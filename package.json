@@ -1,0 +1,37 @@
+{
+  "name": "MicrobeTrace-lite",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Tony Boyles <Anthony@Boyles.cc>",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf dist/ && mkdir dist",
+    "prebuild": "yarn run clean",
+    "build": "npx webpack src/app.js dist/app.js",
+    "start": ""
+  },
+  "devDependencies": {
+    "alertifyjs": "^1.11.0",
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "bettermath": "^0.2.4",
+    "bioseq": "^0.1.1",
+    "bootstrap": "^3.3.7",
+    "browserify": "^15.2.0",
+    "d3": "^4.12.2",
+    "d3-force-attract": "^0.1.1",
+    "d3-symbol-extra": "^0.1.0",
+    "file-saver": "^1.3.3",
+    "http-server": "^0.11.1",
+    "jquery": "^3.2.1",
+    "lazy.js": "^0.5.0",
+    "lighthouse": "^2.8.0",
+    "localforage": "^1.5.6",
+    "papaparse": "^4.3.6",
+    "plain-hamming": "^0.1.0",
+    "tn93": "^0.1.0",
+    "webpack": "^3.10.0",
+    "worker-loader": "^1.1.0"
+  }
+}

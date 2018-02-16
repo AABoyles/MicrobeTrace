@@ -1,0 +1,23 @@
+<style>
+#searchBox{
+  position:absolute;
+  top: 60px;
+  right: 20px;
+}
+</style>
+
+<div id="searchBox">
+  <input type="search" id="search" />
+</div>
+
+<script>
+  $('<li id="FindTab"><a href="#">Find</a></li>')
+    .click(e => $('#search').focus())
+    .append('<li role="separator" class="divider"></li>')
+    .insertBefore('#SettingsTab');
+
+  $(document).on('keydown', e => {
+    if(e.ctrlKey && e.key === 'f') $('#searchBox').slideDown().find('#search').focus();
+  });
+
+</script>

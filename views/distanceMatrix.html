@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title></title>
+  <link rel="icon" href="img/image32.ico" />
+  <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../../node_modules/alertifyjs/build/css/alertify.min.css" />
+  <link rel="stylesheet" href="../stylesheets/main.css" />
+  <style>
+  .showForSequence {
+    display: list-item;
+  }
+  </style>
+</head>
+<body>
+  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Distance Matrix Configuration</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-xs-3">Distance Metric</div>
+            <div class="col-xs-9">
+              <div class="btn-group" data-toggle="buttons" id="distanceMetric"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-3">Invert Axes</div>
+            <div class="col-xs-9">
+              <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-default btn-xs">
+                  <input id="invertX" type="checkbox"> X
+                </label>
+              </div>
+              <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-default btn-xs">
+                  <input id="invertY" type="checkbox"> Y
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-3">Color Scheme</div>
+            <div class="col-xs-9">
+              <input type="color" id="lowColor" value="#313695" />
+              <input type="color" id="medianColor" value="#ffffbf" />
+              <input type="color" id="highColor" value="#a50026" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-3">Axis Labels</div>
+            <div class="col-xs-9">
+              <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-default btn-xs">
+                  <input type="radio" name="axisLabels" id="showAxisLabels" autocomplete="off"> Show
+                </label>
+                <label class="btn btn-default btn-xs active">
+                  <input type="radio" name="axisLabels" id="hideAxisLabels" autocomplete="off" checked> Hide
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div id="main_panel"></div>
+  <script>
+  const electron = require('electron');
+  window.jQuery = window.$ = require('jquery');
+  require('bootstrap');
+  const Plotly = require("@nteract/plotly");
+  const alertify = require('alertifyjs');
+
+  $(function(){
+
+    electron.ipcRenderer.on('deliver-manifest', (e, manifest) => {
+      $('title').text(manifest.productName + ' v. ' + manifest.version);
+      $('#AppName').html('<a href="#">'+manifest.productName+'</a>');
+      $('#AppVersion').html('<a href="#">'+manifest.version+'</a>');
+    });
+    electron.ipcRenderer.send('get-manifest');
+
+    $('body').prepend(electron.ipcRenderer.sendSync('get-component', 'nav.html'));
+    $('body').append(electron.ipcRenderer.sendSync('get-component', 'exportRasterImage.html'));
+    $('<li id="ExportTab"><a href="#">Export Data</a></li>').click(() => {
+      electron.remote.dialog.showSaveDialog({
+        filters: [
+          {name: 'Comma-Separated Values', extensions: ['csv']}
+        ]
+      }, (fileName) => {
+        if (fileName === undefined){
+          return alertify.error('File not exported!');
+        }
+        let labels = session.data.distance_matrix.labels;
+        let data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
+        jetpack.write(fileName, ',' + labels.join(',') + '\n' + data.map((row, i) => labels[i] + ',' + row.join(',')).join('\n'));
+        alertify.success('File Saved!');
+      });
+    }).insertAfter('#FileTab');
+    $('<li role="separator" class="divider"></li>').insertAfter('#FileTab');
+
+    function replot(){
+      if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
+        return alertify.error('No distance matrix could be found!');
+      }
+
+      if(window.plot) Plotly.purge('main_panel');
+
+      let xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
+      let yLabels = xLabels.slice();
+      let data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
+
+      if($('#invertX').is(':checked')){
+        data.forEach(l => l.reverse());
+        xLabels.reverse();
+      }
+
+      if($('#invertY').is(':checked')){
+        data.reverse();
+        yLabels.reverse();
+      }
+
+      let config = {
+        autotick: false,
+        showticklabels: $('#showAxisLabels').is(':checked')
+      };
+
+      if(!$('#showAxisLabels').is(':checked')){
+        config.ticks = '';
+      }
+
+      window.plot = Plotly.newPlot('main_panel', [{
+        x: xLabels,
+        y: yLabels,
+        z: data,
+        type: 'heatmap',
+        colorscale: [
+          [0, $('#lowColor').val()],
+          [0.5, $('#medianColor').val()],
+          [1, $('#highColor').val()]
+        ]
+      }], {
+        xaxis: config,
+        yaxis: config
+      }, {
+        displaylogo: false,
+        displayModeBar: false
+      });
+    }
+
+    electron.ipcRenderer.on('set-data', (e, data) => {
+      window.session = { data: data };
+      $('#distanceMetric').html(
+        Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
+          <label class="btn btn-default btn-xs${(i===0)? ' active':''}">
+            <input type="radio" name="distanceMetric" id="${k}" autocomplete="off"${(i===0)? ' checked':''}> ${k}
+          </label>
+        `).join('')
+      );
+      $('input[name="distanceMetric"]').change(replot);
+      replot();
+    });
+    electron.ipcRenderer.send('get-data');
+
+    $('input[name="axisLabels"]').change(replot);
+    $('input[type="color"]').change(replot);
+    $('#invertX, #invertY').change(replot);
+
+    $(window).on('resize', replot);
+  });
+
+  </script>
+</body>
+</html>

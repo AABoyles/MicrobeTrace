@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title></title>
+  <link rel="icon" href="img/image32.ico" />
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/alertifyjs-alertify.js/1.0.11/css/alertify.css" />
+  <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+</head>
+<body>
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed navbar-left" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <div class="navbar-right">
+          <a class="navbar-brand title invisible" href="#"><h1>MicrobeTrace</h1></a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
+            <ul class="dropdown-menu">
+              <li id="FileTab"><a href="#">New</a></li>
+              <li id="AddDataTab"><a href="#">Add Data</a></li>
+              <li role="separator" class="divider"></li>
+              <li id="ExportTab"><a href="#">Export Data</a></li>
+              <li id="ExportHIVTraceTab"><a href="#">Export HIVTRACE File</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
+            <ul class="dropdown-menu">
+              <li id="RevealAllTab"><a href="#">Reveal All</a></li>
+              <li id="ZoomToFitTab"><a href="#">Zoom To Fit</a></li>
+              <li role="separator" class="divider"></li>
+              <li id="SettingsTab" data-toggle="modal" data-target="#settingsModal"><a href="#">Settings</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
+            <ul class="dropdown-menu">
+              <li id="3DNetworkTab"><a href="#">3D Network</a></li>
+              <li id="TableTab"><a href="#">Table</a></li>
+              <li id="FlowTab"><a href="#">Flow Diagram</a></li>
+              <li id="HistogramTab" class="showForSequence"><a href="#">Histogram</a></li>
+              <li id="DistanceMatrixTab" class="showForSequence"><a href="#">Heatmap</a></li>
+              <li id="SequencesTab" class="showForSequence"><a href="#">Sequences</a></li>
+              <li id="TreeTab" class="showForSequence"><a href="#">Phylogenetic Tree</a></li>
+              <li id="MapTab"><a href="#">Map</a></li>
+              <li role="separator" class="divider"></li>
+              <li id="FullScreenTab"><a href="#">Toggle Full Screen</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
+            <ul class="dropdown-menu">
+              <li id="HelpTab"><a href="#">Help</a></li>
+              <li id="UpdateTab"><a href="#">Check For Update</a></li>
+              <li role="separator" class="divider"></li>
+              <li id="AboutTab"><a href="#" data-toggle="modal" data-target="#aboutModal">About</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="licenseAgreement" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="licenseAgreement">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 id="licenseAgreement" class="modal-title">License Agreement</h4>
+        </div>
+        <div class="modal-body">
+          <pre>The material embodied in this software is provided to you "As-is" and without
+warranty of any kind, express, implied or otherwise, including without
+limitation, any warranty of fitness for a particular purpose. In no event shall
+the Centers for Disease Control and Prevention (CDC) or the United States (U.S.)
+government be liable to you or anyone else for any direct, special, incidental,
+indirect or consequential damages of any kind, or any damages whatsoever,
+including without limitation, loss of profit, loss of use, savings or revenue,
+or the claims of third parties, whether or not CDC or the U.S. Government has
+been advised of the possibility of such loss, however caused and on any theory
+of liability, arising out of or in connection with the possession, use or
+performance of this software.</pre>
+          <p>Please Click "Accept" to accept this agreement, or "Reject" to close this application.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="rejectAgreement" type="button" class="btn btn-danger" data-dismiss="modal">Reject</button>
+          <button id="acceptAgreement" type="button" class="btn btn-primary" data-dismiss="modal">Accept</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div id="file_panel" class="panel panel-default">
+    <div class="panel-heading clearfix">
+      <button id="alignerControlsButton" class="btn btn-default btn-sm pull-right" data-toggle="modal" data-target="#alignerControlsModal">Alignment Options</button>
+      <h3 class="panel-title">Load Data</h3>
+    </div>
+    <div class="panel-body">
+      <div id="drop_zone">
+        Drag and Drop Files Here to Load
+      </div>
+    </div>
+    <div class="panel-footer clearfix">
+      <button type="submit" id="main-submit" class="btn btn-primary pull-right" title="Please select a Network CSV or FASTA File">Submit</button>
+    </div>
+  </div>
+
+  <div id="alignerControlsModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header"><h4 class="modal-title">Alignment Configuration</h4></div>
+        <div class="modal-body">
+          <div class="row" style="margin-bottom: 5px">
+            <div class="col-sm-4">
+              <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>&nbsp;
+              <div class="btn-group btn-group-xs" data-toggle="buttons">
+                <label class="btn btn-default active">
+                  <input type="radio" name="shouldAlign" id="align" autocomplete="off" checked> Yes
+                </label>
+                <label class="btn btn-default">
+                  <input type="radio" name="shouldAlign" id="doNotAlign" autocomplete="off"> No
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="row" id="referenceRow">
+            <div class="col-sm-2">
+              <input id="refSeqFileLoad" class="btn btn-default btn-xs" type="button" value="Load From File" />
+              <input id="refSeqLoad" class="btn btn-default btn-xs" type="button" value="Load HXB2.pol" />
+            </div>
+            <div class="col-sm-10">
+              <textarea id="reference"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer clearfix">
+          <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="Confirm Alignment Configurations are All Properly Set">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingInformationModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header"><h4 class="modal-title">Loading File</h4></div>
+        <div class="modal-body">
+          <img src="img/1DNA.gif" class="img-responsive center-block" />
+          <div class="panel-group" id="advancedLoadingAccordion" role="tablist" aria-multiselectable="false">
+            <div class="panel panel-default">
+              <div class="panel-heading" role="tab" id="advancedLoadingHeading">
+                <a role="button" data-toggle="collapse" data-parent="#advancedLoadingAccordion" href="#advancedLoadingPanelWrapper" aria-expanded="false" aria-controls="advancedLoadingPanelWrapper">Details</a>
+              </div>
+              <div id="advancedLoadingPanelWrapper" class="panel-collapse collapse" role="tabpanel" aria-labelledby="advancedLoadingHeading">
+                <div id="loadingInformation" class="panel-body"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer clearfix">
+          <button id="loadCancelButton" class="btn btn-error btn-sm pull-right">Cancel</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div id="main_panel" class="pane-container pane-horizontal" style="display:none;">
+    <svg id="network"></svg>
+
+    <span id="tooltip"></span>
+
+    <ul id="contextmenu" class="dropdown-menu">
+      <li><a href="#" id="viewAttributes">View Attributes</a></li>
+      <li><a href="#" id="copyID">Copy ID</a></li>
+      <li class="showForSequence"><a href="#" id="copySeq">Copy Sequence</a></li>
+      <li><a href="#" id="pinNode">Pin Node</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a href="#" id="isolateCluster">Isolate Cluster</a></li>
+      <li><a href="#" id="hideCluster">Hide Cluster</a></li>
+    </ul>
+
+    <div id="attributeModal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header"><h4 class="modal-title">Node Attributes</h4></div>
+          <div class="modal-body" style="overflow: auto">
+            <table class="table table-striped">
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="panel-footer clearfix">
+            <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <table id="groupKey"></table>
+
+    <div id="playtools">
+      <div class="btn-group" role="group">
+        <button id="slower" type="button" class="btn btn-default">
+          <i class="fa fa-backward" aria-hidden="true"></i>
+        </button>
+        <button id="playbutton" type="button" class="btn btn-default">
+          <i class="fa fa-pause" aria-hidden="true"></i>
+        </button>
+        <button id="faster" type="button" class="btn btn-default">
+          <i class="fa fa-forward" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <table id="networkStatistics">
+      <tbody>
+        <tr>
+          <td class="text-right">
+            <span id="numberOfNodes"></span>
+            (<span id="numberOfSelectedNodes"></span>)
+          </td>
+          <td>Nodes (Selected)</td>
+        </tr>
+        <tr>
+          <td id="numberOfVisibleLinks" class="text-right"></td>
+          <td>Links</td>
+        </tr>
+        <tr>
+          <td id="numberOfDisjointComponents" class="text-right"></td>
+          <td>Clusters</td>
+        </tr>
+        <tr id="singletonsRow">
+          <td id="numberOfSingletonNodes" class="text-right"></td>
+          <td>Singletons</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="settingsModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Network Configuration</h4>
+        </div>
+        <div class="modal-body">
+          <!-- Nav tabs -->
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#nodeConfigurations" aria-controls="nodeConfigurations" role="tab" data-toggle="tab">Nodes</a></li>
+            <li role="presentation"><a href="#linkConfigurations" aria-controls="profile" role="tab" data-toggle="tab">Links</a></li>
+            <li role="presentation"><a href="#networkConfigurations" aria-controls="messages" role="tab" data-toggle="tab">Network</a></li>
+          </ul>
+          <!-- Tab panes -->
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade in active" id="nodeConfigurations">
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-xs-3"><strong>Property</strong></div>
+                  <div class="col-xs-3"><strong>Variable</strong></div>
+                  <div class="col-xs-6"><strong>Value</strong></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What shape should the nodes be?">Shape</a></div>
+                  <div class="col-xs-3"><select id="nodeSymbolVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
+                  <div class="col-xs-6"><select id="default-node-symbol">
+                    <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
+                    <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
+                    <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
+                    <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
+                    <option value="symbolTriangleRight">&nbsp;&#9654; (Right Triangle)</option>
+                    <option value="symbolDiamond">&nbsp;&#10731; (Vertical Diamond)</option>
+                    <option value="symbolDiamondAlt">&nbsp;&#10731; (Horizontal Diamond)</option>
+                    <option value="symbolSquare">&nbsp;&#9632; (Square)</option>
+                    <option value="symbolDiamondSquare">&nbsp;&#9670; (Tilted Square)</option>
+                    <option value="symbolPentagon">&nbsp;&#11039; (Pentagon)</option>
+                    <option value="symbolHexagon">&nbsp;&#11042; (Hexagon)</option>
+                    <option value="symbolHexagonAlt">&nbsp;&#11043; (Tilted Hexagon)</option>
+                    <option value="symbolOctagon">&nbsp;&#11204; (Octagon)</option>
+                    <option value="symbolOctagonAlt">&nbsp;&#11203; (Tilted Octagon)</option>
+                    <option value="symbolCross">&nbsp;&#10010; (Addition Sign)</option>
+                    <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
+                    <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
+                    <option value="symbolStar">&nbsp;&#9733; (Star)</option>
+                  </select></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</a></div>
+                  <div class="col-xs-3"><select id="nodeLabelVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</a></div>
+                  <div class="col-xs-3"><select id="nodeTooltipVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the nodes be?">Color</a></div>
+                  <div class="col-xs-3"><select id="nodeColorVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
+                  <div class="col-xs-6"><input type="color" id="default-node-color" value="#5656ff" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How transparent should the nodes be?">Transparency</a></div>
+                  <div class="col-xs-3"><select id="nodeOpacityVariable" class="nodeVariables numeric"><option value="none">None</option></select></div>
+                  <div class="col-xs-6"><input type="range" id="default-node-opacity" min="0" max="1" value="1" step="0.01" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How large should the nodes be?">Size</a></div>
+                  <div class="col-xs-3"><select id="nodeRadiusVariable" class="nodeVariables numeric"><option value="none">None</option></select></div>
+                  <div class="col-xs-6"><input type="range" id="default-node-radius" min="1" value="250" step="1" max="5000" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3">Singletons</div>
+                  <div class="col-xs-6 .col-xs-offset-3">
+                    <div class="btn-group btn-group-xs" data-toggle="buttons">
+                      <label class="btn btn-default active">
+                        <input type="radio" name="singletons" id="ShowSingletons" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-default">
+                        <input type="radio" name="singletons" id="HideSingletons" autocomplete="off"> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="linkConfigurations">
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-xs-3"><strong>Property</strong></div>
+                  <div class="col-xs-3"><strong>Variable</strong></div>
+                  <div class="col-xs-6"><strong>Value</strong></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Pruning</a></div>
+                  <div class="col-xs-3"><select id="linkSortVariable" class="linkVariables numeric"><option value="distance">Distance</option></select></div>
+                  <div class="col-xs-6"><a href="#" data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?"><input type="number" id="default-link-threshold" value="0.015" step="0.001" /></a>
+                      <button id="computeMST" class="btn btn-default btn-xs showForNotMST">Compute MST</button>
+                      <div class="btn-group btn-group-xs showForMST" data-toggle="buttons">
+                        <label class="btn btn-default active">
+                          <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
+                        </label>
+                        <label class="btn btn-default">
+                          <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
+                        </label>
+                      </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Are these links directed?">Directionality</a></div>
+                  <div class="col-xs-3"></div>
+                  <div class="col-xs-6">
+                    <div class="btn-group btn-group-xs" data-toggle="buttons">
+                      <label class="btn btn-default active">
+                        <input type="radio" name="DirectionOptions" id="UndirectedLinks" autocomplete="off" checked> Undirected
+                      </label>
+                      <label class="btn btn-default">
+                        <input type="radio" name="DirectionOptions" id="DirectedLinks" autocomplete="off"> Directed
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</a></div>
+                  <div class="col-xs-3"><select id="linkTooltipVariable" class="linkVariables"><option value="none">None</option></select></div>
+                  <div class="col-xs-6"></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What pattern should the links have?">Pattern</a></div>
+                  <div class="col-xs-3"></div>
+                  <div class="col-xs-6"><select id="default-link-pattern">
+                    <option selected>None</option>
+                    <option>Dotted</option>
+                    <option>Dashed</option>
+                    <option>Dot-Dashed</option>
+                  </select></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the links be?">Color</a></div>
+                  <div class="col-xs-3"><select id="linkColorVariable" class="linkVariables"><option value="none">None</option></select></div>
+                  <div class="col-xs-6"><input type="color" id="default-link-color" value="#6f6f6f" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How transparent should the links be?">Transparency</a></div>
+                  <div class="col-xs-3"><select id="linkOpacityVariable" class="linkVariables"><option value="none">None</option></select></div>
+                  <div class="col-xs-6"><input type="range" id="default-link-opacity" min="0" max="1" value="0.5" step="0.01" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How wide should the links be?">Thickness</a></div>
+                  <div class="col-xs-3">
+                    <select id="linkWidthVariable" class="linkVariables"><option value="none">None</option></select><br />
+                    <input type="checkbox" id="reciprocal-link-width" />&nbsp;<a href="#" data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal?</a>
+                  </div>
+                  <div class="col-xs-6"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
+                </div>
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="networkConfigurations">
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-xs-3"><strong>Property</strong></div>
+                  <div class="col-xs-9"><strong>Value</strong></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</a></div>
+                  <div class="col-xs-9">
+                    <div class="btn-group btn-group-xs" data-toggle="buttons">
+                      <label class="btn btn-default active">
+                        <input type="radio" name="networkStatisticsOptions" id="showNetworkStatistics" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-default">
+                        <input type="radio" name="networkStatisticsOptions" id="hideNetworkStatistics" autocomplete="off"> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</a></div>
+                  <div class="col-xs-9"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How long should links be?">Length</a></div>
+                  <div class="col-xs-9"><input type="range" id="default-link-length" min = "0" max="200" value="50" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</a></div>
+                  <div class="col-xs-9"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</a></div>
+                  <div class="col-xs-9"><input type="range" id="default-node-charge" min="0" max="400" value="200" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the background be?">Background</a></div>
+                  <div class="col-xs-9"><input type="color" id="network-color" value="#ffffff" /></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="btn-group" data-toggle="buttons">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+          </div>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="aboutModalLabel">About <span class="title"></span></h4>
+        </div>
+        <div class="modal-body">
+          <h2 class="title"> <small class="version"></small></h2>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="dist/app.js"></script>
+  <script id="HXB2pol" type="sequence">CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC</script>
+</body>
+</html>

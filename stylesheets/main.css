@@ -1,0 +1,267 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 50px;
+}
+.navbar {
+  margin-bottom: 0;
+}
+.navbar-default .navbar-nav > li > a {
+  color: #555;
+}
+.navbar-toggle {
+  float: left;
+  margin-left: 15px;
+}
+a {
+  color: #555;
+  text-decoration: none;
+}
+a:hover,
+a:focus {
+  color: #555;
+  text-decoration: none;
+}
+#UpdateTab {
+  display: none;
+}
+.container {
+  text-align: center;
+}
+#drop_zone {
+  border: 2px dashed #bbb;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  padding: 25px;
+  text-align: center;
+  font: 20pt bold 'Vollkorn';
+  color: #bbb;
+}
+#file_panel {
+  width: 768px;
+}
+.filename {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.filename a{
+  font-weight: 700;
+}
+.filename a.killlink:hover {
+  color: red;
+}
+#file_panel label {
+  font-weight: normal;
+}
+td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.showForMST {
+  display: none;
+}
+#alignerControlsButton {
+  display: none;
+}
+#reference {
+  width: 100%;
+  height: 606px;
+  background-color: #f5f5f5;
+  resize: vertical;
+  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+}
+#main-submit {
+  display: none;
+}
+#loadingInformation {
+  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+  font-size: 11px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 23px;
+  padding: 10px;
+  white-space: pre-line;
+}
+#loadCancelButton {
+  display: none;
+}
+#main_panel {
+  width: 100%;
+  height: 100%;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+}
+#network {
+  width: 100%;
+  height: 100%;
+}
+#links line {
+  stroke: #000;
+}
+#nodes path {
+  stroke: #fff;
+  stroke-width: 2px;
+  cursor: -webkit-grab;
+}
+#nodes path.selected {
+  stroke: #000;
+  stroke-dasharray: 6, 13;
+  stroke-width: 2px;
+  animation-duration: 1s;
+  animation-name: ripple;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+@keyframes ripple {
+  from {
+    stroke-dashoffset: 0px;
+  }
+  to {
+    stroke-dashoffset: 19px;
+  }
+}
+.brush .extent {
+  fill-opacity: .1;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+.btn-default {
+  background-color: #f5f5f5;
+}
+#playtools {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+#tooltip,
+#contextmenu {
+  position: fixed;
+  color: #333;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 5px;
+  opacity: 0;
+  display: block;
+  max-width: 160px;
+}
+#tooltip {
+  max-width: 20%;
+  max-height: 20%;
+  overflow-wrap: break-word;
+  overflow-y: auto;
+  z-index: 10000;
+}
+#contextmenu {
+  width: 160px;
+}
+#contextmenu a:hover {
+  background: #fff;
+}
+#settingsModal {
+  pointer-events: none;
+}
+#settingsModal .modal-dialog {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+#settingsModal .modal-content {
+  pointer-events: all;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+#settingsModal .tab-pane {
+  border: 1px solid #ddd;
+  border-top: none;
+}
+#settingsModal .panel-body {
+  padding: 0px 15px;
+}
+#settingsModal .nav-tabs > li.active > a,
+#settingsModal .nav-tabs > li.active > a:hover,
+#settingsModal .nav-tabs > li.active > a:focus {
+  background-color: transparent;
+  border-bottom: 1px solid #fff;
+}
+#settingsModal .row {
+  border-bottom: 1px solid lightgray;
+}
+#settingsModal .row div {
+  padding: 8px;
+}
+#settingsModal #default-link-threshold {
+  width: 5em;
+}
+#settingsModal #computeMST {
+  display: inline-block;
+  margin: 0 1em;
+}
+#settingsModal .showForMST {
+  display: none;
+  margin: 0 1em;
+}
+#networkStatistics,
+#groupKey {
+  position: absolute;
+  border-radius: 4px;
+  color: #303030;
+  background-color: #f5f5f5;
+  border: 1px solid #c0c0c0;
+}
+#networkStatistics th,
+#groupKey th {
+  text-align: center;
+}
+#networkStatistics th,
+#groupKey th,
+#networkStatistics td,
+#groupKey td {
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#networkStatistics {
+  bottom: 10px;
+  right: 20px;
+}
+#groupKey {
+  top: 60px;
+  right: 10px;
+  z-index: 1000;
+}
+#groupKey select {
+  background: none;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: '';
+}
+#thresholdTooltip {
+  text-align: right;
+  border: 0;
+}
+.nodeVariables,
+.linkVariables {
+  width: 100%;
+}
+.row-striped {
+  display:none;
+  padding-top: 5px;
+}
+.row-striped:nth-of-type(even) {
+  background-color: #efefef;
+}
+.row-striped:nth-of-type(odd) {
+  background-color: #ffffff;
+}
