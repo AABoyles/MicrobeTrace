@@ -362,7 +362,7 @@ $(function(){
     let files = [];
     $('#file_panel .row').each((i, el) => {
       files[i] = {
-        file: session.files[i].name,
+        file: session.files[i],
         type: $(el).find('input[type="radio"]:checked').data('type'),
         field1: $(el).find('select').get(0).value,
         field2: $(el).find('select').get(1).value,
@@ -387,7 +387,7 @@ $(function(){
 
     instructions.files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
     instructions.files.forEach((file, fileNum) => {
-      let filename = file.file;
+      let filename = file.file.name;
 
       if(file.type === 'fasta'){
 
@@ -404,29 +404,28 @@ $(function(){
           message(` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
           if(fileNum == instructions.files.length - 1) nextStuff();
         };
-        reader.readAsText(session.files[fileNum], 'UTF-8');
+        reader.readAsText(file.file, 'UTF-8');
 
       } else if(file.type === 'link'){
 
         message(`Parsing ${filename} as Link CSV...`);
-        let l = 0;
+        let l = 0, m = 0;
         Papa.parse(file.file, {
           header: true,
           dynamicTyping: true,
           skipEmptyLines: true,
-          step: row => {
-            let link = row.data;
-            l += addLink(Object.assign({
-              source: link[file.field1],
-              target: link[file.field2],
-              distance: (file.field3 === "None") ? 1 : link[file.field3],
-              origin: filename,
-              visible: true
-            }, link));
-          },
           complete: results => {
-            message(` - Parsed ${n} New, ${results.data.length} Total Links from Link CSV.`);
-            Object.keys(results.data[0]).forEach(key => session.data.linkFields.push(key));
+            let link = results.data.forEach(link => {
+              l += addLink(Object.assign({
+                source: link[file.field1],
+                target: link[file.field2],
+                distance: (file.field3 === "None") ? 0 : link[file.field3],
+                origin: filename,
+                visible: true
+              }, link));
+            });
+            message(` - Parsed ${l} New, ${m} Total Links from Link CSV.`);
+            results.meta.fields.forEach(key => session.data.linkFields.push(key));
             let n = 0;
             let nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
             let t = nodeIDs.length;
@@ -443,26 +442,24 @@ $(function(){
 
         message(`Parsing ${filename} as Node CSV...`);
 
-        let n = 0;
         Papa.parse(file.file, {
           header: true,
           dynamicTyping: true,
           skipEmptyLines: true,
-          step: row => {
-            let node = row.data;
-            node.id = node[file.field1];
-            if(file.field2 !== 'None') node.seq = node[file.field2];
-            node['origin'] = filename;
-            n += addNode(node);
-          },
           complete: results => {
-            Object.keys(results.data[0]).forEach(key => session.data.nodeFields.push(key));
+            let n = 0;
+            results.data.forEach(node => {
+              node.id = node[file.field1];
+              if(file.field2 !== 'None') node.seq = node[file.field2];
+              node['origin'] = filename;
+              n += addNode(node);
+            });
+            results.meta.fields.forEach(key => session.data.nodeFields.push(key));
             if(data.nodeFields.has('seq')) anySequences = true;
+            message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
             if(fileNum == instructions.files.length - 1) nextStuff();
           }
         });
-
-        message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
 
       } else { //Distance Matrix
 
@@ -498,11 +495,11 @@ $(function(){
                 });
               }
             });
+            message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
+            message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
             if(fileNum == instructions.files.length - 1) nextStuff();
           }
         });
-        message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
-        message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
       }
     });
 
