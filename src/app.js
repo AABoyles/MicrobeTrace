@@ -146,6 +146,15 @@ function message(msg){
   $('#loadingInformation').html(session.messages.join('<br />'));
 }
 
+function titleize(title){
+  let small = title.toLowerCase().replace(/_/g, ' ');
+  if(small === 'id') return 'ID';
+  if(small === 'snps') return 'SNPs';
+  return small.replace(/(?:^|\s|-)\S/g, function(c){
+    return c.toUpperCase();
+  });
+}
+
 $(function(){
 
   function showFilePanel(){
@@ -255,8 +264,8 @@ $(function(){
         header: true,
         complete: function(output){
           let data = output.data;
-          let headers = Object.keys(data[0]);
-          let options = '<option>None</option>' + headers.map(h => '<option>'+h+'</option>').join('\n');
+          let headers = output.meta.fields;
+          let options = '<option>None</option>' + headers.map(h => `<option value="${h}">${titleize(h)}</option>`).join('\n');
           $(`<div class='col-xs-4 text-right'${isFasta?' style="display: none;"':''} data-file='${filename}'>
               <label style="width:65px">${isNode?'ID':'Source'}</label><span>&nbsp;</span><select style="width:calc(100% - 69px)">${options}</select>
             </div>
