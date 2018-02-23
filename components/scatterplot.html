@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MicrobeTrace - Scatterplot</title>
+  <link rel="icon" href="img/image32.ico" />
+  <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../../node_modules/alertifyjs/build/css/alertify.min.css" />
+  <link rel="stylesheet" type="text/css" href="../stylesheets/main.css" />
+</head>
+<body>
+  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Scatterplot Settings</h4>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#histogramConfigurations" aria-controls="histogramConfigurations" role="tab" data-toggle="tab">Histogram</a></li>
+          </ul>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade in active" id="histogramConfigurations">
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which dataset should the histogram be drawn from?">Dataset</a></div>
+                  <div class="col-xs-9">
+                    <div class="btn-group btn-group-xs" data-toggle="buttons">
+                      <label class="btn btn-default active">
+                        <input type="radio" name="set" id="vislinks" autocomplete="off" checked> Visible Links
+                      </label>
+                      <label class="btn btn-default">
+                        <input type="radio" name="set" id="alllinks" autocomplete="off"> All Links
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">X Variable</a></div>
+                  <div class="col-xs-9"><select id="xVar"></select></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Y Variable</a></div>
+                  <div class="col-xs-9"><select id="yVar"></select></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
+                  <div class="col-xs-9">
+                    <div class="btn-group btn-group-xs" data-toggle="buttons">
+                      <label class="btn btn-default active">
+                        <input type="radio" name="scale" id="linearScale" autocomplete="off" checked> Linear
+                      </label>
+                      <label class="btn btn-default">
+                        <input type="radio" name="scale" id="logScale" autocomplete="off"> Log
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
+                  <div class="col-xs-9"><input type="color" id="color" value="#5656ff" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
+                  <div class="col-xs-9"><input type="color" id="network-color" class="triggers" value="#ffffff" /></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div id="main_panel"></div>
+  <script>
+  const electron = require('electron');
+  window.jQuery = window.$ = require('jquery');
+  require('bootstrap');
+  const Plotly = require('@nteract/plotly');
+  const alertify = require('alertifyjs');
+
+  $(function(){
+
+    $('head').append(electron.ipcRenderer.sendSync('get-component', 'titleize.html'));
+    $('body').prepend(electron.ipcRenderer.sendSync('get-component', 'nav.html'));
+    $('body').append(electron.ipcRenderer.sendSync('get-component', 'exportRasterImage.html'));
+    $('#ScreenshotTab').insertBefore('#CloseTab');
+    $('<li role="separator" class="divider"></li>').insertBefore('#CloseTab');
+
+    electron.ipcRenderer.on('set-session', (e, session) => {
+      window.session = session;
+      let links = session.data.links;
+      let options = session.data.linkFields.map(key => `<option value='${key}'>${titleize(key)}</option>`).join('\n');
+      $('#xVar, #yVar').html(options);
+      $('#xVar').val('snps');
+      $('#yVar').val('distance');
+      redraw();
+      restyle();
+    });
+    electron.ipcRenderer.send('get-session');
+
+    function redraw(){
+      if(window.plot) Plotly.purge('main_panel');
+      let xVar = $('#xVar').val();
+      let yVar = $('#yVar').val();
+      let visible = $('#vislinks').is(':checked');
+      let subset = session.data.links.filter(l => !visible || l.visible);
+      window.plot = Plotly.newPlot('main_panel', [{
+        x: subset.map(l => l[xVar]),
+        y: subset.map(l => l[yVar]),
+        type: 'scatter',
+        mode: 'markers',
+        marker: {
+          color: $('#color').val(),
+        }
+      }], {
+        yaxis: {
+          title: titleize(yVar),
+          type: $('#logScale').is(':checked') ? 'log' : ''
+        },
+        xaxis: {
+          title: titleize(xVar)
+        }
+      }, {
+        displaylogo: false,
+        displayModeBar: false
+      });
+      $(window).on('resize', e => {
+        Plotly.relayout('main_panel', {
+          width: $('#main_panel').width(),
+          height: $('#main_panel').height()
+        });
+      });
+    }
+
+    electron.ipcRenderer.on('update-link-visibilities', (e, newLinks) => {
+      let n = newLinks.length;
+      if(n !== session.data.links.length) console.error('Length Mismatch!');
+      for(let i = 0; i < n; i++) session.data.links[i].visible = newLinks[i];
+      redraw();
+    });
+
+    electron.ipcRenderer.on('update-style', (e, style) => {
+      session.style = style;
+      restyle();
+    });
+
+    function restyle(){
+      $('#network-color').val(session.style.background);
+      $('svg.main-svg:first').css('background-color', session.style.background);
+      $('rect.bg').css('fill', session.style.background);
+    }
+
+    $('#network-color').on('input', e => {
+      session.style.background = e.target.value;
+      $('#main_panel').css('background-color', session.style.background);
+      $('rect.bg').css('fill', session.style.background);
+      electron.ipcRenderer.send('update-style', session.style);
+    });
+
+    $('#alllinks, #vislinks, #logScale, #linearScale').change(redraw);
+
+    $('#xVar, #yVar, #color').change(redraw);
+  });
+  </script>
+</body>
+</html>

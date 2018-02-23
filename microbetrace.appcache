@@ -1,0 +1,25 @@
+CACHE MANIFEST
+# 2018-02-23:v1
+
+CACHE:
+index.html
+stylesheets/main.css
+src/app.js
+components/nav.html
+node_modules/bootstrap/dist/css/bootstrap.min.css
+node_modules/@fortawesome/fontawesome-free-webfonts/css/fontawesome.css
+node_modules/@fortawesome/fontawesome-free-webfonts/css/fa-regular.css
+node_modules/alertifyjs/build/css/alertify.min.css
+node_modules/lodash/lodash.min.js
+node_modules/jquery/dist/jquery.min.js
+node_modules/bootstrap/dist/js/bootstrap.min.js
+node_modules/papaparse/papaparse.min.js
+node_modules/bioseq/dist/bioseq.min.js
+node_modules/tn93/dist/tn93.min.js
+node_modules/alertifyjs/build/alertify.min.js
+node_modules/d3/build/d3.min.js
+node_modules/d3-force-attract/dist/d3-force-attract.min.js
+node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js
+
+NETWORK:
+*

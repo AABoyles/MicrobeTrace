@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--html lang="en" manifest="microbetrace.appcache"-->
+<html>
 <head>
+  <!--[if lt IE 9]>
+    <script src="node_modules/html5shiv/dist/html5shiv.min.js"></script>
+  <![endif]-->
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title></title>
+  <title>MicrobeTrace</title>
   <link rel="icon" href="img/image32.ico" />
-  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/alertifyjs-alertify.js/1.0.11/css/alertify.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/@fortawesome/fontawesome-free-webfonts/css/fontawesome.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/@fortawesome/fontawesome-free-webfonts/css/fa-regular.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/alertifyjs/build/css/alertify.min.css" />
   <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="node_modules/core-js/client/core.min.js"></script>
 </head>
 <body>
   <nav class="navbar navbar-default navbar-fixed-top">
@@ -31,33 +36,34 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
             <ul class="dropdown-menu">
-              <li id="FileTab"><a href="#">New</a></li>
-              <li id="AddDataTab"><a href="#">Add Data</a></li>
-              <li role="separator" class="divider"></li>
-              <li id="ExportTab"><a href="#">Export Data</a></li>
-              <li id="ExportHIVTraceTab"><a href="#">Export HIVTRACE File</a></li>
+              <li id="ExitTab"><a href="#">Exit</a></li>
             </ul>
           </li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
             <ul class="dropdown-menu">
-              <li id="RevealAllTab"><a href="#">Reveal All</a></li>
-              <li id="ZoomToFitTab"><a href="#">Zoom To Fit</a></li>
-              <li role="separator" class="divider"></li>
               <li id="SettingsTab" data-toggle="modal" data-target="#settingsModal"><a href="#">Settings</a></li>
             </ul>
           </li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
             <ul class="dropdown-menu">
-              <li id="3DNetworkTab"><a href="#">3D Network</a></li>
-              <li id="TableTab"><a href="#">Table</a></li>
-              <li id="FlowTab"><a href="#">Flow Diagram</a></li>
-              <li id="HistogramTab" class="showForSequence"><a href="#">Histogram</a></li>
-              <li id="DistanceMatrixTab" class="showForSequence"><a href="#">Heatmap</a></li>
-              <li id="SequencesTab" class="showForSequence"><a href="#">Sequences</a></li>
-              <li id="TreeTab" class="showForSequence"><a href="#">Phylogenetic Tree</a></li>
-              <li id="MapTab"><a href="#">Map</a></li>
+              <li id="3DNetworkTab"><a href="3D.html" target="_blank">3D Network</a></li>
+              <li id="TableTab"><a href="table.html" target="_blank">Table</a></li>
+              <li id="FlowTab"><a href="flowDiagram.html" target="_blank">Flow Diagram</a></li>
+              <li id="ScatterplotTab"><a href="scatterplot.html" target="_blank">Scatterplot</a></li>
+              <li id="MapTab"><a href="map.html" target="_blank">Map</a></li>
+              <li role="separator" class="divider showForSequence"></li>
+              <li id="HistogramTab" class="showForSequence"><a href="histogram.html" target="_blank">Histogram</a></li>
+              <li id="SequencesTab" class="showForSequence"><a href="sequences.html" target="_blank">Sequences</a></li>
+              <li id="HeatmapTab" class="showForSequence"><a href="heatmap.html" target="_blank">Heatmap</a></li>
+              <li id="TreeTab" class="showForSequence"><a href="phylogeneticTree.html" target="_blank">Phylogenetic Tree</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
+            <ul class="dropdown-menu">
+              <li id="ReloadTab"><a href="#">Reload</a></li>
               <li role="separator" class="divider"></li>
               <li id="FullScreenTab"><a href="#">Toggle Full Screen</a></li>
             </ul>
@@ -65,10 +71,10 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
             <ul class="dropdown-menu">
-              <li id="HelpTab"><a href="#">Help</a></li>
-              <li id="UpdateTab"><a href="#">Check For Update</a></li>
+              <li id="HelpTab"><a href="https://github.com/CDCGov/MicrobeTrace/wiki" target="_blank">Help</a></li>
               <li role="separator" class="divider"></li>
-              <li id="AboutTab"><a href="#" data-toggle="modal" data-target="#aboutModal">About</a></li>
+              <li id="InstallTab"><a href="#" data-toggle="modal" data-target="#install-modal">Install</a></li>
+              <li id="AboutTab"><a href="#" data-toggle="modal" data-target="#about-modal">About</a></li>
             </ul>
           </li>
         </ul>
@@ -159,7 +165,7 @@ performance of this software.</pre>
       <div class="modal-content">
         <div class="modal-header"><h4 class="modal-title">Loading File</h4></div>
         <div class="modal-body">
-          <img src="img/1DNA.gif" class="img-responsive center-block" />
+          <!--img src="img/1DNA.gif" class="img-responsive center-block" /-->
           <div class="panel-group" id="advancedLoadingAccordion" role="tablist" aria-multiselectable="false">
             <div class="panel panel-default">
               <div class="panel-heading" role="tab" id="advancedLoadingHeading">
@@ -211,16 +217,14 @@ performance of this software.</pre>
 
     <table id="groupKey"></table>
 
+    <div id="searchBox">
+      <input type="search" id="search" />
+    </div>
+
     <div id="playtools">
       <div class="btn-group" role="group">
-        <button id="slower" type="button" class="btn btn-default">
-          <i class="fa fa-backward" aria-hidden="true"></i>
-        </button>
         <button id="playbutton" type="button" class="btn btn-default">
-          <i class="fa fa-pause" aria-hidden="true"></i>
-        </button>
-        <button id="faster" type="button" class="btn btn-default">
-          <i class="fa fa-forward" aria-hidden="true"></i>
+          <i class="fas fa-pause" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -377,18 +381,8 @@ performance of this software.</pre>
                   <div class="col-xs-6"></div>
                 </div>
                 <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What pattern should the links have?">Pattern</a></div>
-                  <div class="col-xs-3"></div>
-                  <div class="col-xs-6"><select id="default-link-pattern">
-                    <option selected>None</option>
-                    <option>Dotted</option>
-                    <option>Dashed</option>
-                    <option>Dot-Dashed</option>
-                  </select></div>
-                </div>
-                <div class="row">
                   <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the links be?">Color</a></div>
-                  <div class="col-xs-3"><select id="linkColorVariable" class="linkVariables"><option value="none">None</option></select></div>
+                  <div class="col-xs-3"><select id="linkColorVariable" class="linkVariables"><option value="none" selected>None</option></select></div>
                   <div class="col-xs-6"><input type="color" id="default-link-color" value="#6f6f6f" /></div>
                 </div>
                 <div class="row">
@@ -458,15 +452,19 @@ performance of this software.</pre>
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel">
+  <div class="modal fade" id="install-modal" tabindex="-1" role="dialog" aria-labelledby="install-modal-label">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="aboutModalLabel">About <span class="title"></span></h4>
+          <h4 class="modal-title" id="install-modal-label">Install MicrobeTrace</h4>
         </div>
         <div class="modal-body">
-          <h2 class="title"> <small class="version"></small></h2>
+          Drag this icon to your Desktop to Install MicrobeTrace:<br />
+          <a href="https://aaboyles.github.com/WebMicrobeTrace" class="text-center">
+            <div style="background-image:url('img/icon.ico');width:128px;height:128px;"></div>
+            <div>MicrobeTrace</div>
+          </a>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -475,7 +473,36 @@ performance of this software.</pre>
     </div>
   </div>
 
-  <script src="dist/app.js"></script>
+  <div class="modal fade" id="about-modal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="aboutModalLabel">About MicrobeTrace</h4>
+        </div>
+        <div class="modal-body">
+          <h3>MicrobeTrace</h3>
+          MicrobeTrace is a desktop application that renders existing data from high-risk contact networks in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to supplemental data sources and mathematical inferences like the most probable transmission pathways. MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data production and analytics and help you to discover, understand, and display relationships between patients (nodes). As a standalone desktop application, MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby reducing both the startup cost and analysis time and effort.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script id="HXB2pol" type="sequence">CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC</script>
+  <script src="node_modules/lodash/lodash.min.js"></script>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/papaparse/papaparse.min.js"></script>
+  <script src="node_modules/bioseq/dist/bioseq.min.js"></script>
+  <script src="node_modules/tn93/dist/tn93.min.js"></script>
+  <script src="node_modules/alertifyjs/build/alertify.min.js"></script>
+  <script src="node_modules/d3/build/d3.min.js"></script>
+  <script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
+  <script src="node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js"></script>
+  <script src="src/app.js"></script>
+
 </body>
 </html>

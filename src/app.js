@@ -1,20 +1,3 @@
-import Lazy from 'lazy.js';
-import math from 'bettermath';
-import localforage from 'localforage';
-import bioseq from 'bioseq';
-import tn93 from 'tn93';
-import Papa from 'papaparse';
-import hamming from 'plain-hamming';
-import d3 from 'd3';
-//TODO: Figure out why extraSymbols makes webpack shit the bed.
-// import extraSymbols from 'd3-symbol-extra';
-// Object.assign(d3, extraSymbols); //d3-symbol-extra doesn't automatically write to d3
-// d3.symbols.concat(Object.values(extraSymbols)); //update the list of available symbols
-import { forceAttract } from 'd3-force-attract';
-import bootstrap from 'bootstrap';
-import alertify from 'alertifyjs';
-import FileSaver from 'file-saver';
-
 function dataSkeleton(){
   return {
     files: [],
@@ -23,8 +6,8 @@ function dataSkeleton(){
       links: [],
       clusters: [],
       distance_matrix: {},
-      nodeFields: [],
-      linkFields: []
+      nodeFields: ['id', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
+      linkFields: ['source', 'target', 'tn93', 'snps', 'visible', 'cluster', 'origin']
     },
     state: {
       visible_clusters: [],
@@ -34,160 +17,155 @@ function dataSkeleton(){
   };
 }
 
+function defaultNode(){
+  return {
+    id: '',
+    padding: 0,
+    selected: false,
+    cluster: 1,
+    visible: true,
+    degree: 0,
+    seq: '',
+    origin: ''
+  }
+}
+
+function addNode(newNode){
+  let oldNode = session.data.nodes.find(d => d.id === newNode.id);
+  if(oldNode){
+    Object.assign(oldNode, newNode);
+    return 0;
+  } else {
+    session.data.nodes.push(Object.assign(defaultNode(), newNode));
+    return 1;
+  }
+}
+
+function defaultLink(){
+  return {
+    source: '',
+    target: '',
+    tn93: 1,
+    snps: Number.INFINITY,
+    visible: false,
+    cluster: 1,
+    origin: 'Genetic Distance'
+  }
+}
+
+function addLink(newLink){
+  let oldLink = session.data.links.find(l => l.source === newLink.source & l.target === newLink.target);
+  if(oldLink){
+    Object.assign(oldLink, newLink);
+    return 0;
+  } else {
+    session.data.links.push(Object.assign(defaultLink(), newLink));
+    return 1;
+  }
+}
+
+function parseFASTA(text){
+  if(!text || text.length === 0) return []
+  let seqs = [], currentSeq = {};
+  text.split(/[\r\n]+/g).forEach((line, i) => {
+    if(/^\s*$/.test(line)) return;
+    if(line[0] == ">" || line[0] == ";"){
+      if(i > 0) seqs.push(currentSeq);
+      currentSeq = {
+        id: line.slice(1),
+        seq: ''
+      };
+    } else {
+      currentSeq.seq += line;
+    }
+  });
+  seqs.push(currentSeq);
+  return seqs;
+}
+
+function hamming(s1, s2){
+  let i = s1.length;
+  let sum = 0;
+  while(--i > 0){
+    if(s1[i] !== s2[i]) sum++;
+  }
+  return sum;
+}
+
+function align(subset, reference){
+  subset.forEach(node => {
+    let rst = bioseq.align(reference, node.seq, true, [1, -1], [-5, -1.7]);
+    let fmt = bioseq.cigar2gaps(reference, node.seq, rst.position, rst.CIGAR);
+    node.padding = rst.position;
+    node.seq = fmt[1];
+  });
+
+  //Final step in alignment: left- and right- padding with hyphens
+  let minPadding = _.minBy(subset, 'padding');
+  subset.forEach(d => d.seq = '-'.repeat(d.padding - minPadding) + d.seq);
+
+  let maxLength = _.max(subset.map(d => d.seq.length));
+  subset.forEach(d => d.seq = d.seq + '-'.repeat(maxLength - d.seq.length));
+}
+
+function computeDistanceMatrices(subset){
+  let n = subset.length;
+  let k = 0;
+  session.data.distance_matrix.tn93 = Array(n);
+  session.data.distance_matrix.snps = Array(n);
+  session.data.distance_matrix.labels = subset.map(d => d.id);
+  for(let i = 0; i < n; i++){
+    session.data.distance_matrix.tn93[i] = Array(n);
+    session.data.distance_matrix.snps[i] = Array(n);
+    session.data.distance_matrix.tn93[i][i] = session.data.distance_matrix.snps[i][i] = 0;
+    for(let j = 0; j < i; j++){
+      let newLink = {
+        source: subset[j].id,
+        target: subset[i].id,
+        tn93: tn93(subset[j]['seq'], subset[i]['seq'], 'AVERAGE'),
+        snps: hamming(subset[j]['seq'], subset[i]['seq'])
+      };
+      session.data.distance_matrix.tn93[i][j] = newLink.tn93;
+      session.data.distance_matrix.tn93[j][i] = newLink.tn93;
+      session.data.distance_matrix.snps[i][j] = newLink.snps;
+      session.data.distance_matrix.snps[j][i] = newLink.snps;
+      k += addLink(newLink);
+    }
+  }
+  return k;
+}
+
+function reset(){
+  window.session = dataSkeleton();
+  $('#fileTable').empty();
+  $('#main-submit').hide();
+}
+
+function message(msg){
+  session.messages.push(msg);
+  $('#loadingInformation').html(session.messages.join('<br />'));
+}
+
 $(function(){
 
-  // We're going to use this function in a variety of contexts. It's purpose is
-  // to restore the app to the state it was in when launched.
-  // The argument indicates whether the contents of the file inputs should be
-  // flushed. Obviously, this should not happen when the fileinput change
-  // callbacks invoke this function.
-  function reset(soft){
-    if(!soft){
-      window.session = dataSkeleton();
-      $('#fileTable').empty();
-      $('#main-submit').hide();
-    }
-    $('#main_panel').fadeOut(() => {
+  function showFilePanel(){
+    $('#main_panel').fadeOut(function(){
       $('#network').empty();
       $('#groupKey').empty();
       $('#loadCancelButton, .showForMST').hide();
-      $('.progress-bar').css('width', '0%').attr('aria-valuenow', 0);
       $('.showForNotMST').css('display', 'inline-block');
       $('#loadingInformation').empty();
-      //$('#FileTab', '#ExportHIVTraceTab', '#ExportTab', '#ScreenshotTab', '#VectorTab', '#TableTab, #FlowTab, #SequencesTab, #HistogramTab, #MapTab, #SettingsTab').addClass('disabled');
       $('#file_panel').fadeIn();
     });
   }
 
-  function launchView(view){console.log(view);}
+  // Let's set up the Nav Bar
+  $('<li id="FileTab"><a href="#">New Session</a></li>').click(function(){
+    reset();
+    showFilePanel();
+  }).insertBefore('#ExitTab');
 
-  //Since the navbar is a reused component, we can only change it per view by injecting elements, like so:
-  $('#FileTab').click(() => reset());
-
-  $('#3DNetworkTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/3D.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#TableTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/table.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#FlowTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/flowDiagram.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#DistanceMatrixTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/distanceMatrix.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#SequencesTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/sequences.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#HistogramTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/histogram.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#TreeTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/phylogeneticTree.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#MapTab').click(function(){
-    if(!$(this).hasClass('disabled')){
-      launchView('views/map.html');
-    } else {
-      alertify.warning('Please load some data first!');
-    }
-  });
-
-  $('#FullScreenTab').click(e => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  });
-
-  $('#HelpTab').click(() => {
-    launchView('components/help/index.html');
-  });
-
-  //$.get('components/exportRasterImage.html', html => $('body').append(html));
-  //$.get('components/exportVectorImage.html', html => $('body').append(html));
-
-  $('#ExportHIVTraceTab').click(() => {
-    FileSaver.saveAs(
-      new Blob([
-        JSON.stringify({
-          trace_results: {
-            'HIV Stages': {},
-            'Degrees': {},
-            'Multiple sequences': {},
-            'Edge Stages': {},
-            'Cluster sizes': session.data.clusters.map(c => c.size),
-            'Settings': {
-              'contaminant-ids': [],
-              'contaminants': 'remove',
-              'edge-filtering': 'remove',
-              'threshold': $('#default-link-threshold').val()
-            },
-            'Network Summary': {
-              'Sequences used to make links': 0,
-              'Clusters': session.data.clusters.length,
-              'Edges': session.data.links.filter(l => l.visible).length,
-              'Nodes': session.data.nodes.length
-            },
-            'Directed Edges': {},
-            'Edges': session.data.links,
-            'Nodes': session.data.nodes
-          }
-        }, null, 2
-      )], {type: "application/json;charset=utf-8"}
-    ), "microbeTraceOutput.json");
-  });
-
-  $('#ExportTab').click(e => FileSaver.saveAs(
-    new Blob(
-      [session.data.nodes.map(n => '>'+n.id+'\n'+n.seq).join('\n')],
-      {type: "application/json;charset=utf-8"}
-    ),
-    "microbeTraceOutput.fasta"
-  ));
-
-  $('#AddDataTab').click(reset);
-
-  $.get('components/search.html', html => $('body').append(html));
-  $('#searchBox').hide();
+  $('#AddDataTab').click(showFilePanel);
 
   $('#RevealAllTab').click(e => {
     session.state.visible_clusters = session.data.clusters.map(c => c.id);
@@ -199,15 +177,24 @@ $(function(){
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   }).insertBefore('#SettingsTab');
 
-  $('#ZoomToFitTab').click(e => session.network.fit())
+  $('#ZoomToFitTab').click(e => session.network.fit());
+
+  $('<li id="FindTab"><a href="#">Find</a></li>')
+    .click(e => $('#search').focus())
+    .append('<li role="separator" class="divider"></li>')
+    .insertBefore('#SettingsTab');
+
+  $(document).on('keydown', e => {
+    if(e.ctrlKey && e.key === 'f') $('#searchBox').slideDown().find('#search').focus();
+  });
 
   reset();
 
   // Before anything else gets done, ask the user to accept the legal agreement
-  if(!localforage.getItem('licenseAccepted')){
+  if(!localStorage.getItem('licenseAccepted')){
     $('#acceptAgreement').click(function(){
       // Set that agreement in localStorage
-      localforage.setItem('licenseAccepted', new Date());
+      localStorage.setItem('licenseAccepted', new Date());
     });
     $('#rejectAgreement').click(function(){
       // If you don't agree, no app for you!
@@ -220,11 +207,11 @@ $(function(){
     });
   }
 
-  $('#file_panel').on('dragover', (evt) => {
+  $('#file_panel').on('dragover', function(evt){
     evt.stopPropagation();
     evt.preventDefault();
     evt.originalEvent.dataTransfer.dropEffect = 'copy';
-  }).on('drop', (evt) => {
+  }).on('drop', function(evt){
     evt.stopPropagation();
     evt.preventDefault();
     $('#drop_zone').slideUp();
@@ -239,9 +226,9 @@ $(function(){
       let isNode = filename.toLowerCase().includes('node');
       let root = $('<div class="row row-striped"></div>');
       $('<div class="col-xs-8 filename"></div>')
-        .append($('<a href="#" class="fa fa-times killlink"></a>').click(e => {
+        .append($('<a href="#" class="fa fa-times killlink"></a>').click(function(e){
           session.files.splice(session.files.indexOf(filename), 1);
-          root.slideUp(e => root.remove());
+          root.slideUp(function(){ root.remove(); });
         }))
         .append(`&nbsp;<a href="#" title="${filename}">${filename}</a>`)
         .appendTo(root);
@@ -266,7 +253,7 @@ $(function(){
       Papa.parse(files[i], {
       	dynamicTyping: true,
         header: true,
-        complete: output => {
+        complete: function(output){
           let data = output.data;
           let headers = Object.keys(data[0]);
           let options = '<option>None</option>' + headers.map(h => '<option>'+h+'</option>').join('\n');
@@ -354,6 +341,15 @@ $(function(){
   var messageTimeout;
 
   $('#main-submit').click(function(e){
+    $('#file_panel').fadeOut(function(){
+      $('#main_panel').fadeIn(function(){
+        $('#loadingInformationModal').modal({
+          keyboard: false,
+          backdrop: 'static'
+        });
+      });
+    });
+
     let files = [];
     $('#file_panel .row').each((i, el) => {
       files[i] = {
@@ -365,7 +361,7 @@ $(function(){
       };
     });
 
-    messageTimeout = setTimeout(() => {
+    messageTimeout = setTimeout(function(){
       $('#loadCancelButton').slideDown();
       alertify.warning("If you stare long enough, you can reverse the DNA Molecule\'s spin direction");
     }, 20000);
@@ -381,14 +377,14 @@ $(function(){
     var anySequences = false;
 
     instructions.files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
-    instructions.files.forEach(file => {
-      let filename = file.file.name;
+    instructions.files.forEach((file, fileNum) => {
+      let filename = file.file;
 
       if(file.type === 'fasta'){
 
-        // electron.ipcRenderer.send('message', `Parsing ${filename} as FASTA...`);
+        message(`Parsing ${filename} as FASTA...`);
         let reader = new FileReader();
-        reader.onloadend(function(e){
+        reader.onloadend = function(e){
           anySequences = true;
           let n = 0;
           let seqs = parseFASTA(e.target.result);
@@ -396,13 +392,14 @@ $(function(){
             node['origin'] = filename;
             n += addNode(node);
           });
-        });
-        reader.readAsText(file.file);
-        // electron.ipcRenderer.send('message', ` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
+          message(` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
+          if(fileNum == instructions.files.length - 1) nextStuff();
+        };
+        reader.readAsText(session.files[fileNum], 'UTF-8');
 
       } else if(file.type === 'link'){
 
-        // electron.ipcRenderer.send('message', `Parsing ${filename} as Link CSV...`);
+        message(`Parsing ${filename} as Link CSV...`);
         let l = 0;
         Papa.parse(file.file, {
           header: true,
@@ -419,23 +416,23 @@ $(function(){
             }, link));
           },
           complete: results => {
-            // electron.ipcRenderer.send('message', ` - Parsed ${n} New, ${results.data.length} Total Links from Link CSV.`);
+            message(` - Parsed ${n} New, ${results.data.length} Total Links from Link CSV.`);
             Object.keys(results.data[0]).forEach(key => session.data.linkFields.push(key));
-            n = 0;
-            let llinks = Lazy(results.data);
-            let nodeIDs = llinks.pluck(file.field1).union(llinks.pluck(file.field2));
-            let t = nodeIDs.size();
+            let n = 0;
+            let nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
+            let t = nodeIDs.length;
             nodeIDs.forEach(d => n += addNode({
-              'id': d,
-              'origin': filename
+              id: d,
+              origin: filename
             }));
-            // electron.ipcRenderer.send('message', ` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
+            message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
+            if(fileNum == instructions.files.length - 1) nextStuff();
           }
         });
 
       } else if(file.type === 'node'){
 
-        // electron.ipcRenderer.send('message', `Parsing ${filename} as Node CSV...`);
+        message(`Parsing ${filename} as Node CSV...`);
 
         let n = 0;
         Papa.parse(file.file, {
@@ -452,14 +449,15 @@ $(function(){
           complete: results => {
             Object.keys(results.data[0]).forEach(key => session.data.nodeFields.push(key));
             if(data.nodeFields.has('seq')) anySequences = true;
+            if(fileNum == instructions.files.length - 1) nextStuff();
           }
         });
 
-        // electron.ipcRenderer.send('message', ` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
+        message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
 
       } else { //Distance Matrix
 
-        // electron.ipcRenderer.send('message', `Parsing ${filename} as Distance Matrix...`);
+        message(`Parsing ${filename} as Distance Matrix...`);
 
         Papa.parse(file.file, {
           dynamicTyping: true,
@@ -491,173 +489,56 @@ $(function(){
                 });
               }
             });
+            if(fileNum == instructions.files.length - 1) nextStuff();
           }
         });
-        // electron.ipcRenderer.send('message', ` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
-        // electron.ipcRenderer.send('message', ` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
+        message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
+        message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
       }
     });
 
-    const allDashes = /^-*$/;
-
-    let subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
-
-    //Alignment:
-    if(anySequences && instructions.align){
-      //electron.ipcRenderer.send('message', 'Aligning Sequences...');
-      subset.forEach(node => {
-        let rst = bioseq.align(instructions.reference, node.seq, true, [1, -1], [-5, -1.7]);
-        let fmt = bioseq.cigar2gaps(instructions.reference, node.seq, rst.position, rst.CIGAR);
-        node.padding = rst.position;
-        node.seq = fmt[1];
-      });
-
-      //Final step in alignment: left- and right- padding with hyphens
-      let minPadding = math.min(subset, 'padding');
-      subset.forEach(d => d.seq = '-'.repeat(d.padding - minPadding) + d.seq);
-
-      let maxLength = math.max(subset.map(d => d.seq.length));
-      subset.forEach(d => d.seq = d.seq + '-'.repeat(maxLength - d.seq.length));
-    }
-
-    if(anySequences){
-      // Computing Distance Matrices:
-      //electron.ipcRenderer.send('message', 'Computing New Distance Matrices...');
-      let n = subset.length;
-      let k = 0;
-      session.data.distance_matrix.tn93 = Array(n);
-      session.data.distance_matrix.snps = Array(n);
-      session.data.distance_matrix.labels = subset.map(d => d.id);
-      for(let i = 0; i < n; i++){
-        session.data.distance_matrix.tn93[i] = Array(n);
-        session.data.distance_matrix.snps[i] = Array(n);
-        session.data.distance_matrix.tn93[i][i] = session.data.distance_matrix.snps[i][i] = 0;
-        for(var j = 0; j < i; j++){
-          let newLink = {
-            'source': subset[j].id,
-            'target': subset[i].id,
-            'distance': tn93(subset[j]['seq'], subset[i]['seq'], 'AVERAGE'),
-            'snps': hamming(subset[j]['seq'], subset[i]['seq'])
-          };
-          session.data.distance_matrix.tn93[i][j] = session.data.distance_matrix.tn93[j][i] = newLink.distance;
-          session.data.distance_matrix.snps[i][j] = session.data.distance_matrix.snps[j][i] = newLink.snps;
-          k += addLink(newLink);
+    function nextStuff(){
+      if(anySequences){
+        const allDashes = /^-*$/;
+        let subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
+        if(instructions.align){
+          message('Aligning Sequences...');
+          align(subset, instructions.reference);
         }
+        message('Computing New Distance Matrices...');
+        let k = computeDistanceMatrices(subset);
+        message(` - Found ${k} New Links while computing Distance Matrices`);
       }
-      //electron.ipcRenderer.send('message', ` - Found ${k} New Links while computing Distance Matrices`);
+
+      clearTimeout(messageTimeout);
+      $('.nodeVariables').html('<option>none</option>\n' + session.data.nodeFields.map(key => `<option>${key}</option>`).join('\n'));
+      $('#nodeTooltipVariable').val('id');
+      $('.linkVariables').html('<option>none</option>\n' + session.data.linkFields.map(key => `<option>${key}</option>`).join('\n'));
+      $('#linkSortVariable').val('tn93');
+      $('#default-link-threshold').show();
+      tagClusters();
+      setNodeVisibility();
+      setLinkVisibility();
+      setupNetwork();
+      renderNetwork();
+      computeDegree();
+      session.state.visible_clusters = session.data.clusters.map(c => c.id);
+      updateStatistics();
+      setTimeout(e => {
+        session.network.fit();
+        $('#loadingInformationModal').modal('hide');
+      }, 1500);
     }
-
-    function defaultNode(){
-      return {
-        id: '',
-        padding: 0,
-        selected: false,
-        cluster: 1,
-        visible: true,
-        degree: 0,
-        seq: '',
-        origin: ''
-      }
-    }
-
-    function addNode(newNode){
-      let oldNode = session.data.nodes.find(d => d.id === newNode.id);
-      if(oldNode){
-        Object.assign(oldNode, newNode);
-        return 0;
-      } else {
-        session.data.nodes.push(Object.assign(defaultNode(), newNode));
-        return 1;
-      }
-    }
-
-    function defaultLink(){
-      return {
-        source: '',
-        target: '',
-        distance: 1,
-        snps: Number.INFINITY,
-        visible: false,
-        cluster: 1,
-        origin: 'Genetic Distance'
-      }
-    }
-
-    function addLink(newLink){
-      let oldLink = session.data.links.find(l => l.source === newLink.source & l.target === newLink.target);
-      if(oldLink){
-        Object.assign(oldLink, newLink);
-        return 0;
-      } else {
-        session.data.links.push(Object.assign(defaultLink(), newLink));
-        return 1;
-      }
-    }
-
-    function parseFASTA(text){
-      if(!text || text.length === 0) return []
-      let seqs = [], currentSeq = {};
-      text.split(/[\r\n]+/g).forEach((line, i) => {
-        if(/^\s*$/.test(line)) return;
-        if(line[0] == ">" || line[0] == ";"){
-          if(i > 0) seqs.push(currentSeq);
-          currentSeq = {
-            id: line.slice(1),
-            seq: ''
-          };
-        } else {
-          currentSeq.seq += line;
-        }
-      });
-      seqs.push(currentSeq);
-      return seqs;
-    }
-
-    session.data.nodeFields = Array.from(new Set(session.data.nodeFields));
-    session.data.linkFields = Array.from(new Set(session.data.linkFields));
-
-    $('#file_panel').fadeOut(() => {
-      $('#main_panel').fadeIn(() => {
-        $('#loadingInformationModal').modal({
-          keyboard: false,
-          backdrop: 'static'
-        });
-      });
-    });
   });
-
-  clearTimeout(messageTimeout);
-  $('#FileTab', '#ExportHIVTraceTab', '#ExportTab', '#ScreenshotTab', '#VectorTab', '#TableTab, #FlowTab, #SequencesTab, #HistogramTab, #MapTab, #SettingsTab').removeClass('disabled');
-  $('.nodeVariables').html('<option>none</option>\n' + session.data.nodeFields.map(key => `<option>${key}</option>`).join('\n'));
-  $('#nodeTooltipVariable').val('id');
-  $('.linkVariables').html('<option>none</option>\n' + session.data.linkFields.map(key => `<option>${key}</option>`).join('\n'));
-  $('#linkSortVariable').val('distance');
-  tagClusters();
-  setNodeVisibility();
-  setLinkVisibility();
-  setupNetwork();
-  renderNetwork();
-  if(session.data.linkFields.includes('origin')){
-    $('#linkColorVariable').val('origin');
-    setLinkColor();
-  }
-  computeDegree();
-  session.state.visible_clusters = session.data.clusters.map(c => c.id);
-  updateStatistics();
-  $('.hidden').removeClass('hidden');
-  setTimeout(e => {
-    session.network.fit();
-    $('#loadingInformationModal').modal('hide');
-  }, 1500);
 
   function updateStatistics(){
     if($('#hideNetworkStatistics').is(':checked')) return;
-    let llinks = Lazy(session.data.links).filter(e => e.visible);
-    let lnodes = Lazy(session.data.nodes).filter(e => e.visible);
-    let singletons = lnodes.size() - llinks.pluck('source').union(llinks.pluck('target')).uniq().size();
-    $('#numberOfSelectedNodes').text(lnodes.filter(d => d.selected).size().toLocaleString());
-    $('#numberOfNodes').text(lnodes.size().toLocaleString());
-    $('#numberOfVisibleLinks').text(llinks.size().toLocaleString());
+    let llinks = _.filter(session.data.links, e => e.visible);
+    let lnodes = _.filter(session.data.nodes, e => e.visible);
+    let singletons = lnodes.length - _.union(_.map(llinks, 'source'), _.map(llinks, 'target')).length;
+    $('#numberOfSelectedNodes').text(lnodes.filter(d => d.selected).length.toLocaleString());
+    $('#numberOfNodes').text(lnodes.length.toLocaleString());
+    $('#numberOfVisibleLinks').text(llinks.length.toLocaleString());
     $('#numberOfSingletonNodes').text(singletons.toLocaleString());
     $('#numberOfDisjointComponents').text(session.data.clusters.length - singletons);
   }
@@ -737,21 +618,12 @@ $(function(){
     }
   }
 
-  function relinkData(){
-    session.data.links.forEach(l => {
-      l.source = session.data.nodes.find(d => d.id === l.source.id);
-      l.target = session.data.nodes.find(d => d.id === l.target.id);
-    });
-  }
-
   function setupNetwork(){
     session.network = {};
     let width = $(window).width(),
         height = $(window).height(),
         xScale = d3.scaleLinear().domain([0, width]).range([0, width]),
         yScale = d3.scaleLinear().domain([0, height]).range([0, height]);
-
-    relinkData();
 
     session.network.zoom = d3.zoom().on('zoom', () => session.network.svg.attr('transform', d3.event.transform));
 
@@ -785,14 +657,14 @@ $(function(){
       .force('charge', d3.forceManyBody()
         .strength(-$('#default-node-charge').val())
       )
-      .force('gravity', forceAttract()
+      .force('gravity', d3.forceAttract()
         .target([width/2, height/2])
         .strength($('#network-gravity').val())
       )
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     session.network.force.on('end', e => {
-      $('#playbutton').data('state', 'paused').html('<i class="fa fa-play" aria-hidden="true"></i>');
+      $('#playbutton').data('state', 'paused').html('<i class="fas fa-play" aria-hidden="true"></i>');
     });
 
     session.network.svg.append('svg:defs').append('marker')
@@ -810,8 +682,17 @@ $(function(){
     session.network.svg.append('g').attr('id', 'nodes');
   }
 
+  function getVLinks(){
+    let vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
+    vlinks.forEach(l => {
+      l.source = session.data.nodes.find(d => d.id == l.source),
+      l.target = session.data.nodes.find(d => d.id == l.target)
+    });
+    return vlinks;
+  }
+
   function renderNetwork(){
-    let vlinks = session.data.links.filter(link => link.visible);
+    let vlinks = getVLinks();
 
     // Links are considerably simpler.
     let link = d3.select('g#links').selectAll('line').data(vlinks);
@@ -823,9 +704,7 @@ $(function(){
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
-    setLinkPattern();
     setLinkColor();
-    scaleLinkThing($('#default-link-opacity').val(), $('#linkOpacityVariable').val(), 'opacity', .1);
     scaleLinkThing($('#default-link-width').val(),   $('#linkWidthVariable').val(),  'stroke-width');
 
     let vnodes = session.data.nodes.filter(node => node.visible);
@@ -864,17 +743,13 @@ $(function(){
       .attr('dy', 5)
       .attr('dx', 8);
 
-    let pb = $('#playbutton'),
-        allLinks = d3.select('g#links').selectAll('line'),
-        allNodes = d3.select('g#nodes').selectAll('g.node');
-
-    session.network.force.nodes(vnodes).on('tick', () => {
-      allLinks
-        .attr('x1', d => d.source.x)
-        .attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x)
-        .attr('y2', d => d.target.y);
-      allNodes
+    session.network.force.nodes(vnodes).on('tick', function(){
+      link
+        .attr('x1', l => l.source.x)
+        .attr('y1', l => l.source.y)
+        .attr('x2', l => l.target.x)
+        .attr('y2', l => l.target.y);
+      node
         .attr('transform', d => {
           if(d.fixed){
             return 'translate(' + d.fx + ', ' + d.fy + ')';
@@ -882,10 +757,6 @@ $(function(){
             return 'translate(' + d.x + ', ' + d.y + ')';
           }
         });
-      if(pb.data('state', 'paused')){
-        pb.data('state', 'playing')
-          .html('<i class="fa fa-pause" aria-hidden="true"></i>');
-      }
     });
 
     session.network.force.force('link').links(vlinks);
@@ -927,14 +798,6 @@ $(function(){
     d3.select('#viewAttributes').on('click', e => {
       showAttributeModal(d);
     }).node().focus();
-    d3.select('#copyID').on('click', e => {
-      clipboard.writeText(d.id);
-      hideContextMenu();
-    });
-    d3.select('#copySeq').on('click', e => {
-      clipboard.writeText(d.seq);
-      hideContextMenu();
-    });
     if(d.fixed){
       $('#pinNode').text('Unpin Node').click(e => {
         d.fx = null;
@@ -1027,7 +890,7 @@ $(function(){
     tooltip
       .transition().duration(100)
       .style('opacity', 0)
-      .on('end', () => tooltip.style('left', '-40px').style('top', '-40px'));
+      .on('end', () => tooltip.style('right', '-40px').style('top', '-40px'));
   }
 
   function redrawNodes(){
@@ -1038,7 +901,7 @@ $(function(){
     let o = (b => d3[$('#default-node-symbol').val()]);
     if(symbolVariable !== 'none'){
       let map = {};
-      let values = Lazy(session.data.nodes).pluck(symbolVariable).uniq().sort().toArray();
+      let values = _(session.data.nodes).map(symbolVariable).uniq().sort().value();
       $('#nodeShapes select').each(function(i, el){
         map[values[i]] = $(this).val();
       });
@@ -1049,9 +912,9 @@ $(function(){
     let size = defaultSize;
     let sizeVariable = $('#nodeRadiusVariable').val();
     if(sizeVariable !== 'none'){
-      let values = Lazy(session.data.nodes).pluck(sizeVariable).without(undefined).uniq().sort().toArray();
-      var min = math.min(values);
-      var max = math.max(values);
+      let values = _(session.data.nodes).map(sizeVariable).without(undefined);
+      var min = values.min();
+      var max = values.max();
       var oldrng = max - min;
       var med = oldrng / 2;
     }
@@ -1099,7 +962,7 @@ $(function(){
       return table.fadeOut(e => table.remove());
     }
     table.append('<tr><th>'+e.target.value+'</th><th>Shape</th><tr>');
-    let values = Lazy(session.data.nodes).pluck(e.target.value).uniq().sort().toArray();
+    let values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
     let symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye'].concat(Object.keys(extraSymbols));
     let o = d3.scaleOrdinal(symbolKeys).domain(values);
     let options = $('#default-node-symbol').html();
@@ -1123,9 +986,9 @@ $(function(){
     if(variable === 'none'){
       return circles.attr('opacity', scalar);
     }
-    let values = Lazy(session.data.nodes).pluck(variable).without(undefined).sort().uniq().toArray();
-    let min = math.min(values);
-    let max = math.max(values);
+    let values = _(session.data.nodes).map(variable).without(undefined);
+    let min = values.min();
+    let max = values.max();
     let rng = max - min;
     let med = rng / 2 + min;
     circles.attr('opacity', d => {
@@ -1151,8 +1014,8 @@ $(function(){
       return;
     }
     table.append('<tr><th>'+e.target.value+'</th><th>Color</th><tr>');
-    let values = Lazy(session.data.nodes).pluck(e.target.value).uniq().sortBy().toArray();
-    let colors = JSON.parse($.get('components/colors.json'));
+    let values = _.map(session.data.nodes, e.target.value);
+    let colors = $.getJSON('components/colors.json');
     let o = d3.scaleOrdinal(colors).domain(values);
     circles.attr('fill', d => o(d[e.target.value]));
     values.forEach(value => {
@@ -1182,19 +1045,6 @@ $(function(){
     session.network.svg.select('g#links').selectAll('line').attr('marker-end', null);
   });
 
-  function setLinkPattern(){
-    let linkWidth = $('#default-link-width').val();
-    let mappings = {
-      'None': 'none',
-      'Dotted': linkWidth + ',' + 2 * linkWidth,
-      'Dashed': linkWidth * 5,
-      'Dot-Dashed': linkWidth * 5 + ',' + linkWidth * 5 + ',' + linkWidth  + ',' + linkWidth * 5
-    }
-    session.network.svg.select('g#links').selectAll('line').attr('stroke-dasharray', mappings[$('#default-link-pattern').val()]);
-  }
-
-  $('#default-link-pattern').on('change', setLinkPattern);
-
   $('#default-link-length').on('input', e => {
     session.network.force.force('link').distance(e.target.value);
     session.network.force.alpha(0.3).alphaTarget(0).restart();
@@ -1213,8 +1063,8 @@ $(function(){
     $('#linkColors').remove();
     let table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
     table.append('<tr><th>'+variable+'</th><th>Color</th><tr>');
-    let values = Lazy(session.data.links).pluck(variable).uniq().sort().toArray();
-    let colors = JSON.parse($.get('components/colors.json'));
+    let values = _(session.data.links).map(variable).uniq().sort().value();
+    let colors = $.getJSON('components/colors.json');
     let o = d3.scaleOrdinal(colors).domain(values);
     links.style('stroke', d => o(d[variable]));
     values.forEach(value => {
@@ -1240,9 +1090,9 @@ $(function(){
       return links.attr(attribute, scalar);
     }
     if(!floor){floor = 1;}
-    let values = Lazy(session.data.links).pluck(variable).without(undefined).sort().uniq().toArray();
-    let min = math.min(values);
-    let max = math.max(values);
+    let values = _(session.data.links).map(variable).without(undefined);
+    let min = values.min();
+    let max = values.max();
     let rng = max - min;
     let recip = $('#reciprocal-link-width').is(':checked');
     links.attr(attribute, d => {
@@ -1264,9 +1114,8 @@ $(function(){
   $('#linkSortVariable').on('change', e => {
     if(e.target.value === 'none'){
       $('#computeMST').fadeOut();
-      $('#default-link-threshold').css('visibility', 'hidden');
+      $('#default-link-threshold').fadeOut();
     } else {
-      //$('#default-link-threshold').attr('step', math.meanAbsoluteDeviation(session.data.links.map(l => l[e.target.value])));
       $('#computeMST').css('display', 'inline-block');
       $('#default-link-threshold').css('visibility', 'visible');
     }
@@ -1274,7 +1123,6 @@ $(function(){
 
   $('#computeMST').click(e => {
     //TODO: Move algorithm into here
-    //ipcRenderer.send('compute-mst');
     $('.showForNotMST').fadeOut(e => {
       $('.showForMST').css('opacity', 0).css('display', 'inline-block').animate({'opacity': 1});
     });
@@ -1310,7 +1158,7 @@ $(function(){
   });
 
   $('#hideNetworkStatistics').parent().click(() => $('#networkStatistics').fadeOut());
-  $('#showNetworkStatistics').parent().click(() => {
+  $('#showNetworkStatistics').parent().click(function(){
     updateStatistics();
     $('#networkStatistics').fadeIn();
   });
@@ -1328,15 +1176,6 @@ $(function(){
   $('#main_panel').css('background-color', $('#network-color').val());
 
   $('#network-color').on('input', e => $('#main_panel').css('background-color', e.target.value));
-
-  $('#faster').click(e => {
-    session.state.alpha += 0.2;
-    session.network.force.alphaTarget(session.state.alpha).restart();
-  });
-  $('#slower').click(e => {
-    session.state.alpha = Math.max(session.state.alpha - 0.2, 0.1);
-    session.network.force.alphaTarget(session.state.alpha).restart();
-  });
 
   $('#playbutton')
     .data('state', 'paused')

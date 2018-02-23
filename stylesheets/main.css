@@ -251,6 +251,11 @@ td {
   text-align: right;
   border: 0;
 }
+#searchBox{
+  position:absolute;
+  top: 60px;
+  right: 20px;
+}
 .nodeVariables,
 .linkVariables {
   width: 100%;
