@@ -37,28 +37,25 @@ a:focus {
 .container {
   text-align: center;
 }
-#drop_zone {
+#file_panel {
+  width: 768px;
+}
+#file_panel .panel-body {
   border: 2px dashed #bbb;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;
-  padding: 25px;
+  margin: 25px;
   text-align: center;
   font: 20pt bold 'Vollkorn';
   color: #bbb;
-}
-#file_panel {
-  width: 768px;
 }
 .filename {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.filename a{
-  font-weight: 700;
-}
-.filename a.killlink:hover {
+.filename span.glyphicon:hover {
   color: red;
 }
 #file_panel label {

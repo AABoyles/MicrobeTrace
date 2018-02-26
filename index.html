@@ -11,8 +11,6 @@
   <title>MicrobeTrace</title>
   <link rel="icon" type="image/png" href="img/icon.ico" />
   <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="node_modules/@fortawesome/fontawesome-free-webfonts/css/fontawesome.css" />
-  <link rel="stylesheet" type="text/css" href="node_modules/@fortawesome/fontawesome-free-webfonts/css/fa-regular.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/alertifyjs/build/css/alertify.min.css" />
   <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
   <script src="node_modules/core-js/client/core.min.js"></script>
@@ -36,12 +34,17 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
             <ul class="dropdown-menu">
+              <li id="FileTab"><a href="#">New Session</a></li>
+              <li role="separator" class="divider"></li>
               <li id="ExitTab"><a href="#">Exit</a></li>
             </ul>
           </li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
             <ul class="dropdown-menu">
+              <li id="FindTab"><a href="#">Find</a></li>
+              <li id="RevealAllTab"><a href="#">Reveal All</a></li>
+              <li role="separator" class="divider"></li>
               <li id="SettingsTab" data-toggle="modal" data-target="#settingsModal"><a href="#">Settings</a></li>
             </ul>
           </li>
@@ -502,9 +505,11 @@ performance of this software.</pre>
   <script src="node_modules/alertifyjs/build/alertify.min.js"></script>
   <script src="node_modules/d3/build/d3.min.js"></script>
   <script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
+  <script src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
+  <script src="node_modules/file-saver/FileSaver.min.js"></script>
   <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   <script src="node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js"></script>
-  <script src="src/app.js"></script>
+  <script src="scripts/app.js"></script>
 
 </body>
 </html>

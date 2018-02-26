@@ -21,9 +21,9 @@ function defaultNode(){
   return {
     id: '',
     padding: 0,
-    selected: false,
+    selected: 0,
     cluster: 1,
-    visible: true,
+    visible: 1,
     degree: 0,
     seq: '',
     origin: ''
@@ -47,7 +47,7 @@ function defaultLink(){
     target: '',
     tn93: 1,
     snps: Number.INFINITY,
-    visible: false,
+    visible: 0,
     cluster: 1,
     origin: 'Genetic Distance'
   }
@@ -169,10 +169,10 @@ $(function(){
   }
 
   // Let's set up the Nav Bar
-  $('<li id="FileTab"><a href="#">New Session</a></li>').click(function(){
+  $('#FileTab').click(function(){
     reset();
     showFilePanel();
-  }).insertBefore('#ExitTab');
+  });
 
   $('#AddDataTab').click(showFilePanel);
 
@@ -184,18 +184,11 @@ $(function(){
     setNodeVisibility();
     renderNetwork();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
-  }).insertBefore('#SettingsTab');
+  });
 
   $('#ZoomToFitTab').click(e => session.network.fit());
 
-  $('<li id="FindTab"><a href="#">Find</a></li>')
-    .click(e => $('#search').focus())
-    .append('<li role="separator" class="divider"></li>')
-    .insertBefore('#SettingsTab');
-
-  $(document).on('keydown', e => {
-    if(e.ctrlKey && e.key === 'f') $('#searchBox').slideDown().find('#search').focus();
-  });
+  $('#FindTab').click(e => $('#search').focus());
 
   reset();
 
@@ -223,7 +216,6 @@ $(function(){
   }).on('drop', function(evt){
     evt.stopPropagation();
     evt.preventDefault();
-    $('#drop_zone').slideUp();
     let files = evt.originalEvent.dataTransfer.files;
     let output = [];
     for(let i = 0, f; f = files[i]; i++){
@@ -235,7 +227,7 @@ $(function(){
       let isNode = filename.toLowerCase().includes('node');
       let root = $('<div class="row row-striped"></div>');
       $('<div class="col-xs-8 filename"></div>')
-        .append($('<a href="#" class="fa fa-times killlink"></a>').click(function(e){
+        .append($('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>').click(function(e){
           session.files.splice(session.files.indexOf(filename), 1);
           root.slideUp(function(){ root.remove(); });
         }))
@@ -244,16 +236,16 @@ $(function(){
       root.append(`
         <div class="col-xs-4 text-right" style="padding-bottom:5px;">
           <div class="btn-group btn-group-xs" data-toggle="buttons">
-            <label class="btn btn-primary${!isFasta&!isNode?' active':''}">
+            <label class="btn btn-default${!isFasta&!isNode?' active':''}">
               <input type="radio" name="options-${filename}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
             </label>
-            <label class="btn btn-primary${!isFasta&isNode?' active':''}">
+            <label class="btn btn-default${!isFasta&isNode?' active':''}">
               <input type="radio" name="options-${filename}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
             </label>
-            <label class="btn btn-primary">
+            <label class="btn btn-default">
               <input type="radio" name="options-${filename}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
             </label>
-            <label class="btn btn-primary${isFasta?' active':''}">
+            <label class="btn btn-default${isFasta?' active':''}">
               <input type="radio" name="options-${filename}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
             </label>
           </div>
@@ -421,7 +413,7 @@ $(function(){
                 target: link[file.field2],
                 distance: (file.field3 === "None") ? 0 : link[file.field3],
                 origin: filename,
-                visible: true
+                visible: 1
               }, link));
             });
             message(` - Parsed ${l} New, ${m} Total Links from Link CSV.`);
@@ -455,7 +447,7 @@ $(function(){
               n += addNode(node);
             });
             results.meta.fields.forEach(key => session.data.nodeFields.push(key));
-            if(data.nodeFields.has('seq')) anySequences = true;
+            if(data.nodeFields.has('seq')) anySequences = 1;
             message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
             if(fileNum == instructions.files.length - 1) nextStuff();
           }
@@ -559,7 +551,7 @@ $(function(){
           nodes: 0,
           links: 0,
           sum_distances: 0,
-          visible: true
+          visible: 1
         });
         DFS(node);
       }
@@ -599,7 +591,7 @@ $(function(){
   }
 
   function setNodeVisibility(){
-    session.data.nodes.forEach(n => n.visible = true);
+    session.data.nodes.forEach(n => n.visible = 1);
     if(session.state.visible_clusters.length < session.data.clusters.length){
       session.data.nodes.forEach(n => n.visible = n.visible && session.state.visible_clusters.includes(n.cluster));
     }
@@ -612,7 +604,7 @@ $(function(){
   function setLinkVisibility(){
     let metric  = $('#linkSortVariable').val(),
         threshold = $('#default-link-threshold').val();
-    session.data.links.forEach(link => link.visible = true);
+    session.data.links.forEach(link => link.visible = 1);
     if(metric !== 'none'){
       session.data.links.forEach(link => link.visible = link.visible && (link[metric] <= threshold));
     }
@@ -690,10 +682,10 @@ $(function(){
 
   function getVLinks(){
     let vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
-    vlinks.forEach(l => {
-      l.source = session.data.nodes.find(d => d.id === l.source),
-      l.target = session.data.nodes.find(d => d.id === l.target)
-    });
+    // vlinks.forEach(l => {
+    //   l.source = session.data.nodes.find(d => d.id === l.source),
+    //   l.target = session.data.nodes.find(d => d.id === l.target)
+    // });
     return vlinks;
   }
 
@@ -747,39 +739,29 @@ $(function(){
       .on('mouseout', hideTooltip);
 
     setLinkColor();
-    scaleLinkThing($('#default-link-width').val(),   $('#linkWidthVariable').val(),  'stroke-width');
+    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
 
     session.network.force.nodes(vnodes).on('tick', function(){
-      link
-        .attr('x1', l => l.source.x)
-        .attr('y1', l => l.source.y)
-        .attr('x2', l => l.target.x)
-        .attr('y2', l => l.target.y);
-      node
-        .attr('transform', d => {
-          if(d.fixed){
-            return 'translate(' + d.fx + ', ' + d.fy + ')';
-          } else {
-            return 'translate(' + d.x + ', ' + d.y + ')';
-          }
-        });
+      if(Math.random() > .99) console.log(link);
+      node.attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
+      link.data(vlinks).attr('x1', l => l.source.x).attr('y1', l => l.source.y).attr('x2', l => l.target.x).attr('y2', l => l.target.y);
     });
 
     session.network.force.force('link').links(vlinks);
   }
 
-  function dragstarted(d) {
+  function dragstarted(d){
     if (!d3.event.active) session.network.force.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
   }
 
-  function dragged(d) {
+  function dragged(d){
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   }
 
-  function dragended(d) {
+  function dragended(d){
     if (!d3.event.active) session.network.force.alphaTarget(0);
     if(!d.fixed){
       d.fx = null;
@@ -868,8 +850,8 @@ $(function(){
 
   function showAttributeModal(d){
     let target = $('#attributeModal tbody').empty();
-    for(const attribute in d){
-      target.append('<tr><td><strong>' + attribute + '</strong></td><td>' + d[attribute] + '</td></tr>');
+    for(var attribute in d){
+      target.append(`<tr><td><strong>${attribute}</strong></td><td>${d[attribute]}</td></tr>`);
     }
     $('#attributeModal').modal('show');
     hideContextMenu();
@@ -1205,8 +1187,8 @@ $(function(){
     });
 
   $('#search').on('input', e => {
-    if(e.target.value === '') {
-      session.data.nodes.forEach(n => n.selected = false);
+    if(e.target.value === ''){
+      session.data.nodes.forEach(n => n.selected = 0);
     } else {
       session.data.nodes.forEach(n => n.selected = (n.id.indexOf(e.target.value)>-1));
       if(session.data.nodes.filter(n => n.selected).length === 0) alertify.warning('No matches!');
@@ -1224,6 +1206,10 @@ $(function(){
   $(document).on('keydown', e => {
     if(e.key === 'Escape'){
       $('#searchBox').slideUp();
+    }
+    if(e.ctrlKey && e.key === 'f'){
+      e.preventDefault();
+      $('#searchBox').slideDown().find('#search').focus();
     }
   });
 });
