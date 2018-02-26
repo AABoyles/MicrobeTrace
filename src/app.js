@@ -691,28 +691,13 @@ $(function(){
   function getVLinks(){
     let vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
     vlinks.forEach(l => {
-      l.source = session.data.nodes.find(d => d.id == l.source),
-      l.target = session.data.nodes.find(d => d.id == l.target)
+      l.source = session.data.nodes.find(d => d.id === l.source),
+      l.target = session.data.nodes.find(d => d.id === l.target)
     });
     return vlinks;
   }
 
   function renderNetwork(){
-    let vlinks = getVLinks();
-
-    // Links are considerably simpler.
-    let link = d3.select('g#links').selectAll('line').data(vlinks);
-    link.exit().remove();
-    link.enter().append('line')
-      .attr('stroke', $('#default-link-color').val())
-      .attr('stroke-width', $('#default-link-width').val())
-      .attr('opacity', $('#default-link-opacity').val())
-      .on('mouseenter', showLinkToolTip)
-      .on('mouseout', hideTooltip);
-
-    setLinkColor();
-    scaleLinkThing($('#default-link-width').val(),   $('#linkWidthVariable').val(),  'stroke-width');
-
     let vnodes = session.data.nodes.filter(node => node.visible);
 
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
@@ -748,6 +733,21 @@ $(function(){
     node.select('text')
       .attr('dy', 5)
       .attr('dx', 8);
+
+    let vlinks = getVLinks();
+
+    // Links are considerably simpler.
+    let link = d3.select('g#links').selectAll('line').data(vlinks);
+    link.exit().remove();
+    link.enter().append('line')
+      .attr('stroke', $('#default-link-color').val())
+      .attr('stroke-width', $('#default-link-width').val())
+      .attr('opacity', $('#default-link-opacity').val())
+      .on('mouseenter', showLinkToolTip)
+      .on('mouseout', hideTooltip);
+
+    setLinkColor();
+    scaleLinkThing($('#default-link-width').val(),   $('#linkWidthVariable').val(),  'stroke-width');
 
     session.network.force.nodes(vnodes).on('tick', function(){
       link
@@ -788,15 +788,15 @@ $(function(){
   }
 
   function clickHandler(n){
-   if(!d3.event.shiftKey){
-     session.data.nodes
-       .filter(node => node !== n)
-       .forEach(node => node.selected = false);
-   }
-   n.selected = !n.selected;
-   d3.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path').classed('selected', d => d.selected);
-   $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
- }
+    if(!d3.event.shiftKey){
+      session.data.nodes
+        .filter(node => node !== n)
+        .forEach(node => node.selected = 0);
+    }
+    n.selected = !n.selected;
+    d3.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path').classed('selected', d => d.selected);
+    $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+  }
 
   new Clipboard('#copyID, #copySeq');
 
