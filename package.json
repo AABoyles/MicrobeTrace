@@ -20,6 +20,7 @@
     "bettermath": "^0.2.4",
     "bioseq": "^0.1.2",
     "bootstrap": "^3.3.7",
+    "clipboard": "^1.7.1",
     "core-js": "^2.5.3",
     "d3": "^4.12.2",
     "d3-force-attract": "^0.1.1",

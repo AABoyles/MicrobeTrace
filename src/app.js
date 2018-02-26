@@ -798,9 +798,13 @@ $(function(){
    $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
  }
 
+  new Clipboard('#copyID, #copySeq');
+
   function showContextMenu(d){
     d3.event.preventDefault();
     hideTooltip();
+    $('#copyID').attr('data-clipboard-text', d.id);
+    $('#copySeq').attr('data-clipboard-text', d.seq);
     d3.select('#viewAttributes').on('click', e => {
       showAttributeModal(d);
     }).node().focus();
