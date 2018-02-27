@@ -719,10 +719,16 @@ $(function(){
     setLinkColor();
     scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
 
+    var nodes = d3.select('g#nodes').selectAll('g.node').data(vnodes);
+    var links = d3.select('g#links').selectAll('line').data(vlinks);
     session.network.force.nodes(vnodes).on('tick', function(){
-      if(Math.random() > .99) console.log(link);
-      node.attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
-      link.data(vlinks).attr('x1', l => l.source.x).attr('y1', l => l.source.y).attr('x2', l => l.target.x).attr('y2', l => l.target.y);
+      nodes
+        .attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
+      links
+        .attr('x1', l => l.source.x)
+        .attr('y1', l => l.source.y)
+        .attr('x2', l => l.target.x)
+        .attr('y2', l => l.target.y);
     });
 
     session.network.force.force('link').links(vlinks);
