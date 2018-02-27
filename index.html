@@ -34,7 +34,13 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
             <ul class="dropdown-menu">
-              <li id="FileTab"><a href="#">New Session</a></li>
+              <li id="FileTab"><a href="#">New</a></li>
+              <li id="SaveTab"><a href="#">Save</a></li>
+              <li id="OpenTab"><a href="#">Open</a></li>
+              <li role="separator" class="divider"></li>
+              <li id="ExportDataTab"><a href="#">Export Data</a></li>
+              <li id="SaveImageTab"><a href="#">Save Image</a></li>
+              <li id="SaveVectorTab"><a href="#">Save Vector</a></li>
               <li role="separator" class="divider"></li>
               <li id="ExitTab"><a href="#">Exit</a></li>
             </ul>
@@ -43,6 +49,7 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
             <ul class="dropdown-menu">
               <li id="FindTab"><a href="#">Find</a></li>
+              <li id="AddDataTab"><a href="#">Add Data</a></li>
               <li id="RevealAllTab"><a href="#">Reveal All</a></li>
               <li role="separator" class="divider"></li>
               <li id="SettingsTab" data-toggle="modal" data-target="#settingsModal"><a href="#">Settings</a></li>
@@ -51,16 +58,16 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
             <ul class="dropdown-menu">
-              <li id="3DNetworkTab"><a href="3D.html" target="_blank">3D Network</a></li>
-              <li id="TableTab"><a href="table.html" target="_blank">Table</a></li>
-              <li id="FlowTab"><a href="flowDiagram.html" target="_blank">Flow Diagram</a></li>
-              <li id="ScatterplotTab"><a href="scatterplot.html" target="_blank">Scatterplot</a></li>
-              <li id="MapTab"><a href="map.html" target="_blank">Map</a></li>
+              <li id="3DNetworkTab"><a href="#" class="viewbutton" data-href="3D">3D Network</a></li>
+              <li id="TableTab"><a href="#" class="viewbutton" data-href="table">Table</a></li>
+              <li id="FlowTab"><a href="#" class="viewbutton" data-href="flowDiagram">Flow Diagram</a></li>
+              <li id="ScatterplotTab"><a href="#" class="viewbutton" data-href="scatterplot">Scatterplot</a></li>
+              <li id="MapTab"><a href="#" class="viewbutton" data-href="map">Map</a></li>
               <li role="separator" class="divider showForSequence"></li>
-              <li id="HistogramTab" class="showForSequence"><a href="histogram.html" target="_blank">Histogram</a></li>
-              <li id="SequencesTab" class="showForSequence"><a href="sequences.html" target="_blank">Sequences</a></li>
-              <li id="HeatmapTab" class="showForSequence"><a href="heatmap.html" target="_blank">Heatmap</a></li>
-              <li id="TreeTab" class="showForSequence"><a href="phylogeneticTree.html" target="_blank">Phylogenetic Tree</a></li>
+              <li id="HistogramTab" class="showForSequence"><a href="#" class="viewbutton" data-href="histogram">Histogram</a></li>
+              <li id="SequencesTab" class="showForSequence"><a href="#" class="viewbutton" data-href="sequences">Sequences</a></li>
+              <li id="HeatmapTab" class="showForSequence"><a href="#" class="viewbutton" data-href="heatmap">Heatmap</a></li>
+              <li id="TreeTab" class="showForSequence"><a href="#" class="viewbutton" data-href="phylogeneticTree">Phylogenetic Tree</a></li>
             </ul>
           </li>
           <li class="dropdown">
@@ -506,6 +513,8 @@ performance of this software.</pre>
   <script src="node_modules/d3/build/d3.min.js"></script>
   <script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
   <script src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
+  <script src="vendor/3d-force-graph.min.js"></script>
+  <script src="node_modules/screenfull/dist/screenfull.js"></script>
   <script src="node_modules/file-saver/FileSaver.min.js"></script>
   <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   <script src="node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js"></script>

@@ -1,21 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title></title>
-  <link rel="icon" href="img/image32.ico" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/alertifyjs/build/css/alertify.min.css" />
-  <link rel="stylesheet" type="text/css" href="../stylesheets/main.css" />
-  <style>
-  #default-link-threshold {
-    visibility: visible !important;
-  }
-  </style>
-</head>
-<body>
+  <script src="node_modules/d3-force-3d/build/d3-force-3d.min.js"></script>
   <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -102,41 +85,22 @@
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
-  <div id="main_panel"></div>
   <script>
-  const electron = require('electron');
-  const Lazy = require('lazy.js');
-  const d3 = require('d3');
-  const ForceGraph3D = require('3d-force-graph');
-
-  window.jQuery = window.$ = require('jquery');
-  require('bootstrap');
-
   $(function(){
 
     let graph = ForceGraph3D()($('#main_panel')[0]);
 
-    electron.ipcRenderer.on('deliver-manifest', (e, manifest) => {
-      $('title').text(manifest.productName + ' v. ' + manifest.version);
-      $('#AppName').html('<a href="#">'+manifest.productName+'</a>');
-      $('#AppVersion').html('<a href="#">'+manifest.version+'</a>');
-    });
-    electron.ipcRenderer.send('get-manifest');
+    $('.nodeVariables').html(
+      ['<option value="none" selected>None</option>'].concat(
+        session.data.nodeFields.map(key => '<option value="' + key + '">' + key + '</option>')
+      ).join('\n')
+    );
 
-    $('body').prepend(electron.ipcRenderer.sendSync('get-component', 'nav.html'));
-    $('body').append(electron.ipcRenderer.sendSync('get-component', 'exportRasterImage.html'));
+    $('.linkVariables').html('<option value="none" selected>None</option>' + session.data.linkFields.map(key => `<option>${key}</option>`).join('\n'));
 
-    electron.ipcRenderer.on('set-data', (e, d) => {
-      window.session = {data: d};
-      $('.nodeVariables').html(
-        ['<option value="none" selected>None</option>'].concat(
-          session.data.nodeFields.map(key => '<option value="' + key + '">' + key + '</option>')
-        ).join('\n')
-      );
-      $('.linkVariables').html('<option value="none" selected>None</option>' + session.data.linkFields.map(key => `<option>${key}</option>`).join('\n'));
-      $('#linkSortVariable').val('distance');
-      drawGraph();
-    });
+    $('#linkSortVariable').val('distance');
+
+    drawGraph();
 
     function drawGraph(){
       let lc = $('#default-link-color').val();
@@ -167,10 +131,6 @@
     $('[data-toggle="tooltip"]').tooltip();
 
     $(window).on('resize', drawGraph);
-
-    electron.ipcRenderer.send('get-data');
   });
 
   </script>
-  </body>
-</html>

@@ -168,28 +168,6 @@ $(function(){
     });
   }
 
-  // Let's set up the Nav Bar
-  $('#FileTab').click(function(){
-    reset();
-    showFilePanel();
-  });
-
-  $('#AddDataTab').click(showFilePanel);
-
-  $('#RevealAllTab').click(e => {
-    session.state.visible_clusters = session.data.clusters.map(c => c.id);
-    $('#HideSingletons').prop('checked', false).parent().removeClass('active');
-    $('#ShowSingletons').prop('checked', true).parent().addClass('active');
-    setLinkVisibility();
-    setNodeVisibility();
-    renderNetwork();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
-  });
-
-  $('#ZoomToFitTab').click(e => session.network.fit());
-
-  $('#FindTab').click(e => $('#search').focus());
-
   reset();
 
   // Before anything else gets done, ask the user to accept the legal agreement
@@ -1199,6 +1177,59 @@ $(function(){
       .data(session.data.nodes)
       .classed('selected', d => d.selected);
     $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+  });
+
+  // Let's set up the Nav Bar
+  $('#FileTab').click(function(){
+    reset();
+    showFilePanel();
+  });
+
+  $('#ExportDataTab').click(function(){
+    var blob = new Blob(["Hello, world!"], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, "hello world.txt");
+  });
+
+  $('#SaveImageTab').click(function(){
+    var blob = new Blob(["Hello, world!"], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, "hello world.txt");
+  });
+
+  $('#SaveVectorTab').click(function(){
+    var content =
+      '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 '+(window.innerHeight-50)+' '+window.innerWidth+'" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        document.getElementsByTagName('svg')[0].innerHTML + '\n' +
+      '</svg>';
+    var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+    saveAs(blob, 'MicrobeTraceExport.svg');
+  });
+
+  $('#ExitTab').click(function(){ window.open('','_self').close(); });
+
+  $('#AddDataTab').click(showFilePanel);
+
+  $('#FindTab').click(function(e){ $('#search').focus(); });
+
+  $('#RevealAllTab').click(function(e) {
+    session.state.visible_clusters = session.data.clusters.map(c => c.id);
+    $('#HideSingletons').prop('checked', false).parent().removeClass('active');
+    $('#ShowSingletons').prop('checked', true).parent().addClass('active');
+    setLinkVisibility();
+    setNodeVisibility();
+    renderNetwork();
+    session.network.force.alpha(0.3).alphaTarget(0).restart();
+  });
+
+  $('#ReloadTab').click(function(){ window.location.reload(true); });
+
+  $('#FullScreenTab').click(function(){ screenfull.toggle(); });
+
+  $('#ZoomToFitTab').click(function(){ session.network.fit(); });
+
+  $('.viewbutton').click(function(){
+    $.get('components/' + $(this).data('href') + '.html', function(response){
+      $('#main_panel').html(response);
+    });
   });
 
   $('[data-toggle="tooltip"]').tooltip();

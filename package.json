@@ -5,13 +5,16 @@
   "author": "Tony Boyles <Anthony@Boyles.cc>",
   "license": "MIT",
   "scripts": {
-    "start": "node_modules/http-server/bin/http-server"
+    "start": "node_modules/http-server/bin/http-server",
+    "build": "npm start && nativifier http://localhost:8080"
   },
   "devDependencies": {
     "http-server": "^0.11.1",
+    "nativefier": "^7.5.4",
     "yarn": "^1.5.0"
   },
   "dependencies": {
+    "3d-force-graph": "^1.25.0",
     "alertifyjs": "^1.11.0",
     "bettermath": "^0.2.4",
     "bioseq": "^0.1.2",
