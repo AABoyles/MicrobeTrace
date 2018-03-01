@@ -1,5 +1,28 @@
 $(function(){
 
+  var layout = new window.GoldenLayout({
+    settings: {
+      selectionEnabled: true
+    },
+    content: [{
+      type: 'stack',
+      content: []
+    }]
+  }, $('#main_panel'));
+
+  layout.init();
+
+  $.get('components/file.html', function(response){
+    layout.registerComponent('Files', function(container, state){
+      container.getElement().html(state.text);
+    });
+    layout.root.contentItems[0].addChild({
+      type: 'component',
+      componentName: 'Files',
+      componentState: { text: response },
+      isClosable: true
+    });
+  });
 
   function reset(){
     window.session = app.dataSkeleton();
@@ -1039,8 +1062,17 @@ $(function(){
   $('#ZoomToFitTab').click(function(){ session.network.fit(); });
 
   $('.viewbutton').click(function(){
-    $.get('components/' + $(this).data('href') + '.html', function(response){
-      $('#main_panel').html(response);
+    var href = $(this).data('href');
+    $.get('components/' + href + '.html', function(response){
+      layout.registerComponent(href, function(container, state){
+        container.getElement().html(state.text);
+      });
+      layout.root.contentItems[0].addChild({
+        title: app.titleize(href),
+        type: 'component',
+        componentName: href,
+        componentState: { text: response }
+      });
     });
   });
 
