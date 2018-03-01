@@ -18,7 +18,7 @@
     "alertifyjs": "^1.11.0",
     "bettermath": "^0.2.4",
     "bioseq": "^0.1.2",
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^4.0.0",
     "clipboard": "^1.7.1",
     "core-js": "^2.5.3",
     "d3": "^4.12.2",
@@ -29,7 +29,9 @@
     "html5shiv": "^3.7.3",
     "jquery": "^3.3.1",
     "lodash": "^4.17.5",
+    "open-iconic": "^1.1.1",
     "papaparse": "^4.3.6",
+    "popper.js": "^1.12.9",
     "pseudo-worker": "^1.1.1",
     "screenfull": "^3.3.2",
     "tn93": "^0.1.1"

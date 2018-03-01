@@ -1,0 +1,368 @@
+<div id="file_panel" class="container-fluid">
+  <div class="jumbotron container">
+    <div id="file_table"></div>
+    <hr class="my-4">
+    <input type="file" id="data_files"  multiple="true" />
+    <button id="alignerControlsButton" class="btn btn-default btn-nr" data-toggle="modal" data-target="#alignerControlsModal">Alignment Options</button>
+    <button type="submit" id="main-submit" class="btn btn-success float-right" title="Please select a Network CSV or FASTA File">Submit</button>
+  </div>
+</div>
+
+<div id="alignerControlsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#alignerControlsModalTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="alignerControlsModalTitle" class="modal-title">Alignment Configuration</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row" style="margin-bottom: 5px">
+          <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>&nbsp;
+          <div class="btn-group btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-default active">
+              <input type="radio" name="shouldAlign" id="align" autocomplete="off" checked> Yes
+            </label>
+            <label class="btn btn-default">
+              <input type="radio" name="shouldAlign" id="doNotAlign" autocomplete="off"> No
+            </label>
+          </div>
+        </div>
+        <div class="row" id="referenceRow">
+          <div class="col-2">
+            <input id="refSeqFileLoad" class="btn btn-default btn-xs" type="button" value="Load From File" />
+            <input id="refSeqLoad" class="btn btn-default btn-xs" type="button" value="Load HXB2.pol" />
+          </div>
+          <div class="col-10">
+            <textarea id="reference"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer clearfix">
+        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="Confirm Alignment Configurations are All Properly Set">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$('#data_files').filestyle({
+  text: 'Input File(s)',
+  input: false,
+  btnClass: 'btn-primary'
+});
+
+$('#file_panel').on('dragover', function(evt){
+  evt.stopPropagation();
+  evt.preventDefault();
+  evt.originalEvent.dataTransfer.dropEffect = 'copy';
+}).on('drop', function(evt){
+  evt.stopPropagation();
+  evt.preventDefault();
+  let files = evt.originalEvent.dataTransfer.files;
+  let output = [];
+  for(let i = 0, f; f = files[i]; i++) addFileToTable(f);
+  $('#main-submit').css('display', 'inline');
+});
+
+$('#data_files').on('change', function(e){
+  let files = e.target.files;
+  for(let i = 0, f; f = files[i]; i++) addFileToTable(f);
+  $('#main-submit').css('display', 'inline');
+});
+
+function addFileToTable(file){
+  session.files.push(file);
+  let filename = file.name;
+  let extension = filename.split('.').pop().slice(0,3).toLowerCase();
+  let isFasta = (extension === 'fas');
+  if(isFasta) $('#alignerControlsButton').css('display', 'inline');
+  let isNode = filename.toLowerCase().includes('node');
+  let root = $('<div class="row file-table-row"></div>');
+  $('<div class="col-8 filename"></div>')
+    .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
+      session.files.splice(session.files.indexOf(filename), 1);
+      root.slideUp(function(){ root.remove(); });
+    }))
+    .append(`&nbsp;<a href="#" title="${filename}">${filename}</a>`)
+    .appendTo(root);
+  root.append(`
+    <div class="col-4 text-right">
+      <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+        <label class="btn btn-default${!isFasta&!isNode?' active':''}">
+          <input type="radio" name="options-${filename}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
+        </label>
+        <label class="btn btn-default${!isFasta&isNode?' active':''}">
+          <input type="radio" name="options-${filename}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
+        </label>
+        <label class="btn btn-default">
+          <input type="radio" name="options-${filename}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
+        </label>
+        <label class="btn btn-default${isFasta?' active':''}">
+          <input type="radio" name="options-${filename}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
+        </label>
+      </div>
+    </div>
+  `);
+  Papa.parse(file, {
+    dynamicTyping: true,
+    header: true,
+    complete: function(output){
+      let data = output.data;
+      let headers = output.meta.fields;
+      let options = '<option>None</option>' + headers.map(h => `<option value="${h}">${app.titleize(h)}</option>`).join('\n');
+      $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${filename}'>
+          <label for="file-${filename}-field-1">${isNode?'ID':'Source'}</label><select id="file-${filename}-field-1" class="form-control">${options}</select>
+        </div>
+        <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${filename}'>
+          <label for="file-${filename}-field-2">${isNode?'Sequence':'Target'}</label><select id="file-${filename}-field-2" class="form-control">${options}</select>
+        </div>
+        <div class='col-4 '${!isFasta&&!isNode?'':' style="display: none;"'} data-file='${filename}'>
+          <label for="file-${filename}-field-3">Distance</label><select id="file-${filename}-field-3" class="form-control">${options}</select>
+        </div>`).appendTo(root);
+      let a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+          b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+          c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
+      [a, b, c].forEach((list, i) => {
+        list.forEach(title => {
+          if(headers.includes(title)){
+            $(root.find('select').get(i)).val(title);
+          }
+        });
+      });
+      root.appendTo('#file_table');
+      let refit = function(e){
+        let type = $(e ? e.target : `[name="options-${filename}"]:checked`).data('type'),
+            these = $(`[data-file='${filename}']`),
+            first = $(these.get(0)),
+            second = $(these.get(1)),
+            third = $(these.get(2)),
+            a = ['SOURCE', 'Source', 'source'],
+            b = ['TARGET', 'Target', 'target'],
+            c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
+        if(type === 'node'){
+          a = ['ID', 'Id', 'id'];
+          b = ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'];
+          first.slideDown().find('label').text('ID');
+          second.slideDown().find('label').text('Sequence');
+          third.slideUp();
+        } else if(type === 'link'){
+          first.slideDown().find('label').text('Source');
+          second.slideDown().find('label').text('Target');
+          third.slideDown();
+        } else {
+          these.slideUp();
+        }
+        [a, b, c].forEach((list, i) => {
+          list.forEach(title => {
+            if(headers.includes(title)){
+              $(these.find('select').get(i)).find('select').val(title);
+            }
+          });
+        });
+      };
+      $(`[name="options-${filename}"]`).change(refit);
+      refit();
+    }
+  });
+}
+
+$('#align').parent().click(e => $('#referenceRow').slideDown());
+$('#doNotAlign').parent().click(e => $('#referenceRow').slideUp());
+
+$('#refSeqFileLoad').click(e => {
+  //TODO: Replace with Drag 'n Drop loader'
+  // remote.dialog.showOpenDialog({
+  //   filters: [{name: 'FASTA Files', extensions:['fas', 'fasta', 'txt']}]
+  // }, paths => {
+  //   if(paths){
+  //     $('#refSeqFile').text(paths[0]).slideDown();
+  //     $('#reference').val(jetpack.read(paths[0]).split(/[\n>]/)[2]);
+  //   }
+  // });
+});
+
+$('#refSeqLoad').click(e => $('#reference').val($('#HXB2pol').html()));
+$('#reference').val($('#HXB2pol').html());
+
+$('#loadCancelButton').click(e => {
+  $('#loadingInformationModal').modal('hide');
+  reset(true);
+});
+
+function message(msg){
+  session.messages.push(msg);
+  $('#loadingInformation').html(session.messages.join('<br />'));
+}
+
+$('#main-submit').click(function(e){
+  $('#loadingInformationModal').modal({
+    keyboard: false,
+    backdrop: 'static'
+  });
+
+  let files = [];
+  $('#file_panel .row').each((i, el) => {
+    let $el = $(el);
+    let selects = $el.find('select');
+    files.push({
+      file: session.files[i],
+      type: $el.find('input[type="radio"]:checked').data('type'),
+      field1: selects.get(0).value,
+      field2: selects.get(1).value,
+      field3: selects.get(2).value
+    });
+  });
+
+  messageTimeout = setTimeout(function(){
+    $('#loadCancelButton').slideDown();
+    alertify.warning("If you stare long enough, you can reverse the DNA Molecule\'s spin direction");
+  }, 20000);
+
+  const hierarchy = ['distmat', 'link', 'node', 'fasta'];
+
+  var instructions = {
+    files: files,
+    align: $('#align').is(':checked'),
+    reference: $('#reference').val()
+  };
+
+  var anySequences = false;
+
+  instructions.files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
+  instructions.files.forEach((file, fileNum) => {
+    let filename = file.file.name;
+
+    if(file.type === 'fasta'){
+
+      message(`Parsing ${filename} as FASTA...`);
+      let reader = new FileReader();
+      reader.onloadend = function(e){
+        anySequences = true;
+        let n = 0;
+        let seqs = app.parseFASTA(e.target.result);
+        seqs.forEach(node => {
+          node['origin'] = filename;
+          n += app.addNode(node);
+        });
+        message(` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
+        if(fileNum == instructions.files.length - 1) nextStuff();
+      };
+      reader.readAsText(file.file, 'UTF-8');
+
+    } else if(file.type === 'link'){
+
+      message(`Parsing ${filename} as Link CSV...`);
+      let l = 0, m = 0;
+      Papa.parse(file.file, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        complete: results => {
+          let link = results.data.forEach(link => {
+            l += app.addLink(Object.assign({
+              source: link[file.field1],
+              target: link[file.field2],
+              distance: (file.field3 === "None") ? 0 : link[file.field3],
+              origin: filename,
+              visible: 1
+            }, link));
+          });
+          message(` - Parsed ${l} New, ${m} Total Links from Link CSV.`);
+          results.meta.fields.forEach(key => session.data.linkFields.push(key));
+          let n = 0;
+          let nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
+          let t = nodeIDs.length;
+          nodeIDs.forEach(d => n += app.addNode({
+            id: d,
+            origin: filename
+          }));
+          message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
+          if(fileNum == instructions.files.length - 1) nextStuff();
+        }
+      });
+
+    } else if(file.type === 'node'){
+
+      message(`Parsing ${filename} as Node CSV...`);
+
+      Papa.parse(file.file, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        complete: results => {
+          let n = 0;
+          results.data.forEach(node => {
+            node.id = node[file.field1];
+            if(file.field2 !== 'None') node.seq = node[file.field2];
+            node['origin'] = filename;
+            n += app.addNode(node);
+          });
+          results.meta.fields.forEach(key => session.data.nodeFields.push(key));
+          if(data.nodeFields.has('seq')) anySequences = 1;
+          message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
+          if(fileNum == instructions.files.length - 1) nextStuff();
+        }
+      });
+
+    } else { //Distance Matrix
+
+      message(`Parsing ${filename} as Distance Matrix...`);
+
+      Papa.parse(file.file, {
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        complete: results => {
+          let nodeIDs = [];
+          let nn = 0, nl = 0;
+          results.data.forEach((row, i) => {
+            if(i == 0){
+              nodeIDs = row;
+              nodeIDs.forEach((cell, k) => {
+                if(k > 0){
+                  nn += app.addNode({
+                    id: cell,
+                    origin: filename
+                  });
+                }
+              });
+            } else {
+              row.forEach((cell, j) => {
+                if(j > i){
+                  nl += app.addLink({
+                    source: nodeIDs[i],
+                    target: nodeIDs[j],
+                    distance: cell,
+                    origin: filename
+                  });
+                }
+              });
+            }
+          });
+          message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
+          message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
+          if(fileNum == instructions.files.length - 1) nextStuff();
+        }
+      });
+    }
+  });
+
+  function nextStuff(){
+    if(anySequences){
+      const allDashes = /^-*$/;
+      let subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
+      if(instructions.align){
+        message('Aligning Sequences...');
+        app.align(subset, instructions.reference);
+      }
+      message('Computing New Distance Matrices...');
+      let k = app.computeDistanceMatrices(subset);
+      message(` - Found ${k} New Links while computing Distance Matrices`);
+    }
+    clearTimeout(messageTimeout);
+    launchView('2d_network');
+  }
+});
+
+</script>

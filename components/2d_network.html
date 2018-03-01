@@ -1,0 +1,715 @@
+<svg id="network"></svg>
+
+<table id="groupKey"></table>
+
+<span id="tooltip"></span>
+
+<ul id="contextmenu" class="dropdown-menu">
+  <li><a href="#" id="viewAttributes">View Attributes</a></li>
+  <li><a href="#" id="copyID">Copy ID</a></li>
+  <li class="showForSequence"><a href="#" id="copySeq">Copy Sequence</a></li>
+  <li><a href="#" id="pinNode">Pin Node</a></li>
+  <li role="separator" class="divider"></li>
+  <li><a href="#" id="isolateCluster">Isolate Cluster</a></li>
+  <li><a href="#" id="hideCluster">Hide Cluster</a></li>
+</ul>
+
+<div id="attributeModal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header"><h4 class="modal-title">Node Attributes</h4></div>
+      <div class="modal-body" style="overflow: auto">
+        <table class="table table-striped">
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="panel-footer clearfix">
+        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="playtools">
+  <div class="btn-group" role="group">
+    <button id="playbutton" type="button" class="btn btn-default">
+      <i class="fas fa-pause" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
+
+<table id="networkStatistics">
+  <tbody>
+    <tr>
+      <td class="text-right">
+        <span id="numberOfNodes"></span>
+        (<span id="numberOfSelectedNodes"></span>)
+      </td>
+      <td>Nodes (Selected)</td>
+    </tr>
+    <tr>
+      <td id="numberOfVisibleLinks" class="text-right"></td>
+      <td>Links</td>
+    </tr>
+    <tr>
+      <td id="numberOfDisjointComponents" class="text-right"></td>
+      <td>Clusters</td>
+    </tr>
+    <tr id="singletonsRow">
+      <td id="numberOfSingletonNodes" class="text-right"></td>
+      <td>Singletons</td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+$('.nodeVariables').html('<option>none</option>\n' + session.data.nodeFields.map(key => `<option>${key}</option>`).join('\n'));
+$('#nodeTooltipVariable').val('id');
+$('.linkVariables').html('<option>none</option>\n' + session.data.linkFields.map(key => `<option>${key}</option>`).join('\n'));
+$('#linkSortVariable').val('tn93');
+$('#default-link-threshold').show();
+app.tagClusters();
+setNodeVisibility();
+setLinkVisibility();
+setupNetwork();
+renderNetwork();
+app.computeDegree();
+session.state.visible_clusters = session.data.clusters.map(c => c.id);
+updateStatistics();
+setTimeout(e => {
+  session.network.fit();
+  $('#loadingInformationModal').modal('hide');
+}, 1500);
+
+var messageTimeout;
+
+function setNodeVisibility(){
+  session.data.nodes.forEach(n => n.visible = 1);
+  if(session.state.visible_clusters.length < session.data.clusters.length){
+    session.data.nodes.forEach(n => n.visible = n.visible && session.state.visible_clusters.includes(n.cluster));
+  }
+  if($('#HideSingletons').is(':checked')){
+    let clusters = session.data.clusters.map(c => c.nodes);
+    session.data.nodes.forEach(n => n.visible = n.visible && clusters[n.cluster-1] > 1);
+  }
+}
+
+function setLinkVisibility(){
+  let metric  = $('#linkSortVariable').val(),
+      threshold = $('#default-link-threshold').val();
+  session.data.links.forEach(link => link.visible = 1);
+  if(metric !== 'none'){
+    session.data.links.forEach(link => link.visible = link.visible && (link[metric] <= threshold));
+  }
+  if($('#showMSTLinks').is(':checked')){
+    session.data.links.forEach(link => link.visible = link.visible && link.mst);
+  }
+  if(session.state.visible_clusters.length < session.data.clusters.length){
+    session.data.links.forEach(link => link.visible = link.visible && session.state.visible_clusters.includes(link.cluster));
+  }
+}
+
+function setupNetwork(){
+  session.network = {};
+  let width = $(window).width(),
+      height = $(window).height(),
+      xScale = d3.scaleLinear().domain([0, width]).range([0, width]),
+      yScale = d3.scaleLinear().domain([0, height]).range([0, height]);
+
+  session.network.zoom = d3.zoom().on('zoom', () => session.network.svg.attr('transform', d3.event.transform));
+
+  session.network.svg = d3.select('svg')
+    .on('click', hideContextMenu)
+    .html('') //Let's make sure the canvas is blank.
+    .call(session.network.zoom)
+    .append('g');
+
+  session.network.fit = function(bounds){
+    if(!bounds) bounds = session.network.svg.node().getBBox();
+    if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
+    let parent = session.network.svg.node().parentElement,
+        midX = bounds.x + bounds.width / 2,
+        midY = bounds.y + bounds.height / 2;
+    let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
+    d3.select('svg')
+      .transition()
+      .duration(750)
+      .call(session.network.zoom.transform, d3.zoomIdentity
+        .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
+        .scale(scale));
+  };
+
+  session.network.force = d3.forceSimulation()
+    .force('link', d3.forceLink()
+      .id(d => d.id)
+      .distance($('#default-link-length').val())
+      .strength(0.125)
+    )
+    .force('charge', d3.forceManyBody()
+      .strength(-$('#default-node-charge').val())
+    )
+    .force('gravity', d3.forceAttract()
+      .target([width/2, height/2])
+      .strength($('#network-gravity').val())
+    )
+    .force('center', d3.forceCenter(width / 2, height / 2));
+
+  session.network.force.on('end', e => {
+    $('#playbutton').data('state', 'paused').html('<i class="fas fa-play" aria-hidden="true"></i>');
+  });
+
+  session.network.svg.append('svg:defs').append('marker')
+    .attr('id', 'end-arrow')
+    .attr('viewBox', '0 0 10 10')
+    .attr('refX', 20)
+    .attr('refY', 5)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+      .attr('d', 'M0,0 L0,10 L10,5 z');
+
+  session.network.svg.append('g').attr('id', 'links');
+  session.network.svg.append('g').attr('id', 'nodes');
+}
+
+function getVLinks(){
+  let vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
+  // vlinks.forEach(l => {
+  //   l.source = session.data.nodes.find(d => d.id === l.source),
+  //   l.target = session.data.nodes.find(d => d.id === l.target)
+  // });
+  return vlinks;
+}
+
+function renderNetwork(){
+  let vnodes = session.data.nodes.filter(node => node.visible);
+
+  //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
+  let node = d3.select('g#nodes').selectAll('g.node').data(vnodes);
+  node.exit().remove(); //Removing nodes with no representation in the dataset.
+  node = node.enter().append('g').attr('class', 'node').attr('tabindex', '0') //Adding nodes that weren't represented in the dataset before.
+    .call(d3.drag() //A bunch of mouse handlers.
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended))
+    .on('mouseenter focusin', showNodeToolTip)
+    .on('mouseout focusout', hideTooltip)
+    .on('contextmenu', showContextMenu)
+    .on('click', clickHandler)
+    .on('keydown', n => {
+      if(d3.event.code === 'Space') clickHandler(n);
+      if(d3.event.shiftKey && d3.event.key === 'F10') showContextMenu(n);
+    });
+
+  // What's this?
+  node.append('path'); // Adding a path?
+  node.append('text'); // And a text? Wouldn't those already be attached to the nodes?
+  // Well, they would for nodes that already existed. The wouldn't for new nodes.
+  // And until we merge the old and new nodes, `node` refers only to the *added* nodes.
+  // Speaking of merging...
+  node = node.merge(node);
+  // E voila! node now refers to all the g.node elements in the network,
+  // and they all have path and text elements, so we can confidently...
+  node.select('path').attr('fill', $('#default-node-color').val());
+  // And style them according to the DOM State instructions.
+  redrawNodes();
+  // And append our label text, too!
+  node.select('text')
+    .attr('dy', 5)
+    .attr('dx', 8);
+
+  let vlinks = getVLinks();
+
+  // Links are considerably simpler.
+  let link = d3.select('g#links').selectAll('line').data(vlinks);
+  link.exit().remove();
+  link.enter().append('line')
+    .attr('stroke', $('#default-link-color').val())
+    .attr('stroke-width', $('#default-link-width').val())
+    .attr('opacity', $('#default-link-opacity').val())
+    .on('mouseenter', showLinkToolTip)
+    .on('mouseout', hideTooltip);
+
+  setLinkColor();
+  scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
+
+  var nodes = d3.select('g#nodes').selectAll('g.node').data(vnodes);
+  var links = d3.select('g#links').selectAll('line').data(vlinks);
+  session.network.force.nodes(vnodes).on('tick', function(){
+    nodes
+      .attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
+    links
+      .attr('x1', l => l.source.x)
+      .attr('y1', l => l.source.y)
+      .attr('x2', l => l.target.x)
+      .attr('y2', l => l.target.y);
+  });
+
+  session.network.force.force('link').links(vlinks);
+}
+
+function dragstarted(d){
+  if (!d3.event.active) session.network.force.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d){
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d){
+  if (!d3.event.active) session.network.force.alphaTarget(0);
+  if(!d.fixed){
+    d.fx = null;
+    d.fy = null;
+  }
+}
+
+function clickHandler(n){
+  if(!d3.event.shiftKey){
+    session.data.nodes
+      .filter(node => node !== n)
+      .forEach(node => node.selected = 0);
+  }
+  n.selected = !n.selected;
+  d3.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path').classed('selected', d => d.selected);
+  $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+}
+
+new Clipboard('#copyID, #copySeq');
+
+function showContextMenu(d){
+  d3.event.preventDefault();
+  hideTooltip();
+  $('#copyID').attr('data-clipboard-text', d.id);
+  $('#copySeq').attr('data-clipboard-text', d.seq);
+  d3.select('#viewAttributes').on('click', e => {
+    showAttributeModal(d);
+  }).node().focus();
+  if(d.fixed){
+    $('#pinNode').text('Unpin Node').click(e => {
+      d.fx = null;
+      d.fy = null;
+      d.fixed = false;
+      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      hideContextMenu();
+    });
+  } else {
+    $('#pinNode').text('Pin Node').click(e => {
+      d.fx = d.x;
+      d.fy = d.y;
+      d.fixed = true;
+      hideContextMenu();
+    });
+  }
+  $('#hideCluster').click(e => {
+    session.state.visible_clusters = session.state.visible_clusters.filter(cid => cid !== d.cluster);
+    setLinkVisibility();
+    setNodeVisibility();
+    renderNetwork();
+    session.network.force.alpha(0.3).alphaTarget(0).restart();
+    hideContextMenu();
+  });
+  if(session.state.visible_clusters < session.data.clusters.length){
+    $('#isolateCluster').text('De-isolate Cluster').click(e => {
+      session.state.visible_clusters = session.data.clusters.map(c => c.id);
+      setNodeVisibility();
+      setLinkVisibility();
+      renderNetwork();
+      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      hideContextMenu();
+    });
+  } else {
+    $('#isolateCluster').text('Isolate Cluster').click(e => {
+      session.state.visible_clusters = [d.cluster];
+      setLinkVisibility();
+      setNodeVisibility();
+      renderNetwork();
+      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      hideContextMenu();
+    });
+  }
+  d3.select('#contextmenu')
+    .style('z-index', 1)
+    .style('left', (d3.event.pageX) + 'px')
+    .style('top', (d3.event.pageY) + 'px')
+    .style('opacity', 1);
+}
+
+function hideContextMenu(){
+  let menu = d3.select('#contextmenu');
+  menu
+    .transition().duration(100)
+    .style('opacity', 0)
+    .on('end', () =>  menu.style('z-index', -1));
+}
+
+function showAttributeModal(d){
+  let target = $('#attributeModal tbody').empty();
+  for(var attribute in d){
+    target.append(`<tr><td><strong>${attribute}</strong></td><td>${d[attribute]}</td></tr>`);
+  }
+  $('#attributeModal').modal('show');
+  hideContextMenu();
+}
+
+function showNodeToolTip(d){
+  if($('#nodeTooltipVariable').val() === 'none') return;
+  d3.select('#tooltip')
+    .html(d[$('#nodeTooltipVariable').val()])
+    .style('left', (d3.event.pageX + 8) + 'px')
+    .style('top', (d3.event.pageY - 28) + 'px')
+    .style('z-index', 1000)
+    .transition().duration(100)
+    .style('opacity', 1);
+}
+
+function showLinkToolTip(d){
+  let v = $('#linkTooltipVariable').val();
+  if(v === 'none') return;
+  d3.select('#tooltip')
+    .html((v === 'source' || v === 'target') ? d[v].id : d[v])
+    .style('left', (d3.event.pageX + 8) + 'px')
+    .style('top', (d3.event.pageY - 28) + 'px')
+    .style('z-index', 1000)
+    .transition().duration(100)
+    .style('opacity', 1);
+}
+
+function hideTooltip(){
+  let tooltip = d3.select('#tooltip');
+  tooltip
+    .transition().duration(100)
+    .style('opacity', 0)
+    .on('end', () => tooltip.style('z-index', -1));
+}
+
+function redrawNodes(){
+  //Things to track in the function:
+  //* Symbols:
+  let type = d3[$('#default-node-symbol').val()];
+  let symbolVariable = $('#nodeSymbolVariable').val();
+  let o = (b => d3[$('#default-node-symbol').val()]);
+  if(symbolVariable !== 'none'){
+    let map = {};
+    let values = _(session.data.nodes).map(symbolVariable).uniq().sort().value();
+    $('#nodeShapes select').each(function(i, el){
+      map[values[i]] = $(this).val();
+    });
+    o = (v => map[v]);
+  }
+  //* Sizes:
+  let defaultSize = $('#default-node-radius').val();
+  let size = defaultSize;
+  let sizeVariable = $('#nodeRadiusVariable').val();
+  if(sizeVariable !== 'none'){
+    let values = _(session.data.nodes).map(sizeVariable).without(undefined);
+    var min = values.min();
+    var max = values.max();
+    var oldrng = max - min;
+    var med = oldrng / 2;
+  }
+  let vnodes = session.data.nodes.filter(n => n.visible);
+  let nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
+  nodes.select('path').each(function(d){
+    if(symbolVariable !== 'none'){
+      type = d3[o(d[$('#nodeSymbolVariable').val()])];
+    }
+    if(sizeVariable !== 'none'){
+      size = med;
+      if(typeof d[sizeVariable] !== 'undefined'){
+        size = d[sizeVariable];
+      }
+      size = (size - min + 1) / oldrng
+      size = size * size * defaultSize;
+    }
+    d3.select(this).attr('d', d3.symbol()
+      .size(size)
+      .type(type));
+  });
+  //* Labels:
+  let labelVar = $('#nodeLabelVariable').val();
+  nodes.select('text').text(n => n[labelVar]);
+}
+
+function updateStatistics(){
+  if($('#hideNetworkStatistics').is(':checked')) return;
+  let llinks = _.filter(session.data.links, e => e.visible);
+  let lnodes = _.filter(session.data.nodes, e => e.visible);
+  let singletons = lnodes.length - _.union(_.map(llinks, 'source'), _.map(llinks, 'target')).length;
+  $('#numberOfSelectedNodes').text(lnodes.filter(d => d.selected).length.toLocaleString());
+  $('#numberOfNodes').text(lnodes.length.toLocaleString());
+  $('#numberOfVisibleLinks').text(llinks.length.toLocaleString());
+  $('#numberOfSingletonNodes').text(singletons.toLocaleString());
+  $('#numberOfDisjointComponents').text(session.data.clusters.length - singletons);
+}
+
+$('#nodeLabelVariable').change(e => {
+  if(e.target.value === 'none'){
+    session.network.svg.select('g#nodes').selectAll('g.node')
+      .select('text').text('');
+  } else {
+    session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes.filter(n => n.visible))
+      .select('text').text(d => d[e.target.value]);
+  }
+});
+
+$('#default-node-symbol').on('input', redrawNodes);
+$('#nodeSymbolVariable').change(e => {
+  $('#default-node-symbol').fadeOut();
+  $('#nodeShapes').fadeOut(function(){$(this).remove()});
+  let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#groupKey');
+  if(e.target.value === 'none'){
+    redrawNodes();
+    $('#default-node-symbol').fadeIn();
+    return table.fadeOut(e => table.remove());
+  }
+  table.append('<tr><th>'+e.target.value+'</th><th>Shape</th><tr>');
+  let values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
+  let symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye'].concat(Object.keys(extraSymbols));
+  let o = d3.scaleOrdinal(symbolKeys).domain(values);
+  let options = $('#default-node-symbol').html();
+  values.forEach(v => {
+    let selector = $('<select></select>').append(options).val(o(v)).change(redrawNodes);
+    let cell = $('<td></td>').append(selector);
+    let row = $('<tr><td>' + v + '</td></tr>').append(cell);
+    table.append(row);
+  });
+  redrawNodes();
+  table.fadeIn();
+});
+
+$('#default-node-radius').on('input', redrawNodes);
+$('#nodeRadiusVariable').change(redrawNodes);
+
+function scaleNodeOpacity(){
+  let scalar = $('#default-node-opacity').val();
+  let variable = $('#nodeOpacityVariable').val();
+  let circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
+  if(variable === 'none'){
+    return circles.attr('opacity', scalar);
+  }
+  let values = _(session.data.nodes).map(variable).without(undefined);
+  let min = values.min();
+  let max = values.max();
+  let rng = max - min;
+  let med = rng / 2 + min;
+  circles.attr('opacity', d => {
+    let v = d[variable];
+    if(typeof v === 'undefined') v = med;
+    return scalar * (v - min) / rng + 0.1;
+  });
+}
+
+$('#default-node-opacity').on('input', scaleNodeOpacity);
+$('#nodeOpacityVariable').change(scaleNodeOpacity);
+
+$('#default-node-color').on('input', e => session.network.svg.select('g#nodes').selectAll('g.node').select('path').attr('fill', e.target.value));
+$('#nodeColorVariable').change(e => {
+  $('#default-node-color').fadeOut();
+  let circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
+  $('#nodeColors').fadeOut(function(){$(this).remove()});
+  let table = $('<tbody id="nodeColors"></tbody>').appendTo('#groupKey');
+  if(e.target.value == 'none'){
+    circles.attr('fill', $('#default-node-color').val());
+    $('#default-node-color').fadeIn();
+    table.fadeOut();
+    return;
+  }
+  table.append('<tr><th>'+e.target.value+'</th><th>Color</th><tr>');
+  let values = _.map(session.data.nodes, e.target.value);
+  let colors = $.getJSON('components/colors.json');
+  let o = d3.scaleOrdinal(colors).domain(values);
+  circles.attr('fill', d => o(d[e.target.value]));
+  values.forEach(value => {
+    let input = $('<input type="color" value="'+o(value)+'" />')
+      .on('input', evt => {
+        circles
+          .filter(d => d[e.target.value] == value)
+          .attr('fill', d => evt.target.value);
+      });
+    let cell = $('<td></td>').append(input);
+    let row = $('<tr><td>'+value+'</td></tr>').append(cell);
+    table.append(row);
+  });
+  table.fadeIn();
+});
+
+$('#default-node-charge').on('input', e => {
+  session.network.force.force('charge').strength(-e.target.value);
+  session.network.force.alpha(0.3).alphaTarget(0).restart();
+});
+
+$('#DirectedLinks').parent().click(e => {
+  session.network.svg.select('g#links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
+});
+
+$('#UndirectedLinks').parent().click(e => {
+  session.network.svg.select('g#links').selectAll('line').attr('marker-end', null);
+});
+
+$('#default-link-length').on('input', e => {
+  session.network.force.force('link').distance(e.target.value);
+  session.network.force.alpha(0.3).alphaTarget(0).restart();
+});
+
+function setLinkColor(e){
+  let variable = $('#linkColorVariable').val();
+  if(variable == 'none'){
+    session.network.svg.select('g#links').selectAll('line').style('stroke', $('#default-link-color').val());
+    $('#default-link-color').fadeIn();
+    $('#linkColors').fadeOut();
+    return;
+  }
+  $('#default-link-color').fadeOut();
+  let links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
+  $('#linkColors').remove();
+  let table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
+  table.append('<tr><th>'+variable+'</th><th>Color</th><tr>');
+  let values = _(session.data.links).map(variable).uniq().sort().value();
+  let colors = $.getJSON('components/colors.json');
+  let o = d3.scaleOrdinal(colors).domain(values);
+  links.style('stroke', d => o(d[variable]));
+  values.forEach(value => {
+    let input = $('<input type="color" name="'+value+'-node-color-setter" value="'+o(value)+'" />')
+      .on('input', evt => {
+        links
+          .filter(d => d[variable] === value)
+          .style('stroke', d => evt.target.value);
+      });
+    let cell = $('<td></td>').append(input);
+    let row = $('<tr><td>'+value+'</td></tr>').append(cell);
+    table.append(row);
+  });
+  table.fadeIn();
+}
+
+$('#default-link-color').on('input', setLinkColor);
+$('#linkColorVariable').change(setLinkColor);
+
+function scaleLinkThing(scalar, variable, attribute, floor){
+  let links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
+  if(variable === 'none'){
+    return links.attr(attribute, scalar);
+  }
+  if(!floor){floor = 1;}
+  let values = _(session.data.links).map(variable).without(undefined);
+  let min = values.min();
+  let max = values.max();
+  let rng = max - min;
+  let recip = $('#reciprocal-link-width').is(':checked');
+  links.attr(attribute, d => {
+    let v = d[variable];
+    if(typeof v === 'undefined') v = rng / 2 + min;
+    if(recip && attribute == 'stroke-width'){
+      return scalar * (1 - (v - min) / rng) + floor;
+    }
+    return scalar * (v - min) / rng + floor;
+  });
+}
+
+$('#default-link-opacity').on('input', e => scaleLinkThing($('#default-link-opacity').val(), $('#linkOpacityVariable').val(), 'opacity', .1));
+$('#linkOpacityVariable').change(e => scaleLinkThing($('#default-link-opacity').val(), $('#linkOpacityVariable').val(), 'opacity', .1));
+
+$('#default-link-width').on('input', e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
+$('#linkWidthVariable, #reciprocal-link-width').change(e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
+
+$('#linkSortVariable').on('change', e => {
+  if(e.target.value === 'none'){
+    $('#computeMST').fadeOut();
+    $('#default-link-threshold').fadeOut();
+  } else {
+    $('#computeMST').css('display', 'inline-block');
+    $('#default-link-threshold').css('visibility', 'visible');
+  }
+});
+
+$('#computeMST').click(e => {
+  //TODO: Write
+  $('.showForNotMST').fadeOut(e => {
+    $('.showForMST').css('opacity', 0).css('display', 'inline-block').animate({'opacity': 1});
+  });
+});
+
+$('#showMSTLinks, #showAllLinks').change(e => {
+  setLinkVisibility();
+  app.tagClusters();
+  if($('#HideSingletons').is(':checked')) setNodeVisibility();
+  renderNetwork();
+  app.computeDegree();
+  updateStatistics();
+  session.network.force.alpha(0.3).alphaTarget(0).restart();
+})
+
+$('#ShowSingletons, #HideSingletons').change(e => {
+  app.tagClusters();
+  setNodeVisibility();
+  renderNetwork();
+  app.computeDegree();
+  updateStatistics();
+  session.network.force.alpha(0.3).alphaTarget(0).restart();
+});
+
+$('#default-link-threshold').on('input', e => {
+  setLinkVisibility();
+  app.tagClusters();
+  if($('#HideSingletons').is(':checked')) setNodeVisibility();
+  renderNetwork();
+  app.computeDegree();
+  updateStatistics();
+  session.network.force.alpha(0.3).alphaTarget(0).restart();
+});
+
+$('#hideNetworkStatistics').parent().click(() => $('#networkStatistics').fadeOut());
+$('#showNetworkStatistics').parent().click(function(){
+  updateStatistics();
+  $('#networkStatistics').fadeIn();
+});
+
+$('#network-friction').on('input', e => {
+  session.network.force.velocityDecay(e.target.value);
+  session.network.force.alpha(0.3).alphaTarget(0).restart();
+});
+
+$('#network-gravity').on('input', e => {
+  session.network.force.force('gravity').strength(e.target.value);
+  session.network.force.alpha(0.3).alphaTarget(0).restart();
+});
+
+$('#main_panel').css('background-color', $('#network-color').val());
+
+$('#network-color').on('input', e => $('#main_panel').css('background-color', e.target.value));
+
+$('#playbutton')
+  .data('state', 'paused')
+  .click(function(e){
+    if($(this).data('state') === 'paused'){
+      $(this).data('state', 'playing')
+        .html('<i class="fa fa-pause" aria-hidden="true"></i>');
+      session.network.force.alphaTarget(session.state.alpha).restart();
+    } else {
+      $(this).data('state', 'paused')
+        .html('<i class="fa fa-play" aria-hidden="true"></i>');
+      session.network.force.alpha(0).alphaTarget(0);
+    }
+  });
+
+$('#search').on('input', e => {
+  if(e.target.value === ''){
+    session.data.nodes.forEach(n => n.selected = 0);
+  } else {
+    session.data.nodes.forEach(n => n.selected = (n.id.indexOf(e.target.value)>-1));
+    if(session.data.nodes.filter(n => n.selected).length === 0) alertify.warning('No matches!');
+  }
+  d3.select('g#nodes')
+    .selectAll('g.node')
+    .select('path')
+    .data(session.data.nodes)
+    .classed('selected', d => d.selected);
+  $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+});
+
+</script>

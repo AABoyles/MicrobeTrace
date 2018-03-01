@@ -141,8 +141,8 @@ app.titleize = function(title){
   let small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
   if(small === 'snps') return 'SNPs';
-  if(small === '2d') return '2D';
-  if(small === '3d') return '3D';
+  if(small === '2d network') return '2D Network';
+  if(small === '3d network') return '3D Network';
   return small.replace(/(?:^|\s|-)\S/g, function(c){
     return c.toUpperCase();
   });

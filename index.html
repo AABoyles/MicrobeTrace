@@ -3,7 +3,7 @@
 <html>
 <head>
   <!--[if lt IE 9]>
-    <script src="node_modules/html5shiv/dist/html5shiv.min.js"></script>
+    <script type="text/javascript" src="node_modules/html5shiv/dist/html5shiv.min.js"></script>
   <![endif]-->
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -14,83 +14,79 @@
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-light-theme.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/alertifyjs/build/css/alertify.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
-  <script src="node_modules/core-js/client/core.min.js"></script>
+  <script type="text/javascript" src="node_modules/core-js/client/core.min.js"></script>
 </head>
 <body>
-  <nav class="navbar navbar-default navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed navbar-left" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-      </div>
-      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-        <div class="navbar-right">
-          <a class="navbar-brand title invisible" href="#"><h1>MicrobeTrace</h1></a>
-        </div>
-        <ul class="nav navbar-nav">
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
-            <ul class="dropdown-menu">
-              <li id="FileTab"><a href="#">New</a></li>
-              <li id="SaveTab"><a href="#">Save</a></li>
-              <li id="OpenTab"><a href="#">Open</a></li>
-              <li role="separator" class="divider"></li>
-              <li id="ExportDataTab"><a href="#">Export Data</a></li>
-              <li id="SaveImageTab"><a href="#">Save Image</a></li>
-              <li id="SaveVectorTab"><a href="#">Save Vector</a></li>
-              <li role="separator" class="divider"></li>
-              <li id="ExitTab"><a href="#">Exit</a></li>
-            </ul>
-          </li>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
-            <ul class="dropdown-menu">
-              <li id="FindTab"><a href="#">Find</a></li>
-              <li id="AddDataTab"><a href="#">Add Data</a></li>
-              <li id="RevealAllTab"><a href="#">Reveal All</a></li>
-              <li role="separator" class="divider"></li>
-              <li id="SettingsTab" data-toggle="modal" data-target="#settingsModal"><a href="#">Settings</a></li>
-            </ul>
-          </li>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
-            <ul class="dropdown-menu">
-              <li id="3DNetworkTab"><a href="#" class="viewbutton" data-href="3D">3D Network</a></li>
-              <li id="TableTab"><a href="#" class="viewbutton" data-href="table">Table</a></li>
-              <li id="FlowTab"><a href="#" class="viewbutton" data-href="flowDiagram">Flow Diagram</a></li>
-              <li id="ScatterplotTab"><a href="#" class="viewbutton" data-href="scatterplot">Scatterplot</a></li>
-              <li id="MapTab"><a href="#" class="viewbutton" data-href="map">Map</a></li>
-              <li role="separator" class="divider showForSequence"></li>
-              <li id="HistogramTab" class="showForSequence"><a href="#" class="viewbutton" data-href="histogram">Histogram</a></li>
-              <li id="SequencesTab" class="showForSequence"><a href="#" class="viewbutton" data-href="sequences">Sequences</a></li>
-              <li id="HeatmapTab" class="showForSequence"><a href="#" class="viewbutton" data-href="heatmap">Heatmap</a></li>
-              <li id="TreeTab" class="showForSequence"><a href="#" class="viewbutton" data-href="phylogeneticTree">Phylogenetic Tree</a></li>
-            </ul>
-          </li>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
-            <ul class="dropdown-menu">
-              <li id="ReloadTab"><a href="#">Reload</a></li>
-              <li role="separator" class="divider"></li>
-              <li id="FullScreenTab"><a href="#">Toggle Full Screen</a></li>
-            </ul>
-          </li>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
-            <ul class="dropdown-menu">
-              <li id="HelpTab"><a href="https://github.com/CDCGov/MicrobeTrace/wiki" target="_blank">Help</a></li>
-              <li role="separator" class="divider"></li>
-              <li id="InstallTab"><a href="#" data-toggle="modal" data-target="#install-modal">Install</a></li>
-              <li id="AboutTab"><a href="#" data-toggle="modal" data-target="#about-modal">About</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
+  <nav class="navbar fixed-top navbar-expand-xl navbar-light bg-light">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="nav mr-auto">
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
+          <div class="dropdown-menu">
+            <a href="#" id="FileTab" class="dropdown-item">New</a>
+            <a href="#" id="SaveTab" class="dropdown-item">Save</a>
+            <a href="#" id="OpenTab" class="dropdown-item">Open</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="ExportDataTab" class="dropdown-item">Export Data</a>
+            <a href="#" id="SaveImageTab" class="dropdown-item">Save Image</a>
+            <a href="#" id="SaveVectorTab" class="dropdown-item">Save Vector</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
+          <div class="dropdown-menu">
+            <a href="#" id="FindTab" class="dropdown-item">Find</a>
+            <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
+            <a href="#" id="RevealAllTab" class="dropdown-item">Reveal All</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="SettingsTab"  class="dropdown-item" data-toggle="modal" data-target="#settingsModal">Settings</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
+          <div class="dropdown-menu">
+            <a href="#" id="2DNetworkTab" class="dropdown-item viewbutton" data-href="2D">2D Network</a>
+            <a href="#" id="3DNetworkTab" class="dropdown-item viewbutton" data-href="3D">3D Network</a>
+            <a href="#" id="TableTab" class="dropdown-item viewbutton" data-href="table">Table</a>
+            <a href="#" id="FlowTab" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
+            <a href="#" id="ScatterplotTab" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
+            <a href="#" id="MapTab" class="dropdown-item viewbutton" data-href="map">Map</a>
+            <div class="dropdown-divider showForSequence"></div>
+            <a href="#" id="HistogramTab" class="dropdown-item viewbutton showForSequence" data-href="histogram">Histogram</a>
+            <a href="#" id="SequencesTab" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
+            <a href="#" id="HeatmapTab" class="dropdown-item viewbutton showForSequence" data-href="heatmap">Heatmap</a>
+            <a href="#" id="TreeTab" class="dropdown-item viewbutton showForSequence" data-href="phylogenetic_tree">Phylogenetic Tree</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
+          <div class="dropdown-menu">
+            <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
+          <div class="dropdown-menu">
+            <a href="https://github.com/CDCGov/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank">Help</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="InstallTab" class="dropdown-item" data-toggle="modal" data-target="#install-modal">Install</a>
+            <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
+          </div>
+        </li>
+      </ul>
+      <form class="navbar-form navbar-right" role="search">
+        <input type="search" id="search" class="form-control" placeholder="Search" />
+      </form>
     </div>
   </nav>
 
@@ -121,41 +117,6 @@ performance of this software.</pre>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
-
-  <div id="alignerControlsModal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header"><h4 class="modal-title">Alignment Configuration</h4></div>
-        <div class="modal-body">
-          <div class="row" style="margin-bottom: 5px">
-            <div class="col-sm-4">
-              <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>&nbsp;
-              <div class="btn-group btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-default active">
-                  <input type="radio" name="shouldAlign" id="align" autocomplete="off" checked> Yes
-                </label>
-                <label class="btn btn-default">
-                  <input type="radio" name="shouldAlign" id="doNotAlign" autocomplete="off"> No
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="row" id="referenceRow">
-            <div class="col-sm-2">
-              <input id="refSeqFileLoad" class="btn btn-default btn-xs" type="button" value="Load From File" />
-              <input id="refSeqLoad" class="btn btn-default btn-xs" type="button" value="Load HXB2.pol" />
-            </div>
-            <div class="col-sm-10">
-              <textarea id="reference"></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer clearfix">
-          <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="Confirm Alignment Configurations are All Properly Set">Confirm</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div id="loadingInformationModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -422,24 +383,27 @@ performance of this software.</pre>
   </div>
 
   <script id="HXB2pol" type="sequence">CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC</script>
-  <script src="node_modules/lodash/lodash.min.js"></script>
-  <script src="node_modules/jquery/dist/jquery.min.js"></script>
-  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
-  <script src="node_modules/papaparse/papaparse.min.js"></script>
-  <script src="node_modules/bioseq/dist/bioseq.min.js"></script>
-  <script src="node_modules/tn93/dist/tn93.min.js"></script>
-  <script src="node_modules/alertifyjs/build/alertify.min.js"></script>
-  <script src="node_modules/d3/build/d3.min.js"></script>
-  <script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
-  <script src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
-  <script src="vendor/3d-force-graph.min.js"></script>
-  <script src="node_modules/screenfull/dist/screenfull.js"></script>
-  <script src="node_modules/file-saver/FileSaver.min.js"></script>
-  <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
-  <script src="node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js"></script>
-  <script src="scripts/common.js"></script>
-  <script src="scripts/app.js"></script>
+
+  <script type="text/javascript" src="node_modules/lodash/lodash.min.js"></script>
+  <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
+  <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="vendor/bootstrap-filestyle.min.js"></script>
+  <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
+  <script type="text/javascript" src="node_modules/papaparse/papaparse.min.js"></script>
+  <script type="text/javascript" src="node_modules/bioseq/dist/bioseq.min.js"></script>
+  <script type="text/javascript" src="node_modules/tn93/dist/tn93.min.js"></script>
+  <script type="text/javascript" src="node_modules/alertifyjs/build/alertify.min.js"></script>
+  <script type="text/javascript" src="node_modules/d3/build/d3.min.js"></script>
+  <script type="text/javascript" src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
+  <script type="text/javascript" src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
+  <script type="text/javascript" src="vendor/3d-force-graph.min.js"></script>
+  <script type="text/javascript" src="node_modules/screenfull/dist/screenfull.js"></script>
+  <script type="text/javascript" src="node_modules/file-saver/FileSaver.min.js"></script>
+  <script type="text/javascript" src="node_modules/clipboard/dist/clipboard.min.js"></script>
+  <script type="text/javascript" src="node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js"></script>
+  <script type="text/javascript" src="scripts/common.js"></script>
+  <script type="text/javascript" src="scripts/app.js"></script>
 
 </body>
 </html>
