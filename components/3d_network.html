@@ -1,0 +1,51 @@
+  <script src="node_modules/d3-force-3d/build/d3-force-3d.min.js"></script>
+  <div id="3d-network"></div>
+  <script>
+  $(function(){
+
+    let graph = ForceGraph3D()($('#3d-network')[0]);
+
+    $('.nodeVariables').html(
+      ['<option value="none" selected>None</option>'].concat(
+        session.data.nodeFields.map(key => '<option value="' + key + '">' + key + '</option>')
+      ).join('\n')
+    );
+
+    $('.linkVariables').html('<option value="none" selected>None</option>' + session.data.linkFields.map(key => `<option>${key}</option>`).join('\n'));
+
+    $('#linkSortVariable').val('distance');
+
+    drawGraph();
+
+    function drawGraph(){
+      let lc = $('#default-link-color').val();
+      let pv = $('#linkSortVariable').val();
+      let t = $('#default-link-threshold').val();
+      let nodeColor = $('#default-node-color').val();
+      let links = session.data.links.filter(l => l[pv] < t).map(l => {
+        l.source = l.source.id;
+        l.target = l.target.id;
+        return l;
+      });
+      graph
+        .backgroundColor($('#network-color').val())
+        .nodeRelSize($('#default-node-radius').val())
+        .colorField(d => nodeColor)
+        .lineOpacity($('#default-link-opacity').val())
+        .linkColorField(l => lc)
+        .graphData({
+          nodes: session.data.nodes,
+          links: links
+        });
+    }
+
+    $('#button').click(() => $('#options').modal('show'));
+
+    $('.triggers').change(drawGraph);
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    $(window).on('resize', drawGraph);
+  });
+
+  </script>

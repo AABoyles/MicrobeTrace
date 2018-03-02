@@ -13,6 +13,7 @@
   <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-light-theme.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/chosen-js/chosen.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/alertifyjs/build/css/alertify.min.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
@@ -53,8 +54,8 @@
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
           <div class="dropdown-menu">
-            <a href="#" id="2DNetworkTab" class="dropdown-item viewbutton" data-href="2D">2D Network</a>
-            <a href="#" id="3DNetworkTab" class="dropdown-item viewbutton" data-href="3D">3D Network</a>
+            <a href="#" id="2DNetworkTab" class="dropdown-item viewbutton" data-href="2d_network">2D Network</a>
+            <a href="#" id="3DNetworkTab" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
             <a href="#" id="TableTab" class="dropdown-item viewbutton" data-href="table">Table</a>
             <a href="#" id="FlowTab" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
             <a href="#" id="ScatterplotTab" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
@@ -121,7 +122,7 @@ performance of this software.</pre>
   <div id="loadingInformationModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header"><h4 class="modal-title">Loading File</h4></div>
+        <div class="modal-header"><h5 class="modal-title">Loading File</h5></div>
         <div class="modal-body">
           <!--img src="img/1DNA.gif" class="img-responsive center-block" /-->
           <div class="panel-group" id="advancedLoadingAccordion" role="tablist" aria-multiselectable="false">
@@ -143,204 +144,6 @@ performance of this software.</pre>
   </div><!-- /.modal -->
 
   <div id="main_panel" class="pane-container pane-horizontal"></div>
-
-  <div id="settingsModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">Network Configuration</h4>
-        </div>
-        <div class="modal-body">
-          <!-- Nav tabs -->
-          <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#nodeConfigurations" aria-controls="nodeConfigurations" role="tab" data-toggle="tab">Nodes</a></li>
-            <li role="presentation"><a href="#linkConfigurations" aria-controls="profile" role="tab" data-toggle="tab">Links</a></li>
-            <li role="presentation"><a href="#networkConfigurations" aria-controls="messages" role="tab" data-toggle="tab">Network</a></li>
-          </ul>
-          <!-- Tab panes -->
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="nodeConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3"><strong>Property</strong></div>
-                  <div class="col-xs-3"><strong>Variable</strong></div>
-                  <div class="col-xs-6"><strong>Value</strong></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What shape should the nodes be?">Shape</a></div>
-                  <div class="col-xs-3"><select id="nodeSymbolVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
-                  <div class="col-xs-6"><select id="default-node-symbol">
-                    <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
-                    <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
-                    <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
-                    <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
-                    <option value="symbolTriangleRight">&nbsp;&#9654; (Right Triangle)</option>
-                    <option value="symbolDiamond">&nbsp;&#10731; (Vertical Diamond)</option>
-                    <option value="symbolDiamondAlt">&nbsp;&#10731; (Horizontal Diamond)</option>
-                    <option value="symbolSquare">&nbsp;&#9632; (Square)</option>
-                    <option value="symbolDiamondSquare">&nbsp;&#9670; (Tilted Square)</option>
-                    <option value="symbolPentagon">&nbsp;&#11039; (Pentagon)</option>
-                    <option value="symbolHexagon">&nbsp;&#11042; (Hexagon)</option>
-                    <option value="symbolHexagonAlt">&nbsp;&#11043; (Tilted Hexagon)</option>
-                    <option value="symbolOctagon">&nbsp;&#11204; (Octagon)</option>
-                    <option value="symbolOctagonAlt">&nbsp;&#11203; (Tilted Octagon)</option>
-                    <option value="symbolCross">&nbsp;&#10010; (Addition Sign)</option>
-                    <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
-                    <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
-                    <option value="symbolStar">&nbsp;&#9733; (Star)</option>
-                  </select></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</a></div>
-                  <div class="col-xs-3"><select id="nodeLabelVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</a></div>
-                  <div class="col-xs-3"><select id="nodeTooltipVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the nodes be?">Color</a></div>
-                  <div class="col-xs-3"><select id="nodeColorVariable" class="nodeVariables categorical"><option value="none">None</option></select></div>
-                  <div class="col-xs-6"><input type="color" id="default-node-color" value="#5656ff" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How transparent should the nodes be?">Transparency</a></div>
-                  <div class="col-xs-3"><select id="nodeOpacityVariable" class="nodeVariables numeric"><option value="none">None</option></select></div>
-                  <div class="col-xs-6"><input type="range" id="default-node-opacity" min="0" max="1" value="1" step="0.01" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How large should the nodes be?">Size</a></div>
-                  <div class="col-xs-3"><select id="nodeRadiusVariable" class="nodeVariables numeric"><option value="none">None</option></select></div>
-                  <div class="col-xs-6"><input type="range" id="default-node-radius" min="1" value="250" step="1" max="5000" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3">Singletons</div>
-                  <div class="col-xs-6 .col-xs-offset-3">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="singletons" id="ShowSingletons" autocomplete="off" checked> Show
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="singletons" id="HideSingletons" autocomplete="off"> Hide
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div role="tabpanel" class="tab-pane fade" id="linkConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3"><strong>Property</strong></div>
-                  <div class="col-xs-3"><strong>Variable</strong></div>
-                  <div class="col-xs-6"><strong>Value</strong></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Pruning</a></div>
-                  <div class="col-xs-3"><select id="linkSortVariable" class="linkVariables numeric"><option value="distance">Distance</option></select></div>
-                  <div class="col-xs-6"><a href="#" data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?"><input type="number" id="default-link-threshold" value="0.015" step="0.001" /></a>
-                      <button id="computeMST" class="btn btn-default btn-xs showForNotMST">Compute MST</button>
-                      <div class="btn-group btn-group-xs showForMST" data-toggle="buttons">
-                        <label class="btn btn-default active">
-                          <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
-                        </label>
-                        <label class="btn btn-default">
-                          <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
-                        </label>
-                      </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Are these links directed?">Directionality</a></div>
-                  <div class="col-xs-3"></div>
-                  <div class="col-xs-6">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="DirectionOptions" id="UndirectedLinks" autocomplete="off" checked> Undirected
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="DirectionOptions" id="DirectedLinks" autocomplete="off"> Directed
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</a></div>
-                  <div class="col-xs-3"><select id="linkTooltipVariable" class="linkVariables"><option value="none">None</option></select></div>
-                  <div class="col-xs-6"></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the links be?">Color</a></div>
-                  <div class="col-xs-3"><select id="linkColorVariable" class="linkVariables"><option value="none" selected>None</option></select></div>
-                  <div class="col-xs-6"><input type="color" id="default-link-color" value="#6f6f6f" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How transparent should the links be?">Transparency</a></div>
-                  <div class="col-xs-3"><select id="linkOpacityVariable" class="linkVariables"><option value="none">None</option></select></div>
-                  <div class="col-xs-6"><input type="range" id="default-link-opacity" min="0" max="1" value="0.5" step="0.01" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How wide should the links be?">Thickness</a></div>
-                  <div class="col-xs-3">
-                    <select id="linkWidthVariable" class="linkVariables"><option value="none">None</option></select><br />
-                    <input type="checkbox" id="reciprocal-link-width" />&nbsp;<a href="#" data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal?</a>
-                  </div>
-                  <div class="col-xs-6"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
-                </div>
-              </div>
-            </div>
-            <div role="tabpanel" class="tab-pane fade" id="networkConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3"><strong>Property</strong></div>
-                  <div class="col-xs-9"><strong>Value</strong></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</a></div>
-                  <div class="col-xs-9">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="networkStatisticsOptions" id="showNetworkStatistics" autocomplete="off" checked> Show
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="networkStatisticsOptions" id="hideNetworkStatistics" autocomplete="off"> Hide
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</a></div>
-                  <div class="col-xs-9"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How long should links be?">Length</a></div>
-                  <div class="col-xs-9"><input type="range" id="default-link-length" min = "0" max="200" value="50" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</a></div>
-                  <div class="col-xs-9"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</a></div>
-                  <div class="col-xs-9"><input type="range" id="default-node-charge" min="0" max="400" value="200" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the background be?">Background</a></div>
-                  <div class="col-xs-9"><input type="color" id="network-color" value="#ffffff" /></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <div class="btn-group" data-toggle="buttons">
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
-          </div>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
 
   <div class="modal fade" id="install-modal" tabindex="-1" role="dialog" aria-labelledby="install-modal-label">
     <div class="modal-dialog" role="document">
@@ -394,13 +197,10 @@ performance of this software.</pre>
   <script type="text/javascript" src="node_modules/bioseq/dist/bioseq.min.js"></script>
   <script type="text/javascript" src="node_modules/tn93/dist/tn93.min.js"></script>
   <script type="text/javascript" src="node_modules/alertifyjs/build/alertify.min.js"></script>
-  <script type="text/javascript" src="node_modules/d3/build/d3.min.js"></script>
-  <script type="text/javascript" src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
-  <script type="text/javascript" src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
-  <script type="text/javascript" src="vendor/3d-force-graph.min.js"></script>
   <script type="text/javascript" src="node_modules/screenfull/dist/screenfull.js"></script>
   <script type="text/javascript" src="node_modules/file-saver/FileSaver.min.js"></script>
   <script type="text/javascript" src="node_modules/clipboard/dist/clipboard.min.js"></script>
+  <script type="text/javascript" src="node_modules/chosen-js/chosen.jquery.min.js"></script>
   <script type="text/javascript" src="node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js"></script>
   <script type="text/javascript" src="scripts/common.js"></script>
   <script type="text/javascript" src="scripts/app.js"></script>
