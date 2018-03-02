@@ -25,6 +25,7 @@
     "core-js": "^2.5.3",
     "d3": "^4.12.2",
     "d3-force-attract": "^0.1.1",
+    "d3-sankey": "^0.7.1",
     "d3-symbol-extra": "^0.1.0",
     "datatables.net-bs4": "^1.10.16",
     "datatables.net-scroller-bs4": "^1.4.4",

@@ -1,0 +1,113 @@
+  <svg id="flow_diagram"></svg>
+
+  <select id='source_side'></select>
+
+  <select id='target_side'></select>
+
+  <script src="node_modules/d3-sankey/build/d3-sankey.min.js"></script>
+  <script>
+
+  function drawGraph(){
+    var width = $(window).width() - 40,
+        height = $(window).height() - 100;
+
+    svg = d3.select('svg#flow_diagram').html(null)
+        .attr('width', width)
+        .attr('height', height);
+
+    var format = d3.format(",.0f"),
+        color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var sankey = d3.sankey()
+        .nodeWidth(15)
+        .nodePadding(10)
+        .extent([[1, 1], [width - 1, height - 6]]);
+
+    var link = svg.append("g")
+        .attr("class", "links")
+        .attr("fill", "none")
+        .attr("stroke", "#000")
+        .attr("stroke-opacity", 0.2)
+      .selectAll("path");
+
+    var node = svg.append("g")
+        .attr("class", "nodes")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+      .selectAll("g");
+
+    var onlyUnique = (value, index, self) => self.indexOf(value) === index;
+
+    wrapper = {links: []};
+    source_variable = $( '#source_side').val();
+    source_values  = session.data.nodes.map(n => n[source_variable]+'').filter(onlyUnique);
+    target_variable = $('#target_side').val();
+    target_values = session.data.nodes.map(n => n[target_variable]+'').filter(onlyUnique);
+    wrapper['nodes'] = source_values.concat(target_values).map(n => ({'name': n}));
+
+    target_list = {};
+    target_values.forEach(target => target_list[target] = 0);
+
+    link_matrix = {};
+    source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
+
+    session.data.nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
+
+    source_values.forEach((source, i) => {
+      target_values.forEach((target, j) => {
+        if(link_matrix[source][target] > 0){
+          wrapper.links.push({
+            'source': i,
+            'target': source_values.length + j,
+            'value':  link_matrix[source][target]
+          });
+        }
+      });
+    });
+
+    sankey(wrapper);
+
+    link = link
+      .data(wrapper.links)
+      .enter().append("path")
+        .attr("d", d3.sankeyLinkHorizontal())
+        .attr("stroke-width", d => Math.max(1, d.width));
+
+    link.append("title")
+        .text(d => d.source.name + " → " + d.target.name + "\n" + format(d.value));
+
+    node = node
+      .data(wrapper.nodes)
+      .enter().append("g");
+
+    node.append("text")
+        .attr("x", d => d.x0 - 6)
+        .attr("y", d => (d.y1 + d.y0) / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "end")
+        .text(d => d.name)
+      .filter(d => d.x0 < width / 2)
+        .attr("x", d => d.x1 + 6)
+        .attr("text-anchor", "start");
+
+    node.append("rect")
+        .attr("x", d => d.x0)
+        .attr("y", d => d.y0)
+        .attr("height", d => Math.abs(d.y1 - d.y0))
+        .attr("width", d => d.x1 - d.x0)
+        .attr("fill", d => color((d.name+'').replace(/ .*/, "")))
+        .attr("stroke", "#000");
+
+    node.append("title").text(d => d.name + "\n" + format(d.value));
+  }
+
+  $('#source_side')
+    .html(session.data.nodeFields.map((field, i) => `<option${i==1?' selected ':''}>${field}</option>`))
+    .change(drawGraph);
+
+  $('#target_side')
+    .html(session.data.nodeFields.map((field, i) => `<option${i==2?' selected ':''}>${field}</option>`))
+    .change(drawGraph);
+
+  drawGraph();
+  </script>

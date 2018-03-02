@@ -291,3 +291,14 @@ td {
 .linkVariables {
   width: 100%;
 }
+
+#source_side, #target_side{
+  position: absolute;
+  top: 10px;
+}
+#source_side{
+  left: 10px;
+}
+#target_side{
+  right: 10px;
+}
