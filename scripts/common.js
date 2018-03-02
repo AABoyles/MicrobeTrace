@@ -121,11 +121,13 @@ app.computeDistanceMatrices = function(subset){
     session.data.distance_matrix.snps[i] = Array(n);
     session.data.distance_matrix.tn93[i][i] = session.data.distance_matrix.snps[i][i] = 0;
     for(let j = 0; j < i; j++){
+      let distance = tn93(subset[j]['seq'], subset[i]['seq'], 'AVERAGE');
       let newLink = {
         source: subset[j].id,
         target: subset[i].id,
-        tn93: tn93(subset[j]['seq'], subset[i]['seq'], 'AVERAGE'),
-        snps: app.hamming(subset[j]['seq'], subset[i]['seq'])
+        tn93: distance,
+        snps: app.hamming(subset[j]['seq'], subset[i]['seq']),
+        distance: distance
       };
       session.data.distance_matrix.tn93[i][j] = newLink.tn93;
       session.data.distance_matrix.tn93[j][i] = newLink.tn93;
@@ -140,6 +142,7 @@ app.computeDistanceMatrices = function(subset){
 app.titleize = function(title){
   let small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
+  if(small === 'tn93') return 'TN93';
   if(small === 'snps') return 'SNPs';
   if(small === '2d network') return '2D Network';
   if(small === '3d network') return '3D Network';
@@ -172,12 +175,17 @@ app.DFS = function(node){
   node.cluster = session.data.clusters.length;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
   session.data.links.forEach(l => {
-    if(l.visible && (l.source.id == node.id || l.target.id == node.id)){
-      l.cluster = session.data.clusters.length;
-      session.data.clusters[session.data.clusters.length - 1].links++;
-      session.data.clusters[session.data.clusters.length - 1].sum_distances += l[lsv];
-      if(!l.source.cluster) app.DFS(l.source);
-      if(!l.target.cluster) app.DFS(l.target);
+    try {
+      if(l.visible && (l.source.id == node.id || l.target.id == node.id)){
+        l.cluster = session.data.clusters.length;
+        session.data.clusters[session.data.clusters.length - 1].links++;
+        session.data.clusters[session.data.clusters.length - 1].sum_distances += l[lsv];
+        if(!l.source.cluster) app.DFS(l.source);
+        if(!l.target.cluster) app.DFS(l.target);
+      }
+    } catch(error) {
+      alertify.error('Missing ID. Did you select the correct Parser?');
+      //TODO: reset
     }
   });
 };

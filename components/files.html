@@ -303,7 +303,7 @@ $('#main-submit').click(function(e){
             n += app.addNode(node);
           });
           results.meta.fields.forEach(key => session.data.nodeFields.push(key));
-          if(results.data.nodeFields.has('seq')) anySequences = 1;
+          if(session.data.nodeFields.includes('seq')) anySequences = 1;
           message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
           if(fileNum == instructions.files.length - 1) nextStuff();
         }
