@@ -5,6 +5,7 @@
   "author": "Tony Boyles <Anthony@Boyles.cc>",
   "license": "MIT",
   "scripts": {
+    "appcache": "./appcache.sh",
     "start": "node_modules/http-server/bin/http-server",
     "build": "npm start && nativifier http://localhost:8080"
   },
