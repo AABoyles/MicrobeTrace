@@ -1,70 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title></title>
-  <link rel="icon" href="img/image32.ico" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/alertifyjs/build/css/alertify.min.css" />
-  <link rel="stylesheet" type="text/css" href="../stylesheets/main.css" />
-  <style>
-  .showForSequence {
-    display: list-item;
-  }
-  </style>
-</head>
-<body>
-  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" data-backdrop="false">
+  <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
+
+  <div id="histogram_panel"></div>
+
+  <button type="button" class="view_settings_button btn btn-light" data-toggle="modal" data-target="#histogram_settings_modal">
+    <span class="oi oi-cog"></span>
+  </button>
+
+  <div class="modal fade" id="histogram_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">Histogram Configuration</h4>
+          <h5 class="modal-title">Histogram Settings</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
-          <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#histogramConfigurations" aria-controls="histogramConfigurations" role="tab" data-toggle="tab">Histogram</a></li>
-          </ul>
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="histogramConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which dataset should the histogram be drawn from?">Dataset</a></div>
-                  <div class="col-xs-9">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="set" id="vislinks" autocomplete="off" checked> Visible Links
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="set" id="alllinks" autocomplete="off"> All Links
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
-                  <div class="col-xs-9"><select id="variable"><option selected>distance</option></select></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
-                  <div class="col-xs-9">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="scale" id="linearScale" autocomplete="off" checked> Linear
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="scale" id="logScale" autocomplete="off"> Log
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
-                  <div class="col-xs-9"><input type="color" id="color" value="#5656ff" /></div>
+          <div class="container">
+            <div class="row">
+              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
+              <div class="col-xs-9">
+                <div class="btn-group btn-group-xs" data-toggle="buttons">
+                  <label class="btn btn-default active">
+                    <input type="radio" name="axis" id="histogram_xAxis" autocomplete="off" checked> X
+                  </label>
+                  <label class="btn btn-default">
+                    <input type="radio" name="axis" id="histogram_yAxis" autocomplete="off"> Y
+                  </label>
                 </div>
               </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Should the histogram be drawn from only stuff thats visible in the network, or all the data?">Dataset</a></div>
+              <div class="col-xs-9">
+                <div class="btn-group btn-group-xs" data-toggle="buttons">
+                  <label class="btn btn-default active">
+                    <input type="radio" name="set" id="histogram_vislinks" autocomplete="off" checked> Only Visible Elements
+                  </label>
+                  <label class="btn btn-default">
+                    <input type="radio" name="set" id="histogram_alllinks" autocomplete="off"> All Elements
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
+              <div class="col-xs-9"><select id="histogram_variable"><option selected>distance</option></select></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
+              <div class="col-xs-9">
+                <div class="btn-group btn-group-xs" data-toggle="buttons">
+                  <label class="btn btn-default active">
+                    <input type="radio" name="scale" id="histogram_linearScale" autocomplete="off" checked> Linear
+                  </label>
+                  <label class="btn btn-default">
+                    <input type="radio" name="scale" id="histogram_logScale" autocomplete="off"> Log
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
+              <div class="col-xs-9"><input type="color" id="histogram_color" value="#5656ff" /></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
+              <div class="col-xs-9"><input type="color" id="histogram_network-color" class="triggers" value="#ffffff" /></div>
             </div>
           </div>
         </div>
@@ -75,70 +77,77 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="main_panel"></div>
   <script>
-  const electron = require('electron');
-  window.jQuery = window.$ = require('jquery');
-  require('bootstrap');
-  const Plotly = require("@nteract/plotly");
-  const alertify = require('alertifyjs');
-
   $(function(){
 
-    electron.ipcRenderer.on('deliver-manifest', (e, manifest) => {
-      $('title').text(manifest.productName + ' v. ' + manifest.version);
-      $('#AppName').html('<a href="#">'+manifest.productName+'</a>');
-      $('#AppVersion').html('<a href="#">'+manifest.version+'</a>');
-    });
-    electron.ipcRenderer.send('get-manifest');
+    // electron.ipcRenderer.on('update-link-visibilities', (e, newLinks) => {
+    //   let n = newLinks.length;
+    //   for(let i = 0; i < n; i++){
+    //     session.data.links[i].visible = newLinks[i];
+    //   }
+    //   redraw();
+    // });
 
-    $('body').prepend(electron.ipcRenderer.sendSync('get-component', 'nav.html'));
-    $('body').append(electron.ipcRenderer.sendSync('get-component', 'exportRasterImage.html'));
+    let links = session.data.links;
 
-    electron.ipcRenderer.on('update-link-visibility', (e, newLinks) => {
-      window.links = newLinks;
-      if($('#vislinks').is(':checked')){
-        Plotly.update('main_panel', {x: [session.data.links.filter(l => l.visible)]});
-      }
-    });
+    $('#histogram_variable').html(
+      session.data.linkFields.map(key => `<option value='links-${key}'>Links ${app.titleize(key)}</option>`).concat(
+      session.data.nodeFields.map(key => `<option value='nodes-${key}'>Nodes ${app.titleize(key)}</option>`)).join('\n')
+    );
 
-    electron.ipcRenderer.on('set-data', (e, data) => {
-      window.session = {data: data};
-      let links = data.links;
-      $('#variable').html(Object.keys(links[0]).map(key => '<option>' + key + '</option>').join('\n'));
-      let varName = $('#variable').val('distance');
-      window.plot = Plotly.newPlot('main_panel', [{
-        x: links.map(l => l['distance']),
+    $('#histogram_variable').val('links-distance');
+
+    redraw();
+
+    restyle();
+
+    function redraw(){
+      if(window.plot) Plotly.purge('histogram_panel');
+      let varName, varSource;
+      [varSource, varName] = $('#histogram_variable').val().split('-');
+      let visible = $('#histogram_vislinks').is(':checked');
+      let axis = $('#histogram_xAxis').is(':checked') ? 'x' : 'y';
+      let nonaxis = $('#histogram_yAxis').is(':checked') ? 'x' : 'y';
+      let data = {
         type: 'histogram',
         marker: {
-          color: $('#color').val(),
-          }
-        }], {
-          yaxis: $('#logScale').is(':checked') ? {type: 'log'} : {}
-        }, {
-          displaylogo: false,
-          displayModeBar: false
+          color: $('#histogram_color').val(),
+        }
+      };
+      data[axis] = session.data[varSource].filter(l => !visible || l.visible).map(l => l[varName]);
+      let layout = {};
+      layout[axis + 'axis'] = {
+        title: app.titleize(varName)
+      }
+      layout[nonaxis + 'axis'] = {
+        title: 'Number of ' + app.titleize(varSource),
+        type: $('#histogram_logScale').is(':checked') ? 'log' : ''
+      };
+      window.plot = Plotly.newPlot('histogram_panel', [data], layout, {
+        displaylogo: false,
+        displayModeBar: false
       });
-      $(window).on('resize', e => Plotly.relayout('main_panel', {width: $('#main_panel').width(), height: $('#main_panel').height()}));
+      $(window).on('resize', e => {
+        Plotly.relayout('histogram_panel', {
+          width: $('#histogram_panel').width(),
+          height: $('#histogram_panel').height()
+        });
+      });
+    }
+
+    function restyle(){
+      $('#histogram_network-color').val(session.style.background);
+      $('svg.main-svg:first').css('background-color', session.style.background);
+      $('rect.bg').css('fill', session.style.background);
+    }
+
+    $('#histogram_network-color').on('input', e => {
+      session.style.background = e.target.value;
+      $('#histogram_panel').css('background-color', session.style.background);
+      $('rect.bg').css('fill', session.style.background);
     });
-    electron.ipcRenderer.send('get-data');
 
-    $('#alllinks').parent().click(e => {
-      let varName = $('#variable').val();
-      Plotly.restyle('main_panel', {x: [session.data.links.map(l => l[varName])]});
-    });
-
-    $('#vislinks').parent().click(e => {
-      let varName = $('#variable').val();
-      Plotly.restyle('main_panel', {x: [session.data.links.filter(l => l.visible).map(l => l[varName])]});
-    });
-
-    $('#logScale, #linearScale').parent().click(e => Plotly.relayout('main_panel', {yaxis: e.target.outerText === 'Log' ? {type: 'log'} : {}}));
-
-    $('#color').on('input', e => Plotly.restyle('main_panel', {marker : {color: e.target.value}}));
-
+    $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redraw);
+    $('#histogram_variable, #histogram_color').change(redraw);
   });
-
   </script>
-</body>
-</html>
