@@ -46,9 +46,19 @@ a:hover, a:focus {
 }
 .lm_tab{
   background-color: #888888;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
 .lm_tab.lm_active{
   background-color: #ffffff;
+}
+
+.tab-pane {
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  padding: 15px;
 }
 
 /* File Panel */
