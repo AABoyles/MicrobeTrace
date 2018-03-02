@@ -1,124 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title></title>
-  <link rel="icon" href="img/image32.ico" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/alertifyjs/build/css/alertify.min.css" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/datatables.net-bs/css/dataTables.bootstrap.css" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/datatables.net-select-bs/css/select.bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="../stylesheets/main.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/datatables.net-bs4/css/dataTables.bootstrap4.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/datatables.net-select-bs4/css/select.bootstrap4.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/datatables.net-scroller-bs4/css/scroller.bootstrap4.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/chosen-js/chosen.css" />
   <style>
-    body{
-      overflow:auto;
-      display:block;
+    #type-panel{
+      position: absolute;
+      top: 10px;
+      left: 10px;
     }
-    .dataTables_wrapper{
-      padding: 1em;
-    }
-    table{
-      width: 100% !important;
-      white-space: nowrap;
-      table-layout: fixed;
-    }
-    .odd{
-      background-color: #e9e9e9;
-    }
-    tr:hover{
-      background-color: #0084c7;
-    }
-    th {
-      transform-origin:center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    td {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    #node-columns, #link-columns {
-      width: 100%;
-    }
-    .showForMST{
-      display: none;
+    #table-wrapper{
+      position: absolute;
+      top: 56px;
     }
   </style>
-</head>
-<body>
-  <div id="main_panel">
-    <table id="table" class="table display compact"></table>
+
+  <div id="table-wrapper" class="table-responsive">
+    <table id="table" class="table table-striped table-hover table-sm">
+      <caption>List of <span id="table-type">nodes</span></caption>
+      <thead class="thead-light"></thead>
+    </table>
   </div>
 
-  <div id="settingsModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="type-panel">
+    <div class="btn-group-toggle btn-group-sm" data-toggle="buttons">
+      <label class="btn btn-default active">
+        <input type="radio" name="nodelink" id="nodes" autocomplete="off" checked> Nodes
+      </label>
+      <label class="btn btn-default">
+        <input type="radio" name="nodelink" id="links" autocomplete="off"> Links
+      </label>
+      <label class="btn btn-default">
+        <input type="radio" name="nodelink" id="clusters" autocomplete="off"> Clusters
+      </label>
+    </div>
+  </div>
+
+  <button type="button" class="view_settings_button btn btn-light" data-toggle="modal" data-target="#table_settings_modal">
+    <span class="oi oi-cog"></span>
+  </button>
+
+  <div id="table_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">Table Options</h4>
+          <h5 class="modal-title">Table Options</h5>
         </div>
         <div class="modal-body">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#nodeConfigurations" aria-controls="nodeConfigurations" role="tab" data-toggle="tab">Nodes</a></li>
-            <li role="presentation"><a href="#linkConfigurations" aria-controls="profile" role="tab" data-toggle="tab">Links</a></li>
-            <li role="presentation"><a href="#clusterConfigurations" aria-controls="messages" role="tab" data-toggle="tab">Clusters</a></li>
-            <li role="presentation"><a href="#tableConfigurations" aria-controls="messages" role="tab" data-toggle="tab">Table</a></li>
+            <li role="presentation" class="active"><a href="#tableConfigurations" aria-controls="messages" role="tab" data-toggle="tab">Table</a></li>
           </ul>
           <!-- Tab panes -->
           <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="nodeConfigurations">
+            <div role="tabpanel" class="tab-pane fade in active" id="tableConfigurations">
               <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3">Columns to Include</div>
-                  <div class="col-xs-9"><select id="node-columns" multiple></select></div>
-                </div>
-              </div>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="linkConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3">Columns to Include</div>
-                  <div class="col-xs-9"><select id="link-columns" multiple></select></div>
-                </div>
-              </div>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="clusterConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3">Columns to Include</div>
-                  <div class="col-xs-9"><select id="cluster-columns" multiple></select></div>
-                </div>
-              </div>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="tableConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3">Content</div>
-                  <div class="col-xs-9">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="nodelink" id="node" autocomplete="off" checked="checked"> Nodes
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="nodelink" id="link" autocomplete="off"> Links
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="nodelink" id="cluster" autocomplete="off"> Clusters
-                      </label>
-                    </div>
-                  </div>
-                </div>
                 <div class="row">
                   <div class="col-xs-3">Text Size</div>
                   <div class="col-xs-9"><input type="range" id="font-size-slider" min="6" value="14" max="72" step="1" /></div>
                 </div>
                 <div class="row">
-                  <div class="col-xs-3">Tilt Headers?</div>
-                  <div class="col-xs-9"><input type="range" id="tiltHeaders" min="-90" value="0" max="90" step="1" /></div>
+                  <div class="col-xs-3">Header Tilt</div>
+                  <div class="col-xs-9"><input type="range" id="tiltHeaders" min="-7.5" value="0" max="7.5" step=".25" /></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-3">Columns</div>
+                  <div class="col-xs-9"><select id="columns" class="chosen-select" multiple></select></div>
+                </div>
               </div>
             </div>
           </div>
@@ -130,142 +78,124 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
+  <script src="node_modules/datatables.net/js/jquery.dataTables.js"></script>
+  <script src="node_modules/datatables.net-bs4/js/dataTables.bootstrap4.js"></script>
+  <script src="node_modules/datatables.net-select/js/dataTables.select.min.js"></script>
+  <script src="node_modules/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+  <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
   <script type="text/javascript">
-  const electron = require('electron');
-  const jetpack = require('fs-jetpack');
-  window.jQuery = window.$ = require('jquery');
-  require('bootstrap');
-  require('datatables.net-bs')(window, $);
-  require('datatables.net-select')(window, $);
-  const Papa = require('papaparse');
 
   const meta = ['index', 'padding', 'selected', 'visible', 'orig', 'mst'];
 
-  $(function(){
+  window.table = { destroy: () => {} };
 
-    electron.ipcRenderer.on('deliver-manifest', (e, manifest) => {
-      $('title').text(manifest.productName + ' v' + manifest.version);
+  function reorder(){ table.draw(false); }
+
+  function resetTextsize(){
+    var s = $('#font-size-slider').val();
+    $('#table').css({
+      'font-size': s + 'px',
+      'line-height': s/10
     });
-    electron.ipcRenderer.send('get-manifest');
+  }
 
-    $('body').prepend(electron.ipcRenderer.sendSync('get-component', 'nav.html'));
-    $('#FileTab').after(
-      $('<li id="ExportTab"><a href="#">Save As</a></li>').click(() => {
-        electron.remote.dialog.showSaveDialog({
-          filters: [
-            {name: 'CSV', extensions: ['csv']}
-          ]
-        }, (fileName) => {
-          if (fileName === undefined){
-            return alertify.error('File not exported!');
-          }
-          jetpack.write(fileName, Papa.unparse(session.data[$('input[name=nodelink]:checked')[0].id + 's']));
-        });
-      })
-    );
-
-    $('body').append(electron.ipcRenderer.sendSync('get-component', 'search.html'));
-
-    window.table = { destroy: () => {} };
-
-    function reorder(){ table.draw(false); }
-
-    function resetTextsize(){
-      var s = $('#font-size-slider').val();
-      $('#table').css({
-        'font-size': s + 'px',
-        'line-height': s/10
-      });
+  function updateTable(){
+    let data_type = $('input[name=nodelink]:checked')[0].id;
+    let data = [];
+    if(data_type == 'clusters'){
+      data = session.data.clusters.filter(c => c.nodes > 1);
+    } else {
+      data = session.data[data_type];
     }
-
-    function updateTable(){
-      let nodelink = $('input[name=nodelink]:checked')[0].id;
-      let data = session.data[nodelink + 's'].filter(r => r.visible);
-      let clusters = session.data.clusters.filter(c => c.nodes > 1);
-      let columns = session.data[nodelink + 'Fields'];
-      table.destroy();
-      let options = {
-        dom: 'lrtip',
-        data: data,
-        columns: columns.map(k => ({title:k, data:k, mData:k, sTitle:k})),
-        deferRender: true,
-        colReorder: true,
-        select: {
-          style: 'multi'
-        }
-      };
-      let selectedColumn = columns.findIndex(d => d === 'selected');
-      if(selectedColumn >= 0) options.orderFixed = [selectedColumn, 'desc'];
-      window.table = $('#table').empty().DataTable(options);
-      let colsToKeep = $('#'+nodelink+'-columns').val().map(parseFloat);
-      columns.forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
-      table.on('user-select', (e, dt, type, cell) => {
-        let index = cell.index().row;
-        data[index].selected = !data[index].selected;
-        table.row(index).data(data[index]);
-        reorder();
-      });
-      table.rows(data.filter(n => n.selected).map(n => n.index)).select();
-      reorder();
-      resetTextsize();
-    }
-
-    electron.ipcRenderer.on('set-data', (e, data) => {
-      window.session = {data: data};
-      session.data.clusterFields = Object.keys(session.data.clusters[0]);
-      ['node', 'link', 'cluster'].forEach(thing => {
-        $('#'+thing+'-columns').html(
-          session.data[thing+'Fields'].map((d, i) => {
-            if(meta.includes(d)) return;
-            return `<option value="${i}"${(i < 7) ? " selected" : ""}>${d}</option>`
-          }).join('\n')
-        ).change(e => {
-          if($('input[name=nodelink]:checked')[0].id === thing){
-            let colsToKeep = $('#'+thing+'-columns').val().map(parseFloat);
-            session.data[thing+'Fields'].forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
-          }
-        });
-      });
-      updateTable();
-    });
-
-    electron.ipcRenderer.on('deliver-data', (e, data) => {
-      window.session = {data: data};
-      updateTable();
-    });
-
-    $('#search').on('input', e => {
-      table.search(e.target.value).draw();
-    });
-
-    $('#tiltHeaders').on('input', function(e){
-      let theta = $(this).val();
-      let h = $('th:first').width();
-      $('th').css({
-        'transform': 'rotate('+-theta+'deg)',
-        'border-bottom': '0px',
-        'height': h*Math.sin(Math.abs(theta)*Math.PI/180)+'px'
-      });
-      if($(this).val() == 0){
-        $('th').css('border-bottom', '1px solid black');
+    let columns = session.data[data_type.slice(0,-1) + 'Fields'];
+    table.destroy();
+    let options = {
+      dom: 'rti',
+      data: data,
+      columns: columns.map(k => ({title:app.titleize(k), data:k, mData:k, sTitle:app.titleize(k)})),
+      deferRender: true,
+      scrollY: $('#table-wrapper').height() - 100,
+      scrollCollapse: true,
+      scroller: true,
+      select: {
+        style: 'multi'
       }
+    };
+    let selectedColumn = columns.findIndex(d => d === 'selected');
+    if(selectedColumn >= 0) options.orderFixed = [selectedColumn, 'desc'];
+    window.table = $('#table').empty().DataTable(options);
+    let colsToKeep = $('#columns').val().map(parseFloat);
+    columns.forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
+    table.on('user-select', (e, dt, type, cell) => {
+      let index = cell.index().row;
+      if(data_type === 'nodes'){
+        session.data[data_type][index].selected = !session.data[data_type][index].selected;
+        table.row(index).data(session.data[data_type][index]);
+        //electron.ipcRenderer.send('update-node-selections', session.data.nodes.map(d => d.selected));
+      }
+      reorder();
     });
+    table.rows(session.data[data_type].filter(n => n.selected).map(n => n.index)).select();
+    reorder();
+    resetTextsize();
+  }
 
-    function resetTextsize(){
-      var s = $('#font-size-slider').val();
-      $('#table').css({
-        'font-size': s + 'px',
-        'line-height': s/10
+  session.data.clusterFields = Object.keys(session.data.clusters[0]);
+
+  $('#search').on('input', function(e){ table.search(e.target.value).draw(); });
+
+  function updateColumns(){
+    let type = $('input[name=nodelink]:checked')[0].id.slice(0,-1);
+    $('#columns')
+      .chosen('destroy')
+      .html(
+        session.data[type+'Fields'].map((d, i) => {
+          if(meta.includes(d)) return;
+          return `<option value="${i}"${(i < 7) ? " selected" : ""}>${app.titleize(d)}</option>`
+        }).join('\n')
+      ).chosen({width: "100%"}).change(e => {
+        let colsToKeep = $('#columns').val().map(parseFloat);
+        session.data[type+'Fields'].forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
+      });
+  }
+
+  updateColumns();
+
+  $('#tiltHeaders').on('input', function(e){
+    let theta = $(this).val();
+    let h = $('th:first').width() * Math.sin(Math.abs(theta) * Math.PI / 180);
+    $('th').css({
+      'transform': `rotate(${-theta}deg)`,
+      'border-bottom': '0px',
+      'height': `${h}px`,
+      'overflow': 'visible'
+    });
+    if($(this).val() == 0){
+      $('th').css({
+        'border-bottom': '1px solid black',
+        'overflow': 'hidden'
       });
     }
-
-    $('#font-size-slider').on('input', resetTextsize);
-    $('input[name=nodelink]').on('change', updateTable);
-
-    electron.ipcRenderer.send('get-data');
   });
 
+  function resetTextsize(){
+    var s = $('#font-size-slider').val();
+    $('#table').css({
+      'font-size': s + 'px',
+      'line-height': s/10
+    });
+  }
+
+  $('input[name=nodelink]').on('change', e => {
+    updateColumns();
+    updateTable();
+  });
+
+  $('#columns').on('change', e => updateTable());
+
+  $('#font-size-slider').on('input', resetTextsize);
+
   $.fn.dataTable.ext.errMode = 'none';
+
+  updateTable();
   </script>
-</body>
-</html>

@@ -24,15 +24,22 @@ a:hover, a:focus {
   display: none;
 }
 
+.view_settings_button{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
 /* NAV BAR */
 .dropdown-toggle::after{
   content: none;
 }
-.lm_content{
-  overflow: auto;
-}
 .lm_goldenlayout{
   background: #f8f9fa!important;
+}
+.lm_content{
+  overflow: auto;
+  background: #ffffff;
 }
 .lm_selected .lm_header{
   background: #f8f9fa!important;

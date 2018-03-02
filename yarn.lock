@@ -251,6 +251,10 @@ cheerio@^1.0.0-rc.2:
     lodash "^4.15.0"
     parse5 "^3.0.1"
 
+chosen-js@^1.8.3:
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/chosen-js/-/chosen-js-1.8.3.tgz#1f953aef905d9760c14b5facc839a5f47eb356ec"
+
 chromium-pickle-js@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/chromium-pickle-js/-/chromium-pickle-js-0.2.0.tgz#04a106672c18b085ab774d983dfa3ea138f22205"
@@ -609,6 +613,49 @@ dashdash@^1.12.0:
   resolved "https://registry.yarnpkg.com/dashdash/-/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
   dependencies:
     assert-plus "^1.0.0"
+
+datatables.net-bs4@^1.10.15, datatables.net-bs4@^1.10.16:
+  version "1.10.16"
+  resolved "https://registry.yarnpkg.com/datatables.net-bs4/-/datatables.net-bs4-1.10.16.tgz#9eee67cfa8565bd3807a603a188305f7d0e20e32"
+  dependencies:
+    datatables.net "1.10.16"
+    jquery ">=1.7"
+
+datatables.net-scroller-bs4@^1.4.4:
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/datatables.net-scroller-bs4/-/datatables.net-scroller-bs4-1.4.4.tgz#daf148a5f740beb17a35738a6964ab2b523d54a7"
+  dependencies:
+    datatables.net-bs4 "^1.10.15"
+    datatables.net-scroller "1.4.4"
+    jquery ">=1.7"
+
+datatables.net-scroller@1.4.4:
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/datatables.net-scroller/-/datatables.net-scroller-1.4.4.tgz#fbb3acefa021290fd833bfa022c39bb064d2c018"
+  dependencies:
+    datatables.net "^1.10.15"
+    jquery ">=1.7"
+
+datatables.net-select-bs4@^1.2.5:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/datatables.net-select-bs4/-/datatables.net-select-bs4-1.2.5.tgz#eb1d6070f7b9485c7766393a05f28553a9f4ff19"
+  dependencies:
+    datatables.net-bs4 "^1.10.15"
+    datatables.net-select "1.2.5"
+    jquery ">=1.7"
+
+datatables.net-select@1.2.5, datatables.net-select@^1.2.5:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/datatables.net-select/-/datatables.net-select-1.2.5.tgz#4f764669b464d5576a59c576c1250a5d069aa2e9"
+  dependencies:
+    datatables.net "^1.10.15"
+    jquery ">=1.7"
+
+datatables.net@1.10.16, datatables.net@^1.10.15:
+  version "1.10.16"
+  resolved "https://registry.yarnpkg.com/datatables.net/-/datatables.net-1.10.16.tgz#4b052d1082824261b68eed9d22741b711d3d2469"
+  dependencies:
+    jquery ">=1.7"
 
 debounce@^1.1.0:
   version "1.1.0"
@@ -1159,7 +1206,7 @@ jquery-param@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/jquery-param/-/jquery-param-0.1.2.tgz#17b1871fd7907e03706464bb6f66485b9b9af293"
 
-jquery@*, jquery@^3.3.1:
+jquery@*, jquery@>=1.7, jquery@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
 
