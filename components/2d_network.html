@@ -909,11 +909,11 @@ $('#playbutton')
   .click(function(e){
     if($(this).data('state') === 'paused'){
       $(this).data('state', 'playing')
-        .html('<i class="fa fa-pause" aria-hidden="true"></i>');
+        .html('<span class="oi oi-media-play"></span>');
       session.network.force.alphaTarget(session.state.alpha).restart();
     } else {
       $(this).data('state', 'paused')
-        .html('<i class="fa fa-play" aria-hidden="true"></i>');
+        .html('<span class="oi oi-media-pause"></span>');
       session.network.force.alpha(0).alphaTarget(0);
     }
   });
