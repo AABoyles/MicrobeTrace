@@ -90,16 +90,16 @@ function addFileToTable(file){
   root.append(`
     <div class="col-4 text-right">
       <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-        <label class="btn btn-default${!isFasta&!isNode?' active':''}">
+        <label class="btn btn-secondary${!isFasta&!isNode?' active':''}">
           <input type="radio" name="options-${filename}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
         </label>
-        <label class="btn btn-default${!isFasta&isNode?' active':''}">
+        <label class="btn btn-secondary${!isFasta&isNode?' active':''}">
           <input type="radio" name="options-${filename}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
         </label>
-        <label class="btn btn-default">
+        <label class="btn btn-secondary">
           <input type="radio" name="options-${filename}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
         </label>
-        <label class="btn btn-default${isFasta?' active':''}">
+        <label class="btn btn-secondary${isFasta?' active':''}">
           <input type="radio" name="options-${filename}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
         </label>
       </div>
@@ -113,13 +113,16 @@ function addFileToTable(file){
       let headers = output.meta.fields;
       let options = '<option>None</option>' + headers.map(h => `<option value="${h}">${app.titleize(h)}</option>`).join('\n');
       $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${filename}'>
-          <label for="file-${filename}-field-1">${isNode?'ID':'Source'}</label><select id="file-${filename}-field-1" class="form-control">${options}</select>
+          <label for="file-${filename}-field-1">${isNode?'ID':'Source'}</label>
+          <select id="file-${filename}-field-1" class="custom-select custom-select-sm">${options}</select>
         </div>
         <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${filename}'>
-          <label for="file-${filename}-field-2">${isNode?'Sequence':'Target'}</label><select id="file-${filename}-field-2" class="form-control">${options}</select>
+          <label for="file-${filename}-field-2">${isNode?'Sequence':'Target'}</label>
+          <select id="file-${filename}-field-2" class="custom-select custom-select-sm">${options}</select>
         </div>
         <div class='col-4 '${!isFasta&&!isNode?'':' style="display: none;"'} data-file='${filename}'>
-          <label for="file-${filename}-field-3">Distance</label><select id="file-${filename}-field-3" class="form-control">${options}</select>
+          <label for="file-${filename}-field-3">Distance</label>
+          <select id="file-${filename}-field-3" class="custom-select custom-select-sm">${options}</select>
         </div>`).appendTo(root);
       let a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
           b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
@@ -300,7 +303,7 @@ $('#main-submit').click(function(e){
             n += app.addNode(node);
           });
           results.meta.fields.forEach(key => session.data.nodeFields.push(key));
-          if(data.nodeFields.has('seq')) anySequences = 1;
+          if(results.data.nodeFields.has('seq')) anySequences = 1;
           message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
           if(fileNum == instructions.files.length - 1) nextStuff();
         }
