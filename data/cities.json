@@ -1,0 +1,1388 @@
+[
+  {
+    "name": "Tokyo",
+    "Country": "Japan",
+    "Latitude": "35.68",
+    "Longitude": "139.8",
+    "Country_ISO3": "JPN",
+    "pop2015": "36090",
+    "sqrtpop": "3.79947364775702"
+  },
+  {
+    "name": "Bombay",
+    "Country": "India",
+    "Latitude": "19.07",
+    "Longitude": "72.82",
+    "Country_ISO3": "IND",
+    "pop2015": "20070",
+    "sqrtpop": "2.83337254874822"
+  },
+  {
+    "name": "Sao Paulo",
+    "Country": "Brazil",
+    "Latitude": "-23.58",
+    "Longitude": "-46.62",
+    "Country_ISO3": "BRA",
+    "pop2015": "19580",
+    "sqrtpop": "2.79857106395389"
+  },
+  {
+    "name": "Mexico City",
+    "Country": "Mexico",
+    "Latitude": "19.42",
+    "Longitude": "-99.12",
+    "Country_ISO3": "MEX",
+    "pop2015": "19480",
+    "sqrtpop": "2.79141541157886"
+  },
+  {
+    "name": "New York",
+    "Country": "United States of America",
+    "Latitude": "40.7",
+    "Longitude": "-73.9",
+    "Country_ISO3": "USA",
+    "pop2015": "19440",
+    "sqrtpop": "2.78854800926934"
+  },
+  {
+    "name": "Delhi",
+    "Country": "India",
+    "Latitude": "28.66",
+    "Longitude": "77.21",
+    "Country_ISO3": "IND",
+    "pop2015": "17020",
+    "sqrtpop": "2.60921444116807"
+  },
+  {
+    "name": "Shanghai",
+    "Country": "China",
+    "Latitude": "31.24",
+    "Longitude": "121.47",
+    "Country_ISO3": "CHN",
+    "pop2015": "15790",
+    "sqrtpop": "2.51316533479196"
+  },
+  {
+    "name": "Calcutta",
+    "Country": "India",
+    "Latitude": "22.54",
+    "Longitude": "88.33",
+    "Country_ISO3": "IND",
+    "pop2015": "15580",
+    "sqrtpop": "2.49639740426079"
+  },
+  {
+    "name": "Dhaka",
+    "Country": "Bangladesh",
+    "Latitude": "23.7",
+    "Longitude": "90.4",
+    "Country_ISO3": "BGD",
+    "pop2015": "14800",
+    "sqrtpop": "2.43310501211929"
+  },
+  {
+    "name": "Buenos Aires",
+    "Country": "Argentina",
+    "Latitude": "-34.62",
+    "Longitude": "-58.44",
+    "Country_ISO3": "ARG",
+    "pop2015": "13090",
+    "sqrtpop": "2.28823075759417"
+  },
+  {
+    "name": "Karachi",
+    "Country": "Pakistan",
+    "Latitude": "24.89",
+    "Longitude": "67.02",
+    "Country_ISO3": "PAK",
+    "pop2015": "13050",
+    "sqrtpop": "2.28473193175917"
+  },
+  {
+    "name": "Los Angeles",
+    "Country": "United States of America",
+    "Latitude": "34",
+    "Longitude": "-118.25",
+    "Country_ISO3": "USA",
+    "pop2015": "12770",
+    "sqrtpop": "2.26008849384266"
+  },
+  {
+    "name": "Cairo",
+    "Country": "Egypt",
+    "Latitude": "30.07",
+    "Longitude": "31.25",
+    "Country_ISO3": "EGY",
+    "pop2015": "12500",
+    "sqrtpop": "2.23606797749979"
+  },
+  {
+    "name": "Rio de Janeiro",
+    "Country": "Brazil",
+    "Latitude": "-22.72",
+    "Longitude": "-43.45",
+    "Country_ISO3": "BRA",
+    "pop2015": "12170",
+    "sqrtpop": "2.20635445928346"
+  },
+  {
+    "name": "Beijing",
+    "Country": "China",
+    "Latitude": "39.9",
+    "Longitude": "116.38",
+    "Country_ISO3": "CHN",
+    "pop2015": "11740",
+    "sqrtpop": "2.16702561129305"
+  },
+  {
+    "name": "Manila",
+    "Country": "Philippines",
+    "Latitude": "14.61",
+    "Longitude": "120.96",
+    "Country_ISO3": "PHL",
+    "pop2015": "11660",
+    "sqrtpop": "2.15962959787089"
+  },
+  {
+    "name": "Osaka",
+    "Country": "Japan",
+    "Latitude": "34.63",
+    "Longitude": "135.51",
+    "Country_ISO3": "JPN",
+    "pop2015": "11340",
+    "sqrtpop": "2.12978872191586"
+  },
+  {
+    "name": "Lagos",
+    "Country": "Nigeria",
+    "Latitude": "6.45",
+    "Longitude": "3.3",
+    "Country_ISO3": "NGA",
+    "pop2015": "10570",
+    "sqrtpop": "2.05621010599598"
+  },
+  {
+    "name": "Istanbul",
+    "Country": "Turkey",
+    "Latitude": "41.06",
+    "Longitude": "29",
+    "Country_ISO3": "TUR",
+    "pop2015": "10530",
+    "sqrtpop": "2.05231576517845"
+  },
+  {
+    "name": "Moscow",
+    "Country": "Russian Federation",
+    "Latitude": "55.74",
+    "Longitude": "37.7",
+    "Country_ISO3": "RUS",
+    "pop2015": "10500",
+    "sqrtpop": "2.04939015319192"
+  },
+  {
+    "name": "Paris",
+    "Country": "France",
+    "Latitude": "48.88",
+    "Longitude": "2.43",
+    "Country_ISO3": "FRA",
+    "pop2015": "9960",
+    "sqrtpop": "1.99599599197994"
+  },
+  {
+    "name": "Seoul",
+    "Country": "Republic of Korea",
+    "Latitude": "37.54",
+    "Longitude": "126.93",
+    "Country_ISO3": "KOR",
+    "pop2015": "9760",
+    "sqrtpop": "1.97585424563655"
+  },
+  {
+    "name": "Jakarta",
+    "Country": "Indonesia",
+    "Latitude": "-6.16",
+    "Longitude": "106.8",
+    "Country_ISO3": "IDN",
+    "pop2015": "9700",
+    "sqrtpop": "1.96977156035922"
+  },
+  {
+    "name": "Guangzhou",
+    "Country": "China",
+    "Latitude": "23.09",
+    "Longitude": "113.29",
+    "Country_ISO3": "CHN",
+    "pop2015": "9450",
+    "sqrtpop": "1.94422220952236"
+  },
+  {
+    "name": "Chicago",
+    "Country": "United States of America",
+    "Latitude": "41.82",
+    "Longitude": "-87.64",
+    "Country_ISO3": "USA",
+    "pop2015": "9210",
+    "sqrtpop": "1.91937489824161"
+  },
+  {
+    "name": "Kinshasa",
+    "Country": "Democratic Republic of the Congo",
+    "Latitude": "-4.32",
+    "Longitude": "15.29",
+    "Country_ISO3": "COD",
+    "pop2015": "9050",
+    "sqrtpop": "1.90262975904404"
+  },
+  {
+    "name": "London",
+    "Country": "United Kingdom",
+    "Latitude": "51.48",
+    "Longitude": "-0.17",
+    "Country_ISO3": "GBR",
+    "pop2015": "8610",
+    "sqrtpop": "1.85580171354593"
+  },
+  {
+    "name": "Lima",
+    "Country": "Peru",
+    "Latitude": "-12.08",
+    "Longitude": "-77.04",
+    "Country_ISO3": "PER",
+    "pop2015": "8380",
+    "sqrtpop": "1.83084679861533"
+  },
+  {
+    "name": "Bogota",
+    "Country": "Colombia",
+    "Latitude": "4.63",
+    "Longitude": "-74.08",
+    "Country_ISO3": "COL",
+    "pop2015": "8320",
+    "sqrtpop": "1.82428068015862"
+  },
+  {
+    "name": "Tehran",
+    "Country": "Iran (Islamic Republic of)",
+    "Latitude": "35.77",
+    "Longitude": "51.44",
+    "Country_ISO3": "IRN",
+    "pop2015": "8220",
+    "sqrtpop": "1.8132843130629"
+  },
+  {
+    "name": "Shenzhen",
+    "Country": "China",
+    "Latitude": "22.55",
+    "Longitude": "114.1",
+    "Country_ISO3": "CHN",
+    "pop2015": "8110",
+    "sqrtpop": "1.80111076838711"
+  },
+  {
+    "name": "Madras",
+    "Country": "India",
+    "Latitude": "13.06",
+    "Longitude": "80.24",
+    "Country_ISO3": "IND",
+    "pop2015": "7560",
+    "sqrtpop": "1.73896520954273"
+  },
+  {
+    "name": "Wuhan",
+    "Country": "China",
+    "Latitude": "30.57",
+    "Longitude": "114.27",
+    "Country_ISO3": "CHN",
+    "pop2015": "7540",
+    "sqrtpop": "1.73666346768739"
+  },
+  {
+    "name": "Tianjin",
+    "Country": "China",
+    "Latitude": "39.12",
+    "Longitude": "117.18",
+    "Country_ISO3": "CHN",
+    "pop2015": "7470",
+    "sqrtpop": "1.72858323490655"
+  },
+  {
+    "name": "Hong Kong",
+    "Country": "China",
+    "Latitude": "22.27",
+    "Longitude": "114.17",
+    "Country_ISO3": "CHN",
+    "pop2015": "7420",
+    "sqrtpop": "1.72278843738864"
+  },
+  {
+    "name": "Bangalore",
+    "Country": "India",
+    "Latitude": "12.97",
+    "Longitude": "77.58",
+    "Country_ISO3": "IND",
+    "pop2015": "7230",
+    "sqrtpop": "1.70058813355851"
+  },
+  {
+    "name": "Lahore",
+    "Country": "Pakistan",
+    "Latitude": "31.54",
+    "Longitude": "74.34",
+    "Country_ISO3": "PAK",
+    "pop2015": "7090",
+    "sqrtpop": "1.68404275480167"
+  },
+  {
+    "name": "Bangkok",
+    "Country": "Thailand",
+    "Latitude": "13.75",
+    "Longitude": "100.51",
+    "Country_ISO3": "THA",
+    "pop2015": "6920",
+    "sqrtpop": "1.66373074744683"
+  },
+  {
+    "name": "Hyderabad",
+    "Country": "India",
+    "Latitude": "17.39",
+    "Longitude": "78.48",
+    "Country_ISO3": "IND",
+    "pop2015": "6760",
+    "sqrtpop": "1.64438438328756"
+  },
+  {
+    "name": "Chongqing",
+    "Country": "China",
+    "Latitude": "29.54",
+    "Longitude": "106.52",
+    "Country_ISO3": "CHN",
+    "pop2015": "6690",
+    "sqrtpop": "1.63584840373428"
+  },
+  {
+    "name": "Belo Horizonte",
+    "Country": "Brazil",
+    "Latitude": "-19.85",
+    "Longitude": "-43.9",
+    "Country_ISO3": "BRA",
+    "pop2015": "5940",
+    "sqrtpop": "1.54142790943982"
+  },
+  {
+    "name": "Baghdad",
+    "Country": "Iraq",
+    "Latitude": "33.33",
+    "Longitude": "44.39",
+    "Country_ISO3": "IRQ",
+    "pop2015": "5890",
+    "sqrtpop": "1.53492670834799"
+  },
+  {
+    "name": "Santiago",
+    "Country": "Chile",
+    "Latitude": "-33.43",
+    "Longitude": "-70.65",
+    "Country_ISO3": "CHL",
+    "pop2015": "5880",
+    "sqrtpop": "1.53362316101447"
+  },
+  {
+    "name": "Madrid",
+    "Country": "Spain",
+    "Latitude": "40.44",
+    "Longitude": "-3.69",
+    "Country_ISO3": "ESP",
+    "pop2015": "5760",
+    "sqrtpop": "1.51789327688082"
+  },
+  {
+    "name": "Miami",
+    "Country": "United States of America",
+    "Latitude": "25.83",
+    "Longitude": "-80.27",
+    "Country_ISO3": "USA",
+    "pop2015": "5760",
+    "sqrtpop": "1.51789327688082"
+  },
+  {
+    "name": "Ahmadabad",
+    "Country": "India",
+    "Latitude": "23.03",
+    "Longitude": "72.56",
+    "Country_ISO3": "IND",
+    "pop2015": "5730",
+    "sqrtpop": "1.51393526942205"
+  },
+  {
+    "name": "Ho Chi Minh City",
+    "Country": "Viet Nam",
+    "Latitude": "10.75",
+    "Longitude": "106.66",
+    "Country_ISO3": "VNM",
+    "pop2015": "5720",
+    "sqrtpop": "1.51261363209512"
+  },
+  {
+    "name": "Philadelphia",
+    "Country": "United States of America",
+    "Latitude": "39.92",
+    "Longitude": "-75.21",
+    "Country_ISO3": "USA",
+    "pop2015": "5630",
+    "sqrtpop": "1.50066651858433"
+  },
+  {
+    "name": "Toronto",
+    "Country": "Canada",
+    "Latitude": "43.72",
+    "Longitude": "-79.41",
+    "Country_ISO3": "CAN",
+    "pop2015": "5450",
+    "sqrtpop": "1.47648230602334"
+  },
+  {
+    "name": "Khartoum",
+    "Country": "Sudan",
+    "Latitude": "15.55",
+    "Longitude": "32.52",
+    "Country_ISO3": "SDN",
+    "pop2015": "5180",
+    "sqrtpop": "1.43944433723573"
+  },
+  {
+    "name": "Barcelona",
+    "Country": "Spain",
+    "Latitude": "41.38",
+    "Longitude": "2.18",
+    "Country_ISO3": "ESP",
+    "pop2015": "5060",
+    "sqrtpop": "1.4226735395023"
+  },
+  {
+    "name": "Chittagong",
+    "Country": "Bangladesh",
+    "Latitude": "22.32",
+    "Longitude": "91.82",
+    "Country_ISO3": "BGD",
+    "pop2015": "5010",
+    "sqrtpop": "1.41562706953491"
+  },
+  {
+    "name": "Poona",
+    "Country": "India",
+    "Latitude": "18.53",
+    "Longitude": "73.85",
+    "Country_ISO3": "IND",
+    "pop2015": "5010",
+    "sqrtpop": "1.41562706953491"
+  },
+  {
+    "name": "Dallas",
+    "Country": "United States of America",
+    "Latitude": "32.76",
+    "Longitude": "-96.66",
+    "Country_ISO3": "USA",
+    "pop2015": "4960",
+    "sqrtpop": "1.40854534893272"
+  },
+  {
+    "name": "Shenyang",
+    "Country": "China",
+    "Latitude": "41.8",
+    "Longitude": "123.38",
+    "Country_ISO3": "CHN",
+    "pop2015": "4950",
+    "sqrtpop": "1.40712472794703"
+  },
+  {
+    "name": "Riyadh",
+    "Country": "Saudi Arabia",
+    "Latitude": "24.65",
+    "Longitude": "46.77",
+    "Country_ISO3": "SAU",
+    "pop2015": "4860",
+    "sqrtpop": "1.39427400463467"
+  },
+  {
+    "name": "Dongguan",
+    "Country": "China",
+    "Latitude": "23.03",
+    "Longitude": "113.71",
+    "Country_ISO3": "CHN",
+    "pop2015": "4850",
+    "sqrtpop": "1.39283882771841"
+  },
+  {
+    "name": "Luanda",
+    "Country": "Angola",
+    "Latitude": "-8.81",
+    "Longitude": "13.23",
+    "Country_ISO3": "AGO",
+    "pop2015": "4780",
+    "sqrtpop": "1.38275088139549"
+  },
+  {
+    "name": "Hanoi",
+    "Country": "Viet Nam",
+    "Latitude": "21.03",
+    "Longitude": "105.82",
+    "Country_ISO3": "VNM",
+    "pop2015": "4720",
+    "sqrtpop": "1.37404512298541"
+  },
+  {
+    "name": "Atlanta",
+    "Country": "United States of America",
+    "Latitude": "33.79",
+    "Longitude": "-84.34",
+    "Country_ISO3": "USA",
+    "pop2015": "4700",
+    "sqrtpop": "1.37113092008021"
+  },
+  {
+    "name": "Houston",
+    "Country": "United States of America",
+    "Latitude": "29.77",
+    "Longitude": "-95.4",
+    "Country_ISO3": "USA",
+    "pop2015": "4610",
+    "sqrtpop": "1.35793961574144"
+  },
+  {
+    "name": "Boston",
+    "Country": "United States of America",
+    "Latitude": "42.37",
+    "Longitude": "-71.1",
+    "Country_ISO3": "USA",
+    "pop2015": "4600",
+    "sqrtpop": "1.35646599662505"
+  },
+  {
+    "name": "Singapore",
+    "Country": "Singapore",
+    "Latitude": "1.26",
+    "Longitude": "103.83",
+    "Country_ISO3": "SGP",
+    "pop2015": "4590",
+    "sqrtpop": "1.35499077487635"
+  },
+  {
+    "name": "Saint Petersburg",
+    "Country": "Russian Federation",
+    "Latitude": "59.91",
+    "Longitude": "30.24",
+    "Country_ISO3": "RUS",
+    "pop2015": "4510",
+    "sqrtpop": "1.34313067123047"
+  },
+  {
+    "name": "Washington D.C.",
+    "Country": "United States of America",
+    "Latitude": "38.89",
+    "Longitude": "-76.95",
+    "Country_ISO3": "USA",
+    "pop2015": "4460",
+    "sqrtpop": "1.33566462856512"
+  },
+  {
+    "name": "Sydney",
+    "Country": "Australia",
+    "Latitude": "-33.88",
+    "Longitude": "151.02",
+    "Country_ISO3": "AUS",
+    "pop2015": "4430",
+    "sqrtpop": "1.3311649033835"
+  },
+  {
+    "name": "Alexandria",
+    "Country": "Egypt",
+    "Latitude": "31.2",
+    "Longitude": "29.9",
+    "Country_ISO3": "EGY",
+    "pop2015": "4420",
+    "sqrtpop": "1.32966161108757"
+  },
+  {
+    "name": "Guadalajara",
+    "Country": "Mexico",
+    "Latitude": "20.67",
+    "Longitude": "-103.34",
+    "Country_ISO3": "MEX",
+    "pop2015": "4410",
+    "sqrtpop": "1.32815661727072"
+  },
+  {
+    "name": "Rangoon",
+    "Country": "Myanmar",
+    "Latitude": "16.87",
+    "Longitude": "96.12",
+    "Country_ISO3": "MMR",
+    "pop2015": "4350",
+    "sqrtpop": "1.31909059582729"
+  },
+  {
+    "name": "Chengdu",
+    "Country": "China",
+    "Latitude": "30.67",
+    "Longitude": "104.07",
+    "Country_ISO3": "CHN",
+    "pop2015": "4270",
+    "sqrtpop": "1.30690474021636"
+  },
+  {
+    "name": "Detroit",
+    "Country": "United States of America",
+    "Latitude": "42.39",
+    "Longitude": "-83.07",
+    "Country_ISO3": "USA",
+    "pop2015": "4200",
+    "sqrtpop": "1.29614813968157"
+  },
+  {
+    "name": "Xi'an",
+    "Country": "China",
+    "Latitude": "34.26",
+    "Longitude": "108.9",
+    "Country_ISO3": "CHN",
+    "pop2015": "4180",
+    "sqrtpop": "1.29305839001957"
+  },
+  {
+    "name": "Abidjan",
+    "Country": "Cote d'Ivoire",
+    "Latitude": "5.32",
+    "Longitude": "-4.02",
+    "Country_ISO3": "CIV",
+    "pop2015": "4180",
+    "sqrtpop": "1.29305839001957"
+  },
+  {
+    "name": "Surat",
+    "Country": "India",
+    "Latitude": "21.16",
+    "Longitude": "72.83",
+    "Country_ISO3": "IND",
+    "pop2015": "4170",
+    "sqrtpop": "1.29151074327704"
+  },
+  {
+    "name": "Porto Alegre",
+    "Country": "Brazil",
+    "Latitude": "-30.04",
+    "Longitude": "-51.2",
+    "Country_ISO3": "BRA",
+    "pop2015": "4100",
+    "sqrtpop": "1.28062484748657"
+  },
+  {
+    "name": "Guiyang",
+    "Country": "China",
+    "Latitude": "26.57",
+    "Longitude": "106.7",
+    "Country_ISO3": "CHN",
+    "pop2015": "3980",
+    "sqrtpop": "1.261744823647"
+  },
+  {
+    "name": "Brasilia",
+    "Country": "Brazil",
+    "Latitude": "-15.79",
+    "Longitude": "-47.89",
+    "Country_ISO3": "BRA",
+    "pop2015": "3940",
+    "sqrtpop": "1.25538838611802"
+  },
+  {
+    "name": "Ankara",
+    "Country": "Turkey",
+    "Latitude": "39.92",
+    "Longitude": "32.85",
+    "Country_ISO3": "TUR",
+    "pop2015": "3910",
+    "sqrtpop": "1.25059985606908"
+  },
+  {
+    "name": "Monterrey",
+    "Country": "Mexico",
+    "Latitude": "25.67",
+    "Longitude": "-100.31",
+    "Country_ISO3": "MEX",
+    "pop2015": "3900",
+    "sqrtpop": "1.24899959967968"
+  },
+  {
+    "name": "Melbourne",
+    "Country": "Australia",
+    "Latitude": "-37.85",
+    "Longitude": "145.07",
+    "Country_ISO3": "AUS",
+    "pop2015": "3850",
+    "sqrtpop": "1.24096736459909"
+  },
+  {
+    "name": "Recife",
+    "Country": "Brazil",
+    "Latitude": "-8.08",
+    "Longitude": "-34.91",
+    "Country_ISO3": "BRA",
+    "pop2015": "3830",
+    "sqrtpop": "1.23773987574126"
+  },
+  {
+    "name": "Nanjing",
+    "Country": "China",
+    "Latitude": "32.04",
+    "Longitude": "118.76",
+    "Country_ISO3": "CHN",
+    "pop2015": "3810",
+    "sqrtpop": "1.23450394896088"
+  },
+  {
+    "name": "Montreal",
+    "Country": "Canada",
+    "Latitude": "45.54",
+    "Longitude": "-73.65",
+    "Country_ISO3": "CAN",
+    "pop2015": "3780",
+    "sqrtpop": "1.22963409191515"
+  },
+  {
+    "name": "Kabul",
+    "Country": "Afghanistan",
+    "Latitude": "34.53",
+    "Longitude": "69.13",
+    "Country_ISO3": "AFG",
+    "pop2015": "3770",
+    "sqrtpop": "1.2280065146407"
+  },
+  {
+    "name": "Harbin",
+    "Country": "China",
+    "Latitude": "45.75",
+    "Longitude": "126.62",
+    "Country_ISO3": "CHN",
+    "pop2015": "3750",
+    "sqrtpop": "1.22474487139159"
+  },
+  {
+    "name": "Salvador",
+    "Country": "Brazil",
+    "Latitude": "-12.99",
+    "Longitude": "-38.48",
+    "Country_ISO3": "BRA",
+    "pop2015": "3700",
+    "sqrtpop": "1.21655250605964"
+  },
+  {
+    "name": "Phoenix",
+    "Country": "United States of America",
+    "Latitude": "33.5",
+    "Longitude": "-112.11",
+    "Country_ISO3": "USA",
+    "pop2015": "3690",
+    "sqrtpop": "1.214907403879"
+  },
+  {
+    "name": "Johannesburg",
+    "Country": "South Africa",
+    "Latitude": "-26.17",
+    "Longitude": "28",
+    "Country_ISO3": "ZAF",
+    "pop2015": "3620",
+    "sqrtpop": "1.20332871651931"
+  },
+  {
+    "name": "Fortaleza",
+    "Country": "Brazil",
+    "Latitude": "-3.78",
+    "Longitude": "-38.58",
+    "Country_ISO3": "BRA",
+    "pop2015": "3600",
+    "sqrtpop": "1.2"
+  },
+  {
+    "name": "Algiers",
+    "Country": "Algeria",
+    "Latitude": "36.78",
+    "Longitude": "3.05",
+    "Country_ISO3": "DZA",
+    "pop2015": "3570",
+    "sqrtpop": "1.19498953970317"
+  },
+  {
+    "name": "San Francisco",
+    "Country": "United States of America",
+    "Latitude": "37.79",
+    "Longitude": "-122.38",
+    "Country_ISO3": "USA",
+    "pop2015": "3540",
+    "sqrtpop": "1.18995798245148"
+  },
+  {
+    "name": "Medellin",
+    "Country": "Colombia",
+    "Latitude": "6.24",
+    "Longitude": "-75.59",
+    "Country_ISO3": "COL",
+    "pop2015": "3520",
+    "sqrtpop": "1.18659175793531"
+  },
+  {
+    "name": "Addis Ababa",
+    "Country": "Ethiopia",
+    "Latitude": "9.02",
+    "Longitude": "38.7",
+    "Country_ISO3": "ETH",
+    "pop2015": "3450",
+    "sqrtpop": "1.17473401244707"
+  },
+  {
+    "name": "Berlin",
+    "Country": "Germany",
+    "Latitude": "52.51",
+    "Longitude": "13.32",
+    "Country_ISO3": "DEU",
+    "pop2015": "3420",
+    "sqrtpop": "1.16961532137708"
+  },
+  {
+    "name": "Busan",
+    "Country": "Republic of Korea",
+    "Latitude": "35.1",
+    "Longitude": "129.03",
+    "Country_ISO3": "KOR",
+    "pop2015": "3420",
+    "sqrtpop": "1.16961532137708"
+  },
+  {
+    "name": "Changchun",
+    "Country": "China",
+    "Latitude": "43.88",
+    "Longitude": "125.31",
+    "Country_ISO3": "CHN",
+    "pop2015": "3400",
+    "sqrtpop": "1.16619037896906"
+  },
+  {
+    "name": "Kano",
+    "Country": "Nigeria",
+    "Latitude": "11.99",
+    "Longitude": "8.49",
+    "Country_ISO3": "NGA",
+    "pop2015": "3390",
+    "sqrtpop": "1.16447413024077"
+  },
+  {
+    "name": "Kanpur",
+    "Country": "India",
+    "Latitude": "26.45",
+    "Longitude": "80.31",
+    "Country_ISO3": "IND",
+    "pop2015": "3370",
+    "sqrtpop": "1.161034021896"
+  },
+  {
+    "name": "Nairobi",
+    "Country": "Kenya",
+    "Latitude": "-1.26",
+    "Longitude": "36.8",
+    "Country_ISO3": "KEN",
+    "pop2015": "3360",
+    "sqrtpop": "1.15931013969516"
+  },
+  {
+    "name": "Cape Town",
+    "Country": "South Africa",
+    "Latitude": "-33.97",
+    "Longitude": "18.48",
+    "Country_ISO3": "ZAF",
+    "pop2015": "3360",
+    "sqrtpop": "1.15931013969516"
+  },
+  {
+    "name": "P'yongyang",
+    "Country": "Democratic People's Republic of Korea",
+    "Latitude": "39.02",
+    "Longitude": "125.75",
+    "Country_ISO3": "PRK",
+    "pop2015": "3350",
+    "sqrtpop": "1.15758369027902"
+  },
+  {
+    "name": "Dalian",
+    "Country": "China",
+    "Latitude": "39.03",
+    "Longitude": "121.59",
+    "Country_ISO3": "CHN",
+    "pop2015": "3340",
+    "sqrtpop": "1.15585466214399"
+  },
+  {
+    "name": "Rome",
+    "Country": "Italy",
+    "Latitude": "41.87",
+    "Longitude": "12.51",
+    "Country_ISO3": "ITA",
+    "pop2015": "3330",
+    "sqrtpop": "1.15412304370028"
+  },
+  {
+    "name": "Curitiba",
+    "Country": "Brazil",
+    "Latitude": "-25.43",
+    "Longitude": "-49.28",
+    "Country_ISO3": "BRA",
+    "pop2015": "3320",
+    "sqrtpop": "1.15238882327103"
+  },
+  {
+    "name": "Dar es Salaam",
+    "Country": "United Republic of Tanzania",
+    "Latitude": "-6.81",
+    "Longitude": "39.25",
+    "Country_ISO3": "TZA",
+    "pop2015": "3320",
+    "sqrtpop": "1.15238882327103"
+  },
+  {
+    "name": "Hangzhou",
+    "Country": "China",
+    "Latitude": "30.25",
+    "Longitude": "120.16",
+    "Country_ISO3": "CHN",
+    "pop2015": "3270",
+    "sqrtpop": "1.14367827643966"
+  },
+  {
+    "name": "Nagoya",
+    "Country": "Japan",
+    "Latitude": "35.15",
+    "Longitude": "136.92",
+    "Country_ISO3": "JPN",
+    "pop2015": "3270",
+    "sqrtpop": "1.14367827643966"
+  },
+  {
+    "name": "Casablanca",
+    "Country": "Morocco",
+    "Latitude": "33.6",
+    "Longitude": "-7.63",
+    "Country_ISO3": "MAR",
+    "pop2015": "3270",
+    "sqrtpop": "1.14367827643966"
+  },
+  {
+    "name": "Athens",
+    "Country": "Greece",
+    "Latitude": "37.94",
+    "Longitude": "23.65",
+    "Country_ISO3": "GRC",
+    "pop2015": "3260",
+    "sqrtpop": "1.14192819388962"
+  },
+  {
+    "name": "Tel Aviv-Jaffa",
+    "Country": "Israel",
+    "Latitude": "32.04",
+    "Longitude": "34.76",
+    "Country_ISO3": "ISR",
+    "pop2015": "3260",
+    "sqrtpop": "1.14192819388962"
+  },
+  {
+    "name": "Jeddah",
+    "Country": "Saudi Arabia",
+    "Latitude": "21.54",
+    "Longitude": "39.17",
+    "Country_ISO3": "SAU",
+    "pop2015": "3240",
+    "sqrtpop": "1.13841995766062"
+  },
+  {
+    "name": "Zibo",
+    "Country": "China",
+    "Latitude": "36.78",
+    "Longitude": "118.05",
+    "Country_ISO3": "CHN",
+    "pop2015": "3210",
+    "sqrtpop": "1.13313723793722"
+  },
+  {
+    "name": "Seattle",
+    "Country": "United States of America",
+    "Latitude": "47.58",
+    "Longitude": "-122.31",
+    "Country_ISO3": "USA",
+    "pop2015": "3170",
+    "sqrtpop": "1.12605506082074"
+  },
+  {
+    "name": "East Rand",
+    "Country": "South Africa",
+    "Latitude": "-26.17",
+    "Longitude": "28.22",
+    "Country_ISO3": "ZAF",
+    "pop2015": "3160",
+    "sqrtpop": "1.12427754580442"
+  },
+  {
+    "name": "Jaipur",
+    "Country": "India",
+    "Latitude": "26.9",
+    "Longitude": "75.8",
+    "Country_ISO3": "IND",
+    "pop2015": "3140",
+    "sqrtpop": "1.12071405808975"
+  },
+  {
+    "name": "Taiyuan",
+    "Country": "China",
+    "Latitude": "37.89",
+    "Longitude": "112.55",
+    "Country_ISO3": "CHN",
+    "pop2015": "3100",
+    "sqrtpop": "1.113552872566"
+  },
+  {
+    "name": "Kunming",
+    "Country": "China",
+    "Latitude": "25.05",
+    "Longitude": "102.7",
+    "Country_ISO3": "CHN",
+    "pop2015": "3100",
+    "sqrtpop": "1.113552872566"
+  },
+  {
+    "name": "Caracas",
+    "Country": "Venezuela (Bolivarian Republic of)",
+    "Latitude": "10.49",
+    "Longitude": "-66.89",
+    "Country_ISO3": "VEN",
+    "pop2015": "3100",
+    "sqrtpop": "1.113552872566"
+  },
+  {
+    "name": "Surabaja",
+    "Country": "Indonesia",
+    "Latitude": "-7.39",
+    "Longitude": "112.68",
+    "Country_ISO3": "IDN",
+    "pop2015": "3040",
+    "sqrtpop": "1.10272390016722"
+  },
+  {
+    "name": "Campinas",
+    "Country": "Brazil",
+    "Latitude": "-22.9",
+    "Longitude": "-47.05",
+    "Country_ISO3": "BRA",
+    "pop2015": "3000",
+    "sqrtpop": "1.09544511501033"
+  },
+  {
+    "name": "San Diego",
+    "Country": "United States of America",
+    "Latitude": "32.76",
+    "Longitude": "-117.12",
+    "Country_ISO3": "USA",
+    "pop2015": "3000",
+    "sqrtpop": "1.09544511501033"
+  },
+  {
+    "name": "Qingdao",
+    "Country": "China",
+    "Latitude": "36.14",
+    "Longitude": "120.43",
+    "Country_ISO3": "CHN",
+    "pop2015": "2980",
+    "sqrtpop": "1.09178752511649"
+  },
+  {
+    "name": "Aleppo",
+    "Country": "Syrian Arab Republic",
+    "Latitude": "36.21",
+    "Longitude": "37.15",
+    "Country_ISO3": "SYR",
+    "pop2015": "2970",
+    "sqrtpop": "1.0899541274751"
+  },
+  {
+    "name": "Milan",
+    "Country": "Italy",
+    "Latitude": "45.47",
+    "Longitude": "9.18",
+    "Country_ISO3": "ITA",
+    "pop2015": "2940",
+    "sqrtpop": "1.08443533693808"
+  },
+  {
+    "name": "Jinan",
+    "Country": "China",
+    "Latitude": "36.65",
+    "Longitude": "116.96",
+    "Country_ISO3": "CHN",
+    "pop2015": "2910",
+    "sqrtpop": "1.07888831674089"
+  },
+  {
+    "name": "Lisbon",
+    "Country": "Portugal",
+    "Latitude": "38.72",
+    "Longitude": "-9.12",
+    "Country_ISO3": "PRT",
+    "pop2015": "2890",
+    "sqrtpop": "1.07517440445725"
+  },
+  {
+    "name": "Lucknow",
+    "Country": "India",
+    "Latitude": "26.84",
+    "Longitude": "80.91",
+    "Country_ISO3": "IND",
+    "pop2015": "2880",
+    "sqrtpop": "1.0733126291999"
+  },
+  {
+    "name": "Dakar",
+    "Country": "Senegal",
+    "Latitude": "14.68",
+    "Longitude": "-17.45",
+    "Country_ISO3": "SEN",
+    "pop2015": "2860",
+    "sqrtpop": "1.06957935656968"
+  },
+  {
+    "name": "Ibadan",
+    "Country": "Nigeria",
+    "Latitude": "7.37",
+    "Longitude": "3.89",
+    "Country_ISO3": "NGA",
+    "pop2015": "2840",
+    "sqrtpop": "1.06583300755794"
+  },
+  {
+    "name": "Durban",
+    "Country": "South Africa",
+    "Latitude": "-29.83",
+    "Longitude": "30.94",
+    "Country_ISO3": "ZAF",
+    "pop2015": "2840",
+    "sqrtpop": "1.06583300755794"
+  },
+  {
+    "name": "Changsha",
+    "Country": "China",
+    "Latitude": "28.09",
+    "Longitude": "113",
+    "Country_ISO3": "CHN",
+    "pop2015": "2830",
+    "sqrtpop": "1.06395488626163"
+  },
+  {
+    "name": "Fuzhou",
+    "Country": "China",
+    "Latitude": "26.07",
+    "Longitude": "119.3",
+    "Country_ISO3": "CHN",
+    "pop2015": "2830",
+    "sqrtpop": "1.06395488626163"
+  },
+  {
+    "name": "Faisalabad",
+    "Country": "Pakistan",
+    "Latitude": "31.4",
+    "Longitude": "73.08",
+    "Country_ISO3": "PAK",
+    "pop2015": "2830",
+    "sqrtpop": "1.06395488626163"
+  },
+  {
+    "name": "Fukuoka",
+    "Country": "Japan",
+    "Latitude": "33.57",
+    "Longitude": "130.4",
+    "Country_ISO3": "JPN",
+    "pop2015": "2820",
+    "sqrtpop": "1.06207344378814"
+  },
+  {
+    "name": "Lanzhou",
+    "Country": "China",
+    "Latitude": "36.11",
+    "Longitude": "103.59",
+    "Country_ISO3": "CHN",
+    "pop2015": "2780",
+    "sqrtpop": "1.05451410611713"
+  },
+  {
+    "name": "San Juan",
+    "Country": "Puerto Rico",
+    "Latitude": "18.8",
+    "Longitude": "-71.22",
+    "Country_ISO3": "PRI",
+    "pop2015": "2760",
+    "sqrtpop": "1.0507140429251"
+  },
+  {
+    "name": "Kiev",
+    "Country": "Ukraine",
+    "Latitude": "50.44",
+    "Longitude": "30.5",
+    "Country_ISO3": "UKR",
+    "pop2015": "2750",
+    "sqrtpop": "1.04880884817015"
+  },
+  {
+    "name": "Xiamen",
+    "Country": "China",
+    "Latitude": "24.46",
+    "Longitude": "118.07",
+    "Country_ISO3": "CHN",
+    "pop2015": "2740",
+    "sqrtpop": "1.04690018626419"
+  },
+  {
+    "name": "Zhengzhou",
+    "Country": "China",
+    "Latitude": "34.75",
+    "Longitude": "113.64",
+    "Country_ISO3": "CHN",
+    "pop2015": "2740",
+    "sqrtpop": "1.04690018626419"
+  },
+  {
+    "name": "Izmir",
+    "Country": "Turkey",
+    "Latitude": "38.43",
+    "Longitude": "27.14",
+    "Country_ISO3": "TUR",
+    "pop2015": "2720",
+    "sqrtpop": "1.04307238483242"
+  },
+  {
+    "name": "Minneapolis",
+    "Country": "United States of America",
+    "Latitude": "44.92",
+    "Longitude": "-93.3",
+    "Country_ISO3": "USA",
+    "pop2015": "2700",
+    "sqrtpop": "1.03923048454133"
+  },
+  {
+    "name": "Guayaquil",
+    "Country": "Ecuador",
+    "Latitude": "-2.2",
+    "Longitude": "-79.9",
+    "Country_ISO3": "ECU",
+    "pop2015": "2690",
+    "sqrtpop": "1.0373041983912"
+  },
+  {
+    "name": "Damascus",
+    "Country": "Syrian Arab Republic",
+    "Latitude": "33.49",
+    "Longitude": "36.29",
+    "Country_ISO3": "SYR",
+    "pop2015": "2680",
+    "sqrtpop": "1.03537432844358"
+  },
+  {
+    "name": "Jinxi",
+    "Country": "China",
+    "Latitude": "41.11",
+    "Longitude": "122.05",
+    "Country_ISO3": "CHN",
+    "pop2015": "2660",
+    "sqrtpop": "1.03150375665821"
+  },
+  {
+    "name": "Taipei",
+    "Country": "China",
+    "Latitude": "25.03",
+    "Longitude": "121.5",
+    "Country_ISO3": "CHN",
+    "pop2015": "2650",
+    "sqrtpop": "1.0295630140987"
+  },
+  {
+    "name": "Mashhad",
+    "Country": "Iran (Islamic Republic of)",
+    "Latitude": "36.28",
+    "Longitude": "59.59",
+    "Country_ISO3": "IRN",
+    "pop2015": "2650",
+    "sqrtpop": "1.0295630140987"
+  },
+  {
+    "name": "Shijiazhuang",
+    "Country": "China",
+    "Latitude": "38.07",
+    "Longitude": "114.55",
+    "Country_ISO3": "CHN",
+    "pop2015": "2630",
+    "sqrtpop": "1.02567051239665"
+  },
+  {
+    "name": "Jilin",
+    "Country": "China",
+    "Latitude": "43.85",
+    "Longitude": "126.56",
+    "Country_ISO3": "CHN",
+    "pop2015": "2610",
+    "sqrtpop": "1.02176318195558"
+  },
+  {
+    "name": "Nagpur",
+    "Country": "India",
+    "Latitude": "21.15",
+    "Longitude": "79.08",
+    "Country_ISO3": "IND",
+    "pop2015": "2610",
+    "sqrtpop": "1.02176318195558"
+  },
+  {
+    "name": "Nanchang",
+    "Country": "China",
+    "Latitude": "28.67",
+    "Longitude": "115.88",
+    "Country_ISO3": "CHN",
+    "pop2015": "2580",
+    "sqrtpop": "1.01587400793602"
+  },
+  {
+    "name": "Inch`on",
+    "Country": "Republic of Korea",
+    "Latitude": "37.48",
+    "Longitude": "126.63",
+    "Country_ISO3": "KOR",
+    "pop2015": "2580",
+    "sqrtpop": "1.01587400793602"
+  },
+  {
+    "name": "Bandung",
+    "Country": "Indonesia",
+    "Latitude": "-6.91",
+    "Longitude": "107.6",
+    "Country_ISO3": "IDN",
+    "pop2015": "2570",
+    "sqrtpop": "1.01390334845093"
+  },
+  {
+    "name": "Wenzhou",
+    "Country": "China",
+    "Latitude": "27.99",
+    "Longitude": "120.65",
+    "Country_ISO3": "CHN",
+    "pop2015": "2560",
+    "sqrtpop": "1.01192885125388"
+  },
+  {
+    "name": "Sapporo",
+    "Country": "Japan",
+    "Latitude": "43.05",
+    "Longitude": "141.34",
+    "Country_ISO3": "JPN",
+    "pop2015": "2560",
+    "sqrtpop": "1.01192885125388"
+  }
+]

@@ -302,3 +302,15 @@ td {
 #target_side{
   right: 10px;
 }
+
+/* MAP */
+
+#map_panel{
+  width: 100%;
+  height: 100%;
+  background: #9bbff4;
+}
+#countries, #states, #counties {
+  fill: #bbdaa4;
+  stroke: #666666;
+}
