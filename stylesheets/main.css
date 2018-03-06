@@ -327,9 +327,30 @@ input[type="range"]{
 }
 
 /* Phylogenetic tree */
-.fa-rotate-45 {
-  transform: rotate(45deg);
+#phylogenetic_tree_panel #show-length {
+  position: absolute;
+  top: 10px;
+  left: 10px;
 }
-.fa-rotate-135 {
-  transform: rotate(135deg);
+#phylogenetic_tree_panel .links {
+  fill: none;
+  stroke: #000;
+}
+#phylogenetic_tree_panel .link-extensions {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .25;
+}
+#phylogenetic_tree_panel .labels {
+  font: 10px sans-serif;
+}
+#phylogenetic_tree_panel .link--active {
+  stroke: #000 !important;
+  stroke-width: 1.5px;
+}
+#phylogenetic_tree_panel .link-extension--active {
+  stroke-opacity: .6;
+}
+#phylogenetic_tree_panel .label--active {
+  font-weight: bold;
 }
