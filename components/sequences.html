@@ -1,39 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title></title>
-  <link rel="icon" href="img/image32.ico" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/alertifyjs/build/css/alertify.min.css" />
-  <link rel="stylesheet" type="text/css" href="../../node_modules/msa/css/msa.css" />
-  <style>
-    body {
-      margin-top: 60px;
-    }
-    .showForSequence {
-      display: list-item;
-    }
-    .smenubar .smenubar_alink {
-      border-radius: 0px !important;
-      background-image: none !important;
-      background-color: #777777 !important;
-    }
-    .smenu-dropdown {
-      left: 18px !important;
-      top: 38px !important;
-    }
-  </style>
-</head>
-<body>
-  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" data-backdrop="false">
+  <link rel="stylesheet" type="text/css" href="node_modules/msa/css/msa.css" />
+
+  <div id="sequences_panel"></div>
+
+  <button type="button" class="view_settings_button btn btn-light" data-toggle="modal" data-target="#sequences_settings_modal">
+    <span class="oi oi-cog"></span>
+  </button>
+
+  <div class="modal fade" id="sequences_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 class="modal-title">Sequences Configuration</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">Sequences Configuration</h4>
         </div>
         <div class="modal-body"></div>
         <div class="modal-footer">
@@ -43,57 +21,31 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="main_panel"></div>
+  <script src="node_modules/msa/dist/msa.js"></script>
   <script>
-  const electron = require('electron');
-  var _ = require('underscore');
-  window.jQuery = window.$ = require('jquery');
-  require('bootstrap');
-  var msa = require('msa');
-
-  $(function(){
-
-    electron.ipcRenderer.on('deliver-manifest', (e, manifest) => {
-      $('title').text(manifest.productName + ' v. ' + manifest.version);
-      $('#AppName').html('<a href="#">'+manifest.productName+'</a>');
-      $('#AppVersion').html('<a href="#">'+manifest.version+'</a>');
-    });
-    electron.ipcRenderer.send('get-manifest');
-
-    $('body').prepend(electron.ipcRenderer.sendSync('get-component', 'nav.html'));
-
-    electron.ipcRenderer.on('set-data', (e, data) => {
-      window.session = {data: data};
-      var m = new msa.msa({
-        el: $('#main_panel')[0],
-        vis: {
-          overviewbox: true,
-          bootstrapMenu: true,
-          labels: false,
-          labelId: false
-        },
-        zoomer: {
-          menuFontsize: "12px",
-          autoResize: true,
-          currentSize: -20
-        },
-        seqs: session.data.nodes.filter(d => d.seq).map((node, i) => ({
-          'details': {'en': node.id},
-          'id': node.id,
-          'name': node.id,
-          'seq': node.seq
-        }))
-      });
-      m.addView("menu", new msa.menu.defaultmenu({msa: m}));
-      m.render();
-      $('.smenubar').detach().appendTo('#settingsModal .modal-body');
-      let menubuttons = $('.smenubar > div');
-      [0,2,3,6,7,8].forEach(i => $(menubuttons.get(i)).hide());
-    });
-    electron.ipcRenderer.send('get-data');
-
+  var m = new msa.msa({
+    el: $('#sequences_panel')[0],
+    vis: {
+      overviewbox: true,
+      bootstrapMenu: true,
+      labels: false,
+      labelId: false
+    },
+    zoomer: {
+      menuFontsize: "12px",
+      autoResize: true,
+      currentSize: -20
+    },
+    seqs: session.data.nodes.filter(d => d.seq).map((node, i) => ({
+      'details': {'en': node.id},
+      'id': node.id,
+      'name': node.id,
+      'seq': node.seq
+    }))
   });
-
+  m.addView("menu", new msa.menu.defaultmenu({msa: m}));
+  m.render();
+  $('.smenubar').detach().appendTo('#sequences_settings_modal .modal-body');
+  var menubuttons = $('.smenubar > div');
+  [0,2,3,6,7,8].forEach(i => $(menubuttons.get(i)).hide());
   </script>
-  </body>
-</html>

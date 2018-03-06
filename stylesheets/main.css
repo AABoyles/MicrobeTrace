@@ -311,3 +311,25 @@ input[type="range"]{
   fill: #bbdaa4;
   stroke: #666666;
 }
+
+/* Sequences */
+#sequences_panel {
+  padding: 15px;
+}
+.smenubar .smenubar_alink {
+  border-radius: 0px !important;
+  background-image: none !important;
+  background-color: #777777 !important;
+}
+.smenu-dropdown {
+  left: 18px !important;
+  top: 38px !important;
+}
+
+/* Phylogenetic tree */
+.fa-rotate-45 {
+  transform: rotate(45deg);
+}
+.fa-rotate-135 {
+  transform: rotate(135deg);
+}
