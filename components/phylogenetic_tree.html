@@ -1,4 +1,4 @@
-  <div id="phylogenetic_tree_panel"></div>
+  <svg id="phylogenetic_tree_panel"></svg>
 
   <table id="phylogenetic_tree_statistics">
     <tr>
@@ -118,14 +118,16 @@
       .size([360, innerRadius])
       .separation(function(a, b) { return 1; });
 
-  var svg = d3.select("#phylogenetic_tree_panel").append("svg")
-      .attr("width", outerRadius * 2)
-      .attr("height", outerRadius * 2);
+  var tree_zoomer = d3.zoom().on('zoom', () => tree_svg.attr('transform', d3.event.transform))
 
-  var legend = svg.append("g")
-      .attr("class", "legend")
-    .selectAll("g")
-    .data(color.domain())
+  var tree_svg = d3.select("svg#phylogenetic_tree_panel")
+      .attr("width", outerRadius * 2)
+      .attr("height", outerRadius * 2)
+      .call(session.network.zoom)
+      .append(g);
+
+  var legend = tree_svg.append("g").attr("class", "legend")
+    .selectAll("g").data(color.domain())
     .enter().append("g")
       .attr("transform", function(d, i) { return "translate(" + (outerRadius * 2 - 10) + "," + (i * 20 + 10) + ")"; });
 
@@ -142,7 +144,7 @@
       .attr("text-anchor", "end")
       .text(function(d){ return d; });
 
-  var chart = svg.append("g")
+  var chart = tree_svg.append("g")
       .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
 
   d3.text("data/life.txt", function(error, life) {
@@ -154,8 +156,7 @@
 
     cluster(root);
 
-    var input = d3.select("#show-length input").on("change", changed),
-        timeout = setTimeout(function() { input.property("checked", true).each(changed); }, 2000);
+    var input = d3.select("#show-length input").on("change", changed);
 
     setRadius(root, root.data.length = 0, innerRadius / maxLength(root));
     setColor(root);
@@ -189,8 +190,7 @@
         .on("mouseover", mouseovered(true))
         .on("mouseout", mouseovered(false));
 
-    function changed() {
-      clearTimeout(timeout);
+    function changed(){
       var t = d3.transition().duration(750);
       linkExtension.transition(t).attr("d", this.checked ? linkExtensionVariable : linkExtensionConstant);
       link.transition(t).attr("d", this.checked ? linkVariable : linkConstant);

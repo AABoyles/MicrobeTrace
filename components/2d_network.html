@@ -6,40 +6,41 @@
 
 <table id="groupKey"></table>
 
-<span id="tooltip"></span>
-
-<ul id="contextmenu" class="dropdown-menu">
-  <li><a href="#" id="viewAttributes">View Attributes</a></li>
-  <li><a href="#" id="copyID">Copy ID</a></li>
-  <li class="showForSequence"><a href="#" id="copySeq">Copy Sequence</a></li>
-  <li><a href="#" id="pinNode">Pin Node</a></li>
-  <li role="separator" class="divider"></li>
-  <li><a href="#" id="isolateCluster">Isolate Cluster</a></li>
-  <li><a href="#" id="hideCluster">Hide Cluster</a></li>
-</ul>
+<div id="2d-context-menu" class="dropdown-menu">
+  <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
+  <a href="#" id="copyID" class="dropdown-item">Copy ID</a>
+  <a href="#" id="copySeq" class="dropdown-item showForSequence">Copy Sequence</a>
+  <a href="#" id="pinNode" class="dropdown-item">Pin Node</a>
+  <div class="dropdown-divider" />
+  <a href="#" id="isolateCluster" class="dropdown-item">Isolate Cluster</a>
+  <a href="#" id="hideCluster" class="dropdown-item">Hide Cluster</a>
+</div>
 
 <div id="attributeModal" class="modal fade" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header"><h4 class="modal-title">Node Attributes</h4></div>
+      <div class="modal-header">
+        <h5 class="modal-title">Node Attributes</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
       <div class="modal-body" style="overflow: auto">
         <table class="table table-striped">
           <tbody></tbody>
         </table>
       </div>
-      <div class="panel-footer clearfix">
-        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="">OK</button>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" data-dismiss="modal" title="">OK</button>
       </div>
     </div>
   </div>
 </div>
 
 <div id="playtools">
-  <div class="btn-group" role="group">
-    <button id="playbutton" type="button" class="btn btn-default">
-      <span class="oi oi-media-play"></span>
-    </button>
-  </div>
+  <button id="playbutton" type="button" class="btn btn-light">
+    <span class="oi oi-media-pause"></span>
+  </button>
 </div>
 
 <table id="networkStatistics">
@@ -77,19 +78,19 @@
       </div>
       <div class="modal-body">
         <form>
-          <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <ul class="nav nav-tabs" id="2d_tab_list" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+              <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#node_settings" role="tab" aria-controls="node_settings" aria-selected="true">Nodes</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+              <a class="nav-link" id="links-tab" data-toggle="tab" href="#link_settings" role="tab" aria-controls="link_settings" aria-selected="false">Links</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+              <a class="nav-link" id="network-tab" data-toggle="tab" href="#network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
             </li>
           </ul>
-          <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="node_settings" role="tabpanel" aria-labelledby="nodes-tab">
               <div class="form-group row">
                 <div class="col-3"><strong>Property</strong></div>
                 <div class="col-3"><strong>Variable</strong></div>
@@ -142,40 +143,12 @@
                 <div class="col-3"><select id="nodeRadiusVariable" class="custom-select custom-select-sm nodeVariables numeric"><option value="none">None</option></select></div>
                 <div class="col-6"><input type="range" id="default-node-radius" min="1" value="250" step="1" max="5000" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-3">Singletons</div>
-                <div class="col-6 .col-offset-3">
-                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                    <label class="btn btn-default active">
-                      <input type="radio" name="singletons" id="ShowSingletons" autocomplete="off" checked> Show
-                    </label>
-                    <label class="btn btn-default">
-                      <input type="radio" name="singletons" id="HideSingletons" autocomplete="off"> Hide
-                    </label>
-                  </div>
-                </div>
-              </div>
             </div>
-            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="tab-pane fade" id="link_settings" role="tabpanel" aria-labelledby="links-tab">
               <div class="form-group row">
                 <div class="col-3"><strong>Property</strong></div>
                 <div class="col-3"><strong>Variable</strong></div>
                 <div class="col-6"><strong>Value</strong></div>
-              </div>
-              <div class="form-group row">
-                <div class="col-3"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Pruning</label></div>
-                <div class="col-3"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables numeric"><option value="distance">Distance</option></select></div>
-                <div class="col-6"><label data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?"><input type="number" class="" id="default-link-threshold" value="0.015" step="0.001" /></label>
-                  <button id="computeMST" class="btn btn-default btn-xs showForNotMST">Compute MST</button>
-                  <div class="btn-group btn-group-toggle btn-group-sm showForMST" data-toggle="buttons">
-                    <label class="btn btn-default active">
-                      <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
-                    </label>
-                    <label class="btn btn-default">
-                      <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
-                    </label>
-                  </div>
-                </div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="Are these links directed?">Directionality</label></div>
@@ -215,7 +188,7 @@
                 <div class="col-6"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
               </div>
             </div>
-            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+            <div class="tab-pane fade" id="network_settings" role="tabpanel" aria-labelledby="network-tab">
               <div class="form-group row">
                 <div class="col-3"><strong>Property</strong></div>
                 <div class="col-9"><strong>Value</strong></div>
@@ -269,20 +242,7 @@
 <script type="text/javascript" src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
 <script type="text/javascript" src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
 <script>
-$('.nodeVariables').html(
-  '<option value="none">None</option>\n' +
-  session.data.nodeFields.map(key =>
-    `<option value="${key}">${app.titleize(key)}</option>`
-  ).join('\n')
-);
 $('#nodeTooltipVariable').val('id');
-
-$('.linkVariables').html(
-  '<option value="none">None</option>\n' +
-  session.data.linkFields.map(key =>
-    `<option value="${key}">${app.titleize(key)}</option>`
-  ).join('\n')
-);
 $('#linkSortVariable').val('distance');
 
 $('#default-link-threshold').show();
@@ -307,13 +267,13 @@ function setNodeVisibility(){
     session.data.nodes.forEach(n => n.visible = n.visible && session.state.visible_clusters.includes(n.cluster));
   }
   if($('#HideSingletons').is(':checked')){
-    let clusters = session.data.clusters.map(c => c.nodes);
+    var clusters = session.data.clusters.map(c => c.nodes);
     session.data.nodes.forEach(n => n.visible = n.visible && clusters[n.cluster-1] > 1);
   }
 }
 
 function setLinkVisibility(){
-  let metric  = $('#linkSortVariable').val(),
+  var metric  = $('#linkSortVariable').val(),
       threshold = $('#default-link-threshold').val();
   session.data.links.forEach(link => link.visible = 1);
   if(metric !== 'none'){
@@ -329,27 +289,27 @@ function setLinkVisibility(){
 
 function setupNetwork(){
   session.network = {};
-  let width = $(window).width(),
-      height = $(window).height(),
+  var width = $('#network').width(),
+      height = $('#network').height(),
       xScale = d3.scaleLinear().domain([0, width]).range([0, width]),
       yScale = d3.scaleLinear().domain([0, height]).range([0, height]);
 
   session.network.zoom = d3.zoom().on('zoom', () => session.network.svg.attr('transform', d3.event.transform));
 
-  session.network.svg = d3.select('svg')
+  session.network.svg = d3.select('svg#network')
     .on('click', hideContextMenu)
-    .html('') //Let's make sure the canvas is blank.
+    .html(null) //Let's make sure the canvas is blank.
     .call(session.network.zoom)
     .append('g');
 
   session.network.fit = function(bounds){
     if(!bounds) bounds = session.network.svg.node().getBBox();
     if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
-    let parent = session.network.svg.node().parentElement,
+    var parent = session.network.svg.node().parentElement,
         midX = bounds.x + bounds.width / 2,
         midY = bounds.y + bounds.height / 2;
-    let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
-    d3.select('svg')
+    var scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
+    d3.select('svg#network')
       .transition()
       .duration(750)
       .call(session.network.zoom.transform, d3.zoomIdentity
@@ -373,7 +333,9 @@ function setupNetwork(){
     .force('center', d3.forceCenter(width / 2, height / 2));
 
   session.network.force.on('end', e => {
-    $('#playbutton').data('state', 'paused').html('<span class="oi oi-media-pause"></span>');
+    $('#playbutton')
+      .data('state', 'paused')
+      .html('<span class="oi oi-media-play"></span>');
   });
 
   session.network.svg.append('svg:defs').append('marker')
@@ -391,20 +353,11 @@ function setupNetwork(){
   session.network.svg.append('g').attr('id', 'nodes');
 }
 
-function getVLinks(){
-  let vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
-  // vlinks.forEach(l => {
-  //   l.source = session.data.nodes.find(d => d.id === l.source),
-  //   l.target = session.data.nodes.find(d => d.id === l.target)
-  // });
-  return vlinks;
-}
-
 function renderNetwork(){
-  let vnodes = session.data.nodes.filter(node => node.visible);
+  var vnodes = session.data.nodes.filter(node => node.visible);
 
   //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
-  let node = d3.select('g#nodes').selectAll('g.node').data(vnodes);
+  var node = d3.select('g#nodes').selectAll('g.node').data(vnodes);
   node.exit().remove(); //Removing nodes with no representation in the dataset.
   node = node.enter().append('g').attr('class', 'node').attr('tabindex', '0') //Adding nodes that weren't represented in the dataset before.
     .call(d3.drag() //A bunch of mouse handlers.
@@ -437,10 +390,10 @@ function renderNetwork(){
     .attr('dy', 5)
     .attr('dx', 8);
 
-  let vlinks = getVLinks();
+  var vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
 
   // Links are considerably simpler.
-  let link = d3.select('g#links').selectAll('line').data(vlinks);
+  var link = d3.select('g#links').selectAll('line').data(vlinks);
   link.exit().remove();
   link.enter().append('line')
     .attr('stroke', $('#default-link-color').val())
@@ -550,28 +503,29 @@ function showContextMenu(d){
       hideContextMenu();
     });
   }
-  d3.select('#contextmenu')
-    .style('z-index', 1)
-    .style('left', (d3.event.pageX) + 'px')
-    .style('top', (d3.event.pageY) + 'px')
-    .style('opacity', 1);
+  $('#2d-context-menu').css({
+    'z-index': 1,
+    'display': 'block',
+    'left': (d3.event.pageX) + 'px',
+    'top': (d3.event.pageY-56) + 'px',
+    'opacity': 1
+  });
 }
 
 function hideContextMenu(){
-  let menu = d3.select('#contextmenu');
-  menu
-    .transition().duration(100)
-    .style('opacity', 0)
-    .on('end', () =>  menu.style('z-index', -1));
+  var menu = $('#2d-context-menu');
+  menu.animate({'opacity': 0}, 80, function(){
+    $(this).css('z-index', -1);
+  });
 }
 
 function showAttributeModal(d){
-  let target = $('#attributeModal tbody').empty();
+  hideContextMenu();
+  var target = $('#attributeModal tbody').empty();
   for(var attribute in d){
-    target.append(`<tr><td><strong>${attribute}</strong></td><td>${d[attribute]}</td></tr>`);
+    target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
   }
   $('#attributeModal').modal('show');
-  hideContextMenu();
 }
 
 function showNodeToolTip(d){
@@ -586,7 +540,7 @@ function showNodeToolTip(d){
 }
 
 function showLinkToolTip(d){
-  let v = $('#linkTooltipVariable').val();
+  var v = $('#linkTooltipVariable').val();
   if(v === 'none') return;
   d3.select('#tooltip')
     .html((v === 'source' || v === 'target') ? d[v].id : d[v])
@@ -598,7 +552,7 @@ function showLinkToolTip(d){
 }
 
 function hideTooltip(){
-  let tooltip = d3.select('#tooltip');
+  var tooltip = d3.select('#tooltip');
   tooltip
     .transition().duration(100)
     .style('opacity', 0)
@@ -608,30 +562,30 @@ function hideTooltip(){
 function redrawNodes(){
   //Things to track in the function:
   //* Symbols:
-  let type = d3[$('#default-node-symbol').val()];
-  let symbolVariable = $('#nodeSymbolVariable').val();
-  let o = (b => d3[$('#default-node-symbol').val()]);
+  var type = d3[$('#default-node-symbol').val()];
+  var symbolVariable = $('#nodeSymbolVariable').val();
+  var o = (b => d3[$('#default-node-symbol').val()]);
   if(symbolVariable !== 'none'){
-    let map = {};
-    let values = _(session.data.nodes).map(symbolVariable).uniq().sort().value();
+    var map = {};
+    var values = _(session.data.nodes).map(symbolVariable).uniq().sort().value();
     $('#nodeShapes select').each(function(i, el){
       map[values[i]] = $(this).val();
     });
     o = (v => map[v]);
   }
   //* Sizes:
-  let defaultSize = $('#default-node-radius').val();
-  let size = defaultSize;
-  let sizeVariable = $('#nodeRadiusVariable').val();
+  var defaultSize = $('#default-node-radius').val();
+  var size = defaultSize;
+  var sizeVariable = $('#nodeRadiusVariable').val();
   if(sizeVariable !== 'none'){
-    let values = _(session.data.nodes).map(sizeVariable).without(undefined);
+    var values = _(session.data.nodes).map(sizeVariable).without(undefined);
     var min = values.min();
     var max = values.max();
     var oldrng = max - min;
     var med = oldrng / 2;
   }
-  let vnodes = session.data.nodes.filter(n => n.visible);
-  let nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
+  var vnodes = session.data.nodes.filter(n => n.visible);
+  var nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
   nodes.select('path').each(function(d){
     if(symbolVariable !== 'none'){
       type = d3[o(d[$('#nodeSymbolVariable').val()])];
@@ -649,15 +603,15 @@ function redrawNodes(){
       .type(type));
   });
   //* Labels:
-  let labelVar = $('#nodeLabelVariable').val();
+  var labelVar = $('#nodeLabelVariable').val();
   nodes.select('text').text(n => n[labelVar]);
 }
 
 function updateStatistics(){
   if($('#hideNetworkStatistics').is(':checked')) return;
-  let llinks = _.filter(session.data.links, e => e.visible);
-  let lnodes = _.filter(session.data.nodes, e => e.visible);
-  let singletons = lnodes.length - _.union(_.map(llinks, 'source'), _.map(llinks, 'target')).length;
+  var llinks = _.filter(session.data.links, e => e.visible);
+  var lnodes = _.filter(session.data.nodes, e => e.visible);
+  var singletons = lnodes.length - _.union(_.map(llinks, 'source'), _.map(llinks, 'target')).length;
   $('#numberOfSelectedNodes').text(lnodes.filter(d => d.selected).length.toLocaleString());
   $('#numberOfNodes').text(lnodes.length.toLocaleString());
   $('#numberOfVisibleLinks').text(llinks.length.toLocaleString());
@@ -679,21 +633,21 @@ $('#default-node-symbol').on('input', redrawNodes);
 $('#nodeSymbolVariable').change(e => {
   $('#default-node-symbol').fadeOut();
   $('#nodeShapes').fadeOut(function(){$(this).remove()});
-  let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#groupKey');
+  var table = $('<tbody id="nodeShapes"></tbody>').appendTo('#groupKey');
   if(e.target.value === 'none'){
     redrawNodes();
     $('#default-node-symbol').fadeIn();
     return table.fadeOut(e => table.remove());
   }
   table.append('<tr><th>'+e.target.value+'</th><th>Shape</th><tr>');
-  let values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
-  let symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye'].concat(Object.keys(extraSymbols));
-  let o = d3.scaleOrdinal(symbolKeys).domain(values);
-  let options = $('#default-node-symbol').html();
+  var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
+  var symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye'].concat(Object.keys(extraSymbols));
+  var o = d3.scaleOrdinal(symbolKeys).domain(values);
+  var options = $('#default-node-symbol').html();
   values.forEach(v => {
-    let selector = $('<select></select>').append(options).val(o(v)).change(redrawNodes);
-    let cell = $('<td></td>').append(selector);
-    let row = $('<tr><td>' + v + '</td></tr>').append(cell);
+    var selector = $('<select></select>').append(options).val(o(v)).change(redrawNodes);
+    var cell = $('<td></td>').append(selector);
+    var row = $('<tr><td>' + v + '</td></tr>').append(cell);
     table.append(row);
   });
   redrawNodes();
@@ -704,19 +658,19 @@ $('#default-node-radius').on('input', redrawNodes);
 $('#nodeRadiusVariable').change(redrawNodes);
 
 function scaleNodeOpacity(){
-  let scalar = $('#default-node-opacity').val();
-  let variable = $('#nodeOpacityVariable').val();
-  let circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
+  var scalar = $('#default-node-opacity').val();
+  var variable = $('#nodeOpacityVariable').val();
+  var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
   if(variable === 'none'){
     return circles.attr('opacity', scalar);
   }
-  let values = _(session.data.nodes).map(variable).without(undefined);
-  let min = values.min();
-  let max = values.max();
-  let rng = max - min;
-  let med = rng / 2 + min;
+  var values = _(session.data.nodes).map(variable).without(undefined);
+  var min = values.min();
+  var max = values.max();
+  var rng = max - min;
+  var med = rng / 2 + min;
   circles.attr('opacity', d => {
-    let v = d[variable];
+    var v = d[variable];
     if(typeof v === 'undefined') v = med;
     return scalar * (v - min) / rng + 0.1;
   });
@@ -728,9 +682,9 @@ $('#nodeOpacityVariable').change(scaleNodeOpacity);
 $('#default-node-color').on('input', e => session.network.svg.select('g#nodes').selectAll('g.node').select('path').attr('fill', e.target.value));
 $('#nodeColorVariable').change(e => {
   $('#default-node-color').fadeOut();
-  let circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
+  var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
   $('#nodeColors').fadeOut(function(){$(this).remove()});
-  let table = $('<tbody id="nodeColors"></tbody>').appendTo('#groupKey');
+  var table = $('<tbody id="nodeColors"></tbody>').appendTo('#groupKey');
   if(e.target.value == 'none'){
     circles.attr('fill', $('#default-node-color').val());
     $('#default-node-color').fadeIn();
@@ -738,19 +692,19 @@ $('#nodeColorVariable').change(e => {
     return;
   }
   table.append('<tr><th>'+e.target.value+'</th><th>Color</th><tr>');
-  let values = _.map(session.data.nodes, e.target.value);
-  let colors = $.getJSON('components/colors.json');
-  let o = d3.scaleOrdinal(colors).domain(values);
+  var values = _.map(session.data.nodes, e.target.value);
+  var colors = $.getJSON('components/colors.json');
+  var o = d3.scaleOrdinal(colors).domain(values);
   circles.attr('fill', d => o(d[e.target.value]));
   values.forEach(value => {
-    let input = $('<input type="color" value="'+o(value)+'" />')
+    var input = $('<input type="color" value="'+o(value)+'" />')
       .on('input', evt => {
         circles
           .filter(d => d[e.target.value] == value)
           .attr('fill', d => evt.target.value);
       });
-    let cell = $('<td></td>').append(input);
-    let row = $('<tr><td>'+value+'</td></tr>').append(cell);
+    var cell = $('<td></td>').append(input);
+    var row = $('<tr><td>'+value+'</td></tr>').append(cell);
     table.append(row);
   });
   table.fadeIn();
@@ -775,7 +729,7 @@ $('#default-link-length').on('input', e => {
 });
 
 function setLinkColor(e){
-  let variable = $('#linkColorVariable').val();
+  var variable = $('#linkColorVariable').val();
   if(variable == 'none'){
     session.network.svg.select('g#links').selectAll('line').style('stroke', $('#default-link-color').val());
     $('#default-link-color').fadeIn();
@@ -783,23 +737,23 @@ function setLinkColor(e){
     return;
   }
   $('#default-link-color').fadeOut();
-  let links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
+  var links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
   $('#linkColors').remove();
-  let table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
+  var table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
   table.append('<tr><th>'+variable+'</th><th>Color</th><tr>');
-  let values = _(session.data.links).map(variable).uniq().sort().value();
-  let colors = $.getJSON('components/colors.json');
-  let o = d3.scaleOrdinal(colors).domain(values);
+  var values = _(session.data.links).map(variable).uniq().sort().value();
+  var colors = $.getJSON('components/colors.json');
+  var o = d3.scaleOrdinal(colors).domain(values);
   links.style('stroke', d => o(d[variable]));
   values.forEach(value => {
-    let input = $('<input type="color" name="'+value+'-node-color-setter" value="'+o(value)+'" />')
+    var input = $('<input type="color" name="'+value+'-node-color-setter" value="'+o(value)+'" />')
       .on('input', evt => {
         links
           .filter(d => d[variable] === value)
           .style('stroke', d => evt.target.value);
       });
-    let cell = $('<td></td>').append(input);
-    let row = $('<tr><td>'+value+'</td></tr>').append(cell);
+    var cell = $('<td></td>').append(input);
+    var row = $('<tr><td>'+value+'</td></tr>').append(cell);
     table.append(row);
   });
   table.fadeIn();
@@ -809,18 +763,18 @@ $('#default-link-color').on('input', setLinkColor);
 $('#linkColorVariable').change(setLinkColor);
 
 function scaleLinkThing(scalar, variable, attribute, floor){
-  let links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
+  var links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
   if(variable === 'none'){
     return links.attr(attribute, scalar);
   }
   if(!floor){floor = 1;}
-  let values = _(session.data.links).map(variable).without(undefined);
-  let min = values.min();
-  let max = values.max();
-  let rng = max - min;
-  let recip = $('#reciprocal-link-width').is(':checked');
+  var values = _(session.data.links).map(variable).without(undefined);
+  var min = values.min();
+  var max = values.max();
+  var rng = max - min;
+  var recip = $('#reciprocal-link-width').is(':checked');
   links.attr(attribute, d => {
-    let v = d[variable];
+    var v = d[variable];
     if(typeof v === 'undefined') v = rng / 2 + min;
     if(recip && attribute == 'stroke-width'){
       return scalar * (1 - (v - min) / rng) + floor;
@@ -906,11 +860,11 @@ $('#playbutton')
   .click(function(e){
     if($(this).data('state') === 'paused'){
       $(this).data('state', 'playing')
-        .html('<span class="oi oi-media-play"></span>');
+        .html('<span class="oi oi-media-pause"></span>');
       session.network.force.alphaTarget(session.state.alpha).restart();
     } else {
       $(this).data('state', 'paused')
-        .html('<span class="oi oi-media-pause"></span>');
+        .html('<span class="oi oi-media-play"></span>');
       session.network.force.alpha(0).alphaTarget(0);
     }
   });

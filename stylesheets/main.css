@@ -37,8 +37,12 @@ a:hover, a:focus {
   top: 10px;
   right: 10px;
 }
+.nodeVariables,
+.linkVariables {
+  width: 100%;
+}
 
-/* NAV BAR */
+/* NAV BAR and Golden Layout */
 .dropdown-toggle::after{
   content: none; /* Hides carats */
 }
@@ -46,7 +50,6 @@ a:hover, a:focus {
   background: #f8f9fa!important;
 }
 .lm_content{
-  overflow: auto;
   background: #ffffff;
 }
 .lm_selected .lm_header{
@@ -202,46 +205,6 @@ input[type="range"]{
   overflow-y: auto;
   z-index: 10000;
 }
-#settingsModal {
-  pointer-events: none;
-}
-#settingsModal .modal-dialog {
-  background-color: rgba(255, 255, 255, 0.5);
-}
-#settingsModal .modal-content {
-  pointer-events: all;
-  background-color: rgba(255, 255, 255, 0.5);
-}
-#settingsModal .tab-pane {
-  border: 1px solid #ddd;
-  border-top: none;
-}
-#settingsModal .panel-body {
-  padding: 0px 15px;
-}
-#settingsModal .nav-tabs > li.active > a,
-#settingsModal .nav-tabs > li.active > a:hover,
-#settingsModal .nav-tabs > li.active > a:focus {
-  background-color: transparent;
-  border-bottom: 1px solid #fff;
-}
-#settingsModal .row {
-  border-bottom: 1px solid lightgray;
-}
-#settingsModal .row div {
-  padding: 8px;
-}
-#settingsModal #default-link-threshold {
-  width: 5em;
-}
-#settingsModal #computeMST {
-  display: inline-block;
-  margin: 0 1em;
-}
-#settingsModal .showForMST {
-  display: none;
-  margin: 0 1em;
-}
 #networkStatistics,
 #groupKey {
   position: absolute;
@@ -277,14 +240,6 @@ input[type="range"]{
   -moz-appearance: none;
   text-indent: 1px;
   text-overflow: '';
-}
-#thresholdTooltip {
-  text-align: right;
-  border: 0;
-}
-.nodeVariables,
-.linkVariables {
-  width: 100%;
 }
 
 /* FLOW DIAGRAM */

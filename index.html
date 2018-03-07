@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--html lang="en" manifest="microbetrace.appcache"-->
-<html>
+<html lang="en">
 <head>
   <!--[if lt IE 9]>
     <script type="text/javascript" src="node_modules/html5shiv/dist/html5shiv.min.js"></script>
@@ -48,7 +48,7 @@
             <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
             <a href="#" id="RevealAllTab" class="dropdown-item">Reveal All</a>
             <div class="dropdown-divider"></div>
-            <a href="#" id="SettingsTab"  class="dropdown-item" data-toggle="modal" data-target="#settingsModal">Settings</a>
+            <a href="#" id="SettingsTab"  class="dropdown-item" data-toggle="modal" data-target="#global_settings_modal">Settings</a>
           </div>
         </li>
         <li class="nav-item dropdown">
@@ -95,7 +95,7 @@
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 id="licenseAgreement" class="modal-title">License Agreement</h4>
+          <h5 id="licenseAgreement" class="modal-title">License Agreement</h5>
         </div>
         <div class="modal-body">
           <pre>The material embodied in this software is provided to you "As-is" and without
@@ -122,9 +122,11 @@ performance of this software.</pre>
   <div id="loadingInformationModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Loading File</h5></div>
+        <div class="modal-header">
+          <h5 class="modal-title">Loading File</h5>
+        </div>
         <div class="modal-body">
-          <!--img src="img/1DNA.gif" class="img-responsive center-block" /-->
+          <img src="img/1DNA.gif" class="img-responsive center-block" />
           <div class="panel-group" id="advancedLoadingAccordion" role="tablist" aria-multiselectable="false">
             <div class="panel panel-default">
               <div class="panel-heading" role="tab" id="advancedLoadingHeading">
@@ -145,12 +147,82 @@ performance of this software.</pre>
 
   <div id="main_panel" class="pane-container pane-horizontal"></div>
 
+  <span id="tooltip"></span>
+
+  <div id="global_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Global Configurations</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Global</a>
+              </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+              <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="nodes-tab">
+                <div class="form-group row">
+                  <div class="col-4"><strong>Property</strong></div>
+                  <div class="col-4"><strong>Variable</strong></div>
+                  <div class="col-4"><strong>Value</strong></div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Pruning</label></div>
+                  <div class="col-4"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables numeric"><option value="distance">Distance</option></select></div>
+                  <div class="col-4"><label data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></label></div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-4"><span data-toggle="tooltip" title="Would you like to restrict links to the Minimum Spanning Tree?">Minimum Spanning Tree</span></div>
+                  <div class="col-4"><button id="computeMST" class="btn btn-secondary btn-sm showForNotMST">Compute MST</button></div>
+                  <div class="col-4">
+                    <div class="btn-group btn-group-toggle btn-group-sm showForMST" data-toggle="buttons">
+                      <label class="btn btn-secondary active">
+                        <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
+                      </label>
+                      <label class="btn btn-secondary">
+                        <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-4">Singletons</div>
+                  <div class="col-8">
+                    <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                      <label class="btn btn-secondary active">
+                        <input type="radio" name="singletons" id="ShowSingletons" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-default">
+                        <input type="radio" name="singletons" id="HideSingletons" autocomplete="off"> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <div class="btn-group" data-toggle="buttons">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+          </div>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
   <div class="modal fade" id="install-modal" tabindex="-1" role="dialog" aria-labelledby="install-modal-label">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 class="modal-title" id="install-modal-label">Install MicrobeTrace</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="install-modal-label">Install MicrobeTrace</h4>
         </div>
         <div class="modal-body">
           <p class="on-chrome">To Install, Click on Chrome Options > More Tools > Add to Taskbar, and click "OK". (<a href="https://support.google.com/chrome_webstore/answer/3060053?hl=en">See here for more</a>)</p>
@@ -171,8 +243,8 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 class="modal-title" id="aboutModalLabel">About MicrobeTrace</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="aboutModalLabel">About MicrobeTrace</h4>
         </div>
         <div class="modal-body">
           <h3>MicrobeTrace</h3>

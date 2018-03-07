@@ -9,7 +9,7 @@ app.dataSkeleton = function(){
       clusters: [],
       distance_matrix: {},
       nodeFields: ['id', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
-      linkFields: ['source', 'target', 'tn93', 'snps', 'visible', 'cluster', 'origin']
+      linkFields: ['source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin']
     },
     state: {
       visible_clusters: [],

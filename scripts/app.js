@@ -11,7 +11,7 @@ var layout = new window.GoldenLayout({
 
 layout.init();
 
-var launchView = function(view){
+function launchView(view){
   if(!layout._components[view]){
     layout.registerComponent(view, function(container, state){
       container.getElement().html(state.text);
@@ -29,19 +29,30 @@ var launchView = function(view){
       componentName: view,
       componentState: { text: componentCache[view] }
     });
+    $('select.nodeVariables').html(
+      '<option>None</option>' +
+      session.data.nodeFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    $('select.linkVariables').html(
+      '<option>None</option>' +
+      session.data.linkFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    $('[data-toggle="tooltip"]').tooltip();
   }
-};
+}
 
 var componentCache = {};
 
 $(function(){
 
-  launchView('files');
-
   function reset(){
     window.session = app.dataSkeleton();
     //TODO: Kill all open tabs
-    //TODO: Open up the File Tab
+    launchView('files');
   }
 
   reset();
@@ -79,7 +90,7 @@ $(function(){
   $('#SaveVectorTab').click(function(){
     var content =
       '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 '+(window.innerHeight-50)+' '+window.innerWidth+'" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-        document.getElementsByTagName('svg')[0].innerHTML + '\n' +
+        document.getElementsByTagName('svg#network')[0].innerHTML + '\n' +
       '</svg>';
     var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
     saveAs(blob, 'MicrobeTraceExport.svg');
@@ -87,9 +98,9 @@ $(function(){
 
   $('#ExitTab').click(function(){ window.open('','_self').close(); });
 
-  $('#AddDataTab').click(function(){ launchView('file'); });
-
   $('#FindTab').click(function(e){ $('#search').focus(); });
+
+  $('#AddDataTab').click(function(){ launchView('file'); });
 
   $('#RevealAllTab').click(function(e) {
     session.state.visible_clusters = session.data.clusters.map(c => c.id);
@@ -105,11 +116,7 @@ $(function(){
 
   $('#FullScreenTab').click(function(){ screenfull.toggle(); });
 
-  $('#ZoomToFitTab').click(function(){ session.network.fit(); });
-
   $('.viewbutton').click(function(){ launchView($(this).data('href')); });
-
-  $('[data-toggle="tooltip"]').tooltip();
 
   $(document).on('keydown', e => {
     if(e.key === 'Escape'){
