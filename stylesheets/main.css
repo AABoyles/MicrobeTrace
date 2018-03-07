@@ -37,6 +37,9 @@ a:hover, a:focus {
   top: 10px;
   right: 10px;
 }
+.floater{
+  border: 1px solid #cccccc;
+}
 .nodeVariables,
 .linkVariables {
   width: 100%;
