@@ -71,6 +71,10 @@ a:hover, a:focus {
   border-bottom-right-radius: 5px;
   padding: 15px;
 }
+button.navbar-toggler{
+  font-size:1rem;
+}
+
 
 /* File Panel */
 #file_panel {
