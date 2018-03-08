@@ -1,6 +1,6 @@
 <svg id="network"></svg>
 
-<button type="button" class="btn btn-light floater view_settings_button" data-toggle="modal" data-target="#2d_network_settings_modal">
+<button type="button" class="btn btn-light view_settings_button" data-toggle="modal" data-target="#2d_network_settings_modal">
   <span class="oi oi-cog"></span>
 </button>
 
@@ -43,32 +43,34 @@
   </button>
 </div>
 
-<table id="networkStatistics">
-  <tbody>
-    <tr>
-      <td class="text-right">
-        <span id="numberOfNodes"></span>
-        (<span id="numberOfSelectedNodes"></span>)
-      </td>
-      <td>Nodes (Selected)</td>
-    </tr>
-    <tr>
-      <td id="numberOfVisibleLinks" class="text-right"></td>
-      <td>Links</td>
-    </tr>
-    <tr>
-      <td id="numberOfDisjointComponents" class="text-right"></td>
-      <td>Clusters</td>
-    </tr>
-    <tr id="singletonsRow">
-      <td id="numberOfSingletonNodes" class="text-right"></td>
-      <td>Singletons</td>
-    </tr>
-  </tbody>
-</table>
+<div id="networkStatistics">
+  <table>
+    <tbody>
+      <tr>
+        <td class="text-right">
+          <span id="numberOfNodes"></span>
+          (<span id="numberOfSelectedNodes"></span>)
+        </td>
+        <td>Nodes (Selected)</td>
+      </tr>
+      <tr>
+        <td id="numberOfVisibleLinks" class="text-right"></td>
+        <td>Links</td>
+      </tr>
+      <tr>
+        <td id="numberOfDisjointComponents" class="text-right"></td>
+        <td>Clusters</td>
+      </tr>
+      <tr id="singletonsRow">
+        <td id="numberOfSingletonNodes" class="text-right"></td>
+        <td>Singletons</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <div id="2d_network_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Network Configuration</h5>
@@ -78,7 +80,7 @@
       </div>
       <div class="modal-body">
         <form>
-          <ul class="nav nav-tabs" id="2d_tab_list" role="tablist">
+          <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
               <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#node_settings" role="tab" aria-controls="node_settings" aria-selected="true">Nodes</a>
             </li>
@@ -86,7 +88,7 @@
               <a class="nav-link" id="links-tab" data-toggle="tab" href="#link_settings" role="tab" aria-controls="link_settings" aria-selected="false">Links</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="network-tab" data-toggle="tab" href="#network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
+              <a class="nav-link" id="network-tab" data-toggle="tab" href="#2d_network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
             </li>
           </ul>
           <div class="tab-content">
@@ -155,10 +157,10 @@
                 <div class="col-3"></div>
                 <div class="col-6">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                    <label class="btn btn-default active">
+                    <label class="btn btn-secondary active">
                       <input type="radio" name="DirectionOptions" id="UndirectedLinks" autocomplete="off" checked> Undirected
                     </label>
-                    <label class="btn btn-default">
+                    <label class="btn btn-secondary">
                       <input type="radio" name="DirectionOptions" id="DirectedLinks" autocomplete="off"> Directed
                     </label>
                   </div>
@@ -188,7 +190,7 @@
                 <div class="col-6"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
               </div>
             </div>
-            <div class="tab-pane fade" id="network_settings" role="tabpanel" aria-labelledby="network-tab">
+            <div class="tab-pane fade" id="2d_network_settings" role="tabpanel" aria-labelledby="network-tab">
               <div class="form-group row">
                 <div class="col-3"><strong>Property</strong></div>
                 <div class="col-9"><strong>Value</strong></div>
@@ -197,11 +199,11 @@
                 <div class="col-3"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
                 <div class="col-9">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                    <label class="btn btn-default active">
-                      <input type="radio" name="networkStatisticsOptions" id="showNetworkStatistics" autocomplete="off" checked> Show
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="2d_network_statisticsOptions" id="show_2d_network_statistics" autocomplete="off" checked> Show
                     </label>
-                    <label class="btn btn-default">
-                      <input type="radio" name="networkStatisticsOptions" id="hideNetworkStatistics" autocomplete="off"> Hide
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="2d_network_statisticsOptions" id="hide_2d_network_statistics" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -608,7 +610,7 @@ function redrawNodes(){
 }
 
 function updateStatistics(){
-  if($('#hideNetworkStatistics').is(':checked')) return;
+  if($('#hide_2d_network_statistics').is(':checked')) return;
   var llinks = _.filter(session.data.links, e => e.visible);
   var lnodes = _.filter(session.data.nodes, e => e.visible);
   var singletons = lnodes.length - _.union(_.map(llinks, 'source'), _.map(llinks, 'target')).length;
@@ -833,8 +835,8 @@ $('#default-link-threshold').on('input', e => {
   session.network.force.alpha(0.3).alphaTarget(0).restart();
 });
 
-$('#hideNetworkStatistics').parent().click(() => $('#networkStatistics').fadeOut());
-$('#showNetworkStatistics').parent().click(function(){
+$('#hide_2d_network_statistics').parent().click(() => $('#networkStatistics').fadeOut());
+$('#show_2d_network_statistics').parent().click(function(){
   updateStatistics();
   $('#networkStatistics').fadeIn();
 });
