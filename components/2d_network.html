@@ -693,8 +693,7 @@ $('#nodeColorVariable').change(e => {
   }
   table.append('<tr><th>'+e.target.value+'</th><th>Color</th><tr>');
   var values = _.map(session.data.nodes, e.target.value);
-  var colors = $.getJSON('components/colors.json');
-  var o = d3.scaleOrdinal(colors).domain(values);
+  var o = d3.scaleOrdinal(session.style.palette).domain(values);
   circles.attr('fill', d => o(d[e.target.value]));
   values.forEach(value => {
     var input = $('<input type="color" value="'+o(value)+'" />')
@@ -742,8 +741,7 @@ function setLinkColor(e){
   var table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
   table.append('<tr><th>'+variable+'</th><th>Color</th><tr>');
   var values = _(session.data.links).map(variable).uniq().sort().value();
-  var colors = $.getJSON('components/colors.json');
-  var o = d3.scaleOrdinal(colors).domain(values);
+  var o = d3.scaleOrdinal(session.style.palette).domain(values);
   links.style('stroke', d => o(d[variable]));
   values.forEach(value => {
     var input = $('<input type="color" name="'+value+'-node-color-setter" value="'+o(value)+'" />')
