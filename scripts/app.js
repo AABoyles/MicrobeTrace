@@ -1,55 +1,56 @@
-var layout = new window.GoldenLayout({
-  settings: {
-    selectionEnabled: true,
-    showPopoutIcon: false
-  },
-  content: [{
-    type: 'stack',
-    content: []
-  }]
-}, $('#main_panel'));
-
-layout.init();
-
-function launchView(view){
-  if(!layout._components[view]){
-    layout.registerComponent(view, function(container, state){
-      container.getElement().html(state.text);
-    });
-  }
-  if(!componentCache[view]){
-    $.get('components/' + view + '.html', function(response){
-      componentCache[view] = response;
-      launchView(view);
-    });
-  } else {
-    layout.root.contentItems[0].addChild({
-      title: app.titleize(view),
-      type: 'component',
-      componentName: view,
-      componentState: { text: componentCache[view] }
-    });
-    $('select.nodeVariables').html(
-      '<option>None</option>' +
-      session.data.nodeFields.map(function(field){
-        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-      }).join('\n')
-    );
-    $('select.linkVariables').html(
-      '<option>None</option>' +
-      session.data.linkFields.map(function(field){
-        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-      }).join('\n')
-    );
-    $('[data-toggle="tooltip"]').tooltip();
-  }
-}
-
+var layout, launchView, reset;
 var componentCache = {};
 
 $(function(){
 
-  function reset(){
+  layout = new window.GoldenLayout({
+    settings: {
+      selectionEnabled: true,
+      showPopoutIcon: false
+    },
+    content: [{
+      type: 'stack',
+      content: []
+    }]
+  }, $('#main_panel'));
+
+  layout.init();
+
+  launchView = function(view){
+    if(!layout._components[view]){
+      layout.registerComponent(view, function(container, state){
+        container.getElement().html(state.text);
+      });
+    }
+    if(!componentCache[view]){
+      $.get('components/' + view + '.html', function(response){
+        componentCache[view] = response;
+        launchView(view);
+      });
+    } else {
+      layout.root.contentItems[0].addChild({
+        title: app.titleize(view),
+        type: 'component',
+        componentName: view,
+        componentState: { text: componentCache[view] }
+      });
+      $('select.nodeVariables').html(
+        '<option>None</option>' +
+        session.data.nodeFields.map(function(field){
+          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+        }).join('\n')
+      );
+      $('select.linkVariables').html(
+        '<option>None</option>' +
+        session.data.linkFields.map(function(field){
+          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+        }).join('\n')
+      );
+      $('[data-toggle="tooltip"]').tooltip();
+    }
+  }
+
+  reset = function(){
     window.session = app.dataSkeleton();
     //TODO: Kill all open tabs
     launchView('files');
