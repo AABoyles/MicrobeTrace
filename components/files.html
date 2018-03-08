@@ -63,13 +63,13 @@ $('#file_panel').on('dragover', function(evt){
   let files = evt.originalEvent.dataTransfer.files;
   let output = [];
   for(let i = 0, f; f = files[i]; i++) addFileToTable(f);
-  $('#main-submit').css('display', 'inline');
+  $('#main-submit').css('display', 'inline').focus();
 });
 
 $('#data_files').on('change', function(e){
   let files = e.target.files;
   for(let i = 0, f; f = files[i]; i++) addFileToTable(f);
-  $('#main-submit').css('display', 'inline');
+  $('#main-submit').css('display', 'inline').focus();
 });
 
 function addFileToTable(file){
