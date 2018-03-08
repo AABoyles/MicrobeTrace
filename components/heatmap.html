@@ -8,17 +8,17 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 class="modal-title">Heatmap Settings</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">Heatmap Settings</h4>
         </div>
         <div class="modal-body">
-          <div class="row">
+          <div class="form-group row">
             <div class="col-xs-3">Distance Metric</div>
             <div class="col-xs-9">
               <div class="btn-group" data-toggle="buttons" id="heatmap_distanceMetric"></div>
             </div>
           </div>
-          <div class="row">
+          <div class="form-group row">
             <div class="col-xs-3">Invert Axes</div>
             <div class="col-xs-9">
               <div class="btn-group" data-toggle="buttons">
@@ -33,7 +33,7 @@
               </div>
             </div>
           </div>
-          <div class="row">
+          <div class="form-group row">
             <div class="col-xs-3">Color Scheme</div>
             <div class="col-xs-9">
               <input type="color" id="heatmap_lowColor" value="#313695" />
@@ -41,11 +41,11 @@
               <input type="color" id="heatmap_highColor" value="#a50026" />
             </div>
           </div>
-          <div class="row">
+          <div class="form-group row">
             <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
             <div class="col-xs-9"><input type="color" id="heatmap_network-color" class="triggers" value="#ffffff" /></div>
           </div>
-          <div class="row">
+          <div class="form-group row">
             <div class="col-xs-3">Axis Labels</div>
             <div class="col-xs-9">
               <div class="btn-group" data-toggle="buttons">
@@ -74,9 +74,9 @@
 
     if(window.plot) Plotly.purge('heatmap_panel');
 
-    let xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
-    let yLabels = xLabels.slice();
-    let data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
+    var xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
+    var yLabels = xLabels.slice();
+    var data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
 
     if($('#heatmap_invertX').is(':checked')){
       data.forEach(l => l.reverse());
@@ -88,7 +88,7 @@
       yLabels.reverse();
     }
 
-    let config = {
+    var config = {
       autotick: false,
       showticklabels: $('#heatmap_showAxisLabels').is(':checked')
     };
@@ -118,16 +118,14 @@
 
   $('#heatmap_distanceMetric').html(
     Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
-      <label class="btn btn-default btn-xs${(i===0)? ' active':''}">
-        <input type="radio" name="distanceMetric" id="${k}" autocomplete="off"${(i===0)? ' checked':''}> ${k}
+      <label class="btn btn-secondary${(i===0)? ' active':''}">
+        <input type="radio" name="distanceMetric" id="${k}" autocomplete="off"${(i===0)? ' checked':''}>${app.titleize(k)}</input>
       </label>
     `).join('')
   );
   $('input[name="distanceMetric"]').change(replot);
 
   replot();
-
-  restyle();
 
   $('#heatmap_network-color').on('input change', function(e){
     $('svg.main-svg:first').css('background-color', e.target.value);
@@ -136,6 +134,4 @@
   $('input[name="axisLabels"]').change(replot);
   $('input[type="color"]').change(replot);
   $('#heatmap_invertX, #heatmap_invertY').change(replot);
-
-  $(window).on('resize', replot);
   </script>
