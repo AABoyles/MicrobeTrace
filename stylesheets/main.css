@@ -284,14 +284,20 @@ input[type="range"]{
 /* Sequences */
 #sequences_panel {
   padding: 15px;
+  height: 100%;
+  overflow: auto;
 }
 .smenubar .smenubar_alink {
-  border-radius: 0px !important;
+  border-radius: .25rem !important;
   background-image: none !important;
-  background-color: #777777 !important;
+  border: 1px solid #cccccc !important;
+  color: #212529 !important;
+  background-color: #f8f9fa !important;
+}
+.smenubar .smenubar_alink:hover {
+
 }
 .smenu-dropdown {
-  left: 18px !important;
   top: 38px !important;
 }
 

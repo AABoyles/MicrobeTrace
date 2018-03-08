@@ -2,25 +2,6 @@
 
   <div id="sequences_panel"></div>
 
-  <button type="button" class="view_settings_button btn btn-light" data-toggle="modal" data-target="#sequences_settings_modal">
-    <span class="oi oi-cog"></span>
-  </button>
-
-  <div class="modal fade" id="sequences_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Sequences Configuration</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        </div>
-        <div class="modal-body"></div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
-
   <script src="node_modules/msa/dist/msa.js"></script>
   <script>
   var m = new msa.msa({
@@ -45,7 +26,6 @@
   });
   m.addView("menu", new msa.menu.defaultmenu({msa: m}));
   m.render();
-  $('.smenubar').detach().appendTo('#sequences_settings_modal .modal-body');
   var menubuttons = $('.smenubar > div');
-  [0,2,3,6,7,8].forEach(i => $(menubuttons.get(i)).hide());
+  [0,2,3,6,7,8,9].forEach(i => $(menubuttons.get(i)).hide());
   </script>
