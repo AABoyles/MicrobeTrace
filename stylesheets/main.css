@@ -320,3 +320,15 @@ input[type="range"]{
 #phylogenetic_tree_panel .label--active {
   font-weight: bold;
 }
+
+/* Table */
+#table-type-panel{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+#table-wrapper{
+  position: absolute;
+  top: 56px;
+  height: calc(100% - 66px);
+}
