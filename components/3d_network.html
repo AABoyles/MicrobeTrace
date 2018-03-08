@@ -44,7 +44,7 @@
                 </div>
                 <div class="row">
                   <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-                  <div class="col-xs-6"><input type="color" id="3d_network_network-color" class="triggers" value="#ffffff" /></div>
+                  <div class="col-xs-6"><input type="color" id="3d_network-color" class="triggers" value="#ffffff" /></div>
                 </div>
               </div>
             </div>
@@ -61,14 +61,6 @@
   <script>
   var graph = ForceGraph3D()($('#3d-network')[0]);
 
-  $('.nodeVariables').html(
-    ['<option value="none" selected>None</option>'].concat(
-      session.data.nodeFields.map(key => '<option value="' + key + '">' + app.titleize(key) + '</option>')
-    ).join('\n')
-  );
-
-  $('.linkVariables').html('<option value="none" selected>None</option>' + session.data.linkFields.map(key => `<option value="${key}">${app.titleize(key)}</option>`).join('\n'));
-
   drawGraph3D();
 
   function drawGraph3D(){
@@ -78,7 +70,7 @@
     var nodeColor = $('#3d_network_default-node-color').val();
     var links = _.cloneDeep(session.data.links.filter(l => l[pv] < t));
     graph
-      .backgroundColor($('#3d_network_network-color').val())
+      .backgroundColor($('#3d_network-color').val())
       .nodeRelSize($('#3d_network_default-node-radius').val())
       .colorField(d => nodeColor)
       .lineOpacity($('#3d_network_default-link-opacity').val())
