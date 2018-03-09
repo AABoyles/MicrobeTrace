@@ -260,6 +260,7 @@ $('#main-submit').click(function(e){
       let l = 0, m = 0;
       Papa.parse(file.file, {
         header: true,
+        worker: true,
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
@@ -292,6 +293,7 @@ $('#main-submit').click(function(e){
 
       Papa.parse(file.file, {
         header: true,
+        worker: true,
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
@@ -314,6 +316,7 @@ $('#main-submit').click(function(e){
       message(`Parsing ${filename} as Distance Matrix...`);
 
       Papa.parse(file.file, {
+        worker: true,
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
@@ -351,21 +354,51 @@ $('#main-submit').click(function(e){
     }
   });
 
-  function nextStuff(){
+  var nextStuff = function(){
     if(anySequences){
-      const allDashes = /^-*$/;
-      let subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
+      var allDashes = /^-*$/;
+      var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
       if(instructions.align){
-        message('Aligning Sequences...');
-        app.align(subset, instructions.reference);
+        alignAndComputeDM(subset);
+      } else {
+        computeDM(subset);
       }
-      message('Computing New Distance Matrices...');
-      let k = app.computeDistanceMatrices(subset);
-      message(` - Found ${k} New Links while computing Distance Matrices`);
+    } else {
+      launchView('2d_network');
     }
-    clearTimeout(messageTimeout);
-    launchView('2d_network');
-  }
+  };
+
+  var alignAndComputeDM = function(subset){
+    message('Aligning Sequences...');
+    var aligner = new Worker('scripts/aligner.js');
+    aligner.postMessage({
+      reference: instructions.reference,
+      nodes: subset
+    });
+    aligner.onmessage = function(response){
+      subset.forEach(function(node, i){
+        node = response.data[i];
+      });
+      computeDM(subset);
+    };
+  };
+
+  var computeDM = function(subset){
+    message('Computing New Distance Matrices...');
+    var computer = new Worker('scripts/compute-dm.js');
+    computer.postMessage(subset);
+    computer.onmessage = function(response){
+      var k = 0;
+      clearTimeout(messageTimeout);
+      response.data.links.forEach(function(link){
+        k += app.addLink(link);
+      });
+      session.data.distance_matrix = response.data;
+      delete session.data.distance_matrix.links;
+      message(` - Found ${k} New Links while computing Distance Matrices`);
+      launchView('2d_network');
+    };
+  };
 });
 
 </script>

@@ -88,60 +88,6 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
-app.hamming = function(s1, s2){
-  let i = s1.length;
-  let sum = 0;
-  while(--i > 0){
-    if(s1[i] !== s2[i]) sum++;
-  }
-  return sum;
-};
-
-app.align = function(subset, reference){
-  subset.forEach(node => {
-    let rst = bioseq.align(reference, node.seq, true, [1, -1], [-5, -1.7]);
-    let fmt = bioseq.cigar2gaps(reference, node.seq, rst.position, rst.CIGAR);
-    node.padding = rst.position;
-    node.seq = fmt[1];
-  });
-
-  //Final step in alignment: left- and right- padding with hyphens
-  let minPadding = _.minBy(subset, 'padding');
-  subset.forEach(d => d.seq = '-'.repeat(d.padding - minPadding) + d.seq);
-
-  let maxLength = _.max(subset.map(d => d.seq.length));
-  subset.forEach(d => d.seq = d.seq + '-'.repeat(maxLength - d.seq.length));
-};
-
-app.computeDistanceMatrices = function(subset){
-  let n = subset.length;
-  let k = 0;
-  session.data.distance_matrix.tn93 = Array(n);
-  session.data.distance_matrix.snps = Array(n);
-  session.data.distance_matrix.labels = subset.map(d => d.id);
-  for(let i = 0; i < n; i++){
-    session.data.distance_matrix.tn93[i] = Array(n);
-    session.data.distance_matrix.snps[i] = Array(n);
-    session.data.distance_matrix.tn93[i][i] = session.data.distance_matrix.snps[i][i] = 0;
-    for(let j = 0; j < i; j++){
-      let distance = tn93(subset[j]['seq'], subset[i]['seq'], 'AVERAGE');
-      let newLink = {
-        source: subset[j].id,
-        target: subset[i].id,
-        tn93: distance,
-        snps: app.hamming(subset[j]['seq'], subset[i]['seq']),
-        distance: distance
-      };
-      session.data.distance_matrix.tn93[i][j] = newLink.tn93;
-      session.data.distance_matrix.tn93[j][i] = newLink.tn93;
-      session.data.distance_matrix.snps[i][j] = newLink.snps;
-      session.data.distance_matrix.snps[j][i] = newLink.snps;
-      k += app.addLink(newLink);
-    }
-  }
-  return k;
-};
-
 app.titleize = function(title){
   let small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
