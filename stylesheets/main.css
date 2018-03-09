@@ -111,6 +111,7 @@ button.navbar-toggler{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin: auto;
 }
 .filename span.oi-circle-x:hover {
   color: red;

@@ -3,13 +3,13 @@
   <div class="container">
     <hr class="my-4">
     <input type="file" id="data_files" multiple="true" />
-    <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr" data-toggle="modal" data-target="#alignerControlsModal">Alignment Options</button>
+    <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#alignerControlsModal">Alignment Options</button>
     <button type="submit" id="main-submit" class="btn btn-success float-right" title="Please select a Network CSV or FASTA File">Submit</button>
   </div>
 </div>
 
 <div id="alignerControlsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#alignerControlsModalTitle" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 id="alignerControlsModalTitle" class="modal-title">Alignment Configuration</h5>
@@ -18,24 +18,31 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="row" style="margin-bottom: 5px">
-          <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>&nbsp;
-          <div class="btn-group btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-default active">
-              <input type="radio" name="shouldAlign" id="align" autocomplete="off" checked> Yes
-            </label>
-            <label class="btn btn-default">
-              <input type="radio" name="shouldAlign" id="doNotAlign" autocomplete="off"> No
-            </label>
+        <div class="container-fluid">
+          <div class="form-group row" style="margin-bottom: 1rem">
+            <div class="col-2">
+              <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>
+            </div>
+            <div class="col-10">
+              <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                <label class="btn btn-secondary active">
+                  <input type="radio" name="shouldAlign" id="align" autocomplete="off" checked> Yes
+                </label>
+                <label class="btn btn-secondary">
+                  <input type="radio" name="shouldAlign" id="doNotAlign" autocomplete="off"> No
+                </label>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="row" id="referenceRow">
-          <div class="col-2">
-            <input id="refSeqFileLoad" class="btn btn-default btn-xs" type="button" value="Load From File" />
-            <input id="refSeqLoad" class="btn btn-default btn-xs" type="button" value="Load HXB2.pol" />
-          </div>
-          <div class="col-10">
-            <textarea id="reference"></textarea>
+          <div class="form-group row" id="referenceRow">
+            <div class="col-2">
+              <a href="#" data-toggle="tooltip" title="Against what sequence should MicrobeTrace align your sequences?">Reference</a>
+            </div>
+            <div class="col-10">
+              <textarea id="reference"></textarea>
+              <input id="refSeqFileLoad" class="btn btn-secondary btn-sm btn-nr" type="file" value="Load From File" />
+              <input id="refSeqLoad" class="btn btn-secondary btn-sm" type="button" value="Load HXB2.pol" />
+            </div>
           </div>
         </div>
       </div>
@@ -47,7 +54,12 @@
 </div>
 
 <script>
-$('#data_files').filestyle({
+
+$('#data_files').on('change', function(e){
+  var files = e.target.files;
+  for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
+  $('#main-submit').css('display', 'inline').focus();
+}).filestyle({
   text: 'Input File(s)',
   input: false,
   btnClass: 'btn-primary'
@@ -60,26 +72,20 @@ $('#file_panel').on('dragover', function(evt){
 }).on('drop', function(evt){
   evt.stopPropagation();
   evt.preventDefault();
-  let files = evt.originalEvent.dataTransfer.files;
-  let output = [];
-  for(let i = 0, f; f = files[i]; i++) addFileToTable(f);
-  $('#main-submit').css('display', 'inline').focus();
-});
-
-$('#data_files').on('change', function(e){
-  let files = e.target.files;
-  for(let i = 0, f; f = files[i]; i++) addFileToTable(f);
+  var files = evt.originalEvent.dataTransfer.files;
+  var output = [];
+  for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
   $('#main-submit').css('display', 'inline').focus();
 });
 
 function addFileToTable(file){
   session.files.push(file);
-  let filename = file.name;
-  let extension = filename.split('.').pop().slice(0,3).toLowerCase();
-  let isFasta = (extension === 'fas');
+  var filename = file.name;
+  var extension = filename.split('.').pop().slice(0,3).toLowerCase();
+  var isFasta = (extension === 'fas');
   if(isFasta) $('#alignerControlsButton').css('display', 'inline');
-  let isNode = filename.toLowerCase().includes('node');
-  let root = $('<div class="row file-table-row"></div>');
+  var isNode = filename.toLowerCase().includes('node');
+  var root = $('<div class="form-group row file-table-row"></div>');
   $('<div class="col-8 filename"></div>')
     .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
       session.files.splice(session.files.indexOf(filename), 1);
@@ -109,9 +115,9 @@ function addFileToTable(file){
     dynamicTyping: true,
     header: true,
     complete: function(output){
-      let data = output.data;
-      let headers = output.meta.fields;
-      let options = '<option>None</option>' + headers.map(h => `<option value="${h}">${app.titleize(h)}</option>`).join('\n');
+      var data = output.data;
+      var headers = output.meta.fields;
+      var options = '<option>None</option>' + headers.map(h => `<option value="${h}">${app.titleize(h)}</option>`).join('\n');
       $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${filename}'>
           <label for="file-${filename}-field-1">${isNode?'ID':'Source'}</label>
           <select id="file-${filename}-field-1" class="custom-select custom-select-sm">${options}</select>
@@ -124,7 +130,7 @@ function addFileToTable(file){
           <label for="file-${filename}-field-3">Distance</label>
           <select id="file-${filename}-field-3" class="custom-select custom-select-sm">${options}</select>
         </div>`).appendTo(root);
-      let a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+      var a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
           b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
           c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
       [a, b, c].forEach((list, i) => {
@@ -135,8 +141,8 @@ function addFileToTable(file){
         });
       });
       root.appendTo('#file_table');
-      let refit = function(e){
-        let type = $(e ? e.target : `[name="options-${filename}"]:checked`).data('type'),
+      var refit = function(e){
+        var type = $(e ? e.target : `[name="options-${filename}"]:checked`).data('type'),
             these = $(`[data-file='${filename}']`),
             first = $(these.get(0)),
             second = $(these.get(1)),
@@ -174,16 +180,21 @@ function addFileToTable(file){
 $('#align').parent().click(e => $('#referenceRow').slideDown());
 $('#doNotAlign').parent().click(e => $('#referenceRow').slideUp());
 
-$('#refSeqFileLoad').click(e => {
-  //TODO: Replace with Drag 'n Drop loader'
-  // remote.dialog.showOpenDialog({
-  //   filters: [{name: 'FASTA Files', extensions:['fas', 'fasta', 'txt']}]
-  // }, paths => {
-  //   if(paths){
-  //     $('#refSeqFile').text(paths[0]).slideDown();
-  //     $('#reference').val(jetpack.read(paths[0]).split(/[\n>]/)[2]);
-  //   }
-  // });
+$('#refSeqFileLoad').filestyle({
+  text: 'Load from File',
+  input: false,
+  btnClass: 'btn-secondary btn-sm'
+});
+
+$('#refSeqFileLoad').on('change', function(e){
+  var file = e.target.files[0];
+  var reader = new FileReader();
+  reader.onloadend = function(e){
+    if (e.target.readyState == FileReader.DONE){
+      $('#reference').val(app.parseFASTA(e.target.result)[0].seq);
+    }
+  };
+  reader.readAsText(file);
 });
 
 $('#refSeqLoad').click(e => $('#reference').val($('#HXB2pol').html()));
@@ -205,10 +216,10 @@ $('#main-submit').click(function(e){
     backdrop: 'static'
   });
 
-  let files = [];
+  var files = [];
   $('#file_panel .row').each((i, el) => {
-    let $el = $(el);
-    let selects = $el.find('select');
+    var $el = $(el);
+    var selects = $el.find('select');
     files.push({
       file: session.files[i],
       type: $el.find('input[type="radio"]:checked').data('type'),
@@ -223,7 +234,7 @@ $('#main-submit').click(function(e){
     alertify.warning("If you stare long enough, you can reverse the DNA Molecule\'s spin direction");
   }, 20000);
 
-  const hierarchy = ['distmat', 'link', 'node', 'fasta'];
+  var hierarchy = ['distmat', 'link', 'node', 'fasta'];
 
   var instructions = {
     files: files,
@@ -235,16 +246,16 @@ $('#main-submit').click(function(e){
 
   instructions.files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
   instructions.files.forEach((file, fileNum) => {
-    let filename = file.file.name;
+    var filename = file.file.name;
 
     if(file.type === 'fasta'){
 
       message(`Parsing ${filename} as FASTA...`);
-      let reader = new FileReader();
+      var reader = new FileReader();
       reader.onloadend = function(e){
         anySequences = true;
-        let n = 0;
-        let seqs = app.parseFASTA(e.target.result);
+        var n = 0;
+        var seqs = app.parseFASTA(e.target.result);
         seqs.forEach(node => {
           node['origin'] = filename;
           n += app.addNode(node);
@@ -257,14 +268,14 @@ $('#main-submit').click(function(e){
     } else if(file.type === 'link'){
 
       message(`Parsing ${filename} as Link CSV...`);
-      let l = 0, m = 0;
+      var l = 0, m = 0;
       Papa.parse(file.file, {
         header: true,
         worker: true,
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
-          let link = results.data.forEach(link => {
+          var link = results.data.forEach(link => {
             l += app.addLink(Object.assign({
               source: link[file.field1],
               target: link[file.field2],
@@ -275,9 +286,9 @@ $('#main-submit').click(function(e){
           });
           message(` - Parsed ${l} New, ${m} Total Links from Link CSV.`);
           results.meta.fields.forEach(key => session.data.linkFields.push(key));
-          let n = 0;
-          let nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
-          let t = nodeIDs.length;
+          var n = 0;
+          var nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
+          var t = nodeIDs.length;
           nodeIDs.forEach(d => n += app.addNode({
             id: d,
             origin: filename
@@ -297,7 +308,7 @@ $('#main-submit').click(function(e){
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
-          let n = 0;
+          var n = 0;
           results.data.forEach(node => {
             node.id = node[file.field1];
             if(file.field2 !== 'None') node.seq = node[file.field2];
@@ -320,8 +331,8 @@ $('#main-submit').click(function(e){
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
-          let nodeIDs = [];
-          let nn = 0, nl = 0;
+          var nodeIDs = [];
+          var nn = 0, nl = 0;
           results.data.forEach((row, i) => {
             if(i == 0){
               nodeIDs = row;
