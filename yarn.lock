@@ -3744,10 +3744,6 @@ pruner@^0.0.7:
   dependencies:
     fs-extra "^4.0.0"
 
-pseudo-worker@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/pseudo-worker/-/pseudo-worker-1.1.1.tgz#7e75b3c391da1fdb2beb44e05c0d4847cf1d95a8"
-
 punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
