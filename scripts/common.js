@@ -36,7 +36,7 @@ app.defaultNode = function(){
 };
 
 app.addNode = function(newNode){
-  let oldNode = session.data.nodes.find(d => d.id === newNode.id);
+  var oldNode = session.data.nodes.find(d => d.id === newNode.id);
   if(oldNode){
     Object.assign(oldNode, newNode);
     return 0;
@@ -59,7 +59,7 @@ app.defaultLink = function(){
 };
 
 app.addLink = function(newLink){
-  let oldLink = session.data.links.find(l => l.source === newLink.source & l.target === newLink.target);
+  var oldLink = session.data.links.find(l => l.source === newLink.source & l.target === newLink.target);
   if(oldLink){
     Object.assign(oldLink, newLink);
     return 0;
@@ -71,7 +71,7 @@ app.addLink = function(newLink){
 
 app.parseFASTA = function(text){
   if(!text || text.length === 0) return []
-  let seqs = [], currentSeq = {};
+  var seqs = [], currentSeq = {};
   text.split(/[\r\n]+/g).forEach((line, i) => {
     if(/^\s*$/.test(line)) return;
     if(line[0] == ">" || line[0] == ";"){
@@ -89,7 +89,7 @@ app.parseFASTA = function(text){
 };
 
 app.titleize = function(title){
-  let small = title.toLowerCase().replace(/_/g, ' ');
+  var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
   if(small === 'tn93') return 'TN93';
   if(small === 'snps') return 'SNPs';
@@ -120,7 +120,7 @@ app.tagClusters = function(){
 
 app.DFS = function(node){
   if(typeof node.cluster !== 'undefined') return;
-  let lsv = $('#linkSortVariable').val();
+  var lsv = $('#linkSortVariable').val();
   node.cluster = session.data.clusters.length;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
   session.data.links.forEach(l => {
