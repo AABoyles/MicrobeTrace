@@ -29,3 +29,5 @@
   var menubuttons = $('.smenubar > div');
   [0,2,3,6,7,8,9].forEach(i => $(menubuttons.get(i)).hide());
   </script>
+  <!-- This shitty little hack mitigates the fact that MSA Viewer overwrites lodash with underscore. -->
+  <script type="text/javascript" src="node_modules/lodash/lodash.min.js"></script>
