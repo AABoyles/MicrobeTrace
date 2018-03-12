@@ -88,6 +88,18 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
+app.unparseFASTA = function(nodes){
+  return nodes.map(function(node){
+    return '>' + node.id + '\r\n' + node.seq;
+  }).join('\r\n');
+};
+
+app.unparseMEGA = function(nodes){
+  return nodes.map(function(node){
+    return '#' + node.id + '\r\n' + node.seq;
+  }).join('\r\n');
+};
+
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
