@@ -272,6 +272,7 @@ performance of this software.</pre>
   <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="vendor/bootstrap-filestyle.min.js"></script>
   <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
+  <script type="text/javascript" src="node_modules/html2canvas/dist/html2canvas.min.js"></script>
   <script type="text/javascript" src="node_modules/papaparse/papaparse.min.js"></script>
   <script type="text/javascript" src="node_modules/alertifyjs/build/alertify.min.js"></script>
   <script type="text/javascript" src="node_modules/screenfull/dist/screenfull.js"></script>
@@ -368,8 +369,21 @@ performance of this software.</pre>
     });
 
     $('#SaveImageTab').click(function(){
-      var blob = new Blob(["Hello, world!"], {type: "text/plain;charset=utf-8"});
-      saveAs(blob, "hello world.txt");
+      $('.hideForScreenshot, .view_settings_button').hide();
+      setTimeout(function(){
+        if($('svg#network').parent().parent()[0].style.display === '' ||
+           $('div#3d-network').parent().parent()[0].style.display === ''){
+          alertify.warning('Sorry, MicrobeTrace cannot currently screenshot Networks. Please use <a href="https://www.take-a-screenshot.org/">a different approach</a> to capture the network.');
+          $('.hideForScreenshot, .view_settings_button').show();
+        } else {
+          html2canvas($('.lm_items').get(0)).then(function(canvas){
+            canvas.toBlob(function(blob){
+              saveAs(blob, 'MicrobeTraceImage.png');
+            });
+            $('.hideForScreenshot, .view_settings_button').show();
+          });
+        }
+      }, 1);
     });
 
     $('#SaveVectorTab').click(function(){
