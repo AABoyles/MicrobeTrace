@@ -126,19 +126,15 @@ performance of this software.</pre>
           <h5 class="modal-title">Loading File</h5>
         </div>
         <div class="modal-body">
-          <img src="img/1DNA.gif" class="img-responsive center-block" />
-          <div class="panel-group" id="advancedLoadingAccordion" role="tablist" aria-multiselectable="false">
-            <div class="panel panel-default">
-              <div class="panel-heading" role="tab" id="advancedLoadingHeading">
-                <a role="button" data-toggle="collapse" data-parent="#advancedLoadingAccordion" href="#advancedLoadingPanelWrapper" aria-expanded="false" aria-controls="advancedLoadingPanelWrapper">Details</a>
-              </div>
-              <div id="advancedLoadingPanelWrapper" class="panel-collapse collapse" role="tabpanel" aria-labelledby="advancedLoadingHeading">
-                <div id="loadingInformation" class="panel-body"></div>
-              </div>
-            </div>
+          <div class="text-center">
+            <img src="img/1DNA.gif" alt="Loading Spinner" />
+          </div>
+          <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">Details</a>
+          <div class="collapse" id="collapseExample">
+            <div id="loadingInformation" class="card card-body"></div>
           </div>
         </div>
-        <div class="modal-footer clearfix">
+        <div class="modal-footer">
           <button id="loadCancelButton" class="btn btn-error btn-sm pull-right">Cancel</button>
         </div>
       </div><!-- /.modal-content -->
