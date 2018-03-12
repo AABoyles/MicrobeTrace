@@ -7,7 +7,7 @@ CACHE:
 index.html
 stylesheets/main.css" > microbetrace.appcache
 ls components/ | sed -e 's/^/components\//' >> microbetrace.appcache
-ls workers/ | sed -e 's/^/workers\//' >> microbetrace.appcache
+ls scripts/ | sed -e 's/^/scripts\//' >> microbetrace.appcache
 ls vendor/ | sed -e 's/^/vendor\//' >> microbetrace.appcache
 ls img/ | sed -e 's/^/img\//' >> microbetrace.appcache
 cat index.html | grep -o "node_modules/.*\.js" >> microbetrace.appcache

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-03-09
+# 2018-03-12
 
 CACHE:
 index.html
@@ -16,7 +16,10 @@ components/phylogenetic_tree.html
 components/scatterplot.html
 components/sequences.html
 components/table.html
-workers/combined.js
+scripts/aligner.js
+scripts/common.js
+scripts/compute-dm.js
+scripts/compute-mst.js
 vendor/3d-force-graph.min.js
 vendor/bootstrap-filestyle.min.js
 vendor/d3v3.js
@@ -42,15 +45,13 @@ node_modules/jquery/dist/jquery.min.js
 node_modules/popper.js/dist/umd/popper.min.js
 node_modules/bootstrap/dist/js/bootstrap.min.js
 node_modules/golden-layout/dist/goldenlayout.min.js
+node_modules/html2canvas/dist/html2canvas.min.js
 node_modules/papaparse/papaparse.min.js
-node_modules/bioseq/dist/bioseq.min.js
-node_modules/tn93/dist/tn93.min.js
 node_modules/alertifyjs/build/alertify.min.js
 node_modules/screenfull/dist/screenfull.js
 node_modules/file-saver/FileSaver.min.js
 node_modules/clipboard/dist/clipboard.min.js
 node_modules/chosen-js/chosen.jquery.min.js
-node_modules/pseudo-worker/dist/pseudo-worker.polyfill.min.js
 node_modules/d3/build/d3.min.js
 node_modules/plotly.js/dist/plotly.min.js
 node_modules/d3-force-attract/dist/d3-force-attract.min.js
@@ -58,6 +59,7 @@ node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
 node_modules/d3-force-3d/build/d3-force-3d.min.js
 node_modules/d3-sankey/build/d3-sankey.min.js
 node_modules/msa/dist/msa.js
+node_modules/lodash/lodash.min.js
 node_modules/datatables.net/js/jquery.dataTables.js
 node_modules/datatables.net-bs4/js/dataTables.bootstrap4.js
 node_modules/datatables.net-select/js/dataTables.select.min.js
