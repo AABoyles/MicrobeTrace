@@ -367,6 +367,7 @@ $('#main-submit').click(function(e){
 
   var nextStuff = function(){
     if(anySequences){
+      $('.showForSequence').show();
       var allDashes = /^-*$/;
       var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
       if(instructions.align){
@@ -375,6 +376,8 @@ $('#main-submit').click(function(e){
         computeDM(subset);
       }
     } else {
+      $('.showForSequence').hide();
+      clearTimeout(messageTimeout);
       launchView('2d_network');
     }
   };
