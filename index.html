@@ -338,11 +338,12 @@ performance of this software.</pre>
   <script type="text/javascript" src="scripts/common.js"></script>
   <script type="text/javascript">
   var layout, launchView, reset;
-  var contentItems = [];
   var componentCache = {};
 
   $(function(){
     "use strict";
+
+    window.session = app.dataSkeleton();
 
     layout = new window.GoldenLayout({
       settings: {
@@ -369,7 +370,7 @@ performance of this software.</pre>
           launchView(view);
         });
       } else {
-        var contentItem = contentItems.find(function(item){
+        var contentItem = session.state.contentItems.find(function(item){
           return item.componentName === view;
         });
         if(contentItem){
@@ -382,7 +383,13 @@ performance of this software.</pre>
             type: 'component'
           });
           contentItem = _.last(layout.root.contentItems[0].contentItems);
-          contentItems.push(contentItem);
+          contentItem.on('itemDestroyed', function(){
+            var i = session.state.contentItems.findIndex(function(item){
+              return item === contentItem;
+            });
+            session.state.contentItems.splice(i, 1);
+          });
+          session.state.contentItems.push(contentItem);
         }
         $('select.nodeVariables').html(
           '<option>None</option>' +
@@ -401,13 +408,7 @@ performance of this software.</pre>
       }
     }
 
-    reset = function(){
-      window.session = app.dataSkeleton();
-      //TODO: Kill all open tabs
-      launchView('files');
-    }
-
-    reset();
+    launchView('files');
 
     // Before anything else gets done, ask the user to accept the legal agreement
     if(!localStorage.getItem('licenseAccepted')){
@@ -427,7 +428,15 @@ performance of this software.</pre>
     }
 
     // Let's set up the Nav Bar
-    $('#FileTab').click(reset);
+    $('#FileTab').click(function(){
+      window.session = app.dataSkeleton();
+      layout.root.replaceChild(layout.root.contentItems[0], {
+        type: 'stack',
+        content: []
+      });
+      session.state.contentItems = [];
+      launchView('files');
+    });
 
     $('#SaveImageTab').click(function(){
       $('.hideForScreenshot, .view_settings_button').hide();
