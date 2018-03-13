@@ -825,7 +825,7 @@ convex-hull@^1.0.3:
     incremental-convex-hull "^1.0.1"
     monotone-convex-hull-2d "^1.0.1"
 
-core-js@^2.0.0, core-js@^2.4.0, core-js@^2.5.0, core-js@^2.5.3:
+core-js@^2.0.0, core-js@^2.4.0, core-js@^2.5.0:
   version "2.5.3"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.3.tgz#8acc38345824f16d8365b7c9b4259168e8ed603e"
 
@@ -2372,10 +2372,6 @@ html2canvas@^1.0.0-alpha.10:
   resolved "https://registry.yarnpkg.com/html2canvas/-/html2canvas-1.0.0-alpha.10.tgz#08b3d0bf9f690e5e00e6cac3c5feb083a6a9488c"
   dependencies:
     css-line-break "1.0.1"
-
-html5shiv@^3.7.3:
-  version "3.7.3"
-  resolved "https://registry.yarnpkg.com/html5shiv/-/html5shiv-3.7.3.tgz#d78a84a367bcb9a710100d57802c387b084631d2"
 
 htmlparser2@^3.9.1:
   version "3.9.2"
