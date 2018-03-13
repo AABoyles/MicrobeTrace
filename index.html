@@ -342,9 +342,11 @@ performance of this software.</pre>
   <script type="text/javascript" src="scripts/common.js"></script>
   <script type="text/javascript">
   var layout, launchView, reset;
+  var contentItems = [];
   var componentCache = {};
 
   $(function(){
+    "use strict";
 
     layout = new window.GoldenLayout({
       settings: {
@@ -371,12 +373,21 @@ performance of this software.</pre>
           launchView(view);
         });
       } else {
-        layout.root.contentItems[0].addChild({
-          title: app.titleize(view),
-          type: 'component',
-          componentName: view,
-          componentState: { text: componentCache[view] }
+        var contentItem = contentItems.find(function(item){
+          return item.componentName === view;
         });
+        if(contentItem){
+          contentItem.parent.setActiveContentItem(contentItem);
+        } else {
+          layout.root.contentItems[0].addChild({
+            componentName: view,
+            componentState: { text: componentCache[view] },
+            title: app.titleize(view),
+            type: 'component'
+          });
+          contentItem = _.last(layout.root.contentItems[0].contentItems);
+          contentItems.push(contentItem);
+        }
         $('select.nodeVariables').html(
           '<option>None</option>' +
           session.data.nodeFields.map(function(field){
@@ -390,6 +401,7 @@ performance of this software.</pre>
           }).join('\n')
         );
         $('[data-toggle="tooltip"]').tooltip();
+        return contentItem;
       }
     }
 
