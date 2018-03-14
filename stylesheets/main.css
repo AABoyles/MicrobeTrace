@@ -222,25 +222,24 @@ input[type="range"]{
 #networkStatistics,
 #groupKey {
   position: absolute;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   color: #303030;
   background-color: #f5f5f5;
   border: 1px solid #c0c0c0;
 }
-#networkStatistics th,
 #groupKey th {
   text-align: center;
 }
-#networkStatistics th,
-#groupKey th,
-#networkStatistics td,
-#groupKey td {
+#groupKey th, td {
   border: 1px solid lightgray;
   padding: 4px;
 }
 #networkStatistics {
   bottom: 10px;
   right: 20px;
+}
+#networkStatistics td{
+  border: none;
 }
 #groupKey {
   top: 60px;
