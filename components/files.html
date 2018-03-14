@@ -202,7 +202,7 @@ $('#reference').val($('#HXB2pol').html());
 
 $('#loadCancelButton').click(e => {
   $('#loadingInformationModal').modal('hide');
-  reset(true);
+  app.reset();
 });
 
 function message(msg){
@@ -378,7 +378,7 @@ $('#main-submit').click(function(e){
     } else {
       $('.showForSequence').hide();
       clearTimeout(messageTimeout);
-      launchView('2d_network');
+      app.launchView('2d_network');
     }
   };
 
@@ -410,7 +410,7 @@ $('#main-submit').click(function(e){
       session.data.distance_matrix = response.data;
       delete session.data.distance_matrix.links;
       message(` - Found ${k} New Links while computing Distance Matrices`);
-      launchView('2d_network');
+      app.launchView('2d_network');
     };
   };
 });

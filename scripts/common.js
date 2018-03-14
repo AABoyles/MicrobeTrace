@@ -166,3 +166,63 @@ app.computeDegree = function(){
     c.mean_genetic_distance = c.sum_distances/c.links;
   });
 };
+
+app.reset = function(){
+  window.session = app.dataSkeleton();
+  layout.root.replaceChild(layout.root.contentItems[0], {
+    type: 'stack',
+    content: []
+  });
+  session.state.contentItems = [];
+  app.launchView('files');
+}
+
+app.launchView = function(view){
+  if(!layout._components[view]){
+    layout.registerComponent(view, function(container, state){
+      container.getElement().html(state.text);
+    });
+  }
+  if(!componentCache[view]){
+    $.get('components/' + view + '.html', function(response){
+      componentCache[view] = response;
+      app.launchView(view);
+    });
+  } else {
+    var contentItem = session.state.contentItems.find(function(item){
+      return item.componentName === view;
+    });
+    if(contentItem){
+      contentItem.parent.setActiveContentItem(contentItem);
+    } else {
+      layout.root.contentItems[0].addChild({
+        componentName: view,
+        componentState: { text: componentCache[view] },
+        title: app.titleize(view),
+        type: 'component'
+      });
+      contentItem = _.last(layout.root.contentItems[0].contentItems);
+      contentItem.on('itemDestroyed', function(){
+        var i = session.state.contentItems.findIndex(function(item){
+          return item === contentItem;
+        });
+        session.state.contentItems.splice(i, 1);
+      });
+      session.state.contentItems.push(contentItem);
+    }
+    $('select.nodeVariables').html(
+      '<option>None</option>' +
+      session.data.nodeFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    $('select.linkVariables').html(
+      '<option>None</option>' +
+      session.data.linkFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    $('[data-toggle="tooltip"]').tooltip();
+    return contentItem;
+  }
+};

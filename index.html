@@ -337,7 +337,7 @@ performance of this software.</pre>
   <script type="text/javascript" src="node_modules/plotly.js/dist/plotly.min.js"></script>
   <script type="text/javascript" src="scripts/common.js"></script>
   <script type="text/javascript">
-  var layout, launchView, reset;
+  var layout;
   var componentCache = {};
 
   $(function(){
@@ -358,57 +358,7 @@ performance of this software.</pre>
 
     layout.init();
 
-    launchView = function(view){
-      if(!layout._components[view]){
-        layout.registerComponent(view, function(container, state){
-          container.getElement().html(state.text);
-        });
-      }
-      if(!componentCache[view]){
-        $.get('components/' + view + '.html', function(response){
-          componentCache[view] = response;
-          launchView(view);
-        });
-      } else {
-        var contentItem = session.state.contentItems.find(function(item){
-          return item.componentName === view;
-        });
-        if(contentItem){
-          contentItem.parent.setActiveContentItem(contentItem);
-        } else {
-          layout.root.contentItems[0].addChild({
-            componentName: view,
-            componentState: { text: componentCache[view] },
-            title: app.titleize(view),
-            type: 'component'
-          });
-          contentItem = _.last(layout.root.contentItems[0].contentItems);
-          contentItem.on('itemDestroyed', function(){
-            var i = session.state.contentItems.findIndex(function(item){
-              return item === contentItem;
-            });
-            session.state.contentItems.splice(i, 1);
-          });
-          session.state.contentItems.push(contentItem);
-        }
-        $('select.nodeVariables').html(
-          '<option>None</option>' +
-          session.data.nodeFields.map(function(field){
-            return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-          }).join('\n')
-        );
-        $('select.linkVariables').html(
-          '<option>None</option>' +
-          session.data.linkFields.map(function(field){
-            return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-          }).join('\n')
-        );
-        $('[data-toggle="tooltip"]').tooltip();
-        return contentItem;
-      }
-    }
-
-    launchView('files');
+    app.launchView('files');
 
     // Before anything else gets done, ask the user to accept the legal agreement
     if(!localStorage.getItem('licenseAccepted')){
@@ -428,15 +378,7 @@ performance of this software.</pre>
     }
 
     // Let's set up the Nav Bar
-    $('#FileTab').click(function(){
-      window.session = app.dataSkeleton();
-      layout.root.replaceChild(layout.root.contentItems[0], {
-        type: 'stack',
-        content: []
-      });
-      session.state.contentItems = [];
-      launchView('files');
-    });
+    $('#FileTab').click(app.reset);
 
     $('#SaveImageTab').click(function(){
       $('.hideForScreenshot, .view_settings_button').hide();
@@ -469,7 +411,7 @@ performance of this software.</pre>
 
     $('#FindTab').click(function(e){ $('#search').focus(); });
 
-    $('#AddDataTab').click(function(){ launchView('files'); });
+    $('#AddDataTab').click(function(){ app.launchView('files'); });
 
     $('#RevealAllTab').click(function(e) {
       session.state.visible_clusters = session.data.clusters.map(c => c.id);
@@ -485,7 +427,7 @@ performance of this software.</pre>
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
 
-    $('.viewbutton').click(function(){ launchView($(this).data('href')); });
+    $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
 
     $('[name="export-options"]').change(function(e){
       var type = $('[name="export-options"]:checked').data('type');
