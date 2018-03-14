@@ -484,6 +484,10 @@ performance of this software.</pre>
         $('#searchBox').slideDown().find('#search').focus();
       }
     });
+
+    $(window).on('resize', function(e){
+      layout.root.setSize();
+    });
   });
 
   alertify.defaults.transition = 'slide';
