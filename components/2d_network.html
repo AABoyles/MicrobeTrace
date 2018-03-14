@@ -41,6 +41,9 @@
   <button id="playbutton" type="button" class="btn btn-light floater">
     <span class="oi oi-media-pause"></span>
   </button>
+  <button id="fitbutton" type="button" class="btn btn-light floater">
+    <span class="oi oi-target"></span>
+  </button>
 </div>
 
 <div id="networkStatistics">
@@ -304,7 +307,7 @@
       .call(session.network.zoom)
       .append('g');
 
-    session.network.fit = function(bounds){
+    session.network.fit = function(thing, bounds){
       if(!bounds) bounds = session.network.svg.node().getBBox();
       if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
       var parent = session.network.svg.node().parentElement,
@@ -866,6 +869,8 @@
         session.network.force.alpha(0).alphaTarget(0);
       }
     });
+
+  $('#fitbutton').click(session.network.fit);
 
   $('#search').on('input', e => {
     if(e.target.value === ''){
