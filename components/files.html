@@ -379,6 +379,11 @@ $('#main-submit').click(function(e){
       $('.showForSequence').hide();
       clearTimeout(messageTimeout);
       app.launchView('2d_network');
+      $('#linkSortVariable').html(
+        session.data.linkFields.map(function(field){
+          return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+        }).join('\n')
+      );
     }
   };
 
@@ -411,6 +416,11 @@ $('#main-submit').click(function(e){
       delete session.data.distance_matrix.links;
       message(` - Found ${k} New Links while computing Distance Matrices`);
       app.launchView('2d_network');
+      $('#linkSortVariable').html(
+        session.data.linkFields.map(function(field){
+          return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+        }).join('\n')
+      );
     };
   };
 });
