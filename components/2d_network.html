@@ -100,7 +100,7 @@
               </div>
               <div class="form-group row">
                 <div class="col-3"><label for="default-node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
-                <div class="col-3"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables categorical"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
                 <div class="col-6"><select id="default-node-symbol" class="custom-select custom-select-sm">
                   <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
                   <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
@@ -124,25 +124,25 @@
               </div>
               <div class="form-group row">
                 <div class="col-3"><label for="nodeLabelVariable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
-                <div class="col-3"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables categorical"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label for="nodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-                <div class="col-3"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables categorical"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Color</label></div>
-                <div class="col-3"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables categorical"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
                 <div class="col-6"><input type="color" id="default-node-color" value="#5656ff" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label for="default-node-opacity" data-toggle="tooltip" title="How transparent should the nodes be?">Transparency</label></div>
-                <div class="col-3"><select id="nodeOpacityVariable" class="custom-select custom-select-sm nodeVariables numeric"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="nodeOpacityVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
                 <div class="col-6"><input type="range" id="default-node-opacity" min="0" max="1" value="1" step="0.01" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label for="default-node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
-                <div class="col-3"><select id="nodeRadiusVariable" class="custom-select custom-select-sm nodeVariables numeric"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="nodeRadiusVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
                 <div class="col-6"><input type="range" id="default-node-radius" min="1" value="250" step="1" max="5000" /></div>
               </div>
             </div>
@@ -168,23 +168,23 @@
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
-                <div class="col-3"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
                 <div class="col-6"></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="What color should the links be?">Color</label></div>
-                <div class="col-3"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option value="none" selected>None</option></select></div>
+                <div class="col-3"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option selected>None</option></select></div>
                 <div class="col-6"><input type="color" id="default-link-color" value="#6f6f6f" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
-                <div class="col-3"><select id="linkOpacityVariable" class="custom-select custom-select-sm linkVariables"><option value="none">None</option></select></div>
+                <div class="col-3"><select id="linkOpacityVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
                 <div class="col-6"><input type="range" id="default-link-opacity" min="0" max="1" value="0.5" step="0.01" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="How wide should the links be?">Thickness</label></div>
                 <div class="col-3">
-                  <select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option value="none">None</option></select><br />
+                  <select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select><br />
                   <input type="checkbox" id="reciprocal-link-width" />&nbsp;<label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal?</label>
                 </div>
                 <div class="col-6"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
@@ -245,10 +245,9 @@
 <script type="text/javascript" src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
 <script>
 (function(){
-  $('#nodeTooltipVariable').val('id');
-  $('#linkSortVariable').val('distance');
 
   $('#default-link-threshold').show();
+
   app.tagClusters();
   setNodeVisibility();
   setLinkVisibility();
@@ -568,7 +567,7 @@
     var type = d3[$('#default-node-symbol').val()];
     var symbolVariable = $('#nodeSymbolVariable').val();
     var o = (b => d3[$('#default-node-symbol').val()]);
-    if(symbolVariable !== 'none'){
+    if(symbolVariable !== 'None'){
       var map = {};
       var values = _(session.data.nodes).map(symbolVariable).uniq().sort().value();
       $('#nodeShapes select').each(function(i, el){
@@ -580,7 +579,7 @@
     var defaultSize = $('#default-node-radius').val();
     var size = defaultSize;
     var sizeVariable = $('#nodeRadiusVariable').val();
-    if(sizeVariable !== 'none'){
+    if(sizeVariable !== 'None'){
       var values = _(session.data.nodes).map(sizeVariable).without(undefined);
       var min = values.min();
       var max = values.max();
@@ -590,10 +589,10 @@
     var vnodes = session.data.nodes.filter(n => n.visible);
     var nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
     nodes.select('path').each(function(d){
-      if(symbolVariable !== 'none'){
-        type = d3[o(d[$('#nodeSymbolVariable').val()])];
+      if(symbolVariable !== 'None'){
+        type = d3[o(d[symbolVariable])];
       }
-      if(sizeVariable !== 'none'){
+      if(sizeVariable !== 'None'){
         size = med;
         if(typeof d[sizeVariable] !== 'undefined'){
           size = d[sizeVariable];
@@ -601,9 +600,7 @@
         size = (size - min + 1) / oldrng
         size = size * size * defaultSize;
       }
-      d3.select(this).attr('d', d3.symbol()
-        .size(size)
-        .type(type));
+      d3.select(this).attr('d', d3.symbol().size(size).type(type));
     });
     //* Labels:
     var labelVar = $('#nodeLabelVariable').val();
@@ -623,7 +620,7 @@
   }
 
   $('#nodeLabelVariable').change(e => {
-    if(e.target.value === 'none'){
+    if(e.target.value === 'None'){
       session.network.svg.select('g#nodes').selectAll('g.node')
         .select('text').text('');
     } else {
@@ -637,14 +634,14 @@
     $('#default-node-symbol').fadeOut();
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
     var table = $('<tbody id="nodeShapes"></tbody>').appendTo('#groupKey');
-    if(e.target.value === 'none'){
+    if(e.target.value === 'None'){
       redrawNodes();
       $('#default-node-symbol').fadeIn();
       return table.fadeOut(e => table.remove());
     }
     table.append('<tr><th>'+e.target.value+'</th><th>Shape</th><tr>');
     var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
-    var symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye'].concat(Object.keys(extraSymbols));
+    var symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'];
     var o = d3.scaleOrdinal(symbolKeys).domain(values);
     var options = $('#default-node-symbol').html();
     values.forEach(v => {
@@ -664,7 +661,7 @@
     var scalar = $('#default-node-opacity').val();
     var variable = $('#nodeOpacityVariable').val();
     var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
-    if(variable === 'none'){
+    if(variable === 'None'){
       return circles.attr('opacity', scalar);
     }
     var values = _(session.data.nodes).map(variable).without(undefined);
@@ -688,7 +685,7 @@
     var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
     $('#nodeColors').fadeOut(function(){$(this).remove()});
     var table = $('<tbody id="nodeColors"></tbody>').appendTo('#groupKey');
-    if(e.target.value == 'none'){
+    if(e.target.value == 'None'){
       circles.attr('fill', $('#default-node-color').val());
       $('#default-node-color').fadeIn();
       table.fadeOut();
@@ -732,7 +729,7 @@
 
   function setLinkColor(e){
     var variable = $('#linkColorVariable').val();
-    if(variable == 'none'){
+    if(variable == 'None'){
       session.network.svg.select('g#links').selectAll('line').style('stroke', $('#default-link-color').val());
       $('#default-link-color').fadeIn();
       $('#linkColors').fadeOut();
@@ -765,7 +762,7 @@
 
   function scaleLinkThing(scalar, variable, attribute, floor){
     var links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
-    if(variable === 'none'){
+    if(variable === 'None'){
       return links.attr(attribute, scalar);
     }
     if(!floor){floor = 1;}
@@ -791,7 +788,7 @@
   $('#linkWidthVariable, #reciprocal-link-width').change(e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
 
   $('#linkSortVariable').on('change', e => {
-    if(e.target.value === 'none'){
+    if(e.target.value === 'None'){
       $('#computeMST').fadeOut();
       $('#default-link-threshold').fadeOut();
     } else {
@@ -884,5 +881,8 @@
       .classed('selected', d => d.selected);
     $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
   });
+
+  $('#nodeTooltipVariable').val('id');
+  $('#linkSortVariable').val('distance');
 })();
 </script>
