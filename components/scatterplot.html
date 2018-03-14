@@ -13,53 +13,57 @@
         </div>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#scatterplotConfigurations" aria-controls="scatterplotConfigurations" role="tab" data-toggle="tab">Scatterplot</a></li>
+            <li role="presentation" class="nav-item active">
+              <a href="#scatterplotConfigurations" aria-controls="scatterplotConfigurations" class="nav-link active" role="tab" data-toggle="tab">Scatterplot</a>
+            </li>
           </ul>
           <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="scatterplot_scatterplotConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which dataset should the scatterplot be drawn from?">Dataset</a></div>
-                  <div class="col-xs-9">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="set" id="scatterplot_vislinks" autocomplete="off" checked> Visible Links
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="set" id="scatterplot_alllinks" autocomplete="off"> All Links
-                      </label>
-                    </div>
+            <div role="tabpanel" class="tab-pane fade show active" id="scatterplotConfigurations">
+              <div class="form-group row">
+                <div class="col-3"><strong>Property</strong></div>
+                <div class="col-9"><strong>Value</strong></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3"><a href="#" data-toggle="tooltip" title="Which dataset should the scatterplot be drawn from?">Dataset</a></div>
+                <div class="col-9">
+                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="set" id="scatterplot_vislinks" autocomplete="off" checked> Visible Links
+                    </label>
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="set" id="scatterplot_alllinks" autocomplete="off"> All Links
+                    </label>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which variable should the scatterplot be drawn from?">X Variable</a></div>
-                  <div class="col-xs-9"><select id="scatterplot_xVar"></select></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which variable should the scatterplot be drawn from?">Y Variable</a></div>
-                  <div class="col-xs-9"><select id="scatterplot_yVar"></select></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
-                  <div class="col-xs-9">
-                    <div class="btn-group btn-group-xs" data-toggle="buttons">
-                      <label class="btn btn-default active">
-                        <input type="radio" name="scale" id="scatterplot_linearScale" autocomplete="off" checked> Linear
-                      </label>
-                      <label class="btn btn-default">
-                        <input type="radio" name="scale" id="scatterplot_logScale" autocomplete="off"> Log
-                      </label>
-                    </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the scatterplot be drawn from?">X Variable</a></div>
+                <div class="col-9"><select id="scatterplot_xVar" class="custom-select custom-select-sm"></select></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the scatterplot be drawn from?">Y Variable</a></div>
+                <div class="col-9"><select id="scatterplot_yVar" class="custom-select custom-select-sm"></select></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
+                <div class="col-9">
+                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="scale" id="scatterplot_linearScale" autocomplete="off" checked> Linear
+                    </label>
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="scale" id="scatterplot_logScale" autocomplete="off"> Log
+                    </label>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the scatterplot be?">Color</a></div>
-                  <div class="col-xs-9"><input type="color" id="scatterplot_color" value="#5656ff" /></div>
-                </div>
-                <div class="row">
-                  <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-                  <div class="col-xs-9"><input type="color" id="scatterplot_network-color" class="triggers" value="#ffffff" /></div>
-                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the scatterplot be?">Color</a></div>
+                <div class="col-9"><input type="color" id="scatterplot_color" value="#5656ff" /></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
+                <div class="col-9"><input type="color" id="scatterplot_network-color" class="triggers" value="#ffffff" /></div>
               </div>
             </div>
           </div>
