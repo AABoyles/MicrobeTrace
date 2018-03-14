@@ -214,7 +214,13 @@
 
     var fields = session.data.nodeFields;
 
-    $('.fields').append(fields.map(field => `<option value="${field}">${app.titleize(field)}</option>`).join('\n'));
+    $('.fields')
+      .append(fields.map(field => `<option value="${field}">${app.titleize(field)}</option>`).join('\n'))
+      .change(e => {
+        matchCoordinates();
+        redrawNodes();
+        drawLinks();
+      });
 
     if(fields.includes('lat')) $('#latitudeField').val('lat');
     if(fields.includes('lon')) $('#longitudeField').val('lon');
@@ -390,18 +396,20 @@
         d.jy = normal() * jitter;
       });
       nodeLayer
-        .selectAll('circle').data(session.data.nodes.filter(d => d.lon && d.lat))
+        .selectAll('circle').data(session.data.nodes.filter(d => d.visible && d.lon && d.lat))
         .attr('cx', d => projection([d.lon, d.lat])[0] + d.jx)
         .attr('cy', d => projection([d.lon, d.lat])[1] + d.jy);
     }
 
     function drawLinks(){
       if(!$('#showLinks').hasClass('active')) return linkLayer.html(null);
-      session.data.links.forEach(l => {
-        if(typeof l.source !== 'object') l.source = session.data.nodes.find(d => d.id === l.source);
-        if(typeof l.target !== 'object') l.target = session.data.nodes.find(d => d.id === l.target);
+      var links = _.cloneDeep(session.data.links);
+      var nodes = _.cloneDeep(session.data.nodes);
+      links.forEach(l => {
+        if(typeof l.source !== 'object') l.source = nodes.find(d => d.id === l.source);
+        if(typeof l.target !== 'object') l.target = nodes.find(d => d.id === l.target);
       });
-      var vlinks = session.data.links.filter(l => l.visible && !Number.isNaN(l.source.lat) && !Number.isNaN(l.source.lon) && !Number.isNaN(l.target.lat) && !Number.isNaN(l.target.lon));
+      var vlinks = links.filter(l => l.visible && !Number.isNaN(l.source.lat) && !Number.isNaN(l.source.lon) && !Number.isNaN(l.target.lat) && !Number.isNaN(l.target.lon));
       var ll = linkLayer.selectAll('line').data(vlinks);
       ll.exit().remove();
       ll.enter().append('line').merge(ll)
@@ -414,12 +422,6 @@
         .attr('y2', d => projection([d.target.lon, d.target.lat])[1] + d.target.jy);
       linkLayer.transition().style('opacity', 1);
     }
-
-    $('.fields').change(e => {
-      matchCoordinates();
-      redrawNodes();
-      drawLinks();
-    });
 
     $('#showStates').click(function(e){
       if(!$(this).hasClass('active')){
@@ -492,6 +494,8 @@
     $('#landColor').on('input', e => svg.selectAll('path').attr('fill', e.target.value));
 
     $('#waterColor').on('input', e => svg.style('background', e.target.value));
+
+    $('#default-link-threshold').change(drawLinks);
 
     drawCountries();
     drawCities();
