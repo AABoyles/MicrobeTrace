@@ -226,3 +226,29 @@ app.launchView = function(view){
     return contentItem;
   }
 };
+
+app.setNodeVisibility = function(){
+  session.data.nodes.forEach(n => n.visible = 1);
+  if(session.state.visible_clusters.length < session.data.clusters.length){
+    session.data.nodes.forEach(n => n.visible = n.visible && session.state.visible_clusters.includes(n.cluster));
+  }
+  if($('#HideSingletons').is(':checked')){
+    var clusters = session.data.clusters.map(c => c.nodes);
+    session.data.nodes.forEach(n => n.visible = n.visible && clusters[n.cluster-1] > 1);
+  }
+};
+
+app.setLinkVisibility = function(){
+  var metric  = $('#linkSortVariable').val(),
+      threshold = $('#default-link-threshold').val();
+  session.data.links.forEach(link => link.visible = 1);
+  if(metric !== 'none'){
+    session.data.links.forEach(link => link.visible = link.visible && (link[metric] <= threshold));
+  }
+  if($('#showMSTLinks').is(':checked')){
+    session.data.links.forEach(link => link.visible = link.visible && link.mst);
+  }
+  if(session.state.visible_clusters.length < session.data.clusters.length){
+    session.data.links.forEach(link => link.visible = link.visible && session.state.visible_clusters.includes(link.cluster));
+  }
+};

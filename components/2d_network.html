@@ -252,8 +252,8 @@
   $('#default-link-threshold').show();
 
   app.tagClusters();
-  setNodeVisibility();
-  setLinkVisibility();
+  app.setNodeVisibility();
+  app.setLinkVisibility();
   setupNetwork();
   renderNetwork();
   app.computeDegree();
@@ -265,32 +265,6 @@
   }, 1500);
 
   var messageTimeout;
-
-  function setNodeVisibility(){
-    session.data.nodes.forEach(n => n.visible = 1);
-    if(session.state.visible_clusters.length < session.data.clusters.length){
-      session.data.nodes.forEach(n => n.visible = n.visible && session.state.visible_clusters.includes(n.cluster));
-    }
-    if($('#HideSingletons').is(':checked')){
-      var clusters = session.data.clusters.map(c => c.nodes);
-      session.data.nodes.forEach(n => n.visible = n.visible && clusters[n.cluster-1] > 1);
-    }
-  }
-
-  function setLinkVisibility(){
-    var metric  = $('#linkSortVariable').val(),
-        threshold = $('#default-link-threshold').val();
-    session.data.links.forEach(link => link.visible = 1);
-    if(metric !== 'none'){
-      session.data.links.forEach(link => link.visible = link.visible && (link[metric] <= threshold));
-    }
-    if($('#showMSTLinks').is(':checked')){
-      session.data.links.forEach(link => link.visible = link.visible && link.mst);
-    }
-    if(session.state.visible_clusters.length < session.data.clusters.length){
-      session.data.links.forEach(link => link.visible = link.visible && session.state.visible_clusters.includes(link.cluster));
-    }
-  }
 
   function setupNetwork(){
     session.network = {};
@@ -483,8 +457,8 @@
     }
     $('#hideCluster').click(e => {
       session.state.visible_clusters = session.state.visible_clusters.filter(cid => cid !== d.cluster);
-      setLinkVisibility();
-      setNodeVisibility();
+      app.setLinkVisibility();
+      app.setNodeVisibility();
       renderNetwork();
       session.network.force.alpha(0.3).alphaTarget(0).restart();
       hideContextMenu();
@@ -492,8 +466,8 @@
     if(session.state.visible_clusters < session.data.clusters.length){
       $('#isolateCluster').text('De-isolate Cluster').click(e => {
         session.state.visible_clusters = session.data.clusters.map(c => c.id);
-        setNodeVisibility();
-        setLinkVisibility();
+        app.setNodeVisibility();
+        app.setLinkVisibility();
         renderNetwork();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
         hideContextMenu();
@@ -501,8 +475,8 @@
     } else {
       $('#isolateCluster').text('Isolate Cluster').click(e => {
         session.state.visible_clusters = [d.cluster];
-        setLinkVisibility();
-        setNodeVisibility();
+        app.setLinkVisibility();
+        app.setNodeVisibility();
         renderNetwork();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
         hideContextMenu();
@@ -518,8 +492,7 @@
   }
 
   function hideContextMenu(){
-    var menu = $('#2d-context-menu');
-    menu.animate({'opacity': 0}, 80, function(){
+    $('#2d-context-menu').animate({'opacity': 0}, 80, function(){
       $(this).css('z-index', -1);
     });
   }
@@ -808,9 +781,9 @@
   });
 
   $('#showMSTLinks, #showAllLinks').change(e => {
-    setLinkVisibility();
+    app.setLinkVisibility();
     app.tagClusters();
-    if($('#HideSingletons').is(':checked')) setNodeVisibility();
+    if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
     renderNetwork();
     app.computeDegree();
     updateStatistics();
@@ -819,7 +792,7 @@
 
   $('#ShowSingletons, #HideSingletons').change(e => {
     app.tagClusters();
-    setNodeVisibility();
+    app.setNodeVisibility();
     renderNetwork();
     app.computeDegree();
     updateStatistics();
@@ -827,9 +800,9 @@
   });
 
   $('#default-link-threshold').on('input', e => {
-    setLinkVisibility();
+    app.setLinkVisibility();
     app.tagClusters();
-    if($('#HideSingletons').is(':checked')) setNodeVisibility();
+    if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
     renderNetwork();
     app.computeDegree();
     updateStatistics();
