@@ -62,17 +62,16 @@
 
   <script type="text/javascript" src="vendor/3d-force-graph.min.js"></script>
   <script>
-  var graph = ForceGraph3D()($('#3d-network')[0]);
+  (function(){
+    var graph = ForceGraph3D()($('#3d-network')[0]);
 
-  drawGraph3D();
-
-  function drawGraph3D(){
-    var lc = $('#3d_network_default-link-color').val();
-    var pv = $('#linkSortVariable').val();
-    var t = $('#default-link-threshold').val();
-    var nodeColor = $('#3d_network_default-node-color').val();
-    var links = _.cloneDeep(session.data.links.filter(l => l[pv] < t));
-    graph
+    function drawGraph3D(){
+      var lc = $('#3d_network_default-link-color').val();
+      var pv = $('#linkSortVariable').val();
+      var t = $('#default-link-threshold').val();
+      var nodeColor = $('#3d_network_default-node-color').val();
+      var links = _.cloneDeep(session.data.links.filter(l => l[pv] < t));
+      graph
       .backgroundColor($('#3d_network-color').val())
       .nodeRelSize($('#3d_network_default-node-radius').val())
       .colorField(d => nodeColor)
@@ -82,7 +81,11 @@
         nodes: session.data.nodes,
         links: links
       });
-  }
+    }
 
-  $('.triggers').change(drawGraph3D);
+    $('#linkSortVariable, #default-link-threshold').change(drawGraph3D);
+    $('#3d_network_default-node-color, #3d_network_default-link-color, #3d_network-color, #3d_network_default-node-radius, #3d_network_default-link-opacity').change(drawGraph3D);
+
+    drawGraph3D();
+  })();
   </script>
