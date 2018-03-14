@@ -15,132 +15,132 @@
         </div>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#dataConfigurations" aria-controls="dataConfigurations" role="tab" data-toggle="tab">Data</a></li>
-            <li role="presentation"><a href="#nodeConfigurations" aria-controls="nodeConfigurations" role="tab" data-toggle="tab">Nodes</a></li>
-            <li role="presentation"><a href="#mapConfigurations" aria-controls="nodeConfigurations" role="tab" data-toggle="tab">Map</a></li>
+            <li role="presentation" class="nav-item active">
+              <a href="#mapDataConfigurations" class="nav-link active" aria-controls="mapDataConfigurations" role="tab" data-toggle="tab">Data</a>
+            </li>
+            <li role="presentation" class="nav-item">
+              <a href="#mapNodeConfigurations" class="nav-link" aria-controls="mapNodeConfigurations" role="tab" data-toggle="tab">Nodes</a>
+            </li>
+            <li role="presentation" class="nav-item">
+              <a href="#mapConfigurations" class="nav-link" aria-controls="mapNodeConfigurations" role="tab" data-toggle="tab">Map</a>
+            </li>
           </ul>
           <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="dataConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3">Latitude</div>
-                  <div class="col-xs-9">
-                    <select id="latitudeField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </div>
+            <div role="tabpanel" class="tab-pane fade show active" id="mapDataConfigurations">
+              <div class="form-group row">
+                <div class="col-3">Latitude</div>
+                <div class="col-9">
+                  <select id="latitudeField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Longitude</div>
-                  <div class="col-xs-9">
-                    <select id="longitudeField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Longitude</div>
+                <div class="col-9">
+                  <select id="longitudeField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Zipcode</div>
-                  <div class="col-xs-9">
-                    <select id="zipcodeField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Zipcode</div>
+                <div class="col-9">
+                  <select id="zipcodeField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">County</div>
-                  <div class="col-xs-9">
-                    <select id="countyField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">County</div>
+                <div class="col-9">
+                  <select id="countyField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">State</div>
-                  <div class="col-xs-9">
-                    <select id="stateField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">State</div>
+                <div class="col-9">
+                  <select id="stateField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Country</div>
-                  <div class="col-xs-9">
-                    <select id="countryField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Country</div>
+                <div class="col-9">
+                  <select id="countryField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
                 </div>
               </div>
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="nodeConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3">Radius</div>
-                  <!--td>
-                    <select id="radiusField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </td-->
-                  <div class="col-xs-9">
-                    <input type="range" id="radius" min="1" max="30" step="0.1" value="6" />
-                  </div>
+            <div role="tabpanel" class="tab-pane fade" id="mapNodeConfigurations">
+              <div class="form-group row">
+                <div class="col-3">Radius</div>
+                <!--td>
+                  <select id="radiusField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
+                </td-->
+                <div class="col-9">
+                  <input type="range" id="radius" min="1" max="30" step="0.1" value="6" />
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Color</div>
-                  <div class="col-xs-9">
-                    <select id="nodeColorField" class="fields">
-                      <option selected>None</option>
-                    </select>
-                    <input type="color" id="color" value="#5656ff" />
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Color</div>
+                <div class="col-9">
+                  <select id="nodeColorField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
+                  <input type="color" id="color" value="#5656ff" />
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Transparency</div>
-                  <div class="col-xs-9">
-                    <!--select id="opacityField" class="fields">
-                      <option selected>None</option>
-                    </select-->
-                    <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="1.00" />
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Transparency</div>
+                <div class="col-9">
+                  <!--select id="opacityField" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select-->
+                  <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="1.00" />
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Jitter</div>
-                  <div class="col-xs-9">
-                    <input type="range" id="jitter" min="0.00" max="100" step="0.5" value="0.00" />
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Jitter</div>
+                <div class="col-9">
+                  <input type="range" id="jitter" min="0.00" max="100" step="0.5" value="0.00" />
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Tooltip</div>
-                  <div class="col-xs-9">
-                    <select id="nodeTooltipVariable" class="fields">
-                      <option selected>None</option>
-                    </select>
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Tooltip</div>
+                <div class="col-9">
+                  <select id="nodeTooltipVariable" class="fields custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
                 </div>
               </div>
             </div>
             <div role="tabpanel" class="tab-pane fade" id="mapConfigurations">
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-xs-3">Layers</div>
-                  <div class="col-xs-9">
-                    <button type="button" class="btn btn-default btn-xs" data-toggle="button" id="showStates" aria-pressed="false" autocomplete="off">States</button>
-                    <button type="button" class="btn btn-default btn-xs" data-toggle="button" id="showCounties" aria-pressed="false" autocomplete="off">Counties</button>
-                    <button type="button" class="btn btn-default btn-xs active" data-toggle="button" id="showCities" aria-pressed="true" autocomplete="off">Cities</button>
-                    <button type="button" class="btn btn-default btn-xs" data-toggle="button" id="showLinks" aria-pressed="false" autocomplete="off">Links</button>
-                  </div>
+              <div class="form-group row">
+                <div class="col-3">Layers</div>
+                <div class="col-9">
+                  <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showStates" aria-pressed="false" autocomplete="off">States</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showCounties" aria-pressed="false" autocomplete="off">Counties</button>
+                  <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showCities" aria-pressed="true" autocomplete="off">Cities</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showLinks" aria-pressed="false" autocomplete="off">Links</button>
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Land Color</div>
-                  <div class="col-xs-9">
-                    <input type="color" id="landColor" value="#bbdaa4" />
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Land Color</div>
+                <div class="col-9">
+                  <input type="color" id="landColor" value="#bbdaa4" />
                 </div>
-                <div class="row">
-                  <div class="col-xs-3">Water Color</div>
-                  <div class="col-xs-9">
-                    <input type="color" id="waterColor" value="#9bbff4" />
-                  </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Water Color</div>
+                <div class="col-9">
+                  <input type="color" id="waterColor" value="#9bbff4" />
                 </div>
               </div>
             </div>
@@ -306,7 +306,7 @@
       tooltip
         .transition().duration(100)
         .style('opacity', 0)
-        .on('end', () => tooltip.style('right', '0px').style('top', '0px'));
+        .on('end', () => tooltip.style('z-index', -1));
     }
 
     function drawCountries(){
@@ -331,7 +331,7 @@
           drawStates();
         });
         return;
-      } states = JSON.parse(electron.ipcRenderer.sendSync('get-component', 'states.json'));
+      }
       stateLayer.selectAll('path').data(states.features).enter().append('path')
         .attr('d', path)
         .attr('stroke-width', 1 / lastTransform.k)
@@ -367,7 +367,7 @@
       cityWrappers = cityLayer
         .style('opacity', 0)
         .selectAll('g').attr('class', 'city')
-        .data(window.cities).enter().append('g');
+        .data(cities).enter().append('g');
       cityWrappers.append('circle')
         .attr('cx', d => projection([d['Longitude'], d['Latitude']])[0])
         .attr('cy', d => projection([d['Longitude'], d['Latitude']])[1])
@@ -406,7 +406,7 @@
       ll.exit().remove();
       ll.enter().append('line').merge(ll)
         .attr('class', 'link')
-        .style('stroke', session.style.linkcolors[0])
+        .style('stroke', session.style.palette[0])
         .attr('stroke-width', 2 / lastTransform.k)
         .attr('x1', d => projection([d.source.lon, d.source.lat])[0] + d.source.jx)
         .attr('y1', d => projection([d.source.lon, d.source.lat])[1] + d.source.jy)
@@ -470,7 +470,7 @@
       }
       table.append('<tr><th>'+e.target.value+'</th><th>Color</th></tr>');
       var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
-      var colors = session.style.nodecolors;
+      var colors = session.style.palette;
       var o = d3.scaleOrdinal(colors).domain(values);
       circles.style('fill', d => o(d[e.target.value]));
       values.forEach(value => {
