@@ -242,7 +242,7 @@ input[type="range"]{
   border: none;
 }
 #groupKey {
-  top: 60px;
+  top: 10px;
   right: 10px;
   z-index: 1000;
 }
