@@ -424,11 +424,11 @@ performance of this software.</pre>
       session.network.force.alpha(0.3).alphaTarget(0).restart();
     });
 
+    $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
+
     $('#ReloadTab').click(function(){ window.location.reload(true); });
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
-
-    $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
 
     $('[name="export-options"]').change(function(e){
       var type = $('[name="export-options"]:checked').data('type');
@@ -475,6 +475,8 @@ performance of this software.</pre>
       var blob = new Blob([handler(data)], {type: mime + 'charset=utf-8'});
       saveAs(blob, name + '.' + format);
     });
+
+    
 
     $(document).on('keydown', e => {
       if(e.key === 'Escape'){
