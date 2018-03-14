@@ -209,20 +209,20 @@ app.launchView = function(view){
         session.state.contentItems.splice(i, 1);
       });
       session.state.contentItems.push(contentItem);
+      contentItem.element.find('select.nodeVariables').html(
+        '<option>None</option>' +
+        session.data.nodeFields.map(function(field){
+          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+        }).join('\n')
+      );
+      contentItem.element.find('select.linkVariables').html(
+        '<option>None</option>' +
+        session.data.linkFields.map(function(field){
+          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+        }).join('\n')
+      );
+      contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     }
-    $('select.nodeVariables').html(
-      '<option>None</option>' +
-      session.data.nodeFields.map(function(field){
-        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-      }).join('\n')
-    );
-    $('select.linkVariables').html(
-      '<option>None</option>' +
-      session.data.linkFields.map(function(field){
-        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-      }).join('\n')
-    );
-    $('[data-toggle="tooltip"]').tooltip();
     return contentItem;
   }
 };
