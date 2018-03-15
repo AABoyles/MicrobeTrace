@@ -78,7 +78,7 @@
       .lineOpacity($('#3d_network_default-link-opacity').val())
       .linkColorField(l => lc)
       .graphData({
-        nodes: session.data.nodes,
+        nodes: _.cloneDeep(session.data.nodes),
         links: links
       });
     }
