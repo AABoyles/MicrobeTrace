@@ -258,85 +258,73 @@
   app.tagClusters();
   app.setNodeVisibility();
   app.setLinkVisibility();
-  setupNetwork();
-  renderNetwork();
-  app.computeDegree();
-  session.state.visible_clusters = session.data.clusters.map(c => c.id);
-  updateStatistics();
-  setTimeout(e => {
-    session.network.fit();
-    $('#loadingInformationModal').modal('hide');
-  }, 1500);
 
-  var messageTimeout;
+  session.network = {};
 
-  function setupNetwork(){
-    session.network = {};
-    var width = $('#network').width(),
-        height = $('#network').height(),
-        xScale = d3.scaleLinear().domain([0, width]).range([0, width]),
-        yScale = d3.scaleLinear().domain([0, height]).range([0, height]);
+  var width = $('#network').width(),
+      height = $('#network').height(),
+      xScale = d3.scaleLinear().domain([0, width]).range([0, width]),
+      yScale = d3.scaleLinear().domain([0, height]).range([0, height]);
 
-    session.network.zoom = d3.zoom().on('zoom', () => session.network.svg.attr('transform', d3.event.transform));
+  session.network.zoom = d3.zoom().on('zoom', () => session.network.svg.attr('transform', d3.event.transform));
 
-    session.network.svg = d3.select('svg#network')
-      .on('click', hideContextMenu)
-      .html(null) //Let's make sure the canvas is blank.
-      .call(session.network.zoom)
-      .append('g');
+  session.network.svg = d3.select('svg#network')
+    .on('click', hideContextMenu)
+    .html(null) //Let's make sure the canvas is blank.
+    .call(session.network.zoom)
+    .append('g');
 
-    session.network.fit = function(thing, bounds){
-      if(!bounds) bounds = session.network.svg.node().getBBox();
-      if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
-      var parent = session.network.svg.node().parentElement,
-          midX = bounds.x + bounds.width / 2,
-          midY = bounds.y + bounds.height / 2;
-      var scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
-      d3.select('svg#network')
-        .transition()
-        .duration(750)
-        .call(session.network.zoom.transform, d3.zoomIdentity
-          .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
-          .scale(scale));
-    };
+  session.network.fit = function(thing, bounds){
+    if(!bounds) bounds = session.network.svg.node().getBBox();
+    if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
+    var parent = session.network.svg.node().parentElement,
+        midX = bounds.x + bounds.width / 2,
+        midY = bounds.y + bounds.height / 2;
+    var scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
+    d3.select('svg#network')
+      .transition()
+      .duration(750)
+      .call(session.network.zoom.transform, d3.zoomIdentity
+        .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
+        .scale(scale));
+  };
 
-    session.network.force = d3.forceSimulation()
-      .force('link', d3.forceLink()
-        .id(d => d.id)
-        .distance($('#default-link-length').val())
-        .strength(0.125)
-      )
-      .force('charge', d3.forceManyBody()
-        .strength(-$('#default-node-charge').val())
-      )
-      .force('gravity', d3.forceAttract()
-        .target([width/2, height/2])
-        .strength($('#network-gravity').val())
-      )
-      .force('center', d3.forceCenter(width / 2, height / 2));
+  session.network.force = d3.forceSimulation()
+    .force('link', d3.forceLink()
+      .id(d => d.id)
+      .distance($('#default-link-length').val())
+      .strength(0.125)
+    )
+    .force('charge', d3.forceManyBody()
+      .strength(-$('#default-node-charge').val())
+    )
+    .force('gravity', d3.forceAttract()
+      .target([width/2, height/2])
+      .strength($('#network-gravity').val())
+    )
+    .force('center', d3.forceCenter(width / 2, height / 2));
 
-    session.network.force.on('end', e => {
-      $('#playbutton')
-        .data('state', 'paused')
-        .html('<span class="oi oi-media-play"></span>');
-    });
+  session.network.force.on('end', e => {
+    $('#playbutton')
+      .data('state', 'paused')
+      .html('<span class="oi oi-media-play"></span>');
+  });
 
-    session.network.svg.append('svg:defs').append('marker')
-      .attr('id', 'end-arrow')
-      .attr('viewBox', '0 0 10 10')
-      .attr('refX', 20)
-      .attr('refY', 5)
-      .attr('markerWidth', 4)
-      .attr('markerHeight', 4)
-      .attr('orient', 'auto')
-      .append('svg:path')
-        .attr('d', 'M0,0 L0,10 L10,5 z');
+  session.network.svg.append('svg:defs').append('marker')
+    .attr('id', 'end-arrow')
+    .attr('viewBox', '0 0 10 10')
+    .attr('refX', 20)
+    .attr('refY', 5)
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 4)
+    .attr('orient', 'auto')
+    .append('svg:path')
+      .attr('d', 'M0,0 L0,10 L10,5 z');
 
-    session.network.svg.append('g').attr('id', 'links');
-    session.network.svg.append('g').attr('id', 'nodes');
-  }
+  session.network.svg.append('g').attr('id', 'links');
+  session.network.svg.append('g').attr('id', 'nodes');
 
-  function renderNetwork(){
+  session.network.render = function(){
     var vnodes = session.data.nodes.filter(node => node.visible);
 
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
@@ -401,7 +389,19 @@
     });
 
     session.network.force.force('link').links(vlinks);
-  }
+  };
+
+  session.network.render();
+
+  app.tagClusters();
+  app.computeDegree();
+
+  updateStatistics();
+
+  setTimeout(e => {
+    session.network.fit();
+    $('#loadingInformationModal').modal('hide');
+  }, 1500);
 
   function dragstarted(d){
     if (!d3.event.active) session.network.force.alphaTarget(0.3).restart();
@@ -463,7 +463,7 @@
       session.state.visible_clusters = session.state.visible_clusters.filter(cid => cid !== d.cluster);
       app.setLinkVisibility();
       app.setNodeVisibility();
-      renderNetwork();
+      session.network.render();
       session.network.force.alpha(0.3).alphaTarget(0).restart();
       hideContextMenu();
     });
@@ -472,7 +472,7 @@
         session.state.visible_clusters = session.data.clusters.map(c => c.id);
         app.setNodeVisibility();
         app.setLinkVisibility();
-        renderNetwork();
+        session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
         hideContextMenu();
       });
@@ -481,7 +481,7 @@
         session.state.visible_clusters = [d.cluster];
         app.setLinkVisibility();
         app.setNodeVisibility();
-        renderNetwork();
+        session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
         hideContextMenu();
       });
@@ -491,8 +491,7 @@
       'display': 'block',
       'left': (d3.event.pageX) + 'px',
       'top': (d3.event.pageY-56) + 'px',
-      'opacity': 1
-    });
+    }).animate({'opacity': 1}, 80);
   }
 
   function hideContextMenu(){
@@ -788,7 +787,7 @@
     app.setLinkVisibility();
     app.tagClusters();
     if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
-    renderNetwork();
+    session.network.render();
     app.computeDegree();
     updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
@@ -797,7 +796,7 @@
   $('#ShowSingletons, #HideSingletons').change(e => {
     app.tagClusters();
     app.setNodeVisibility();
-    renderNetwork();
+    session.network.render();
     app.computeDegree();
     updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
@@ -807,7 +806,7 @@
     app.setLinkVisibility();
     app.tagClusters();
     if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
-    renderNetwork();
+    session.network.render();
     app.computeDegree();
     updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();

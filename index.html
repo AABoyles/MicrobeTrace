@@ -407,9 +407,10 @@ performance of this software.</pre>
       session.state.visible_clusters = session.data.clusters.map(c => c.id);
       $('#HideSingletons').prop('checked', false).parent().removeClass('active');
       $('#ShowSingletons').prop('checked', true).parent().addClass('active');
-      setLinkVisibility();
-      setNodeVisibility();
-      renderNetwork();
+      app.setLinkVisibility();
+      app.setNodeVisibility();
+      session.network.render();
+      session.network.fit();
       session.network.force.alpha(0.3).alphaTarget(0).restart();
     });
 
