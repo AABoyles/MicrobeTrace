@@ -68,118 +68,113 @@
   <script src="node_modules/datatables.net-select/js/dataTables.select.min.js"></script>
   <script src="node_modules/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
   <script type="text/javascript">
+  (function(){
 
-  const meta = ['index', 'padding', 'selected', 'visible', 'orig', 'mst'];
+    var meta = ['index', 'padding', 'selected', 'visible', 'orig', 'mst'];
 
-  window.table = { destroy: () => {} };
+    window.table = { destroy: function(){} };
 
-  function reorder(){ table.draw(false); }
+    session.data.clusterFields = Object.keys(session.data.clusters[0]);
 
-  function resetTextsize(){
-    var s = $('#font-size-slider').val();
-    $('#table').css({
-      'font-size': s + 'px',
-      'line-height': s/10
-    });
-  }
-
-  function updateTable(){
-    let data_type = $('input[name=nodelink]:checked')[0].id;
-    let data = [];
-    if(data_type == 'clusters'){
-      data = session.data.clusters.filter(c => c.nodes > 1);
-    } else {
-      data = session.data[data_type];
-    }
-    let columns = session.data[data_type.slice(0,-1) + 'Fields'];
-    table.destroy();
-    let options = {
-      dom: 'rti',
-      data: data,
-      columns: columns.map(k => ({title:app.titleize(k), data:k, mData:k, sTitle:app.titleize(k)})),
-      deferRender: true,
-      scrollY: $('#table-wrapper').height() - 100,
-      scrollCollapse: true,
-      scroller: true,
-      select: {
-        style: 'multi'
+    function updateTable(){
+      var data_type = $('input[name=nodelink]:checked')[0].id;
+      var data = [];
+      if(data_type == 'clusters'){
+        data = session.data.clusters.filter(c => c.nodes > 1);
+      } else {
+        data = session.data[data_type];
       }
-    };
-    let selectedColumn = columns.findIndex(d => d === 'selected');
-    if(selectedColumn >= 0) options.orderFixed = [selectedColumn, 'desc'];
-    window.table = $('#table').empty().DataTable(options);
-    let colsToKeep = $('#columns').val().map(parseFloat);
-    columns.forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
-    table.on('user-select', (e, dt, type, cell) => {
-      let index = cell.index().row;
-      if(data_type === 'nodes'){
-        session.data[data_type][index].selected = !session.data[data_type][index].selected;
-        table.row(index).data(session.data[data_type][index]);
-        //electron.ipcRenderer.send('update-node-selections', session.data.nodes.map(d => d.selected));
-      }
+      var columns = session.data[data_type.slice(0,-1) + 'Fields'];
+      table.destroy();
+      var options = {
+        dom: 'rti',
+        data: data,
+        columns: columns.map(k => ({title:app.titleize(k), data:k, mData:k, sTitle:app.titleize(k)})),
+        deferRender: true,
+        scrollY: $('#table-wrapper').height() - 100,
+        scrollCollapse: true,
+        scroller: true,
+        select: {
+          style: 'multi'
+        }
+      };
+      var selectedColumn = columns.findIndex(d => d === 'selected');
+      if(selectedColumn >= 0) options.orderFixed = [selectedColumn, 'desc'];
+      window.table = $('#table').empty().DataTable(options);
+      var colsToKeep = $('#columns').val().map(parseFloat);
+      columns.forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
+      table.on('user-select', (e, dt, type, cell) => {
+        var index = cell.index().row;
+        if(data_type === 'nodes'){
+          session.data[data_type][index].selected = !session.data[data_type][index].selected;
+          table.row(index).data(session.data[data_type][index]);
+        }
+        reorder();
+      });
+      table.rows(session.data[data_type].filter(n => n.selected).map(n => n.index)).select();
       reorder();
-    });
-    table.rows(session.data[data_type].filter(n => n.selected).map(n => n.index)).select();
-    reorder();
-    resetTextsize();
-  }
+      resetTextsize();
+    }
 
-  session.data.clusterFields = Object.keys(session.data.clusters[0]);
+    function reorder(){ table.draw(false); }
 
-  $('#search').on('input', function(e){ table.search(e.target.value).draw(); });
+    $('#search').on('input', function(e){ table.search(e.target.value).draw(); });
 
-  function updateColumns(){
-    let type = $('input[name=nodelink]:checked')[0].id.slice(0,-1);
-    $('#columns')
-      .chosen('destroy')
-      .html(
-        session.data[type+'Fields'].map((d, i) => {
-          if(meta.includes(d)) return;
-          return `<option value="${i}"${(i < 7) ? " selected" : ""}>${app.titleize(d)}</option>`
-        }).join('\n')
-      ).chosen({width: "100%"}).change(e => {
-        let colsToKeep = $('#columns').val().map(parseFloat);
-        session.data[type+'Fields'].forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
-      });
-  }
+    function updateColumns(){
+      var type = $('input[name=nodelink]:checked')[0].id.slice(0,-1);
+      $('#columns')
+        .chosen('destroy')
+        .html(
+          session.data[type+'Fields'].map((d, i) => {
+            if(meta.includes(d)) return;
+            return `<option value="${i}"${(i < 7) ? " selected" : ""}>${app.titleize(d)}</option>`
+          }).join('\n')
+        ).chosen({width: "100%"}).change(e => {
+          var colsToKeep = $('#columns').val().map(parseFloat);
+          session.data[type+'Fields'].forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
+        });
+    }
 
-  updateColumns();
+    updateColumns();
 
-  $('#tiltHeaders').on('input', function(e){
-    let theta = $(this).val();
-    let h = $('th:first').width() * Math.sin(Math.abs(theta) * Math.PI / 180);
-    $('th').css({
-      'transform': `rotate(${-theta}deg)`,
-      'border-bottom': '0px',
-      'height': `${h}px`,
-      'overflow': 'visible'
-    });
-    if($(this).val() == 0){
+    $('#tiltHeaders').on('input', function(e){
+      var theta = $(this).val();
+      var h = $('th:first').width() * Math.sin(Math.abs(theta) * Math.PI / 180);
       $('th').css({
-        'border-bottom': '1px solid black',
-        'overflow': 'hidden'
+        'transform': `rotate(${-theta}deg)`,
+        'border-bottom': '0px',
+        'height': `${h}px`,
+        'overflow': 'visible'
+      });
+      if($(this).val() == 0){
+        $('th').css({
+          'border-bottom': '1px solid black',
+          'overflow': 'hidden'
+        });
+      }
+    });
+
+    function resetTextsize(){
+      var s = $('#font-size-slider').val();
+      $('#table').css({
+        'font-size': s + 'px',
+        'line-height': s/10
       });
     }
-  });
 
-  function resetTextsize(){
-    var s = $('#font-size-slider').val();
-    $('#table').css({
-      'font-size': s + 'px',
-      'line-height': s/10
+    $('input[name=nodelink]').on('change', e => {
+      updateColumns();
+      updateTable();
     });
-  }
 
-  $('input[name=nodelink]').on('change', e => {
-    updateColumns();
-    updateTable();
-  });
+    $('#columns').on('change', e => updateTable());
 
-  $('#columns').on('change', e => updateTable());
+    $('#font-size-slider').on('input', resetTextsize);
 
-  $('#font-size-slider').on('input', resetTextsize);
+    setTimeout(updateTable, 100);
+
+  })();
 
   $.fn.dataTable.ext.errMode = 'none';
 
-  updateTable();
   </script>
