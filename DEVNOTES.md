@@ -36,3 +36,13 @@ Here are some ideas:
 * https://clipboardjs.com/ 'nuff said
 
 In the interest of pushing compatibility back through to IE (ugh), I've integrated html5shiv and core-js. I may also need an SVG solution, like [svg4everybody](https://github.com/jonathantneal/svg4everybody), but I'm definitely getting ahead of myself. These compatibility issues won't be solved until I start testing, and I won't start testing until I have a working proof-of-concept with a reasonable degree of feature-completeness.
+
+## 2018-03-15
+
+Busy few weeks of Development. The architecture has been significantly revised. In particular, I've opted NOT to try to cram the whole app into a single page and script. Instead, each view contains its own HTML (which typically includes a visualization pane, a few widgets including a complete settings modal) and script which contains all the logic to get that particular view running. When a user requests a view (typically by clicking on an entry in the View dropdown of the nav menu), app.launchView pulls the view code using AJAX and inserts it into the DOM with GoldenLayout. This seems to work surprisingly well. I was worried about namespace issues (since I've never kept to a reliable naming scheme), but it's hasn't been a significant problem.
+
+As part of this, I've spun the file panel and 2D network into their own 'Views'. Also, I've written as much generic data-management code as possible into the scripts/common.js file, which populates the app global. This has started to gobble up some DOM stuff, but I'm trying to keep it to a minimum.
+
+I've successfully spun the hard computational work of file parsing and Distance Matrix computation into Web Workers. Liberating the DOM thread to show our ridiculous little DNA spinner. Eventually I'll get MST working the same way.
+
+Most of the Markup has been updated to look good on Bootstrap 4. There are elements here and there that still aren't styled properly, but it's more a bug hunt than free-for-all at this point.
