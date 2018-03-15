@@ -4,6 +4,10 @@
     <span class="oi oi-cog"></span>
   </button>
 
+  <button type="button" class="export_button btn btn-light" data-toggle="modal" data-target="#map_export_modal">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+
   <table id="groupKey"></table>
 
   <div class="modal fade" id="map_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
@@ -153,40 +157,55 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
+  <div id="map_export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Export Geospatial Data</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group row">
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="map_export_nodes" checked>
+                  <label class="form-check-label" for="map_export_nodes">Nodes</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="map_export_links">
+                  <label class="form-check-label" for="map_export_links">Links</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-9">
+                <input type="text" id="map_export-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              </div>
+              <div class="col-3">
+                <select id="map_export-file-format" class="form-control form-control-sm">
+                  <option selected>geojson</option>
+                  <option>shapefile</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+          <button type="button" id="map_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <script src="vendor/shpwrite.js"></script>
   <script>
   $(function(){
 
     var countries, states, counties, cities, zipcodes;
-
-    // $('<li id="ExportTab"><a href="#">Export Geospatial Data</a></li>').click(e => {
-      // const shpwrite = require('shp-write');
-      // electron.remote.dialog.showSaveDialog({
-      //   filters: [
-      //     {name: 'Zipped Shapefile', extensions: ['zip']},
-      //     {name: 'GeoJSON', extensions: ['geojson']}
-      //   ],
-      // }, filename => {
-      //   var geojson = {
-      //     type: 'FeatureCollection',
-      //     features:	session.data.nodes.map(d => ({
-      // 			type: 'Feature',
-      // 			geometry: {
-      // 				type: 'Point',
-      // 				coordinates: [d.lon, d.lat]
-      //       },
-      //       properties: d
-      // 		}))
-      //   };
-      //   var out;
-      //   if(filename.split('.').pop() == 'zip'){
-      //     out = shpwrite.zip(geojson);
-      //   } else {
-      //     out = JSON.stringify(geojson);
-      //   }
-      //   jetpack.write(filename, out);
-      //   alertify.success('File Saved!');
-      // });
-    // }).insertBefore('#CloseTab');
 
     var projection = d3.geoMercator();
 
@@ -496,6 +515,58 @@
     $('#waterColor').on('input', e => svg.style('background', e.target.value));
 
     $('#default-link-threshold').change(drawLinks);
+
+    $('#map_export').click(function(e){
+      var geojson = {
+        type: 'FeatureCollection',
+        features:	[]
+      };
+      if($('#map_export_nodes').is(':checked')){
+        session.data.nodes.forEach(function(d){
+          geojson.features.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [d.lon, d.lat]
+            },
+            properties: d
+          });
+    		});
+      }
+      if($('#map_export_links').is(':checked')){
+        session.data.links.forEach(function(d){
+          var source = session.data.nodes.find(function(node){
+            return node.id === d.source;
+          });
+          var target = session.data.nodes.find(function(node){
+            return node.id === d.target;
+          });
+          if(source && target){
+            if(source.lat && source.lon && target.lat && target.lon){
+              geojson.features.push({
+                type: 'Feature',
+                geometry: {
+                  type: 'Linestring',
+                  coordinates: [
+                    [source.lon, source.lat],
+                    [target.lon, target.lat]
+                  ]
+                },
+                properties: d
+              });
+            }
+          }
+        });
+      }
+      var output;
+      var format = $('#map_export-file-format').val();
+      if(format === 'shapefile'){
+        output = new Blob([shpwrite.zip(geojson)], {type: 'application/zip'});
+      } else {
+        output = new Blob([JSON.stringify(geojson)], {type: 'application/json;charset=utf-8'});
+      }
+      saveAs(output, $('#map_export-file-name').val() + '.' + format);
+    });
 
     drawCountries();
     drawCities();
