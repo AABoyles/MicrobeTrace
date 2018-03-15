@@ -132,22 +132,20 @@ app.tagClusters = function(){
 };
 
 app.DFS = function(node){
+  if(typeof node === 'string') node = session.data.nodes.find(function(d){ return d.id === node; });
   if(typeof node.cluster !== 'undefined') return;
   var lsv = $('#linkSortVariable').val();
   node.cluster = session.data.clusters.length;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
   session.data.links.forEach(l => {
-    try {
-      if(l.visible && (l.source.id == node.id || l.target.id == node.id)){
-        l.cluster = session.data.clusters.length;
-        session.data.clusters[session.data.clusters.length - 1].links++;
-        session.data.clusters[session.data.clusters.length - 1].sum_distances += l[lsv];
-        if(!l.source.cluster) app.DFS(l.source);
-        if(!l.target.cluster) app.DFS(l.target);
-      }
-    } catch(error) {
-      alertify.error('Missing ID. Did you select the correct Parser?');
-      //TODO: reset
+    if(l.visible && (l.source == node.id || l.target == node.id)){
+      l.cluster = session.data.clusters.length;
+      session.data.clusters[session.data.clusters.length - 1].links++;
+      session.data.clusters[session.data.clusters.length - 1].sum_distances += l[lsv];
+      var source = session.data.nodes.find(d => d.id === l.source);
+      if(!l.source.cluster) app.DFS(source);
+      var target = session.data.nodes.find(d => d.id === l.target);
+      if(!l.target.cluster) app.DFS(target);
     }
   });
 };
@@ -157,14 +155,40 @@ app.computeDegree = function(){
   session.data.links
     .filter(l => l.visible)
     .forEach(l => {
-      l.source.degree++;
-      l.target.degree++;
+      session.data.nodes.find(d => d.id == l.source).degree++;
+      session.data.nodes.find(d => d.id == l.target).degree++;
     });
   session.data.clusters.forEach(c => {
     c.links = c.links/2;
     c.links_per_node = c.links/c.nodes;
     c.mean_genetic_distance = c.sum_distances/c.links;
   });
+};
+
+app.setNodeVisibility = function(){
+  session.data.nodes.forEach(n => n.visible = 1);
+  if(session.state.visible_clusters.length < session.data.clusters.length){
+    session.data.nodes.forEach(n => n.visible = n.visible && session.state.visible_clusters.includes(n.cluster));
+  }
+  if($('#HideSingletons').is(':checked')){
+    var clusters = session.data.clusters.map(c => c.nodes);
+    session.data.nodes.forEach(n => n.visible = n.visible && clusters[n.cluster-1] > 1);
+  }
+};
+
+app.setLinkVisibility = function(){
+  var metric  = $('#linkSortVariable').val(),
+      threshold = $('#default-link-threshold').val();
+  session.data.links.forEach(link => link.visible = 1);
+  if(metric !== 'none'){
+    session.data.links.forEach(link => link.visible = link.visible && (link[metric] <= threshold));
+  }
+  if($('#showMSTLinks').is(':checked')){
+    session.data.links.forEach(link => link.visible = link.visible && link.mst);
+  }
+  if(session.state.visible_clusters.length < session.data.clusters.length){
+    session.data.links.forEach(link => link.visible = link.visible && session.state.visible_clusters.includes(link.cluster));
+  }
 };
 
 app.reset = function(){
@@ -175,7 +199,7 @@ app.reset = function(){
   });
   session.state.contentItems = [];
   app.launchView('files');
-}
+};
 
 app.launchView = function(view){
   if(!layout._components[view]){
@@ -224,31 +248,5 @@ app.launchView = function(view){
       contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     }
     return contentItem;
-  }
-};
-
-app.setNodeVisibility = function(){
-  session.data.nodes.forEach(n => n.visible = 1);
-  if(session.state.visible_clusters.length < session.data.clusters.length){
-    session.data.nodes.forEach(n => n.visible = n.visible && session.state.visible_clusters.includes(n.cluster));
-  }
-  if($('#HideSingletons').is(':checked')){
-    var clusters = session.data.clusters.map(c => c.nodes);
-    session.data.nodes.forEach(n => n.visible = n.visible && clusters[n.cluster-1] > 1);
-  }
-};
-
-app.setLinkVisibility = function(){
-  var metric  = $('#linkSortVariable').val(),
-      threshold = $('#default-link-threshold').val();
-  session.data.links.forEach(link => link.visible = 1);
-  if(metric !== 'none'){
-    session.data.links.forEach(link => link.visible = link.visible && (link[metric] <= threshold));
-  }
-  if($('#showMSTLinks').is(':checked')){
-    session.data.links.forEach(link => link.visible = link.visible && link.mst);
-  }
-  if(session.state.visible_clusters.length < session.data.clusters.length){
-    session.data.links.forEach(link => link.visible = link.visible && session.state.visible_clusters.includes(link.cluster));
   }
 };
