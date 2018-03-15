@@ -447,7 +447,9 @@
         countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 0);
         drawStates();
       } else {
-        countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
+        if(!$('#showCounties').hasClass('active')){
+          countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
+        }
         stateLayer.transition().style('opacity', 0).on('end', e => stateLayer.html(null));
       }
     });
@@ -457,7 +459,9 @@
         countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 0);
         drawCounties();
       } else {
-        countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
+        if(!$('#showStates').hasClass('active')){
+          countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
+        }
         countyLayer.transition().style('opacity', 0).on('end', e => countyLayer.html(null));
       }
     });
