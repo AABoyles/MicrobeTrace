@@ -49,6 +49,12 @@ a:hover, a:focus {
 .linkVariables {
   width: 100%;
 }
+.export_button{
+  position:absolute;
+  top: 10px;
+  left: 62px;
+  border: 1px solid #cccccc;
+}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after{
@@ -82,7 +88,6 @@ a:hover, a:focus {
 button.navbar-toggler{
   font-size:1rem;
 }
-
 
 /* File Panel */
 #file_panel {

@@ -4,6 +4,10 @@
   <span class="oi oi-cog"></span>
 </button>
 
+<button type="button" id="svg_export" class="export_button btn btn-light">
+  <span class="oi oi-data-transfer-download"></span>
+</button>
+
 <table id="groupKey" class="floater"></table>
 
 <div id="2d-context-menu" class="dropdown-menu">
@@ -828,6 +832,16 @@
   $('#main_panel').css('background-color', $('#network-color').val());
 
   $('#network-color').on('input', e => $('#main_panel').css('background-color', e.target.value));
+
+  $('#svg_export').click(function(){
+    var network = document.getElementById('network');
+    var content =
+      '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 '+network.height.baseVal.value+' '+network.width.baseVal.value+'" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        network.innerHTML + '\n' +
+      '</svg>';
+    var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+    saveAs(blob, 'MicrobeTraceExport.svg');
+  });
 
   $('#playbutton')
     .data('state', 'paused')
