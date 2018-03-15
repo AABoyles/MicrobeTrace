@@ -236,16 +236,10 @@ $('#main-submit').click(function(e){
 
   var hierarchy = ['distmat', 'link', 'node', 'fasta'];
 
-  var instructions = {
-    files: files,
-    align: $('#align').is(':checked'),
-    reference: $('#reference').val()
-  };
-
   var anySequences = false;
 
-  instructions.files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
-  instructions.files.forEach((file, fileNum) => {
+  files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
+  files.forEach((file, fileNum) => {
     var filename = file.file.name;
 
     if(file.type === 'fasta'){
@@ -261,7 +255,7 @@ $('#main-submit').click(function(e){
           n += app.addNode(node);
         });
         message(` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
-        if(fileNum == instructions.files.length - 1) nextStuff();
+        if(fileNum == files.length - 1) nextStuff();
       };
       reader.readAsText(file.file, 'UTF-8');
 
@@ -294,7 +288,7 @@ $('#main-submit').click(function(e){
             origin: filename
           }));
           message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
-          if(fileNum == instructions.files.length - 1) nextStuff();
+          if(fileNum == files.length - 1) nextStuff();
         }
       });
 
@@ -316,9 +310,9 @@ $('#main-submit').click(function(e){
             n += app.addNode(node);
           });
           results.meta.fields.forEach(key => session.data.nodeFields.push(key));
-          if(session.data.nodeFields.includes('seq')) anySequences = 1;
+          if(results.meta.fields.includes('seq')) anySequences = 1;
           message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
-          if(fileNum == instructions.files.length - 1) nextStuff();
+          if(fileNum == files.length - 1) nextStuff();
         }
       });
 
@@ -359,7 +353,7 @@ $('#main-submit').click(function(e){
           });
           message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
           message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
-          if(fileNum == instructions.files.length - 1) nextStuff();
+          if(fileNum == files.length - 1) nextStuff();
         }
       });
     }
@@ -370,7 +364,7 @@ $('#main-submit').click(function(e){
       $('.showForSequence').show();
       var allDashes = /^-*$/;
       var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
-      if(instructions.align){
+      if($('#align').is(':checked')){
         alignAndComputeDM(subset);
       } else {
         computeDM(subset);
@@ -391,7 +385,7 @@ $('#main-submit').click(function(e){
     message('Aligning Sequences...');
     var aligner = new Worker('scripts/aligner.js');
     aligner.postMessage({
-      reference: instructions.reference,
+      reference: $('#reference').val(),
       nodes: subset
     });
     aligner.onmessage = function(response){
