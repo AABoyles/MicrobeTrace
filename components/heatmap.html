@@ -67,71 +67,78 @@
   </div><!-- /.modal -->
 
   <script>
-  function replot(){
-    if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
-      return alertify.error('No distance matrix could be found!');
+  (function(){
+
+    $('#heatmap_distanceMetric').html(
+      Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
+        <label class="btn btn-secondary${(i===0)? ' active':''}">
+          <input type="radio" name="distanceMetric" id="${k}" autocomplete="off"${(i===0)? ' checked':''}>${app.titleize(k)}</input>
+        </label>
+      `).join('')
+    );
+
+    function redrawHeatmap(){
+      if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
+        return alertify.error('No distance matrix could be found!');
+      }
+
+      if(window.plot) Plotly.purge('heatmap_panel');
+
+      var xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
+      var yLabels = xLabels.slice();
+      var data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
+
+      if($('#heatmap_invertX').is(':checked')){
+        data.forEach(l => l.reverse());
+        xLabels.reverse();
+      }
+
+      if($('#heatmap_invertY').is(':checked')){
+        data.reverse();
+        yLabels.reverse();
+      }
+
+      var config = {
+        autotick: false,
+        showticklabels: $('#heatmap_showAxisLabels').is(':checked')
+      };
+
+      if(!$('#heatmap_showAxisLabels').is(':checked')){
+        config.ticks = '';
+      }
+
+      window.plot = Plotly.newPlot('heatmap_panel', [{
+        x: xLabels,
+        y: yLabels,
+        z: data,
+        type: 'heatmap',
+        colorscale: [
+          [0, $('#heatmap_lowColor').val()],
+          [0.5, $('#heatmap_medianColor').val()],
+          [1, $('#heatmap_highColor').val()]
+        ]
+      }], {
+        xaxis: config,
+        yaxis: config,
+        width: $('#heatmap_panel').parent().width(),
+        height: $('#heatmap_panel').parent().height()
+      }, {
+        displaylogo: false,
+        displayModeBar: false
+      });
     }
 
-    if(window.plot) Plotly.purge('heatmap_panel');
+    $('input[name="distanceMetric"]').change(redrawHeatmap);
 
-    var xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
-    var yLabels = xLabels.slice();
-    var data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
-
-    if($('#heatmap_invertX').is(':checked')){
-      data.forEach(l => l.reverse());
-      xLabels.reverse();
-    }
-
-    if($('#heatmap_invertY').is(':checked')){
-      data.reverse();
-      yLabels.reverse();
-    }
-
-    var config = {
-      autotick: false,
-      showticklabels: $('#heatmap_showAxisLabels').is(':checked')
-    };
-
-    if(!$('#heatmap_showAxisLabels').is(':checked')){
-      config.ticks = '';
-    }
-
-    window.plot = Plotly.newPlot('heatmap_panel', [{
-      x: xLabels,
-      y: yLabels,
-      z: data,
-      type: 'heatmap',
-      colorscale: [
-        [0, $('#heatmap_lowColor').val()],
-        [0.5, $('#heatmap_medianColor').val()],
-        [1, $('#heatmap_highColor').val()]
-      ]
-    }], {
-      xaxis: config,
-      yaxis: config
-    }, {
-      displaylogo: false,
-      displayModeBar: false
+    $('#heatmap_network-color').on('input change', function(e){
+      $('svg.main-svg:first').css('background-color', e.target.value);
     });
-  }
 
-  $('#heatmap_distanceMetric').html(
-    Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
-      <label class="btn btn-secondary${(i===0)? ' active':''}">
-        <input type="radio" name="distanceMetric" id="${k}" autocomplete="off"${(i===0)? ' checked':''}>${app.titleize(k)}</input>
-      </label>
-    `).join('')
-  );
-  $('input[name="distanceMetric"]').change(replot);
+    $('input[name="axisLabels"]').change(redrawHeatmap);
+    $('input[type="color"]').change(redrawHeatmap);
+    $('#heatmap_invertX, #heatmap_invertY').change(redrawHeatmap);
 
-  replot();
+    setTimeout(redrawHeatmap, 80);
 
-  $('#heatmap_network-color').on('input change', function(e){
-    $('svg.main-svg:first').css('background-color', e.target.value);
-  });
-
-  $('input[name="axisLabels"]').change(replot);
-  $('input[type="color"]').change(replot);
-  $('#heatmap_invertX, #heatmap_invertY').change(replot);
+  })();
   </script>
