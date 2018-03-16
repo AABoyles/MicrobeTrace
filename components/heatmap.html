@@ -12,55 +12,53 @@
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-xs-3">Distance Metric</div>
-            <div class="col-xs-9">
-              <div class="btn-group" data-toggle="buttons" id="heatmap_distanceMetric"></div>
-            </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-xs-3">Invert Axes</div>
-            <div class="col-xs-9">
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default btn-xs">
-                  <input id="heatmap_invertX" type="checkbox"> X
-                </label>
-              </div>
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default btn-xs">
-                  <input id="heatmap_invertY" type="checkbox"> Y
-                </label>
+          <div class="container">
+            <div class="form-group row">
+              <div class="col-3">Distance Metric</div>
+              <div class="col-9">
+                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" id="heatmap_distanceMetric"></div>
               </div>
             </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-xs-3">Color Scheme</div>
-            <div class="col-xs-9">
-              <input type="color" id="heatmap_lowColor" value="#313695" />
-              <input type="color" id="heatmap_medianColor" value="#ffffbf" />
-              <input type="color" id="heatmap_highColor" value="#a50026" />
+            <div class="form-group row">
+              <div class="col-3">Invert Axes</div>
+              <div class="col-9">
+                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                  <label class="btn btn-secondary">
+                    <input id="heatmap_invertX" type="checkbox"> X
+                  </label>
+                </div>
+                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                  <label class="btn btn-secondary">
+                    <input id="heatmap_invertY" type="checkbox"> Y
+                  </label>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-            <div class="col-xs-9"><input type="color" id="heatmap_network-color" class="triggers" value="#ffffff" /></div>
-          </div>
-          <div class="form-group row">
-            <div class="col-xs-3">Axis Labels</div>
-            <div class="col-xs-9">
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default btn-xs">
-                  <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
-                </label>
-                <label class="btn btn-default btn-xs active">
-                  <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
-                </label>
+            <div class="form-group row">
+              <div class="col-3">Color Scheme</div>
+              <div class="col-9">
+                <input type="color" id="heatmap_lowColor" value="#313695" />
+                <input type="color" id="heatmap_medianColor" value="#ffffbf" />
+                <input type="color" id="heatmap_highColor" value="#a50026" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-3">Axis Labels</div>
+              <div class="col-9">
+                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
+                  </label>
+                  <label class="btn btn-secondary active">
+                    <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
+                  </label>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -129,11 +127,6 @@
     }
 
     $('input[name="distanceMetric"]').change(redrawHeatmap);
-
-    $('#heatmap_network-color').on('input change', function(e){
-      $('svg.main-svg:first').css('background-color', e.target.value);
-    });
-
     $('input[name="axisLabels"]').change(redrawHeatmap);
     $('input[type="color"]').change(redrawHeatmap);
     $('#heatmap_invertX, #heatmap_invertY').change(redrawHeatmap);
