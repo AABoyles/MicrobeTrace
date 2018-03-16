@@ -284,8 +284,6 @@
 <script>
 (function(){
 
-  $('#default-link-threshold').show();
-
   app.tagClusters();
   app.setNodeVisibility();
   app.setLinkVisibility();
@@ -307,7 +305,7 @@
 
   session.network.fit = function(thing, bounds){
     if(!bounds) bounds = session.network.svg.node().getBBox();
-    if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
+    if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
     var parent = session.network.svg.node().parentElement,
         midX = bounds.x + bounds.width / 2,
         midY = bounds.y + bounds.height / 2;
@@ -460,9 +458,13 @@
         .forEach(node => node.selected = 0);
     }
     n.selected = !n.selected;
+    $(window).trigger('node_selected');
+  }
+
+  $(window).on('node_selected', function(){
     d3.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path').classed('selected', d => d.selected);
     $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
-  }
+  });
 
   new Clipboard('#copyID, #copySeq');
 
@@ -695,7 +697,7 @@
     var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
     $('#nodeColors').fadeOut(function(){$(this).remove()});
     var table = $('<tbody id="nodeColors"></tbody>').appendTo('#groupKey');
-    if(e.target.value == 'None'){
+    if(e.target.value === 'None'){
       circles.attr('fill', $('#default-node-color').val());
       $('#default-node-color').fadeIn();
       table.fadeOut();
@@ -709,7 +711,7 @@
       var input = $('<input type="color" value="'+o(value)+'" />')
         .on('input', evt => {
           circles
-            .filter(d => d[e.target.value] == value)
+            .filter(d => d[e.target.value] === value)
             .attr('fill', d => evt.target.value);
         });
       var cell = $('<td></td>').append(input);
@@ -739,7 +741,7 @@
 
   function setLinkColor(e){
     var variable = $('#linkColorVariable').val();
-    if(variable == 'None'){
+    if(variable === 'None'){
       session.network.svg.select('g#links').selectAll('line').style('stroke', $('#default-link-color').val());
       $('#default-link-color').fadeIn();
       $('#linkColors').fadeOut();
@@ -784,7 +786,7 @@
     links.attr(attribute, d => {
       var v = d[variable];
       if(typeof v === 'undefined') v = rng / 2 + min;
-      if(recip && attribute == 'stroke-width'){
+      if(recip && attribute === 'stroke-width'){
         return scalar * (1 - (v - min) / rng) + floor;
       }
       return scalar * (v - min) / rng + floor;
@@ -797,23 +799,7 @@
   $('#default-link-width').on('input', e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
   $('#linkWidthVariable, #reciprocal-link-width').change(e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
 
-  $('#linkSortVariable').on('change', e => {
-    if(e.target.value === 'None'){
-      $('#computeMST').fadeOut();
-      $('#default-link-threshold').fadeOut();
-    } else {
-      $('#computeMST').css('display', 'inline-block');
-      $('#default-link-threshold').css('visibility', 'visible');
-    }
-  });
-
-  $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons').change(e => {
-    session.network.render();
-    updateStatistics();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
-  });
-
-  $('#default-link-threshold').on('input', e => {
+  $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons, #linkSortVariable, #default-link-threshold').on('input', e => {
     session.network.render();
     updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
@@ -822,6 +808,7 @@
   $('#hide_2d_network_statistics').parent().click(function(){
     $('#networkStatistics').fadeOut();
   });
+
   $('#show_2d_network_statistics').parent().click(function(){
     updateStatistics();
     $('#networkStatistics').fadeIn();
@@ -867,19 +854,10 @@
 
   $('#fitbutton').click(session.network.fit);
 
-  $('#search').on('input', e => {
-    if(e.target.value === ''){
-      session.data.nodes.forEach(n => n.selected = 0);
-    } else {
-      session.data.nodes.forEach(n => n.selected = (n.id.indexOf(e.target.value)>-1));
-      if(session.data.nodes.filter(n => n.selected).length === 0) alertify.warning('No matches!');
-    }
-    d3.select('g#nodes')
-      .selectAll('g.node')
-      .select('path')
-      .data(session.data.nodes)
-      .classed('selected', d => d.selected);
-    $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+  $('#RevealAllTab').click(function(e) {
+    session.network.render();
+    session.network.fit();
+    session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
   setTimeout(function(){

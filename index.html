@@ -409,9 +409,6 @@ performance of this software.</pre>
       $('#ShowSingletons').prop('checked', true).parent().addClass('active');
       app.setLinkVisibility();
       app.setNodeVisibility();
-      session.network.render();
-      session.network.fit();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
     });
 
     $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
@@ -491,13 +488,20 @@ performance of this software.</pre>
       saveAs(blob, name + '.' + format);
     });
 
-    $(document).on('keydown', e => {
-      if(e.key === 'Escape'){
-        $('#searchBox').slideUp();
+    $('#search').on('input', e => {
+      if(e.target.value === ''){
+        session.data.nodes.forEach(n => n.selected = 0);
+      } else {
+        session.data.nodes.forEach(n => n.selected = (n.id.indexOf(e.target.value)>-1));
+        if(session.data.nodes.filter(n => n.selected).length === 0) alertify.warning('No matches!');
       }
+      $(window).trigger('node_selected');
+    });
+
+    $(document).on('keydown', e => {
       if(e.ctrlKey && e.key === 'f'){
         e.preventDefault();
-        $('#searchBox').slideDown().find('#search').focus();
+        $('#search').focus();
       }
     });
 

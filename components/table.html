@@ -72,17 +72,17 @@
 
     var meta = ['index', 'padding', 'selected', 'visible', 'orig', 'mst'];
 
-    window.table = { destroy: function(){} };
+    var table = { destroy: function(){} };
 
     session.data.clusterFields = Object.keys(session.data.clusters[0]);
 
     function updateTable(){
       var data_type = $('input[name=nodelink]:checked')[0].id;
       var data = [];
-      if(data_type == 'clusters'){
+      if(data_type === 'clusters'){
         data = session.data.clusters.filter(c => c.nodes > 1);
       } else {
-        data = session.data[data_type];
+        data = session.data[data_type].filter(function(thing){ return thing.visible; });
       }
       var columns = session.data[data_type.slice(0,-1) + 'Fields'];
       table.destroy();
@@ -100,25 +100,38 @@
       };
       var selectedColumn = columns.findIndex(d => d === 'selected');
       if(selectedColumn >= 0) options.orderFixed = [selectedColumn, 'desc'];
-      window.table = $('#table').empty().DataTable(options);
+      table = $('#table').empty().DataTable(options);
       var colsToKeep = $('#columns').val().map(parseFloat);
       columns.forEach((col, i) => table.column(i).visible(colsToKeep.includes(i)));
       table.on('user-select', (e, dt, type, cell) => {
         var index = cell.index().row;
         if(data_type === 'nodes'){
           session.data[data_type][index].selected = !session.data[data_type][index].selected;
-          table.row(index).data(session.data[data_type][index]);
+          $(window).trigger('node_selected');
+        } else {
+          reorder();
         }
-        reorder();
       });
-      table.rows(session.data[data_type].filter(n => n.selected).map(n => n.index)).select();
-      reorder();
+      selectRows();
       resetTextsize();
     }
 
-    function reorder(){ table.draw(false); }
+    $(window).on('node_selected', selectRows);
 
-    $('#search').on('input', function(e){ table.search(e.target.value).draw(); });
+    function selectRows(){
+      var data_type = $('input[name=nodelink]:checked')[0].id;
+      table
+        .rows()
+          .deselect()
+        .rows(
+          session.data[data_type]
+            .filter(n => n.selected)
+            .map(n => n.index)
+        ).select();
+      reorder();
+    }
+
+    function reorder(){ table.draw(false); }
 
     function updateColumns(){
       var type = $('input[name=nodelink]:checked')[0].id.slice(0,-1);
@@ -146,7 +159,7 @@
         'height': `${h}px`,
         'overflow': 'visible'
       });
-      if($(this).val() == 0){
+      if($(this).val() === 0){
         $('th').css({
           'border-bottom': '1px solid black',
           'overflow': 'hidden'
@@ -170,6 +183,24 @@
     $('#columns').on('change', e => updateTable());
 
     $('#font-size-slider').on('input', resetTextsize);
+
+    $('#linkSortVariable, #default-link-threshold').on('input', e => {
+      if($('input[name=nodelink]:checked')[0].id === 'clusters'){
+        updateTable();
+      }
+    });
+
+    $('#showMSTLinks, #showAllLinks').on('input', function(){
+      if($('input[name=nodelink]:checked')[0].id === 'links'){
+        updateTable();
+      }
+    });
+
+    $('#ShowSingletons, #HideSingletons').on('input', function(){
+      if($('input[name=nodelink]:checked')[0].id === 'nodes'){
+        updateTable();
+      }
+    });
 
     setTimeout(updateTable, 100);
 
