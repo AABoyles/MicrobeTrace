@@ -427,10 +427,7 @@
 
   updateStatistics();
 
-  setTimeout(e => {
-    session.network.fit();
-    $('#loadingInformationModal').modal('hide');
-  }, 1500);
+  setTimeout(session.network.fit, 1500);
 
   function dragstarted(d){
     if (!d3.event.active) session.network.force.alphaTarget(0.3).restart();

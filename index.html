@@ -337,12 +337,11 @@ performance of this software.</pre>
   <script type="text/javascript" src="scripts/common.js"></script>
   <script type="text/javascript">
   var layout;
-  var componentCache = {};
 
   $(function(){
     "use strict";
 
-    window.session = app.dataSkeleton();
+    window.session = app.sessionSkeleton();
 
     layout = new window.GoldenLayout({
       settings: {

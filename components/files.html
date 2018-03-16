@@ -209,6 +209,10 @@ function message(msg){
 }
 
 $('#main-submit').click(function(e){
+  session.messages = [];
+  session.data = app.dataSkeleton();
+  $('#loadingInformation').html('');
+
   $('#loadingInformationModal').modal({
     keyboard: false,
     backdrop: 'static'
@@ -371,12 +375,18 @@ $('#main-submit').click(function(e){
     } else {
       $('.showForSequence').hide();
       clearTimeout(messageTimeout);
-      app.launchView('2d_network');
       $('#linkSortVariable').html(
         session.data.linkFields.map(function(field){
           return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
         }).join('\n')
       );
+      app.launchView('2d_network');
+      if(session.network){
+        session.network.render();
+        session.network.force.alpha(0.3).alphaTarget(0).restart();
+        setTimeout(session.network.fit, 1500);
+      }
+      $('#loadingInformationModal').modal('hide');
     }
   };
 
@@ -408,12 +418,18 @@ $('#main-submit').click(function(e){
       session.data.distance_matrix = response.data;
       delete session.data.distance_matrix.links;
       message(` - Found ${k} New Links while computing Distance Matrices`);
-      app.launchView('2d_network');
       $('#linkSortVariable').html(
         session.data.linkFields.map(function(field){
           return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
         }).join('\n')
       );
+      app.launchView('2d_network');
+      if(session.network){
+        session.network.render();
+        session.network.force.alpha(0.3).alphaTarget(0).restart();
+        setTimeout(session.network.fit, 1500);
+      }
+      $('#loadingInformationModal').modal('hide');
     };
   };
 });

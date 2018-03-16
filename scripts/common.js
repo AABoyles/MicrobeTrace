@@ -1,16 +1,22 @@
 var app = {};
 
+app.componentCache = [];
+
 app.dataSkeleton = function(){
   return {
+    nodes: [],
+    links: [],
+    clusters: [],
+    distance_matrix: {},
+    nodeFields: ['id', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
+    linkFields: ['source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin']
+  };
+};
+
+app.sessionSkeleton = function(){
+  return {
     files: [],
-    data: {
-      nodes: [],
-      links: [],
-      clusters: [],
-      distance_matrix: {},
-      nodeFields: ['id', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
-      linkFields: ['source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin']
-    },
+    data: app.dataSkeleton(),
     state: {
       visible_clusters: [],
       alpha: 0.3,
@@ -181,7 +187,7 @@ app.setLinkVisibility = function(){
 };
 
 app.reset = function(){
-  window.session = app.dataSkeleton();
+  window.session = app.sessionSkeleton();
   layout.root.replaceChild(layout.root.contentItems[0], {
     type: 'stack',
     content: []
@@ -196,9 +202,9 @@ app.launchView = function(view){
       container.getElement().html(state.text);
     });
   }
-  if(!componentCache[view]){
+  if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
-      componentCache[view] = response;
+      app.componentCache[view] = response;
       app.launchView(view);
     });
   } else {
@@ -210,7 +216,7 @@ app.launchView = function(view){
     } else {
       layout.root.contentItems[0].addChild({
         componentName: view,
-        componentState: { text: componentCache[view] },
+        componentState: { text: app.componentCache[view] },
         title: app.titleize(view),
         type: 'component'
       });
