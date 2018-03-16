@@ -510,7 +510,7 @@
   }
 
   function showNodeToolTip(d){
-    if($('#nodeTooltipVariable').val() === 'none') return;
+    if($('#nodeTooltipVariable').val() === 'None') return;
     d3.select('#tooltip')
       .html(d[$('#nodeTooltipVariable').val()])
       .style('left', (d3.event.pageX + 8) + 'px')
@@ -522,7 +522,7 @@
 
   function showLinkToolTip(d){
     var v = $('#linkTooltipVariable').val();
-    if(v === 'none') return;
+    if(v === 'None') return;
     d3.select('#tooltip')
       .html((v === 'source' || v === 'target') ? d[v].id : d[v])
       .style('left', (d3.event.pageX + 8) + 'px')
@@ -873,7 +873,8 @@
     $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
   });
 
-  $('#nodeTooltipVariable').val('id');
-  $('#linkSortVariable').val('distance');
+  setTimeout(function(){
+    $('#nodeTooltipVariable').val('id');
+  }, 80);
 })();
 </script>
