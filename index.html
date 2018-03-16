@@ -248,10 +248,10 @@ performance of this software.</pre>
               <div class="col-12">
                 <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                   <label class="btn btn-secondary active">
-                    <input type="radio" name="export-dms" data-type="link" autocomplete="off" checked>TN93</input>
+                    <input type="radio" name="export-dms" data-type="tn93" autocomplete="off" checked>TN93</input>
                   </label>
                   <label class="btn btn-secondary">
-                    <input type="radio" name="export-dms" data-type="node" autocomplete="off">SNPs</input>
+                    <input type="radio" name="export-dms" data-type="snps" autocomplete="off">SNPs</input>
                   </label>
                 </div>
               </div>
@@ -447,16 +447,15 @@ performance of this software.</pre>
 
     $('[name="export-options"]').change(function(e){
       var type = $('[name="export-options"]:checked').data('type');
-      var otherFormats = '<option selected>csv</option><option>json</option>';
       if(type === 'nodes'){
         $('#export-dm-row').slideUp();
-        $('#export-file-format').html(['csv', 'json', 'fasta', 'mega'].map(function(f){ return '<option>' + f + '</option>'; }).join(''));
+        $('#export-file-format').html('<option>csv</option><option>json</option><option>fasta</option><option>mega</option>');
       } else if(type === 'links'){
         $('#export-dm-row').slideUp();
-        $('#export-file-format').html(otherFormats);
+        $('#export-file-format').html('<option selected>csv</option><option>json</option>');
       } else if(type === 'distmat'){
         $('#export-dm-row').slideDown();
-        $('#export-file-format').html(otherFormats);
+        $('#export-file-format').html('<option selected>csv</option>');
       } else if(type === 'hivtrace'){
         $('#export-dm-row').slideUp();
         $('#export-file-format').html('<option selected>hivtrace</option>');
@@ -464,17 +463,8 @@ performance of this software.</pre>
     });
 
     $('#export-data').click(function(){
-      var data = session.data.nodes;
-      var type = $('[name="export-options"]:checked').data('type');
       var mime = 'application/json;';
       var handler = JSON.stringify;
-      if(type === 'links'){
-        data = session.data.links;
-      } else if(type === 'distmat'){
-
-      } else if(type === 'hivtrace'){
-        handler = app.exportHIVTRACE;
-      }
       var format = $('#export-file-format').val();
       if(format === 'csv'){
         mime = 'text/csv;';
@@ -485,6 +475,16 @@ performance of this software.</pre>
       } else if(format === 'mega'){
         mime = 'application/mega;';
         handler = app.unparseMEGA;
+      }
+      var data = session.data.nodes;
+      var type = $('[name="export-options"]:checked').data('type');
+      if(type === 'links'){
+        data = session.data.links;
+      } else if(type === 'distmat'){
+        data = session.data.distance_matrix[$('[name="export-dms"]:checked').data('type')];
+        handler = app.unparseDM;
+      } else if(type === 'hivtrace'){
+        handler = app.exportHIVTRACE;
       }
       var name = $('#export-file-name').val();
       var blob = new Blob([handler(data)], {type: mime + 'charset=utf-8'});
