@@ -89,52 +89,6 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
-app.unparseFASTA = function(nodes){
-  return nodes.map(function(node){
-    return '>' + node.id + '\r\n' + node.seq;
-  }).join('\r\n');
-};
-
-app.unparseMEGA = function(nodes){
-  return nodes.map(function(node){
-    return '#' + node.id + '\r\n' + node.seq;
-  }).join('\r\n');
-};
-
-app.unparseDM = function(dm){
-  return ',' + session.data.distance_matrix.labels.join(',') + '\n' +
-    dm
-      .map((row, i) => labels[i] + ',' + row.join(','))
-      .join('\n');
-};
-
-app.exportHIVTRACE = function(){
-  return JSON.stringify({
-    'trace_results': {
-      'HIV Stages': {},
-      'Degrees': {},
-      'Multiple sequences': {},
-      'Edge Stages': {},
-      'Cluster sizes': session.data.clusters.map(c => c.size),
-      'Settings': {
-        'contaminant-ids': [],
-        'contaminants': 'remove',
-        'edge-filtering': 'remove',
-        'threshold': $('#default-link-threshold').val()
-      },
-      'Network Summary': {
-        'Sequences used to make links': 0,
-        'Clusters': session.data.clusters.length,
-        'Edges': session.data.links.filter(l => l.visible).length,
-        'Nodes': session.data.nodes.length
-      },
-      'Directed Edges': {},
-      'Edges': session.data.links,
-      'Nodes': session.data.nodes
-    }
-  }, null, 2)
-}
-
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
@@ -172,10 +126,11 @@ app.DFS = function(node){
   node.cluster = session.data.clusters.length;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
   session.data.links.forEach(l => {
-    if(l.visible && (l.source == node.id || l.target == node.id)){
+    if(l.visible && (l.source === node.id || l.target === node.id)){
       l.cluster = session.data.clusters.length;
-      session.data.clusters[session.data.clusters.length - 1].links++;
-      session.data.clusters[session.data.clusters.length - 1].sum_distances += l[lsv];
+      var cluster = session.data.clusters[session.data.clusters.length - 1];
+      cluster.links++;
+      cluster.sum_distances += l[lsv];
       var source = session.data.nodes.find(d => d.id === l.source);
       if(!l.source.cluster) app.DFS(source);
       var target = session.data.nodes.find(d => d.id === l.target);
@@ -189,8 +144,8 @@ app.computeDegree = function(){
   session.data.links
     .filter(l => l.visible)
     .forEach(l => {
-      session.data.nodes.find(d => d.id == l.source).degree++;
-      session.data.nodes.find(d => d.id == l.target).degree++;
+      session.data.nodes.find(d => d.id === l.source).degree++;
+      session.data.nodes.find(d => d.id === l.target).degree++;
     });
   session.data.clusters.forEach(c => {
     c.links = c.links/2;
@@ -283,4 +238,50 @@ app.launchView = function(view){
     }
     return contentItem;
   }
+};
+
+app.unparseFASTA = function(nodes){
+  return nodes.map(function(node){
+    return '>' + node.id + '\r\n' + node.seq;
+  }).join('\r\n');
+};
+
+app.unparseMEGA = function(nodes){
+  return nodes.map(function(node){
+    return '#' + node.id + '\r\n' + node.seq;
+  }).join('\r\n');
+};
+
+app.unparseDM = function(dm){
+  return ',' + session.data.distance_matrix.labels.join(',') + '\n' +
+    dm
+      .map((row, i) => labels[i] + ',' + row.join(','))
+      .join('\n');
+};
+
+app.exportHIVTRACE = function(){
+  return JSON.stringify({
+    'trace_results': {
+      'HIV Stages': {},
+      'Degrees': {},
+      'Multiple sequences': {},
+      'Edge Stages': {},
+      'Cluster sizes': session.data.clusters.map(c => c.size),
+      'Settings': {
+        'contaminant-ids': [],
+        'contaminants': 'remove',
+        'edge-filtering': 'remove',
+        'threshold': $('#default-link-threshold').val()
+      },
+      'Network Summary': {
+        'Sequences used to make links': 0,
+        'Clusters': session.data.clusters.length,
+        'Edges': session.data.links.filter(l => l.visible).length,
+        'Nodes': session.data.nodes.length
+      },
+      'Directed Edges': {},
+      'Edges': session.data.links,
+      'Nodes': session.data.nodes
+    }
+  }, null, 2)
 };
