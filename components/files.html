@@ -60,7 +60,7 @@ $('#data_files').on('change', function(e){
   for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
   $('#main-submit').css('display', 'inline').focus();
 }).filestyle({
-  text: 'Input File(s)',
+  text: 'Add File(s)',
   input: false,
   btnClass: 'btn-primary'
 });
@@ -73,40 +73,38 @@ $('#file_panel').on('dragover', function(evt){
   evt.stopPropagation();
   evt.preventDefault();
   var files = evt.originalEvent.dataTransfer.files;
-  var output = [];
   for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
   $('#main-submit').css('display', 'inline').focus();
 });
 
 function addFileToTable(file){
   session.files.push(file);
-  var filename = file.name;
-  var extension = filename.split('.').pop().slice(0,3).toLowerCase();
+  var extension = file.name.split('.').pop().slice(0,3).toLowerCase();
   var isFasta = (extension === 'fas');
   if(isFasta) $('#alignerControlsButton').css('display', 'inline');
-  var isNode = filename.toLowerCase().includes('node');
+  var isNode = file.name.toLowerCase().includes('node');
   var root = $('<div class="form-group row file-table-row"></div>');
   $('<div class="col-8 filename"></div>')
     .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
-      session.files.splice(session.files.indexOf(filename), 1);
+      session.files.splice(session.files.indexOf(file.name), 1);
       root.slideUp(function(){ root.remove(); });
     }))
-    .append(`&nbsp;<a href="#" title="${filename}">${filename}</a>`)
+    .append(`&nbsp;<a href="#" title="${file.name}">${file.name}</a>`)
     .appendTo(root);
   root.append(`
     <div class="col-4 text-right">
       <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
         <label class="btn btn-secondary${!isFasta&!isNode?' active':''}">
-          <input type="radio" name="options-${filename}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
+          <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
         </label>
         <label class="btn btn-secondary${!isFasta&isNode?' active':''}">
-          <input type="radio" name="options-${filename}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
+          <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
         </label>
         <label class="btn btn-secondary">
-          <input type="radio" name="options-${filename}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
+          <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
         </label>
         <label class="btn btn-secondary${isFasta?' active':''}">
-          <input type="radio" name="options-${filename}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
+          <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
         </label>
       </div>
     </div>
@@ -118,17 +116,17 @@ function addFileToTable(file){
       var data = output.data;
       var headers = output.meta.fields;
       var options = '<option>None</option>' + headers.map(h => `<option value="${h}">${app.titleize(h)}</option>`).join('\n');
-      $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${filename}'>
-          <label for="file-${filename}-field-1">${isNode?'ID':'Source'}</label>
-          <select id="file-${filename}-field-1" class="custom-select custom-select-sm">${options}</select>
+      $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+          <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
+          <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
         </div>
-        <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${filename}'>
-          <label for="file-${filename}-field-2">${isNode?'Sequence':'Target'}</label>
-          <select id="file-${filename}-field-2" class="custom-select custom-select-sm">${options}</select>
+        <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+          <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
+          <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
         </div>
-        <div class='col-4 '${!isFasta&&!isNode?'':' style="display: none;"'} data-file='${filename}'>
-          <label for="file-${filename}-field-3">Distance</label>
-          <select id="file-${filename}-field-3" class="custom-select custom-select-sm">${options}</select>
+        <div class='col-4 '${!isFasta&&!isNode?'':' style="display: none;"'} data-file='${file.name}'>
+          <label for="file-${file.name}-field-3">Distance</label>
+          <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
         </div>`).appendTo(root);
       var a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
           b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
@@ -142,8 +140,8 @@ function addFileToTable(file){
       });
       root.appendTo('#file_table');
       var refit = function(e){
-        var type = $(e ? e.target : `[name="options-${filename}"]:checked`).data('type'),
-            these = $(`[data-file='${filename}']`),
+        var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
+            these = $(`[data-file='${file.name}']`),
             first = $(these.get(0)),
             second = $(these.get(1)),
             third = $(these.get(2)),
@@ -171,7 +169,7 @@ function addFileToTable(file){
           });
         });
       };
-      $(`[name="options-${filename}"]`).change(refit);
+      $(`[name="options-${file.name}"]`).change(refit);
       refit();
     }
   });
@@ -219,9 +217,10 @@ $('#main-submit').click(function(e){
   var files = [];
   $('#file_panel .row').each((i, el) => {
     var $el = $(el);
+    var fname = $el.find('.filename').text().trim();
     var selects = $el.find('select');
     files.push({
-      file: session.files[i],
+      file: session.files.find(function(file){ return file.name === fname; }),
       type: $el.find('input[type="radio"]:checked').data('type'),
       field1: selects.get(0).value,
       field2: selects.get(1).value,
