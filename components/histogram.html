@@ -15,61 +15,61 @@
         </div>
         <div class="modal-body">
           <div class="container">
-            <div class="row">
-              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
-              <div class="col-xs-9">
-                <div class="btn-group btn-group-xs" data-toggle="buttons">
-                  <label class="btn btn-default active">
+            <div class="form-group row">
+              <div class="col-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
+              <div class="col-9">
+                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                  <label class="btn btn-secondary active">
                     <input type="radio" name="axis" id="histogram_xAxis" autocomplete="off" checked> X
                   </label>
-                  <label class="btn btn-default">
+                  <label class="btn btn-secondary">
                     <input type="radio" name="axis" id="histogram_yAxis" autocomplete="off"> Y
                   </label>
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Should the histogram be drawn from only stuff thats visible in the network, or all the data?">Dataset</a></div>
-              <div class="col-xs-9">
-                <div class="btn-group btn-group-xs" data-toggle="buttons">
-                  <label class="btn btn-default active">
+            <div class="form-group row">
+              <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the histogram be drawn from only stuff thats visible in the network, or all the data?">Dataset</a></div>
+              <div class="col-9">
+                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                  <label class="btn btn-secondary active">
                     <input type="radio" name="set" id="histogram_vislinks" autocomplete="off" checked> Only Visible Elements
                   </label>
-                  <label class="btn btn-default">
+                  <label class="btn btn-secondary">
                     <input type="radio" name="set" id="histogram_alllinks" autocomplete="off"> All Elements
                   </label>
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
-              <div class="col-xs-9"><select id="histogram_variable"><option selected>distance</option></select></div>
+            <div class="form-group row">
+              <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
+              <div class="col-9"><select id="histogram_variable" class="custom-select custom-select-sm"><option selected>distance</option></select></div>
             </div>
-            <div class="row">
-              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
-              <div class="col-xs-9">
-                <div class="btn-group btn-group-xs" data-toggle="buttons">
-                  <label class="btn btn-default active">
+            <div class="form-group row">
+              <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
+              <div class="col-9">
+                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                  <label class="btn btn-secondary active">
                     <input type="radio" name="scale" id="histogram_linearScale" autocomplete="off" checked> Linear
                   </label>
-                  <label class="btn btn-default">
+                  <label class="btn btn-secondary">
                     <input type="radio" name="scale" id="histogram_logScale" autocomplete="off"> Log
                   </label>
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
-              <div class="col-xs-9"><input type="color" id="histogram_color" value="#5656ff" /></div>
+            <div class="form-group row">
+              <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
+              <div class="col-9"><input type="color" id="histogram_color" value="#5656ff" /></div>
             </div>
-            <div class="row">
-              <div class="col-xs-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-              <div class="col-xs-9"><input type="color" id="histogram_network-color" class="triggers" value="#ffffff" /></div>
+            <div class="form-group row">
+              <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
+              <div class="col-9"><input type="color" id="histogram_network-color" class="triggers" value="#ffffff" /></div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -80,9 +80,7 @@
     $('#histogram_variable').html(
       session.data.linkFields.map(key => `<option value='links-${key}'>Links ${app.titleize(key)}</option>`).concat(
       session.data.nodeFields.map(key => `<option value='nodes-${key}'>Nodes ${app.titleize(key)}</option>`)).join('\n')
-    );
-
-    $('#histogram_variable').val('links-distance');
+    ).val('links-distance');
 
     function redrawHistogram(){
       if(window.plot) Plotly.purge('histogram_panel');
@@ -116,10 +114,8 @@
       });
     }
 
-    $('#histogram_network-color').on('input', e => {
-      session.style.background = e.target.value;
-      $('#histogram_panel').css('background-color', session.style.background);
-      $('rect.bg').css('fill', session.style.background);
+    $('#histogram_network-color').on('input', function(e){
+      $('rect.bg').css('fill', e.target.value);
     });
 
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
