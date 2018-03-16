@@ -76,18 +76,7 @@
   </div><!-- /.modal -->
 
   <script>
-  $(function(){
-
-    // electron.ipcRenderer.on('update-link-visibilities', (e, newLinks) => {
-    //   let n = newLinks.length;
-    //   for(let i = 0; i < n; i++){
-    //     session.data.links[i].visible = newLinks[i];
-    //   }
-    //   redraw();
-    // });
-
-    let links = session.data.links;
-
+  (function(){
     $('#histogram_variable').html(
       session.data.linkFields.map(key => `<option value='links-${key}'>Links ${app.titleize(key)}</option>`).concat(
       session.data.nodeFields.map(key => `<option value='nodes-${key}'>Nodes ${app.titleize(key)}</option>`)).join('\n')
@@ -95,25 +84,25 @@
 
     $('#histogram_variable').val('links-distance');
 
-    redraw();
-
-    restyle();
-
-    function redraw(){
+    function redrawHistogram(){
       if(window.plot) Plotly.purge('histogram_panel');
-      let varName, varSource;
-      [varSource, varName] = $('#histogram_variable').val().split('-');
-      let visible = $('#histogram_vislinks').is(':checked');
-      let axis = $('#histogram_xAxis').is(':checked') ? 'x' : 'y';
-      let nonaxis = $('#histogram_yAxis').is(':checked') ? 'x' : 'y';
-      let data = {
+      var temp = $('#histogram_variable').val().split('-');
+      var varSource = temp[0];
+      var varName = temp[1];
+      var visible = $('#histogram_vislinks').is(':checked');
+      var axis = $('#histogram_xAxis').is(':checked') ? 'x' : 'y';
+      var nonaxis = $('#histogram_yAxis').is(':checked') ? 'x' : 'y';
+      var data = {
         type: 'histogram',
         marker: {
           color: $('#histogram_color').val(),
         }
       };
       data[axis] = session.data[varSource].filter(l => !visible || l.visible).map(l => l[varName]);
-      let layout = {};
+      var layout = {
+        width: $('#histogram_panel').parent().width(),
+        height: $('#histogram_panel').parent().height()
+      };
       layout[axis + 'axis'] = {
         title: app.titleize(varName)
       }
@@ -125,18 +114,6 @@
         displaylogo: false,
         displayModeBar: false
       });
-      $(window).on('resize', e => {
-        Plotly.relayout('histogram_panel', {
-          width: $('#histogram_panel').width(),
-          height: $('#histogram_panel').height()
-        });
-      });
-    }
-
-    function restyle(){
-      $('#histogram_network-color').val(session.style.background);
-      $('svg.main-svg:first').css('background-color', session.style.background);
-      $('rect.bg').css('fill', session.style.background);
     }
 
     $('#histogram_network-color').on('input', e => {
@@ -145,7 +122,9 @@
       $('rect.bg').css('fill', session.style.background);
     });
 
-    $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redraw);
-    $('#histogram_variable, #histogram_color').change(redraw);
-  });
+    $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
+    $('#histogram_variable, #histogram_color').change(redrawHistogram);
+
+    setTimeout(redrawHistogram, 80);
+  })();
   </script>
