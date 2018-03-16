@@ -776,43 +776,21 @@
     }
   });
 
-  $('#computeMST').click(e => {
-    //TODO: Write
-    $('.showForNotMST').fadeOut(e => {
-      $('.showForMST').css('opacity', 0).css('display', 'inline-block').animate({'opacity': 1});
-    });
-  });
-
-  $('#showMSTLinks, #showAllLinks').change(e => {
-    app.setLinkVisibility();
-    app.tagClusters();
-    if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+  $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons').change(e => {
     session.network.render();
-    app.computeDegree();
-    updateStatistics();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
-  })
-
-  $('#ShowSingletons, #HideSingletons').change(e => {
-    app.tagClusters();
-    app.setNodeVisibility();
-    session.network.render();
-    app.computeDegree();
     updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
   $('#default-link-threshold').on('input', e => {
-    app.setLinkVisibility();
-    app.tagClusters();
-    if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
     session.network.render();
-    app.computeDegree();
     updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
-  $('#hide_2d_network_statistics').parent().click(() => $('#networkStatistics').fadeOut());
+  $('#hide_2d_network_statistics').parent().click(function(){
+    $('#networkStatistics').fadeOut();
+  });
   $('#show_2d_network_statistics').parent().click(function(){
     updateStatistics();
     $('#networkStatistics').fadeIn();

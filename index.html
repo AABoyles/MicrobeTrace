@@ -420,6 +420,31 @@ performance of this software.</pre>
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
 
+    $('#computeMST').click(e => {
+      //TODO: Write
+      $('.showForNotMST').fadeOut(e => {
+        $('.showForMST').css('opacity', 0).css('display', 'inline-block').animate({'opacity': 1});
+      });
+    });
+
+    $('#showMSTLinks, #showAllLinks').change(e => {
+      app.setLinkVisibility();
+      app.tagClusters();
+      if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+      app.computeDegree();
+    })
+
+    $('#ShowSingletons, #HideSingletons').change(e => {
+      app.setNodeVisibility();
+    });
+
+    $('#default-link-threshold').on('input', e => {
+      app.setLinkVisibility();
+      app.tagClusters();
+      if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+      app.computeDegree();
+    });
+
     $('[name="export-options"]').change(function(e){
       var type = $('[name="export-options"]:checked').data('type');
       var otherFormats = '<option selected>csv</option><option>json</option>';
@@ -465,8 +490,6 @@ performance of this software.</pre>
       var blob = new Blob([handler(data)], {type: mime + 'charset=utf-8'});
       saveAs(blob, name + '.' + format);
     });
-
-
 
     $(document).on('keydown', e => {
       if(e.key === 'Escape'){
