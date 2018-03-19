@@ -425,7 +425,19 @@
   app.tagClusters();
   app.computeDegree();
 
-  updateStatistics();
+  session.network.updateStatistics = function(){
+    if($('#hide_2d_network_statistics').is(':checked')) return;
+    var llinks = _.filter(session.data.links, e => e.visible);
+    var lnodes = _.filter(session.data.nodes, e => e.visible);
+    var singletons = session.data.clusters.filter(c => c.nodes === 1).length;
+    $('#numberOfSelectedNodes').text(lnodes.filter(d => d.selected).length.toLocaleString());
+    $('#numberOfNodes').text(lnodes.length.toLocaleString());
+    $('#numberOfVisibleLinks').text(llinks.length.toLocaleString());
+    $('#numberOfSingletonNodes').text(singletons.toLocaleString());
+    $('#numberOfDisjointComponents').text(session.data.clusters.length - singletons);
+  }
+
+  session.network.updateStatistics();
 
   setTimeout(session.network.fit, 1500);
 
@@ -616,18 +628,6 @@
     nodes.select('text').text(n => n[labelVar]);
   }
 
-  function updateStatistics(){
-    if($('#hide_2d_network_statistics').is(':checked')) return;
-    var llinks = _.filter(session.data.links, e => e.visible);
-    var lnodes = _.filter(session.data.nodes, e => e.visible);
-    var singletons = lnodes.length - _.union(_.map(llinks, 'source'), _.map(llinks, 'target')).length;
-    $('#numberOfSelectedNodes').text(lnodes.filter(d => d.selected).length.toLocaleString());
-    $('#numberOfNodes').text(lnodes.length.toLocaleString());
-    $('#numberOfVisibleLinks').text(llinks.length.toLocaleString());
-    $('#numberOfSingletonNodes').text(singletons.toLocaleString());
-    $('#numberOfDisjointComponents').text(session.data.clusters.length - singletons);
-  }
-
   $('#nodeLabelVariable').change(e => {
     if(e.target.value === 'None'){
       session.network.svg.select('g#nodes').selectAll('g.node')
@@ -798,7 +798,7 @@
 
   $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons, #linkSortVariable, #default-link-threshold').on('input', e => {
     session.network.render();
-    updateStatistics();
+    session.network.updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
@@ -807,7 +807,7 @@
   });
 
   $('#show_2d_network_statistics').parent().click(function(){
-    updateStatistics();
+    session.network.updateStatistics();
     $('#networkStatistics').fadeIn();
   });
 

@@ -8,8 +8,8 @@ app.dataSkeleton = function(){
     links: [],
     clusters: [],
     distance_matrix: {},
-    nodeFields: ['id', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
-    linkFields: ['source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin']
+    nodeFields: ['id', 'index', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
+    linkFields: ['source', 'target', 'index', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin']
   };
 };
 
@@ -32,6 +32,7 @@ app.sessionSkeleton = function(){
 app.defaultNode = function(){
   return {
     id: '',
+    index: session.data.nodes.length,
     padding: 0,
     selected: 0,
     cluster: 1,
@@ -43,6 +44,7 @@ app.defaultNode = function(){
 };
 
 app.addNode = function(newNode){
+  if(typeof newNode.id === 'number') newNode.id = '' + newNode.id;
   var oldNode = session.data.nodes.find(d => d.id === newNode.id);
   if(oldNode){
     Object.assign(oldNode, newNode);
@@ -57,6 +59,7 @@ app.defaultLink = function(){
   return {
     source: '',
     target: '',
+    index: session.data.links.length,
     tn93: 1,
     snps: Number.INFINITY,
     visible: 0,

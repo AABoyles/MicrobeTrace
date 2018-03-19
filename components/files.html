@@ -384,6 +384,7 @@ $('#main-submit').click(function(e){
       if(session.network){
         session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
+        session.network.updateStatistics();
         setTimeout(session.network.fit, 1500);
       }
       $('#loadingInformationModal').modal('hide');
