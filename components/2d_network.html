@@ -180,13 +180,13 @@
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="What color should the links be?">Color</label></div>
-                <div class="col-3"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option selected>None</option></select></div>
+                <div class="col-3"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>origin</option></select></div>
                 <div class="col-6"><input type="color" id="default-link-color" value="#6f6f6f" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
                 <div class="col-3"><select id="linkOpacityVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
-                <div class="col-6"><input type="range" id="default-link-opacity" min="0" max="1" value="0.5" step="0.01" /></div>
+                <div class="col-6"><input type="range" id="default-link-opacity" min="0" max="1" value="1" step="0.01" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-3"><label data-toggle="tooltip" title="How wide should the links be?">Thickness</label></div>
@@ -390,7 +390,7 @@
       .attr('dy', 5)
       .attr('dx', 8);
 
-    var vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
+    var vlinks = getVLinks();
 
     // Links are considerably simpler.
     var link = d3.select('g#links').selectAll('line').data(vlinks);
@@ -420,9 +420,30 @@
     session.network.force.force('link').links(vlinks);
   };
 
+  function getVLinks(){
+    var vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
+    var output = [];
+    var n = vlinks.length;
+    for(var i = 0; i < n; i++){
+      vlinks[i].origin.forEach((o, j, l) => {
+        output.push(Object.assign({}, vlinks[i], {
+          origin: o,
+          oNum: j,
+          origins: l.length,
+          source: session.data.nodes.find(d => d.id === vlinks[i].source),
+          target: session.data.nodes.find(d => d.id === vlinks[i].target)
+        }));
+      });
+    }
+    return output;
+  }
+
   session.network.render();
 
   app.tagClusters();
+
+  setLinkColor();
+
   app.computeDegree();
 
   session.network.updateStatistics = function(){
@@ -745,13 +766,28 @@
       return;
     }
     $('#default-link-color').fadeOut();
-    var links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
+    var vlinks = getVLinks();
+    var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     $('#linkColors').remove();
     var table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
     table.append('<tr><th>'+variable+'</th><th>Color</th><tr>');
-    var values = _(session.data.links).map(variable).uniq().sort().value();
+    var values = _(vlinks).map(variable).uniq().sort().value();
     var o = d3.scaleOrdinal(session.style.palette).domain(values);
-    links.style('stroke', d => o(d[variable]));
+    links
+      .style('stroke', d => o(d[variable]))
+      .attr('stroke-dasharray', l => {
+        var length = 15;
+        var out = new Array(l.origins * 2);
+        var ofs = new Array(l.origins).fill(1);
+        var ons = new Array(l.origins).fill(0);
+        ons[l.oNum] = 1;
+        ofs[l.oNum] = 0;
+        for(var i = 0; i < l.origins; i++){
+          out[2*i] = ons[i] * length;
+          out[2*i + 1] = ofs[i] * length;
+        }
+        return out.join(', ');
+      });
     values.forEach(value => {
       var input = $('<input type="color" name="'+value+'-node-color-setter" value="'+o(value)+'" />')
         .on('input', evt => {
@@ -770,12 +806,13 @@
   $('#linkColorVariable').change(setLinkColor);
 
   function scaleLinkThing(scalar, variable, attribute, floor){
-    var links = session.network.svg.select('g#links').selectAll('line').data(session.data.links.filter(l => l.visible));
+    var vlinks = getVLinks();
+    var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     if(variable === 'None'){
       return links.attr(attribute, scalar);
     }
     if(!floor){floor = 1;}
-    var values = _(session.data.links).map(variable).without(undefined);
+    var values = _(vlinks).map(variable).without(undefined);
     var min = values.min();
     var max = values.max();
     var rng = max - min;

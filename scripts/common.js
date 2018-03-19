@@ -39,7 +39,7 @@ app.defaultNode = function(){
     visible: 1,
     degree: 0,
     seq: '',
-    origin: ''
+    origin: []
   }
 };
 
@@ -47,6 +47,7 @@ app.addNode = function(newNode){
   if(typeof newNode.id === 'number') newNode.id = '' + newNode.id;
   var oldNode = session.data.nodes.find(d => d.id === newNode.id);
   if(oldNode){
+    if(newNode.origin) newNode.origin = newNode.origin.concat(oldNode.origin);
     Object.assign(oldNode, newNode);
     return 0;
   } else {
@@ -64,13 +65,14 @@ app.defaultLink = function(){
     snps: Number.INFINITY,
     visible: 0,
     cluster: 1,
-    origin: 'Genetic Distance'
+    origin: []
   }
 };
 
 app.addLink = function(newLink){
   var oldLink = session.data.links.find(l => l.source === newLink.source & l.target === newLink.target);
   if(oldLink){
+    if(newLink.origin) newLink.origin = newLink.origin.concat(oldLink.origin);
     Object.assign(oldLink, newLink);
     return 0;
   } else {

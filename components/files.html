@@ -254,7 +254,7 @@ $('#main-submit').click(function(e){
         var n = 0;
         var seqs = app.parseFASTA(e.target.result);
         seqs.forEach(node => {
-          node['origin'] = filename;
+          node['origin'] = [filename];
           n += app.addNode(node);
         });
         message(` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
@@ -265,7 +265,7 @@ $('#main-submit').click(function(e){
     } else if(file.type === 'link'){
 
       message(`Parsing ${filename} as Link CSV...`);
-      var l = 0, m = 0;
+      var l = 0;
       Papa.parse(file.file, {
         header: true,
         worker: true,
@@ -277,18 +277,18 @@ $('#main-submit').click(function(e){
               source: link[file.field1],
               target: link[file.field2],
               distance: (file.field3 === "None") ? 0 : link[file.field3],
-              origin: filename,
+              origin: [filename],
               visible: 1
             }, link));
           });
-          message(` - Parsed ${l} New, ${m} Total Links from Link CSV.`);
+          message(` - Parsed ${l} New, ${results.data.length} Total Links from Link CSV.`);
           results.meta.fields.forEach(key => session.data.linkFields.push(key));
           var n = 0;
           var nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
           var t = nodeIDs.length;
           nodeIDs.forEach(d => n += app.addNode({
             id: d,
-            origin: filename
+            origin: [filename]
           }));
           message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
           if(fileNum == files.length - 1) nextStuff();
@@ -309,7 +309,7 @@ $('#main-submit').click(function(e){
           results.data.forEach(node => {
             node.id = node[file.field1];
             if(file.field2 !== 'None') node.seq = node[file.field2];
-            node['origin'] = filename;
+            node['origin'] = [filename];
             n += app.addNode(node);
           });
           results.meta.fields.forEach(key => session.data.nodeFields.push(key));
@@ -337,7 +337,7 @@ $('#main-submit').click(function(e){
                 if(k > 0){
                   nn += app.addNode({
                     id: cell,
-                    origin: filename
+                    origin: [filename]
                   });
                 }
               });
@@ -348,7 +348,7 @@ $('#main-submit').click(function(e){
                     source: nodeIDs[i],
                     target: nodeIDs[j],
                     distance: cell,
-                    origin: filename
+                    origin: [filename]
                   });
                 }
               });
