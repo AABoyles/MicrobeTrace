@@ -393,9 +393,9 @@ $('#main-submit').click(function(e){
         session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
         session.network.updateStatistics();
+        $('#loadingInformationModal').modal('hide');
         setTimeout(session.network.fit, 1500);
       }
-      $('#loadingInformationModal').modal('hide');
     }
   };
 
@@ -436,9 +436,11 @@ $('#main-submit').click(function(e){
       if(session.network){
         session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
-        setTimeout(session.network.fit, 1500);
+        setTimeout(function(){
+          session.network.fit();
+          $('#loadingInformationModal').modal('hide');
+        }, 1500);
       }
-      $('#loadingInformationModal').modal('hide');
     };
   };
 });
