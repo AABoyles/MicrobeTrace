@@ -1,18 +1,20 @@
 {
   "name": "WebMicrobeTrace",
-  "version": "0.3.0a",
+  "version": "0.3.0",
   "main": "index.js",
   "author": "Tony Boyles <Anthony@Boyles.cc>",
   "license": "MIT",
   "repository": "https://github.com/AABoyles/WebMicrobeTrace.git",
   "scripts": {
     "appcache": "./appcache.sh",
-    "start": "node_modules/http-server/bin/http-server",
-    "build": "npm start && nativifier http://localhost:8080"
+    "start": "nodejs index.js",
+    "build": "yarn start && nativifier http://localhost:8080"
   },
   "devDependencies": {
+    "connect": "^3.6.6",
     "http-server": "^0.11.1",
     "nativefier": "^7.5.4",
+    "serve-static": "^1.13.2",
     "yarn": "^1.5.0"
   },
   "dependencies": {
