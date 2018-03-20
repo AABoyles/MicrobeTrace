@@ -5,9 +5,13 @@
   "author": "Tony Boyles <Anthony@Boyles.cc>",
   "license": "MIT",
   "repository": "https://github.com/AABoyles/WebMicrobeTrace.git",
+  "engines": {
+    "node": "9.8.0",
+    "yarn": "1.5.1"
+  },
   "scripts": {
     "appcache": "./appcache.sh",
-    "start": "node_modules/http-server/bin/http-server",
+    "start": "./index.js",
     "build": "yarn start && nativifier http://localhost:8080"
   },
   "devDependencies": {
