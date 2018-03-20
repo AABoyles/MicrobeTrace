@@ -764,7 +764,7 @@
     var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     $('#linkColors').remove();
     var table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
-    table.append('<tr><th>'+variable+'</th><th>Color</th><tr>');
+    table.append('<tr><th>'+app.titleize(variable)+'</th><th>Color</th><tr>');
     var values = _(vlinks).map(variable).uniq().sort().value();
     var o = d3.scaleOrdinal(session.style.palette).domain(values);
     links
