@@ -161,7 +161,7 @@ app.computeDegree = function(){
   session.data.clusters.forEach(c => {
     c.links = c.links/2;
     c.links_per_node = c.links/c.nodes;
-    c.mean_genetic_distance = c.sum_distances/c.links;
+    c.mean_genetic_distance = c.sum_distances/2/c.links;
   });
 };
 
