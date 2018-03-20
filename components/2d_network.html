@@ -438,8 +438,6 @@
 
   app.tagClusters();
 
-  setLinkColor();
-
   app.computeDegree();
 
   session.network.updateStatistics = function(){
@@ -892,6 +890,7 @@
 
   setTimeout(function(){
     $('#nodeTooltipVariable').val('id');
+    $('#linkColorVariable').val('origin');
   }, 80);
 })();
 </script>
