@@ -157,54 +157,52 @@ performance of this software.</pre>
           </button>
         </div>
         <div class="modal-body">
-          <form>
-            <ul class="nav nav-tabs" role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Global</a>
-              </li>
-            </ul>
-            <div class="tab-content">
-              <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="nodes-tab">
-                <div class="form-group row">
-                  <div class="col-4"><strong>Property</strong></div>
-                  <div class="col-4"><strong>Variable</strong></div>
-                  <div class="col-4"><strong>Value</strong></div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Pruning</label></div>
-                  <div class="col-4"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables numeric"><option value="distance">Distance</option></select></div>
-                  <div class="col-4"><label data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></label></div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-4"><span data-toggle="tooltip" title="Would you like to restrict links to the Minimum Spanning Tree?">Minimum Spanning Tree</span></div>
-                  <div class="col-4"><button id="computeMST" class="btn btn-secondary btn-sm showForNotMST">Compute MST</button></div>
-                  <div class="col-4">
-                    <div class="btn-group btn-group-toggle btn-group-sm showForMST" data-toggle="buttons">
-                      <label class="btn btn-secondary active">
-                        <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
-                      </label>
-                      <label class="btn btn-secondary">
-                        <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
-                      </label>
-                    </div>
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Global</a>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="nodes-tab">
+              <div class="form-group row">
+                <div class="col-4"><strong>Property</strong></div>
+                <div class="col-4"><strong>Variable</strong></div>
+                <div class="col-4"><strong>Value</strong></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Pruning</label></div>
+                <div class="col-4"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables numeric"><option value="distance" selected>Distance</option></select></div>
+                <div class="col-4"><label data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></label></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="computeMST" data-toggle="tooltip" title="Would you like to restrict links to the Minimum Spanning Tree?">Minimum Spanning Tree</label></div>
+                <div class="col-4"><button id="computeMST" class="btn btn-secondary btn-sm showForNotMST">Compute MST</button></div>
+                <div class="col-4">
+                  <div class="btn-group btn-group-toggle btn-group-sm showForMST" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
+                    </label>
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
+                    </label>
                   </div>
                 </div>
-                <div class="form-group row">
-                  <div class="col-4">Singletons</div>
-                  <div class="col-8">
-                    <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                      <label class="btn btn-secondary active">
-                        <input type="radio" name="singletons" id="ShowSingletons" autocomplete="off" checked> Show
-                      </label>
-                      <label class="btn btn-secondary">
-                        <input type="radio" name="singletons" id="HideSingletons" autocomplete="off"> Hide
-                      </label>
-                    </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4">Singletons</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="singletons" id="ShowSingletons" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="singletons" id="HideSingletons" autocomplete="off"> Hide
+                    </label>
                   </div>
                 </div>
               </div>
             </div>
-          </form>
+          </div>
         </div>
         <div class="modal-footer">
           <div class="btn-group" data-toggle="buttons">
@@ -225,49 +223,47 @@ performance of this software.</pre>
           </button>
         </div>
         <div class="modal-body">
-          <form>
-            <div class="form-group row">
-              <div class="col-12">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="export-options" data-type="links" autocomplete="off" checked>Link</input>
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="export-options" data-type="nodes" autocomplete="off">Node</input>
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="export-options" data-type="distmat" autocomplete="off">Distance Matrix</input>
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="export-options" data-type="hivtrace" autocomplete="off">HIVTrace</input>
-                  </label>
-                </div>
+          <div class="form-group row">
+            <div class="col-12">
+              <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                <label class="btn btn-secondary active">
+                  <input type="radio" name="export-options" data-type="links" autocomplete="off" checked>Link</input>
+                </label>
+                <label class="btn btn-secondary">
+                  <input type="radio" name="export-options" data-type="nodes" autocomplete="off">Node</input>
+                </label>
+                <label class="btn btn-secondary">
+                  <input type="radio" name="export-options" data-type="distmat" autocomplete="off">Distance Matrix</input>
+                </label>
+                <label class="btn btn-secondary">
+                  <input type="radio" name="export-options" data-type="hivtrace" autocomplete="off">HIVTrace</input>
+                </label>
               </div>
             </div>
-            <div id="export-dm-row" class="form-group row">
-              <div class="col-12">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="export-dms" data-type="tn93" autocomplete="off" checked>TN93</input>
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="export-dms" data-type="snps" autocomplete="off">SNPs</input>
-                  </label>
-                </div>
+          </div>
+          <div id="export-dm-row" class="form-group row">
+            <div class="col-12">
+              <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                <label class="btn btn-secondary active">
+                  <input type="radio" name="export-dms" data-type="tn93" autocomplete="off" checked>TN93</input>
+                </label>
+                <label class="btn btn-secondary">
+                  <input type="radio" name="export-dms" data-type="snps" autocomplete="off">SNPs</input>
+                </label>
               </div>
             </div>
-            <div class="form-group row">
-              <div class="col-9">
-                <input type="text" id="export-file-name" class="form-control form-control-sm" placeholder="Filename" />
-              </div>
-              <div class="col-3">
-                <select id="export-file-format" class="form-control form-control-sm">
-                  <option selected>csv</option>
-                  <option>json</option>
-                </select>
-              </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-9">
+              <input type="text" id="export-file-name" class="form-control form-control-sm" placeholder="Filename" />
             </div>
-          </form>
+            <div class="col-3">
+              <select id="export-file-format" class="form-control form-control-sm">
+                <option selected>csv</option>
+                <option>json</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
@@ -485,6 +481,13 @@ performance of this software.</pre>
       var name = $('#export-file-name').val();
       var blob = new Blob([handler(data)], {type: mime + 'charset=utf-8'});
       saveAs(blob, name + '.' + format);
+    });
+
+    $('form').on('keydown', e => {
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        e.stopPropagation();
+      }
     });
 
     $('#search').on('input', e => {
