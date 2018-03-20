@@ -282,7 +282,11 @@ $('#main-submit').click(function(e){
             }, link));
           });
           message(` - Parsed ${l} New, ${results.data.length} Total Links from Link CSV.`);
-          results.meta.fields.forEach(key => session.data.linkFields.push(key));
+          results.meta.fields.map(key => {
+            if(!session.data.linkFields.includes(key)){
+              session.data.linkFields.push(key);
+            }
+          });
           var n = 0;
           var nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
           var t = nodeIDs.length;
@@ -312,7 +316,11 @@ $('#main-submit').click(function(e){
             node['origin'] = [filename];
             n += app.addNode(node);
           });
-          results.meta.fields.forEach(key => session.data.nodeFields.push(key));
+          results.meta.fields.forEach(key => {
+            if(!session.data.nodeFields.includes(key)){
+              session.data.nodeFields.push(key);
+            }
+          });
           if(results.meta.fields.includes('seq')) anySequences = 1;
           message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
           if(fileNum == files.length - 1) nextStuff();
