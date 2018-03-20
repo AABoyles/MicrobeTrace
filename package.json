@@ -7,14 +7,12 @@
   "repository": "https://github.com/AABoyles/WebMicrobeTrace.git",
   "scripts": {
     "appcache": "./appcache.sh",
-    "start": "nodejs index.js",
+    "start": "node_modules/http-server/bin/http-server",
     "build": "yarn start && nativifier http://localhost:8080"
   },
   "devDependencies": {
-    "connect": "^3.6.6",
     "http-server": "^0.11.1",
     "nativefier": "^7.5.4",
-    "serve-static": "^1.13.2",
     "yarn": "^1.5.0"
   },
   "dependencies": {
