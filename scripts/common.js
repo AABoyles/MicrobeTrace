@@ -18,6 +18,7 @@ app.sessionSkeleton = function(){
   return {
     files: [],
     data: app.dataSkeleton(),
+    layout: {},
     state: {
       alpha: 0.3,
       contentItems: []
@@ -214,7 +215,7 @@ app.setLinkVisibility = function(){
 
 app.reset = function(){
   window.session = app.sessionSkeleton();
-  layout.root.replaceChild(layout.root.contentItems[0], {
+  session.layout.root.replaceChild(session.layout.root.contentItems[0], {
     type: 'stack',
     content: []
   });
@@ -223,8 +224,8 @@ app.reset = function(){
 };
 
 app.launchView = function(view){
-  if(!layout._components[view]){
-    layout.registerComponent(view, function(container, state){
+  if(!session.layout._components[view]){
+    session.layout.registerComponent(view, function(container, state){
       container.getElement().html(state.text);
     });
   }
@@ -240,13 +241,13 @@ app.launchView = function(view){
     if(contentItem){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
-      layout.root.contentItems[0].addChild({
+      session.layout.root.contentItems[0].addChild({
         componentName: view,
         componentState: { text: app.componentCache[view] },
         title: app.titleize(view),
         type: 'component'
       });
-      contentItem = _.last(layout.root.contentItems[0].contentItems);
+      contentItem = _.last(session.layout.root.contentItems[0].contentItems);
       contentItem.on('itemDestroyed', function(){
         var i = session.state.contentItems.findIndex(function(item){
           return item === contentItem;

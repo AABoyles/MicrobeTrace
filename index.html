@@ -340,7 +340,7 @@ performance of this software.</pre>
 
     window.session = app.sessionSkeleton();
 
-    layout = new window.GoldenLayout({
+    session.layout = new window.GoldenLayout({
       settings: {
         selectionEnabled: true,
         showPopoutIcon: false
@@ -351,7 +351,7 @@ performance of this software.</pre>
       }]
     }, $('#main_panel'));
 
-    layout.init();
+    session.layout.init();
 
     app.launchView('files');
 
@@ -509,7 +509,7 @@ performance of this software.</pre>
     });
 
     $(window).on('resize', function(e){
-      layout.root.setSize();
+      session.layout.root.setSize();
     });
   });
 
