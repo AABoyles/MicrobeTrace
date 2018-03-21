@@ -274,8 +274,8 @@ $('#main-submit').click(function(e){
         complete: results => {
           var link = results.data.forEach(link => {
             l += app.addLink(Object.assign({
-              source: link[file.field1],
-              target: link[file.field2],
+              source: '' + link[file.field1],
+              target: '' + link[file.field2],
               distance: (file.field3 === "None") ? 0 : link[file.field3],
               origin: [filename],
               visible: 1
@@ -291,7 +291,7 @@ $('#main-submit').click(function(e){
           var nodeIDs = _.union(_.map(results.data, file.field1), _.map(results.data, file.field2));
           var t = nodeIDs.length;
           nodeIDs.forEach(d => n += app.addNode({
-            id: d,
+            id: '' + d,
             origin: [filename]
           }));
           message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
@@ -311,7 +311,7 @@ $('#main-submit').click(function(e){
         complete: results => {
           var n = 0;
           results.data.forEach(node => {
-            node.id = node[file.field1];
+            node.id = '' + node[file.field1];
             if(file.field2 !== 'None') node.seq = node[file.field2];
             node['origin'] = [filename];
             n += app.addNode(node);
@@ -344,7 +344,7 @@ $('#main-submit').click(function(e){
               nodeIDs.forEach((cell, k) => {
                 if(k > 0){
                   nn += app.addNode({
-                    id: cell,
+                    id: '' + cell,
                     origin: [filename]
                   });
                 }
@@ -353,8 +353,8 @@ $('#main-submit').click(function(e){
               row.forEach((cell, j) => {
                 if(j > i){
                   nl += app.addLink({
-                    source: nodeIDs[i],
-                    target: nodeIDs[j],
+                    source: '' + nodeIDs[i],
+                    target: '' + nodeIDs[j],
                     distance: cell,
                     origin: [filename]
                   });
