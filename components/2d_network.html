@@ -286,10 +286,8 @@
 
   session.network = {};
 
-  var width = $('#network').width(),
-      height = $('#network').height(),
-      xScale = d3.scaleLinear().domain([0, width]).range([0, width]),
-      yScale = d3.scaleLinear().domain([0, height]).range([0, height]);
+  var width = $('#network').parent().width(),
+      height = $('#network').parent().height();
 
   session.network.zoom = d3.zoom().on('zoom', () => session.network.svg.attr('transform', d3.event.transform));
 
