@@ -350,3 +350,8 @@ input[type="range"]{
   height: calc(100% - 66px);
   width: calc(100% - 30px);
 }
+
+/* Timeline */
+#timeline-wrapper{
+  padding-top: 56px;
+}

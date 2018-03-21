@@ -1,0 +1,76 @@
+  <button type="button" class="btn btn-light view_settings_button" data-toggle="modal" data-target="#timeline_settings_modal">
+    <span class="oi oi-cog"></span>
+  </button>
+
+  <div id="timeline-wrapper" class="container-fluid"></div>
+
+  <div id="timeline_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Timeline Options</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <!-- Nav tabs -->
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item active">
+              <a href="#timelineConfigurations" id="timeline-tab" class="nav-link active" aria-controls="timeline" role="tab" data-toggle="tab">Timeline</a>
+            </li>
+          </ul>
+          <!-- Tab panes -->
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="timelineConfigurations" role="tabpanel" aria-labelledby="timeline-tab">
+              <div class="form-group row">
+                <div class="col-3">Date Column</div>
+                <div class="col-9"><select id="date-column" class="custom-select custom-select-sm nodeVariables">
+                  <option>None</option>
+                  <option value="date" selected>Date</option>
+                </select></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <script type="text/javascript" src="node_modules/vis/dist/vis.min.js"></script>
+  <script type="text/javascript" src="node_modules/moment/min/moment-with-locales.min.js"></script>
+  <script type="text/javascript">
+  var timeline = {destroy: function(){}};
+
+  (function(){
+
+    function drawTimeline(){
+      timeline.destroy();
+      var dateField = $('#date-column').val();
+      timeline = new vis.Timeline(document.getElementById('timeline-wrapper'), session.data.nodes.map(d => {
+        return {
+          id: d.id,
+          content: d.id,
+          start: moment('' + d[dateField]),
+          type: 'point'
+        };
+      }), {
+        'height': $('#timeline-wrapper').parent().height()-66
+      });
+    }
+    
+    $('#date-column').change(drawTimeline);
+
+    setTimeout(function(){
+      ['date', 'Date', 'DATE'].forEach(name => {
+        if(session.data.nodeFields.includes(name)){
+          $('#date-column').val(name);
+        }
+      });
+      drawTimeline();
+    }, 100);
+
+  })();
+
+  </script>
