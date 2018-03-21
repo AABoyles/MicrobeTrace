@@ -348,4 +348,5 @@ input[type="range"]{
   position: absolute;
   top: 56px;
   height: calc(100% - 66px);
+  width: calc(100% - 30px);
 }
