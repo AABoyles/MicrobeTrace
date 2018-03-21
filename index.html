@@ -399,7 +399,7 @@ performance of this software.</pre>
     $('#AddDataTab').click(function(){ app.launchView('files'); });
 
     $('#RevealAllTab').click(function(e) {
-      session.state.visible_clusters = session.data.clusters.map(c => c.id);
+      session.data.clusters.forEach(c => c.visible = 1);
       $('#HideSingletons').prop('checked', false).parent().removeClass('active');
       $('#ShowSingletons').prop('checked', true).parent().addClass('active');
       app.setLinkVisibility();

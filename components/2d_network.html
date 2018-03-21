@@ -517,31 +517,35 @@
       });
     }
     $('#hideCluster').click(e => {
-      session.state.visible_clusters = session.state.visible_clusters.filter(cid => cid !== d.cluster);
+      session.data.clusters.find(c => c.id === d.cluster).visible = 0;
       app.setLinkVisibility();
       app.setNodeVisibility();
       session.network.render();
       session.network.force.alpha(0.3).alphaTarget(0).restart();
       hideContextMenu();
     });
-    if(session.state.visible_clusters < session.data.clusters.length){
-      $('#isolateCluster').text('De-isolate Cluster').click(e => {
-        session.state.visible_clusters = session.data.clusters.map(c => c.id);
-        app.setNodeVisibility();
-        app.setLinkVisibility();
-        session.network.render();
-        session.network.force.alpha(0.3).alphaTarget(0).restart();
-        hideContextMenu();
-      });
+    if(session.data.clusters.length < 2){
+      $('#isolateCluster').hide();
     } else {
-      $('#isolateCluster').text('Isolate Cluster').click(e => {
-        session.state.visible_clusters = [d.cluster];
-        app.setLinkVisibility();
-        app.setNodeVisibility();
-        session.network.render();
-        session.network.force.alpha(0.3).alphaTarget(0).restart();
-        hideContextMenu();
-      });
+      if(session.data.clusters.filter(c => c.visible).length === 1){
+        $('#isolateCluster').show().text('De-isolate Cluster').click(e => {
+          session.data.clusters.forEach(c => c.visible = 1);
+          app.setNodeVisibility();
+          app.setLinkVisibility();
+          session.network.render();
+          session.network.force.alpha(0.3).alphaTarget(0).restart();
+          hideContextMenu();
+        });
+      } else {
+        $('#isolateCluster').show().text('Isolate Cluster').click(e => {
+          session.data.clusters.forEach(c => c.visible = c.id === d.cluster);
+          app.setLinkVisibility();
+          app.setNodeVisibility();
+          session.network.render();
+          session.network.force.alpha(0.3).alphaTarget(0).restart();
+          hideContextMenu();
+        });
+      }
     }
     $('#2d-context-menu').css({
       'z-index': 1,
