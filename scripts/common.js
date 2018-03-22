@@ -214,7 +214,9 @@ app.setLinkVisibility = function(){
 };
 
 app.reset = function(){
+  var cache = session.layout;
   window.session = app.sessionSkeleton();
+  session.layout = cache;
   session.layout.root.replaceChild(session.layout.root.contentItems[0], {
     type: 'stack',
     content: []
