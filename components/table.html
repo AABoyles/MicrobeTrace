@@ -80,8 +80,8 @@
       </thead>
       <tbody>
         <tr v-for="entry in filteredData"
-          :class="entry.selected ? 'table-active' : ''"
-          v-on:click="entry.selected = !entry.selected">
+          @click="select(entry)"
+          :class="entry.selected ? 'table-active' : ''">
           <td v-for="key in columns">{{ entry[key] }}</td>
         </tr>
       </tbody>
@@ -106,9 +106,9 @@
         var sortOrders = {};
         this.columns.forEach(function(key){
           sortOrders[key] = 1;
-        })
+        });
         return {
-          sortKey: '',
+          sortKey: 'id',
           sortOrders: sortOrders
         }
       },
@@ -116,13 +116,13 @@
         filteredData: function(){
           var sortKey = this.sortKey;
           var order = this.sortOrders[sortKey] || 1;
-          var data = this.data;
-          if (sortKey) {
+          var data = this.data.filter(d => d.visible);
+          if(sortKey){
             data = data.slice().sort(function(a, b){
-              a = a[sortKey];
-              b = b[sortKey];
-              return (a === b ? 0 : a > b ? 1 : -1) * order;
-            })
+              if(a.selected && !b.selected) return -1;
+              if(b.selected && !a.selected) return 1;
+              return (a[sortKey] === b[sortKey] ? 0 : a[sortKey] > b[sortKey] ? 1 : -1) * order;
+            });
           }
           return data;
         }
@@ -131,6 +131,12 @@
         sortBy: function(key){
           this.sortKey = key;
           this.sortOrders[key] = this.sortOrders[key] * -1;
+        },
+        select: function(entry){
+          entry.selected = !entry.selected
+          if($('input[name=nodelink]:checked')[0].id === 'nodes'){
+            $(window).trigger('node_selected');
+          }
         }
       }
     });
