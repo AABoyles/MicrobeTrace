@@ -355,6 +355,9 @@ input[type="range"]{
 }
 
 /* Timeline */
-#timeline-wrapper{
-  padding-top: 56px;
+.vis-timeline{
+  border: none!important;
+}
+.vis-shadow{
+  display: none!important;
 }

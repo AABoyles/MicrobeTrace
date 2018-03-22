@@ -1,8 +1,8 @@
+  <div id="timeline-wrapper"></div>
+
   <button type="button" class="btn btn-light view_settings_button" data-toggle="modal" data-target="#timeline_settings_modal">
     <span class="oi oi-cog"></span>
   </button>
-
-  <div id="timeline-wrapper" class="container-fluid"></div>
 
   <div id="timeline_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
@@ -47,19 +47,25 @@
 
     function drawTimeline(){
       timeline.destroy();
-      var dateField = $('#date-column').val();
-      timeline = new vis.Timeline(document.getElementById('timeline-wrapper'), session.data.nodes.map(d => {
-        return {
-          id: d.id,
-          content: d.id,
-          start: moment('' + d[dateField]),
-          type: 'point'
-        };
-      }), {
-        'height': $('#timeline-wrapper').parent().height()-66
-      });
+      var field = $('#date-column').val();
+      timeline = new vis.Timeline(
+        document.getElementById('timeline-wrapper'),
+        session.data.nodes
+          .filter(d => d[field] && d.visible)
+          .map(d => ({
+            id: d.id,
+            content: d.id,
+            start: moment('' + d[field]),
+            type: 'point'
+          })),
+        {
+          'height': $('#timeline-wrapper').parent().height(),
+          'multiselect': true
+        }
+      );
+      timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
     }
-    
+
     $('#date-column').change(drawTimeline);
 
     setTimeout(function(){
@@ -68,8 +74,36 @@
           $('#date-column').val(name);
         }
       });
+
       drawTimeline();
+
+      var field = $('#date-column').val();
+
+      timeline.addCustomTime(_.max(session.data.nodes.map(d => moment('' + d[field]))));
+
+      timeline.on('timechanged', function(e){
+        var field = $('#date-column').val();
+        session.state.time = moment(e.time);
+        app.setNodeVisibility();
+        timeline.setItems(session.data.nodes
+          .filter(d => d[field] && d.visible)
+          .map(d => ({
+            id: d.id,
+            content: d.id,
+            start: moment('' + d[field]),
+            type: 'point'
+          })));
+      });
+
+      timeline.on('select', function(properties){
+        session.data.nodes.forEach(d => d.selected = properties.items.includes(d.id));
+        $(window).trigger('node_selected');
+      });
     }, 100);
+
+    $(window).on('node_selected', e => {
+      timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
+    });
 
   })();
 

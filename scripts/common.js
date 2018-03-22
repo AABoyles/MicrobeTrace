@@ -184,12 +184,12 @@ app.computeDegree = function(){
 
 app.setNodeVisibility = function(){
   var showSingletons = $('#ShowSingletons').is(':checked');
+  var field = $('#date-column').val();
   session.data.nodes.forEach(n => {
     var cluster = session.data.clusters.find(c => c.id === n.cluster);
-    if(cluster){
-      n.visible = cluster.visible;
-    } else {
-      n.visible = showSingletons;
+    n.visible = cluster ? cluster.visible : showSingletons;
+    if(session.state.time && field){
+      n.visible = n.visible && session.state.time.isAfter(n[field]);
     }
   });
 };
