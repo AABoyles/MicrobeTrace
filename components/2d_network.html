@@ -474,7 +474,7 @@
   }
 
   function clickHandler(n){
-    if(!d3.event.shiftKey){
+    if(!d3.event.shiftKey && !d3.event.ctrlKey){
       session.data.nodes
         .filter(node => node !== n)
         .forEach(node => node.selected = 0);
@@ -829,7 +829,13 @@
   $('#default-link-width').on('input', e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
   $('#linkWidthVariable, #reciprocal-link-width').change(e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
 
-  $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons, #linkSortVariable, #default-link-threshold').on('input', e => {
+  $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons').on('change', e => {
+    session.network.render();
+    session.network.updateStatistics();
+    session.network.force.alpha(0.3).alphaTarget(0).restart();
+  });
+
+  $('#linkSortVariable, #default-link-threshold').on('input', e => {
     session.network.render();
     session.network.updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
