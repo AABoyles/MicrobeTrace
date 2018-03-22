@@ -52,13 +52,13 @@
           <div class="dropdown-menu">
             <a href="#" id="2DNetworkTab" class="dropdown-item viewbutton" data-href="2d_network">2D Network</a>
             <a href="#" id="3DNetworkTab" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
+            <a href="#" id="HistogramTab" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
             <a href="#" id="TableTab" class="dropdown-item viewbutton" data-href="table">Table</a>
             <a href="#" id="FlowTab" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
             <a href="#" id="ScatterplotTab" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
             <a href="#" id="MapTab" class="dropdown-item viewbutton" data-href="map">Map</a>
             <a href="#" id="TimelineTab" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
             <div class="dropdown-divider showForSequence"></div>
-            <a href="#" id="HistogramTab" class="dropdown-item viewbutton showForSequence" data-href="histogram">Histogram</a>
             <a href="#" id="SequencesTab" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
             <a href="#" id="HeatmapTab" class="dropdown-item viewbutton showForSequence" data-href="heatmap">Heatmap</a>
             <a href="#" id="TreeTab" class="dropdown-item viewbutton showForSequence" data-href="phylogenetic_tree">Phylogenetic Tree</a>
@@ -190,25 +190,23 @@ performance of this software.</pre>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Global</a>
+              <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
             </li>
           </ul>
           <div class="tab-content">
             <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="nodes-tab">
               <div class="form-group row">
-                <div class="col-4"><strong>Property</strong></div>
-                <div class="col-4"><strong>Variable</strong></div>
-                <div class="col-4"><strong>Value</strong></div>
+                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Prune Links on</label></div>
+                <div class="col-8"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
               </div>
               <div class="form-group row">
-                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Pruning</label></div>
-                <div class="col-4"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables numeric"><option value="distance" selected>Distance</option></select></div>
-                <div class="col-4"><label data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></label></div>
+                <div class="col-4"><label for="default-link-threshold" data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Pruning Threshold</label></div>
+                <div class="col-8"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label for="computeMST" data-toggle="tooltip" title="Would you like to restrict links to the Minimum Spanning Tree?">Minimum Spanning Tree</label></div>
-                <div class="col-4"><button id="computeMST" class="btn btn-secondary btn-sm showForNotMST">Compute MST</button></div>
-                <div class="col-4">
+                <div class="col-8">
+                  <button id="computeMST" class="btn btn-secondary btn-sm showForNotMST">Compute MST</button>
                   <div class="btn-group btn-group-toggle btn-group-sm showForMST" data-toggle="buttons">
                     <label class="btn btn-secondary active">
                       <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
@@ -220,7 +218,7 @@ performance of this software.</pre>
                 </div>
               </div>
               <div class="form-group row">
-                <div class="col-4">Singletons</div>
+                <div class="col-4"><label for="ShowSingletons" data-toggle="tooltip" title="Would you like to show or hide nodes with no visible links?">Singletons</label></div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">

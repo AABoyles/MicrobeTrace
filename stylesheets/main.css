@@ -88,6 +88,9 @@ a:hover, a:focus {
 button.navbar-toggler{
   font-size:1rem;
 }
+.showForSequence{
+  display: none;
+}
 
 /* File Panel */
 #file_panel {
