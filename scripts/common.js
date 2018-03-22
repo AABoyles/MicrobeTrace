@@ -9,8 +9,8 @@ app.dataSkeleton = function(){
     clusters: [],
     distance_matrix: {},
     nodeFields: ['id', 'index', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
-    linkFields: ['source', 'target', 'index', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
-    clusterFields: ['id', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected']
+    linkFields: ['id', 'index', 'source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
+    clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected']
   };
 };
 
@@ -196,21 +196,22 @@ app.setNodeVisibility = function(){
 
 app.setLinkVisibility = function(){
   var metric  = $('#linkSortVariable').val(),
-      threshold = $('#default-link-threshold').val();
-  session.data.links.forEach(link => link.visible = 1);
-  if(metric !== 'none'){
-    session.data.links.forEach(link => link.visible = link.visible && (link[metric] <= threshold));
-  }
-  if($('#showMSTLinks').is(':checked')){
-    session.data.links.forEach(link => link.visible = link.visible && link.mst);
-  }
-  if(session.data.clusters.length > 0){
-    //The above condition is a dumb hack to initial load the network
-    session.data.links.forEach(l => {
-      var cluster = session.data.clusters.find(c => c.id === l.cluster);
-      if(cluster) l.visible = l.visible && cluster.visible;
-    });
-  }
+      threshold = $('#default-link-threshold').val(),
+      showMST = $('#showMSTLinks').is(':checked');
+  session.data.links.forEach(link => {
+    link.visible = 1;
+    if(metric !== 'none'){
+      link.visible = link.visible && (link[metric] <= threshold);
+    }
+    if(showMST){
+      link.visible = link.visible && link.mst;
+    }
+    if(session.data.clusters.length > 0){
+      //The above condition is a dumb hack to initial load the network
+      var cluster = session.data.clusters.find(c => c.id === link.cluster);
+      if(cluster) link.visible = link.visible && cluster.visible;
+    }
+  });
 };
 
 app.reset = function(){
@@ -309,7 +310,7 @@ app.exportHIVTRACE = function(){
         'threshold': $('#default-link-threshold').val()
       },
       'Network Summary': {
-        'Sequences used to make links': 0,
+        'Sequences used to make links': session.data.links.filter(l => l.origin.includes('Genetic Distance').length),
         'Clusters': session.data.clusters.length,
         'Edges': session.data.links.filter(l => l.visible).length,
         'Nodes': session.data.nodes.length
