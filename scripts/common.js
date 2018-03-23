@@ -122,6 +122,7 @@ app.titleize = function(title){
   if(small === 'snps') return 'SNPs';
   if(small === '2d network') return '2D Network';
   if(small === '3d network') return '3D Network';
+  if(small === 'geo map') return 'Map';
   return small.replace(/(?:^|\s|-)\S/g, function(c){
     return c.toUpperCase();
   });
@@ -227,11 +228,6 @@ app.reset = function(){
 };
 
 app.launchView = function(view){
-  if(!session.layout._components[view]){
-    session.layout.registerComponent(view, function(container, state){
-      container.getElement().html(state.text);
-    });
-  }
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
       app.componentCache[view] = response;
@@ -245,7 +241,7 @@ app.launchView = function(view){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
       session.layout.root.contentItems[0].addChild({
-        componentName: view,
+        componentName: 'default',
         componentState: { text: app.componentCache[view] },
         title: app.titleize(view),
         type: 'component'

@@ -1,12 +1,14 @@
-<svg id="map_panel"></svg>
+  <svg id="map_panel"></svg>
 
-  <button type="button" class="view_settings_button btn btn-light" data-toggle="modal" data-target="#map_settings_modal">
-    <span class="oi oi-cog"></span>
-  </button>
+  <div class="view_controls">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#map_settings_modal">
+      <span class="oi oi-cog"></span>
+    </button>
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#map_export_modal">
+      <span class="oi oi-data-transfer-download"></span>
+    </button>
+  </div>
 
-  <button type="button" class="export_button btn btn-light" data-toggle="modal" data-target="#map_export_modal">
-    <span class="oi oi-data-transfer-download"></span>
-  </button>
 
   <table id="groupKey"></table>
 
@@ -31,6 +33,16 @@
           </ul>
           <div class="tab-content">
             <div role="tabpanel" class="tab-pane fade show active" id="mapDataConfigurations">
+              <div class="row">
+                <div class="col-12">
+                  <div class="alert alert-info alert-dismissible" role="alert">
+                    Please select the most precise geographic data your inputs have.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div class="form-group row">
                 <div class="col-3">Latitude</div>
                 <div class="col-9">
@@ -316,12 +328,16 @@
 
     function showToolTip(d){
       var tooltiptext = '';
-      if(d.properties) tooltiptext = d.properties.name;
-      else if($('#nodeTooltipVariable').val() !== 'None' && d[$('#nodeTooltipVariable').val()]) tooltiptext = d[$('#nodeTooltipVariable').val()];
+      if(d.properties){
+        tooltiptext = d.properties.name;
+      } else if($('#nodeTooltipVariable').val() !== 'None' && d[$('#nodeTooltipVariable').val()]){
+        tooltiptext = d[$('#nodeTooltipVariable').val()];
+      }
       d3.select('#tooltip')
         .html(tooltiptext)
         .style('left', (d3.event.pageX + 8) + 'px')
         .style('top', (d3.event.pageY + 18) + 'px')
+        .style('z-index', 1)
         .transition().duration(100)
         .style('opacity', 1);
     }
