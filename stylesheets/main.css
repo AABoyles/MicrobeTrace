@@ -35,10 +35,7 @@ a:hover, a:focus {
 .lm_controls .lm_popout {
   display: none;
 }
-.view_settings_button{
-  position: absolute;
-  top: 10px;
-  left: 10px;
+.view_controls button{
   border: 1px solid #cccccc;
 }
 .floater{
@@ -201,7 +198,7 @@ input[type="range"]{
 .btn-default {
   background-color: #f5f5f5;
 }
-#playtools {
+.view_controls {
   position: absolute;
   top: 10px;
   left: 10px;

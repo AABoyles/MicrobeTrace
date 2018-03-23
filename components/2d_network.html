@@ -1,13 +1,13 @@
 <svg id="network"></svg>
 
-<div id="playtools" class="hideForScreenshot">
-  <button type="button" class="btn btn-light btn-sm floater" data-toggle="modal" data-target="#2d_network_settings_modal">
+<div class="view_controls">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#2d_network_settings_modal">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm floater"  data-toggle="modal" data-target="#export_svg_modal">
+  <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_svg_modal">
     <span class="oi oi-data-transfer-download"></span>
   </button>
-  <button id="fitbutton" type="button" class="btn btn-light btn-sm floater">
+  <button id="fitbutton" type="button" class="btn btn-light btn-sm">
     <span class="oi oi-target"></span>
   </button>
 </div>
@@ -322,12 +322,6 @@
       .strength($('#network-gravity').val())
     )
     .force('center', d3.forceCenter(width / 2, height / 2));
-
-  session.network.force.on('end', e => {
-    $('#playbutton')
-      .data('state', 'paused')
-      .html('<span class="oi oi-media-play"></span>');
-  });
 
   session.network.svg.append('svg:defs').append('marker')
     .attr('id', 'end-arrow')

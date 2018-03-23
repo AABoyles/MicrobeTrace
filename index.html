@@ -6,13 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MicrobeTrace</title>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-116308624-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'UA-116308624-1');
   </script>
   <link rel="icon" type="image/png" href="img/icon.ico" />
@@ -58,18 +56,18 @@
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
           <div class="dropdown-menu">
-            <a href="#" id="2DNetworkTab" class="dropdown-item viewbutton" data-href="2d_network">2D Network</a>
-            <a href="#" id="3DNetworkTab" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
-            <a href="#" id="HistogramTab" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
-            <a href="#" id="TableTab" class="dropdown-item viewbutton" data-href="table">Table</a>
-            <a href="#" id="FlowTab" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
-            <a href="#" id="ScatterplotTab" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
-            <a href="#" id="MapTab" class="dropdown-item viewbutton" data-href="map">Map</a>
-            <a href="#" id="TimelineTab" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="2d_network">2D Network</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
             <div class="dropdown-divider showForSequence"></div>
-            <a href="#" id="SequencesTab" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
-            <a href="#" id="HeatmapTab" class="dropdown-item viewbutton showForSequence" data-href="heatmap">Heatmap</a>
-            <a href="#" id="TreeTab" class="dropdown-item viewbutton showForSequence" data-href="phylogenetic_tree">Phylogenetic Tree</a>
+            <a href="#" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
+            <a href="#" class="dropdown-item viewbutton showForSequence" data-href="heatmap">Heatmap</a>
+            <a href="#" class="dropdown-item viewbutton showForSequence" data-href="phylogenetic_tree">Phylogenetic Tree</a>
           </div>
         </li>
         <li class="nav-item dropdown">
@@ -420,13 +418,13 @@ performance of this software.</pre>
     });
 
     $('#SaveImageTab').click(function(){
-      $('.hideForScreenshot, .view_settings_button, .export_button').hide();
+      $('.hideForScreenshot, .view_controls').hide();
       setTimeout(function(){
         html2canvas($('.lm_items').get(0)).then(function(canvas){
           canvas.toBlob(function(blob){
             saveAs(blob, 'MicrobeTraceImage.png');
           });
-          $('.hideForScreenshot, .view_settings_button, .export_button').show();
+          $('.hideForScreenshot, .view_controls').show();
         });
       }, 1);
     });
