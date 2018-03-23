@@ -36,12 +36,11 @@
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
           <div class="dropdown-menu">
-            <a href="#" id="FileTab" class="dropdown-item">New</a>
             <a href="#" class="dropdown-item" data-toggle="modal" data-target="#save_modal">Save</a>
-            <a href="#" id="OpenTab" class="dropdown-item">Open</a>
-            <div class="dropdown-divider"></div>
             <a href="#" id="ExportDataTab" class="dropdown-item" data-toggle="modal" data-target="#export_modal">Export Data</a>
-            <a href="#" id="SaveImageTab" class="dropdown-item">Save Image</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="OpenTab" class="dropdown-item">Open</a>
+            <a href="#" id="FileTab" class="dropdown-item">New</a>
             <div class="dropdown-divider"></div>
             <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
           </div>
@@ -419,18 +418,12 @@ performance of this software.</pre>
     $('#SaveImageTab').click(function(){
       $('.hideForScreenshot, .view_settings_button, .export_button').hide();
       setTimeout(function(){
-        if($('svg#network').parent().parent()[0].style.display === '' ||
-           $('div#3d-network').parent().parent()[0].style.display === ''){
-          alertify.warning('Sorry, MicrobeTrace cannot currently screenshot Networks. Please use <a href="https://www.take-a-screenshot.org/">a different approach</a> to capture the network.');
-          $('.hideForScreenshot, .view_settings_button').show();
-        } else {
-          html2canvas($('.lm_items').get(0)).then(function(canvas){
-            canvas.toBlob(function(blob){
-              saveAs(blob, 'MicrobeTraceImage.png');
-            });
-            $('.hideForScreenshot, .view_settings_button, .export_button').show();
+        html2canvas($('.lm_items').get(0)).then(function(canvas){
+          canvas.toBlob(function(blob){
+            saveAs(blob, 'MicrobeTraceImage.png');
           });
-        }
+          $('.hideForScreenshot, .view_settings_button, .export_button').show();
+        });
       }, 1);
     });
 

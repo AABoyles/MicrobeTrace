@@ -24,7 +24,7 @@ app.sessionSkeleton = function(){
       contentItems: []
     },
     style: {
-      palette: ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"]
+      palette: ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac']
     },
     messages: []
   };
@@ -87,7 +87,7 @@ app.parseFASTA = function(text){
   var seqs = [], currentSeq = {};
   text.split(/[\r\n]+/g).forEach((line, i) => {
     if(/^\s*$/.test(line)) return;
-    if(line[0] === ">" || line[0] === ";"){
+    if(line[0] === '>' || line[0] === ';'){
       if(i > 0) seqs.push(currentSeq);
       currentSeq = {
         id: line.slice(1),
@@ -105,11 +105,11 @@ app.parseNewick = function(a){
   for(var e = [], r = {}, s = a.split(/\s*(;|\(|\)|,|:)\s*/), t = 0; t < s.length; t++){
     var n = s[t];
     switch(n){
-      case "(": var c = {}; r.branchset = [c], e.push(r), r = c; break;
-      case ",": var c = {}; e[e.length-1].branchset.push(c), r = c; break;
-      case ")": r = e.pop(); break;
-      case ":": break;
-      default: var h = s[t-1]; ")" == h || "(" == h || "," == h ? r.name = n : ":" == h && (r.length = parseFloat(n))
+      case '(': var c = {}; r.branchset = [c], e.push(r), r = c; break;
+      case ',': var c = {}; e[e.length-1].branchset.push(c), r = c; break;
+      case ')': r = e.pop(); break;
+      case ':': break;
+      default: var h = s[t-1]; ')' == h || '(' == h || ',' == h ? r.name = n : ':' == h && (r.length = parseFloat(n))
     }
   }
   return r;
@@ -293,6 +293,96 @@ app.unparseDM = function(dm){
     dm
       .map((row, i) => labels[i] + ',' + row.join(','))
       .join('\n');
+};
+
+app.unparseSVG = function(svgNode){
+	svgNode.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
+	var cssStyleText = getCSSStyles(svgNode);
+	appendCSS(cssStyleText, svgNode);
+
+	var serializer = new XMLSerializer();
+	var svgString = serializer.serializeToString(svgNode);
+	svgString = svgString.replace(/(\w+)?:?xlink=/g, 'xmlns:xlink='); // Fix root xlink without namespace
+	svgString = svgString.replace(/NS\d+:href/g, 'xlink:href'); // Safari NS namespace fix
+
+	return svgString;
+
+	function getCSSStyles( parentElement ) {
+		var selectorTextArr = [];
+
+		// Add Parent element Id and Classes to the list
+		selectorTextArr.push( '#'+parentElement.id );
+		for (var c = 0; c < parentElement.classList.length; c++)
+				if ( !contains('.'+parentElement.classList[c], selectorTextArr) )
+					selectorTextArr.push( '.'+parentElement.classList[c] );
+
+		// Add Children element Ids and Classes to the list
+		var nodes = parentElement.getElementsByTagName('*');
+		for (var i = 0; i < nodes.length; i++) {
+			var id = nodes[i].id;
+			if ( !contains('#'+id, selectorTextArr) )
+				selectorTextArr.push( '#'+id );
+
+			var classes = nodes[i].classList;
+			for (var c = 0; c < classes.length; c++)
+				if ( !contains('.'+classes[c], selectorTextArr) )
+					selectorTextArr.push( '.'+classes[c] );
+		}
+
+		// Extract CSS Rules
+		var extractedCSSText = '';
+		for (var i = 0; i < document.styleSheets.length; i++) {
+			var s = document.styleSheets[i];
+
+			try {
+			    if(!s.cssRules) continue;
+			} catch( e ) {
+		    		if(e.name !== 'SecurityError') throw e; // for Firefox
+		    		continue;
+		    	}
+
+			var cssRules = s.cssRules;
+			for (var r = 0; r < cssRules.length; r++) {
+				if ( contains( cssRules[r].selectorText, selectorTextArr ) )
+					extractedCSSText += cssRules[r].cssText;
+			}
+		}
+
+		return extractedCSSText;
+
+		function contains(str,arr) {
+			return arr.indexOf( str ) === -1 ? false : true;
+		}
+	}
+
+	function appendCSS( cssText, element ) {
+		var styleElement = document.createElement('style');
+		styleElement.setAttribute('type','text/css');
+		styleElement.innerHTML = cssText;
+		var refNode = element.hasChildNodes() ? element.children[0] : null;
+		element.insertBefore( styleElement, refNode );
+	}
+};
+
+app.blobifySVG = function(svgString, width, height, format, callback){
+	var format = format ? format : 'png';
+	var imgsrc = 'data:image/svg+xml;base64,'+ btoa( unescape( encodeURIComponent( svgString ) ) ); // Convert SVG string to data URL
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+
+	canvas.width = width;
+	canvas.height = height;
+
+	var image = new Image();
+	image.onload = function() {
+		context.clearRect ( 0, 0, width, height );
+		context.drawImage(image, 0, 0, width, height);
+		canvas.toBlob( function(blob) {
+			var filesize = Math.round( blob.length/1024 ) + ' KB';
+			if ( callback ) callback( blob, filesize );
+		});
+	};
+	image.src = imgsrc;
 };
 
 app.exportHIVTRACE = function(){

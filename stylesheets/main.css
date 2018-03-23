@@ -173,12 +173,7 @@ input[type="range"]{
   height: 100%;
   background: #ffffff
 }
-#links line {
-  stroke: #000000;
-}
 #nodes path {
-  stroke: #ffffff;
-  stroke-width: 2px;
   cursor: -webkit-grab;
 }
 #nodes path.selected {
@@ -208,7 +203,7 @@ input[type="range"]{
 }
 #playtools {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   left: 10px;
 }
 #tooltip {

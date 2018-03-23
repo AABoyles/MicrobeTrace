@@ -1,12 +1,16 @@
 <svg id="network"></svg>
 
-<button type="button" class="btn btn-light view_settings_button" data-toggle="modal" data-target="#2d_network_settings_modal">
-  <span class="oi oi-cog"></span>
-</button>
-
-<button type="button" class="export_button btn btn-light"  data-toggle="modal" data-target="#export_svg_modal">
-  <span class="oi oi-data-transfer-download"></span>
-</button>
+<div id="playtools" class="hideForScreenshot">
+  <button type="button" class="btn btn-light btn-sm floater" data-toggle="modal" data-target="#2d_network_settings_modal">
+    <span class="oi oi-cog"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm floater"  data-toggle="modal" data-target="#export_svg_modal">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+  <button id="fitbutton" type="button" class="btn btn-light btn-sm floater">
+    <span class="oi oi-target"></span>
+  </button>
+</div>
 
 <table id="groupKey" class="floater"></table>
 
@@ -39,15 +43,6 @@
       </div>
     </div>
   </div>
-</div>
-
-<div id="playtools" class="hideForScreenshot">
-  <button id="playbutton" type="button" class="btn btn-light floater">
-    <span class="oi oi-media-pause"></span>
-  </button>
-  <button id="fitbutton" type="button" class="btn btn-light floater">
-    <span class="oi oi-target"></span>
-  </button>
 </div>
 
 <div id="networkStatistics">
@@ -261,8 +256,9 @@
             <input type="text" id="export-svg-file-name" class="form-control form-control-sm" placeholder="Filename" />
           </div>
           <div class="col-3">
-            <select class="form-control form-control-sm">
-              <option selected>svg</option>
+            <select id="export-img-file-type" class="form-control form-control-sm">
+              <option selected>png</option>
+              <option>svg</option>
             </select>
           </div>
         </div>
@@ -368,7 +364,9 @@
       });
 
     // What's this?
-    node.append('path'); // Adding a path?
+    node.append('path')  // Adding a path?
+      .attr('stroke', '#ffffff')
+      .attr('stroke-width', '2px');
     node.append('text'); // And a text? Wouldn't those already be attached to the nodes?
     // Well, they would for nodes that already existed. The wouldn't for new nodes.
     // And until we merge the old and new nodes, `node` refers only to the *added* nodes.
@@ -756,7 +754,7 @@
   function setLinkColor(e){
     var variable = $('#linkColorVariable').val();
     if(variable === 'None'){
-      session.network.svg.select('g#links').selectAll('line').style('stroke', $('#default-link-color').val());
+      session.network.svg.select('g#links').selectAll('line').attr('stroke', $('#default-link-color').val());
       $('#default-link-color').fadeIn();
       $('#linkColors').fadeOut();
       return;
@@ -770,7 +768,7 @@
     var values = _(vlinks).map(variable).uniq().sort().value();
     var o = d3.scaleOrdinal(session.style.palette).domain(values);
     links
-      .style('stroke', d => o(d[variable]))
+      .attr('stroke', d => o(d[variable]))
       .attr('stroke-dasharray', l => {
         var length = 15;
         var out = new Array(l.origins * 2);
@@ -789,7 +787,7 @@
         .on('input', evt => {
           links
             .filter(d => d[variable] === value)
-            .style('stroke', d => evt.target.value);
+            .attr('stroke', d => evt.target.value);
         });
       var cell = $('<td></td>').append(input);
       var row = $('<tr><td>'+value+'</td></tr>').append(cell);
@@ -866,27 +864,17 @@
 
   $('#svg_export').click(function(){
     var network = document.getElementById('network');
-    var content =
-      '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 '+network.height.baseVal.value+' '+network.width.baseVal.value+'" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-        network.innerHTML + '\n' +
-      '</svg>';
-    var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
-    saveAs(blob, $('#export-svg-file-name').val() + '.svg');
+    var content = app.unparseSVG(network);
+    var filetype = $('#export-img-file-type').val();
+    if(filetype === 'svg'){
+      var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+      saveAs(blob, $('#export-svg-file-name').val() + '.' + filetype);
+    } else {
+      app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+        saveAs(blob, $('#export-svg-file-name').val() + '.' + filetype);
+      });
+    }
   });
-
-  $('#playbutton')
-    .data('state', 'paused')
-    .click(function(e){
-      if($(this).data('state') === 'paused'){
-        $(this).data('state', 'playing')
-          .html('<span class="oi oi-media-pause"></span>');
-        session.network.force.alphaTarget(session.state.alpha).restart();
-      } else {
-        $(this).data('state', 'paused')
-          .html('<span class="oi oi-media-play"></span>');
-        session.network.force.alpha(0).alphaTarget(0);
-      }
-    });
 
   $('#fitbutton').click(session.network.fit);
 
