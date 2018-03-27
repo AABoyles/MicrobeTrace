@@ -25,73 +25,67 @@
 </head>
 <body>
   <nav class="navbar fixed-top navbar-expand-xl navbar-light bg-light">
-    <button class="navbar-toggler py-0" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="nav mr-auto">
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
-          <div class="dropdown-menu">
-            <a href="#" class="dropdown-item" data-toggle="modal" data-target="#save_modal">Save</a>
-            <a href="#" id="ExportDataTab" class="dropdown-item" data-toggle="modal" data-target="#export_modal">Export Data</a>
-            <div class="dropdown-divider"></div>
-            <a href="#" id="OpenTab" class="dropdown-item">Open</a>
-            <a href="#" id="FileTab" class="dropdown-item">New</a>
-            <div class="dropdown-divider"></div>
-            <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
-          <div class="dropdown-menu">
-            <a href="#" id="FindTab" class="dropdown-item">Find</a>
-            <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
-            <a href="#" id="RevealAllTab" class="dropdown-item">Reveal All</a>
-            <div class="dropdown-divider"></div>
-            <a href="#" id="SettingsTab"  class="dropdown-item" data-toggle="modal" data-target="#global_settings_modal">Settings</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
-          <div class="dropdown-menu">
-            <a href="#" class="dropdown-item viewbutton" data-href="2d_network">2D Network</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
-            <div class="dropdown-divider showForSequence"></div>
-            <a href="#" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
-            <a href="#" class="dropdown-item viewbutton showForSequence" data-href="heatmap">Heatmap</a>
-            <a href="#" class="dropdown-item viewbutton showForSequence" data-href="phylogenetic_tree">Phylogenetic Tree</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
-          <div class="dropdown-menu">
-            <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
-            <div class="dropdown-divider"></div>
-            <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
-          <div class="dropdown-menu">
-            <a href="https://github.com/CDCGov/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank">Help</a>
-            <div class="dropdown-divider"></div>
-            <a href="#" id="InstallTab" class="dropdown-item" data-toggle="modal" data-target="#install-modal">Install</a>
-            <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
-          </div>
-        </li>
-      </ul>
-      <form class="navbar-form navbar-right" role="search">
-        <input type="search" id="search" class="form-control py-0" placeholder="Search" />
-      </form>
-    </div>
+    <ul class="nav mr-auto">
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
+        <div class="dropdown-menu">
+          <a href="#" class="dropdown-item" data-toggle="modal" data-target="#save_modal">Save</a>
+          <a href="#" id="ExportDataTab" class="dropdown-item" data-toggle="modal" data-target="#export_modal">Export Data</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="OpenTab" class="dropdown-item">Open</a>
+          <a href="#" id="FileTab" class="dropdown-item">New</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
+        <div class="dropdown-menu">
+          <a href="#" id="FindTab" class="dropdown-item">Find</a>
+          <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
+          <a href="#" id="RevealAllTab" class="dropdown-item">Reveal All</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="SettingsTab"  class="dropdown-item" data-toggle="modal" data-target="#global_settings_modal">Settings</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
+        <div class="dropdown-menu">
+          <a href="#" class="dropdown-item viewbutton" data-href="2d_network">2D Network</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
+          <div class="dropdown-divider showForSequence"></div>
+          <a href="#" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
+          <a href="#" class="dropdown-item viewbutton showForSequence" data-href="heatmap">Heatmap</a>
+          <a href="#" class="dropdown-item viewbutton showForSequence" data-href="phylogenetic_tree">Phylogenetic Tree</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
+        <div class="dropdown-menu">
+          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
+        <div class="dropdown-menu">
+          <a href="https://github.com/CDCGov/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank">Help</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="InstallTab" class="dropdown-item" data-toggle="modal" data-target="#install-modal">Install</a>
+          <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
+        </div>
+      </li>
+    </ul>
+    <form class="navbar-form navbar-right" role="search">
+      <input type="search" id="search" class="form-control py-0" placeholder="Search" />
+    </form>
   </nav>
 
   <div id="licenseAgreement" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="licenseAgreement">
