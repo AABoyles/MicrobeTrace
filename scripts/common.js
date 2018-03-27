@@ -115,6 +115,13 @@ app.parseNewick = function(a){
   return r;
 };
 
+app.striptags = function(inp){
+  return ('' + inp)
+    .replace(/<[^>]+?>.*?<\/[^>]+?>/g, '') //Closed Tags
+    .replace(/<[^>]+?\/\s*>/g, '') //Self-Closing Tags
+    .replace(/<[^>]+?>/g, ''); //Unclosed Tags
+};
+
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';

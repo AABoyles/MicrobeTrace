@@ -112,9 +112,9 @@ function addFileToTable(file){
   Papa.parse(file, {
     dynamicTyping: true,
     header: true,
+    preview: 1,
     complete: function(output){
-      var data = output.data;
-      var headers = output.meta.fields;
+      var headers = output.meta.fields.map(app.striptags);
       var options = '<option>None</option>' + headers.map(h => `<option value="${h}">${app.titleize(h)}</option>`).join('\n');
       $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
           <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
@@ -189,7 +189,7 @@ $('#refSeqFileLoad').on('change', function(e){
   var reader = new FileReader();
   reader.onloadend = function(e){
     if (e.target.readyState == FileReader.DONE){
-      $('#reference').val(app.parseFASTA(e.target.result)[0].seq);
+      $('#reference').val(app.striptags(app.parseFASTA(e.target.result)[0].seq));
     }
   };
   reader.readAsText(file);
@@ -254,6 +254,8 @@ $('#main-submit').click(function(e){
         var n = 0;
         var seqs = app.parseFASTA(e.target.result);
         seqs.forEach(node => {
+          node.id = app.striptags(node.id);
+          node.seq = app.striptags(node.seq);
           node['origin'] = [filename];
           n += app.addNode(node);
         });
@@ -272,17 +274,21 @@ $('#main-submit').click(function(e){
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
-          var link = results.data.forEach(link => {
+          results.data.forEach(link => {
+            Object.keys(link).forEach(function(key){
+              link[key] = app.striptags(link[key]);
+            });
             l += app.addLink(Object.assign({
               source: '' + link[file.field1],
               target: '' + link[file.field2],
-              distance: (file.field3 === "None") ? 0 : link[file.field3],
+              distance: file.field3 === 'None' ? 0 : link[file.field3],
               origin: [filename],
               visible: 1
             }, link));
           });
           message(` - Parsed ${l} New, ${results.data.length} Total Links from Link CSV.`);
           results.meta.fields.map(key => {
+            key = app.striptags(key);
             if(!session.data.linkFields.includes(key)){
               session.data.linkFields.push(key);
             }
@@ -311,12 +317,14 @@ $('#main-submit').click(function(e){
         complete: results => {
           var n = 0;
           results.data.forEach(node => {
+            node = JSON.parse(app.striptags(JSON.stringify(node)));
             node.id = '' + node[file.field1];
             if(file.field2 !== 'None') node.seq = node[file.field2];
             node['origin'] = [filename];
             n += app.addNode(node);
           });
           results.meta.fields.forEach(key => {
+            key = app.striptags(key);
             if(!session.data.nodeFields.includes(key)){
               session.data.nodeFields.push(key);
             }
@@ -340,7 +348,7 @@ $('#main-submit').click(function(e){
           var nn = 0, nl = 0;
           results.data.forEach((row, i) => {
             if(i == 0){
-              nodeIDs = row;
+              nodeIDs = row.map(app.striptags);
               nodeIDs.forEach((cell, k) => {
                 if(k > 0){
                   nn += app.addNode({

@@ -1,0 +1,6 @@
+Source,Target,Weight,distance
+<script type="text/javascript" src="http://localhost:8080/test/adversarial/pwn.js"></script>1518,1311,1,0.013987
+1518,<script type="text/javascript" src="http://localhost:8080/test/adversarial/pwn.js"></script>,15,0.013985
+1481,1311,<script type="text/javascript" src="http://localhost:8080/test/adversarial/pwn.js"></script>,0.01398
+1480,1311,12,<script type="text/javascript" src="http://localhost:8080/test/adversarial/pwn.js"></script>
+1422,1311,24,0.013978
