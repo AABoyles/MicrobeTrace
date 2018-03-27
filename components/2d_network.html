@@ -1,14 +1,17 @@
 <svg id="network"></svg>
 
 <div class="view_controls">
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#2d_network_settings_modal">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#2d_network_settings_modal" title="Network Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_svg_modal">
+  <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_svg_modal" title="Export Network">
     <span class="oi oi-data-transfer-download"></span>
   </button>
-  <button id="fitbutton" type="button" class="btn btn-light btn-sm">
+  <button id="fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
     <span class="oi oi-target"></span>
+  </button>
+  <button id="pinbutton" type="button" class="btn btn-light btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
+    <span class="oi oi-pin"></span>
   </button>
 </div>
 
@@ -871,6 +874,28 @@
   });
 
   $('#fitbutton').click(session.network.fit);
+
+  $('#pinbutton').click(function(){
+    var nodes = session.network.svg
+      .select('g#nodes')
+      .selectAll('g.node')
+      .data(session.data.nodes.filter(d => d.visible))
+      .select('path');
+    if(session.state.allPinned){
+      nodes.each(function(d){
+        delete d.fx;
+        delete d.fy;
+        d.fixed = false;
+      });
+    } else {
+      nodes.each(function(d){
+        d.fx = d.x;
+        d.fy = d.y;
+        d.fixed = true;
+      });
+    }
+    session.state.allPinned = !session.state.allPinned;
+  });
 
   $('#RevealAllTab').click(function(e) {
     session.network.render();
