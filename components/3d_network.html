@@ -73,16 +73,25 @@
       var t = $('#default-link-threshold').val();
       var nodeColor = $('#3d_network_default-node-color').val();
       var links = _.cloneDeep(session.data.links.filter(l => l[pv] < t));
-      graph
-      .backgroundColor($('#3d_network-color').val())
-      .nodeRelSize($('#3d_network_default-node-radius').val())
-      .colorField(d => nodeColor)
-      .lineOpacity($('#3d_network_default-link-opacity').val())
-      .linkColorField(l => lc)
-      .graphData({
-        nodes: _.cloneDeep(session.data.nodes),
-        links: links
+      var nodes = _.cloneDeep(session.data.nodes);
+      nodes.forEach(d => {
+        delete d.x;
+        delete d.y;
+        delete d.fx;
+        delete d.fy;
+        delete d.vx;
+        delete d.vy;
       });
+      graph
+        .backgroundColor($('#3d_network-color').val())
+        .nodeRelSize($('#3d_network_default-node-radius').val())
+        .colorField(d => nodeColor)
+        .lineOpacity($('#3d_network_default-link-opacity').val())
+        .linkColorField(l => lc)
+        .graphData({
+          nodes: nodes,
+          links: links
+        });
     }
 
     $('#linkSortVariable, #default-link-threshold').change(drawGraph3D);
