@@ -1,11 +1,4 @@
-  <svg id="phylogenetic_tree_panel"></svg>
-
-  <table id="phylogenetic_tree_statistics">
-    <tr>
-      <td>Selected Branches</td>
-      <td id="phylogenetic_tree_selected_branch_counter">0</td>
-    </tr>
-  </table>
+  <svg id="phylogenetic_tree_panel" width="100%" height="100%"></svg>
 
   <div class="view_controls">
     <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#phylogenetic_tree_settings_modal">
@@ -24,70 +17,38 @@
           <div class="form-group row">
             <div class="col-3">Distance Metric</div>
             <div class="col-9">
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default btn-xs active">
-                  <input type="radio" name="distanceMetric" id="tn93" autocomplete="off" checked> TN93
+              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary btn-sm active">
+                  <input type="radio" name="tree_distanceMetric" data-value="tn93" autocomplete="off" checked> TN93
                 </label>
-                <label class="btn btn-default btn-xs">
-                  <input type="radio" name="distanceMetric" id="snps" autocomplete="off"> SNPs
+                <label class="btn btn-secondary btn-sm">
+                  <input type="radio" name="tree_distanceMetric" data-value="snps" autocomplete="off"> SNPs
                 </label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-3">Layout Tweaks</div>
-            <div class="col-9">
-              <div class="btn-group">
-                <button type="button" class="btn btn-default btn-sm" data-direction="vertical" data-amount="1" title="Expand vertical spacing">
-                    <i class="fa fa-arrows-v"></i>
-                </button>
-                 <button type="button" class="btn btn-default btn-sm" data-direction="vertical" data-amount="-1" title="Compress vertical spacing">
-                    <i class="fa fa-compress fa-rotate-135"></i>
-                </button>
-                <button type="button" class="btn btn-default btn-sm" data-direction="horizontal" data-amount="1" title="Expand horizonal spacing">
-                    <i class="fa fa-arrows-h"></i>
-                </button>
-                 <button type="button" class="btn btn-default btn-sm" data-direction="horizontal" data-amount="-1" title="Compress horizonal spacing">
-                    <i class="fa fa-compress fa-rotate-45"></i>
-                </button>
-                 <button type="button" class="btn btn-default btn-sm" id="sort_ascending" title="Sort deepest clades to the bottom">
-                    <i class="fa fa-sort-amount-asc"></i>
-                </button>
-                 <button type="button" class="btn btn-default btn-sm" id="sort_descending" title="Sort deepsest clades to the top">
-                    <i class="fa fa-sort-amount-desc"></i>
-                </button>
-                 <button type="button" class="btn btn-default btn-sm" id="sort_original" title="Restore original order">
-                    <i class="fa fa-sort"></i>
-                </button>
               </div>
             </div>
           </div>
           <div class="form-group row">
             <div class="col-3">Layout</div>
             <div class="col-9">
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default active btn-sm">
-                  <input type="radio" name="options" class="phylotree-layout-mode" data-mode="linear" autocomplete="off" checked title="Layout left-to-right"> Linear
+              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary btn-sm">
+                  <input type="radio" name="tree_branch_length" data-value="show" autocomplete="off"> Show
                 </label>
-                <label class="btn btn-default  btn-sm">
-                  <input type="radio" name="options" class="phylotree-layout-mode" data-mode="radial" autocomplete="off" title="Layout radially"> Radial
+                <label class="btn btn-secondary btn-sm active">
+                  <input type="radio" name="tree_branch_length" data-value="hide" autocomplete="off"> Hide
                 </label>
               </div>
             </div>
           </div>
           <div class="form-group row">
-            <div class="col-3">Label Alignment</div>
+            <div class="col-3">Layout</div>
             <div class="col-9">
-              <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default active btn-sm">
-                  <input type="radio" class="phylotree-align-toggler" data-align="left" name="options-align" autocomplete="off" checked title="Align tips labels to branches">
-                      <i class="fa fa-align-left"></i>
-                  </input>
+              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary btn-sm">
+                  <input type="radio" name="options" class="phylotree-layout-mode" data-mode="linear" autocomplete="off" title="Layout left-to-right"> Linear
                 </label>
-                <label class="btn btn-default btn-sm">
-                 <input type="radio" class="phylotree-align-toggler" data-align="right" name="options-align" autocomplete="off" title="Align tips labels to the edge of the plot">
-                      <i class="fa fa-align-right"></i>
-                  </input>
+                <label class="btn btn-secondary btn-sm active">
+                  <input type="radio" name="options" class="phylotree-layout-mode" data-mode="radial" autocomplete="off" title="Layout radially" checked> Radial
                 </label>
               </div>
             </div>
@@ -105,157 +66,138 @@
 
   (function(){
 
-    var outerRadius = 960 / 2,
-        innerRadius = outerRadius - 170;
+    function redrawTree(){
+      var typeSelector = $('input[type="radio"][name="tree_distanceMetric"]');
+      var type = typeSelector.filter(':checked').data('value');
 
-    var color = d3.scaleOrdinal()
-        .domain(['Bacteria', 'Eukaryota', 'Archaea'])
-        .range(d3.schemeCategory10);
-
-    var cluster = d3.cluster()
-        .size([360, innerRadius])
-        .separation(function(a, b) { return 1; });
-
-    var tree_zoomer = d3.zoom().on('zoom', () => tree_svg.attr('transform', d3.event.transform))
-
-    var tree_svg = d3.select('svg#phylogenetic_tree_panel')
-        .attr('width', outerRadius * 2)
-        .attr('height', outerRadius * 2)
-        .call(session.network.zoom)
-        .append('g');
-
-    var legend = tree_svg.append('g').attr('class', 'legend')
-      .selectAll('g').data(color.domain())
-      .enter().append('g')
-        .attr('transform', function(d, i) { return 'translate(' + (outerRadius * 2 - 10) + ',' + (i * 20 + 10) + ')'; });
-
-    legend.append('rect')
-        .attr('x', -18)
-        .attr('width', 18)
-        .attr('height', 18)
-        .attr('fill', color);
-
-    legend.append('text')
-        .attr('x', -24)
-        .attr('y', 9)
-        .attr('dy', '.35em')
-        .attr('text-anchor', 'end')
-        .text(function(d){ return d; });
-
-    var chart = tree_svg.append('g')
-        .attr('transform', 'translate(' + outerRadius + ',' + outerRadius + ')');
-
-    var RNJ = new RapidNeighborJoining(session.data.distance_matrix.tn93, session.data.distance_matrix.labels.map(function(l){
-      return {
-        'name': l.id,
-        'genotype': l.id
+      if(!session.data.trees[type]){
+        var RNJ = new RapidNeighborJoining(session.data.distance_matrix[type], session.data.distance_matrix.labels.map(function(l){
+          return {
+            'name': l,
+            'genotype': l
+          }
+        }));
+        RNJ.run();
+        session.data.trees[type] = RNJ.getAsNewick();
       }
-    }));
-    RNJ.run();
-    var life = RNJ.getAsNewick();
+      var container = $('#phylogenetic_tree_panel').parent();
+      var outerRadius = Math.min(container.width(), container.height()) / 2.1,
+          innerRadius = outerRadius - 170;
 
-    var root = d3.hierarchy(app.parseNewick(life), function(d) { return d.branchset; })
-        .sum(function(d) { return d.branchset ? 0 : 1; })
-        .sort(function(a, b) { return (a.value - b.value) || d3.ascending(a.data.length, b.data.length); });
+      var cluster = d3.cluster()
+          .size([360, innerRadius])
+          .separation(function(a, b) { return 1; });
 
-    cluster(root);
+      var tree_zoomer = d3.zoom().on('zoom', () => tree_svg.attr('transform', d3.event.transform));
 
-    var input = d3.select('#show-length input').on('change', changed);
+      var tree_svg = d3.select('svg#phylogenetic_tree_panel')
+          .html(null)
+          .call(tree_zoomer)
+          .append('g');
 
-    setRadius(root, root.data.length = 0, innerRadius / maxLength(root));
-    setColor(root);
+      var chart = tree_svg.append('g')
+          .attr('transform', 'translate(' + outerRadius + ',' + outerRadius + ')');
 
-    var linkExtension = chart.append('g')
-        .attr('class', 'link-extensions')
-      .selectAll('path')
-      .data(root.links().filter(function(d) { return !d.target.children; }))
-      .enter().append('path')
-        .each(function(d) { d.target.linkExtensionNode = this; })
-        .attr('d', linkExtensionConstant);
+      var root = d3.hierarchy(app.parseNewick(session.data.trees[type]), function(d) { return d.branchset; })
+          .sum(function(d) { return d.branchset ? 0 : 1; })
+          .sort(function(a, b) { return (a.value - b.value) || d3.ascending(a.data.length, b.data.length); });
 
-    var link = chart.append('g')
-        .attr('class', 'links')
-      .selectAll('path')
-      .data(root.links())
-      .enter().append('path')
-        .each(function(d) { d.target.linkNode = this; })
-        .attr('d', linkConstant)
-        .attr('stroke', function(d) { return d.target.color; });
+      cluster(root);
 
-    chart.append('g')
-        .attr('class', 'labels')
-      .selectAll('text')
-      .data(root.leaves())
-      .enter().append('text')
-        .attr('dy', '.31em')
-        .attr('transform', function(d) { return 'rotate(' + (d.x - 90) + ')translate(' + (innerRadius + 4) + ',0)' + (d.x < 180 ? '' : 'rotate(180)'); })
-        .attr('text-anchor', function(d) { return d.x < 180 ? 'start' : 'end'; })
-        .text(function(d) { return d.data.name.replace(/_/g, ' '); })
-        .on('mouseover', mouseovered(true))
-        .on('mouseout', mouseovered(false));
+      setRadius(root, root.data.length = 0, innerRadius / maxLength(root));
 
-    function changed(){
-      var t = d3.transition().duration(750);
-      linkExtension.transition(t).attr('d', this.checked ? linkExtensionVariable : linkExtensionConstant);
-      link.transition(t).attr('d', this.checked ? linkVariable : linkConstant);
+      var linkExtension = chart.append('g')
+          .attr('class', 'link-extensions')
+        .selectAll('path')
+        .data(root.links().filter(function(d) { return !d.target.children; }))
+        .enter().append('path')
+          .each(function(d) { d.target.linkExtensionNode = this; })
+          .attr('d', linkExtensionConstant);
+
+      var link = chart.append('g')
+          .attr('class', 'links')
+        .selectAll('path')
+        .data(root.links())
+        .enter().append('path')
+          .each(function(d) { d.target.linkNode = this; })
+          .attr('d', linkConstant)
+          .attr('stroke', '#000000');
+
+      chart.append('g')
+          .attr('class', 'labels')
+        .selectAll('text')
+        .data(root.leaves())
+        .enter().append('text')
+          .attr('dy', '.31em')
+          .attr('transform', function(d) { return 'rotate(' + (d.x - 90) + ')translate(' + (innerRadius + 4) + ',0)' + (d.x < 180 ? '' : 'rotate(180)'); })
+          .attr('text-anchor', function(d) { return d.x < 180 ? 'start' : 'end'; })
+          .text(function(d) { return d.data.name.replace(/_/g, ' '); })
+          .on('mouseover', mouseovered(true))
+          .on('mouseout', mouseovered(false));
+
+      function changed(){
+        var checked = $('[name="tree_branch_length"]:checked').data('value') === 'show';
+        var t = d3.transition().duration(750);
+        linkExtension.transition(t).attr('d', checked ? linkExtensionVariable : linkExtensionConstant);
+        link.transition(t).attr('d', checked ? linkVariable : linkConstant);
+      }
+
+      function mouseovered(active) {
+        return function(d) {
+          d3.select(this).classed('label--active', active);
+          d3.select(d.linkExtensionNode).classed('link-extension--active', active).each(moveToFront);
+          do d3.select(d.linkNode).classed('link--active', active).each(moveToFront); while (d = d.parent);
+        };
+      }
+
+      function moveToFront() {
+        this.parentNode.appendChild(this);
+      }
+
+      // Compute the maximum cumulative length of any node in the tree.
+      function maxLength(d) {
+        return d.data.length + (d.children ? d3.max(d.children, maxLength) : 0);
+      }
+
+      // Set the radius of each node by recursively summing and scaling the distance from the root.
+      function setRadius(d, y0, k) {
+        d.radius = (y0 += d.data.length) * k;
+        if (d.children) d.children.forEach(function(d) { setRadius(d, y0, k); });
+      }
+
+      function linkVariable(d) {
+        return linkStep(d.source.x, d.source.radius, d.target.x, d.target.radius);
+      }
+
+      function linkConstant(d) {
+        return linkStep(d.source.x, d.source.y, d.target.x, d.target.y);
+      }
+
+      function linkExtensionVariable(d) {
+        return linkStep(d.target.x, d.target.radius, d.target.x, innerRadius);
+      }
+
+      function linkExtensionConstant(d) {
+        return linkStep(d.target.x, d.target.y, d.target.x, innerRadius);
+      }
+
+      // Like d3.svg.diagonal.radial, but with square corners.
+      function linkStep(startAngle, startRadius, endAngle, endRadius) {
+        var c0 = Math.cos(startAngle = (startAngle - 90) / 180 * Math.PI),
+            s0 = Math.sin(startAngle),
+            c1 = Math.cos(endAngle = (endAngle - 90) / 180 * Math.PI),
+            s1 = Math.sin(endAngle);
+        return 'M' + startRadius * c0 + ',' + startRadius * s0
+            + (endAngle === startAngle ? '' : 'A' + startRadius + ',' + startRadius + ' 0 0 ' + (endAngle > startAngle ? 1 : 0) + ' ' + startRadius * c1 + ',' + startRadius * s1)
+            + 'L' + endRadius * c1 + ',' + endRadius * s1;
+      }
+
+      $('[name="tree_branch_length"]').on('change', changed);
     }
 
-    function mouseovered(active) {
-      return function(d) {
-        d3.select(this).classed('label--active', active);
-        d3.select(d.linkExtensionNode).classed('link-extension--active', active).each(moveToFront);
-        do d3.select(d.linkNode).classed('link--active', active).each(moveToFront); while (d = d.parent);
-      };
-    }
+    $('input[type="radio"][name="tree_distanceMetric"]').change(redrawTree);
 
-    function moveToFront() {
-      this.parentNode.appendChild(this);
-    }
-
-    // Compute the maximum cumulative length of any node in the tree.
-    function maxLength(d) {
-      return d.data.length + (d.children ? d3.max(d.children, maxLength) : 0);
-    }
-
-    // Set the radius of each node by recursively summing and scaling the distance from the root.
-    function setRadius(d, y0, k) {
-      d.radius = (y0 += d.data.length) * k;
-      if (d.children) d.children.forEach(function(d) { setRadius(d, y0, k); });
-    }
-
-    // Set the color of each node by recursively inheriting.
-    function setColor(d) {
-      var name = d.data.name;
-      d.color = color.domain().indexOf(name) >= 0 ? color(name) : d.parent ? d.parent.color : null;
-      if (d.children) d.children.forEach(setColor);
-    }
-
-    function linkVariable(d) {
-      return linkStep(d.source.x, d.source.radius, d.target.x, d.target.radius);
-    }
-
-    function linkConstant(d) {
-      return linkStep(d.source.x, d.source.y, d.target.x, d.target.y);
-    }
-
-    function linkExtensionVariable(d) {
-      return linkStep(d.target.x, d.target.radius, d.target.x, innerRadius);
-    }
-
-    function linkExtensionConstant(d) {
-      return linkStep(d.target.x, d.target.y, d.target.x, innerRadius);
-    }
-
-    // Like d3.svg.diagonal.radial, but with square corners.
-    function linkStep(startAngle, startRadius, endAngle, endRadius) {
-      var c0 = Math.cos(startAngle = (startAngle - 90) / 180 * Math.PI),
-          s0 = Math.sin(startAngle),
-          c1 = Math.cos(endAngle = (endAngle - 90) / 180 * Math.PI),
-          s1 = Math.sin(endAngle);
-      return 'M' + startRadius * c0 + ',' + startRadius * s0
-          + (endAngle === startAngle ? '' : 'A' + startRadius + ',' + startRadius + ' 0 0 ' + (endAngle > startAngle ? 1 : 0) + ' ' + startRadius * c1 + ',' + startRadius * s1)
-          + 'L' + endRadius * c1 + ',' + endRadius * s1;
-    }
+    setTimeout(redrawTree, 80);
 
   })();
   </script>
