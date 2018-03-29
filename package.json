@@ -10,12 +10,11 @@
     "yarn": "1.5.1"
   },
   "scripts": {
-    "appcache": "./appcache.sh",
+    "appcache": "sh appcache.sh",
     "start": "node index.js",
     "build": "yarn start && nativifier http://localhost:8080"
   },
   "devDependencies": {
-    "express": "^4.16.3",
     "nativefier": "^7.5.4",
     "yarn": "^1.5.0"
   },
@@ -35,6 +34,7 @@
     "datatables.net-scroller-bs4": "^1.4.4",
     "datatables.net-select": "^1.2.5",
     "datatables.net-select-bs4": "^1.2.5",
+    "express": "^4.16.3",
     "golden-layout": "^1.5.9",
     "html2canvas": "^1.0.0-alpha.10",
     "jquery": "^3.3.1",
@@ -47,6 +47,7 @@
     "screenfull": "^3.3.2",
     "tn93": "^0.1.1",
     "vis": "^4.21.0",
-    "vue": "^2.5.16"
+    "vue": "^2.5.16",
+    "xss": "^0.3.7"
   }
 }

@@ -1,6 +1,7 @@
-const express = require('express')
-const PORT = process.env.PORT || 5000
+#!/usr/bin/env node
+
+const express = require('express');
 
 express()
   .use(express.static(__dirname))
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+  .listen(process.env.PORT || 5000);
