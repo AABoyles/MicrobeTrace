@@ -232,6 +232,9 @@ app.launchView = function(view){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
       app.componentCache[view] = response;
+      session.layout.registerComponent(view, function(container, state){
+        container.getElement().html(state.text);
+      });
       app.launchView(view);
     });
   } else {
@@ -242,7 +245,7 @@ app.launchView = function(view){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
       session.layout.root.contentItems[0].addChild({
-        componentName: 'default',
+        componentName: view,
         componentState: { text: app.componentCache[view] },
         title: app.titleize(view),
         type: 'component'
