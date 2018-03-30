@@ -42,6 +42,7 @@
     "msa": "^1.0.3",
     "open-iconic": "^1.1.1",
     "papaparse": "^4.3.6",
+    "phylocanvas": "^2.8.1",
     "plotly.js": "^1.34.0",
     "popper.js": "^1.12.9",
     "screenfull": "^3.3.2",
