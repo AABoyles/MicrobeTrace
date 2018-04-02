@@ -32,7 +32,12 @@
           <a href="#" class="dropdown-item" data-toggle="modal" data-target="#save_modal">Save</a>
           <a href="#" id="ExportDataTab" class="dropdown-item" data-toggle="modal" data-target="#export_modal">Export Data</a>
           <div class="dropdown-divider"></div>
-          <a href="#" id="OpenTab" class="dropdown-item">Open</a>
+          <a href="#" class="dropdown-item">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="OpenTab"></input>
+              <label class="custom-file-label" for="OpenTab">Open</label>
+            </div>
+          </a>
           <a href="#" id="FileTab" class="dropdown-item">New</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
@@ -369,7 +374,7 @@ performance of this software.</pre>
 
     window.session = app.sessionSkeleton();
 
-    session.layout = new window.GoldenLayout({
+    window.layout = new window.GoldenLayout({
       settings: {
         selectionEnabled: true,
         showPopoutIcon: false
@@ -380,7 +385,9 @@ performance of this software.</pre>
       }]
     }, $('#main_panel'));
 
-    session.layout.init();
+    layout.init();
+
+    layout.contentItems = [];
 
     app.launchView('files');
 
@@ -405,8 +412,19 @@ performance of this software.</pre>
     $('#FileTab').click(app.reset);
 
     $('#SaveTab').click(function(){
-      var blob = new Blob([JSON.stringify(session.data)], {type: 'application/json;charset=utf-8'});
+      var blob = new Blob([JSON.stringify(session)], {type: 'application/json;charset=utf-8'});
       saveAs(blob, $('#save-file-name').val()+'.microbetrace');
+    });
+
+    $('#OpenTab').change(function(e){
+      if(e.target.files.length > 0){
+        var reader = new FileReader();
+        reader.onloadend = function(out){
+          session = JSON.parse(out.target.result);
+          app.launchView('2d_network');
+        };
+        reader.readAsText(e.target.files[0], 'UTF-8');
+      }
     });
 
     $('#SaveImageTab').click(function(){
@@ -537,7 +555,7 @@ performance of this software.</pre>
     });
 
     $(window).on('resize', function(e){
-      session.layout.root.setSize();
+      layout.root.setSize();
     });
   });
 
