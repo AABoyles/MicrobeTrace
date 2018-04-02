@@ -9,7 +9,6 @@
     </button>
   </div>
 
-
   <table id="groupKey"></table>
 
   <div class="modal fade" id="map_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
@@ -46,7 +45,7 @@
               <div class="form-group row">
                 <div class="col-3">Latitude</div>
                 <div class="col-9">
-                  <select id="latitudeField" class="fields custom-select custom-select-sm">
+                  <select id="latField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </div>
@@ -54,7 +53,15 @@
               <div class="form-group row">
                 <div class="col-3">Longitude</div>
                 <div class="col-9">
-                  <select id="longitudeField" class="fields custom-select custom-select-sm">
+                  <select id="lonField" class="nodeVariables custom-select custom-select-sm">
+                    <option selected>None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Census Tract</div>
+                <div class="col-9">
+                  <select id="tractField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </div>
@@ -62,7 +69,7 @@
               <div class="form-group row">
                 <div class="col-3">Zipcode</div>
                 <div class="col-9">
-                  <select id="zipcodeField" class="fields custom-select custom-select-sm">
+                  <select id="zipcodeField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </div>
@@ -70,7 +77,7 @@
               <div class="form-group row">
                 <div class="col-3">County</div>
                 <div class="col-9">
-                  <select id="countyField" class="fields custom-select custom-select-sm">
+                  <select id="countyField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </div>
@@ -78,7 +85,7 @@
               <div class="form-group row">
                 <div class="col-3">State</div>
                 <div class="col-9">
-                  <select id="stateField" class="fields custom-select custom-select-sm">
+                  <select id="stateField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </div>
@@ -86,7 +93,7 @@
               <div class="form-group row">
                 <div class="col-3">Country</div>
                 <div class="col-9">
-                  <select id="countryField" class="fields custom-select custom-select-sm">
+                  <select id="countryField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </div>
@@ -96,7 +103,7 @@
               <div class="form-group row">
                 <div class="col-3">Radius</div>
                 <!--td>
-                  <select id="radiusField" class="fields custom-select custom-select-sm">
+                  <select id="radiusField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </td-->
@@ -107,7 +114,7 @@
               <div class="form-group row">
                 <div class="col-3">Color</div>
                 <div class="col-9">
-                  <select id="nodeColorField" class="fields custom-select custom-select-sm">
+                  <select id="nodeColorField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                   <input type="color" id="color" value="#5656ff" />
@@ -116,7 +123,7 @@
               <div class="form-group row">
                 <div class="col-3">Transparency</div>
                 <div class="col-9">
-                  <!--select id="opacityField" class="fields custom-select custom-select-sm">
+                  <!--select id="opacityField" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select-->
                   <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="1.00" />
@@ -131,7 +138,7 @@
               <div class="form-group row">
                 <div class="col-3">Tooltip</div>
                 <div class="col-9">
-                  <select id="nodeTooltipVariable" class="fields custom-select custom-select-sm">
+                  <select id="nodeTooltipVariable" class="nodeVariables custom-select custom-select-sm">
                     <option selected>None</option>
                   </select>
                 </div>
@@ -216,6 +223,7 @@
   <script src="vendor/shpwrite.js"></script>
   <script>
   $(function(){
+    app.mapData = {};
 
     var countries, states, counties, cities, zipcodes;
 
@@ -243,22 +251,17 @@
     var linkLayer    = svg.append('g').attr('id', 'links');
     var nodeLayer    = svg.append('g').attr('id', 'nodes');
 
+    $('#map_settings_modal .nodeVariables').change(e => {
+      matchCoordinates();
+      redrawNodes();
+      drawLinks();
+    });
+
     var fields = session.data.nodeFields;
 
-    $('.fields')
-      .append(fields.map(field => `<option value="${field}">${app.titleize(field)}</option>`).join('\n'))
-      .change(e => {
-        matchCoordinates();
-        redrawNodes();
-        drawLinks();
-      });
-
-    if(fields.includes('lat')) $('#latitudeField').val('lat');
-    if(fields.includes('lon')) $('#longitudeField').val('lon');
-    if(fields.includes('zipcode')) $('#zipcodeField').val('zipcode');
-    if(fields.includes('county')) $('#countyField').val('county');
-    if(fields.includes('state')) $('#stateField').val('state');
-    if(fields.includes('country')) $('#countryField').val('country');
+    ['lat', 'lon', 'tract', 'zipcode', 'county', 'state', 'country'].forEach(v => {
+      if(fields.includes(v)) $(`#${v}Field`).val(v);
+    });
     if(fields.includes('id')) $('#nodeTooltipVariable').val('id');
 
     matchCoordinates();
@@ -278,14 +281,14 @@
       if($('#countryField').val() !== 'None'){
         var val = $('#countryField').val();
         session.data.nodes.forEach(n => {
-          var country = countries.features.find(c => c.id == n[val] || c.properties.name == n[val] || c.properties.country == n[val] || c.properties.ccode == n[val]);
+          var country = app.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val] || c.properties.country == n[val] || c.properties.ccode == n[val]);
           if(country) Object.assign(n, country.properties);
         });
       }
       if($('#stateField').val() !== 'None'){
         var sval = $('#stateField').val();
         session.data.nodes.forEach(n => {
-          var state = states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
+          var state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
           if(state) Object.assign(n, state.properties);
         });
         // Counties is nested in states because Counties are typically reported by name (rather than a UID like FIPS code),
@@ -294,22 +297,41 @@
         if($('#countyField').val() !== 'None'){
           var cval = $('#countyField').val();
           session.data.nodes.forEach(n => {
-            var state = states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
-            var county = counties.features.find(c => c.properties.NAME.includes(n[cval]) && c.properties.USPS == state.properties.usps);
+            var state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
+            var county = app.mapData.counties.features.find(c => c.properties.NAME.includes(n[cval]) && c.properties.USPS == state.properties.usps);
             if(county) Object.assign(n, county.properties);
           });
         }
       }
       if($('#zipcodeField').val() !== 'None'){
+        if(!app.mapData.zipcodes){
+          return $.getJSON('data/zipcodes.json', r => {
+            app.mapData.zipcodes = r;
+            matchCoordinates();
+          });
+        }
         var val = $('#zipcodeField').val();
         session.data.nodes.forEach(n => {
-          var zo = zipcodes.find(z => z.zipcode == n[val]);
+          var zo = app.mapData.zipcodes.find(z => z.zipcode == n[val]);
           if(zo) Object.assign(n, zo);
         });
       }
-      if($('#latitudeField').val() !== 'None' && $('#longitudeField').val() !== 'None'){
-        var lat = $('#latitudeField').val(),
-            lon = $('#longitudeField').val();
+      if($('#tractField').val() !== 'None'){
+        if(!app.mapData.tracts){
+          return $.getJSON('data/tracts.json', r => {
+            app.mapData.tracts = r;
+            matchCoordinates();
+          });
+        }
+        var val = $('#tractField').val();
+        session.data.nodes.forEach(n => {
+          var tract = app.mapData.tracts.find(t => t.tract == n[val]);
+          if(tract) Object.assign(n, tract);
+        });
+      }
+      if($('#latField').val() !== 'None' && $('#lonField').val() !== 'None'){
+        var lat = $('#latField').val(),
+            lon = $('#lonField').val();
         session.data.nodes.forEach(n => {
           if(typeof n[lat] == 'string'){
             n.lat = (n[lat].includes('S') ? -1 : 1) * parseFloat(n[lat]);
@@ -329,7 +351,7 @@
     function showToolTip(d){
       var tooltiptext = '';
       if(d.properties){
-        tooltiptext = d.properties.name;
+        tooltiptext = d.properties.name || d.properties.NAME + ', ' + d.properties.STNAME;
       } else if($('#nodeTooltipVariable').val() !== 'None' && d[$('#nodeTooltipVariable').val()]){
         tooltiptext = d[$('#nodeTooltipVariable').val()];
       }
@@ -351,14 +373,14 @@
     }
 
     function drawCountries(){
-      if(!countries){
+      if(!app.mapData.countries){
         $.getJSON('data/countries.json', function(c){
-          countries = c;
+          app.mapData.countries = c;
           drawCountries();
         });
         return;
       }
-      countryWrappers = countryLayer.selectAll('path').data(countries.features).enter().append('path')
+      countryWrappers = countryLayer.selectAll('path').data(app.mapData.countries.features).enter().append('path')
         .attr('d', path)
         .on('mouseenter', showToolTip)
         .on('mouseout', hideTooltip);
@@ -366,14 +388,14 @@
     }
 
     function drawStates(){
-      if(!states){
+      if(!app.mapData.states){
         $.getJSON('data/states.json', function(s){
-          states = s;
+          app.mapData.states = s;
           drawStates();
         });
         return;
       }
-      stateLayer.selectAll('path').data(states.features).enter().append('path')
+      stateLayer.selectAll('path').data(app.mapData.states.features).enter().append('path')
         .attr('d', path)
         .attr('stroke-width', 1 / lastTransform.k)
         .on('mouseenter', showToolTip)
@@ -382,14 +404,14 @@
     }
 
     function drawCounties(){
-      if(!counties){
+      if(!app.mapData.counties){
         $.getJSON('data/counties.json', function(c){
-          counties = c;
+          app.mapData.counties = c;
           drawCounties();
         });
         return;
       }
-      countyLayer.selectAll('path').data(counties.features).enter().append('path')
+      countyLayer.selectAll('path').data(app.mapData.counties.features).enter().append('path')
         .attr('d', path)
         .attr('stroke-width', 1 / lastTransform.k)
         .on('mouseenter', showToolTip)
@@ -398,9 +420,9 @@
     }
 
     function drawCities(){
-      if(!cities){
+      if(!app.mapData.cities){
         $.getJSON('data/cities.json', function(c){
-          cities = c;
+          app.mapData.cities = c;
           drawCities();
         });
         return;
@@ -408,7 +430,7 @@
       cityWrappers = cityLayer
         .style('opacity', 0)
         .selectAll('g').attr('class', 'city')
-        .data(cities).enter().append('g');
+        .data(app.mapData.cities).enter().append('g');
       cityWrappers.append('circle')
         .attr('cx', d => projection([d['Longitude'], d['Latitude']])[0])
         .attr('cy', d => projection([d['Longitude'], d['Latitude']])[1])

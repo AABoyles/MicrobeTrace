@@ -19,10 +19,8 @@ app.sessionSkeleton = function(){
   return {
     files: [],
     data: app.dataSkeleton(),
-    layout: {},
     state: {
-      alpha: 0.3,
-      contentItems: []
+      alpha: 0.3
     },
     style: {
       palette: ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac']
@@ -217,14 +215,12 @@ app.setLinkVisibility = function(){
 };
 
 app.reset = function(){
-  var cache = session.layout;
   window.session = app.sessionSkeleton();
-  session.layout = cache;
-  session.layout.root.replaceChild(session.layout.root.contentItems[0], {
+  layout.root.replaceChild(layout.root.contentItems[0], {
     type: 'stack',
     content: []
   });
-  session.state.contentItems = [];
+  layout.contentItems = [];
   app.launchView('files');
 };
 
@@ -232,29 +228,32 @@ app.launchView = function(view){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
       app.componentCache[view] = response;
+      layout.registerComponent(view, function(container, state){
+        container.getElement().html(state.text);
+      });
       app.launchView(view);
     });
   } else {
-    var contentItem = session.state.contentItems.find(function(item){
+    var contentItem = layout.contentItems.find(function(item){
       return item.componentName === view;
     });
     if(contentItem){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
-      session.layout.root.contentItems[0].addChild({
-        componentName: 'default',
+      layout.root.contentItems[0].addChild({
+        componentName: view,
         componentState: { text: app.componentCache[view] },
         title: app.titleize(view),
         type: 'component'
       });
-      contentItem = _.last(session.layout.root.contentItems[0].contentItems);
+      contentItem = _.last(layout.root.contentItems[0].contentItems);
       contentItem.on('itemDestroyed', function(){
-        var i = session.state.contentItems.findIndex(function(item){
+        var i = layout.contentItems.findIndex(function(item){
           return item === contentItem;
         });
-        session.state.contentItems.splice(i, 1);
+        layout.contentItems.splice(i, 1);
       });
-      session.state.contentItems.push(contentItem);
+      layout.contentItems.push(contentItem);
       contentItem.element.find('select.nodeVariables').html(
         '<option>None</option>' +
         session.data.nodeFields.map(function(field){
@@ -397,7 +396,7 @@ app.exportHIVTRACE = function(){
         'threshold': $('#default-link-threshold').val()
       },
       'Network Summary': {
-        'Sequences used to make links': session.data.links.filter(l => l.origin.includes('Genetic Distance').length),
+        'Sequences used to make links': session.data.links.filter(l => l.origin.includes('Genetic Distance')).length,
         'Clusters': session.data.clusters.length,
         'Edges': session.data.links.filter(l => l.visible).length,
         'Nodes': session.data.nodes.length
