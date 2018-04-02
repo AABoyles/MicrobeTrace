@@ -351,7 +351,7 @@
     function showToolTip(d){
       var tooltiptext = '';
       if(d.properties){
-        tooltiptext = d.properties.name;
+        tooltiptext = d.properties.name || d.properties.NAME + ', ' + d.properties.STNAME;
       } else if($('#nodeTooltipVariable').val() !== 'None' && d[$('#nodeTooltipVariable').val()]){
         tooltiptext = d[$('#nodeTooltipVariable').val()];
       }
