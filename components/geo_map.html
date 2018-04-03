@@ -7,6 +7,9 @@
     <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#map_export_modal">
       <span class="oi oi-data-transfer-download"></span>
     </button>
+    <button id="map_fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
+      <span class="oi oi-target"></span>
+    </button>
   </div>
 
   <table id="groupKey"></table>
@@ -148,7 +151,7 @@
               <div class="form-group row">
                 <div class="col-3">Layers</div>
                 <div class="col-9">
-                  <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showStates" aria-pressed="false" autocomplete="off">States</button>
+                  <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showStates" aria-pressed="true" autocomplete="off">States</button>
                   <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showCounties" aria-pressed="false" autocomplete="off">Counties</button>
                   <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showCities" aria-pressed="true" autocomplete="off">Cities</button>
                   <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showLinks" aria-pressed="false" autocomplete="off">Links</button>
@@ -235,14 +238,16 @@
 
     var lastTransform = {k:1, x:0, y:0};
 
-    svg.call(d3.zoom().on('zoom', () => {
+    var zoom = d3.zoom().on('zoom', () => {
       lastTransform = Object.assign({}, d3.event.transform);
       var radius = parseFloat($('#radius').val());
       svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities').attr('transform', d3.event.transform);
       svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / lastTransform.k);
       svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / lastTransform.k);
       svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / lastTransform.k);
-    }));
+    });
+
+    svg.call(zoom);
 
     var countryLayer = svg.append('g').attr('id', 'countries');
     var stateLayer   = svg.append('g').attr('id', 'states');
@@ -480,6 +485,23 @@
       linkLayer.transition().style('opacity', 1);
     }
 
+    function fitMap(thing, bounds){
+      if(!bounds) bounds = svg.node().getBBox();
+      if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
+      var parent = svg.node().parentElement,
+          midX = bounds.x + bounds.width / 2,
+          midY = bounds.y + bounds.height / 2;
+      var scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
+      svg
+        .transition()
+        .duration(750)
+        .call(zoom.transform, d3.zoomIdentity
+          .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
+          .scale(scale));
+    };
+
+    $('#map_fitbutton').click(fitMap);
+
     $('#showStates').click(function(e){
       if(!$(this).hasClass('active')){
         countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 0);
@@ -612,5 +634,6 @@
 
     drawCountries();
     drawCities();
+    fitMap();
   });
   </script>
