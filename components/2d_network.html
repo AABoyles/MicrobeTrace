@@ -344,7 +344,7 @@
     var vnodes = session.data.nodes.filter(node => node.visible);
 
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
-    var node = d3.select('g#nodes').selectAll('g.node').data(vnodes);
+    var node = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
     node.exit().remove(); //Removing nodes with no representation in the dataset.
     node = node.enter().append('g').attr('class', 'node').attr('tabindex', '0') //Adding nodes that weren't represented in the dataset before.
       .call(d3.drag() //A bunch of mouse handlers.
@@ -382,7 +382,7 @@
     var vlinks = getVLinks();
 
     // Links are considerably simpler.
-    var link = d3.select('g#links').selectAll('line').data(vlinks);
+    var link = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     link.exit().remove();
     link.enter().append('line')
       .attr('stroke', $('#default-link-color').val())
@@ -394,8 +394,8 @@
     setLinkColor();
     scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
 
-    var nodes = d3.select('g#nodes').selectAll('g.node').data(vnodes);
-    var links = d3.select('g#links').selectAll('line').data(vlinks);
+    var nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     session.network.force.nodes(vnodes).on('tick', function(){
       nodes
         .attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
@@ -479,7 +479,7 @@
   }
 
   $(window).on('node_selected', function(){
-    d3.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path').classed('selected', d => d.selected);
+    session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path').classed('selected', d => d.selected);
     $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
   });
 
