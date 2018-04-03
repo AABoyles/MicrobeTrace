@@ -18,8 +18,8 @@
         </div>
         <div class="modal-body">
           <div class="form-group row">
-            <div class="col-3">Distance Metric</div>
-            <div class="col-9">
+            <div class="col-2">Distance Metric</div>
+            <div class="col-10">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary btn-sm active">
                   <input type="radio" name="tree_distanceMetric" data-value="tn93" autocomplete="off" checked> TN93
@@ -31,20 +31,23 @@
             </div>
           </div>
           <div class="form-group row">
-            <div class="col-3">Layout</div>
-            <div class="col-9">
+            <div class="col-2">Layout</div>
+            <div class="col-10">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary btn-sm active">
-                  <input type="radio" name="tree_layout" data-value="radial" autocomplete="off" checked> Radial
+                  <input type="radio" name="tree_layout" data-value="rectangular" autocomplete="off" checked> Rectangular
                 </label>
                 <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="rectangular" autocomplete="off"> Rectangular
+                  <input type="radio" name="tree_layout" data-value="diagonal" autocomplete="off"> Diagonal
+                </label>
+                <label class="btn btn-secondary btn-sm">
+                  <input type="radio" name="tree_layout" data-value="hierarchical" autocomplete="off"> Hierarchical
                 </label>
                 <label class="btn btn-secondary btn-sm">
                   <input type="radio" name="tree_layout" data-value="circular" autocomplete="off"> Circular
                 </label>
                 <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="diagonal" autocomplete="off"> Diagonal
+                  <input type="radio" name="tree_layout" data-value="radial" autocomplete="off"> Radial
                 </label>
               </div>
             </div>
@@ -136,10 +139,14 @@
       phylocanvas = new Phylocanvas.Tree(root[0]);
       phylocanvas.load(session.data.trees[type]); // load your tree file
       phylocanvas.setSize(root.parent().width(), root.parent().height());
+      phylocanvas.setTreeType($('[name="tree_layout"]:checked').data('value'));
       phylocanvas.fitInPanel();
     }
 
-    $('[name="tree_distanceMetric"]').change(redrawTree);
+    $('[name="tree_distanceMetric"]').change(function(){
+      redrawTree();
+      phylocanvas.draw();
+    });
 
     $('[name="tree_layout"]').change(e => {
       phylocanvas.setTreeType($('[name="tree_layout"]:checked').data('value'));
