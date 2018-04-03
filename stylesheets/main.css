@@ -291,11 +291,11 @@ input[type="range"]{
 #map_panel{
   width: 100%;
   height: 100%;
-  background: #cad2d3;
+  background: #d4dadc;
 }
 #countries, #states, #counties {
-  fill: #f6f6f4;
-  stroke: #cad2d3;
+  fill: #fafaf8;
+  stroke: #eee0df;
 }
 
 /* Sequences */
