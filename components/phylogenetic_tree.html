@@ -146,6 +146,13 @@
       phylocanvas.setSize(root.parent().width(), root.parent().height());
       phylocanvas.setTreeType($('[name="tree_layout"]:checked').data('value'));
       phylocanvas.fitInPanel();
+
+      phylocanvas.on('updated', function(e){
+        session.data.nodes.forEach(function(node){
+          node.selected = e.nodeIds.includes(node.id);
+        });
+        $(window).trigger('node_selected');
+      });
     }
 
     $('[name="tree_distanceMetric"]').change(function(){
@@ -193,6 +200,13 @@
         var blob = new Blob([session.data.trees[$('[name="tree_distanceMetric"]:checked').data('value')]], {type: "application/newick;charset=utf-8"});
         saveAs(blob, $('#tree_export-img-file-name').val() + '.nwk');
       }
+    });
+
+    $(window).on('node_selected', function(e){
+      session.data.nodes.filter(d => d.selected).forEach(node => {
+        phylocanvas.branches[node.id].selected = true;
+      });
+      phylocanvas.draw();
     });
 
     setTimeout(redrawTree, 80);
