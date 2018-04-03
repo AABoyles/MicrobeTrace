@@ -370,7 +370,7 @@ performance of this software.</pre>
   <script type="text/javascript" src="scripts/common.js"></script>
   <script type="text/javascript">
   $(function(){
-    "use strict";
+    'use strict';
 
     window.session = app.sessionSkeleton();
 
@@ -475,6 +475,83 @@ performance of this software.</pre>
 
     $('#ShowSingletons, #HideSingletons').change(e => {
       app.setNodeVisibility();
+    });
+
+    app.updateThresholdHistogram = function(){
+      var width = 280,
+          height = 48,
+          svg = d3.select('svg#link-threshold-sparkline')
+            .html(null)
+            .attr('width', width)
+            .attr('height', height);
+
+      var lsv = $('#linkSortVariable').val();
+      var data = session.data.links.map(function(l){ return parseFloat(l[lsv]); }),
+        min = Math.min(...data),
+        max = Math.max(...data);
+
+      var x = d3.scaleLinear()
+        .domain([min, max])
+        .range([0, width]);
+
+      var bins = d3.histogram()
+          .domain(x.domain())
+          .thresholds(x.ticks(40))
+          (data);
+
+      var y = d3.scaleLinear()
+          .domain([0, d3.max(bins, function(d) { return d.length; })])
+          .range([height, 0]);
+
+      var bar = svg.selectAll('.bar')
+        .data(bins)
+        .enter().append('g')
+          .attr('class', 'bar')
+          .attr('transform', function(d) { return 'translate(' + x(d.x0) + ',' + y(d.length) + ')'; });
+
+      bar.append('rect')
+          .attr('x', 1)
+          .attr('width', 6)
+          .attr('height', function(d) { return height - y(d.length); });
+
+      function updateThreshold(){
+        var x = d3.mouse(svg.node())[0],
+            range = max - min;
+        session.state.linkThreshold = x / width * range + min;
+        $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+      }
+
+      svg.on('click', function(){
+        updateThreshold();
+        app.setLinkVisibility();
+        app.tagClusters();
+        if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+        app.computeDegree();
+        session.network.render();
+        session.network.updateStatistics();
+        session.network.force.alpha(0.3).alphaTarget(0).restart();
+      });
+
+      svg.on('mousedown', function(){
+        d3.event.preventDefault();
+        svg.on('mousemove', updateThreshold);
+        svg.on('mouseup', function(){
+          app.setLinkVisibility();
+          app.tagClusters();
+          if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+          app.computeDegree();
+          session.network.render();
+          session.network.updateStatistics();
+          session.network.force.alpha(0.3).alphaTarget(0).restart();
+          svg
+            .on('mousemove', null)
+            .on('mouseup', null);
+        });
+      });
+    };
+
+    $('#linkSortVariable').on('change', function(){
+      app.updateThresholdHistogram();
     });
 
     $('#default-link-threshold').on('input', e => {
