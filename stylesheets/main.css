@@ -297,6 +297,12 @@ input[type="range"]{
   fill: #fafaf8;
   stroke: #eee0df;
 }
+g#labels text.Ocean{
+  fill: #abb6bd;
+}
+g#labels text.Continent{
+  fill: #bdc5ca;
+}
 
 /* Sequences */
 #sequences_panel {

@@ -241,7 +241,7 @@
     var zoom = d3.zoom().on('zoom', () => {
       lastTransform = Object.assign({}, d3.event.transform);
       var radius = parseFloat($('#radius').val());
-      svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities').attr('transform', d3.event.transform);
+      svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', d3.event.transform);
       svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / lastTransform.k);
       svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / lastTransform.k);
       svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / lastTransform.k);
@@ -253,6 +253,7 @@
     var stateLayer   = svg.append('g').attr('id', 'states');
     var countyLayer  = svg.append('g').attr('id', 'counties');
     var cityLayer    = svg.append('g').attr('id', 'cities');
+    var labelsLayer  = svg.append('g').attr('id', 'labels');
     var linkLayer    = svg.append('g').attr('id', 'map_links');
     var nodeLayer    = svg.append('g').attr('id', 'map_nodes');
 
@@ -375,6 +376,25 @@
         .transition().duration(100)
         .style('opacity', 0)
         .on('end', () => tooltip.style('z-index', -1));
+    }
+
+    function drawLabels(){
+      if(!app.mapData.labels){
+        $.getJSON('data/labels.json', function(c){
+          app.mapData.labels = c;
+          drawLabels();
+        });
+        return;
+      }
+      labelsLayer.selectAll('text')
+        .data(app.mapData.labels.features)
+        .enter().append('text')
+        .attr('class', d => d.properties.type)
+        .attr('text-anchor', 'middle')
+        .attr('x', d => projection(d.geometry.coordinates)[0])
+        .attr('y', d => projection(d.geometry.coordinates)[1])
+        .text(d => d.properties.text);
+      labelsLayer.transition().style('opacity', 1);
     }
 
     function drawCountries(){
@@ -633,6 +653,7 @@
     });
 
     drawCountries();
+    drawLabels();
     drawStates();
     drawCities();
     fitMap();

@@ -1,0 +1,149 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "North America",
+        "type": "Continent",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-98.661, 41.835]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "South America",
+        "type": "Continent",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-58.583, -13.669]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "Africa",
+        "type": "Continent",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.210, 3.072]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "Asia",
+        "type": "Continent",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [83.976, 43.260]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "Europe",
+        "type": "Continent",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.045, 49.500]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "Australia",
+        "type": "Continent",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [133.982, -24.902]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "Antarctica",
+        "type": "Continent",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [23.943, -76.325]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "North Atlantic Ocean",
+        "type": "Ocean",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-40.579, 34.322]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "South Atlantic Ocean",
+        "type": "Ocean",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-13.685, -28.443]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "Indian Ocean",
+        "type": "Ocean",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [80.182, -21.763]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "South Pacific Ocean",
+        "type": "Ocean",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-136.380, -29.825]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "North Pacific Ocean",
+        "type": "Ocean",
+        "zoom": [1, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-171.536, 30.009]
+      }
+    }
+  ]
+}
