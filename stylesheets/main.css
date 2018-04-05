@@ -308,6 +308,10 @@ g#labels text.Ocean{
 g#labels text.Continent{
   fill: #bdc5ca;
 }
+g#labels text.Country{
+  fill: #bdc5ca;
+  font-size: xx-small;
+}
 #map_group_key {
   position: absolute;
   top: 10px;
@@ -333,6 +337,20 @@ g#labels text.Continent{
   text-indent: 1px;
   text-overflow: '';
 }
+#map_nodes circle {
+  cursor: -webkit-grab;
+
+}
+#map_nodes circle.selected {
+  stroke: #ff8300;
+  stroke-width: 4px;
+  /* stroke-dasharray: 6, 13;
+  animation-duration: 1s;
+  animation-name: ripple;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear; */
+}
+
 
 /* Sequences */
 #sequences_panel {
