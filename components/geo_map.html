@@ -12,7 +12,7 @@
     </button>
   </div>
 
-  <table id="groupKey"></table>
+  <table id="map_group_key"></table>
 
   <div class="modal fade" id="map_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
@@ -155,6 +155,7 @@
                   <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showCounties" aria-pressed="false" autocomplete="off">Counties</button>
                   <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showCities" aria-pressed="true" autocomplete="off">Cities</button>
                   <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showLinks" aria-pressed="false" autocomplete="off">Links</button>
+                  <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showLabels" aria-pressed="true" autocomplete="off">Labels</button>
                 </div>
               </div>
               <div class="form-group row">
@@ -227,35 +228,38 @@
   <script>
   $(function(){
     app.mapData = {};
+    session.map = {};
 
-    var countries, states, counties, cities, zipcodes;
+    var countryWrappers;
 
     var projection = d3.geoMercator();
 
     var path = d3.geoPath().projection(projection);
 
-    var svg = d3.select('#map_panel');
+    session.map.svg = d3.select('#map_panel');
 
-    var lastTransform = {k:1, x:0, y:0};
+    session.map.lastTransform = {k:1, x:0, y:0};
 
     var zoom = d3.zoom().on('zoom', () => {
-      lastTransform = Object.assign({}, d3.event.transform);
+      session.map.lastTransform = Object.assign({}, d3.event.transform);
       var radius = parseFloat($('#radius').val());
-      svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', d3.event.transform);
-      svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / lastTransform.k);
-      svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / lastTransform.k);
-      svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / lastTransform.k);
+      session.map.svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', d3.event.transform);
+      session.map.svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / session.map.lastTransform.k);
+      session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
+      session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
+      if($('#showLabels').hasClass('active')) drawLabels();
+      console.log(session.map.lastTransform.k);
     });
 
-    svg.call(zoom);
+    session.map.svg.call(zoom);
 
-    var countryLayer = svg.append('g').attr('id', 'countries');
-    var stateLayer   = svg.append('g').attr('id', 'states');
-    var countyLayer  = svg.append('g').attr('id', 'counties');
-    var cityLayer    = svg.append('g').attr('id', 'cities');
-    var labelsLayer  = svg.append('g').attr('id', 'labels');
-    var linkLayer    = svg.append('g').attr('id', 'map_links');
-    var nodeLayer    = svg.append('g').attr('id', 'map_nodes');
+    var countryLayer = session.map.svg.append('g').attr('id', 'countries');
+    var stateLayer   = session.map.svg.append('g').attr('id', 'states');
+    var countyLayer  = session.map.svg.append('g').attr('id', 'counties');
+    var labelsLayer  = session.map.svg.append('g').attr('id', 'labels');
+    var cityLayer    = session.map.svg.append('g').attr('id', 'cities');
+    var linkLayer    = session.map.svg.append('g').attr('id', 'map_links');
+    var nodeLayer    = session.map.svg.append('g').attr('id', 'map_nodes');
 
     $('#map_settings_modal .nodeVariables').change(e => {
       matchCoordinates();
@@ -272,7 +276,7 @@
 
     matchCoordinates();
 
-    var radius = parseFloat($('#radius').val()) / lastTransform.k;
+    var radius = parseFloat($('#radius').val()) / session.map.lastTransform.k;
     var color = $('#color').val();
 
     nodeLayer.selectAll('circle')
@@ -386,15 +390,21 @@
         });
         return;
       }
-      labelsLayer.selectAll('text')
-        .data(app.mapData.labels.features)
-        .enter().append('text')
-        .attr('class', d => d.properties.type)
-        .attr('text-anchor', 'middle')
-        .attr('x', d => projection(d.geometry.coordinates)[0])
-        .attr('y', d => projection(d.geometry.coordinates)[1])
-        .text(d => d.properties.text);
-      labelsLayer.transition().style('opacity', 1);
+      //This isn't a proper D3-style join, but it's not a performance issue yet, so I'm not sweating it.
+      //labelsLayer.selectAll('text').remove();
+      var k = session.map.lastTransform.k;
+      var labels = labelsLayer.selectAll('text')
+        .data(app.mapData.labels.features.filter(function(l){
+          return l.properties.zoom[0] < k && l.properties.zoom[1] > k;
+        }));
+      labels.exit().remove();
+      labels.enter().append('text')
+          .attr('text-anchor', 'middle')
+        .merge(labels)
+          .text(d => d.properties.text)
+          .attr('class', d => d.properties.type)
+          .attr('x', d => projection(d.geometry.coordinates)[0])
+          .attr('y', d => projection(d.geometry.coordinates)[1]);
     }
 
     function drawCountries(){
@@ -405,7 +415,9 @@
         });
         return;
       }
-      countryWrappers = countryLayer.selectAll('path').data(app.mapData.countries.features).enter().append('path')
+      countryWrappers = countryLayer.selectAll('path')
+        .data(app.mapData.countries.features)
+        .enter().append('path')
         .attr('d', path)
         .on('mouseenter', showToolTip)
         .on('mouseout', hideTooltip);
@@ -422,7 +434,7 @@
       }
       stateLayer.selectAll('path').data(app.mapData.states.features).enter().append('path')
         .attr('d', path)
-        .attr('stroke-width', 1 / lastTransform.k)
+        .attr('stroke-width', 1 / session.map.lastTransform.k)
         .on('mouseenter', showToolTip)
         .on('mouseout', hideTooltip);
       stateLayer.transition().style('opacity', 1);
@@ -438,7 +450,7 @@
       }
       countyLayer.selectAll('path').data(app.mapData.counties.features).enter().append('path')
         .attr('d', path)
-        .attr('stroke-width', 1 / lastTransform.k)
+        .attr('stroke-width', 1 / session.map.lastTransform.k)
         .on('mouseenter', showToolTip)
         .on('mouseout', hideTooltip);
       countyLayer.transition().style('opacity', 1);
@@ -472,7 +484,7 @@
 
     function redrawNodes(){
       var normal = d3.randomNormal();
-      var jitter = parseFloat($('#jitter').val()) / lastTransform.k;
+      var jitter = parseFloat($('#jitter').val()) / session.map.lastTransform.k;
       session.data.nodes.forEach(d => {
         d.jx = normal() * jitter;
         d.jy = normal() * jitter;
@@ -497,7 +509,7 @@
       ll.enter().append('line').merge(ll)
         .attr('class', 'link')
         .style('stroke', session.style.palette[0])
-        .attr('stroke-width', 2 / lastTransform.k)
+        .attr('stroke-width', 2 / session.map.lastTransform.k)
         .attr('x1', d => projection([d.source.lon, d.source.lat])[0] + d.source.jx)
         .attr('y1', d => projection([d.source.lon, d.source.lat])[1] + d.source.jy)
         .attr('x2', d => projection([d.target.lon, d.target.lat])[0] + d.target.jx)
@@ -506,13 +518,13 @@
     }
 
     function fitMap(thing, bounds){
-      if(!bounds) bounds = svg.node().getBBox();
+      if(!bounds) bounds = session.map.svg.node().getBBox();
       if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
-      var parent = svg.node().parentElement,
+      var parent = session.map.svg.node().parentElement,
           midX = bounds.x + bounds.width / 2,
           midY = bounds.y + bounds.height / 2;
       var scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
-      svg
+      session.map.svg
         .transition()
         .duration(750)
         .call(zoom.transform, d3.zoomIdentity
@@ -554,9 +566,17 @@
       }
     });
 
+    $('#showLabels').click(function(e){
+      if(!$(this).hasClass('active')){
+        drawLabels();
+      } else {
+        labelsLayer.transition().style('opacity', 0).on('end', e => labelsLayer.html(null));
+      }
+    });
+
     $('#showLinks').on('mouseup', e => setTimeout(drawLinks, 80));
 
-    $('#radius').on('input', e => nodeLayer.selectAll('circle').attr('r', e.target.value / lastTransform.k));
+    $('#radius').on('input', e => nodeLayer.selectAll('circle').attr('r', e.target.value / session.map.lastTransform.k));
 
     $('#color').on('input', e => nodeLayer.selectAll('circle').style('fill', e.target.value));
 
@@ -566,8 +586,8 @@
     });
 
     $('#nodeColorField').change(e => {
-      var circles = svg.select('g#map_nodes').selectAll('circle').data(session.data.nodes);
-      var table = $('#groupKey').empty();
+      var circles = session.map.svg.select('g#map_nodes').selectAll('circle').data(session.data.nodes);
+      var table = $('#map_group_key').empty();
       if(e.target.value == 'none'){
         circles.style('fill', $('#color').val());
         table.fadeOut();
@@ -592,11 +612,11 @@
       table.fadeIn();
     });
 
-    $('#opacity').on('input', e => svg.selectAll('circle').attr('opacity', e.target.value));
+    $('#opacity').on('input', e => session.map.svg.selectAll('circle').attr('opacity', e.target.value));
 
-    $('#landColor').on('input', e => svg.selectAll('path').attr('fill', e.target.value));
+    $('#landColor').on('input', e => session.map.svg.selectAll('path').attr('fill', e.target.value));
 
-    $('#waterColor').on('input', e => svg.style('background', e.target.value));
+    $('#waterColor').on('input', e => session.map.svg.style('background', e.target.value));
 
     $('#default-link-threshold').change(drawLinks);
 
@@ -655,6 +675,7 @@
     drawCountries();
     drawLabels();
     drawStates();
+    setTimeout(() => countryWrappers.filter(d => d.id === 'USA').style('opacity', 0), 1000);
     drawCities();
     fitMap();
   });

@@ -292,16 +292,48 @@ input[type="range"]{
   width: 100%;
   height: 100%;
   background: #d4dadc;
+  cursor: -webkit-grab;
+}
+#map_panel:hover:active{
+  cursor: hold;
 }
 #countries, #states, #counties {
   fill: #fafaf8;
   stroke: #eee0df;
+}
+g#labels text {
+  pointer-events: none;
 }
 g#labels text.Ocean{
   fill: #abb6bd;
 }
 g#labels text.Continent{
   fill: #bdc5ca;
+}
+#map_group_key {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  border-radius: 0.25rem;
+  color: #303030;
+  background-color: #f5f5f5;
+  border: 1px solid #c0c0c0;
+}
+#map_group_key th {
+  text-align: center;
+}
+#map_group_key th, td {
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#map_group_key select {
+  background: none;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: '';
 }
 
 /* Sequences */
