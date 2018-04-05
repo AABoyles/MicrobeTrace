@@ -15,7 +15,7 @@
   </button>
 </div>
 
-<table id="groupKey" class="floater"></table>
+<table id="network_group_key" class="floater"></table>
 
 <div id="2d-context-menu" class="dropdown-menu">
   <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
@@ -712,7 +712,7 @@
   $('#nodeSymbolVariable').change(e => {
     $('#default-node-symbol').fadeOut();
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
-    var table = $('<tbody id="nodeShapes"></tbody>').appendTo('#groupKey');
+    var table = $('<tbody id="nodeShapes"></tbody>').appendTo('#network_group_key');
     if(e.target.value === 'None'){
       redrawNodes();
       $('#default-node-symbol').fadeIn();
@@ -763,7 +763,7 @@
     $('#default-node-color').fadeOut();
     var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
     $('#nodeColors').fadeOut(function(){$(this).remove()});
-    var table = $('<tbody id="nodeColors"></tbody>').appendTo('#groupKey');
+    var table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
     if(e.target.value === 'None'){
       circles.attr('fill', $('#default-node-color').val());
       $('#default-node-color').fadeIn();
@@ -818,7 +818,7 @@
     var vlinks = getVLinks();
     var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     $('#linkColors').remove();
-    var table = $('<tbody id="linkColors"></tbody>').appendTo('#groupKey');
+    var table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
     table.append('<tr><th>'+app.titleize(variable)+'</th><th>Color</th><tr>');
     var values = _(vlinks).map(variable).uniq().sort().value();
     var o = d3.scaleOrdinal(session.style.palette).domain(values);
@@ -965,9 +965,6 @@
   setTimeout(function(){
     $('#nodeTooltipVariable').val('id');
     $('#linkColorVariable').val('origin');
-  }, 80);
-
-  setTimeout(function(){
     $('#loadingInformationModal').modal('hide');
   }, 1500);
 })();

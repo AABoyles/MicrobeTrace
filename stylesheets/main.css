@@ -234,17 +234,17 @@ input[type="range"]{
   z-index: 10000;
 }
 #networkStatistics,
-#groupKey {
+#network_group_key {
   position: absolute;
   border-radius: 0.25rem;
   color: #303030;
   background-color: #f5f5f5;
   border: 1px solid #c0c0c0;
 }
-#groupKey th {
+#network_group_key th {
   text-align: center;
 }
-#groupKey th, td {
+#network_group_key th, td {
   border: 1px solid lightgray;
   padding: 4px;
 }
@@ -255,12 +255,12 @@ input[type="range"]{
 #networkStatistics td{
   border: none;
 }
-#groupKey {
+#network_group_key {
   top: 10px;
   right: 10px;
   z-index: 1000;
 }
-#groupKey select {
+#network_group_key select {
   background: none;
   border: none;
   -webkit-appearance: none;
