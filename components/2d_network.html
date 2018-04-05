@@ -771,8 +771,8 @@
       return;
     }
     table.append('<tr><th>'+e.target.value+'</th><th>Color</th><tr>');
-    var values = _.map(session.data.nodes, e.target.value);
     var o = d3.scaleOrdinal(session.style.palette).domain(values);
+    var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
     circles.attr('fill', d => o(d[e.target.value]));
     values.forEach(value => {
       var input = $('<input type="color" value="'+o(value)+'" />')
