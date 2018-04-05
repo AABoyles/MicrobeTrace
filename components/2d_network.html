@@ -347,9 +347,12 @@
     .call(session.network.zoom);
 
   d3.select('svg#network')
-    .append('g')
-    .attr('class', 'brush')
-    .call(session.network.brush);
+      .append('g')
+      .attr('class', 'brush')
+      .call(session.network.brush)
+      .attr('pointer-events', 'none')
+    .select('rect.overlay')
+      .attr('pointer-events', 'none');
 
   session.network.svg = d3.select('svg#network')
     .append('g')
@@ -532,7 +535,7 @@
   }
 
   function clickHandler(n){
-    if(!d3.event.shiftKey && !d3.event.ctrlKey){
+    if(!d3.event.ctrlKey){
       session.data.nodes
         .filter(node => node !== n)
         .forEach(node => node.selected = 0);
@@ -960,6 +963,13 @@
     session.network.render();
     session.network.fit();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
+  });
+
+  d3.select(window).on('keydown keyup', function(){
+    d3.select('g.brush')
+        .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none')
+      .select('rect.overlay')
+        .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
   });
 
   setTimeout(function(){
