@@ -179,21 +179,19 @@ input[type="range"]{
 
 /* 2D NETWORK */
 #network {
-  width: 100%;
-  height: 100%;
-  background: #ffffff
+
 }
 #nodes path {
   cursor: -webkit-grab;
 }
 #nodes path.selected {
-  stroke: #000000;
-  stroke-dasharray: 6, 13;
-  stroke-width: 2px;
+  stroke: #ff8300;
+  stroke-width: 4px;
+  /* stroke-dasharray: 6, 13;
   animation-duration: 1s;
   animation-name: ripple;
   animation-iteration-count: infinite;
-  animation-timing-function: linear;
+  animation-timing-function: linear; */
 }
 @keyframes ripple {
   from {

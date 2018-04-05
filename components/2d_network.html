@@ -137,7 +137,7 @@
             <div class="form-group row">
               <div class="col-3"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Color</label></div>
               <div class="col-3"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
-              <div class="col-6"><input type="color" id="default-node-color" value="#5656ff" /></div>
+              <div class="col-6"><input type="color" id="default-node-color" value="#1f77b4" /></div>
             </div>
             <div class="form-group row">
               <div class="col-3"><label for="default-node-opacity" data-toggle="tooltip" title="How transparent should the nodes be?">Transparency</label></div>
@@ -178,7 +178,7 @@
             <div class="form-group row">
               <div class="col-3"><label data-toggle="tooltip" title="What color should the links be?">Color</label></div>
               <div class="col-3"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>origin</option></select></div>
-              <div class="col-6"><input type="color" id="default-link-color" value="#6f6f6f" /></div>
+              <div class="col-6"><input type="color" id="default-link-color" value="#8dd3c7" /></div>
             </div>
             <div class="form-group row">
               <div class="col-3"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
@@ -771,8 +771,8 @@
       return;
     }
     table.append('<tr><th>'+e.target.value+'</th><th>Color</th><tr>');
-    var o = d3.scaleOrdinal(session.style.palette).domain(values);
     var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
+    var o = d3.scaleOrdinal([d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2))).domain(values);
     circles.attr('fill', d => o(d[e.target.value]));
     values.forEach(value => {
       var input = $('<input type="color" value="'+o(value)+'" />')
@@ -821,7 +821,7 @@
     var table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
     table.append('<tr><th>'+app.titleize(variable)+'</th><th>Color</th><tr>');
     var values = _(vlinks).map(variable).uniq().sort().value();
-    var o = d3.scaleOrdinal(session.style.palette).domain(values);
+    var o = d3.scaleOrdinal(d3.schemePaired).domain(values);
     links
       .attr('stroke', d => o(d[variable]))
       .attr('stroke-dasharray', l => {

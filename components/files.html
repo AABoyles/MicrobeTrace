@@ -401,8 +401,10 @@ $('#main-submit').click(function(e){
         session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
         session.network.updateStatistics();
-        $('#loadingInformationModal').modal('hide');
-        setTimeout(session.network.fit, 1500);
+        setTimeout(function(){
+          session.network.fit();
+          $('#loadingInformationModal').modal('hide');
+        }, 1500);
       }
       app.updateThresholdHistogram();
     }
