@@ -6,11 +6,11 @@
       "properties": {
         "text": "North America",
         "type": "Continent",
-        "zoom": [1, 8]
+        "zoom": [0, 3]
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [-98.661, 41.835]
+        "coordinates": [-97.661, 35.835]
       }
     },
     {
@@ -18,11 +18,11 @@
       "properties": {
         "text": "South America",
         "type": "Continent",
-        "zoom": [1, 8]
+        "zoom": [0, 3]
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [-58.583, -13.669]
+        "coordinates": [-57.583, -9.669]
       }
     },
     {
@@ -30,7 +30,7 @@
       "properties": {
         "text": "Africa",
         "type": "Continent",
-        "zoom": [1, 8]
+        "zoom": [0, 3]
       },
       "geometry": {
         "type": "Point",
@@ -42,7 +42,7 @@
       "properties": {
         "text": "Asia",
         "type": "Continent",
-        "zoom": [1, 8]
+        "zoom": [0, 3]
       },
       "geometry": {
         "type": "Point",
@@ -54,11 +54,11 @@
       "properties": {
         "text": "Europe",
         "type": "Continent",
-        "zoom": [1, 8]
+        "zoom": [0, 3]
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [5.045, 49.500]
+        "coordinates": [16.946, 48.714]
       }
     },
     {
@@ -66,7 +66,7 @@
       "properties": {
         "text": "Australia",
         "type": "Continent",
-        "zoom": [1, 8]
+        "zoom": [0, 3]
       },
       "geometry": {
         "type": "Point",
@@ -78,7 +78,7 @@
       "properties": {
         "text": "Antarctica",
         "type": "Continent",
-        "zoom": [1, 8]
+        "zoom": [0, 3]
       },
       "geometry": {
         "type": "Point",
@@ -90,7 +90,7 @@
       "properties": {
         "text": "North Atlantic Ocean",
         "type": "Ocean",
-        "zoom": [1, 8]
+        "zoom": [0, 8]
       },
       "geometry": {
         "type": "Point",
@@ -102,7 +102,7 @@
       "properties": {
         "text": "South Atlantic Ocean",
         "type": "Ocean",
-        "zoom": [1, 8]
+        "zoom": [0, 8]
       },
       "geometry": {
         "type": "Point",
@@ -114,7 +114,7 @@
       "properties": {
         "text": "Indian Ocean",
         "type": "Ocean",
-        "zoom": [1, 8]
+        "zoom": [0, 8]
       },
       "geometry": {
         "type": "Point",
@@ -126,7 +126,7 @@
       "properties": {
         "text": "South Pacific Ocean",
         "type": "Ocean",
-        "zoom": [1, 8]
+        "zoom": [0, 8]
       },
       "geometry": {
         "type": "Point",
@@ -138,11 +138,23 @@
       "properties": {
         "text": "North Pacific Ocean",
         "type": "Ocean",
-        "zoom": [1, 8]
+        "zoom": [0, 8]
       },
       "geometry": {
         "type": "Point",
         "coordinates": [-171.536, 30.009]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "text": "Arctic Ocean",
+        "type": "Ocean",
+        "zoom": [0, 8]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [16.636, 81.936]
       }
     }
   ]
