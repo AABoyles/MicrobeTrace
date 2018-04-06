@@ -372,6 +372,13 @@ performance of this software.</pre>
   $(function(){
     'use strict';
 
+    if(navigator.onLine && window.applicationCache.status !== window.applicationCache.UNCACHED){
+      window.applicationCache.update();
+      if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
+        window.applicationCache.swapCache();
+      }
+    }
+
     window.session = app.sessionSkeleton();
 
     window.layout = new window.GoldenLayout({
