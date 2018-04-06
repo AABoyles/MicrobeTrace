@@ -310,7 +310,6 @@ g#labels text.Continent{
 }
 g#labels text.Country{
   fill: #bdc5ca;
-  font-size: xx-small;
 }
 #map_group_key {
   position: absolute;

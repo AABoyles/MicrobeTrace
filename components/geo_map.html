@@ -425,6 +425,7 @@
           .attr('text-anchor', 'middle')
         .merge(labels)
           .text(d => d.properties.text)
+          .attr('font-size', 14/session.map.lastTransform.k)
           .attr('class', d => d.properties.type)
           .attr('x', d => projection(d.geometry.coordinates)[0])
           .attr('y', d => projection(d.geometry.coordinates)[1]);
