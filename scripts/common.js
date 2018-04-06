@@ -286,7 +286,8 @@ app.unparseMEGA = function(nodes){
 };
 
 app.unparseDM = function(dm){
-  return ',' + session.data.distance_matrix.labels.join(',') + '\n' +
+  var labels = session.data.distance_matrix.labels;
+  return ',' + labels.join(',') + '\n' +
     dm
       .map((row, i) => labels[i] + ',' + row.join(','))
       .join('\n');
