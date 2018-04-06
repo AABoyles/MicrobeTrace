@@ -2,6 +2,15 @@
 
   <div id="sequences_panel"></div>
 
+  <div class="view_controls">
+    <button type="button" class="btn btn-light btn-sm invisible">
+      <span class="oi oi-cog"></span>
+    </button>
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#sequences_export_modal">
+      <span class="oi oi-data-transfer-download"></span>
+    </button>
+  </div>
+
   <script src="node_modules/msa/dist/msa.js"></script>
   <script>
   var m = new msa.msa({
@@ -24,7 +33,7 @@
       'seq': node.seq
     }))
   });
-  m.addView("menu", new msa.menu.defaultmenu({msa: m}));
+  m.addView('menu', new msa.menu.defaultmenu({msa: m}));
   m.render();
   var menubuttons = $('.smenubar > div');
   [0,2,3,6,7,8,9].forEach(i => $(menubuttons.get(i)).hide());

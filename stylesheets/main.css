@@ -357,18 +357,28 @@ g#labels text.Country{
   height: 100%;
   overflow: auto;
 }
+.smenubar{
+  position:absolute;
+  top: 13px;
+  left: 80px;
+}
 .smenubar .smenubar_alink {
   border-radius: .25rem !important;
   background-image: none !important;
   border: 1px solid #cccccc !important;
   color: #212529 !important;
   background-color: #f8f9fa !important;
+  padding: 8px 4px !important;
 }
 .smenubar .smenubar_alink:hover {
 
 }
 .smenu-dropdown {
   top: 38px !important;
+}
+.biojs_msa_stage{
+  position: absolute;
+  top: 50px;
 }
 
 /* Phylogenetic tree */
