@@ -18,8 +18,8 @@
         </div>
         <div class="modal-body">
           <div class="form-group row">
-            <div class="col-3">Distance Metric</div>
-            <div class="col-9">
+            <div class="col-2">Distance Metric</div>
+            <div class="col-10">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary btn-sm active">
                   <input type="radio" name="tree_distanceMetric" data-value="tn93" autocomplete="off" checked> TN93
@@ -31,44 +31,50 @@
             </div>
           </div>
           <div class="form-group row">
-            <div class="col-3">Layout</div>
-            <div class="col-9">
+            <div class="col-2">Layout</div>
+            <div class="col-10">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary btn-sm active">
-                  <input type="radio" name="tree_layout" data-value="radial" autocomplete="off" checked> Radial
+                  <input type="radio" name="tree_layout" data-value="rectangular" autocomplete="off" checked> Rectangular
                 </label>
                 <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="rectangular" autocomplete="off"> Rectangular
+                  <input type="radio" name="tree_layout" data-value="diagonal" autocomplete="off"> Diagonal
+                </label>
+                <label class="btn btn-secondary btn-sm">
+                  <input type="radio" name="tree_layout" data-value="hierarchical" autocomplete="off"> Hierarchical
                 </label>
                 <label class="btn btn-secondary btn-sm">
                   <input type="radio" name="tree_layout" data-value="circular" autocomplete="off"> Circular
                 </label>
                 <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="diagonal" autocomplete="off"> Diagonal
+                  <input type="radio" name="tree_layout" data-value="radial" autocomplete="off"> Radial
                 </label>
               </div>
             </div>
           </div>
           <div class="form-group row">
-            <div class="col-3">Labels</div>
-            <div class="col-9">
+            <div class="col-2">Labels</div>
+            <div class="col-10">
               <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary btn-sm active">
-                  <input type="radio" name="tree_labels" id="tree_labels_show" autocomplete="off" checked> Show
+                <label class="btn btn-secondary btn-sm">
+                  <input type="radio" name="tree_labels" id="tree_labels_align" autocomplete="off"> Align
                 </label>
                 <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_labels" id="tree_labels_hide" autocomplete="off"> Hide
+                  <input type="radio" name="tree_labels" id="tree_labels_show" autocomplete="off"> Show
+                </label>
+                <label class="btn btn-secondary btn-sm active">
+                  <input type="radio" name="tree_labels" id="tree_labels_hide" autocomplete="off" checked> Hide
                 </label>
               </div>
             </div>
           </div>
           <div class="form-group row">
-            <div class="col-3">Text Size</div>
-            <div class="col-9"><input type="range" id="tree_font-size-slider" min="6" value="10" max="24" step="1" /></div>
+            <div class="col-2">Text Size</div>
+            <div class="col-10"><input type="range" id="tree_font-size-slider" min="6" value="10" max="24" step="1" /></div>
           </div>
           <div class="form-group row">
-            <div class="col-3">Node Radius</div>
-            <div class="col-9"><input type="range" id="tree_node-size-slider" min="1" value="4" max="36" step="1" /></div>
+            <div class="col-2">Node Radius</div>
+            <div class="col-10"><input type="range" id="tree_node-size-slider" min="1" value="4" max="36" step="1" /></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -111,9 +117,7 @@
   <script type="application/javascript" src="vendor/neighbor-joining.js"></script>
   <script type="application/javascript" src="node_modules/phylocanvas/dist/phylocanvas.min.js"></script>
   <script>
-
   var phylocanvas;
-
   (function(){
 
     function redrawTree(){
@@ -133,13 +137,28 @@
 
       var root = $('#phylogenetic_tree_panel').empty();
 
-      phylocanvas = new Phylocanvas.Tree(root[0]);
+      phylocanvas = new Phylocanvas.Tree(root[0], {
+        hoverLabel: true,
+        showLabels: !$('#tree_labels_hide').is(':checked'),
+        alignLabels: $('#tree_labels_align').is(':checked'),
+      });
       phylocanvas.load(session.data.trees[type]); // load your tree file
       phylocanvas.setSize(root.parent().width(), root.parent().height());
+      phylocanvas.setTreeType($('[name="tree_layout"]:checked').data('value'));
       phylocanvas.fitInPanel();
+
+      phylocanvas.on('updated', function(e){
+        session.data.nodes.forEach(function(node){
+          node.selected = e.nodeIds.includes(node.id);
+        });
+        $(window).trigger('node_selected');
+      });
     }
 
-    $('[name="tree_distanceMetric"]').change(redrawTree);
+    $('[name="tree_distanceMetric"]').change(function(){
+      redrawTree();
+      phylocanvas.draw();
+    });
 
     $('[name="tree_layout"]').change(e => {
       phylocanvas.setTreeType($('[name="tree_layout"]:checked').data('value'));
@@ -154,8 +173,15 @@
       phylocanvas.setNodeSize(e.target.value);
     });
 
+    $('#tree_labels_align').parent().click(e => {
+      phylocanvas.showLabels = true;
+      phylocanvas.alignLabels = true;
+      phylocanvas.draw();
+    });
+
     $('#tree_labels_show').parent().click(e => {
       phylocanvas.showLabels = true;
+      phylocanvas.alignLabels = false;
       phylocanvas.draw();
     });
 
@@ -174,6 +200,13 @@
         var blob = new Blob([session.data.trees[$('[name="tree_distanceMetric"]:checked').data('value')]], {type: "application/newick;charset=utf-8"});
         saveAs(blob, $('#tree_export-img-file-name').val() + '.nwk');
       }
+    });
+
+    $(window).on('node_selected', function(e){
+      session.data.nodes.filter(d => d.selected).forEach(node => {
+        phylocanvas.branches[node.id].selected = true;
+      });
+      phylocanvas.draw();
     });
 
     setTimeout(redrawTree, 80);

@@ -179,21 +179,19 @@ input[type="range"]{
 
 /* 2D NETWORK */
 #network {
-  width: 100%;
-  height: 100%;
-  background: #ffffff
+
 }
 #nodes path {
   cursor: -webkit-grab;
 }
 #nodes path.selected {
-  stroke: #000000;
-  stroke-dasharray: 6, 13;
-  stroke-width: 2px;
+  stroke: #ff8300;
+  stroke-width: 4px;
+  /* stroke-dasharray: 6, 13;
   animation-duration: 1s;
   animation-name: ripple;
   animation-iteration-count: infinite;
-  animation-timing-function: linear;
+  animation-timing-function: linear; */
 }
 @keyframes ripple {
   from {
@@ -234,17 +232,17 @@ input[type="range"]{
   z-index: 10000;
 }
 #networkStatistics,
-#groupKey {
+#network_group_key {
   position: absolute;
   border-radius: 0.25rem;
   color: #303030;
   background-color: #f5f5f5;
   border: 1px solid #c0c0c0;
 }
-#groupKey th {
+#network_group_key th {
   text-align: center;
 }
-#groupKey th, td {
+#network_group_key th, td {
   border: 1px solid lightgray;
   padding: 4px;
 }
@@ -255,12 +253,12 @@ input[type="range"]{
 #networkStatistics td{
   border: none;
 }
-#groupKey {
+#network_group_key {
   top: 10px;
   right: 10px;
   z-index: 1000;
 }
-#groupKey select {
+#network_group_key select {
   background: none;
   border: none;
   -webkit-appearance: none;
@@ -291,12 +289,67 @@ input[type="range"]{
 #map_panel{
   width: 100%;
   height: 100%;
-  background: #9bbff4;
+  background: #d4dadc;
+  cursor: -webkit-grab;
+}
+#map_panel:hover:active{
+  cursor: hold;
 }
 #countries, #states, #counties {
-  fill: #bbdaa4;
-  stroke: #666666;
+  fill: #fafaf8;
+  stroke: #eee0df;
 }
+g#labels text {
+  pointer-events: none;
+}
+g#labels text.Ocean{
+  fill: #abb6bd;
+}
+g#labels text.Continent{
+  fill: #bdc5ca;
+}
+g#labels text.Country{
+  fill: #bdc5ca;
+}
+#map_group_key {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  border-radius: 0.25rem;
+  color: #303030;
+  background-color: #f5f5f5;
+  border: 1px solid #c0c0c0;
+}
+#map_group_key th {
+  text-align: center;
+}
+#map_group_key th, td {
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#map_group_key select {
+  background: none;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: '';
+}
+#map_nodes circle {
+  cursor: -webkit-grab;
+
+}
+#map_nodes circle.selected {
+  stroke: #ff8300;
+  stroke-width: 4px;
+  /* stroke-dasharray: 6, 13;
+  animation-duration: 1s;
+  animation-name: ripple;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear; */
+}
+
 
 /* Sequences */
 #sequences_panel {
