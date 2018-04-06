@@ -434,18 +434,6 @@ performance of this software.</pre>
       }
     });
 
-    $('#SaveImageTab').click(function(){
-      $('.hideForScreenshot, .view_controls').hide();
-      setTimeout(function(){
-        html2canvas($('.lm_items').get(0)).then(function(canvas){
-          canvas.toBlob(function(blob){
-            saveAs(blob, 'MicrobeTraceImage.png');
-          });
-          $('.hideForScreenshot, .view_controls').show();
-        });
-      }, 1);
-    });
-
     $('#ExitTab').click(function(){ window.open('','_self').close(); });
 
     $('#FindTab').click(function(e){ $('#search').focus(); });
