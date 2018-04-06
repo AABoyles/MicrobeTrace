@@ -160,7 +160,7 @@ app.DFS = function(node){
       l.cluster = session.data.clusters.length - 1;
       var cluster = session.data.clusters[session.data.clusters.length - 1];
       cluster.links++;
-      cluster.sum_distances += l[lsv];
+      cluster.sum_distances += parseFloat(l[lsv]);
       if(!l.source.cluster) app.DFS(l.source);
       if(!l.target.cluster) app.DFS(l.target);
     }
