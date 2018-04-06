@@ -79,13 +79,15 @@
 
   <script>
   (function(){
+    var plot;
+
     $('#histogram_variable').html(
       session.data.linkFields.map(key => `<option value='links-${key}'>Links ${app.titleize(key)}</option>`).concat(
       session.data.nodeFields.map(key => `<option value='nodes-${key}'>Nodes ${app.titleize(key)}</option>`)).join('\n')
     ).val('links-distance');
 
     function redrawHistogram(){
-      if(window.plot) Plotly.purge('histogram_panel');
+      if(plot) Plotly.purge('histogram_panel');
       var temp = $('#histogram_variable').val().split('-');
       var varSource = temp[0];
       var varName = temp[1];
@@ -110,7 +112,7 @@
         title: 'Number of ' + app.titleize(varSource),
         type: $('#histogram_logScale').is(':checked') ? 'log' : ''
       };
-      window.plot = Plotly.newPlot('histogram_panel', [data], layout, {
+      plot = Plotly.newPlot('histogram_panel', [data], layout, {
         displaylogo: false,
         displayModeBar: false
       });

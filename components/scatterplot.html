@@ -79,18 +79,20 @@
 
   <script>
   (function(){
+    var plot;
+
     var options = session.data.linkFields.map(key => `<option value='${key}'>${app.titleize(key)}</option>`).join('\n');
     $('#scatterplot_xVar, #scatterplot_yVar').html(options);
     $('#scatterplot_xVar').val('snps');
     $('#scatterplot_yVar').val('distance');
 
     function redrawScatterplot(){
-      if(window.plot) Plotly.purge('scatterplot_panel');
+      if(plot) Plotly.purge('scatterplot_panel');
       var xVar = $('#scatterplot_xVar').val();
       var yVar = $('#scatterplot_yVar').val();
       var visible = $('#scatterplot_vislinks').is(':checked');
       var subset = session.data.links.filter(l => !visible || l.visible);
-      window.plot = Plotly.newPlot('scatterplot_panel', [{
+      plot = Plotly.newPlot('scatterplot_panel', [{
         x: subset.map(l => l[xVar]),
         y: subset.map(l => l[yVar]),
         type: 'scatter',
