@@ -29,6 +29,7 @@
               <select id="export-sequences-file-type" class="form-control form-control-sm">
                 <option selected>fasta</option>
                 <option>mega</option>
+                <option>png</option>
               </select>
             </div>
           </div>
@@ -45,7 +46,7 @@
   <script>
   (function(){
     var m = new msa.msa({
-      el: $('#sequences_panel')[0],
+      el: $('#sequences_panel').get(0),
       vis: {
         overviewbox: true,
         bootstrapMenu: true,
@@ -72,9 +73,17 @@
 
     $('#sequences_export').click(function(){
       var type = $('#export-sequences-file-type').val();
-      var handler = type === 'fasta' ? app.unparseFASTA : app.unparseMEGA;
-      var blob = new Blob([handler(session.data.nodes.filter(d => d.seq))]);
-      saveAs(blob, $('#export-sequences-file-name').val() + '.' + type);
+      if(type === 'fasta'){
+        var blob = new Blob([app.unparseFASTA(session.data.nodes.filter(d => d.seq))]);
+        saveAs(blob, $('#export-sequences-file-name').val() + '.fasta');
+      } else if(type === 'mega'){
+        var blob = new Blob([app.unparseMEGA(session.data.nodes.filter(d => d.seq))]);
+        saveAs(blob, $('#export-sequences-file-name').val() + '.mega');
+      } else if(type === 'png'){
+        $('.biojs_msa_overviewbox').get(0).toBlob(function(blob){
+          saveAs(blob, $('#export-sequences-file-name').val() + '.png');
+        });
+      }
     });
   })();
   </script>
