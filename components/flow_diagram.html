@@ -1,112 +1,203 @@
   <svg id="flow_diagram"></svg>
 
-  <select id='flow_source_side' class="custom-select custom-select-sm"></select>
-  <select id='flow_target_side' class="custom-select custom-select-sm"></select>
+  <div class="view_controls">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#flow-diagram_settings_modal">
+      <span class="oi oi-cog"></span>
+    </button>
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_flow-diagram_modal" title="Export Network">
+      <span class="oi oi-data-transfer-download"></span>
+    </button>
+  </div>
+
+  <div id="flow-diagram_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Flow Diagram Options</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <!-- Nav tabs -->
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item active">
+              <a href="#flow-diagramConfigurations" id="flow-diagram-tab" class="nav-link active" aria-controls="flow-diagram" role="tab" data-toggle="tab">Flow Diagram</a>
+            </li>
+          </ul>
+          <!-- Tab panes -->
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="flow-diagramConfigurations" role="tabpanel" aria-labelledby="flow-diagram-tab">
+              <div class="form-group row">
+                <div class="col-3">Left Side Variable</div>
+                <div class="col-9">
+                  <select id="flow_source_side" class="custom-select custom-select-sm"></select>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Right Side Variable</div>
+                <div class="col-9">
+                  <select id="flow_target_side" class="custom-select custom-select-sm"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div id="export_flow-diagram_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Export Flow Diagram</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group row">
+            <div class="col-9">
+              <input type="text" id="export-flow-diagram-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            </div>
+            <div class="col-3">
+              <select id="export-flow-diagram-file-type" class="form-control form-control-sm">
+                <option selected>png</option>
+                <option>svg</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+          <button type="button" id="flow-diagram_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
 
   <script src="node_modules/d3-sankey/build/d3-sankey.min.js"></script>
   <script>
+  (function(){
 
-  function drawFlowDiagram(){
-    var width = $(window).width() - 40,
-        height = $(window).height() - 125;
+    function drawFlowDiagram(){
+      var width = $(window).width() - 40,
+          height = $(window).height() - 125;
 
-    svg = d3.select('svg#flow_diagram').html(null)
-        .attr('width', width)
-        .attr('height', height);
+      svg = d3.select('svg#flow_diagram').html(null)
+          .attr('width', width)
+          .attr('height', height);
 
-    var format = d3.format(",.0f"),
-        color = d3.scaleOrdinal(d3.schemeCategory10);
+      var format = d3.format(',.0f'),
+          color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    var sankey = d3.sankey()
-        .nodeWidth(15)
-        .nodePadding(10)
-        .extent([[1, 1], [width - 1, height - 6]]);
+      var sankey = d3.sankey()
+          .nodeWidth(15)
+          .nodePadding(10)
+          .extent([[1, 1], [width - 1, height - 6]]);
 
-    var link = svg.append("g")
-        .attr("class", "links")
-        .attr("fill", "none")
-        .attr("stroke", "#000")
-        .attr("stroke-opacity", 0.2)
-      .selectAll("path");
+      var link = svg.append('g')
+          .attr('class', 'links')
+          .attr('fill', 'none')
+          .attr('stroke', '#000000')
+          .attr('stroke-opacity', 0.2)
+        .selectAll('path');
 
-    var node = svg.append("g")
-        .attr("class", "nodes")
-        .attr("font-family", "sans-serif")
-        .attr("font-size", 10)
-      .selectAll("g");
+      var node = svg.append('g')
+          .attr('class', 'nodes')
+          .attr('font-family', 'sans-serif')
+          .attr('font-size', 10)
+        .selectAll('g');
 
-    var onlyUnique = (value, index, self) => self.indexOf(value) === index;
+      var onlyUnique = (value, index, self) => self.indexOf(value) === index;
 
-    wrapper = {links: []};
-    source_variable = $( '#flow_source_side').val();
-    source_values  = session.data.nodes.map(n => n[source_variable]+'').filter(onlyUnique);
-    target_variable = $('#flow_target_side').val();
-    target_values = session.data.nodes.map(n => n[target_variable]+'').filter(onlyUnique);
-    wrapper['nodes'] = source_values.concat(target_values).map(n => ({'name': n}));
+      wrapper = {links: []};
+      source_variable = $( '#flow_source_side').val();
+      source_values  = session.data.nodes.map(n => n[source_variable]+'').filter(onlyUnique);
+      target_variable = $('#flow_target_side').val();
+      target_values = session.data.nodes.map(n => n[target_variable]+'').filter(onlyUnique);
+      wrapper['nodes'] = source_values.concat(target_values).map(n => ({'name': n}));
 
-    target_list = {};
-    target_values.forEach(target => target_list[target] = 0);
+      target_list = {};
+      target_values.forEach(target => target_list[target] = 0);
 
-    link_matrix = {};
-    source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
+      link_matrix = {};
+      source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
 
-    session.data.nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
+      session.data.nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
 
-    source_values.forEach((source, i) => {
-      target_values.forEach((target, j) => {
-        if(link_matrix[source][target] > 0){
-          wrapper.links.push({
-            'source': i,
-            'target': source_values.length + j,
-            'value':  link_matrix[source][target]
-          });
-        }
+      source_values.forEach((source, i) => {
+        target_values.forEach((target, j) => {
+          if(link_matrix[source][target] > 0){
+            wrapper.links.push({
+              'source': i,
+              'target': source_values.length + j,
+              'value':  link_matrix[source][target]
+            });
+          }
+        });
       });
+
+      sankey(wrapper);
+
+      link = link
+        .data(wrapper.links)
+        .enter().append('path')
+          .attr('d', d3.sankeyLinkHorizontal())
+          .attr('stroke-width', d => Math.max(1, d.width));
+
+      link.append('title')
+          .text(d => d.source.name + ' → ' + d.target.name + '\n' + format(d.value));
+
+      node = node
+        .data(wrapper.nodes)
+        .enter().append('g');
+
+      node.append('text')
+          .attr('x', d => d.x0 - 6)
+          .attr('y', d => (d.y1 + d.y0) / 2)
+          .attr('dy', '0.35em')
+          .attr('text-anchor', 'end')
+          .text(d => d.name)
+        .filter(d => d.x0 < width / 2)
+          .attr('x', d => d.x1 + 6)
+          .attr('text-anchor', 'start');
+
+      node.append('rect')
+          .attr('x', d => d.x0)
+          .attr('y', d => d.y0)
+          .attr('height', d => Math.abs(d.y1 - d.y0))
+          .attr('width', d => d.x1 - d.x0)
+          .attr('fill', d => color((d.name+'').replace(/ .*/, '')))
+          .attr('stroke', '#000000');
+
+      node.append('title').text(d => d.name + '\n' + format(d.value));
+    }
+
+    $('#flow_source_side')
+      .html(session.data.nodeFields.map((field, i) => `<option${i==1?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
+      .change(drawFlowDiagram);
+
+    $('#flow_target_side')
+      .html(session.data.nodeFields.map((field, i) => `<option${i==2?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
+      .change(drawFlowDiagram);
+
+    $('#flow-diagram_export').click(function(){
+      var network = $('#flow_diagram')[0];
+      var content = app.unparseSVG(network);
+      var filetype = $('#export-flow-diagram-file-type').val();
+      if(filetype === 'svg'){
+        var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        saveAs(blob, $('#export-flow-diagram-file-name').val() + '.' + filetype);
+      } else {
+        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+          saveAs(blob, $('#export-flow-diagram-file-name').val() + '.' + filetype);
+        });
+      }
     });
 
-    sankey(wrapper);
-
-    link = link
-      .data(wrapper.links)
-      .enter().append("path")
-        .attr("d", d3.sankeyLinkHorizontal())
-        .attr("stroke-width", d => Math.max(1, d.width));
-
-    link.append("title")
-        .text(d => d.source.name + " → " + d.target.name + "\n" + format(d.value));
-
-    node = node
-      .data(wrapper.nodes)
-      .enter().append("g");
-
-    node.append("text")
-        .attr("x", d => d.x0 - 6)
-        .attr("y", d => (d.y1 + d.y0) / 2)
-        .attr("dy", "0.35em")
-        .attr("text-anchor", "end")
-        .text(d => d.name)
-      .filter(d => d.x0 < width / 2)
-        .attr("x", d => d.x1 + 6)
-        .attr("text-anchor", "start");
-
-    node.append("rect")
-        .attr("x", d => d.x0)
-        .attr("y", d => d.y0)
-        .attr("height", d => Math.abs(d.y1 - d.y0))
-        .attr("width", d => d.x1 - d.x0)
-        .attr("fill", d => color((d.name+'').replace(/ .*/, "")))
-        .attr("stroke", "#000");
-
-    node.append("title").text(d => d.name + "\n" + format(d.value));
-  }
-
-  $('#flow_source_side')
-    .html(session.data.nodeFields.map((field, i) => `<option${i==1?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
-    .change(drawFlowDiagram);
-
-  $('#flow_target_side')
-    .html(session.data.nodeFields.map((field, i) => `<option${i==2?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
-    .change(drawFlowDiagram);
-
-  drawFlowDiagram();
+    drawFlowDiagram();
+  })();
   </script>
