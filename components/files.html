@@ -419,7 +419,7 @@ $('#main-submit').click(function(e){
     });
     aligner.onmessage = function(response){
       subset.forEach(function(node, i){
-        node = response.data[i];
+        Object.assign(node, response.data[i]);
       });
       computeDM(subset);
     };
