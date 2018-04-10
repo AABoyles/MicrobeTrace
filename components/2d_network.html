@@ -1,7 +1,7 @@
 <svg id="network"></svg>
 
 <div class="view_controls">
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#2d_network_settings_modal" title="Network Settings">
+  <button type="button" id="toggle_2d_network_settings" class="btn btn-light btn-sm" title="Network Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_svg_modal" title="Export Network">
@@ -13,6 +13,159 @@
   <button id="pinbutton" type="button" class="btn btn-light btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
     <span class="oi oi-pin"></span>
   </button>
+</div>
+
+<div id="2d_network_settings_pane" class="left_pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#node_settings" role="tab" aria-controls="node_settings" aria-selected="true">Nodes</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="links-tab" data-toggle="tab" href="#link_settings" role="tab" aria-controls="link_settings" aria-selected="false">Links</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="network-tab" data-toggle="tab" href="#2d_network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="node_settings" role="tabpanel" aria-labelledby="nodes-tab">
+      <div class="form-group row">
+        <div class="col-3"><strong>Property</strong></div>
+        <div class="col-3"><strong>Variable</strong></div>
+        <div class="col-6"><strong>Value</strong></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label for="default-node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
+        <div class="col-3"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-6"><select id="default-node-symbol" class="custom-select custom-select-sm">
+          <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
+          <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
+          <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
+          <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
+          <option value="symbolTriangleRight">&nbsp;&#9654; (Right Triangle)</option>
+          <option value="symbolDiamond">&nbsp;&#10731; (Vertical Diamond)</option>
+          <option value="symbolDiamondAlt">&nbsp;&#10731; (Horizontal Diamond)</option>
+          <option value="symbolSquare">&nbsp;&#9632; (Square)</option>
+          <option value="symbolDiamondSquare">&nbsp;&#9670; (Tilted Square)</option>
+          <option value="symbolPentagon">&nbsp;&#11039; (Pentagon)</option>
+          <option value="symbolHexagon">&nbsp;&#11042; (Hexagon)</option>
+          <option value="symbolHexagonAlt">&nbsp;&#11043; (Tilted Hexagon)</option>
+          <option value="symbolOctagon">&nbsp;&#11204; (Octagon)</option>
+          <option value="symbolOctagonAlt">&nbsp;&#11203; (Tilted Octagon)</option>
+          <option value="symbolCross">&nbsp;&#10010; (Addition Sign)</option>
+          <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
+          <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
+          <option value="symbolStar">&nbsp;&#9733; (Star)</option>
+        </select></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label for="nodeLabelVariable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
+        <div class="col-3"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label for="nodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+        <div class="col-3"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Color</label></div>
+        <div class="col-3"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-6"><input type="color" id="default-node-color" value="#1f77b4" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label for="default-node-opacity" data-toggle="tooltip" title="How transparent should the nodes be?">Transparency</label></div>
+        <div class="col-3"><select id="nodeOpacityVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
+        <div class="col-6"><input type="range" id="default-node-opacity" min="0" max="1" value="1" step="0.01" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label for="default-node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
+        <div class="col-3"><select id="nodeRadiusVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
+        <div class="col-6"><input type="range" id="default-node-radius" min="1" value="250" step="1" max="5000" /></div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="link_settings" role="tabpanel" aria-labelledby="links-tab">
+      <div class="form-group row">
+        <div class="col-3"><strong>Property</strong></div>
+        <div class="col-3"><strong>Variable</strong></div>
+        <div class="col-6"><strong>Value</strong></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="Are these links directed?">Directionality</label></div>
+        <div class="col-3"></div>
+        <div class="col-6">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary active">
+              <input type="radio" name="DirectionOptions" id="UndirectedLinks" autocomplete="off" checked> Undirected
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="DirectionOptions" id="DirectedLinks" autocomplete="off"> Directed
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
+        <div class="col-3"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+        <div class="col-6"></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="What color should the links be?">Color</label></div>
+        <div class="col-3"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>origin</option></select></div>
+        <div class="col-6"><input type="color" id="default-link-color" value="#8dd3c7" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
+        <div class="col-3"><select id="linkOpacityVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+        <div class="col-6"><input type="range" id="default-link-opacity" min="0" max="1" value="1" step="0.01" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="How wide should the links be?">Thickness</label></div>
+        <div class="col-3">
+          <select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select><br />
+          <input type="checkbox" id="reciprocal-link-width" />&nbsp;<label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal?</label>
+        </div>
+        <div class="col-6"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="2d_network_settings" role="tabpanel" aria-labelledby="network-tab">
+      <div class="form-group row">
+        <div class="col-3"><strong>Property</strong></div>
+        <div class="col-9"><strong>Value</strong></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary active">
+              <input type="radio" name="2d_network_statisticsOptions" id="show_2d_network_statistics" autocomplete="off" checked> Show
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="2d_network_statisticsOptions" id="hide_2d_network_statistics" autocomplete="off"> Hide
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</label></div>
+        <div class="col-9"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="How long should links be?">Length</label></div>
+        <div class="col-9"><input type="range" id="default-link-length" min = "0" max="200" value="50" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</label></div>
+        <div class="col-9"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
+        <div class="col-9"><input type="range" id="default-node-charge" min="0" max="400" value="200" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3"><label data-toggle="tooltip" title="What color should the background be?">Background</label></div>
+        <div class="col-9"><input type="color" id="network-color" value="#ffffff" /></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <table id="network_group_key" class="floater"></table>
@@ -73,176 +226,6 @@
     </tbody>
   </table>
 </div>
-
-<div id="2d_network_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Network Configuration</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <ul class="nav nav-tabs" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#node_settings" role="tab" aria-controls="node_settings" aria-selected="true">Nodes</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="links-tab" data-toggle="tab" href="#link_settings" role="tab" aria-controls="link_settings" aria-selected="false">Links</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="network-tab" data-toggle="tab" href="#2d_network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
-          </li>
-        </ul>
-        <div class="tab-content">
-          <div class="tab-pane fade show active" id="node_settings" role="tabpanel" aria-labelledby="nodes-tab">
-            <div class="form-group row">
-              <div class="col-3"><strong>Property</strong></div>
-              <div class="col-3"><strong>Variable</strong></div>
-              <div class="col-6"><strong>Value</strong></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label for="default-node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
-              <div class="col-3"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
-              <div class="col-6"><select id="default-node-symbol" class="custom-select custom-select-sm">
-                <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
-                <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
-                <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
-                <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
-                <option value="symbolTriangleRight">&nbsp;&#9654; (Right Triangle)</option>
-                <option value="symbolDiamond">&nbsp;&#10731; (Vertical Diamond)</option>
-                <option value="symbolDiamondAlt">&nbsp;&#10731; (Horizontal Diamond)</option>
-                <option value="symbolSquare">&nbsp;&#9632; (Square)</option>
-                <option value="symbolDiamondSquare">&nbsp;&#9670; (Tilted Square)</option>
-                <option value="symbolPentagon">&nbsp;&#11039; (Pentagon)</option>
-                <option value="symbolHexagon">&nbsp;&#11042; (Hexagon)</option>
-                <option value="symbolHexagonAlt">&nbsp;&#11043; (Tilted Hexagon)</option>
-                <option value="symbolOctagon">&nbsp;&#11204; (Octagon)</option>
-                <option value="symbolOctagonAlt">&nbsp;&#11203; (Tilted Octagon)</option>
-                <option value="symbolCross">&nbsp;&#10010; (Addition Sign)</option>
-                <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
-                <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
-                <option value="symbolStar">&nbsp;&#9733; (Star)</option>
-              </select></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label for="nodeLabelVariable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
-              <div class="col-3"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label for="nodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-              <div class="col-3"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Color</label></div>
-              <div class="col-3"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
-              <div class="col-6"><input type="color" id="default-node-color" value="#1f77b4" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label for="default-node-opacity" data-toggle="tooltip" title="How transparent should the nodes be?">Transparency</label></div>
-              <div class="col-3"><select id="nodeOpacityVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
-              <div class="col-6"><input type="range" id="default-node-opacity" min="0" max="1" value="1" step="0.01" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label for="default-node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
-              <div class="col-3"><select id="nodeRadiusVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
-              <div class="col-6"><input type="range" id="default-node-radius" min="1" value="250" step="1" max="5000" /></div>
-            </div>
-          </div>
-          <div class="tab-pane fade" id="link_settings" role="tabpanel" aria-labelledby="links-tab">
-            <div class="form-group row">
-              <div class="col-3"><strong>Property</strong></div>
-              <div class="col-3"><strong>Variable</strong></div>
-              <div class="col-6"><strong>Value</strong></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="Are these links directed?">Directionality</label></div>
-              <div class="col-3"></div>
-              <div class="col-6">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="DirectionOptions" id="UndirectedLinks" autocomplete="off" checked> Undirected
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="DirectionOptions" id="DirectedLinks" autocomplete="off"> Directed
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
-              <div class="col-3"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
-              <div class="col-6"></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="What color should the links be?">Color</label></div>
-              <div class="col-3"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>origin</option></select></div>
-              <div class="col-6"><input type="color" id="default-link-color" value="#8dd3c7" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
-              <div class="col-3"><select id="linkOpacityVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
-              <div class="col-6"><input type="range" id="default-link-opacity" min="0" max="1" value="1" step="0.01" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="How wide should the links be?">Thickness</label></div>
-              <div class="col-3">
-                <select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select><br />
-                <input type="checkbox" id="reciprocal-link-width" />&nbsp;<label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal?</label>
-              </div>
-              <div class="col-6"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
-            </div>
-          </div>
-          <div class="tab-pane fade" id="2d_network_settings" role="tabpanel" aria-labelledby="network-tab">
-            <div class="form-group row">
-              <div class="col-3"><strong>Property</strong></div>
-              <div class="col-9"><strong>Value</strong></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="2d_network_statisticsOptions" id="show_2d_network_statistics" autocomplete="off" checked> Show
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="2d_network_statisticsOptions" id="hide_2d_network_statistics" autocomplete="off"> Hide
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</label></div>
-              <div class="col-9"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="How long should links be?">Length</label></div>
-              <div class="col-9"><input type="range" id="default-link-length" min = "0" max="200" value="50" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</label></div>
-              <div class="col-9"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
-              <div class="col-9"><input type="range" id="default-node-charge" min="0" max="400" value="200" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><label data-toggle="tooltip" title="What color should the background be?">Background</label></div>
-              <div class="col-9"><input type="color" id="network-color" value="#ffffff" /></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <div class="btn-group" data-toggle="buttons">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
-        </div>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
 
 <div id="export_svg_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
   <div class="modal-dialog" role="document">
@@ -701,6 +684,15 @@
     nodes.select('text').text(n => n[labelVar]);
   }
 
+  $('#toggle_2d_network_settings').click(function(){
+    var pane = $('#2d_network_settings_pane');
+    if(pane.is(':visible')){
+      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    } else {
+      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    }
+  });
+
   $('#nodeLabelVariable').change(e => {
     if(e.target.value === 'None'){
       session.network.svg.select('g#nodes').selectAll('g.node')
@@ -975,7 +967,6 @@
   setTimeout(function(){
     $('#nodeTooltipVariable').val('id');
     $('#linkColorVariable').val('origin');
-    $('#loadingInformationModal').modal('hide');
   }, 1500);
 })();
 </script>
