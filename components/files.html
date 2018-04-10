@@ -211,6 +211,7 @@ function message(msg){
 $('#main-submit').click(function(e){
   session.messages = [];
   session.data = app.dataSkeleton();
+  app.launchView('2d_network');
   $('#loadingInformation').html('');
 
   $('#loadingInformationModal').modal({
@@ -396,7 +397,6 @@ $('#main-submit').click(function(e){
           return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
         }).join('\n')
       );
-      app.launchView('2d_network');
       if(session.network){
         session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
@@ -443,16 +443,13 @@ $('#main-submit').click(function(e){
           return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
         }).join('\n')
       );
-      app.launchView('2d_network');
-      if(session.network){
-        session.network.render();
-        session.network.force.alpha(0.3).alphaTarget(0).restart();
-        setTimeout(function(){
-          session.network.fit();
-          $('#loadingInformationModal').modal('hide');
-        }, 1500);
-      }
       app.updateThresholdHistogram();
+      session.network.render();
+      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      setTimeout(function(){
+        session.network.fit();
+        $('#loadingInformationModal').modal('hide');
+      }, 1500);
     };
   };
 });
