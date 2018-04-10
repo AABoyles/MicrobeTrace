@@ -67,13 +67,20 @@ svg#link-threshold-sparkline{
 }
 .left_pane{
   position: absolute;
-  top: 50px;
+  top: 0px;
   left: -400px;
   display: none;
-  max-width: 400px;
   width: 400px;
+  height: 100%;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.1);
+}
+.left_pane .nav{
+  padding-top: 40px;
+}
+.left_pane .nav-link.active{
+  background-color: transparent;
+  border-color: #dee2e6 #dee2e6 transparent #ffffff;
 }
 
 /* NAV BAR and Golden Layout */
@@ -99,7 +106,7 @@ svg#link-threshold-sparkline{
   box-shadow: none!important;
 }
 .tab-pane {
-  border: 1px solid #dee2e6;
+  border: 1px solid #ffffff;
   border-top: none;
   border-bottom-left-radius: .25rem;
   border-bottom-right-radius: .25rem;
