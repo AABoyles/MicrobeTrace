@@ -19,15 +19,17 @@ onmessage = function(e){
   var subset = e.data;
   var n = subset.length;
   var output = {
-    tn93: Array(n),
-    snps: Array(n),
-    labels: subset.map(d => d.id),
+    distance_matrix: {
+      tn93: Array(n),
+      snps: Array(n),
+      labels: subset.map(d => d.id)
+    },
     links: []
   };
   for(var i = 0; i < n; i++){
-    output.tn93[i] = Array(n);
-    output.snps[i] = Array(n);
-    output.tn93[i][i] = output.snps[i][i] = 0;
+    output.distance_matrix.tn93[i] = Array(n);
+    output.distance_matrix.snps[i] = Array(n);
+    output.distance_matrix.tn93[i][i] = output.distance_matrix.snps[i][i] = 0;
     for(var j = 0; j < i; j++){
       var distance = tn93(subset[j]['seq'], subset[i]['seq'], 'AVERAGE');
       var newLink = {
@@ -38,10 +40,10 @@ onmessage = function(e){
         distance: distance,
         origin: ['Genetic Distance']
       };
-      output.tn93[i][j] = newLink.tn93;
-      output.tn93[j][i] = newLink.tn93;
-      output.snps[i][j] = newLink.snps;
-      output.snps[j][i] = newLink.snps;
+      output.distance_matrix.tn93[i][j] = newLink.tn93;
+      output.distance_matrix.tn93[j][i] = newLink.tn93;
+      output.distance_matrix.snps[i][j] = newLink.snps;
+      output.distance_matrix.snps[j][i] = newLink.snps;
       output.links.push(newLink);
     }
   }

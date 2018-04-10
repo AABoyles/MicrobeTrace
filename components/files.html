@@ -435,8 +435,7 @@ $('#main-submit').click(function(e){
       response.data.links.forEach(function(link){
         k += app.addLink(link);
       });
-      session.data.distance_matrix = response.data;
-      delete session.data.distance_matrix.links;
+      session.data.distance_matrix = response.data.distance_matrix;
       message(` - Found ${k} New Links while computing Distance Matrices`);
       $('#linkSortVariable').html(
         session.data.linkFields.map(function(field){
@@ -444,8 +443,13 @@ $('#main-submit').click(function(e){
         }).join('\n')
       );
       app.updateThresholdHistogram();
+      app.setLinkVisibility();
+      app.setNodeVisibility();
+      app.tagClusters();
+      app.computeDegree();
       session.network.render();
       session.network.force.alpha(0.3).alphaTarget(0).restart();
+      session.network.updateStatistics();
       setTimeout(function(){
         session.network.fit();
         $('#loadingInformationModal').modal('hide');

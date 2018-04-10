@@ -261,10 +261,6 @@
 <script>
 (function(){
 
-  app.tagClusters();
-  app.setNodeVisibility();
-  app.setLinkVisibility();
-
   session.network = {};
 
   session.network.brush = d3.brush()
@@ -475,12 +471,6 @@
     return output;
   }
 
-  session.network.render();
-
-  app.tagClusters();
-
-  app.computeDegree();
-
   session.network.updateStatistics = function(){
     if($('#hide_2d_network_statistics').is(':checked')) return;
     var llinks = _.filter(session.data.links, e => e.visible);
@@ -492,10 +482,6 @@
     $('#numberOfSingletonNodes').text(singletons.toLocaleString());
     $('#numberOfDisjointComponents').text(session.data.clusters.length - singletons);
   }
-
-  session.network.updateStatistics();
-
-  setTimeout(session.network.fit, 1500);
 
   function dragstarted(d){
     if (!d3.event.active) session.network.force.alphaTarget(0.3).restart();
