@@ -16,37 +16,22 @@ function hamming(s1, s2, gapPenalty){
 };
 
 onmessage = function(e){
-  var subset = e.data;
+  var subset = e.data.nodes;
+  var j = e.data.j;
   var n = subset.length;
-  var output = {
-    distance_matrix: {
-      tn93: Array(n),
-      snps: Array(n),
-      labels: subset.map(d => d.id)
-    },
-    links: []
-  };
+  var output = [];
   for(var i = 0; i < n; i++){
-    output.distance_matrix.tn93[i] = Array(n);
-    output.distance_matrix.snps[i] = Array(n);
-    output.distance_matrix.tn93[i][i] = output.distance_matrix.snps[i][i] = 0;
-    for(var j = 0; j < i; j++){
-      var distance = tn93(subset[j]['seq'], subset[i]['seq'], 'AVERAGE');
-      var newLink = {
-        source: subset[j].id,
-        target: subset[i].id,
-        tn93: distance,
-        snps: hamming(subset[j]['seq'], subset[i]['seq'], 0),
-        distance: distance,
-        origin: ['Genetic Distance']
-      };
-      output.distance_matrix.tn93[i][j] = newLink.tn93;
-      output.distance_matrix.tn93[j][i] = newLink.tn93;
-      output.distance_matrix.snps[i][j] = newLink.snps;
-      output.distance_matrix.snps[j][i] = newLink.snps;
-      output.links.push(newLink);
-    }
+    if(i === j) continue;
+    var distance = tn93(subset[i]['seq'], subset[j]['seq'], 'AVERAGE');
+    var newLink = {
+      source: subset[i].id,
+      target: subset[j].id,
+      tn93: distance,
+      snps: hamming(subset[i]['seq'], subset[j]['seq'], 0),
+      distance: distance,
+      origin: ['Genetic Distance']
+    };
+    output.push(newLink);
   }
   postMessage(output);
-  close();
 };

@@ -444,34 +444,33 @@ $('#main-submit').click(function(e){
 
   var computeDM = function(subset){
     message('Computing New Distance Matrices...');
-    var computer = new Worker('scripts/compute-dm.js');
-    computer.postMessage(subset);
-    computer.onmessage = function(response){
-      var k = 0;
-      clearTimeout(messageTimeout);
-      response.data.links.forEach(function(link){
-        k += app.addLink(link);
+    var k = 0;
+    var n = subset.length;
+    var cores = parseFloat($('#availableCores').val());
+    var computers = Array(cores);
+    var nPerI = Math.ceil(n/cores);
+    var returned = 0;
+    for(var i = 0; i < cores; i++){
+      computers[i] = new Worker('scripts/compute-dm.js');
+      computers[i].onmessage = function(response){
+        console.log((Date.now() - session.startTime)/1000 + 's');
+        response.data.forEach(function(link, j){
+          k += app.addLink(link);
+        });
+        if(++returned === n){
+          computers.forEach(c => c.terminate());
+          message(` - Found ${k} New Links while computing Distance Matrices`);
+          finishUp();
+        }
+      };
+    }
+    for(var j = 0; j < n; j++){
+      computers[j % cores].postMessage({
+        j: j,
+        nodes: subset
       });
-      session.data.distance_matrix = response.data.distance_matrix;
-      message(` - Found ${k} New Links while computing Distance Matrices`);
-      $('#linkSortVariable').html(
-        session.data.linkFields.map(function(field){
-          return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
-        }).join('\n')
-      );
-      app.updateThresholdHistogram();
-      app.setLinkVisibility();
-      app.setNodeVisibility();
-      app.tagClusters();
-      app.computeDegree();
-      session.network.render();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
-      session.network.updateStatistics();
-      setTimeout(function(){
-        session.network.fit();
-        $('#loadingInformationModal').modal('hide');
-      }, 1500);
-    };
+    }
+  };
 
   var finishUp = function(){
     clearTimeout(messageTimeout);

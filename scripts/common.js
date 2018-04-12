@@ -70,7 +70,9 @@ app.defaultLink = function(){
 };
 
 app.addLink = function(newLink){
-  var oldLink = session.data.links.find(l => l.source === newLink.source & l.target === newLink.target);
+  var oldLink = session.data.links.find(l => {
+    return (l.source === newLink.source & l.target === newLink.target) | (l.source === newLink.target & l.target === newLink.source);
+  });
   if(oldLink){
     if(newLink.origin) newLink.origin = newLink.origin.concat(oldLink.origin);
     Object.assign(oldLink, newLink);
