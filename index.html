@@ -480,11 +480,18 @@ performance of this software.</pre>
             .attr('width', width)
             .attr('height', height);
 
-      var lsv = $('#linkSortVariable').val();
-      var data = session.data.links.map(function(l){ return parseFloat(l[lsv]); }),
-        min = Math.min(...data),
-        max = Math.max(...data),
-        range = max - min;
+      var lsv = $('#linkSortVariable').val(),
+          n = session.data.links.length,
+          max = Number.MIN_SAFE_INTEGER,
+          min = Number.MAX_SAFE_INTEGER,
+          data = Array(n);
+      for(var i = 0; i < n; i++){
+        var x = parseFloat(session.data.links[i][lsv]);
+        data[i] = x;
+        if(x < min) min = x;
+        if(x > max) max = x;
+      }
+      var range = max - min;
 
       var x = d3.scaleLinear()
         .domain([min, max])
