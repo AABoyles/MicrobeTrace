@@ -4,7 +4,7 @@ onmessage = function(e){
   var reference = e.data.reference;
 
   subset.forEach(node => {
-    var rst = bioseq.align(reference, node.seq, true, [1, -1], [-5, -1.7]);
+    var rst = bioseq.align(reference, node.seq, e.data.isLocal, e.data.match, e.data.gap);
     var fmt = bioseq.cigar2gaps(reference, node.seq, rst.position, rst.CIGAR);
     node.padding = rst.position;
     node.seq = fmt[1];
