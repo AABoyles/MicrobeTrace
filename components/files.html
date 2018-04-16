@@ -51,7 +51,6 @@
               <div class="col-9">
                 <input id="refSeqFileLoad" class="btn btn-secondary btn-sm btn-nr" type="file" value="Load From File" />
                 <span id="referenceName">HIV (HXB2.pol)</span>
-                <textarea id="reference"></textarea>
               </div>
             </div>
             <div class="form-group row alignConfigRow">
@@ -230,30 +229,23 @@
   $('#align').parent().click(e => $('.alignConfigRow').slideDown());
   $('#doNotAlign').parent().click(e => $('.alignConfigRow').slideUp());
 
-  $('#refSeqFileLoad').filestyle({
-    text: 'Load from File',
-    input: false,
-    btnClass: 'btn-secondary btn-sm'
-  });
-
   $('#refSeqFileLoad').on('change', function(e){
     var file = e.target.files[0];
     var reader = new FileReader();
     reader.onloadend = function(e){
       if (e.target.readyState == FileReader.DONE){
-        $('#reference').val(filterXSS(app.parseFASTA(e.target.result)[0].seq));
+        var node = app.parseFASTA(e.target.result)[0];
+        session.data.reference = filterXSS(node.seq);
+        $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
       }
     };
     reader.readAsText(file);
   });
 
-  $('#refSeqLoad').click(e => $('#reference').val($('#HXB2pol').html()));
-  $('#reference').val($('#HXB2pol').html());
-
   var data, width = 0, height = 0;
   $('#previewAlignment').click(function(){
     var reader = new FileReader();
-    var reference = $('#reference').val();
+    var reference = session.data.Reference;
     var isLocal = $('#localAlign').is(':checked');
     var match = [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat);
     var gap = [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat);
@@ -291,7 +283,7 @@
         });
       };
       aligner.postMessage({
-        reference: $('#reference').val(),
+        reference: session.data.reference,
         isLocal: $('#localAlign').is(':checked'),
         match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
         gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
@@ -529,7 +521,7 @@
           }
         };
         aligners[i].postMessage({
-          reference: $('#reference').val(),
+          reference: session.data.reference,
           isLocal: $('#localAlign').is(':checked'),
           match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
           gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
