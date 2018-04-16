@@ -551,7 +551,7 @@
     };
 
     var computeDM = function(subset){
-      message('Computing New Distance Matrices...');
+      message('Computing Links based on Genomic Proximity...');
       var k = 0;
       var n = subset.length;
       var cores = parseFloat($('#availableCores').val());
@@ -559,9 +559,8 @@
       var nPerI = Math.ceil(n/cores);
       var returned = 0;
       for(var i = 0; i < cores; i++){
-        computers[i] = new Worker('scripts/compute-dm.js');
+        computers[i] = new Worker('scripts/compute-links.js');
         computers[i].onmessage = function(response){
-          console.log((Date.now() - session.startTime)/1000 + 's');
           response.data.forEach(function(link, j){
             k += app.addLink(link);
           });
@@ -606,6 +605,16 @@
         session.network.fit();
         $('#loadingInformationModal').modal('hide');
       }, 1500);
+
+      var DMMaker = new Worker('scripts/compute-dm.js');
+      DMMaker.onmessage = function(response){
+        session.data.distance_matrix = response.data;
+        DMMaker.terminate();
+      };
+      DMMaker.postMessage({
+        nodes: session.data.nodes.filter(d => d.seq),
+        links: session.data.links.filter(l => l.tn93 && l.snps)
+      });
     };
   });
 })();
