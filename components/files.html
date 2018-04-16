@@ -29,7 +29,7 @@
         <!-- Tab panes -->
         <div class="tab-content">
           <div id="alignerConfigurations" class="tab-pane fade show active" role="tabpanel">
-            <div class="form-group row" style="margin-bottom: 1rem">
+            <div class="form-group row">
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>
               </div>
@@ -41,6 +41,16 @@
                   <label class="btn btn-secondary active">
                     <input type="radio" name="shouldAlign" id="doNotAlign" autocomplete="off" checked> No
                   </label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row alignConfigRow">
+              <div class="col-12">
+                <div class="alert alert-danger alert-dismissible" role="alert">
+                  MicrobeTrace is not intended to be an alignment program. For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software">an external tool</a> before loading them into MicrobeTrace.
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -250,12 +260,12 @@
   $('#previewAlignment').click(function(){
     $('#alignmentPreview').children().fadeOut(function(){
       $(this).remove();
-      $('#alignmentPreview').append(
-        $('<img src="img/spinner.gif" class="mx-auto" />').hide().fadeIn()
-      );
+      $('<img src="img/spinner.gif" class="mx-auto" />')
+        .hide()
+        .appendTo('#alignmentPreview')
+        .fadeIn();
     });
     var reader = new FileReader();
-    var reference = session.data.Reference;
     var isLocal = $('#localAlign').is(':checked');
     var match = [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat);
     var gap = [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat);
