@@ -454,7 +454,7 @@
   };
 
   function getVLinks(){
-    var vlinks = _.cloneDeep(session.data.links.filter(link => link.visible));
+    var vlinks = UltraDeepClone(session.data.links.filter(link => link.visible));
     var output = [];
     var n = vlinks.length;
     for(var i = 0; i < n; i++){
