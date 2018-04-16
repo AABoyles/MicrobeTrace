@@ -1,7 +1,7 @@
   <div id="heatmap_panel"></div>
 
   <div class="view_controls">
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#heatmap_settings_modal">
+    <button type="button" id="toggle_heatmap_settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_heatmap_modal" title="Export Network">
@@ -9,65 +9,52 @@
     </button>
   </div>
 
-  <div class="modal fade" id="heatmap_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Heatmap Settings</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <div id="heatmap_settings_pane" class="left_pane">
+    <div class="container">
+      <div class="form-group row">
+        <div class="col-3">Distance Metric</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" id="heatmap_distanceMetric"></div>
         </div>
-        <div class="modal-body">
-          <div class="container">
-            <div class="form-group row">
-              <div class="col-3">Distance Metric</div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" id="heatmap_distanceMetric"></div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3">Invert Axes</div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary">
-                    <input id="heatmap_invertX" type="checkbox"> X
-                  </label>
-                </div>
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary">
-                    <input id="heatmap_invertY" type="checkbox"> Y
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3">Color Scheme</div>
-              <div class="col-9">
-                <input type="color" id="heatmap_lowColor" value="#313695" />
-                <input type="color" id="heatmap_medianColor" value="#ffffbf" />
-                <input type="color" id="heatmap_highColor" value="#a50026" />
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3">Axis Labels</div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
-                  </label>
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
-                  </label>
-                </div>
-              </div>
-            </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3">Invert Axes</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary">
+              <input id="heatmap_invertX" type="checkbox"> X
+            </label>
+          </div>
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary">
+              <input id="heatmap_invertY" type="checkbox"> Y
+            </label>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+      </div>
+      <div class="form-group row">
+        <div class="col-3">Color Scheme</div>
+        <div class="col-9">
+          <input type="color" id="heatmap_lowColor" value="#313695" />
+          <input type="color" id="heatmap_medianColor" value="#ffffbf" />
+          <input type="color" id="heatmap_highColor" value="#a50026" />
         </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+      </div>
+      <div class="form-group row">
+        <div class="col-3">Axis Labels</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary">
+              <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
+            </label>
+            <label class="btn btn-secondary active">
+              <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="export_heatmap_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
@@ -163,6 +150,15 @@
         displayModeBar: false
       });
     }
+
+    $('#toggle_heatmap_settings').click(function(){
+      var pane = $('#heatmap_settings_pane');
+      if(pane.is(':visible')){
+        pane.animate({left: '-400px'}, function(){ pane.hide(); });
+      } else {
+        pane.show(0, function(){ pane.animate({left: '0px'}); });
+      }
+    });
 
     $('#heatmap_export').on('mousedown', function(){
       var format = $('#export-heatmap-file-type').val();

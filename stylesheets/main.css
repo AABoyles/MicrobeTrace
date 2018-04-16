@@ -71,7 +71,11 @@ svg#link-threshold-sparkline{
 }
 .left_pane .nav-link.active{
   background-color: transparent;
-  border-color: #dee2e6 #dee2e6 transparent #ffffff;
+  border-width: 2px;
+  border-color: #ffffff #ffffff transparent #ffffff;
+}
+input[type="color"]{
+  width: 100%;
 }
 
 /* NAV BAR and Golden Layout */
@@ -97,7 +101,7 @@ svg#link-threshold-sparkline{
   box-shadow: none!important;
 }
 .tab-pane {
-  border: 1px solid #ffffff;
+  border: 2px solid #ffffff;
   border-top: none;
   border-bottom-left-radius: .25rem;
   border-bottom-right-radius: .25rem;
@@ -161,7 +165,10 @@ td {
   text-overflow: ellipsis;
 }
 #alignmentPreview{
-  min-height: 130px;
+  min-height: 115px;
+  max-height: 200px;
+  overflow-x: scroll;
+  overflow-y: auto;
 }
 .bootstrap-filestyle.input-group{
   display: inline;
