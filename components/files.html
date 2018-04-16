@@ -49,13 +49,15 @@
                 <a href="#" data-toggle="tooltip" title="Against what sequence should MicrobeTrace align your sequences?">Reference</a>
               </div>
               <div class="col-9">
-                <input id="refSeqFileLoad" class="btn btn-secondary btn-sm btn-nr" type="file" value="Load From File" />
-                <span id="referenceName">HIV (HXB2.pol)</span>
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" id="refSeqFileLoad">
+                  <label class="custom-file-label" for="refSeqFileLoad">HIV (HXB2.pol)</label>
+                </div>
               </div>
             </div>
             <div class="form-group row alignConfigRow">
               <div class="col-3">
-                <a href="#" data-toggle="tooltip" title="How should MicrobeTrace align your sequences?R">Scope</a>
+                <a href="#" data-toggle="tooltip" title="How should MicrobeTrace align your sequences?">Type</a>
               </div>
               <div class="col-9">
                 <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
@@ -75,12 +77,14 @@
             </div>
             <div class="form-group row alignConfigRow">
               <div class="col-3">Gap Open/Extension</div>
-              <div class="col"><input type="number" id="alignerGapO" class="form-control" value="-1" max="0"></input></div>
-              <div class="col"><input type="number" id="alignerGapE" class="form-control" value="-1" max="0"></input></div>
+              <div class="col"><input type="number" id="alignerGapO" class="form-control" value="-5" max="0"></input></div>
+              <div class="col"><input type="number" id="alignerGapE" class="form-control" value="-2" max="0"></input></div>
             </div>
             <div class="form-group row alignConfigRow">
               <div class="col-3"><button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button></div>
-              <div class="col-9" id="alignmentPreview" style="overflow:scroll"></div>
+              <div class="col-9">
+                <div class="text-center" id="alignmentPreview" style="overflow-x: scroll"><canvas></canvas></div>
+              </div>
             </div>
           </div>
           <div id="systemConfigurations" class="tab-pane fade" role="tabpanel">
@@ -244,6 +248,12 @@
 
   var data, width = 0, height = 0;
   $('#previewAlignment').click(function(){
+    $('#alignmentPreview').children().fadeOut(function(){
+      $(this).remove();
+      $('#alignmentPreview').append(
+        $('<img src="img/spinner.gif" class="mx-auto" />').hide().fadeIn()
+      );
+    });
     var reader = new FileReader();
     var reference = session.data.Reference;
     var isLocal = $('#localAlign').is(':checked');

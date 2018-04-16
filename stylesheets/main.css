@@ -160,6 +160,8 @@ td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+#alignmentPreview{
+  min-height: 130px;
 }
 .bootstrap-filestyle.input-group{
   display: inline;
