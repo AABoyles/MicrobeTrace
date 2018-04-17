@@ -266,9 +266,6 @@
         .fadeIn();
     });
     var reader = new FileReader();
-    var isLocal = $('#localAlign').is(':checked');
-    var match = [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat);
-    var gap = [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat);
     reader.onloadend = function(e){
       if(!data){
         data = app.parseFASTA(e.target.result);
@@ -279,37 +276,38 @@
         });
         height = data.length;
       }
-      aligner = new Worker('scripts/aligner.js');
-      aligner.onmessage = function(response){
-        var colors = {
-          "A" : "lightgreen",
-          "G" : "orange",
-          "C" : "yellow",
-          "T" : "red"
-        };
-        var canvas = d3.select('#alignmentPreview').html(null).append("canvas")
-          .attr("width", width)
-          .attr("height", height);
-        var context = canvas.node().getContext("2d");
-        response.data.forEach((s, row) => {
-          s.seq.substring(0,width).toUpperCase().split('').forEach((c, col) => {
-            if(c === '-') return;
-            context.beginPath();
-            context.rect(col, row, 1, 1);
-            context.fillStyle = colors[c];
-            context.fill();
-            context.closePath();
-          });
-        });
-      };
-      aligner.postMessage({
+      app.align({
+        nodes: data,
         reference: session.data.reference,
         isLocal: $('#localAlign').is(':checked'),
         match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
         gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-        nodes: data
+        cores: parseFloat($('#availableCores').val()),
+        callback: function(output){
+          var colors = {
+            'A' : 'lightgreen',
+            'G' : 'orange',
+            'C' : 'yellow',
+            'T' : 'red'
+          };
+          var canvas = d3.select('#alignmentPreview').html(null).append('canvas')
+            .attr('width', width)
+            .attr('height', height);
+          var context = canvas.node().getContext('2d');
+          output.sort((a, b) => a.id > b.id ? -1 : 1);
+          output.forEach((s, row) => {
+            s.seq.substring(0,width).toUpperCase().split('').forEach((c, col) => {
+              if(c === '-') return;
+              context.beginPath();
+              context.rect(col, row, 1, 1);
+              context.fillStyle = colors[c];
+              context.fill();
+              context.closePath();
+            });
+          });
+        }
       });
-    }
+    };
     reader.readAsText(session.files.find(f => f.name.includes('fas')), 'UTF-8');
   });
 
@@ -345,7 +343,7 @@
 
     messageTimeout = setTimeout(function(){
       $('#loadCancelButton').slideDown();
-      alertify.warning("If you stare long enough, you can reverse the DNA Molecule\'s spin direction");
+      alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
     }, 20000);
 
     var files = [];
@@ -511,7 +509,7 @@
         if($('#align').is(':checked')){
           alignAndComputeDM(subset);
         } else {
-          computeDM(subset);
+          computeLinks(subset);
         }
       } else {
         $('.showForSequence').hide();
@@ -521,36 +519,23 @@
 
     var alignAndComputeDM = function(subset){
       message('Aligning Sequences...');
-      var n = subset.length;
-      var cores = parseFloat($('#availableCores').val());
-      var aligners = Array(cores);
-      var nPerI = Math.ceil(n/cores);
-      var returned = 0;
-      for(var i = 0; i < cores; i++){
-        aligners[i] = new Worker('scripts/aligner.js');
-        aligners[i].onmessage = function(response){
-          response.data.forEach(function(node, j){
+      app.align({
+        reference: session.data.reference,
+        isLocal: $('#localAlign').is(':checked'),
+        match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
+        gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
+        nodes: subset,
+        cores: parseFloat($('#availableCores').val()),
+        callback: function(response){
+          response.forEach(function(node){
             Object.assign(subset[node.index], node);
           });
-          if(++returned === aligners.length){
-            var minPadding = Math.min(...subset.map(d => d.padding));
-            subset.forEach(d => d.seq = '-'.repeat(d.padding - minPadding) + d.seq);
-            var maxLength = Math.max(...subset.map(d => d.seq.length));
-            subset.forEach(d => d.seq = d.seq + '-'.repeat(maxLength - d.seq.length));
-            computeDM(subset);
-          }
-        };
-        aligners[i].postMessage({
-          reference: session.data.reference,
-          isLocal: $('#localAlign').is(':checked'),
-          match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
-          gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-          nodes: subset.slice(i*nPerI, Math.min((i+1)*nPerI, n))
-        });
-      }
+          computeLinks(subset);
+        }
+      });
     };
 
-    var computeDM = function(subset){
+    var computeLinks = function(subset){
       message('Computing Links based on Genomic Proximity...');
       var k = 0;
       var n = subset.length;
@@ -566,7 +551,7 @@
           });
           if(++returned === n){
             computers.forEach(c => c.terminate());
-            message(` - Found ${k} New Links while computing Distance Matrices`);
+            message(` - Found ${k} New Links from Genomic Proximity`);
             finishUp();
           }
         };

@@ -72,10 +72,16 @@ app.defaultLink = function(){
 
 app.addLink = function(newLink){
   var oldLink = session.data.links.find(l => {
-    return (l.source === newLink.source & l.target === newLink.target) | (l.source === newLink.target & l.target === newLink.source);
+    return (
+      (l.source === newLink.source & l.target === newLink.target) |
+      (l.source === newLink.target & l.target === newLink.source)
+    );
   });
   if(oldLink){
-    if(newLink.origin) newLink.origin = newLink.origin.concat(oldLink.origin);
+    if(newLink.origin){
+      if(oldLink.origin.includes(newLink.origin)) return 0;
+      newLink.origin = newLink.origin.concat(oldLink.origin);
+    }
     Object.assign(oldLink, newLink);
     return 0;
   } else {
@@ -115,6 +121,33 @@ app.parseNewick = function(a){
     }
   }
   return r;
+};
+
+app.align = function(params){
+  if(!params.cores) params.cores = 2;
+  var n = params.nodes.length;
+  var aligners = Array(params.cores);
+  var nPerI = Math.ceil(n/params.cores);
+  var returned = 0;
+  var output = [];
+  for(var i = 0; i < params.cores; i++){
+    aligners[i] = new Worker('scripts/aligner.js');
+    aligners[i].onmessage = function(response){
+      output = output.concat(response.data);
+      if(++returned === aligners.length){
+        var minPadding = Math.min(...output.map(d => d.padding));
+        output.forEach(d => d.seq = '-'.repeat(d.padding - minPadding) + d.seq);
+        var maxLength = Math.max(...output.map(d => d.seq.length));
+        output.forEach(d => d.seq = d.seq + '-'.repeat(maxLength - d.seq.length));
+        params.callback(output);
+      }
+    };
+    var subset = Object.assign({}, params, {
+      nodes: params.nodes.slice(i*nPerI, Math.min((i+1)*nPerI, n)),
+      callback: undefined
+    });
+    aligners[i].postMessage(subset);
+  }
 };
 
 app.titleize = function(title){
