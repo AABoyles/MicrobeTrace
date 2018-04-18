@@ -4,6 +4,9 @@
     <button id="toggle_histogram_settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_histogram_modal" title="Export Histogram">
+      <span class="oi oi-data-transfer-download"></span>
+    </button>
   </div>
 
   <div id="histogram_settings_pane" class="left_pane">
@@ -69,6 +72,36 @@
     </div>
   </div>
 
+  <div id="export_histogram_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Export Histogram Image</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group row">
+            <div class="col-9">
+              <input type="text" id="export-histogram-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            </div>
+            <div class="col-3">
+              <select id="export-histogram-file-type" class="form-control form-control-sm">
+                <option selected>png</option>
+                <option>svg</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+          <button type="button" id="histogram_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
   <script>
   (function(){
     var plot;
@@ -125,6 +158,20 @@
 
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
     $('#histogram_variable, #histogram_color').change(redrawHistogram);
+
+    $('#histogram_export').click(function(){
+      var network = $('#histogram_panel .main-svg').get(0);
+      var content = app.unparseSVG(network);
+      var filetype = $('#export-histogram-file-type').val();
+      if(filetype === 'svg'){
+        var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        saveAs(blob, $('#export-histogram-file-name').val() + '.' + filetype);
+      } else {
+        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+          saveAs(blob, $('#export-histogram-file-name').val() + '.' + filetype);
+        });
+      }
+    });
 
     setTimeout(redrawHistogram, 80);
   })();
