@@ -4,7 +4,7 @@
     <button type="button" id="toggle_heatmap_settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_heatmap_modal" title="Export Network">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_heatmap_modal" title="Export Heatmap">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
@@ -60,7 +60,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Export Table</h5>
+          <h5 class="modal-title">Export Heatmap</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -74,7 +74,6 @@
               <select id="export-heatmap-file-type" class="form-control form-control-sm">
                 <option selected>csv</option>
                 <option>png</option>
-                <option>jpg</option>
               </select>
             </div>
           </div>
@@ -161,15 +160,25 @@
     });
 
     $('#heatmap_export').on('mousedown', function(){
-      var format = $('#export-heatmap-file-type').val();
+      var filetype = $('#export-heatmap-file-type').val();
       var name = $('#export-heatmap-file-name').val();
-      if(format === 'csv'){
+      if(filetype === 'csv'){
         content = app.unparseDM(session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id]);
         var blob = new Blob([content]);
-        saveAs(blob, name + '.' + format);
-      } else {
-        //TODO: Figure this out:
-        //Plotly.toImage(plot,{format:format}).then(function(content));
+        saveAs(blob, name + '.' + filetype);
+        return;
+      }
+      var network = $('#heatmap_panel image').get(0);
+      if(filetype === 'png'){
+        var bin = atob(network.href.baseVal.slice(22));
+        var length = bin.length;
+        var buf = new ArrayBuffer(length);
+        var arr = new Uint8Array(buf);
+        for (var i = 0; i < length; i++) {
+          arr[i] = bin.charCodeAt(i);
+        }
+        var blob = new Blob([buf], {type: 'image/png'});
+        saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
       }
     });
 
