@@ -135,10 +135,21 @@ app.align = function(params){
     aligners[i].onmessage = function(response){
       output = output.concat(response.data);
       if(++returned === aligners.length){
-        var minPadding = Math.min(...output.map(d => d.padding));
-        output.forEach(d => d.seq = '-'.repeat(d.padding - minPadding) + d.seq);
-        var maxLength = Math.max(...output.map(d => d.seq.length));
-        output.forEach(d => d.seq = d.seq + '-'.repeat(maxLength - d.seq.length));
+        var minPadding = Number.MAX_SAFE_INTEGER,
+            maxLength = 0;
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          if(minPadding > d.padding) minPadding = d.padding;
+        }
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
+          if(maxLength < d.seq.length) maxLength = d.seq.length;
+        }
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          d.seq = d.seq + '-'.repeat(maxLength - d.seq.length)
+        }
         params.callback(output);
       }
     };
