@@ -65,14 +65,18 @@ svg#link-threshold-sparkline{
   height: 100%;
   padding: 10px;
   background: rgba(0, 0, 0, 0.1);
+  z-index: 1;
 }
 .left_pane .nav{
   padding-top: 40px;
 }
-.left_pane .nav-link.active{
-  background-color: transparent;
+.left_pane .active{
+  background:#ffffff;
   border-width: 2px;
   border-color: #ffffff #ffffff transparent #ffffff;
+}
+.left_pane div.tab-content{
+  background:#ffffff;
 }
 input[type="color"]{
   width: 100%;
@@ -280,6 +284,11 @@ input[type="range"]{
   text-overflow: '';
 }
 
+/* 3D Network */
+.graph-nav-info{
+  display: none;
+}
+
 /* FLOW DIAGRAM */
 #flow_diagram{
   margin: 15px;
@@ -353,9 +362,7 @@ g#labels text.Country{
 
 /* Sequences */
 #sequences_panel {
-  padding: 15px;
   height: 100%;
-  overflow: auto;
 }
 .smenubar{
   position:absolute;
@@ -414,7 +421,20 @@ g#labels text.Country{
 #table-type-panel{
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 85px;
+  display: flex;
+  z-index: 2;
+}
+#table-type-panel .chosen-container{
+  margin-left: 8px;
+}
+#table-type-panel ul.chosen-choices{
+  border-radius: .25rem;
+  padding: 2px;
+}
+#table-type-panel .search-choice{
+  background-image: none;
+  background-color: #f8f9fa;
 }
 #table-wrapper{
   position: absolute;

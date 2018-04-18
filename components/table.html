@@ -1,5 +1,5 @@
   <div class="view_controls">
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table_settings_modal">
+    <button type="button" id="toggle_table_settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table_export_modal">
@@ -8,57 +8,39 @@
   </div>
 
   <div id="table-type-panel">
-    <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-      <label class="btn btn-secondary active">
+    <div class="btn-group btn-group-toggle btn-group-sm floater" data-toggle="buttons">
+      <label class="btn btn-light active">
         <input type="radio" name="nodelink" id="nodes" autocomplete="off" checked> Nodes
       </label>
-      <label class="btn btn-secondary">
+      <label class="btn btn-light">
         <input type="radio" name="nodelink" id="links" autocomplete="off"> Links
       </label>
-      <label class="btn btn-secondary">
+      <label class="btn btn-light">
         <input type="radio" name="nodelink" id="clusters" autocomplete="off"> Clusters
       </label>
     </div>
+    <select id="columns" class="chosen-select" multiple></select>
   </div>
 
-  <div id="table_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Table Options</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <div id="table_settings_pane" class="left_pane left_pane_opaque">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#tableConfigurations" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="table-tab">
+        <div class="form-group row">
+          <div class="col-3">Text Size</div>
+          <div class="col-9"><input type="range" id="font-size-slider" min="6" value="14" max="72" step="1" /></div>
         </div>
-        <div class="modal-body">
-          <!-- Nav tabs -->
-          <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item active">
-              <a href="#tableConfigurations" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
-            </li>
-          </ul>
-          <!-- Tab panes -->
-          <div class="tab-content">
-            <div class="tab-pane fade show active" id="tableConfigurations" role="tabpanel" aria-labelledby="table-tab">
-              <div class="form-group row">
-                <div class="col-3">Text Size</div>
-                <div class="col-9"><input type="range" id="font-size-slider" min="6" value="14" max="72" step="1" /></div>
-              </div>
-              <div class="form-group row">
-                <div class="col-3">Header Tilt</div>
-                <div class="col-9"><input type="range" id="tiltHeaders" min="-7.5" value="0" max="7.5" step=".25" /></div>
-              </div>
-              <div class="form-group row">
-                <div class="col-3">Columns</div>
-                <div class="col-9"><select id="columns" class="chosen-select" multiple></select></div>
-              </div>
-            </div>
-          </div>
+        <div class="form-group row">
+          <div class="col-3">Header Tilt</div>
+          <div class="col-9"><input type="range" id="tiltHeaders" min="-7.5" value="0" max="7.5" step=".25" /></div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+      </div>
+    </div>
+  </div>
 
   <div class="container-fluid">
     <div id="table-wrapper" class="table-responsive">
@@ -195,6 +177,15 @@
     }
 
     updateColumns();
+
+    $('#toggle_table_settings').click(function(){
+      var pane = $('#table_settings_pane');
+      if(pane.is(':visible')){
+        pane.animate({left: '-400px'}, function(){ pane.hide(); });
+      } else {
+        pane.show(0, function(){ pane.animate({left: '0px'}); });
+      }
+    });
 
     $('#tiltHeaders').on('input', function(e){
       var theta = $(this).val();

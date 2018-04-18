@@ -1,7 +1,7 @@
   <div id="phylogenetic_tree_panel"></div>
 
   <div class="view_controls">
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#phylogenetic_tree_settings_modal">
+    <button id="toggle_tree_settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_tree_modal" title="Export Tree">
@@ -9,80 +9,67 @@
     </button>
   </div>
 
-  <div class="modal fade" id="phylogenetic_tree_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Phylogenetic Tree Configuration</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <div id="tree_settings_pane" class="left_pane">
+    <div class="form-group row">
+      <div class="col-2">Distance Metric</div>
+      <div class="col-10">
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-secondary btn-sm active">
+            <input type="radio" name="tree_distanceMetric" data-value="tn93" autocomplete="off" checked> TN93
+          </label>
+          <label class="btn btn-secondary btn-sm">
+            <input type="radio" name="tree_distanceMetric" data-value="snps" autocomplete="off"> SNPs
+          </label>
         </div>
-        <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-2">Distance Metric</div>
-            <div class="col-10">
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary btn-sm active">
-                  <input type="radio" name="tree_distanceMetric" data-value="tn93" autocomplete="off" checked> TN93
-                </label>
-                <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_distanceMetric" data-value="snps" autocomplete="off"> SNPs
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-2">Layout</div>
-            <div class="col-10">
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary btn-sm active">
-                  <input type="radio" name="tree_layout" data-value="rectangular" autocomplete="off" checked> Rectangular
-                </label>
-                <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="diagonal" autocomplete="off"> Diagonal
-                </label>
-                <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="hierarchical" autocomplete="off"> Hierarchical
-                </label>
-                <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="circular" autocomplete="off"> Circular
-                </label>
-                <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_layout" data-value="radial" autocomplete="off"> Radial
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-2">Labels</div>
-            <div class="col-10">
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_labels" id="tree_labels_align" autocomplete="off"> Align
-                </label>
-                <label class="btn btn-secondary btn-sm">
-                  <input type="radio" name="tree_labels" id="tree_labels_show" autocomplete="off"> Show
-                </label>
-                <label class="btn btn-secondary btn-sm active">
-                  <input type="radio" name="tree_labels" id="tree_labels_hide" autocomplete="off" checked> Hide
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-2">Text Size</div>
-            <div class="col-10"><input type="range" id="tree_font-size-slider" min="6" value="10" max="24" step="1" /></div>
-          </div>
-          <div class="form-group row">
-            <div class="col-2">Node Radius</div>
-            <div class="col-10"><input type="range" id="tree_node-size-slider" min="1" value="4" max="36" step="1" /></div>
-          </div>
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-2">Layout</div>
+      <div class="col-10">
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-secondary btn-sm active">
+            <input type="radio" name="tree_layout" data-value="rectangular" autocomplete="off" checked> Rectangular
+          </label>
+          <label class="btn btn-secondary btn-sm">
+            <input type="radio" name="tree_layout" data-value="diagonal" autocomplete="off"> Diagonal
+          </label>
+          <label class="btn btn-secondary btn-sm">
+            <input type="radio" name="tree_layout" data-value="hierarchical" autocomplete="off"> Hierarchical
+          </label>
+          <label class="btn btn-secondary btn-sm">
+            <input type="radio" name="tree_layout" data-value="circular" autocomplete="off"> Circular
+          </label>
+          <label class="btn btn-secondary btn-sm">
+            <input type="radio" name="tree_layout" data-value="radial" autocomplete="off"> Radial
+          </label>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-2">Labels</div>
+      <div class="col-10">
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-secondary btn-sm">
+            <input type="radio" name="tree_labels" id="tree_labels_align" autocomplete="off"> Align
+          </label>
+          <label class="btn btn-secondary btn-sm">
+            <input type="radio" name="tree_labels" id="tree_labels_show" autocomplete="off"> Show
+          </label>
+          <label class="btn btn-secondary btn-sm active">
+            <input type="radio" name="tree_labels" id="tree_labels_hide" autocomplete="off" checked> Hide
+          </label>
         </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-2">Text Size</div>
+      <div class="col-10"><input type="range" id="tree_font-size-slider" min="6" value="10" max="24" step="1" /></div>
+    </div>
+    <div class="form-group row">
+      <div class="col-2">Node Radius</div>
+      <div class="col-10"><input type="range" id="tree_node-size-slider" min="1" value="4" max="36" step="1" /></div>
+    </div>
+  </div>
 
   <div id="export_tree_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
@@ -154,6 +141,15 @@
         $(window).trigger('node_selected');
       });
     }
+
+    $('#toggle_tree_settings').click(function(){
+      var pane = $('#tree_settings_pane');
+      if(pane.is(':visible')){
+        pane.animate({left: '-400px'}, function(){ pane.hide(); });
+      } else {
+        pane.show(0, function(){ pane.animate({left: '0px'}); });
+      }
+    });
 
     $('[name="tree_distanceMetric"]').change(function(){
       redrawTree();

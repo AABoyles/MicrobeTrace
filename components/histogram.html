@@ -1,81 +1,73 @@
-  <div id="histogram_panel"></div>
+<div id="histogram_panel"></div>
 
   <div class="view_controls">
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#histogram_settings_modal">
+    <button id="toggle_histogram_settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
   </div>
 
-  <div class="modal fade" id="histogram_settings_modal" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Histogram Settings</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="container">
-            <div class="form-group row">
-              <div class="col-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="axis" id="histogram_xAxis" autocomplete="off" checked> X
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="axis" id="histogram_yAxis" autocomplete="off"> Y
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the histogram be drawn from only stuff thats visible in the network, or all the data?">Dataset</a></div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="set" id="histogram_vislinks" autocomplete="off" checked> Only Visible Elements
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="set" id="histogram_alllinks" autocomplete="off"> All Elements
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
-              <div class="col-9"><select id="histogram_variable" class="custom-select custom-select-sm"><option selected>distance</option></select></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="scale" id="histogram_linearScale" autocomplete="off" checked> Linear
-                  </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="scale" id="histogram_logScale" autocomplete="off"> Log
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
-              <div class="col-9"><input type="color" id="histogram_color" value="#5656ff" /></div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-              <div class="col-9"><input type="color" id="histogram_network-color" class="triggers" value="#ffffff" /></div>
+  <div id="histogram_settings_pane" class="left_pane">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#histogramConfigurations" id="histogram-tab" class="nav-link active" aria-controls="histogram" role="tab" data-toggle="tab">Histogram</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="histogramConfigurations" role="tabpanel" aria-labelledby="histogram-tab">
+        <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary active">
+                <input type="radio" name="axis" id="histogram_xAxis" autocomplete="off" checked> X
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" name="axis" id="histogram_yAxis" autocomplete="off"> Y
+              </label>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the histogram be drawn from only stuff thats visible in the network, or all the data?">Dataset</a></div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary active">
+                <input type="radio" name="set" id="histogram_vislinks" autocomplete="off" checked> Only Visible Elements
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" name="set" id="histogram_alllinks" autocomplete="off"> All Elements
+              </label>
+            </div>
+          </div>
         </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+        <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
+          <div class="col-9"><select id="histogram_variable" class="custom-select custom-select-sm"><option selected>distance</option></select></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary active">
+                <input type="radio" name="scale" id="histogram_linearScale" autocomplete="off" checked> Linear
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" name="scale" id="histogram_logScale" autocomplete="off"> Log
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
+          <div class="col-9"><input type="color" id="histogram_color" value="#5656ff" /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
+          <div class="col-9"><input type="color" id="histogram_network-color" class="triggers" value="#ffffff" /></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
   (function(){
@@ -117,6 +109,15 @@
         displayModeBar: false
       });
     }
+
+    $('#toggle_histogram_settings').click(function(){
+      var pane = $('#histogram_settings_pane');
+      if(pane.is(':visible')){
+        pane.animate({left: '-400px'}, function(){ pane.hide(); });
+      } else {
+        pane.show(0, function(){ pane.animate({left: '0px'}); });
+      }
+    });
 
     $('#histogram_network-color').on('input', function(e){
       $('rect.bg').css('fill', e.target.value);
