@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-04-06
+# 2018-04-18
 
 CACHE:
 index.html
@@ -20,6 +20,7 @@ components/timeline.html
 scripts/aligner.js
 scripts/common.js
 scripts/compute-dm.js
+scripts/compute-links.js
 scripts/compute-mst.js
 vendor/3d-force-graph.min.js
 vendor/bootstrap-filestyle.min.js
@@ -41,8 +42,10 @@ img/image32.ico
 img/image32.png
 img/image64.ico
 img/image64.png
+img/spinner.gif
+node_modules/underscore/underscore-min.js
+node_modules/udc/udc.js
 node_modules/vue/dist/vue.min.js
-node_modules/lodash/lodash.min.js
 node_modules/jquery/dist/jquery.min.js
 node_modules/popper.js/dist/umd/popper.min.js
 node_modules/bootstrap/dist/js/bootstrap.min.js
@@ -59,10 +62,10 @@ node_modules/chosen-js/chosen.jquery.min.js
 node_modules/d3-force-attract/dist/d3-force-attract.min.js
 node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
 node_modules/d3-force-3d/build/d3-force-3d.min.js
+node_modules/bioseq/dist/bioseq.min.js
 node_modules/d3-sankey/build/d3-sankey.min.js
 node_modules/phylocanvas/dist/phylocanvas.min.js
 node_modules/msa/dist/msa.js
-node_modules/lodash/lodash.min.js
 node_modules/vis/dist/vis.min.js
 node_modules/moment/min/moment-with-locales.min.js
 node_modules/bootstrap/dist/css/bootstrap.min.css
