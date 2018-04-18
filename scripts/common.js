@@ -11,7 +11,8 @@ app.dataSkeleton = function(){
     trees: {},
     nodeFields: ['id', 'index', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
     linkFields: ['id', 'index', 'source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
-    clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected']
+    clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected'],
+    reference: 'CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC'
   };
 };
 
@@ -70,9 +71,17 @@ app.defaultLink = function(){
 };
 
 app.addLink = function(newLink){
-  var oldLink = session.data.links.find(l => l.source === newLink.source & l.target === newLink.target);
+  var oldLink = session.data.links.find(l => {
+    return (
+      (l.source === newLink.source & l.target === newLink.target) |
+      (l.source === newLink.target & l.target === newLink.source)
+    );
+  });
   if(oldLink){
-    if(newLink.origin) newLink.origin = newLink.origin.concat(oldLink.origin);
+    if(newLink.origin){
+      if(oldLink.origin.includes(newLink.origin)) return 0;
+      newLink.origin = newLink.origin.concat(oldLink.origin);
+    }
     Object.assign(oldLink, newLink);
     return 0;
   } else {
@@ -112,6 +121,44 @@ app.parseNewick = function(a){
     }
   }
   return r;
+};
+
+app.align = function(params){
+  if(!params.cores) params.cores = 2;
+  var n = params.nodes.length;
+  var aligners = Array(params.cores);
+  var nPerI = Math.ceil(n/params.cores);
+  var returned = 0;
+  var output = [];
+  for(var i = 0; i < params.cores; i++){
+    aligners[i] = new Worker('scripts/aligner.js');
+    aligners[i].onmessage = function(response){
+      output = output.concat(response.data);
+      if(++returned === aligners.length){
+        var minPadding = Number.MAX_SAFE_INTEGER,
+            maxLength = 0;
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          if(minPadding > d.padding) minPadding = d.padding;
+        }
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
+          if(maxLength < d.seq.length) maxLength = d.seq.length;
+        }
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          d.seq = d.seq + '-'.repeat(maxLength - d.seq.length)
+        }
+        params.callback(output);
+      }
+    };
+    var subset = Object.assign({}, params, {
+      nodes: params.nodes.slice(i*nPerI, Math.min((i+1)*nPerI, n)),
+      callback: undefined
+    });
+    aligners[i].postMessage(subset);
+  }
 };
 
 app.titleize = function(title){
@@ -160,7 +207,7 @@ app.DFS = function(node){
       l.cluster = session.data.clusters.length - 1;
       var cluster = session.data.clusters[session.data.clusters.length - 1];
       cluster.links++;
-      cluster.sum_distances += l[lsv];
+      cluster.sum_distances += parseFloat(l[lsv]);
       if(!l.source.cluster) app.DFS(l.source);
       if(!l.target.cluster) app.DFS(l.target);
     }
@@ -286,7 +333,8 @@ app.unparseMEGA = function(nodes){
 };
 
 app.unparseDM = function(dm){
-  return ',' + session.data.distance_matrix.labels.join(',') + '\n' +
+  var labels = session.data.distance_matrix.labels;
+  return ',' + labels.join(',') + '\n' +
     dm
       .map((row, i) => labels[i] + ',' + row.join(','))
       .join('\n');
@@ -294,71 +342,58 @@ app.unparseDM = function(dm){
 
 app.unparseSVG = function(svgNode){
 	svgNode.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
-	var cssStyleText = getCSSStyles(svgNode);
-	appendCSS(cssStyleText, svgNode);
+  var selectorTextArr = [];
 
+  // Add Parent element Id and Classes to the list
+  selectorTextArr.push( '#'+svgNode.id );
+  for (var c = 0; c < svgNode.classList.length; c++){
+    if (!('.'+svgNode.classList[c]).includes(selectorTextArr)){
+      selectorTextArr.push('.'+svgNode.classList[c]);
+    }
+  }
+
+  // Add Children element Ids and Classes to the list
+  var nodes = svgNode.getElementsByTagName('*');
+  for(var i = 0; i < nodes.length; i++){
+    var id = nodes[i].id;
+    if(!('#'+id).includes(selectorTextArr)){
+      selectorTextArr.push( '#'+id );
+    }
+    var classes = nodes[i].classList;
+    for(var c = 0; c < classes.length; c++){
+      if(!('.'+classes[c]).includes(selectorTextArr)){
+        selectorTextArr.push('.'+classes[c]);
+      }
+    }
+  }
+
+  // Extract CSS Rules
+  var extractedCSSText = '';
+  for (var i = 0; i < document.styleSheets.length; i++) {
+    var s = document.styleSheets[i];
+    try {
+      if(!s.cssRules) continue;
+    } catch(e){
+      if(e.name !== 'SecurityError') throw e; // for Firefox
+      continue;
+    }
+    var cssRules = s.cssRules;
+    for (var r = 0; r < cssRules.length; r++) {
+      if(!cssRules[r].selectorText) continue;
+      if(cssRules[r].selectorText.includes(selectorTextArr)){
+        extractedCSSText += cssRules[r].cssText;
+      }
+    }
+  }
+
+  var styleElement = document.createElement('style');
+  styleElement.setAttribute('type', 'text/css');
+  styleElement.innerHTML = extractedCSSText;
+  var refNode = svgNode.hasChildNodes() ? svgNode.children[0] : null;
+  svgNode.insertBefore(styleElement, refNode);
 	var serializer = new XMLSerializer();
 	var svgString = serializer.serializeToString(svgNode);
-	svgString = svgString.replace(/(\w+)?:?xlink=/g, 'xmlns:xlink='); // Fix root xlink without namespace
-	svgString = svgString.replace(/NS\d+:href/g, 'xlink:href'); // Safari NS namespace fix
-
 	return svgString;
-
-	function getCSSStyles( parentElement ) {
-		var selectorTextArr = [];
-
-		// Add Parent element Id and Classes to the list
-		selectorTextArr.push( '#'+parentElement.id );
-		for (var c = 0; c < parentElement.classList.length; c++)
-				if ( !contains('.'+parentElement.classList[c], selectorTextArr) )
-					selectorTextArr.push( '.'+parentElement.classList[c] );
-
-		// Add Children element Ids and Classes to the list
-		var nodes = parentElement.getElementsByTagName('*');
-		for (var i = 0; i < nodes.length; i++) {
-			var id = nodes[i].id;
-			if ( !contains('#'+id, selectorTextArr) )
-				selectorTextArr.push( '#'+id );
-
-			var classes = nodes[i].classList;
-			for (var c = 0; c < classes.length; c++)
-				if ( !contains('.'+classes[c], selectorTextArr) )
-					selectorTextArr.push( '.'+classes[c] );
-		}
-
-		// Extract CSS Rules
-		var extractedCSSText = '';
-		for (var i = 0; i < document.styleSheets.length; i++) {
-			var s = document.styleSheets[i];
-
-			try {
-			    if(!s.cssRules) continue;
-			} catch( e ) {
-		    		if(e.name !== 'SecurityError') throw e; // for Firefox
-		    		continue;
-		    	}
-
-			var cssRules = s.cssRules;
-			for (var r = 0; r < cssRules.length; r++) {
-				if ( contains( cssRules[r].selectorText, selectorTextArr ) )
-					extractedCSSText += cssRules[r].cssText;
-			}
-		}
-
-		return extractedCSSText;
-
-		function contains(str,arr) {
-			return arr.indexOf( str ) === -1 ? false : true;
-		}
-	}
-
-	function appendCSS( cssText, element ) {
-		var styleElement = document.createElement('style');
-		styleElement.setAttribute('type','text/css');
-		styleElement.innerHTML = cssText;
-		var refNode = element.hasChildNodes() ? element.children[0] : null;
-		element.insertBefore( styleElement, refNode );
-	}
 };
 
 app.blobifySVG = function(svgString, width, height, format, callback){
@@ -374,9 +409,8 @@ app.blobifySVG = function(svgString, width, height, format, callback){
 	image.onload = function() {
 		context.clearRect ( 0, 0, width, height );
 		context.drawImage(image, 0, 0, width, height);
-		canvas.toBlob( function(blob) {
-			var filesize = Math.round( blob.length/1024 ) + ' KB';
-			if ( callback ) callback( blob, filesize );
+		canvas.toBlob(function(blob){
+			if(callback) callback(blob);
 		});
 	};
 	image.src = imgsrc;

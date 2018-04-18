@@ -1,56 +1,42 @@
   <div id="timeline-wrapper"></div>
 
   <div class="view_controls">
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#timeline_settings_modal">
+    <button type="button" id="toggle_timeline_settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
   </div>
 
-  <div id="timeline_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Timeline Options</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <div id="timeline_settings_pane" class="left_pane">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#timelineConfigurations" id="timeline-tab" class="nav-link active" aria-controls="timeline" role="tab" data-toggle="tab">Timeline</a>
+      </li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="timelineConfigurations" role="tabpanel" aria-labelledby="timeline-tab">
+        <div class="form-group row">
+          <div class="col-3">Date Column</div>
+          <div class="col-9"><select id="date-column" class="custom-select custom-select-sm nodeVariables">
+            <option>None</option>
+            <option value="date" selected>Date</option>
+          </select></div>
         </div>
-        <div class="modal-body">
-          <!-- Nav tabs -->
-          <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item active">
-              <a href="#timelineConfigurations" id="timeline-tab" class="nav-link active" aria-controls="timeline" role="tab" data-toggle="tab">Timeline</a>
-            </li>
-          </ul>
-          <!-- Tab panes -->
-          <div class="tab-content">
-            <div class="tab-pane fade show active" id="timelineConfigurations" role="tabpanel" aria-labelledby="timeline-tab">
-              <div class="form-group row">
-                <div class="col-3">Date Column</div>
-                <div class="col-9"><select id="date-column" class="custom-select custom-select-sm nodeVariables">
-                  <option>None</option>
-                  <option value="date" selected>Date</option>
-                </select></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+      </div>
+    </div>
+  </div>
 
   <script type="text/javascript" src="node_modules/vis/dist/vis.min.js"></script>
   <script type="text/javascript" src="node_modules/moment/min/moment-with-locales.min.js"></script>
   <script type="text/javascript">
-  var timeline = {destroy: function(){}};
-
   (function(){
+    session.timeline = {destroy: function(){}};
 
     function drawTimeline(){
-      timeline.destroy();
+      session.timeline.destroy();
       var field = $('#date-column').val();
-      timeline = new vis.Timeline(
+      session.timeline = new vis.Timeline(
         document.getElementById('timeline-wrapper'),
         session.data.nodes
           .filter(d => d[field] && d.visible)
@@ -65,7 +51,7 @@
           'multiselect': true
         }
       );
-      timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
+      session.timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
     }
 
     $('#date-column').change(drawTimeline);
@@ -81,13 +67,13 @@
 
       var field = $('#date-column').val();
 
-      timeline.addCustomTime(_.max(session.data.nodes.map(d => moment('' + d[field]))));
+      session.timeline.addCustomTime(_.max(session.data.nodes.map(d => moment('' + d[field]))));
 
-      timeline.on('timechanged', function(e){
+      session.timeline.on('timechanged', function(e){
         var field = $('#date-column').val();
         session.state.time = moment(e.time);
         app.setNodeVisibility();
-        timeline.setItems(session.data.nodes
+        session.timeline.setItems(session.data.nodes
           .filter(d => d[field] && d.visible)
           .map(d => ({
             id: d.id,
@@ -97,14 +83,23 @@
           })));
       });
 
-      timeline.on('select', function(properties){
+      session.timeline.on('select', function(properties){
         session.data.nodes.forEach(d => d.selected = properties.items.includes(d.id));
         $(window).trigger('node_selected');
       });
     }, 100);
 
     $(window).on('node_selected', e => {
-      timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
+      session.timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
+    });
+
+    $('#toggle_timeline_settings').click(function(){
+      var pane = $('#timeline_settings_pane');
+      if(pane.is(':visible')){
+        pane.animate({left: '-400px'}, function(){ pane.hide(); });
+      } else {
+        pane.show(0, function(){ pane.animate({left: '0px'}); });
+      }
     });
 
   })();

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-03-29
+# 2018-04-06
 
 CACHE:
 index.html
@@ -60,6 +60,7 @@ node_modules/d3-force-attract/dist/d3-force-attract.min.js
 node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
 node_modules/d3-force-3d/build/d3-force-3d.min.js
 node_modules/d3-sankey/build/d3-sankey.min.js
+node_modules/phylocanvas/dist/phylocanvas.min.js
 node_modules/msa/dist/msa.js
 node_modules/lodash/lodash.min.js
 node_modules/vis/dist/vis.min.js
@@ -77,8 +78,9 @@ node_modules/msa/css/msa.css
 data/cities.json
 data/counties.json
 data/countries.json
-data/life.txt
+data/labels.json
 data/states.json
+data/tracts.json
 data/zipcodes.json
 
 NETWORK:

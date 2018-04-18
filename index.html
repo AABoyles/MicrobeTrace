@@ -32,10 +32,8 @@
           <a href="#" id="ExportDataTab" class="dropdown-item" data-toggle="modal" data-target="#export_modal">Export Data</a>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
-            <div class="custom-file">
-              <input type="file" class="custom-file-input" id="OpenTab"></input>
-              <label class="custom-file-label" for="OpenTab">Open</label>
-            </div>
+            <input type="file" class="d-none" id="OpenTab"></input>
+            <label class="mb-0" for="OpenTab">Open</label>
           </a>
           <a href="#" id="FileTab" class="dropdown-item">New</a>
           <div class="dropdown-divider"></div>
@@ -347,10 +345,9 @@ performance of this software.</pre>
     </div>
   </div>
 
-  <script id="HXB2pol" type="sequence">CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC</script>
-
+  <script type="text/javascript" src="node_modules/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="node_modules/udc/udc.js"></script>
   <script type="text/javascript" src="node_modules/vue/dist/vue.min.js"></script>
-  <script type="text/javascript" src="node_modules/lodash/lodash.min.js"></script>
   <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
   <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -370,6 +367,13 @@ performance of this software.</pre>
   <script type="text/javascript">
   $(function(){
     'use strict';
+
+    if(navigator.onLine && window.applicationCache.status !== window.applicationCache.UNCACHED){
+      window.applicationCache.update();
+      if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
+        window.applicationCache.swapCache();
+      }
+    }
 
     window.session = app.sessionSkeleton();
 
@@ -426,18 +430,6 @@ performance of this software.</pre>
       }
     });
 
-    $('#SaveImageTab').click(function(){
-      $('.hideForScreenshot, .view_controls').hide();
-      setTimeout(function(){
-        html2canvas($('.lm_items').get(0)).then(function(canvas){
-          canvas.toBlob(function(blob){
-            saveAs(blob, 'MicrobeTraceImage.png');
-          });
-          $('.hideForScreenshot, .view_controls').show();
-        });
-      }, 1);
-    });
-
     $('#ExitTab').click(function(){ window.open('','_self').close(); });
 
     $('#FindTab').click(function(e){ $('#search').focus(); });
@@ -484,10 +476,18 @@ performance of this software.</pre>
             .attr('width', width)
             .attr('height', height);
 
-      var lsv = $('#linkSortVariable').val();
-      var data = session.data.links.map(function(l){ return parseFloat(l[lsv]); }),
-        min = Math.min(...data),
-        max = Math.max(...data);
+      var lsv = $('#linkSortVariable').val(),
+          n = session.data.links.length,
+          max = Number.MIN_SAFE_INTEGER,
+          min = Number.MAX_SAFE_INTEGER,
+          data = Array(n);
+      for(var i = 0; i < n; i++){
+        var x = parseFloat(session.data.links[i][lsv]);
+        data[i] = x;
+        if(x < min) min = x;
+        if(x > max) max = x;
+      }
+      var range = max - min;
 
       var x = d3.scaleLinear()
         .domain([min, max])
@@ -514,8 +514,7 @@ performance of this software.</pre>
           .attr('height', function(d) { return height - y(d.length); });
 
       function updateThreshold(){
-        var x = d3.mouse(svg.node())[0],
-            range = max - min;
+        var x = d3.mouse(svg.node())[0];
         session.state.linkThreshold = x / width * range + min;
         $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
       }
@@ -547,6 +546,8 @@ performance of this software.</pre>
             .on('mouseup', null);
         });
       });
+
+      $('#default-link-threshold').val(parseFloat((range/5 + min).toLocaleString()));
     };
 
     $('#linkSortVariable').on('change', function(){

@@ -29,15 +29,6 @@ a:hover, a:focus {
   color: #555;
   text-decoration: none;
 }
-.custom-file-label{
-  border: none;
-  padding-left: 0;
-  color: #212529;
-  background: none;
-}
-.custom-file-label::after{
-  display: none;
-}
 #export-dm-row{
   display: none;
 }
@@ -65,6 +56,31 @@ svg#link-threshold-sparkline{
   width: 280px;
   height: 48px;
 }
+.left_pane{
+  position: absolute;
+  top: 0px;
+  left: -400px;
+  display: none;
+  width: 400px;
+  height: 100%;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+.left_pane .nav{
+  padding-top: 40px;
+}
+.left_pane .active{
+  background:#ffffff;
+  border-width: 2px;
+  border-color: #ffffff #ffffff transparent #ffffff;
+}
+.left_pane div.tab-content{
+  background:#ffffff;
+}
+input[type="color"]{
+  width: 100%;
+}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after{
@@ -89,7 +105,7 @@ svg#link-threshold-sparkline{
   box-shadow: none!important;
 }
 .tab-pane {
-  border: 1px solid #dee2e6;
+  border: 2px solid #ffffff;
   border-top: none;
   border-bottom-left-radius: .25rem;
   border-bottom-right-radius: .25rem;
@@ -147,12 +163,16 @@ td {
 #alignerControlsButton {
   display: none;
 }
-#reference {
-  width: 100%;
-  height: 606px;
-  background-color: #f5f5f5;
-  resize: vertical;
-  font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+.custom-file-input{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#alignmentPreview{
+  min-height: 115px;
+  max-height: 200px;
+  overflow-x: scroll;
+  overflow-y: auto;
 }
 .bootstrap-filestyle.input-group{
   display: inline;
@@ -178,9 +198,6 @@ input[type="range"]{
 }
 
 /* 2D NETWORK */
-#network {
-
-}
 #nodes path {
   cursor: -webkit-grab;
 }
@@ -267,25 +284,18 @@ input[type="range"]{
   text-overflow: '';
 }
 
+/* 3D Network */
+.graph-nav-info{
+  display: none;
+}
+
 /* FLOW DIAGRAM */
 #flow_diagram{
   margin: 15px;
   margin-top: 50px;
 }
-#flow_source_side, #flow_target_side{
-  position: absolute;
-  top: 10px;
-  width: auto;
-}
-#flow_source_side{
-  left: 10px;
-}
-#flow_target_side{
-  right: 10px;
-}
 
 /* MAP */
-
 #map_panel{
   width: 100%;
   height: 100%;
@@ -350,12 +360,14 @@ g#labels text.Country{
   animation-timing-function: linear; */
 }
 
-
 /* Sequences */
 #sequences_panel {
-  padding: 15px;
   height: 100%;
-  overflow: auto;
+}
+.smenubar{
+  position:absolute;
+  top: 13px;
+  left: 80px;
 }
 .smenubar .smenubar_alink {
   border-radius: .25rem !important;
@@ -363,12 +375,17 @@ g#labels text.Country{
   border: 1px solid #cccccc !important;
   color: #212529 !important;
   background-color: #f8f9fa !important;
+  padding: 8px 4px !important;
 }
 .smenubar .smenubar_alink:hover {
 
 }
 .smenu-dropdown {
   top: 38px !important;
+}
+.biojs_msa_stage{
+  position: absolute;
+  top: 50px;
 }
 
 /* Phylogenetic tree */
@@ -404,7 +421,20 @@ g#labels text.Country{
 #table-type-panel{
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 85px;
+  display: flex;
+  z-index: 2;
+}
+#table-type-panel .chosen-container{
+  margin-left: 8px;
+}
+#table-type-panel ul.chosen-choices{
+  border-radius: .25rem;
+  padding: 2px;
+}
+#table-type-panel .search-choice{
+  background-image: none;
+  background-color: #f8f9fa;
 }
 #table-wrapper{
   position: absolute;

@@ -7,7 +7,7 @@
   "repository": "https://github.com/AABoyles/WebMicrobeTrace.git",
   "engines": {
     "node": "9.8.0",
-    "yarn": "1.5.1"
+    "yarn": "^1.6.0"
   },
   "scripts": {
     "appcache": "sh appcache.sh",
@@ -38,7 +38,6 @@
     "golden-layout": "^1.5.9",
     "html2canvas": "^1.0.0-alpha.10",
     "jquery": "^3.3.1",
-    "lodash": "^4.17.5",
     "msa": "^1.0.3",
     "open-iconic": "^1.1.1",
     "papaparse": "^4.3.6",
@@ -47,6 +46,8 @@
     "popper.js": "^1.12.9",
     "screenfull": "^3.3.2",
     "tn93": "^0.1.1",
+    "udc": "^1.0.1",
+    "underscore": "^1.8.3",
     "vis": "^4.21.0",
     "vue": "^2.5.16",
     "xss": "^0.3.7"
