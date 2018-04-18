@@ -4,6 +4,9 @@
     <button type="button" id="toggle_scatterplot_settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_scatterplot_modal" title="Export Scatterplot">
+      <span class="oi oi-data-transfer-download"></span>
+    </button>
   </div>
 
   <div id="scatterplot_settings_pane" class="left_pane">
@@ -64,6 +67,36 @@
     </div>
   </div>
 
+  <div id="export_scatterplot_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Export Scatterplot Image</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group row">
+            <div class="col-9">
+              <input type="text" id="export-scatterplot-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            </div>
+            <div class="col-3">
+              <select id="export-scatterplot-file-type" class="form-control form-control-sm">
+                <option selected>png</option>
+                <option>svg</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+          <button type="button" id="scatterplot_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
   <script>
   (function(){
     var plot;
@@ -119,6 +152,20 @@
 
     $('#scatterplot_alllinks, #scatterplot_vislinks, #scatterplot_logScale, #scatterplot_linearScale').change(redrawScatterplot);
     $('#scatterplot_xVar, #scatterplot_yVar, #scatterplot_color').change(redrawScatterplot);
+
+    $('#scatterplot_export').click(function(){
+      var network = $('#scatterplot_panel .main-svg').get(0);
+      var content = app.unparseSVG(network);
+      var filetype = $('#export-scatterplot-file-type').val();
+      if(filetype === 'svg'){
+        var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        saveAs(blob, $('#export-scatterplot-file-name').val() + '.' + filetype);
+      } else {
+        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+          saveAs(blob, $('#export-scatterplot-file-name').val() + '.' + filetype);
+        });
+      }
+    });
 
     setTimeout(redrawScatterplot, 80);
   })();
