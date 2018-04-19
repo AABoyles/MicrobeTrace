@@ -458,15 +458,34 @@
     var output = [];
     var n = vlinks.length;
     for(var i = 0; i < n; i++){
-      vlinks[i].origin.forEach((o, j, l) => {
+      if(vlinks[i].origin){
+        if(typeof vlinks[i].origin === 'object'){
+          vlinks[i].origin.forEach((o, j, l) => {
+            output.push(Object.assign({}, vlinks[i], {
+              origin: o,
+              oNum: j,
+              origins: l.length,
+              source: session.data.nodes.find(d => d.id === vlinks[i].source),
+              target: session.data.nodes.find(d => d.id === vlinks[i].target)
+            }));
+          });
+        } else {
+          output.push(Object.assign({}, vlinks[i], {
+            oNum: 0,
+            origins: 1,
+            source: session.data.nodes.find(d => d.id === vlinks[i].source),
+            target: session.data.nodes.find(d => d.id === vlinks[i].target)
+          }));
+        }
+      } else {
         output.push(Object.assign({}, vlinks[i], {
-          origin: o,
-          oNum: j,
-          origins: l.length,
+          origin: 'Unknown',
+          oNum: 0,
+          origins: 1,
           source: session.data.nodes.find(d => d.id === vlinks[i].source),
           target: session.data.nodes.find(d => d.id === vlinks[i].target)
         }));
-      });
+      }
     }
     return output;
   }
