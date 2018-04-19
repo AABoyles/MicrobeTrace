@@ -90,6 +90,29 @@ app.addLink = function(newLink){
   }
 };
 
+app.parseHIVTrace = function(hivtrace){
+  hivtrace['trace_results']['Nodes'].forEach(node => {
+    var newNode = UltraDeepClone(node.patient_attributes);
+    newNode.id = node.id;
+    newNode.origin = 'HIVTRACE Import';
+    app.addNode(newNode);
+  });
+  Object.keys(hivtrace['trace_results']['Nodes'][0]['patient_attributes']).forEach(key => {
+    if(!session.data.nodeFields.includes(key)) session.data.nodeFields.push(key);
+  });
+  var n = hivtrace['trace_results']['Edges'].length;
+  for(var i = 0; i < n; i++){
+    var link = hivtrace['trace_results']['Edges'][i];
+    app.addLink({
+      'source': '' + link.sequences[0],
+      'target': '' + link.sequences[1],
+      'distance': parseFloat(link.length),
+      'origin': ['HIVTRACE Import'],
+      'visible': 1
+    });
+  }
+};
+
 app.parseFASTA = function(text){
   if(!text || text.length === 0) return []
   var seqs = [], currentSeq = {};
