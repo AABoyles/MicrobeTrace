@@ -417,28 +417,80 @@ app.blobifySVG = function(svgString, width, height, format, callback){
 };
 
 app.exportHIVTRACE = function(){
+  var links = session.data.links.filter(l => l.visible);
+  var geneticLinks = links.filter(l => l.origin.includes('Genetic Distance'));
+  var sequences = Array.from(new Set([...geneticLinks.map(l => l.source), ...geneticLinks.map(l => l.target)]));
+  var pas = {};
+  session.data.nodes.forEach(d => {
+    Object.keys(d).forEach(key => {
+      if(pas[key]) return;
+      pas[key] = {
+        label: key,
+        type: app.titleize(typeof d[key])
+      }
+    });
+  });
   return JSON.stringify({
     'trace_results': {
-      'HIV Stages': {},
-      'Degrees': {},
-      'Multiple sequences': {},
-      'Edge Stages': {},
       'Cluster sizes': session.data.clusters.map(c => c.size),
+      'Degrees': {
+        'Distribution': [],
+        'Model': 'Waring',
+        'fitted': [],
+        'rho': 0,
+        'rho CI': [-1, 1]
+      },
+      'Directed Edges': {
+        'Count': 0,
+        'Reasons for unresolved directions': {
+          'Missing dates': links.length
+        }
+      },
+      'Edge Stages': {},
+      'Edges': links.map(l => ({
+        'attributes': ['BULK'],
+        'directed': false,
+        'length': l.distance,
+        'removed': false,
+        'sequences': [l.source, l.target],
+        'source': session.data.nodes.findIndex(d => d.id === l.source),
+        'support': 0,
+        'target': session.data.nodes.findIndex(d => d.id === l.target)
+      })),
+      'HIV Stages': {
+        "A-1": 0,
+        "A-2": 0,
+        "A-3": 0,
+        "Chronic": session.data.nodes.length,
+        "E-1": 0,
+        "E-2": 0,
+        "E-3": 0
+      },
+      'Multiple sequences': {
+        'Followup, days': null,
+        'Subjects with': 0
+      },
+      'Network Summary': {
+        'Clusters': session.data.clusters.length,
+        'Edges': links.length,
+        'Nodes': session.data.nodes.length,
+        'Sequences used to make links': sequences.length
+      },
+      'Nodes': session.data.nodes.map(d => ({
+        'attributes': [],
+        'baseline': null,
+        'cluster': d.cluster,
+        'edi': null,
+        'id': d.id,
+        'patient_attributes': d
+      })),
+      'patient_attribute_schema': pas,
       'Settings': {
         'contaminant-ids': [],
         'contaminants': 'remove',
         'edge-filtering': 'remove',
         'threshold': $('#default-link-threshold').val()
       },
-      'Network Summary': {
-        'Sequences used to make links': session.data.links.filter(l => l.origin.includes('Genetic Distance')).length,
-        'Clusters': session.data.clusters.length,
-        'Edges': session.data.links.filter(l => l.visible).length,
-        'Nodes': session.data.nodes.length
-      },
-      'Directed Edges': {},
-      'Edges': session.data.links,
-      'Nodes': session.data.nodes
     }
   }, null, 2)
 };
