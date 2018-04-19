@@ -277,8 +277,8 @@
   function brushed(){
     if(d3.event.sourceEvent.type === 'end') return;
     var selection = [
-      session.state.transform.invert(d3.event.selection[0]),
-      session.state.transform.invert(d3.event.selection[1])
+      session.network.transform.invert(d3.event.selection[0]),
+      session.network.transform.invert(d3.event.selection[1])
     ];
     if(selection == null) return;
     var node = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes.filter(d => d.visible));
@@ -311,7 +311,7 @@
 
   function zoomed(){
     session.network.svg.attr('transform', d3.event.transform);
-    session.state.transform = d3.event.transform;
+    session.network.transform = d3.event.transform;
   }
 
   var width  = $('#network').parent().width(),
@@ -919,7 +919,7 @@
       .selectAll('g.node')
       .data(session.data.nodes.filter(d => d.visible))
       .select('path');
-    if(session.state.allPinned){
+    if(session.network.allPinned){
       nodes.each(function(d){
         delete d.fx;
         delete d.fy;
@@ -933,7 +933,7 @@
         d.fixed = true;
       });
     }
-    session.state.allPinned = !session.state.allPinned;
+    session.network.allPinned = !session.network.allPinned;
   });
 
   $('#RevealAllTab').click(function(e) {

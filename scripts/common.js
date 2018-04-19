@@ -21,6 +21,8 @@ app.sessionSkeleton = function(){
     files: [],
     data: app.dataSkeleton(),
     state: {
+      linkThreshold: 0.015,
+      time: 0
     },
     messages: []
   };
