@@ -85,10 +85,8 @@
 
     function drawGraph3D(){
       var lc = $('#3d_network_default-link-color').val();
-      var pv = $('#linkSortVariable').val();
-      var t = $('#default-link-threshold').val();
       var nodeColor = $('#3d_network_default-node-color').val();
-      var links = UltraDeepClone(session.data.links.filter(l => l[pv] < t));
+      var links = UltraDeepClone(session.data.links.filter(l => l.visible));
       var nodes = UltraDeepClone(session.data.nodes);
       nodes.forEach(d => {
         delete d.x;

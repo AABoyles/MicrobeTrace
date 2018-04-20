@@ -267,6 +267,7 @@ app.setLinkVisibility = function(){
   var metric  = $('#linkSortVariable').val(),
       threshold = $('#default-link-threshold').val(),
       showMST = $('#showMSTLinks').is(':checked');
+  session.state.linkThreshold = threshold;
   session.data.links.forEach(link => {
     link.visible = 1;
     if(metric !== 'none'){
@@ -510,7 +511,7 @@ app.exportHIVTRACE = function(){
         'contaminant-ids': [],
         'contaminants': 'remove',
         'edge-filtering': 'remove',
-        'threshold': $('#default-link-threshold').val()
+        'threshold': session.state.linkThreshold
       },
     }
   }, null, 2)
