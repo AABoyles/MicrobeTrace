@@ -261,43 +261,12 @@ performance of this software.</pre>
         </div>
         <div class="modal-body">
           <div class="form-group row">
-            <div class="col-12">
-              <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="export-options" data-type="links" autocomplete="off" checked>Link</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-options" data-type="nodes" autocomplete="off">Node</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-options" data-type="distmat" autocomplete="off">Distance Matrix</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-options" data-type="hivtrace" autocomplete="off">HIVTrace</input>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div id="export-dm-row" class="form-group row">
-            <div class="col-12">
-              <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="export-dms" data-type="tn93" autocomplete="off" checked>TN93</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-dms" data-type="snps" autocomplete="off">SNPs</input>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group row">
             <div class="col-9">
               <input type="text" id="export-file-name" class="form-control form-control-sm" placeholder="Filename" />
             </div>
             <div class="col-3">
               <select id="export-file-format" class="form-control form-control-sm">
-                <option selected>csv</option>
-                <option>json</option>
+                <option selected>hivtrace</option>
               </select>
             </div>
           </div>
@@ -600,49 +569,11 @@ performance of this software.</pre>
       app.computeDegree();
     });
 
-    $('[name="export-options"]').change(function(e){
-      var type = $('[name="export-options"]:checked').data('type');
-      if(type === 'nodes'){
-        $('#export-dm-row').slideUp();
-        $('#export-file-format').html('<option>csv</option><option>json</option><option>fasta</option><option>mega</option>');
-      } else if(type === 'links'){
-        $('#export-dm-row').slideUp();
-        $('#export-file-format').html('<option selected>csv</option><option>json</option>');
-      } else if(type === 'distmat'){
-        $('#export-dm-row').slideDown();
-        $('#export-file-format').html('<option selected>csv</option>');
-      } else if(type === 'hivtrace'){
-        $('#export-dm-row').slideUp();
-        $('#export-file-format').html('<option selected>hivtrace</option>');
-      }
-    });
-
     $('#export-data').click(function(){
       var mime = 'application/json;';
-      var handler = JSON.stringify;
       var format = $('#export-file-format').val();
-      if(format === 'csv'){
-        mime = 'text/csv;';
-        handler = Papa.unparse;
-      } else if(format === 'fasta'){
-        mime = 'application/fasta;';
-        handler = app.unparseFASTA;
-      } else if(format === 'mega'){
-        mime = 'application/mega;';
-        handler = app.unparseMEGA;
-      }
-      var data = session.data.nodes;
-      var type = $('[name="export-options"]:checked').data('type');
-      if(type === 'links'){
-        data = session.data.links;
-      } else if(type === 'distmat'){
-        data = session.data.distance_matrix[$('[name="export-dms"]:checked').data('type')];
-        handler = app.unparseDM;
-      } else if(type === 'hivtrace'){
-        handler = app.exportHIVTRACE;
-      }
       var name = $('#export-file-name').val();
-      var blob = new Blob([handler(data)], {type: mime + 'charset=utf-8'});
+      var blob = new Blob([app.exportHIVTRACE()], {type: mime + 'charset=utf-8'});
       saveAs(blob, name + '.' + format);
     });
 
