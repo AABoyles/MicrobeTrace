@@ -10,46 +10,53 @@
   </div>
 
   <div id="heatmap_settings_pane" class="left_pane">
-    <div class="container">
-      <div class="form-group row">
-        <div class="col-3">Distance Metric</div>
-        <div class="col-9">
-          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" id="heatmap_distanceMetric"></div>
-        </div>
-      </div>
-      <div class="form-group row">
-        <div class="col-3">Invert Axes</div>
-        <div class="col-9">
-          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary">
-              <input id="heatmap_invertX" type="checkbox"> X
-            </label>
-          </div>
-          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary">
-              <input id="heatmap_invertY" type="checkbox"> Y
-            </label>
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#heatmapConfigurations" id="heatmap-tab" class="nav-link active" aria-controls="heatmap" role="tab" data-toggle="tab">Heatmap</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="heatmapConfigurations" role="tabpanel" aria-labelledby="heatmap-tab">
+        <div class="form-group row">
+          <div class="col-3">Distance Metric</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" id="heatmap_distanceMetric"></div>
           </div>
         </div>
-      </div>
-      <div class="form-group row">
-        <div class="col-3">Color Scheme</div>
-        <div class="col-9">
-          <input type="color" id="heatmap_lowColor" value="#313695" />
-          <input type="color" id="heatmap_medianColor" value="#ffffbf" />
-          <input type="color" id="heatmap_highColor" value="#a50026" />
+        <div class="form-group row">
+          <div class="col-3">Invert Axes</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary">
+                <input id="heatmap_invertX" type="checkbox"> X
+              </label>
+            </div>
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary">
+                <input id="heatmap_invertY" type="checkbox"> Y
+              </label>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group row">
-        <div class="col-3">Axis Labels</div>
-        <div class="col-9">
-          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary">
-              <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
-            </label>
-            <label class="btn btn-secondary active">
-              <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
-            </label>
+        <div class="form-group row">
+          <div class="col-3">Color Scheme</div>
+          <div class="col-9">
+            <input type="color" id="heatmap_lowColor" value="#313695" />
+            <input type="color" id="heatmap_medianColor" value="#ffffbf" />
+            <input type="color" id="heatmap_highColor" value="#a50026" />
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Axis Labels</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary">
+                <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
+              </label>
+              <label class="btn btn-secondary active">
+                <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
+              </label>
+            </div>
           </div>
         </div>
       </div>
