@@ -595,6 +595,7 @@
       session.network.force.alpha(0.3).alphaTarget(0).restart();
       session.network.updateStatistics();
       session.loadTime = Date.now() - session.startTime;
+      $('.hideForHIVTrace').css('display', 'flex');
       setTimeout(function(){
         session.network.fit();
         $('#loadingInformationModal').modal('hide');

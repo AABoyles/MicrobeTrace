@@ -431,6 +431,7 @@ performance of this software.</pre>
             session.network.force.alpha(0.3).alphaTarget(0).restart();
             session.network.updateStatistics();
             session.loadTime = Date.now() - session.startTime;
+            $('.hideForHIVTrace').hide();
             setTimeout(session.network.fit, 1500);
           }, 80);
         };
