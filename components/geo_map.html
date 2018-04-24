@@ -225,19 +225,22 @@
 
     session.map.svg = d3.select('#map_panel');
 
-    session.map.lastTransform = {k:1, x:0, y:0};
+    session.map.lastTransform = d3.zoomIdentity.translate(0, 0).scale(2);
 
-    var zoom = d3.zoom().on('zoom', () => {
-      session.map.lastTransform = Object.assign({}, d3.event.transform);
-      var radius = parseFloat($('#radius').val());
-      session.map.svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', d3.event.transform);
-      session.map.svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / session.map.lastTransform.k);
-      // session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
-      // session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
-      if($('#showLabels').hasClass('active')) drawLabels();
-    });
+    session.map.zoom = d3.zoom()
+      .scaleExtent([1, 100])
+      .on('zoom', () => {
+        var e = d3.event.transform;
+        session.map.lastTransform = UltraDeepClone(e);
+        session.map.svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', session.map.lastTransform);
+        session.map.svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / e.k);
+        // var radius = parseFloat($('#radius').val());
+        // session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
+        // session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
+        if($('#showLabels').hasClass('active')) drawLabels();
+      });
 
-    session.map.svg.call(zoom);
+    session.map.svg.call(session.map.zoom);
 
     var countryLayer = session.map.svg.append('g').attr('id', 'countries');
     var stateLayer   = session.map.svg.append('g').attr('id', 'states');
@@ -503,8 +506,8 @@
       }
     });
 
-    function fitMap(thing, bounds){
-      if(!bounds) bounds = session.map.svg.node().getBBox();
+    session.map.fit = function(bounds){
+      if(!bounds) bounds = countryLayer.node().getBBox();
       if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
       var parent = session.map.svg.node().parentElement,
           midX = bounds.x + bounds.width / 2,
@@ -513,12 +516,18 @@
       session.map.svg
         .transition()
         .duration(750)
-        .call(zoom.transform, d3.zoomIdentity
+        .call(session.map.zoom.transform, d3.zoomIdentity
           .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
           .scale(scale));
     };
 
-    $('#map_fitbutton').click(fitMap);
+    $('#map_fitbutton').click(e => {
+      if(session.data.nodes.some(d => d.lat && d.lon)){
+        session.map.fit(nodeLayer.node().getBBox());
+      } else {
+        session.map.fit();
+      }
+    });
 
     $('#showStates').click(function(e){
       if(!$(this).hasClass('active')){
@@ -687,7 +696,7 @@
     drawNodes(); //No idea why this needs to be called twice, but it does.
     setTimeout(() => {
       countryWrappers.filter(d => d.id === 'USA').style('opacity', 0);
-      fitMap();
+      if(session.data.nodes.some(d => d.lat && d.lon)) session.map.fit(nodeLayer.node().getBBox());
     }, 1500);
   });
   </script>
