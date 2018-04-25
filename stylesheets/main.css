@@ -78,9 +78,6 @@ svg#link-threshold-sparkline{
 .left_pane div.tab-content{
   background:#ffffff;
 }
-input[type="color"]{
-  width: 100%;
-}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after{
