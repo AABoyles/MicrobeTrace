@@ -526,6 +526,7 @@ performance of this software.</pre>
         var x = d3.mouse(svg.node())[0];
         session.state.linkThreshold = x / width * range + min;
         $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+        $(window).trigger('updateThreshold');
       }
 
       svg.on('click', function(){
@@ -556,18 +557,19 @@ performance of this software.</pre>
         });
       });
 
-      $('#default-link-threshold').val(parseFloat((range/5 + min).toLocaleString()));
+      session.state.linkThreshold = range/5 + min;
+      $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+      $(window).trigger('updateThreshold');
     };
 
-    $('#linkSortVariable').on('change', function(){
-      app.updateThresholdHistogram();
-    });
+    $('#linkSortVariable').on('change', app.updateThresholdHistogram());
 
     $('#default-link-threshold').on('input', e => {
       app.setLinkVisibility();
       app.tagClusters();
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
+      $(window).trigger('updateThreshold');
     });
 
     $('#export-data').click(function(){

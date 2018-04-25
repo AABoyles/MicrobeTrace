@@ -17,7 +17,7 @@
   <div id="map_settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="nav-item active">
-        <a href="#mapDataConfigurations" class="nav-link active" aria-controls="mapDataConfigurations" role="tab" data-toggle="tab">Data</a>
+        <a href="#mapDataConfigurations" class="nav-link" aria-controls="mapDataConfigurations" role="tab" data-toggle="tab">Data</a>
       </li>
       <li role="presentation" class="nav-item">
         <a href="#mapNodeConfigurations" class="nav-link" aria-controls="mapNodeConfigurations" role="tab" data-toggle="tab">Nodes</a>
@@ -612,7 +612,7 @@
 
     $('#waterColor').on('input', e => session.map.svg.style('background', e.target.value));
 
-    $('#default-link-threshold').change(drawLinks);
+    $(window).on('updateThreshold', drawLinks);
 
     $('#map_export').click(function(e){
       var geojson = {
