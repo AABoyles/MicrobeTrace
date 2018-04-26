@@ -44,7 +44,7 @@ app.defaultNode = function(){
 
 app.addNode = function(newNode){
   if(typeof newNode.id === 'number') newNode.id = '' + newNode.id;
-  var oldNode = session.data.nodes.find(d => d.id === newNode.id);
+  var oldNode = session.data.nodes.find(function(d){ return d.id === newNode.id; });
   if(oldNode){
     if(newNode.origin) newNode.origin = newNode.origin.concat(oldNode.origin);
     Object.assign(oldNode, newNode);
@@ -69,7 +69,7 @@ app.defaultLink = function(){
 };
 
 app.addLink = function(newLink){
-  var oldLink = session.data.links.find(l => {
+  var oldLink = session.data.links.find(function(l){
     return (
       (l.source === newLink.source & l.target === newLink.target) |
       (l.source === newLink.target & l.target === newLink.source)
@@ -89,13 +89,13 @@ app.addLink = function(newLink){
 };
 
 app.parseHIVTrace = function(hivtrace){
-  hivtrace['trace_results']['Nodes'].forEach(node => {
+  hivtrace['trace_results']['Nodes'].forEach(function(node){
     var newNode = UltraDeepClone(node.patient_attributes);
     newNode.id = node.id;
     newNode.origin = 'HIVTRACE Import';
     app.addNode(newNode);
   });
-  Object.keys(hivtrace['trace_results']['Nodes'][0]['patient_attributes']).forEach(key => {
+  Object.keys(hivtrace['trace_results']['Nodes'][0]['patient_attributes']).forEach(function(key){
     if(!session.data.nodeFields.includes(key)) session.data.nodeFields.push(key);
   });
   var n = hivtrace['trace_results']['Edges'].length;
@@ -114,7 +114,7 @@ app.parseHIVTrace = function(hivtrace){
 app.parseFASTA = function(text){
   if(!text || text.length === 0) return []
   var seqs = [], currentSeq = {};
-  text.split(/[\r\n]+/g).forEach((line, i) => {
+  text.split(/[\r\n]+/g).forEach(function(line, i){
     if(/^\s*$/.test(line)) return;
     if(line[0] === '>' || line[0] === ';'){
       if(i > 0) seqs.push(currentSeq);
@@ -183,8 +183,8 @@ app.titleize = function(title){
 
 app.tagClusters = function(){
   session.data.clusters = [];
-  session.data.nodes.forEach(node => delete node.cluster);
-  session.data.nodes.forEach(node => {
+  session.data.nodes.forEach(function(node){ delete node.cluster; });
+  session.data.nodes.forEach(function(node){
     if(typeof node.cluster === 'undefined'){
       session.data.clusters.push({
         id: session.data.clusters.length,
@@ -199,7 +199,7 @@ app.tagClusters = function(){
       app.DFS(node);
     }
   });
-  session.data.clusters = session.data.clusters.filter(c => c.nodes > 1);
+  session.data.clusters = session.data.clusters.filter(function(c){ return c.nodes > 1; });
 };
 
 app.DFS = function(node){
@@ -209,7 +209,7 @@ app.DFS = function(node){
   var lsv = $('#linkSortVariable').val();
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
-  session.data.links.forEach(l => {
+  session.data.links.forEach(function(l){
     if(l.visible && (l.source === node.id || l.target === node.id)){
       l.cluster = session.data.clusters.length - 1;
       var cluster = session.data.clusters[session.data.clusters.length - 1];
@@ -222,14 +222,15 @@ app.DFS = function(node){
 };
 
 app.computeDegree = function(){
-  session.data.nodes.forEach(d => d.degree = 0);
-  session.data.links
-    .filter(l => l.visible)
-    .forEach(l => {
-      session.data.nodes.find(d => d.id === l.source).degree++;
-      session.data.nodes.find(d => d.id === l.target).degree++;
-    });
-  session.data.clusters.forEach(c => {
+  session.data.nodes.forEach(function(d){ d.degree = 0; });
+  var numLinks = session.data.links.length;
+  for(var i = 0; i < numLinks; i++){
+    var l = session.data.links[i];
+    if(!l.visible) continue;
+    session.data.nodes.find(function(d){ return d.id === l.source; }).degree++;
+    session.data.nodes.find(function(d){ return d.id === l.target; }).degree++;
+  }
+  session.data.clusters.forEach(function(c){
     c.links = c.links/2;
     c.links_per_node = c.links/c.nodes;
     c.mean_genetic_distance = c.sum_distances/2/c.links;
@@ -239,8 +240,8 @@ app.computeDegree = function(){
 app.setNodeVisibility = function(){
   var showSingletons = $('#ShowSingletons').is(':checked');
   var field = $('#date-column').val();
-  session.data.nodes.forEach(n => {
-    var cluster = session.data.clusters.find(c => c.id === n.cluster);
+  session.data.nodes.forEach(function(n){
+    var cluster = session.data.clusters.find(function(c){ return c.id === n.cluster; });
     n.visible = cluster ? cluster.visible : showSingletons;
     if(session.state.time && field){
       n.visible = n.visible && session.state.time.isAfter(n[field]);
@@ -254,7 +255,7 @@ app.setLinkVisibility = function(){
       threshold = $('#default-link-threshold').val(),
       showMST = $('#showMSTLinks').is(':checked');
   session.state.linkThreshold = threshold;
-  session.data.links.forEach(link => {
+  session.data.links.forEach(function(link){
     link.visible = 1;
     if(metric !== 'none'){
       link.visible = link.visible && (link[metric] <= threshold);
@@ -264,7 +265,7 @@ app.setLinkVisibility = function(){
     }
     if(session.data.clusters.length > 0){
       //The above condition is a dumb hack to initial load the network
-      var cluster = session.data.clusters.find(c => c.id === link.cluster);
+      var cluster = session.data.clusters.find(function(c){ return c.id === link.cluster; });
       if(cluster) link.visible = link.visible && cluster.visible;
     }
   });
@@ -344,7 +345,7 @@ app.unparseDM = function(dm){
   var labels = session.data.distance_matrix.labels;
   return ',' + labels.join(',') + '\n' +
     dm
-      .map((row, i) => labels[i] + ',' + row.join(','))
+      .map(function(row, i){ return labels[i] + ',' + row.join(','); })
       .join('\n');
 };
 
@@ -425,12 +426,15 @@ app.blobifySVG = function(svgString, width, height, format, callback){
 };
 
 app.exportHIVTRACE = function(){
-  var links = session.data.links.filter(l => l.visible);
-  var geneticLinks = links.filter(l => l.origin.includes('Genetic Distance'));
-  var sequences = Array.from(new Set([...geneticLinks.map(l => l.source), ...geneticLinks.map(l => l.target)]));
+  var links = session.data.links.filter(function(l){ return l.visible });
+  var geneticLinks = links.filter(function(l){ return l.origin.includes('Genetic Distance'); });
+  var sequences = _.union(
+    geneticLinks.map(function(l){ return l.source; }),
+    geneticLinks.map(function(l){ return l.target; })
+  );
   var pas = {};
-  session.data.nodes.forEach(d => {
-    Object.keys(d).forEach(key => {
+  session.data.nodes.forEach(function(d){
+    Object.keys(d).forEach(function(key){
       if(pas[key]) return;
       pas[key] = {
         label: key,
@@ -440,7 +444,7 @@ app.exportHIVTRACE = function(){
   });
   return JSON.stringify({
     'trace_results': {
-      'Cluster sizes': session.data.clusters.map(c => c.size),
+      'Cluster sizes': session.data.clusters.map(function(c){ return c.size; }),
       'Degrees': {
         'Distribution': [],
         'Model': 'Waring',
@@ -455,16 +459,16 @@ app.exportHIVTRACE = function(){
         }
       },
       'Edge Stages': {},
-      'Edges': links.map(l => ({
+      'Edges': links.map(function(l){ return {
         'attributes': ['BULK'],
         'directed': false,
         'length': l.distance,
         'removed': false,
         'sequences': [l.source, l.target],
-        'source': session.data.nodes.findIndex(d => d.id === l.source),
+        'source': session.data.nodes.findIndex(function(d){ return d.id === l.source; }),
         'support': 0,
-        'target': session.data.nodes.findIndex(d => d.id === l.target)
-      })),
+        'target': session.data.nodes.findIndex(function(d){ return d.id === l.target; })
+      }}),
       'HIV Stages': {
         "A-1": 0,
         "A-2": 0,
@@ -484,14 +488,14 @@ app.exportHIVTRACE = function(){
         'Nodes': session.data.nodes.length,
         'Sequences used to make links': sequences.length
       },
-      'Nodes': session.data.nodes.map(d => ({
+      'Nodes': session.data.nodes.map(function(d){ return {
         'attributes': [],
         'baseline': null,
         'cluster': d.cluster,
         'edi': null,
         'id': d.id,
         'patient_attributes': d
-      })),
+      }}),
       'patient_attribute_schema': pas,
       'Settings': {
         'contaminant-ids': [],

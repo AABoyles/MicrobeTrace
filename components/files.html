@@ -179,7 +179,7 @@
       preview: 1,
       complete: function(output){
         var headers = output.meta.fields.map(filterXSS);
-        var options = '<option>None</option>' + headers.map(h => `<option value="${h}">${app.titleize(h)}</option>`).join('\n');
+        var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
         $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
             <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
             <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
@@ -195,8 +195,8 @@
         var a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
             b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
             c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
-        [a, b, c].forEach((list, i) => {
-          list.forEach(title => {
+        [a, b, c].forEach(function(list, i){
+          list.forEach(function(title){
             if(headers.includes(title)){
               $(root.find('select').get(i)).val(title);
             }
@@ -225,8 +225,8 @@
           } else {
             these.slideUp();
           }
-          [a, b, c].forEach((list, i) => {
-            list.forEach(title => {
+          [a, b, c].forEach(function(list, i){
+            list.forEach(function(title){
               if(headers.includes(title)){
                 $(these.find('select').get(i)).find('select').val(title);
               }
@@ -240,8 +240,8 @@
   }
 
   $('.alignConfigRow').hide();
-  $('#align').parent().click(e => $('.alignConfigRow').slideDown());
-  $('#doNotAlign').parent().click(e => $('.alignConfigRow').slideUp());
+  $('#align').parent().click(function(){ $('.alignConfigRow').slideDown(); });
+  $('#doNotAlign').parent().click(function(){ $('.alignConfigRow').slideUp(); });
 
   $('#refSeqFileLoad').on('change', function(e){
     var file = e.target.files[0];
@@ -269,7 +269,7 @@
     reader.onloadend = function(e){
       if(!data){
         data = app.parseFASTA(e.target.result);
-        data.forEach(node => {
+        data.forEach(function(node){
           node.id = filterXSS(node.id);
           node.seq = filterXSS(node.seq);
           if(width < node.seq.length) width = node.seq.length;
@@ -294,9 +294,9 @@
             .attr('width', width)
             .attr('height', height);
           var context = canvas.node().getContext('2d');
-          output.sort((a, b) => a.id > b.id ? -1 : 1);
-          output.forEach((s, row) => {
-            s.seq.substring(0,width).toUpperCase().split('').forEach((c, col) => {
+          output.sort(function(a, b){ return a.id > b.id ? -1 : 1; });
+          output.forEach(function(s, row){
+            s.seq.substring(0,width).toUpperCase().split('').forEach(function(c, col){
               if(c === '-') return;
               context.beginPath();
               context.rect(col, row, 1, 1);
@@ -308,12 +308,12 @@
         }
       });
     };
-    reader.readAsText(session.files.find(f => f.name.includes('fas')), 'UTF-8');
+    reader.readAsText(session.files.find(function(f){ return f.name.includes('fas'); }), 'UTF-8');
   });
 
   $('#availableCores').html(
-    _.range(1, navigator.hardwareConcurrency+1).map(i => {
-      return `<option${i === Math.ceil(navigator.hardwareConcurrency/2) ? ' selected' : ''}>${i}</option>`;
+    _.range(1, (navigator.hardwareConcurrency|4)+1).map(i => {
+      return `<option${i === Math.ceil((navigator.hardwareConcurrency|4)/2) ? ' selected' : ''}>${i}</option>`;
     }).join()
   );
 

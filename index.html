@@ -447,7 +447,7 @@ performance of this software.</pre>
     $('#AddDataTab').click(function(){ app.launchView('files'); });
 
     $('#RevealAllTab').click(function(e) {
-      session.data.clusters.forEach(c => c.visible = 1);
+      session.data.clusters.forEach(function(c){ c.visible = 1; });
       $('#HideSingletons').prop('checked', false).parent().removeClass('active');
       $('#ShowSingletons').prop('checked', true).parent().addClass('active');
       app.setLinkVisibility();
@@ -460,23 +460,24 @@ performance of this software.</pre>
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
 
-    $('#computeMST').click(e => {
+    $('#computeMST').click(function(){
       //TODO: Write
-      $('.showForNotMST').fadeOut(e => {
-        $('.showForMST').css('opacity', 0).css('display', 'inline-block').animate({'opacity': 1});
+      $('.showForNotMST').fadeOut(function(){
+        $('.showForMST')
+          .css('opacity', 0)
+          .css('display', 'inline-block')
+          .animate({'opacity': 1});
       });
     });
 
-    $('#showMSTLinks, #showAllLinks').change(e => {
+    $('#showMSTLinks, #showAllLinks').change(function(){
       app.setLinkVisibility();
       app.tagClusters();
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
     })
 
-    $('#ShowSingletons, #HideSingletons').change(e => {
-      app.setNodeVisibility();
-    });
+    $('#ShowSingletons, #HideSingletons').change(app.setNodeVisibility);
 
     app.updateThresholdHistogram = function(){
       var width = 280,
@@ -565,7 +566,7 @@ performance of this software.</pre>
 
     $('#linkSortVariable').on('change', app.updateThresholdHistogram());
 
-    $('#default-link-threshold').on('input', e => {
+    $('#default-link-threshold').on('input', function(){
       app.setLinkVisibility();
       app.tagClusters();
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
@@ -581,33 +582,31 @@ performance of this software.</pre>
       saveAs(blob, name + '.' + format);
     });
 
-    $('form').on('keydown', e => {
+    $('form').on('keydown', function(e){
       if(e.key === 'Enter'){
         e.preventDefault();
         e.stopPropagation();
       }
     });
 
-    $('#search').on('input', e => {
+    $('#search').on('input', function(e){
       if(e.target.value === ''){
-        session.data.nodes.forEach(n => n.selected = 0);
+        session.data.nodes.forEach(function(n){ n.selected = 0; });
       } else {
-        session.data.nodes.forEach(n => n.selected = (n.id.indexOf(e.target.value)>-1));
-        if(session.data.nodes.filter(n => n.selected).length === 0) alertify.warning('No matches!');
+        session.data.nodes.forEach(function(n){ n.selected = (n.id.indexOf(e.target.value)>-1); });
+        if(!session.data.nodes.some(function(n){ return n.selected; })) alertify.warning('No matches!');
       }
       $(window).trigger('node_selected');
     });
 
-    $(document).on('keydown', e => {
+    $(document).on('keydown', function(e){
       if(e.ctrlKey && e.key === 'f'){
         e.preventDefault();
         $('#search').focus();
       }
     });
 
-    $(window).on('resize', function(e){
-      layout.root.setSize();
-    });
+    $(window).on('resize', function(){ layout.root.setSize(); });
   });
 
   alertify.defaults.transition = 'slide';
