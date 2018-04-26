@@ -47,7 +47,8 @@
             <div class="form-group row alignConfigRow">
               <div class="col-12">
                 <div class="alert alert-danger alert-dismissible" role="alert">
-                  MicrobeTrace is not intended to be an alignment program. For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software">an external tool</a> before loading them into MicrobeTrace.
+                  <p>MicrobeTrace is not intended to be an alignment program. For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software">an external tool</a> before loading them into MicrobeTrace.</p>
+                  <p><a href="https://github.com/CDCgov/MicrobeTRACE/wiki/Alignment">Click here for additional information.</a></p>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
@@ -81,17 +82,27 @@
               </div>
             </div>
             <div class="form-group row alignConfigRow">
-              <div class="col-3">Match/Mismatch</div>
+              <div class="col-3">
+                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace reward matching bases?"><label for="alignerMatch">Match</label></a>/
+                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace penalize non-matching bases?"><label for="alignerMismatch">Mismatch</label></a>
+              </div>
               <div class="col"><input type="number" id="alignerMatch" class="form-control" value="1" min="0"></input></div>
               <div class="col"><input type="number" id="alignerMismatch" class="form-control" value="-1" max="0"></input></div>
             </div>
             <div class="form-group row alignConfigRow">
-              <div class="col-3">Gap Open/Extension</div>
+              <div class="col-3">
+                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace Penalize opening a gap?"><label for="alignerGapO">Gap Open</label></a>/
+                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace Penalize extending a gap?"><label for="alignerGapE">Extension</label></a>
+              </div>
               <div class="col"><input type="number" id="alignerGapO" class="form-control" value="-5" max="0"></input></div>
               <div class="col"><input type="number" id="alignerGapE" class="form-control" value="-2" max="0"></input></div>
             </div>
             <div class="form-group row alignConfigRow">
-              <div class="col-3"><button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button></div>
+              <div class="col-3">
+                <a href="#" data-toggle="tooltip" title="Generate a preview of the alignment, using the current configurations.">
+                  <button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button>
+                </a>
+              </div>
               <div class="col-9">
                 <div class="text-center" id="alignmentPreview" style="overflow-x: scroll"><canvas></canvas></div>
               </div>
