@@ -131,6 +131,12 @@ app.parseFASTA = function(text){
 };
 
 app.align = function(params){
+  if(params.aligner === 'none'){
+    if(params.callback){
+      params.callback(params.nodes);
+    }
+    return params.nodes;
+  }
   if(!params.cores) params.cores = 2;
   var n = params.nodes.length;
   var aligners = Array(params.cores);
@@ -138,7 +144,7 @@ app.align = function(params){
   var returned = 0;
   var output = [];
   for(var i = 0; i < params.cores; i++){
-    aligners[i] = new Worker('scripts/aligner.js');
+    aligners[i] = new Worker('scripts/align-'+params.aligner+'.js');
     aligners[i].onmessage = function(response){
       output = output.concat(response.data);
       if(++returned === aligners.length){

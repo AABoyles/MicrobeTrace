@@ -35,11 +35,14 @@
               </div>
               <div class="col-9">
                 <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="shouldAlign" id="align" autocomplete="off"> Yes
-                  </label>
                   <label class="btn btn-secondary active">
-                    <input type="radio" name="shouldAlign" id="doNotAlign" autocomplete="off" checked> No
+                    <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="shouldAlign" id="nbeamAlign" data-aligner="nbeam" autocomplete="off"> NBEAM
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
                   </label>
                 </div>
               </div>
@@ -97,7 +100,7 @@
               <div class="col"><input type="number" id="alignerGapO" class="form-control" value="-5" max="0"></input></div>
               <div class="col"><input type="number" id="alignerGapE" class="form-control" value="-2" max="0"></input></div>
             </div>
-            <div class="form-group row alignConfigRow">
+            <div class="form-group row">
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Generate a preview of the alignment, using the current configurations.">
                   <button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button>
@@ -126,7 +129,6 @@
     </div>
   </div>
 </div>
-<script src="node_modules/bioseq/dist/bioseq.min.js"></script>
 <script>
 (function(){
 
@@ -251,7 +253,8 @@
   }
 
   $('.alignConfigRow').hide();
-  $('#align').parent().click(function(){ $('.alignConfigRow').slideDown(); });
+  $('#swAlign'   ).parent().click(function(){ $('.alignConfigRow').slideDown(); });
+  $('#nbeamAlign').parent().click(function(){ $('.alignConfigRow').slideUp(); });
   $('#doNotAlign').parent().click(function(){ $('.alignConfigRow').slideUp(); });
 
   $('#refSeqFileLoad').on('change', function(e){
@@ -290,6 +293,7 @@
       app.align({
         nodes: data,
         reference: session.data.reference,
+        aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
         isLocal: $('#localAlign').is(':checked'),
         match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
         gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),

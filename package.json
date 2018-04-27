@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": "https://github.com/AABoyles/WebMicrobeTrace.git",
   "engines": {
-    "node": "9.8.0",
+    "node": "^10.0.0",
     "yarn": "^1.6.0"
   },
   "scripts": {
@@ -40,6 +40,7 @@
     "jquery": "^3.3.1",
     "msa": "^1.0.3",
     "npm": "^6.0.0",
+    "ntseq": "^1.1.0",
     "open-iconic": "^1.1.1",
     "papaparse": "^4.4.0",
     "phylocanvas": "^2.8.1",
