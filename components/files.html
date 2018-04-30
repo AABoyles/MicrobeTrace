@@ -521,10 +521,10 @@
         $('.showForSequence').show();
         var allDashes = /^-*$/;
         var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
-        if($('#align').is(':checked')){
-          alignAndComputeDM(subset);
-        } else {
+        if($('#doNotAlign').is(':checked')){
           computeLinks(subset);
+        } else {
+          alignAndComputeLinks(subset);
         }
       } else {
         $('.showForSequence').hide();
@@ -532,10 +532,11 @@
       }
     };
 
-    var alignAndComputeDM = function(subset){
+    var alignAndComputeLinks = function(subset){
       message('Aligning Sequences...');
       app.align({
         reference: session.data.reference,
+        aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
         isLocal: $('#localAlign').is(':checked'),
         match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
         gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
