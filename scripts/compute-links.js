@@ -1,14 +1,10 @@
-if(typeof window === 'undefined') window = self;
 importScripts('../node_modules/tn93/dist/tn93.min.js');
 
-function hamming(s1, s2, gapPenalty){
-  if(!gapPenalty) gapPenalty = 0;
+function hamming(s1, s2){
   var i = s1.length;
   var sum = 0;
   while(--i > 0){
-    if(s1[i] === '-' ^ s2[i] === '-'){
-      sum += gapPenalty;
-    } else if(s1[i] !== s2[i]){
+    if(s1[i] !== s2[i] && s1[i] !== '-' && s2[i] !== '-'){
       sum++;
     }
   }
@@ -25,7 +21,7 @@ onmessage = function(e){
       source: subset[i].id,
       target: subset[j].id,
       tn93: distance,
-      snps: hamming(subset[i]['seq'], subset[j]['seq'], 0),
+      snps: hamming(subset[i]['seq'], subset[j]['seq']),
       distance: distance,
       origin: ['Genetic Distance']
     };
