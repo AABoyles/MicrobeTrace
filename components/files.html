@@ -100,7 +100,7 @@
               <div class="col"><input type="number" id="alignerGapO" class="form-control" value="-5" max="0"></input></div>
               <div class="col"><input type="number" id="alignerGapE" class="form-control" value="-2" max="0"></input></div>
             </div>
-            <div class="form-group row">
+            <div class="form-group row alignPreviewRow">
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Generate a preview of the alignment, using the current configurations.">
                   <button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button>
@@ -252,10 +252,17 @@
     });
   }
 
-  $('.alignConfigRow').hide();
-  $('#swAlign'   ).parent().click(function(){ $('.alignConfigRow').slideDown(); });
-  $('#nbeamAlign').parent().click(function(){ $('.alignConfigRow').slideUp(); });
-  $('#doNotAlign').parent().click(function(){ $('.alignConfigRow').slideUp(); });
+  $('.alignConfigRow, .alignPreviewRow').hide();
+  $('#swAlign').parent().click(function(){
+    $('.alignConfigRow, .alignPreviewRow').slideDown();
+  });
+  $('#nbeamAlign').parent().click(function(){
+    $('.alignConfigRow').slideUp();
+    $('.alignPreviewRow').slideDown();
+  });
+  $('#doNotAlign').parent().click(function(){
+    $('.alignConfigRow, .alignPreviewRow').slideUp();
+  });
 
   $('#refSeqFileLoad').on('change', function(e){
     var file = e.target.files[0];
@@ -272,13 +279,7 @@
 
   var data, width = 0, height = 0;
   $('#previewAlignment').click(function(){
-    $('#alignmentPreview').children().fadeOut(function(){
-      $(this).remove();
-      $('<img src="img/spinner.gif" class="mx-auto" />')
-        .hide()
-        .appendTo('#alignmentPreview')
-        .fadeIn();
-    });
+    $('#alignmentPreview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
     var reader = new FileReader();
     reader.onloadend = function(e){
       if(!data){
