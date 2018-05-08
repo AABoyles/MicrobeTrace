@@ -10,13 +10,13 @@
   <div id="table-type-panel">
     <div class="btn-group btn-group-toggle btn-group-sm floater" data-toggle="buttons">
       <label class="btn btn-light active">
-        <input type="radio" name="nodelink" id="nodes" autocomplete="off" checked> Nodes
+        <input type="radio" name="nodelink" data-value="nodes" autocomplete="off" checked> Nodes
       </label>
       <label class="btn btn-light">
-        <input type="radio" name="nodelink" id="links" autocomplete="off"> Links
+        <input type="radio" name="nodelink" data-value="links" autocomplete="off"> Links
       </label>
       <label class="btn btn-light">
-        <input type="radio" name="nodelink" id="clusters" autocomplete="off"> Clusters
+        <input type="radio" name="nodelink" data-value="clusters" autocomplete="off"> Clusters
       </label>
     </div>
     <select id="columns" class="chosen-select" multiple></select>
@@ -149,7 +149,7 @@
         },
         select: function(entry){
           entry.selected = !entry.selected
-          if($('input[name=nodelink]:checked')[0].id === 'nodes'){
+          if($('input[name=nodelink]:checked').data('value') === 'nodes'){
             $(window).trigger('node_selected');
           }
         }
@@ -157,15 +157,15 @@
     });
 
     function updateTable(){
-      var data_type = $('input[name=nodelink]:checked')[0].id;
+      var data_type = $('input[name=nodelink]:checked').data('value');
       var colsToKeep = $('#columns').val();
       table.gridColumns = $('#columns').val();
-      table.gridData = session.data[$('input[name=nodelink]:checked')[0].id];
+      table.gridData = session.data[data_type];
       resetTextsize();
     }
 
     function updateColumns(){
-      var type = $('input[name=nodelink]:checked')[0].id.slice(0,-1);
+      var type = $('input[name=nodelink]:checked').data('value').slice(0,-1);
       $('#columns')
         .chosen('destroy')
         .html(
@@ -222,7 +222,7 @@
     $('#font-size-slider').on('input', resetTextsize);
 
     $('#linkSortVariable, #default-link-threshold').on('input', e => {
-      if($('input[name=nodelink]:checked')[0].id === 'clusters'){
+      if($('input[name=nodelink]:checked').data('value') === 'clusters'){
         updateTable();
       }
     });
@@ -231,7 +231,7 @@
       var mime = 'text/csv;';
       var handler = Papa.unparse;
       var format = $('#export-file-format').val();
-      var data = session.data[$('input[name=nodelink]:checked')[0].id];
+      var data = session.data[$('input[name=nodelink]:checked').data('value')];
       if(format === 'json'){
         mime = 'application/json;';
         handler = JSON.stringify;
@@ -246,7 +246,7 @@
         el: '#table-wrapper',
         data: {
           gridColumns: $('#columns').val(),
-          gridData: session.data[$('input[name=nodelink]:checked')[0].id]
+          gridData: session.data[$('input[name=nodelink]:checked').data('value')]
         }
       });
       resetTextsize();
