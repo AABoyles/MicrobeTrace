@@ -62,11 +62,11 @@
         </div>
         <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
-          <div class="col-9"><input type="color" id="histogram_color" value="#5656ff" /></div>
+          <div class="col-9"><input type="color" id="histogram_color" class="custom-select custom-select-sm" value="#5656ff" /></div>
         </div>
         <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-          <div class="col-9"><input type="color" id="histogram_network-color" class="triggers" value="#ffffff" /></div>
+          <div class="col-9"><input type="color" id="histogram_network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
         </div>
       </div>
     </div>
@@ -141,6 +141,7 @@
         displaylogo: false,
         displayModeBar: false
       });
+      $('rect.bg').css('fill', $('#histogram_network-color').val());
     }
 
     $('#toggle_histogram_settings').click(function(){
@@ -152,12 +153,8 @@
       }
     });
 
-    $('#histogram_network-color').on('input', function(e){
-      $('rect.bg').css('fill', e.target.value);
-    });
-
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
-    $('#histogram_variable, #histogram_color').change(redrawHistogram);
+    $('#histogram_variable, #histogram_color, #histogram_network-color').change(redrawHistogram);
 
     $('#histogram_export').click(function(){
       var network = $('#histogram_panel .main-svg').get(0);
