@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-04-18
+# 2018-05-10
 
 CACHE:
 index.html
@@ -17,15 +17,19 @@ components/scatterplot.html
 components/sequences.html
 components/table.html
 components/timeline.html
-scripts/aligner.js
+scripts/align-nbeam.js
+scripts/align-sw.js
 scripts/common.js
+scripts/compute-consensus.js
 scripts/compute-dm.js
 scripts/compute-links.js
 scripts/compute-mst.js
+scripts/polyfills.js
 vendor/3d-force-graph.min.js
 vendor/bootstrap-filestyle.min.js
 vendor/FileSaver.min.js
 vendor/neighbor-joining.js
+vendor/ntseq.js
 vendor/shpwrite.js
 img/1DNA.gif
 img/Back_Arrow.png
