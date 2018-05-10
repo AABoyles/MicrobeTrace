@@ -19,8 +19,11 @@
       </div>
       <div class="modal-body">
         <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="nav-item">
+            <a href="#alignerConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
+          </li>
           <li role="presentation" class="nav-item active">
-            <a href="#alignerConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
+            <a href="#distanceConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Distance</a>
           </li>
           <li role="presentation" class="nav-item">
             <a href="#systemConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">System</a>
@@ -28,33 +31,33 @@
         </ul>
         <!-- Tab panes -->
         <div class="tab-content">
-          <div id="alignerConfigurations" class="tab-pane fade show active" role="tabpanel">
+          <div id="alignerConfigurations" class="tab-pane fade" role="tabpanel">
+            <div class="form-group row">
+              <div class="col-12">
+                <div class="alert alert-warning alert-dismissible" role="alert">
+                  <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software">an external tool</a> before loading them into MicrobeTrace.</p>
+                  <p><a href="https://github.com/CDCgov/MicrobeTRACE/wiki/Alignment">Click here for additional information.</a></p>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              </div>
+            </div>
             <div class="form-group row">
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>
               </div>
               <div class="col-9">
                 <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
+                  <label class="btn btn-secondary active" data-toggle="tooltip" title="Do Not Align Sequences (Recommended)">
                     <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
                   </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="shouldAlign" id="nbeamAlign" data-aligner="nbeam" autocomplete="off"> NBEAM
-                  </label>
-                  <label class="btn btn-secondary">
+                  <label class="btn btn-secondary" data-toggle="tooltip" title="Align Sequences using Smith-Waterman aligner (Recommended)">
                     <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
                   </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row alignConfigRow">
-              <div class="col-12">
-                <div class="alert alert-danger alert-dismissible" role="alert">
-                  <p>MicrobeTrace is not intended to be an alignment program. For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software">an external tool</a> before loading them into MicrobeTrace.</p>
-                  <p><a href="https://github.com/CDCgov/MicrobeTRACE/wiki/Alignment">Click here for additional information.</a></p>
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
+                  <label class="btn btn-secondary" data-toggle="tooltip" title="Align Sequences using ungapped aligner (Not Recommended)">
+                    <input type="radio" name="shouldAlign" id="nbeamAlign" data-aligner="nbeam" autocomplete="off"> NBEAM
+                  </label>
                 </div>
               </div>
             </div>
@@ -108,6 +111,38 @@
               </div>
               <div class="col-9">
                 <div class="text-center" id="alignmentPreview" style="overflow-x: scroll"><canvas></canvas></div>
+              </div>
+            </div>
+          </div>
+          <div id="distanceConfigurations" class="tab-pane fade show active" role="tabpanel">
+            <div class="form-group row">
+              <div class="col-2">
+                <label for="distanceMetrics">Distance Metric(s)</label>
+              </div>
+              <div class="col-10">
+                <select class="chosen-select custom-select-sm" id="distanceMetrics" multiple>
+                  <option selected>TN93</option>
+                  <option>SNPs</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-2">
+                <label for="defaultDistanceMetric">Default Distance Metric</label>
+              </div>
+              <div class="col-10">
+                <select class="custom-select custom-select-sm" id="defaultDistanceMetric">
+                  <option selected>TN93</option>
+                  <option>SNPs</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-2">
+                <label for="defaultDistanceMetric">Default Link Threshold</label>
+              </div>
+              <div class="col-10">
+                <input type="number" id="defaultDistanceMetric" class="custom-select custom-select-sm" value="0.015"></input>
               </div>
             </div>
           </div>
@@ -251,6 +286,10 @@
       }
     });
   }
+
+  $('#distanceMetrics').chosen({width: "100%"}).change(function(){
+
+  });
 
   $('.alignConfigRow, .alignPreviewRow').hide();
   $('#swAlign').parent().click(function(){
