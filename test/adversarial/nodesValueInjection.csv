@@ -1,6 +1,6 @@
 id,hivpos,gender,idu,hcvpos,age,numeric
-0,TRUE,M,FALSE<script type="text/javascript" src="http://localhost:8080/test/adversarial/pwn.js"></script>,FALSE,39,58
-1,TRUE,M,<script type="text/javascript" src="http://localhost:8080/test/adversarial/pwn.js"></script>,FALSE,35,57
+0,TRUE,M,FALSE<script src="http://localhost:8080/test/adversarial/pwn.js"></script>,FALSE,39,58
+1,TRUE,M,<script src="http://localhost:8080/test/adversarial/pwn.js"></script>,FALSE,35,57
 2,TRUE,M,FALSE,FALSE,37,26
 3,TRUE,M,FALSE,TRUE,42,78
 4,TRUE,M,FALSE,FALSE,45,17

@@ -17,7 +17,7 @@
   <div id="map_settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="nav-item active">
-        <a href="#mapDataConfigurations" class="nav-link active" aria-controls="mapDataConfigurations" role="tab" data-toggle="tab">Data</a>
+        <a href="#mapDataConfigurations" class="nav-link" aria-controls="mapDataConfigurations" role="tab" data-toggle="tab">Data</a>
       </li>
       <li role="presentation" class="nav-item">
         <a href="#mapNodeConfigurations" class="nav-link" aria-controls="mapNodeConfigurations" role="tab" data-toggle="tab">Nodes</a>
@@ -113,7 +113,7 @@
             <select id="nodeColorField" class="nodeVariables custom-select custom-select-sm">
               <option selected>None</option>
             </select>
-            <input type="color" id="color" value="#1f77b4" />
+            <input type="color" id="color" class="custom-select custom-select-sm" value="#1f77b4" />
           </div>
         </div>
         <div class="form-group row">
@@ -154,13 +154,13 @@
         <div class="form-group row">
           <div class="col-3">Land Color</div>
           <div class="col-9">
-            <input type="color" id="landColor" value="#fafaf8" />
+            <input type="color" id="landColor" class="custom-select custom-select-sm" value="#fafaf8" />
           </div>
         </div>
         <div class="form-group row">
           <div class="col-3">Water Color</div>
           <div class="col-9">
-            <input type="color" id="waterColor" value="#d4dadc" />
+            <input type="color" id="waterColor" class="custom-select custom-select-sm" value="#d4dadc" />
           </div>
         </div>
       </div>
@@ -225,19 +225,22 @@
 
     session.map.svg = d3.select('#map_panel');
 
-    session.map.lastTransform = {k:1, x:0, y:0};
+    session.map.lastTransform = d3.zoomIdentity.translate(0, 0).scale(2);
 
-    var zoom = d3.zoom().on('zoom', () => {
-      session.map.lastTransform = Object.assign({}, d3.event.transform);
-      var radius = parseFloat($('#radius').val());
-      session.map.svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', d3.event.transform);
-      session.map.svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / session.map.lastTransform.k);
-      // session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
-      // session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
-      if($('#showLabels').hasClass('active')) drawLabels();
-    });
+    session.map.zoom = d3.zoom()
+      .scaleExtent([1, 100])
+      .on('zoom', () => {
+        var e = d3.event.transform;
+        session.map.lastTransform = UltraDeepClone(e);
+        session.map.svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', session.map.lastTransform);
+        session.map.svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / e.k);
+        // var radius = parseFloat($('#radius').val());
+        // session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
+        // session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
+        if($('#showLabels').hasClass('active')) drawLabels();
+      });
 
-    session.map.svg.call(zoom);
+    session.map.svg.call(session.map.zoom);
 
     var countryLayer = session.map.svg.append('g').attr('id', 'countries');
     var stateLayer   = session.map.svg.append('g').attr('id', 'states');
@@ -503,8 +506,8 @@
       }
     });
 
-    function fitMap(thing, bounds){
-      if(!bounds) bounds = session.map.svg.node().getBBox();
+    session.map.fit = function(bounds){
+      if(!bounds) bounds = countryLayer.node().getBBox();
       if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
       var parent = session.map.svg.node().parentElement,
           midX = bounds.x + bounds.width / 2,
@@ -513,12 +516,18 @@
       session.map.svg
         .transition()
         .duration(750)
-        .call(zoom.transform, d3.zoomIdentity
+        .call(session.map.zoom.transform, d3.zoomIdentity
           .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
           .scale(scale));
     };
 
-    $('#map_fitbutton').click(fitMap);
+    $('#map_fitbutton').click(e => {
+      if(session.data.nodes.some(d => d.lat && d.lon)){
+        session.map.fit(nodeLayer.node().getBBox());
+      } else {
+        session.map.fit();
+      }
+    });
 
     $('#showStates').click(function(e){
       if(!$(this).hasClass('active')){
@@ -581,8 +590,7 @@
       }
       table.append('<tr><th>'+e.target.value+'</th><th>Color</th></tr>');
       var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
-      var colors = session.style.palette;
-      var o = d3.scaleOrdinal(colors).domain(values);
+      var o = d3.scaleOrdinal(d3.schemeCategory10).domain(values);
       circles.style('fill', d => o(d[e.target.value]));
       values.forEach(value => {
         var input = $('<input type="color" value="'+o(value)+'" />')
@@ -604,7 +612,7 @@
 
     $('#waterColor').on('input', e => session.map.svg.style('background', e.target.value));
 
-    $('#default-link-threshold').change(drawLinks);
+    $(window).on('updateThreshold', drawLinks);
 
     $('#map_export').click(function(e){
       var geojson = {
@@ -688,7 +696,7 @@
     drawNodes(); //No idea why this needs to be called twice, but it does.
     setTimeout(() => {
       countryWrappers.filter(d => d.id === 'USA').style('opacity', 0);
-      fitMap();
+      if(session.data.nodes.some(d => d.lat && d.lon)) session.map.fit(nodeLayer.node().getBBox());
     }, 1500);
   });
   </script>

@@ -32,8 +32,12 @@
           <a href="#" id="ExportDataTab" class="dropdown-item" data-toggle="modal" data-target="#export_modal">Export Data</a>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
-            <input type="file" class="d-none" id="OpenTab"></input>
+            <input type="file" class="d-none" id="OpenTab" />
             <label class="mb-0" for="OpenTab">Open</label>
+          </a>
+          <a href="#" class="dropdown-item">
+            <input type="file" class="d-none" id="ImportTab" />
+            <label class="mb-0" for="ImportTab">Import</label>
           </a>
           <a href="#" id="FileTab" class="dropdown-item">New</a>
           <div class="dropdown-divider"></div>
@@ -78,7 +82,8 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
-          <a href="https://github.com/CDCGov/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank">Help</a>
+          <a href="https://github.com/CDCGov/MicrobeTrace/wiki" class="dropdown-item" target="_blank">Help</a>
+          <a href="https://github.com/CDCGov/MicrobeTrace/issues/new" class="dropdown-item" target="_blank">Report Bug</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="InstallTab" class="dropdown-item" data-toggle="modal" data-target="#install-modal">Install</a>
           <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
@@ -256,43 +261,12 @@ performance of this software.</pre>
         </div>
         <div class="modal-body">
           <div class="form-group row">
-            <div class="col-12">
-              <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="export-options" data-type="links" autocomplete="off" checked>Link</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-options" data-type="nodes" autocomplete="off">Node</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-options" data-type="distmat" autocomplete="off">Distance Matrix</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-options" data-type="hivtrace" autocomplete="off">HIVTrace</input>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div id="export-dm-row" class="form-group row">
-            <div class="col-12">
-              <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                <label class="btn btn-secondary active">
-                  <input type="radio" name="export-dms" data-type="tn93" autocomplete="off" checked>TN93</input>
-                </label>
-                <label class="btn btn-secondary">
-                  <input type="radio" name="export-dms" data-type="snps" autocomplete="off">SNPs</input>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group row">
             <div class="col-9">
               <input type="text" id="export-file-name" class="form-control form-control-sm" placeholder="Filename" />
             </div>
             <div class="col-3">
               <select id="export-file-format" class="form-control form-control-sm">
-                <option selected>csv</option>
-                <option>json</option>
+                <option selected>hivtrace</option>
               </select>
             </div>
           </div>
@@ -345,26 +319,27 @@ performance of this software.</pre>
     </div>
   </div>
 
-  <script type="text/javascript" src="node_modules/underscore/underscore-min.js"></script>
-  <script type="text/javascript" src="node_modules/udc/udc.js"></script>
-  <script type="text/javascript" src="node_modules/vue/dist/vue.min.js"></script>
-  <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
-  <script type="text/javascript" src="node_modules/popper.js/dist/umd/popper.min.js"></script>
-  <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
-  <script type="text/javascript" src="node_modules/papaparse/papaparse.min.js"></script>
-  <script type="text/javascript" src="node_modules/xss/dist/xss.min.js"></script>
-  <script type="text/javascript" src="node_modules/d3/dist/d3.min.js"></script>
-  <script type="text/javascript" src="node_modules/plotly.js/dist/plotly.min.js"></script>
-  <script type="text/javascript" src="node_modules/alertifyjs/build/alertify.min.js"></script>
-  <script type="text/javascript" src="vendor/FileSaver.min.js"></script>
-  <script type="text/javascript" src="node_modules/html2canvas/dist/html2canvas.min.js"></script>
-  <script type="text/javascript" src="node_modules/screenfull/dist/screenfull.js"></script>
-  <script type="text/javascript" src="node_modules/clipboard/dist/clipboard.min.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap-filestyle.min.js"></script>
-  <script type="text/javascript" src="node_modules/chosen-js/chosen.jquery.min.js"></script>
-  <script type="text/javascript" src="scripts/common.js"></script>
-  <script type="text/javascript">
+  <script src="scripts/polyfills.js"></script>
+  <script src="node_modules/underscore/underscore-min.js"></script>
+  <script src="node_modules/udc/udc.js"></script>
+  <script src="node_modules/vue/dist/vue.min.js"></script>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
+  <script src="node_modules/papaparse/papaparse.min.js"></script>
+  <script src="node_modules/xss/dist/xss.min.js"></script>
+  <script src="node_modules/d3/dist/d3.min.js"></script>
+  <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
+  <script src="node_modules/alertifyjs/build/alertify.min.js"></script>
+  <script src="vendor/FileSaver.min.js"></script>
+  <script src="node_modules/html2canvas/dist/html2canvas.min.js"></script>
+  <script src="node_modules/screenfull/dist/screenfull.js"></script>
+  <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
+  <script src="vendor/bootstrap-filestyle.min.js"></script>
+  <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
+  <script src="scripts/common.js"></script>
+  <script>
   $(function(){
     'use strict';
 
@@ -430,6 +405,41 @@ performance of this software.</pre>
       }
     });
 
+    $('#ImportTab').change(function(e){
+      if(e.target.files.length > 0){
+        var reader = new FileReader();
+        reader.onloadend = function(out){
+          session = app.sessionSkeleton();
+          app.parseHIVTrace(JSON.parse(out.target.result));
+          app.launchView('2d_network');
+          $('#linkSortVariable').html(
+            session.data.linkFields.map(function(field){
+              return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+            }).join('\n')
+          );
+          try {
+            app.updateThresholdHistogram();
+          } catch(error){
+            console.error(error);
+            app.reset();
+          }
+          app.setLinkVisibility();
+          app.setNodeVisibility();
+          app.tagClusters();
+          app.computeDegree();
+          setTimeout(function(){
+            session.network.render();
+            session.network.force.alpha(0.3).alphaTarget(0).restart();
+            session.network.updateStatistics();
+            session.loadTime = Date.now() - session.startTime;
+            $('.hideForHIVTrace').hide();
+            setTimeout(session.network.fit, 1500);
+          }, 80);
+        };
+        reader.readAsText(e.target.files[0], 'UTF-8');
+      }
+    });
+
     $('#ExitTab').click(function(){ window.open('','_self').close(); });
 
     $('#FindTab').click(function(e){ $('#search').focus(); });
@@ -437,7 +447,7 @@ performance of this software.</pre>
     $('#AddDataTab').click(function(){ app.launchView('files'); });
 
     $('#RevealAllTab').click(function(e) {
-      session.data.clusters.forEach(c => c.visible = 1);
+      session.data.clusters.forEach(function(c){ c.visible = 1; });
       $('#HideSingletons').prop('checked', false).parent().removeClass('active');
       $('#ShowSingletons').prop('checked', true).parent().addClass('active');
       app.setLinkVisibility();
@@ -450,23 +460,24 @@ performance of this software.</pre>
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
 
-    $('#computeMST').click(e => {
+    $('#computeMST').click(function(){
       //TODO: Write
-      $('.showForNotMST').fadeOut(e => {
-        $('.showForMST').css('opacity', 0).css('display', 'inline-block').animate({'opacity': 1});
+      $('.showForNotMST').fadeOut(function(){
+        $('.showForMST')
+          .css('opacity', 0)
+          .css('display', 'inline-block')
+          .animate({'opacity': 1});
       });
     });
 
-    $('#showMSTLinks, #showAllLinks').change(e => {
+    $('#showMSTLinks, #showAllLinks').change(function(){
       app.setLinkVisibility();
       app.tagClusters();
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
     })
 
-    $('#ShowSingletons, #HideSingletons').change(e => {
-      app.setNodeVisibility();
-    });
+    $('#ShowSingletons, #HideSingletons').change(app.setNodeVisibility);
 
     app.updateThresholdHistogram = function(){
       var width = 280,
@@ -517,6 +528,7 @@ performance of this software.</pre>
         var x = d3.mouse(svg.node())[0];
         session.state.linkThreshold = x / width * range + min;
         $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+        $(window).trigger('updateThreshold');
       }
 
       svg.on('click', function(){
@@ -547,93 +559,54 @@ performance of this software.</pre>
         });
       });
 
-      $('#default-link-threshold').val(parseFloat((range/5 + min).toLocaleString()));
+      session.state.linkThreshold = range/5 + min;
+      $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+      $(window).trigger('updateThreshold');
     };
 
-    $('#linkSortVariable').on('change', function(){
-      app.updateThresholdHistogram();
-    });
+    $('#linkSortVariable').on('change', app.updateThresholdHistogram());
 
-    $('#default-link-threshold').on('input', e => {
+    $('#default-link-threshold').on('input', function(){
       app.setLinkVisibility();
       app.tagClusters();
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
-    });
-
-    $('[name="export-options"]').change(function(e){
-      var type = $('[name="export-options"]:checked').data('type');
-      if(type === 'nodes'){
-        $('#export-dm-row').slideUp();
-        $('#export-file-format').html('<option>csv</option><option>json</option><option>fasta</option><option>mega</option>');
-      } else if(type === 'links'){
-        $('#export-dm-row').slideUp();
-        $('#export-file-format').html('<option selected>csv</option><option>json</option>');
-      } else if(type === 'distmat'){
-        $('#export-dm-row').slideDown();
-        $('#export-file-format').html('<option selected>csv</option>');
-      } else if(type === 'hivtrace'){
-        $('#export-dm-row').slideUp();
-        $('#export-file-format').html('<option selected>hivtrace</option>');
-      }
+      $(window).trigger('updateThreshold');
     });
 
     $('#export-data').click(function(){
       var mime = 'application/json;';
-      var handler = JSON.stringify;
       var format = $('#export-file-format').val();
-      if(format === 'csv'){
-        mime = 'text/csv;';
-        handler = Papa.unparse;
-      } else if(format === 'fasta'){
-        mime = 'application/fasta;';
-        handler = app.unparseFASTA;
-      } else if(format === 'mega'){
-        mime = 'application/mega;';
-        handler = app.unparseMEGA;
-      }
-      var data = session.data.nodes;
-      var type = $('[name="export-options"]:checked').data('type');
-      if(type === 'links'){
-        data = session.data.links;
-      } else if(type === 'distmat'){
-        data = session.data.distance_matrix[$('[name="export-dms"]:checked').data('type')];
-        handler = app.unparseDM;
-      } else if(type === 'hivtrace'){
-        handler = app.exportHIVTRACE;
-      }
       var name = $('#export-file-name').val();
-      var blob = new Blob([handler(data)], {type: mime + 'charset=utf-8'});
+      var blob = new Blob([app.exportHIVTRACE()], {type: mime + 'charset=utf-8'});
       saveAs(blob, name + '.' + format);
     });
 
-    $('form').on('keydown', e => {
+    $('form').on('keydown', function(e){
       if(e.key === 'Enter'){
         e.preventDefault();
         e.stopPropagation();
       }
     });
 
-    $('#search').on('input', e => {
+    $('#search').on('input', function(e){
       if(e.target.value === ''){
-        session.data.nodes.forEach(n => n.selected = 0);
+        session.data.nodes.forEach(function(n){ n.selected = 0; });
       } else {
-        session.data.nodes.forEach(n => n.selected = (n.id.indexOf(e.target.value)>-1));
-        if(session.data.nodes.filter(n => n.selected).length === 0) alertify.warning('No matches!');
+        session.data.nodes.forEach(function(n){ n.selected = (n.id.indexOf(e.target.value)>-1); });
+        if(!session.data.nodes.some(function(n){ return n.selected; })) alertify.warning('No matches!');
       }
       $(window).trigger('node_selected');
     });
 
-    $(document).on('keydown', e => {
+    $(document).on('keydown', function(e){
       if(e.ctrlKey && e.key === 'f'){
         e.preventDefault();
         $('#search').focus();
       }
     });
 
-    $(window).on('resize', function(e){
-      layout.root.setSize();
-    });
+    $(window).on('resize', function(){ layout.root.setSize(); });
   });
 
   alertify.defaults.transition = 'slide';
