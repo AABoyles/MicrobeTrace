@@ -651,6 +651,7 @@
       session.network.force.alpha(0.3).alphaTarget(0).restart();
       session.network.updateStatistics();
       session.loadTime = Date.now() - session.startTime;
+      console.log((session.loadTime/1000).toLocaleString() + 's');
       $('.hideForHIVTrace').css('display', 'flex');
       setTimeout(function(){
         session.network.fit();
