@@ -174,6 +174,15 @@ app.align = function(params){
   }
 };
 
+app.computeConsensus = function(callback){
+  var nodes = session.data.nodes.filter(d => d.seq);
+  var computer = new Worker('scripts/compute-consensus.js');
+  computer.onmessage = function(response){
+    session.data.consensus = response.data;
+  };
+  computer.postMessage(nodes);
+};
+
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
