@@ -35,15 +35,15 @@
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="nodeLabelVariable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
-        <div class="col-8"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="nodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-        <div class="col-8"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="nodeSymbolVariable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
-        <div class="col-8"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div id="node_shape_value_row" class="form-group row">
         <div class="col-4"><label for="default-node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
@@ -70,7 +70,7 @@
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="nodeColorVariable" data-toggle="tooltip" title="What color should the nodes be?">Color By</label></div>
-        <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div id="node_color_value_row" class="form-group row">
         <div class="col-4"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Color</label></div>
@@ -727,7 +727,7 @@
       $('#default-node-symbol').fadeIn();
       return table.fadeOut(e => table.remove());
     }
-    table.append('<tr><th>'+e.target.value+'</th><th>Shape</th><tr>');
+    table.append('<tr><th contenteditable>'+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
     var values = _.uniq(session.data.nodes.map(d => d[e.target.value])).sort();
     var symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'];
     var o = d3.scaleOrdinal(symbolKeys).domain(values);
@@ -735,7 +735,7 @@
     values.forEach(v => {
       var selector = $('<select></select>').append(options).val(o(v)).change(redrawNodes);
       var cell = $('<td></td>').append(selector);
-      var row = $('<tr><td>' + v + '</td></tr>').append(cell);
+      var row = $('<tr><td contenteditable>' + app.titleize(''+v) + '</td></tr>').append(cell);
       table.append(row);
     });
     redrawNodes();
@@ -757,7 +757,7 @@
     $('#node_color_value_row').slideUp();
     $('#nodeColors').slideUp(function(){$(this).remove()});
     var table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th>'+app.titleize(e.target.value)+'</th><th>Color</th><tr>');
+    table.append('<tr><th contenteditable>'+app.titleize(e.target.value)+'</th><th>Color</th><tr>');
     var values = _.uniq(session.data.nodes.map(d => d[e.target.value])).sort();
     var o = d3.scaleOrdinal([d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2))).domain(values);
     circles.attr('fill', d => o(d[e.target.value]));
@@ -769,7 +769,7 @@
             .attr('fill', d => evt.target.value);
         });
       var cell = $('<td></td>').append(input);
-      var row = $('<tr><td>'+value+'</td></tr>').append(cell);
+      var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
       table.append(row);
     });
   });
@@ -805,7 +805,7 @@
     var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     $('#linkColors').remove();
     var table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th>'+app.titleize(variable)+'</th><th>Color</th><tr>');
+    table.append('<tr><th contenteditable>'+app.titleize(variable)+'</th><th>Color</th><tr>');
     var values = _.uniq(vlinks.map(l => l[variable])).sort();
     var o = d3.scaleOrdinal(d3.schemePaired).domain(values);
     links
@@ -831,7 +831,7 @@
             .attr('stroke', d => evt.target.value);
         });
       var cell = $('<td></td>').append(input);
-      var row = $('<tr><td>'+value+'</td></tr>').append(cell);
+      var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
       table.append(row);
     });
     table.fadeIn();
