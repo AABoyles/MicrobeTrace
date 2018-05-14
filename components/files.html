@@ -116,10 +116,10 @@
           </div>
           <div id="distanceConfigurations" class="tab-pane fade show active" role="tabpanel">
             <div class="form-group row">
-              <div class="col-2">
+              <div class="col-4">
                 <label for="distanceMetrics">Distance Metric(s)</label>
               </div>
-              <div class="col-10">
+              <div class="col-8">
                 <select class="chosen-select custom-select-sm" id="distanceMetrics" multiple>
                   <option selected>TN93</option>
                   <option>SNPs</option>
@@ -127,22 +127,21 @@
               </div>
             </div>
             <div class="form-group row">
-              <div class="col-2">
+              <div class="col-4">
                 <label for="defaultDistanceMetric">Default Distance Metric</label>
               </div>
-              <div class="col-10">
+              <div class="col-8">
                 <select class="custom-select custom-select-sm" id="defaultDistanceMetric">
                   <option selected>TN93</option>
-                  <option>SNPs</option>
                 </select>
               </div>
             </div>
             <div class="form-group row">
-              <div class="col-2">
-                <label for="defaultDistanceMetric">Default Link Threshold</label>
+              <div class="col-4">
+                <label for="defaultDistanceThreshold">Default Link Threshold</label>
               </div>
-              <div class="col-10">
-                <input type="number" id="defaultDistanceMetric" class="custom-select custom-select-sm" value="0.015"></input>
+              <div class="col-8">
+                <input type="number" id="defaultDistanceThreshold" class="custom-select custom-select-sm" min="0" value="0.015" step="0.001"></input>
               </div>
             </div>
           </div>
@@ -288,7 +287,21 @@
   }
 
   $('#distanceMetrics').chosen({width: "100%"}).change(function(){
+    $('#defaultDistanceMetric').html($(this).val().map((v, i) => {
+      return '<option value="' + v.toLowerCase() + '"' + (i == 0 ? ' selected': '') + '>' + v + '</option>';
+    }).join('\n'));
+  });
 
+  $('#defaultDistanceMetric').change(function(){
+    if($(this).val() == 'snps'){
+      $('#defaultDistanceThreshold')
+        .attr('step', 1)
+        .val(1);
+    } else {
+      $('#defaultDistanceThreshold')
+        .attr('step', 0.001)
+        .val(0.015);
+    }
   });
 
   $('.alignConfigRow, .alignPreviewRow').hide();
