@@ -304,16 +304,12 @@
     }
   });
 
-  $('.alignConfigRow, .alignPreviewRow').hide();
+  $('.alignConfigRow').hide();
   $('#swAlign').parent().click(function(){
-    $('.alignConfigRow, .alignPreviewRow').slideDown();
+    $('.alignConfigRow').slideDown();
   });
-  $('#nbeamAlign').parent().click(function(){
+  $('#doNotAlign, #nbeamAlign').parent().click(function(){
     $('.alignConfigRow').slideUp();
-    $('.alignPreviewRow').slideDown();
-  });
-  $('#doNotAlign').parent().click(function(){
-    $('.alignConfigRow, .alignPreviewRow').slideUp();
   });
 
   $('#refSeqFileLoad').on('change', function(e){
