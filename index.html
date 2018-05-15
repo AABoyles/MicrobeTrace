@@ -560,7 +560,7 @@ performance of this software.</pre>
         });
       });
 
-      session.state.linkThreshold = range/5 + min;
+      session.state.linkThreshold = parseFloat($('#defaultDistanceThreshold').val());
       $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
       $(window).trigger('updateThreshold');
     };
