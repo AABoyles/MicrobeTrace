@@ -565,7 +565,7 @@ performance of this software.</pre>
       $(window).trigger('updateThreshold');
     };
 
-    $('#linkSortVariable').on('change', app.updateThresholdHistogram());
+    $('#linkSortVariable').on('change', app.updateThresholdHistogram);
 
     $('#default-link-threshold').on('input', function(){
       app.setLinkVisibility();
