@@ -573,31 +573,27 @@
         if($('#doNotAlign').is(':checked')){
           computeLinks(subset);
         } else {
-          alignAndComputeLinks(subset);
+          message('Aligning Sequences...');
+          app.align({
+            reference: session.data.reference,
+            aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
+            isLocal: $('#localAlign').is(':checked'),
+            match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
+            gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
+            nodes: subset,
+            cores: parseFloat($('#availableCores').val()),
+            callback: function(response){
+              response.forEach(function(node){
+                Object.assign(subset[node.index], node);
+              });
+              computeLinks(subset);
+            }
+          });
         }
       } else {
         $('.showForSequence').hide();
         finishUp();
       }
-    };
-
-    var alignAndComputeLinks = function(subset){
-      message('Aligning Sequences...');
-      app.align({
-        reference: session.data.reference,
-        aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
-        isLocal: $('#localAlign').is(':checked'),
-        match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
-        gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-        nodes: subset,
-        cores: parseFloat($('#availableCores').val()),
-        callback: function(response){
-          response.forEach(function(node){
-            Object.assign(subset[node.index], node);
-          });
-          computeLinks(subset);
-        }
-      });
     };
 
     var computeLinks = function(subset){
@@ -660,7 +656,7 @@
       session.network.force.alpha(0.3).alphaTarget(0).restart();
       session.network.updateStatistics();
       session.loadTime = Date.now() - session.startTime;
-      console.log((session.loadTime/1000).toLocaleString() + 's');
+      console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
       $('.hideForHIVTrace').css('display', 'flex');
       setTimeout(function(){
         session.network.fit();
