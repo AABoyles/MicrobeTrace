@@ -464,10 +464,7 @@ performance of this software.</pre>
     $('#computeMST').click(function(){
       //TODO: Write
       $('.showForNotMST').fadeOut(function(){
-        $('.showForMST')
-          .css('opacity', 0)
-          .css('display', 'inline-block')
-          .animate({'opacity': 1});
+        $('.showForMST').fadeIn();
       });
     });
 
