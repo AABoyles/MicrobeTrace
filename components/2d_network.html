@@ -106,13 +106,9 @@
         <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color</label></div>
         <div class="col-8"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#8dd3c7" /></div>
       </div>
-      <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency By</label></div>
-        <div class="col-8"><select id="linkOpacityVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
-      </div>
       <div id="link-transparency-row" class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
-        <div class="col-8"><input type="range" id="default-link-opacity" min="0" max="1" value="1" step="0.01" /></div>
+        <div class="col-8"><input type="range" id="default-link-opacity" min="0" max="1" value="0" step="0.01" /></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How wide should the links be?">Thickness By</label></div>
@@ -441,7 +437,7 @@
     link.enter().append('line')
       .attr('stroke', $('#default-link-color').val())
       .attr('stroke-width', $('#default-link-width').val())
-      .attr('opacity', $('#default-link-opacity').val())
+      .attr('opacity', 1 - $('#default-link-opacity').val())
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
@@ -685,7 +681,7 @@
         .selectAll('g.node')
         .selectAll('path')
         .attr('opacity', nodeOpacity);
-      var linkOpacity = $('default-link-opacity').val();
+      var linkOpacity = 1 - $('#default-link-opacity').val();
       session.network.svg
         .select('g#links')
         .selectAll('line')
@@ -911,8 +907,10 @@
     });
   }
 
-  $('#default-link-opacity').on('input', e => scaleLinkThing($('#default-link-opacity').val(), $('#linkOpacityVariable').val(), 'opacity', .1));
-  $('#linkOpacityVariable').change(e => scaleLinkThing($('#default-link-opacity').val(), $('#linkOpacityVariable').val(), 'opacity', .1));
+  $('#default-link-opacity').on('input', e => {
+    var opacity = 1 - $('#default-link-opacity').val();
+    session.network.svg.select('g#links').selectAll('line').attr('opacity', opacity);
+  });
 
   $('#default-link-width').on('input', e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
   $('#linkWidthVariable').change(e => {
