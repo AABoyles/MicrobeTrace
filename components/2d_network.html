@@ -639,21 +639,30 @@
   }
 
   function highlightNeighbors(node){
-    var links = session.data.links
-      .filter(l => l.source === node.id || l.target === node.id);
-    var neighbors = links
-      .map(l => l.source === node.id ? l.target : l.source);
-    neighbors.push(node.id);
+    var links = getVLinks();
+    var lindices = [], neighbors = [node.id];
+    var n = links.length;
+    for(var i = 0; i < n; i++){
+      var l = links[i];
+      if(l.source.id !== node.id && l.target.id !== node.id){
+        lindices.push(l.index);
+      } else {
+        if(l.source.id === node.id){
+          neighbors.push(l.target.id);
+        } else {
+          neighbors.push(l.source.id);
+        }
+      }
+    }
     session.network.svg
       .select('g#nodes')
       .selectAll('g.node')
       .selectAll('path')
       .attr('opacity', d => neighbors.includes(d.id) ? 1 : .1);
-    var lindices = links.map(l => l.index);
     session.network.svg
       .select('g#links')
       .selectAll('line')
-      .attr('opacity', l => lindices.includes(l.index) ? 1 : .1);
+      .attr('opacity', l => lindices.includes(l.index) ? .1 : 1);
   }
 
   function showLinkToolTip(d){
