@@ -346,30 +346,29 @@
         isLocal: $('#localAlign').is(':checked'),
         match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
         gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-        cores: parseFloat($('#availableCores').val()),
-        callback: function(output){
-          var colors = {
-            'A' : 'lightgreen',
-            'G' : 'orange',
-            'C' : 'yellow',
-            'T' : 'red'
-          };
-          var canvas = d3.select('#alignmentPreview').html(null).append('canvas')
-            .attr('width', width)
-            .attr('height', height);
-          var context = canvas.node().getContext('2d');
-          output.sort(function(a, b){ return a.id > b.id ? -1 : 1; });
-          output.forEach(function(s, row){
-            s.seq.substring(0,width).toUpperCase().split('').forEach(function(c, col){
-              if(c === '-') return;
-              context.beginPath();
-              context.rect(col, row, 1, 1);
-              context.fillStyle = colors[c];
-              context.fill();
-              context.closePath();
-            });
+        cores: parseFloat($('#availableCores').val())
+      }, function(output){
+        var colors = {
+          'A' : 'lightgreen',
+          'G' : 'orange',
+          'C' : 'yellow',
+          'T' : 'red'
+        };
+        var canvas = d3.select('#alignmentPreview').html(null).append('canvas')
+          .attr('width', width)
+          .attr('height', height);
+        var context = canvas.node().getContext('2d');
+        output.sort(function(a, b){ return a.id > b.id ? -1 : 1; });
+        output.forEach(function(s, row){
+          s.seq.substring(0,width).toUpperCase().split('').forEach(function(c, col){
+            if(c === '-') return;
+            context.beginPath();
+            context.rect(col, row, 1, 1);
+            context.fillStyle = colors[c];
+            context.fill();
+            context.closePath();
           });
-        }
+        });
       });
     };
     reader.readAsText(session.files.find(function(f){ return f.name.includes('fas'); }), 'UTF-8');
@@ -566,33 +565,32 @@
     });
 
     var nextStuff = function(){
-      if(anySequences){
-        $('.showForSequence').show();
-        var allDashes = /^-*$/;
-        var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
-        if($('#doNotAlign').is(':checked')){
-          computeLinks(subset);
-        } else {
-          message('Aligning Sequences...');
-          app.align({
-            reference: session.data.reference,
-            aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
-            isLocal: $('#localAlign').is(':checked'),
-            match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
-            gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-            nodes: subset,
-            cores: parseFloat($('#availableCores').val()),
-            callback: function(response){
-              response.forEach(function(node){
-                Object.assign(subset[node.index], node);
-              });
-              computeLinks(subset);
-            }
-          });
-        }
-      } else {
+      if(!anySequences){
         $('.showForSequence').hide();
         finishUp();
+        return;
+      }
+      $('.showForSequence').show();
+      var allDashes = /^-*$/;
+      var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
+      if($('#doNotAlign').is(':checked')){
+        computeLinks(subset);
+      } else {
+        message('Aligning Sequences...');
+        app.align({
+          reference: session.data.reference,
+          aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
+          isLocal: $('#localAlign').is(':checked'),
+          match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
+          gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
+          nodes: subset,
+          cores: parseFloat($('#availableCores').val())
+        }, function(response){
+          response.forEach(function(node){
+            Object.assign(subset[node.index], node);
+          });
+          computeLinks(subset);
+        });
       }
     };
 

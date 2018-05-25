@@ -130,10 +130,10 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
-app.align = function(params){
+app.align = function(params, callback){
   if(params.aligner === 'none'){
-    if(params.callback){
-      params.callback(params.nodes);
+    if(callback){
+      callback(params.nodes);
     }
     return params.nodes;
   }
@@ -143,36 +143,33 @@ app.align = function(params){
   var nPerI = Math.ceil(n/params.cores);
   var returned = 0;
   var output = [];
-  app.computeConsensus(function(consensus){
-    for(var i = 0; i < params.cores; i++){
-      aligners[i] = new Worker('scripts/align-'+params.aligner+'.js');
-      aligners[i].onmessage = function(response){
-        output = output.concat(response.data);
-        if(++returned === aligners.length){
-          var minPadding = Number.MAX_SAFE_INTEGER,
-              maxLength = 0;
-          for(var j = 0; j < n; j++){
-            var d = output[j];
-            if(minPadding > d.padding) minPadding = d.padding;
-          }
-          for(var j = 0; j < n; j++){
-            var d = output[j];
-            d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
-            if(maxLength < d.seq.length) maxLength = d.seq.length;
-          }
-          for(var j = 0; j < n; j++){
-            var d = output[j];
-            d.seq = d.seq + '-'.repeat(maxLength - d.seq.length)
-          }
-          params.callback(output);
+  for(var i = 0; i < params.cores; i++){
+    aligners[i] = new Worker('scripts/align-'+params.aligner+'.js');
+    aligners[i].onmessage = function(response){
+      output = output.concat(response.data);
+      if(++returned === aligners.length){
+        var minPadding = Number.MAX_SAFE_INTEGER,
+            maxLength = 0;
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          if(minPadding > d.padding) minPadding = d.padding;
         }
-      };
-      aligners[i].postMessage(Object.assign({}, params, {
-        nodes: params.nodes.slice(i*nPerI, Math.min((i+1)*nPerI, n)),
-        consensus: consensus
-      }));
-    }
-  });
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
+          if(maxLength < d.seq.length) maxLength = d.seq.length;
+        }
+        for(var j = 0; j < n; j++){
+          var d = output[j];
+          d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
+        }
+        callback(output);
+      }
+    };
+    aligners[i].postMessage(Object.assign({}, params, {
+      nodes: params.nodes.slice(i*nPerI, Math.min((i+1)*nPerI, n))
+    }));
+  }
 };
 
 app.computeConsensus = function(callback){
