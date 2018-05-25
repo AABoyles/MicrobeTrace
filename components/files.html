@@ -348,26 +348,8 @@
         gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
         cores: parseFloat($('#availableCores').val())
       }, function(output){
-        var colors = {
-          'A' : 'lightgreen',
-          'G' : 'orange',
-          'C' : 'yellow',
-          'T' : 'red'
-        };
-        var canvas = d3.select('#alignmentPreview').html(null).append('canvas')
-          .attr('width', width)
-          .attr('height', height);
-        var context = canvas.node().getContext('2d');
-        output.sort(function(a, b){ return a.id > b.id ? -1 : 1; });
-        output.forEach(function(s, row){
-          s.seq.substring(0,width).toUpperCase().split('').forEach(function(c, col){
-            if(c === '-') return;
-            context.beginPath();
-            context.rect(col, row, 1, 1);
-            context.fillStyle = colors[c];
-            context.fill();
-            context.closePath();
-          });
+        alignmentViewer(output.map(d => d.seq)).then(function(canvas){
+          $('#alignmentPreview').empty().append(canvas);
         });
       });
     };
