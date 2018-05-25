@@ -6,6 +6,7 @@ onmessage = function(e){
   subset.forEach(node => {
     var rst = bioseq.align(reference, node.seq, e.data.isLocal, e.data.match, e.data.gap);
     var fmt = bioseq.cigar2gaps(reference, node.seq, rst.position, rst.CIGAR);
+    node.score = rst.score;
     node.padding = rst.position;
     node.seq = fmt[1];
   });
