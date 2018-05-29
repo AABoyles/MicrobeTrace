@@ -19,11 +19,11 @@
       </div>
       <div class="modal-body">
         <ul class="nav nav-tabs" role="tablist">
-          <li role="presentation" class="nav-item">
-            <a href="#alignerConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
-          </li>
           <li role="presentation" class="nav-item active">
-            <a href="#distanceConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Distance</a>
+            <a href="#alignerConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
+          </li>
+          <li role="presentation" class="nav-item">
+            <a href="#distanceConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Distance</a>
           </li>
           <li role="presentation" class="nav-item">
             <a href="#systemConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">System</a>
@@ -31,7 +31,7 @@
         </ul>
         <!-- Tab panes -->
         <div class="tab-content">
-          <div id="alignerConfigurations" class="tab-pane fade" role="tabpanel">
+          <div id="alignerConfigurations" class="tab-pane fade show active" role="tabpanel">
             <div class="form-group row">
               <div class="col-12">
                 <div class="alert alert-warning alert-dismissible" role="alert">
@@ -114,7 +114,7 @@
               </div>
             </div>
           </div>
-          <div id="distanceConfigurations" class="tab-pane fade show active" role="tabpanel">
+          <div id="distanceConfigurations" class="tab-pane fade" role="tabpanel">
             <div class="form-group row">
               <div class="col-4">
                 <label for="distanceMetrics">Distance Metric(s)</label>
@@ -304,6 +304,39 @@
     }
   });
 
+  var data;
+  function updatePreview(){
+    if(!data){
+      var reader = new FileReader();
+      reader.onloadend = function(e){
+        data = app.parseFASTA(e.target.result);
+        data.forEach(function(node){
+          node.id = filterXSS(node.id);
+          node.seq = filterXSS(node.seq);
+        });
+        updatePreview();
+      };
+      reader.readAsText(session.files.find(function(f){ return f.name.includes('fas'); }), 'UTF-8');
+      return;
+    }
+    $('#alignmentPreview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
+    app.align({
+      nodes: data,
+      reference: session.data.reference,
+      aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
+      isLocal: $('#localAlign').is(':checked'),
+      match: [parseFloat($('#alignerMatch').val()), parseFloat($('#alignerMismatch').val())],
+      gap: [parseFloat($('#alignerGapO').val()), parseFloat($('#alignerGapE').val())],
+      cores: $('#availableCores').val()|0
+    }, function(output){
+      var n = output.length;
+      var seqs = Array(n);
+      for(var i = 0; i < n; i++) seqs[i] = output[i].seq;
+      alignmentViewer(seqs).then(function(canvas){
+        $('#alignmentPreview').empty().append(canvas);
+      });
+    });
+  }
   $('.alignConfigRow').hide();
   $('#swAlign').parent().click(function(){
     $('.alignConfigRow').slideDown();
@@ -325,36 +358,7 @@
     reader.readAsText(file);
   });
 
-  var data, width = 0, height = 0;
-  $('#previewAlignment').click(function(){
-    $('#alignmentPreview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
-    var reader = new FileReader();
-    reader.onloadend = function(e){
-      if(!data){
-        data = app.parseFASTA(e.target.result);
-        data.forEach(function(node){
-          node.id = filterXSS(node.id);
-          node.seq = filterXSS(node.seq);
-          if(width < node.seq.length) width = node.seq.length;
-        });
-        height = data.length;
-      }
-      app.align({
-        nodes: data,
-        reference: session.data.reference,
-        aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
-        isLocal: $('#localAlign').is(':checked'),
-        match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
-        gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-        cores: parseFloat($('#availableCores').val())
-      }, function(output){
-        alignmentViewer(output.map(d => d.seq)).then(function(canvas){
-          $('#alignmentPreview').empty().append(canvas);
-        });
-      });
-    };
-    reader.readAsText(session.files.find(function(f){ return f.name.includes('fas'); }), 'UTF-8');
-  });
+  $('#alignerControlsButton, #previewAlignment').click(updatePreview);
 
   $('#availableCores').html(
     _.range(1, (navigator.hardwareConcurrency|4)+1).map(i => {
