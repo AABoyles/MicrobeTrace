@@ -1,7 +1,8 @@
 importScripts('../node_modules/tn93/dist/tn93.min.js');
 
 function hamming(s1, s2){
-  var i = s1.length;
+  //If we aligned them, these will definitely be the same length. If not...
+  var i = Math.min(s1.length, s2.length);
   var sum = 0;
   while(--i > 0){
     if(s1[i] !== s2[i] && s1[i] !== '-' && s2[i] !== '-'){

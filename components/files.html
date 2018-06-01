@@ -337,10 +337,13 @@
       });
     });
   }
+
   $('.alignConfigRow').hide();
+
   $('#swAlign').parent().click(function(){
     $('.alignConfigRow').slideDown();
   });
+
   $('#doNotAlign, #nbeamAlign').parent().click(function(){
     $('.alignConfigRow').slideUp();
   });
@@ -382,7 +385,6 @@
     session.startTime = Date.now();
     session.messages = [];
     session.data = app.dataSkeleton();
-    app.launchView('2d_network');
     $('#loadingInformation').html('');
 
     $('#loadingInformationModal').modal({
@@ -481,29 +483,32 @@
 
         message(`Parsing ${filename} as Node CSV...`);
 
+        if(file.field2 !== 'None') anySequences = true;
+
+        var m = 0, n = 0;
         Papa.parse(file.file, {
           header: true,
           worker: true,
           dynamicTyping: true,
           skipEmptyLines: true,
-          complete: results => {
-            var n = 0;
-            results.data.forEach(node => {
-              node = JSON.parse(filterXSS(JSON.stringify(node)));
-              node.id = '' + node[file.field1];
-              if(file.field2 !== 'None') node.seq = node[file.field2];
-              node['origin'] = [filename];
-              n += app.addNode(node);
-            });
-            results.meta.fields.forEach(key => {
-              key = filterXSS(key);
-              if(!session.data.nodeFields.includes(key)){
-                session.data.nodeFields.push(key);
-              }
-            });
-            if(results.meta.fields.includes('seq')) anySequences = 1;
-            message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
-            if(fileNum == files.length - 1) nextStuff();
+          step: results => {
+            if(0 === n++){
+              results.meta.fields.forEach(key => {
+                key = filterXSS(key);
+                if(!session.data.nodeFields.includes(key)){
+                  session.data.nodeFields.push(key);
+                }
+              });
+            }
+            node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
+            node.id = '' + node[file.field1];
+            if(file.field2 !== 'None') node.seq = node[file.field2];
+            node['origin'] = [filename];
+            m += app.addNode(node);
+          },
+          complete: () => {
+            message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
+            if(fileNum === files.length - 1) nextStuff();
           }
         });
 
@@ -550,7 +555,7 @@
       }
     });
 
-    var nextStuff = function(){
+    function nextStuff(){
       if(!anySequences){
         $('.showForSequence').hide();
         finishUp();
@@ -580,7 +585,7 @@
       }
     };
 
-    var computeLinks = function(subset){
+    function computeLinks(subset){
       message('Computing Links based on Genomic Proximity...');
       var k = 0;
       var n = subset.length;
@@ -636,16 +641,18 @@
       app.setNodeVisibility();
       app.tagClusters();
       app.computeDegree();
-      session.network.render();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
-      session.network.updateStatistics();
-      session.loadTime = Date.now() - session.startTime;
-      console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
-      $('.hideForHIVTrace').css('display', 'flex');
-      setTimeout(function(){
-        session.network.fit();
-        $('#loadingInformationModal').modal('hide');
-      }, 1500);
+      app.launchView('2d_network', function(){
+        session.network.render();
+        session.network.force.alpha(0.3).alphaTarget(0).restart();
+        session.network.updateStatistics();
+        session.loadTime = Date.now() - session.startTime;
+        console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
+        $('.hideForHIVTrace').css('display', 'flex');
+        setTimeout(function(){
+          session.network.fit();
+          $('#loadingInformationModal').modal('hide');
+        }, 1500);
+      });
     };
   });
 })();

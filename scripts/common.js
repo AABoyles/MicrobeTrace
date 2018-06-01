@@ -294,14 +294,14 @@ app.reset = function(){
   app.launchView('files');
 };
 
-app.launchView = function(view){
+app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
       app.componentCache[view] = response;
       layout.registerComponent(view, function(container, state){
         container.getElement().html(state.text);
       });
-      app.launchView(view);
+      app.launchView(view, callback);
     });
   } else {
     var contentItem = layout.contentItems.find(function(item){
@@ -324,20 +324,21 @@ app.launchView = function(view){
         layout.contentItems.splice(i, 1);
       });
       layout.contentItems.push(contentItem);
-      contentItem.element.find('select.nodeVariables').html(
-        '<option>None</option>' +
-        session.data.nodeFields.map(function(field){
-          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-        }).join('\n')
-      );
-      contentItem.element.find('select.linkVariables').html(
-        '<option>None</option>' +
-        session.data.linkFields.map(function(field){
-          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-        }).join('\n')
-      );
-      contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     }
+    contentItem.element.find('select.nodeVariables').html(
+      '<option>None</option>' +
+      session.data.nodeFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    contentItem.element.find('select.linkVariables').html(
+      '<option>None</option>' +
+      session.data.linkFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    contentItem.element.find('[data-toggle="tooltip"]').tooltip();
+    if(callback) callback(contentItem);
     return contentItem;
   }
 };
