@@ -111,7 +111,7 @@
         <div class="col-8"><input type="range" id="default-link-opacity" min="0" max="1" value="0" step="0.01" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How wide should the links be?">Thickness By</label></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width By</label></div>
         <div class="col-8"><select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
       </div>
       <div id="link-reciprocalthickness-row" class="form-group row">
@@ -119,7 +119,7 @@
         <div class="col-8"><input type="checkbox" id="reciprocal-link-width" checked /></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How wide should the links be?">Thickness</label></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
         <div class="col-8"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
       </div>
       <div class="form-group row hideForHIVTrace">
@@ -764,14 +764,14 @@
 
   $('#default-node-symbol').on('input', redrawNodes);
   $('#nodeSymbolVariable').change(e => {
-    $('#default-node-symbol').fadeOut();
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
     var table = $('<tbody id="nodeShapes"></tbody>').appendTo('#network_group_key');
     if(e.target.value === 'None'){
       redrawNodes();
-      $('#default-node-symbol').fadeIn();
+      $('#node_shape_value_row').slideDown();
       return table.fadeOut(e => table.remove());
     }
+    $('#node_shape_value_row').slideUp();
     table.append('<tr><th contenteditable>'+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
     var values = _.uniq(session.data.nodes.map(d => d[e.target.value])).sort();
     var symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'];
@@ -841,7 +841,7 @@
     var variable = $('#linkColorVariable').val();
     if(variable === 'None'){
       session.network.svg.select('g#links').selectAll('line').attr('stroke', $('#default-link-color').val());
-      $('#default-link-color').fadeIn();
+      $('#link-color-row').slideDown();
       $('#linkColors').fadeOut();
       return;
     }
