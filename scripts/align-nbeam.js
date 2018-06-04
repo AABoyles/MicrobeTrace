@@ -9,7 +9,10 @@ onmessage = function(e){
     var map = new Nt.MatchMap(match, reference);
     map.initialize();
     map.sort();
-    node.padding = map.best().position;
+    var best = map.best();
+    node.padding = best.position;
+    node.score = best.score;
+    console.log(best.score);
   });
 
   postMessage(subset);

@@ -30,20 +30,16 @@
   <div class="tab-content">
     <div class="tab-pane fade show active" id="node_settings" role="tabpanel" aria-labelledby="nodes-tab">
       <div class="form-group row">
-        <div class="col-4"><strong>Property</strong></div>
-        <div class="col-8"><strong>Value</strong></div>
-      </div>
-      <div class="form-group row">
         <div class="col-4"><label for="nodeLabelVariable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
-        <div class="col-8"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="nodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-        <div class="col-8"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="nodeSymbolVariable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
-        <div class="col-8"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div id="node_shape_value_row" class="form-group row">
         <div class="col-4"><label for="default-node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
@@ -70,17 +66,12 @@
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="nodeColorVariable" data-toggle="tooltip" title="What color should the nodes be?">Color By</label></div>
-        <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables categorical"><option>None</option></select></div>
+        <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div id="node_color_value_row" class="form-group row">
         <div class="col-4"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Color</label></div>
         <div class="col-8"><input type="color" id="default-node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
       </div>
-      <!--div class="form-group row">
-        <div class="col-4"><label for="default-node-opacity" data-toggle="tooltip" title="How transparent should the nodes be?">Transparency</label></div>
-        <div class="col-4"><select id="nodeOpacityVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
-        <div class="col-4"><input type="range" id="default-node-opacity" min="0" max="1" value="1" step="0.01" /></div>
-      </div-->
       <div class="form-group row">
         <div class="col-4"><label for="nodeRadiusVariable" data-toggle="tooltip" title="How large should the nodes be?">Size By</label></div>
         <div class="col-8"><select id="nodeRadiusVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
@@ -89,34 +80,39 @@
         <div class="col-4"><label for="default-node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
         <div class="col-8"><input type="range" id="default-node-radius" min="1" value="250" step="1" max="5000" /></div>
       </div>
+      <div class="form-group row">
+        <div class="col-4"><label for="highlight-neighbors" data-toggle="tooltip" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">Highlight Neighbors?</label></div>
+        <div class="col-8"><input type="checkbox" id="highlight-neighbors" /></div>
+      </div>
     </div>
     <div class="tab-pane fade" id="link_settings" role="tabpanel" aria-labelledby="links-tab">
       <div class="form-group row">
-        <div class="col-4"><strong>Property</strong></div>
-        <div class="col-8"><strong>Value</strong></div>
-      </div>
-      <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
-        <div class="col-4"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
-        <div class="col-4"></div>
+        <div class="col-8"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
+        <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color By</label></div>
+        <div class="col-8"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>origin</option></select></div>
+      </div>
+      <div id="link-color-row" class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color</label></div>
-        <div class="col-4"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>origin</option></select></div>
-        <div class="col-4"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#8dd3c7" /></div>
+        <div class="col-8"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#8dd3c7" /></div>
       </div>
-      <div class="form-group row">
+      <div id="link-transparency-row" class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
-        <div class="col-4"><select id="linkOpacityVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
-        <div class="col-4"><input type="range" id="default-link-opacity" min="0" max="1" value="1" step="0.01" /></div>
+        <div class="col-8"><input type="range" id="default-link-opacity" min="0" max="1" value="0" step="0.01" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How wide should the links be?">Thickness</label></div>
-        <div class="col-4">
-          <select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select><br />
-          <input type="checkbox" id="reciprocal-link-width" />&nbsp;<label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal?</label>
-        </div>
-        <div class="col-4"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width By</label></div>
+        <div class="col-8"><select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+      </div>
+      <div id="link-reciprocalthickness-row" class="form-group row">
+        <div class="col-4"><label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?" checked>Reciprocal</label></div>
+        <div class="col-8"><input type="checkbox" id="reciprocal-link-width" checked /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
+        <div class="col-8"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
       </div>
       <div class="form-group row hideForHIVTrace">
         <div class="col-4"><label data-toggle="tooltip" title="Are these links directed?">Directionality</label></div>
@@ -134,12 +130,8 @@
     </div>
     <div class="tab-pane fade" id="2d_network_settings" role="tabpanel" aria-labelledby="network-tab">
       <div class="form-group row">
-        <div class="col-3"><strong>Property</strong></div>
-        <div class="col-9"><strong>Value</strong></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-3"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
-        <div class="col-9">
+        <div class="col-4"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
+        <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
             <label class="btn btn-secondary active">
               <input type="radio" name="2d_network_statisticsOptions" id="show_2d_network_statistics" autocomplete="off" checked> Show
@@ -151,24 +143,24 @@
         </div>
       </div>
       <div class="form-group row">
-        <div class="col-3"><label data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</label></div>
-        <div class="col-9"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</label></div>
+        <div class="col-8"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-3"><label data-toggle="tooltip" title="How long should links be?">Length</label></div>
-        <div class="col-9"><input type="range" id="default-link-length" min = "0" max="200" value="50" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How long should links be?">Length</label></div>
+        <div class="col-8"><input type="range" id="default-link-length" min = "0" max="200" value="50" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-3"><label data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</label></div>
-        <div class="col-9"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</label></div>
+        <div class="col-8"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-3"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
-        <div class="col-9"><input type="range" id="default-node-charge" min="0" max="400" value="200" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
+        <div class="col-8"><input type="range" id="default-node-charge" min="0" max="400" value="200" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-3"><label data-toggle="tooltip" title="What color should the background be?">Background</label></div>
-        <div class="col-9"><input type="color" id="network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="What color should the background be?">Background</label></div>
+        <div class="col-8"><input type="color" id="network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
       </div>
     </div>
   </div>
@@ -433,7 +425,7 @@
     link.enter().append('line')
       .attr('stroke', $('#default-link-color').val())
       .attr('stroke-width', $('#default-link-width').val())
-      .attr('opacity', $('#default-link-opacity').val())
+      .attr('opacity', 1 - $('#default-link-opacity').val())
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
@@ -619,6 +611,7 @@
   }
 
   function showNodeToolTip(d){
+    if($('#highlight-neighbors').is(':checked')) highlightNeighbors(d);
     if($('#nodeTooltipVariable').val() === 'None') return;
     d3.select('#tooltip')
       .html(d[$('#nodeTooltipVariable').val()])
@@ -627,6 +620,33 @@
       .style('z-index', 1000)
       .transition().duration(100)
       .style('opacity', 1);
+  }
+
+  function highlightNeighbors(node){
+    var links = getVLinks();
+    var lindices = [], neighbors = [node.id];
+    var n = links.length;
+    for(var i = 0; i < n; i++){
+      var l = links[i];
+      if(l.source.id !== node.id && l.target.id !== node.id){
+        lindices.push(l.index);
+      } else {
+        if(l.source.id === node.id){
+          neighbors.push(l.target.id);
+        } else {
+          neighbors.push(l.source.id);
+        }
+      }
+    }
+    session.network.svg
+      .select('g#nodes')
+      .selectAll('g.node')
+      .selectAll('path')
+      .attr('opacity', d => neighbors.includes(d.id) ? 1 : .1);
+    session.network.svg
+      .select('g#links')
+      .selectAll('line')
+      .attr('opacity', l => lindices.includes(l.index) ? .1 : 1);
   }
 
   function showLinkToolTip(d){
@@ -642,6 +662,19 @@
   }
 
   function hideTooltip(){
+    if($('#highlight-neighbors').is(':checked')){
+      var nodeOpacity = $('#default-node-opacity').val();
+      session.network.svg
+        .select('g#nodes')
+        .selectAll('g.node')
+        .selectAll('path')
+        .attr('opacity', nodeOpacity);
+      var linkOpacity = 1 - $('#default-link-opacity').val();
+      session.network.svg
+        .select('g#links')
+        .selectAll('line')
+        .attr('opacity', linkOpacity);
+    }
     var tooltip = d3.select('#tooltip');
     tooltip
       .transition().duration(100)
@@ -719,15 +752,15 @@
 
   $('#default-node-symbol').on('input', redrawNodes);
   $('#nodeSymbolVariable').change(e => {
-    $('#default-node-symbol').fadeOut();
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
     var table = $('<tbody id="nodeShapes"></tbody>').appendTo('#network_group_key');
     if(e.target.value === 'None'){
       redrawNodes();
-      $('#default-node-symbol').fadeIn();
+      $('#node_shape_value_row').slideDown();
       return table.fadeOut(e => table.remove());
     }
-    table.append('<tr><th>'+e.target.value+'</th><th>Shape</th><tr>');
+    $('#node_shape_value_row').slideUp();
+    table.append('<tr><th contenteditable>'+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
     var values = _.uniq(session.data.nodes.map(d => d[e.target.value])).sort();
     var symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'];
     var o = d3.scaleOrdinal(symbolKeys).domain(values);
@@ -735,7 +768,7 @@
     values.forEach(v => {
       var selector = $('<select></select>').append(options).val(o(v)).change(redrawNodes);
       var cell = $('<td></td>').append(selector);
-      var row = $('<tr><td>' + v + '</td></tr>').append(cell);
+      var row = $('<tr><td contenteditable>' + app.titleize(''+v) + '</td></tr>').append(cell);
       table.append(row);
     });
     redrawNodes();
@@ -757,7 +790,7 @@
     $('#node_color_value_row').slideUp();
     $('#nodeColors').slideUp(function(){$(this).remove()});
     var table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th>'+app.titleize(e.target.value)+'</th><th>Color</th><tr>');
+    table.append('<tr><th contenteditable>'+app.titleize(e.target.value)+'</th><th>Color</th><tr>');
     var values = _.uniq(session.data.nodes.map(d => d[e.target.value])).sort();
     var o = d3.scaleOrdinal([d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2))).domain(values);
     circles.attr('fill', d => o(d[e.target.value]));
@@ -769,7 +802,7 @@
             .attr('fill', d => evt.target.value);
         });
       var cell = $('<td></td>').append(input);
-      var row = $('<tr><td>'+value+'</td></tr>').append(cell);
+      var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
       table.append(row);
     });
   });
@@ -796,16 +829,16 @@
     var variable = $('#linkColorVariable').val();
     if(variable === 'None'){
       session.network.svg.select('g#links').selectAll('line').attr('stroke', $('#default-link-color').val());
-      $('#default-link-color').fadeIn();
+      $('#link-color-row').slideDown();
       $('#linkColors').fadeOut();
       return;
     }
-    $('#default-link-color').fadeOut();
+    $('#link-color-row').slideUp();
     var vlinks = getVLinks();
     var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     $('#linkColors').remove();
     var table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th>'+app.titleize(variable)+'</th><th>Color</th><tr>');
+    table.append('<tr><th contenteditable>'+app.titleize(variable)+'</th><th>Color</th><tr>');
     var values = _.uniq(vlinks.map(l => l[variable])).sort();
     var o = d3.scaleOrdinal(d3.schemePaired).domain(values);
     links
@@ -831,7 +864,7 @@
             .attr('stroke', d => evt.target.value);
         });
       var cell = $('<td></td>').append(input);
-      var row = $('<tr><td>'+value+'</td></tr>').append(cell);
+      var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
       table.append(row);
     });
     table.fadeIn();
@@ -862,11 +895,23 @@
     });
   }
 
-  $('#default-link-opacity').on('input', e => scaleLinkThing($('#default-link-opacity').val(), $('#linkOpacityVariable').val(), 'opacity', .1));
-  $('#linkOpacityVariable').change(e => scaleLinkThing($('#default-link-opacity').val(), $('#linkOpacityVariable').val(), 'opacity', .1));
+  $('#default-link-opacity').on('input', e => {
+    var opacity = 1 - $('#default-link-opacity').val();
+    session.network.svg.select('g#links').selectAll('line').attr('opacity', opacity);
+  });
 
   $('#default-link-width').on('input', e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
-  $('#linkWidthVariable, #reciprocal-link-width').change(e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
+  $('#linkWidthVariable').change(e => {
+    if(e.target.value === 'None'){
+      $('#link-reciprocalthickness-row').slideUp();
+    } else {
+      $('#link-reciprocalthickness-row').slideDown();
+    }
+    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
+  });
+  $('#reciprocal-link-width').change(e => {
+    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
+  });
 
   $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons').on('change', e => {
     session.network.render();

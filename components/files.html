@@ -23,6 +23,9 @@
             <a href="#alignerConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
           </li>
           <li role="presentation" class="nav-item">
+            <a href="#distanceConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Distance</a>
+          </li>
+          <li role="presentation" class="nav-item">
             <a href="#systemConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">System</a>
           </li>
         </ul>
@@ -30,31 +33,31 @@
         <div class="tab-content">
           <div id="alignerConfigurations" class="tab-pane fade show active" role="tabpanel">
             <div class="form-group row">
+              <div class="col-12">
+                <div class="alert alert-warning alert-dismissible" role="alert">
+                  <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software">an external tool</a> before loading them into MicrobeTrace.</p>
+                  <p><a href="https://github.com/CDCgov/MicrobeTRACE/wiki/Alignment">Click here for additional information.</a></p>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>
               </div>
               <div class="col-9">
                 <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
+                  <label class="btn btn-secondary active" data-toggle="tooltip" title="Do Not Align Sequences (Recommended)">
                     <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
                   </label>
-                  <label class="btn btn-secondary">
-                    <input type="radio" name="shouldAlign" id="nbeamAlign" data-aligner="nbeam" autocomplete="off"> NBEAM
-                  </label>
-                  <label class="btn btn-secondary">
+                  <label class="btn btn-secondary" data-toggle="tooltip" title="Align Sequences using Smith-Waterman aligner (Recommended)">
                     <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
                   </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row alignConfigRow">
-              <div class="col-12">
-                <div class="alert alert-danger alert-dismissible" role="alert">
-                  <p>MicrobeTrace is not intended to be an alignment program. For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software">an external tool</a> before loading them into MicrobeTrace.</p>
-                  <p><a href="https://github.com/CDCgov/MicrobeTRACE/wiki/Alignment">Click here for additional information.</a></p>
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
+                  <label class="btn btn-secondary" data-toggle="tooltip" title="Align Sequences using ungapped aligner (Not Recommended)">
+                    <input type="radio" name="shouldAlign" id="nbeamAlign" data-aligner="nbeam" autocomplete="off"> NBEAM
+                  </label>
                 </div>
               </div>
             </div>
@@ -108,6 +111,37 @@
               </div>
               <div class="col-9">
                 <div class="text-center" id="alignmentPreview" style="overflow-x: scroll"><canvas></canvas></div>
+              </div>
+            </div>
+          </div>
+          <div id="distanceConfigurations" class="tab-pane fade" role="tabpanel">
+            <div class="form-group row">
+              <div class="col-4">
+                <label for="distanceMetrics">Distance Metric(s)</label>
+              </div>
+              <div class="col-8">
+                <select class="chosen-select custom-select-sm" id="distanceMetrics" multiple>
+                  <option selected>TN93</option>
+                  <option>SNPs</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-4">
+                <label for="defaultDistanceMetric">Default Distance Metric</label>
+              </div>
+              <div class="col-8">
+                <select class="custom-select custom-select-sm" id="defaultDistanceMetric">
+                  <option selected>TN93</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-4">
+                <label for="defaultDistanceThreshold">Default Link Threshold</label>
+              </div>
+              <div class="col-8">
+                <input type="number" id="defaultDistanceThreshold" class="custom-select custom-select-sm" min="0" value="0.015" step="0.001"></input>
               </div>
             </div>
           </div>
@@ -252,16 +286,66 @@
     });
   }
 
-  $('.alignConfigRow, .alignPreviewRow').hide();
+  $('#distanceMetrics').chosen({width: "100%"}).change(function(){
+    $('#defaultDistanceMetric').html($(this).val().map((v, i) => {
+      return '<option value="' + v.toLowerCase() + '"' + (i == 0 ? ' selected': '') + '>' + v + '</option>';
+    }).join('\n'));
+  });
+
+  $('#defaultDistanceMetric').change(function(){
+    if($(this).val() == 'snps'){
+      $('#defaultDistanceThreshold')
+        .attr('step', 1)
+        .val(1);
+    } else {
+      $('#defaultDistanceThreshold')
+        .attr('step', 0.001)
+        .val(0.015);
+    }
+  });
+
+  var data;
+  function updatePreview(){
+    if(!data){
+      var reader = new FileReader();
+      reader.onloadend = function(e){
+        data = app.parseFASTA(e.target.result);
+        data.forEach(function(node){
+          node.id = filterXSS(node.id);
+          node.seq = filterXSS(node.seq);
+        });
+        updatePreview();
+      };
+      reader.readAsText(session.files.find(function(f){ return f.name.includes('fas'); }), 'UTF-8');
+      return;
+    }
+    $('#alignmentPreview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
+    app.align({
+      nodes: data,
+      reference: session.data.reference,
+      aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
+      isLocal: $('#localAlign').is(':checked'),
+      match: [parseFloat($('#alignerMatch').val()), parseFloat($('#alignerMismatch').val())],
+      gap: [parseFloat($('#alignerGapO').val()), parseFloat($('#alignerGapE').val())],
+      cores: $('#availableCores').val()|0
+    }, function(output){
+      var n = output.length;
+      var seqs = Array(n);
+      for(var i = 0; i < n; i++) seqs[i] = output[i].seq;
+      alignmentViewer(seqs).then(function(canvas){
+        $('#alignmentPreview').empty().append(canvas);
+      });
+    });
+  }
+
+  $('.alignConfigRow').hide();
+
   $('#swAlign').parent().click(function(){
-    $('.alignConfigRow, .alignPreviewRow').slideDown();
+    $('.alignConfigRow').slideDown();
   });
-  $('#nbeamAlign').parent().click(function(){
+
+  $('#doNotAlign, #nbeamAlign').parent().click(function(){
     $('.alignConfigRow').slideUp();
-    $('.alignPreviewRow').slideDown();
-  });
-  $('#doNotAlign').parent().click(function(){
-    $('.alignConfigRow, .alignPreviewRow').slideUp();
   });
 
   $('#refSeqFileLoad').on('change', function(e){
@@ -277,55 +361,7 @@
     reader.readAsText(file);
   });
 
-  var data, width = 0, height = 0;
-  $('#previewAlignment').click(function(){
-    $('#alignmentPreview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
-    var reader = new FileReader();
-    reader.onloadend = function(e){
-      if(!data){
-        data = app.parseFASTA(e.target.result);
-        data.forEach(function(node){
-          node.id = filterXSS(node.id);
-          node.seq = filterXSS(node.seq);
-          if(width < node.seq.length) width = node.seq.length;
-        });
-        height = data.length;
-      }
-      app.align({
-        nodes: data,
-        reference: session.data.reference,
-        aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
-        isLocal: $('#localAlign').is(':checked'),
-        match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
-        gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-        cores: parseFloat($('#availableCores').val()),
-        callback: function(output){
-          var colors = {
-            'A' : 'lightgreen',
-            'G' : 'orange',
-            'C' : 'yellow',
-            'T' : 'red'
-          };
-          var canvas = d3.select('#alignmentPreview').html(null).append('canvas')
-            .attr('width', width)
-            .attr('height', height);
-          var context = canvas.node().getContext('2d');
-          output.sort(function(a, b){ return a.id > b.id ? -1 : 1; });
-          output.forEach(function(s, row){
-            s.seq.substring(0,width).toUpperCase().split('').forEach(function(c, col){
-              if(c === '-') return;
-              context.beginPath();
-              context.rect(col, row, 1, 1);
-              context.fillStyle = colors[c];
-              context.fill();
-              context.closePath();
-            });
-          });
-        }
-      });
-    };
-    reader.readAsText(session.files.find(function(f){ return f.name.includes('fas'); }), 'UTF-8');
-  });
+  $('#alignerControlsButton, #previewAlignment').click(updatePreview);
 
   $('#availableCores').html(
     _.range(1, (navigator.hardwareConcurrency|4)+1).map(i => {
@@ -349,7 +385,6 @@
     session.startTime = Date.now();
     session.messages = [];
     session.data = app.dataSkeleton();
-    app.launchView('2d_network');
     $('#loadingInformation').html('');
 
     $('#loadingInformationModal').modal({
@@ -448,29 +483,32 @@
 
         message(`Parsing ${filename} as Node CSV...`);
 
+        if(file.field2 !== 'None') anySequences = true;
+
+        var m = 0, n = 0;
         Papa.parse(file.file, {
           header: true,
           worker: true,
           dynamicTyping: true,
           skipEmptyLines: true,
-          complete: results => {
-            var n = 0;
-            results.data.forEach(node => {
-              node = JSON.parse(filterXSS(JSON.stringify(node)));
-              node.id = '' + node[file.field1];
-              if(file.field2 !== 'None') node.seq = node[file.field2];
-              node['origin'] = [filename];
-              n += app.addNode(node);
-            });
-            results.meta.fields.forEach(key => {
-              key = filterXSS(key);
-              if(!session.data.nodeFields.includes(key)){
-                session.data.nodeFields.push(key);
-              }
-            });
-            if(results.meta.fields.includes('seq')) anySequences = 1;
-            message(` - Parsed ${n} New, ${results.data.length} Total Nodes from Node CSV.`);
-            if(fileNum == files.length - 1) nextStuff();
+          step: results => {
+            if(0 === n++){
+              results.meta.fields.forEach(key => {
+                key = filterXSS(key);
+                if(!session.data.nodeFields.includes(key)){
+                  session.data.nodeFields.push(key);
+                }
+              });
+            }
+            node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
+            node.id = '' + node[file.field1];
+            if(file.field2 !== 'None') node.seq = node[file.field2];
+            node['origin'] = [filename];
+            m += app.addNode(node);
+          },
+          complete: () => {
+            message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
+            if(fileNum === files.length - 1) nextStuff();
           }
         });
 
@@ -517,42 +555,37 @@
       }
     });
 
-    var nextStuff = function(){
-      if(anySequences){
-        $('.showForSequence').show();
-        var allDashes = /^-*$/;
-        var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
-        if($('#doNotAlign').is(':checked')){
-          computeLinks(subset);
-        } else {
-          alignAndComputeLinks(subset);
-        }
-      } else {
+    function nextStuff(){
+      if(!anySequences){
         $('.showForSequence').hide();
         finishUp();
+        return;
       }
-    };
-
-    var alignAndComputeLinks = function(subset){
-      message('Aligning Sequences...');
-      app.align({
-        reference: session.data.reference,
-        aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
-        isLocal: $('#localAlign').is(':checked'),
-        match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
-        gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-        nodes: subset,
-        cores: parseFloat($('#availableCores').val()),
-        callback: function(response){
+      $('.showForSequence').show();
+      var allDashes = /^-*$/;
+      var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
+      if($('#doNotAlign').is(':checked')){
+        computeLinks(subset);
+      } else {
+        message('Aligning Sequences...');
+        app.align({
+          reference: session.data.reference,
+          aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
+          isLocal: $('#localAlign').is(':checked'),
+          match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
+          gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
+          nodes: subset,
+          cores: parseFloat($('#availableCores').val())
+        }, function(response){
           response.forEach(function(node){
             Object.assign(subset[node.index], node);
           });
           computeLinks(subset);
-        }
-      });
+        });
+      }
     };
 
-    var computeLinks = function(subset){
+    function computeLinks(subset){
       message('Computing Links based on Genomic Proximity...');
       var k = 0;
       var n = subset.length;
@@ -608,15 +641,18 @@
       app.setNodeVisibility();
       app.tagClusters();
       app.computeDegree();
-      session.network.render();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
-      session.network.updateStatistics();
-      session.loadTime = Date.now() - session.startTime;
-      $('.hideForHIVTrace').css('display', 'flex');
-      setTimeout(function(){
-        session.network.fit();
-        $('#loadingInformationModal').modal('hide');
-      }, 1500);
+      app.launchView('2d_network', function(){
+        session.network.render();
+        session.network.force.alpha(0.3).alphaTarget(0).restart();
+        session.network.updateStatistics();
+        session.loadTime = Date.now() - session.startTime;
+        console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
+        $('.hideForHIVTrace').css('display', 'flex');
+        setTimeout(function(){
+          session.network.fit();
+          $('#loadingInformationModal').modal('hide');
+        }, 1500);
+      });
     };
   });
 })();

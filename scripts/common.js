@@ -9,7 +9,7 @@ app.dataSkeleton = function(){
     clusters: [],
     distance_matrix: {},
     trees: {},
-    nodeFields: ['id', 'index', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
+    nodeFields: ['id', 'index', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin', 'score'],
     linkFields: ['id', 'index', 'source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
     clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected'],
     reference: 'CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC'
@@ -37,6 +37,7 @@ app.defaultNode = function(){
     cluster: 1,
     visible: 1,
     degree: 0,
+    score: 0,
     seq: '',
     origin: []
   }
@@ -130,10 +131,10 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
-app.align = function(params){
+app.align = function(params, callback){
   if(params.aligner === 'none'){
-    if(params.callback){
-      params.callback(params.nodes);
+    if(callback){
+      callback(params.nodes);
     }
     return params.nodes;
   }
@@ -161,17 +162,25 @@ app.align = function(params){
         }
         for(var j = 0; j < n; j++){
           var d = output[j];
-          d.seq = d.seq + '-'.repeat(maxLength - d.seq.length)
+          d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
         }
-        params.callback(output);
+        callback(output);
       }
     };
-    var subset = Object.assign({}, params, {
-      nodes: params.nodes.slice(i*nPerI, Math.min((i+1)*nPerI, n)),
-      callback: undefined
-    });
-    aligners[i].postMessage(subset);
+    aligners[i].postMessage(Object.assign({}, params, {
+      nodes: params.nodes.slice(i*nPerI, Math.min((i+1)*nPerI, n))
+    }));
   }
+};
+
+app.computeConsensus = function(callback){
+  var nodes = session.data.nodes.filter(d => d.seq);
+  var computer = new Worker('scripts/compute-consensus.js');
+  computer.onmessage = function(response){
+    session.data.consensus = response.data;
+    if(callback) callback(response.data);
+  };
+  computer.postMessage(nodes);
 };
 
 app.titleize = function(title){
@@ -182,9 +191,7 @@ app.titleize = function(title){
   if(small === '2d network') return '2D Network';
   if(small === '3d network') return '3D Network';
   if(small === 'geo map') return 'Map';
-  return small.replace(/(?:^|\s|-)\S/g, function(c){
-    return c.toUpperCase();
-  });
+  return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
 };
 
 app.tagClusters = function(){
@@ -287,14 +294,14 @@ app.reset = function(){
   app.launchView('files');
 };
 
-app.launchView = function(view){
+app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
       app.componentCache[view] = response;
       layout.registerComponent(view, function(container, state){
         container.getElement().html(state.text);
       });
-      app.launchView(view);
+      app.launchView(view, callback);
     });
   } else {
     var contentItem = layout.contentItems.find(function(item){
@@ -317,20 +324,21 @@ app.launchView = function(view){
         layout.contentItems.splice(i, 1);
       });
       layout.contentItems.push(contentItem);
-      contentItem.element.find('select.nodeVariables').html(
-        '<option>None</option>' +
-        session.data.nodeFields.map(function(field){
-          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-        }).join('\n')
-      );
-      contentItem.element.find('select.linkVariables').html(
-        '<option>None</option>' +
-        session.data.linkFields.map(function(field){
-          return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-        }).join('\n')
-      );
-      contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     }
+    contentItem.element.find('select.nodeVariables').html(
+      '<option>None</option>' +
+      session.data.nodeFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    contentItem.element.find('select.linkVariables').html(
+      '<option>None</option>' +
+      session.data.linkFields.map(function(field){
+        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
+      }).join('\n')
+    );
+    contentItem.element.find('[data-toggle="tooltip"]').tooltip();
+    if(callback) callback(contentItem);
     return contentItem;
   }
 };

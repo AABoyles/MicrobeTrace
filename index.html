@@ -82,8 +82,8 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
-          <a href="https://github.com/CDCGov/MicrobeTrace/wiki" class="dropdown-item" target="_blank">Help</a>
-          <a href="https://github.com/CDCGov/MicrobeTrace/issues/new" class="dropdown-item" target="_blank">Report Bug</a>
+          <a href="https://github.com/AABoyles/WebMicrobeTrace/wiki" class="dropdown-item" target="_blank">Help</a>
+          <a href="https://github.com/AABoyles/WebMicrobeTrace/issues/new" class="dropdown-item" target="_blank">Report Bug</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="InstallTab" class="dropdown-item" data-toggle="modal" data-target="#install-modal">Install</a>
           <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
@@ -338,6 +338,7 @@ performance of this software.</pre>
   <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   <script src="vendor/bootstrap-filestyle.min.js"></script>
   <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
+  <script src="node_modules/alignment-viewer/dist/alignment-viewer.min.js"></script>
   <script src="scripts/common.js"></script>
   <script>
   $(function(){
@@ -463,10 +464,7 @@ performance of this software.</pre>
     $('#computeMST').click(function(){
       //TODO: Write
       $('.showForNotMST').fadeOut(function(){
-        $('.showForMST')
-          .css('opacity', 0)
-          .css('display', 'inline-block')
-          .animate({'opacity': 1});
+        $('.showForMST').fadeIn();
       });
     });
 
@@ -559,12 +557,12 @@ performance of this software.</pre>
         });
       });
 
-      session.state.linkThreshold = range/5 + min;
+      session.state.linkThreshold = parseFloat($('#defaultDistanceThreshold').val());
       $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
       $(window).trigger('updateThreshold');
     };
 
-    $('#linkSortVariable').on('change', app.updateThresholdHistogram());
+    $('#linkSortVariable').on('change', app.updateThresholdHistogram);
 
     $('#default-link-threshold').on('input', function(){
       app.setLinkVisibility();
