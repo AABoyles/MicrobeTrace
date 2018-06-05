@@ -6,43 +6,67 @@
     <button type="button" id="toggle_3d_network_settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <!--button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_3d_modal" title="Export Network">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_3d_modal" title="Export Network">
       <span class="oi oi-data-transfer-download"></span>
-    </button-->
+    </button>
   </div>
 
   <div id="3d_network_settings_pane" class="left_pane">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="nav-item active">
-        <a href="#networkConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">3D Network</a>
+      <li role="presentation" class="nav-item">
+        <a href="#threeDNodeConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Nodes</a>
+      </li>
+      <li role="presentation" class="nav-item">
+        <a href="#threeDLinkConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Links</a>
+      </li>
+      <li role="presentation" class="nav-item">
+        <a href="#threeDNetworkConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Network</a>
       </li>
     </ul>
     <!-- Tab panes -->
     <div class="tab-content">
-      <div id="networkConfigurations" class="tab-pane fade show active" role="tabpanel">
+      <div id="threeDNodeConfigurations" class="tab-pane fade show active" role="tabpanel">
         <div class="form-group row">
-          <div class="col-4"><strong>Property</strong></div>
-          <div class="col-8"><strong>Value</strong></div>
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="What do you want to see when you hover over a node?">Tooltip</a></div>
+          <div class="col-8">
+            <select id="3d_network_default-node-tooltip" class="custom-select custom-select-sm nodeVariables"></select>
+          </div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color should the nodes be?">Node Color</a></div>
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="Color Nodes according to which variable?">Color By</a></div>
+          <div class="col-8"><select id="3d_network_node-color-variable" class="custom-select custom-select-sm nodeVariables"></select></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color should the nodes be?">Color</a></div>
           <div class="col-8"><input type="color" id="3d_network_default-node-color" class="custom-select custom-select-sm" value="#5656ff" /></div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="How large should the nodes be?">Node Size</a></div>
-          <div class="col-8"><input type="range" id="3d_network_default-node-radius" min=".1" value="4" step=".1" max="20" /></div>
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="Size nodes in proportion to which variable?">Size By</a></div>
+          <div class="col-8"><select id="3d_network_node-radius-variable" class="custom-select custom-select-sm nodeVariables"></select></div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color should the links be?">Link Color</a></div>
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="How large should the nodes be?">Size</a></div>
+          <div class="col-8"><input type="range" id="3d_network_default-node-radius" min=".1" value="4" step=".1" max="20" /></div>
+        </div>
+      </div>
+      <div id="threeDLinkConfigurations" class="tab-pane fade" role="tabpanel">
+        <div class="form-group row">
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="Color Links according to which variable?">Color By</a></div>
+          <div class="col-8"><select id="3d_network_link-color-variable" class="custom-select custom-select-sm linkVariables"></select></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color should the links be?">Color</a></div>
           <div class="col-8"><input type="color" id="3d_network_default-link-color" class="custom-select custom-select-sm" value="#5f5f5f" /></div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="How transparent should the links be?">Link Transparency</a></div>
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="How transparent should the links be?">Transparency</a></div>
           <div class="col-8"><input type="range" id="3d_network_default-link-opacity" min="0" max="1" value="0.5" step="0.01" /></div>
         </div>
+      </div>
+      <div id="threeDNetworkConfigurations" class="tab-pane fade" role="tabpanel">
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
+          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background</a></div>
           <div class="col-8"><input type="color" id="3d_network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
         </div>
       </div>
@@ -80,14 +104,61 @@
 
   <script src="vendor/3d-force-graph.min.js"></script>
   <script>
+  var graph;
   (function(){
-    var graph = ForceGraph3D()($('#3d-network')[0]);
+    graph = ForceGraph3D()($('#3d-network')[0]);
 
-    function drawGraph3D(){
-      var lc = $('#3d_network_default-link-color').val();
-      var nodeColor = $('#3d_network_default-node-color').val();
+    function updateTooltip(){
+      var nodeTooltip = $('#3d_network_default-node-tooltip').val();
+      if(nodeTooltip === 'None'){
+        graph.nodeLabel('');
+      } else {
+        graph.nodeLabel(d => '<span style="color:#333333;background:#f5f5f5;border:1px solid #cccccc;border-radius:.25rem;padding:.25rem;">'+d[nodeTooltip]+'</span>') //This is more like a tooltip
+      }
+    }
+
+    function updateNodeColors(){
+      var nodeColorBy = $('#3d_network_node-color-variable').val();
+      if(nodeColorBy === 'None'){
+        var nodeColor = $('#3d_network_default-node-color').val();
+        graph.nodeColor(d => nodeColor);
+      } else {
+        graph.nodeAutoColorBy(nodeColorBy);
+      }
+      graph.nodeOpacity(1);
+    }
+
+    function updateNodeSizes(){
+      var nodeSizeBy = $('#3d_network_node-radius-variable').val();
+      if(nodeSizeBy !== 'None') graph.nodeVal(nodeSizeBy);
+      graph.nodeRelSize($('#3d_network_default-node-radius').val());
+    }
+
+    function updateLinkColors(){
+      var linkColorBy = $('#3d_network_link-color-variable').val();
+      if(linkColorBy === 'None'){
+        var linkColor = $('#3d_network_default-link-color').val();
+        graph.linkColor(d => linkColor);
+      } else {
+        graph.linkAutoColorBy(linkColorBy);
+      }
+    }
+
+    function updateLinkOpacity(){
+      graph.lineOpacity(1-$('#3d_network_default-link-opacity').val());
+    }
+
+    function updateLinkWidth(){
+      graph.linkWidth(4);
+    }
+
+    function updateBackground(){
+      graph.backgroundColor($('#3d_network-color').val());
+    }
+
+    function updateData(){
       var links = UltraDeepClone(session.data.links.filter(l => l.visible));
-      var nodes = UltraDeepClone(session.data.nodes);
+      var nodes = UltraDeepClone(session.data.nodes.filter(d => d.visible));
       nodes.forEach(d => {
         delete d.x;
         delete d.y;
@@ -96,16 +167,10 @@
         delete d.vx;
         delete d.vy;
       });
-      graph
-        .backgroundColor($('#3d_network-color').val())
-        .nodeRelSize($('#3d_network_default-node-radius').val())
-        .colorField(d => nodeColor)
-        .lineOpacity($('#3d_network_default-link-opacity').val())
-        .linkColorField(l => lc)
-        .graphData({
-          nodes: nodes,
-          links: links
-        });
+      graph.graphData({
+        nodes: nodes,
+        links: links
+      });
     }
 
     $('#toggle_3d_network_settings').click(function(){
@@ -123,9 +188,23 @@
       });
     });
 
-    $('#linkSortVariable, #default-link-threshold').change(drawGraph3D);
-    $('#3d_network_default-node-color, #3d_network_default-link-color, #3d_network-color, #3d_network_default-node-radius, #3d_network_default-link-opacity').change(drawGraph3D);
+    $('#3d_network_default-node-tooltip').change(updateTooltip);
+    $('#3d_network_node-color-variable, #3d_network_default-node-color').change(updateNodeColors);
+    $('#3d_network_node-radius-variable, #3d_network_default-node-radius').change(updateNodeSizes);
+    $('#3d_network_default-link-color').change(updateLinkColors);
+    $('#3d_network_link-color-variable').on('update', updateLinkColors);
+    $('#3d_network_default-link-opacity').change(updateLinkOpacity);
+    $('#3d_network-color').change(updateBackground);
+    $('#linkSortVariable, #default-link-threshold').change(updateData);
 
-    drawGraph3D();
+    $('#3d_network_default-node-tooltip').val('id');
+    updateTooltip();
+    updateNodeColors();
+    updateNodeSizes();
+    updateLinkColors();
+    updateLinkOpacity();
+    updateLinkWidth();
+    updateBackground();
+    updateData();
   })();
   </script>
