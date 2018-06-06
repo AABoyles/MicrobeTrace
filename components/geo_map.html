@@ -127,7 +127,7 @@
             <!--select id="opacityField" class="nodeVariables custom-select custom-select-sm">
               <option selected>None</option>
             </select-->
-            <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="1.00" />
+            <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="0.00" />
           </div>
         </div>
         <div class="form-group row">
@@ -622,7 +622,7 @@
       table.fadeIn();
     });
 
-    $('#opacity').on('input', e => session.map.svg.selectAll('circle').attr('opacity', e.target.value));
+    $('#opacity').on('input', e => session.map.svg.selectAll('circle').attr('opacity', 1-e.target.value));
 
     $('#landColor').on('input', e => session.map.svg.selectAll('path').attr('fill', e.target.value));
 
