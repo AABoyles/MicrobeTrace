@@ -147,13 +147,24 @@
       </div>
       <div role="tabpanel" class="tab-pane fade" id="mapConfigurations">
         <div class="form-group row">
-          <div class="col-3">Layers</div>
-          <div class="col-9">
-            <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showStates" aria-pressed="true" autocomplete="off">States</button>
-            <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showCounties" aria-pressed="false" autocomplete="off">Counties</button>
-            <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showCities" aria-pressed="true" autocomplete="off">Cities</button>
-            <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showLinks" aria-pressed="false" autocomplete="off">Links</button>
-            <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showLabels" aria-pressed="true" autocomplete="off">Labels</button>
+          <div class="col-3">States</div>
+          <div class="col-9"><input type="checkbox" id="showStates" checked /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Counties</div>
+          <div class="col-9"><input type="checkbox" id="showCounties" /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Cities</div>
+          <div class="col-9"><input type="checkbox" id="showCities" checked /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Links</div>
+          <div class="col-9"><input type="checkbox" id="showLinks" /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Labels</div>
+          <div class="col-9"><input type="checkbox" id="showLabels" checked />
           </div>
         </div>
         <div class="form-group row">
@@ -242,7 +253,7 @@
         // var radius = parseFloat($('#radius').val());
         // session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
         // session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
-        if($('#showLabels').hasClass('active')) drawLabels();
+        if($('#showLabels').is(':checked')) drawLabels();
       });
 
     session.map.svg.call(session.map.zoom);
@@ -357,7 +368,7 @@
     }
 
     function drawLinks(){
-      if(!$('#showLinks').hasClass('active')) return linkLayer.html(null);
+      if(!$('#showLinks').is(':checked')) return linkLayer.html(null);
       var links = UltraDeepClone(session.data.links);
       var nodes = UltraDeepClone(session.data.nodes);
       links.forEach(l => {
@@ -534,40 +545,40 @@
       }
     });
 
-    $('#showStates').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showStates').change(function(e){
+      if($(this).is(':checked')){
         countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 0);
         drawStates();
       } else {
-        if(!$('#showCounties').hasClass('active')){
+        if(!$('#showCounties').is(':checked')){
           countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
         }
         stateLayer.transition().style('opacity', 0).on('end', e => stateLayer.html(null));
       }
     });
 
-    $('#showCounties').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showCounties').change(function(e){
+      if($(this).is(':checked')){
         countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 0);
         drawCounties();
       } else {
-        if(!$('#showStates').hasClass('active')){
+        if(!$('#showStates').is(':checked')){
           countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
         }
         countyLayer.transition().style('opacity', 0).on('end', e => countyLayer.html(null));
       }
     });
 
-    $('#showCities').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showCities').change(function(e){
+      if($(this).is(':checked')){
         drawCities();
       } else {
         cityLayer.transition().style('opacity', 0).on('end', e => cityLayer.html(null));
       }
     });
 
-    $('#showLabels').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showLabels').change(function(e){
+      if($(this).is(':checked')){
         drawLabels();
       } else {
         labelsLayer.transition().style('opacity', 0).on('end', e => labelsLayer.html(null));
