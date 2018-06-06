@@ -589,7 +589,7 @@
         return;
       }
       table.append('<tr><th>'+e.target.value+'</th><th>Color</th></tr>');
-      var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
+      var values = _(session.data.nodes).pluck(e.target.value).uniq().sort().value();
       var o = d3.scaleOrdinal(d3.schemeCategory10).domain(values);
       circles.style('fill', d => o(d[e.target.value]));
       values.forEach(value => {
