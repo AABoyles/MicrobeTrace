@@ -16,8 +16,8 @@
 
   <div id="map_settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="nav-item active">
-        <a href="#mapDataConfigurations" class="nav-link" aria-controls="mapDataConfigurations" role="tab" data-toggle="tab">Data</a>
+      <li role="presentation" class="nav-item">
+        <a href="#mapDataConfigurations" class="nav-link active" aria-controls="mapDataConfigurations" role="tab" data-toggle="tab">Data</a>
       </li>
       <li role="presentation" class="nav-item">
         <a href="#mapNodeConfigurations" class="nav-link" aria-controls="mapNodeConfigurations" role="tab" data-toggle="tab">Nodes</a>
@@ -108,11 +108,16 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3">Color</div>
+          <div class="col-3">Color By</div>
           <div class="col-9">
             <select id="nodeColorField" class="nodeVariables custom-select custom-select-sm">
               <option selected>None</option>
             </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Color</div>
+          <div class="col-9">
             <input type="color" id="color" class="custom-select custom-select-sm" value="#1f77b4" />
           </div>
         </div>
@@ -122,7 +127,7 @@
             <!--select id="opacityField" class="nodeVariables custom-select custom-select-sm">
               <option selected>None</option>
             </select-->
-            <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="1.00" />
+            <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="0.00" />
           </div>
         </div>
         <div class="form-group row">
@@ -142,13 +147,24 @@
       </div>
       <div role="tabpanel" class="tab-pane fade" id="mapConfigurations">
         <div class="form-group row">
-          <div class="col-3">Layers</div>
-          <div class="col-9">
-            <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showStates" aria-pressed="true" autocomplete="off">States</button>
-            <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showCounties" aria-pressed="false" autocomplete="off">Counties</button>
-            <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showCities" aria-pressed="true" autocomplete="off">Cities</button>
-            <button type="button" class="btn btn-secondary btn-sm" data-toggle="button" id="showLinks" aria-pressed="false" autocomplete="off">Links</button>
-            <button type="button" class="btn btn-secondary btn-sm active" data-toggle="button" id="showLabels" aria-pressed="true" autocomplete="off">Labels</button>
+          <div class="col-3">States</div>
+          <div class="col-9"><input type="checkbox" id="showStates" checked /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Counties</div>
+          <div class="col-9"><input type="checkbox" id="showCounties" /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Cities</div>
+          <div class="col-9"><input type="checkbox" id="showCities" checked /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Links</div>
+          <div class="col-9"><input type="checkbox" id="showLinks" /></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Labels</div>
+          <div class="col-9"><input type="checkbox" id="showLabels" checked />
           </div>
         </div>
         <div class="form-group row">
@@ -237,7 +253,7 @@
         // var radius = parseFloat($('#radius').val());
         // session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
         // session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
-        if($('#showLabels').hasClass('active')) drawLabels();
+        if($('#showLabels').is(':checked')) drawLabels();
       });
 
     session.map.svg.call(session.map.zoom);
@@ -352,7 +368,7 @@
     }
 
     function drawLinks(){
-      if(!$('#showLinks').hasClass('active')) return linkLayer.html(null);
+      if(!$('#showLinks').is(':checked')) return linkLayer.html(null);
       var links = UltraDeepClone(session.data.links);
       var nodes = UltraDeepClone(session.data.nodes);
       links.forEach(l => {
@@ -529,40 +545,40 @@
       }
     });
 
-    $('#showStates').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showStates').change(function(e){
+      if($(this).is(':checked')){
         countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 0);
         drawStates();
       } else {
-        if(!$('#showCounties').hasClass('active')){
+        if(!$('#showCounties').is(':checked')){
           countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
         }
         stateLayer.transition().style('opacity', 0).on('end', e => stateLayer.html(null));
       }
     });
 
-    $('#showCounties').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showCounties').change(function(e){
+      if($(this).is(':checked')){
         countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 0);
         drawCounties();
       } else {
-        if(!$('#showStates').hasClass('active')){
+        if(!$('#showStates').is(':checked')){
           countryWrappers.filter(d => d.id === 'USA').transition().style('opacity', 1);
         }
         countyLayer.transition().style('opacity', 0).on('end', e => countyLayer.html(null));
       }
     });
 
-    $('#showCities').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showCities').change(function(e){
+      if($(this).is(':checked')){
         drawCities();
       } else {
         cityLayer.transition().style('opacity', 0).on('end', e => cityLayer.html(null));
       }
     });
 
-    $('#showLabels').click(function(e){
-      if(!$(this).hasClass('active')){
+    $('#showLabels').change(function(e){
+      if($(this).is(':checked')){
         drawLabels();
       } else {
         labelsLayer.transition().style('opacity', 0).on('end', e => labelsLayer.html(null));
@@ -589,7 +605,7 @@
         return;
       }
       table.append('<tr><th>'+e.target.value+'</th><th>Color</th></tr>');
-      var values = _(session.data.nodes).map(e.target.value).uniq().sort().value();
+      var values = _(session.data.nodes).pluck(e.target.value).uniq().sort().value();
       var o = d3.scaleOrdinal(d3.schemeCategory10).domain(values);
       circles.style('fill', d => o(d[e.target.value]));
       values.forEach(value => {
@@ -606,7 +622,7 @@
       table.fadeIn();
     });
 
-    $('#opacity').on('input', e => session.map.svg.selectAll('circle').attr('opacity', e.target.value));
+    $('#opacity').on('input', e => session.map.svg.selectAll('circle').attr('opacity', 1-e.target.value));
 
     $('#landColor').on('input', e => session.map.svg.selectAll('path').attr('fill', e.target.value));
 

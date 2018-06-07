@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-06-04
+# 2018-06-07
 
 CACHE:
 index.html
@@ -89,6 +89,11 @@ data/labels.json
 data/states.json
 data/tracts.json
 data/zipcodes.json
+node_modules/chosen-js/chosen-sprite.png
+node_modules/open-iconic/font/fonts/open-iconic.woff
+node_modules/open-iconic/font/fonts/open-iconic.ttf
+node_modules/open-iconic/font/fonts/open-iconic.otf
+node_modules/papaparse/papaparse.min.js?papaworker
 
 NETWORK:
 *
