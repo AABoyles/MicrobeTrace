@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-04-06
+# 2018-06-07
 
 CACHE:
 index.html
@@ -17,14 +17,19 @@ components/scatterplot.html
 components/sequences.html
 components/table.html
 components/timeline.html
-scripts/aligner.js
+scripts/align-nbeam.js
+scripts/align-sw.js
 scripts/common.js
+scripts/compute-consensus.js
 scripts/compute-dm.js
+scripts/compute-links.js
 scripts/compute-mst.js
+scripts/polyfills.js
 vendor/3d-force-graph.min.js
 vendor/bootstrap-filestyle.min.js
 vendor/FileSaver.min.js
 vendor/neighbor-joining.js
+vendor/ntseq.js
 vendor/shpwrite.js
 img/1DNA.gif
 img/Back_Arrow.png
@@ -41,8 +46,10 @@ img/image32.ico
 img/image32.png
 img/image64.ico
 img/image64.png
+img/spinner.gif
+node_modules/underscore/underscore-min.js
+node_modules/udc/udc.js
 node_modules/vue/dist/vue.min.js
-node_modules/lodash/lodash.min.js
 node_modules/jquery/dist/jquery.min.js
 node_modules/popper.js/dist/umd/popper.min.js
 node_modules/bootstrap/dist/js/bootstrap.min.js
@@ -56,13 +63,13 @@ node_modules/html2canvas/dist/html2canvas.min.js
 node_modules/screenfull/dist/screenfull.js
 node_modules/clipboard/dist/clipboard.min.js
 node_modules/chosen-js/chosen.jquery.min.js
+node_modules/alignment-viewer/dist/alignment-viewer.min.js
 node_modules/d3-force-attract/dist/d3-force-attract.min.js
 node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
 node_modules/d3-force-3d/build/d3-force-3d.min.js
 node_modules/d3-sankey/build/d3-sankey.min.js
 node_modules/phylocanvas/dist/phylocanvas.min.js
 node_modules/msa/dist/msa.js
-node_modules/lodash/lodash.min.js
 node_modules/vis/dist/vis.min.js
 node_modules/moment/min/moment-with-locales.min.js
 node_modules/bootstrap/dist/css/bootstrap.min.css
@@ -82,6 +89,11 @@ data/labels.json
 data/states.json
 data/tracts.json
 data/zipcodes.json
+node_modules/chosen-js/chosen-sprite.png
+node_modules/open-iconic/font/fonts/open-iconic.woff
+node_modules/open-iconic/font/fonts/open-iconic.ttf
+node_modules/open-iconic/font/fonts/open-iconic.otf
+node_modules/papaparse/papaparse.min.js?papaworker
 
 NETWORK:
 *
