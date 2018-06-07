@@ -15,6 +15,7 @@ cat components/*.html | grep -o "node_modules/.*\.js" >> microbetrace.appcache
 cat index.html | grep -o "node_modules/.*\.css" >> microbetrace.appcache
 cat components/*.html | grep -o "node_modules/.*\.css" >> microbetrace.appcache
 ls data/ | sed -e 's/^/data\//' >> microbetrace.appcache
+cat cache.extra >> microbetrace.appcache
 
 echo "
 NETWORK:
