@@ -117,7 +117,8 @@ button.navbar-toggler{
 
 /* File Panel */
 #file_panel {
-  height: 100%;
+  overflow-y: scroll;
+  height: calc(100% - 68px);
   padding-top: 15px;
   background-color: #ffffff;
 }
