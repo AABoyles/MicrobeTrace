@@ -247,13 +247,14 @@
       .scaleExtent([1, 100])
       .on('zoom', () => {
         var e = d3.event.transform;
-        session.map.lastTransform = UltraDeepClone(e);
-        session.map.svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', session.map.lastTransform);
+        session.map.svg.selectAll('g#countries, g#states, g#counties, g#map_nodes, g#map_links, g#cities, g#labels').attr('transform', e);
         session.map.svg.selectAll('g#countries, g#states, g#counties').selectAll('path').attr('stroke-width', 1 / e.k);
-        // var radius = parseFloat($('#radius').val());
-        // session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius / session.map.lastTransform.k);
-        // session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', 2 / session.map.lastTransform.k);
+        var radius = parseFloat($('#radius').val()) / e.k;
+        session.map.svg.selectAll('g#map_nodes').selectAll('circle').attr('r', radius);
+        var width = 2 / e.k;
+        session.map.svg.selectAll('g#map_links').selectAll('line').attr('stroke-width', width);
         if($('#showLabels').is(':checked')) drawLabels();
+        session.map.lastTransform = UltraDeepClone(e);
       });
 
     session.map.svg.call(session.map.zoom);
@@ -344,7 +345,7 @@
     }
 
     function drawNodes(){
-      var radius = parseFloat($('#radius').val());
+      var radius = parseFloat($('#radius').val()) / session.map.lastTransform.k;
       var color = $('#color').val();
       var normal = d3.randomNormal();
       var jitter = parseFloat($('#jitter').val()) / session.map.lastTransform.k;
@@ -352,14 +353,14 @@
         d.jx = normal() * jitter;
         d.jy = normal() * jitter;
       });
-      var nodes = nodeLayer.selectAll('circle').data(session.data.nodes.filter(d => d.visible && d.lon && d.lat))
+      var nodes = nodeLayer.selectAll('circle').data(session.data.nodes.filter(d => d.visible && d.lon && d.lat));
       nodes.exit().remove();
       nodes.enter().append('circle')
       nodes = nodes.merge(nodes);
       nodes
         .attr('r', radius)
-        .attr('stroke', '#ffffff')
-        .attr('stroke-width', '2px')
+        // .attr('stroke', '#ffffff')
+        // .attr('stroke-width', '2px')
         .style('fill', color)
         .attr('cx', d => projection([d.lon, d.lat])[0] + d.jx)
         .attr('cy', d => projection([d.lon, d.lat])[1] + d.jy)
@@ -587,7 +588,10 @@
 
     $('#showLinks').on('mouseup', e => setTimeout(drawLinks, 80));
 
-    $('#radius').on('input', e => nodeLayer.selectAll('circle').attr('r', e.target.value));
+    $('#radius').on('input', e => {
+      var radius = e.target.value / session.map.lastTransform.k;
+      nodeLayer.selectAll('circle').attr('r', radius);
+    });
 
     $('#color').on('input', e => nodeLayer.selectAll('circle').style('fill', e.target.value));
 
