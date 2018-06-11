@@ -701,12 +701,6 @@
 
     $(window).on('link_visibility', drawLinks);
 
-    $('#linkSortVariable, #default-link-threshold').on('input', e => {
-      session.network.render();
-      session.network.updateStatistics();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
-    });
-
     matchCoordinates();
     drawNodes();
     drawCountries();
@@ -714,6 +708,7 @@
     drawStates();
     drawCities();
     drawNodes(); //No idea why this needs to be called twice, but it does.
+
     setTimeout(() => {
       countryWrappers.filter(d => d.id === 'USA').style('opacity', 0);
       if(session.data.nodes.some(d => d.lat && d.lon)) session.map.fit(nodeLayer.node().getBBox());
