@@ -78,6 +78,9 @@ svg#link-threshold-sparkline{
 .left_pane div.tab-content{
   background:#ffffff;
 }
+.ifOnline{
+  display:none;
+}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after{

@@ -83,9 +83,10 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
-          <a href="https://github.com/AABoyles/WebMicrobeTrace/wiki" class="dropdown-item" target="_blank">Help</a>
-          <a href="https://github.com/AABoyles/WebMicrobeTrace/issues/new" class="dropdown-item" target="_blank">Report Bug</a>
-          <div class="dropdown-divider"></div>
+          <a href="https://github.com/AABoyles/WebMicrobeTrace/wiki" class="dropdown-item ifOnline" target="_blank">Help</a>
+          <a href="https://github.com/AABoyles/WebMicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank">Report Bug</a>
+          <div class="dropdown-divider ifOnline"></div>
+          <a href="#" id="UpdateTab" class="dropdown-item ifOnline">Update</a>
           <a href="#" id="InstallTab" class="dropdown-item" data-toggle="modal" data-target="#install-modal">Install</a>
           <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
         </div>
@@ -311,7 +312,8 @@ performance of this software.</pre>
         </div>
         <div class="modal-body">
           <h3>MicrobeTrace <small id="version"></small></h3>
-          MicrobeTrace is a desktop application that renders existing data from high-risk contact networks in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to supplemental data sources and mathematical inferences like the most probable transmission pathways. MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data production and analytics and help you to discover, understand, and display relationships between patients (nodes). As a standalone desktop application, MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby reducing both the startup cost and analysis time and effort.
+          <p>MicrobeTrace is a desktop application that renders existing data from high-risk contact networks in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to supplemental data sources and mathematical inferences like the most probable transmission pathways. MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data production and analytics and help you to discover, understand, and display relationships (links) between patients (nodes). MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby reducing both the startup cost and analysis time and effort.</p>
+          <p class="ifOnline"><a href="https://github.com/aaboyles/WebMicrobeTrace/wiki">Click Here to Learn More</a></p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -345,7 +347,7 @@ performance of this software.</pre>
   $(function(){
     'use strict';
 
-    $.getJSON('package.json', r => $('#version').html(r.version));
+    $.getJSON('package.json', function(r){ $('#version').html(r.version); });
 
     if(navigator.onLine && window.applicationCache.status !== window.applicationCache.UNCACHED){
       window.applicationCache.update();
@@ -353,6 +355,7 @@ performance of this software.</pre>
         window.applicationCache.swapCache();
       }
     }
+    if(navigator.onLine) $('.ifOnline').show();
 
     window.session = app.sessionSkeleton();
 
@@ -463,6 +466,21 @@ performance of this software.</pre>
     $('#ReloadTab').click(function(){ window.location.reload(true); });
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
+
+    $('#UpdateTab').click(function(){
+      if('serviceWorker' in navigator){
+        navigator.serviceWorker.register('sw.js', { scope: '/' }).then(function(reg){
+          if(reg.installing || reg.waiting){
+            alertify.warning('MicrobeTrace is Updating...');
+          } else if(reg.active) {
+            alertify.success('You\'re running the latest available version of MicrobeTrace!');
+          }
+        }).catch(function(error){
+          alertify.error('MicrobeTrace failed to Update!');
+          console.log(error);
+        });
+      }
+    });
 
     $('#computeMST').click(function(){
       //TODO: Write
