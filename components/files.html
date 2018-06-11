@@ -1,7 +1,9 @@
 <div id="file_panel" class="container-fluid">
   <div id="file_table" class="container"></div>
-  <div class="container">
-    <hr class="my-4">
+</div>
+
+<div class="fixed-bottom" style="background: white; border-top: 1px solid rgba(0,0,0,.1);">
+  <div class="container" style="padding: 15px">
     <input type="file" id="data_files" multiple="true" />
     <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#alignerControlsModal">Settings</button>
     <button type="submit" id="main-submit" class="btn btn-success float-right" title="Please select a Network CSV or FASTA File">Submit</button>
@@ -107,7 +109,9 @@
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Generate a preview of the alignment, using the current configurations.">
                   <button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button>
-                </a>
+                </a><br />
+                <input type="checkbox" id="autoPreview"></input>
+                <label for="autoPreview" data-toggle="tooltip" title="Update preview of the alignment whenever anything changes?">Auto-Preview?</label>
               </div>
               <div class="col-9">
                 <div class="text-center" id="alignmentPreview" style="overflow-x: scroll"><canvas></canvas></div>
@@ -342,10 +346,12 @@
 
   $('#swAlign').parent().click(function(){
     $('.alignConfigRow').slideDown();
+    if($('#autoPreview').is(':checked')) updatePreview();
   });
 
   $('#doNotAlign, #nbeamAlign').parent().click(function(){
     $('.alignConfigRow').slideUp();
+    if($('#autoPreview').is(':checked')) updatePreview();
   });
 
   $('#refSeqFileLoad').on('change', function(e){
@@ -356,6 +362,7 @@
         var node = app.parseFASTA(e.target.result)[0];
         session.data.reference = filterXSS(node.seq);
         $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
+        if($('#autoPreview').is(':checked')) updatePreview();
       }
     };
     reader.readAsText(file);

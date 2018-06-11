@@ -129,7 +129,8 @@
         alignLabels: $('#tree_labels_align').is(':checked'),
       });
       phylocanvas.load(session.data.trees[type]); // load your tree file
-      phylocanvas.setSize(root.parent().width(), root.parent().height());
+      var parent = root.parent();
+      phylocanvas.setSize(parent.width(), parent.height());
       phylocanvas.setTreeType($('#tree_layout').val().toLowerCase());
       phylocanvas.fitInPanel();
 
