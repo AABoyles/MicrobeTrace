@@ -10,9 +10,11 @@
     "yarn": "^1.6.0"
   },
   "scripts": {
+    "gencerts": "bash sslcert/gen.sh",
     "appcache": "bash appcache.sh",
     "start": "node index.js",
     "build": "yarn start && nativifier http://localhost:5000"
+    "secure": "node https.js",
   },
   "devDependencies": {
     "nativefier": "^7.6.2"
