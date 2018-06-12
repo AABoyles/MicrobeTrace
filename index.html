@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!--html lang="en" manifest="microbetrace.appcache"-->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -349,12 +348,6 @@ performance of this software.</pre>
 
     $.getJSON('package.json', function(r){ $('#version').html(r.version); });
 
-    if(navigator.onLine && window.applicationCache.status !== window.applicationCache.UNCACHED){
-      window.applicationCache.update();
-      if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
-        window.applicationCache.swapCache();
-      }
-    }
     if(navigator.onLine) $('.ifOnline').show();
 
     window.session = app.sessionSkeleton();
