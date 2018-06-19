@@ -1,4 +1,4 @@
-$(function(){
+(function(){
   'use strict';
 
   $.getJSON('package.json', function(r){ $('#version').html(r.version); });
@@ -276,7 +276,7 @@ $(function(){
   });
 
   $(window).on('resize', function(){ layout.root.setSize(); });
-});
+})();
 
 alertify.defaults.transition = 'slide';
 alertify.defaults.theme.ok = 'btn btn-primary';
