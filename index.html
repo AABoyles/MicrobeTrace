@@ -205,27 +205,29 @@ performance of this software.</pre>
           <div class="tab-content">
             <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="nodes-tab">
               <div class="form-group row">
-                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Prune Links on</label></div>
-                <div class="col-8"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
-              </div>
-              <div class="form-group row">
-                <div class="col-4"><a data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Pruning Threshold</a></div>
-                <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
-                <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></div>
-              </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="computeMST" data-toggle="tooltip" title="Would you like to restrict links to the Minimum Spanning Tree?">Minimum Spanning Tree</label></div>
+                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
                 <div class="col-8">
-                  <button id="computeMST" class="btn btn-secondary btn-sm showForNotMST">Compute MST</button>
-                  <div class="btn-group btn-group-toggle btn-group-sm showForMST" data-toggle="buttons">
+                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
-                      <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> All
+                      <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> None
                     </label>
                     <label class="btn btn-secondary">
                       <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
                     </label>
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="MSTOptions" id="showNNLinks" autocomplete="off"> NN
+                    </label>
                   </div>
                 </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Filter Links on</label></div>
+                <div class="col-8"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><a data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Filtering Threshold</a></div>
+                <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
+                <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label for="ShowSingletons" data-toggle="tooltip" title="Would you like to show or hide nodes with no visible links?">Singletons</label></div>
@@ -482,19 +484,9 @@ performance of this software.</pre>
       }
     });
 
-    $('#computeMST').click(function(){
-      //TODO: Write
-      $('.showForNotMST').fadeOut(function(){
-        $('.showForMST').fadeIn();
-      });
+    $('[name="MSTOptions"]').change(function(){
+      app.updateNetwork($('#HideSingletons').is(':checked'));
     });
-
-    $('#showMSTLinks, #showAllLinks').change(function(){
-      app.setLinkVisibility();
-      app.tagClusters();
-      if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
-      app.computeDegree();
-    })
 
     $('#ShowSingletons, #HideSingletons').change(app.setNodeVisibility);
 
