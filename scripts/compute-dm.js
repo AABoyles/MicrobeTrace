@@ -24,4 +24,5 @@ onmessage = function(e){
     snps: snps,
     labels: labels
   });
+  close();
 };

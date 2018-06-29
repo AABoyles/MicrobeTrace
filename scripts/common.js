@@ -266,22 +266,68 @@ app.setNodeVisibility = function(){
 app.setLinkVisibility = function(){
   var metric  = $('#linkSortVariable').val(),
       threshold = $('#default-link-threshold').val(),
-      showMST = $('#showMSTLinks').is(':checked');
+      showMST = $('#showMSTLinks').is(':checked'),
+      showNN = $('#showNNLinks').is(':checked');
   session.state.linkThreshold = threshold;
   session.data.links.forEach(function(link){
-    link.visible = 1;
-    if(metric !== 'none'){
-      link.visible = link.visible && (link[metric] <= threshold);
-    }
+    link.visible = true;
     if(showMST){
-      link.visible = link.visible && link.mst;
+      link.visible &= link.mst;
+    } else if(showNN){
+      link.visible &= link.nn;
+    }
+    if(metric !== 'none'){
+      link.visible &= (link[metric] <= threshold);
     }
     if(session.data.clusters.length > 0){
       //The above condition is a dumb hack to initial load the network
       var cluster = session.data.clusters.find(function(c){ return c.id === link.cluster; });
-      if(cluster) link.visible = link.visible && cluster.visible;
+      if(cluster) link.visible &= cluster.visible;
     }
   });
+};
+
+app.updateNetwork = function(hideSingletons){
+  app.setLinkVisibility();
+  app.tagClusters();
+  if(hideSingletons) app.setNodeVisibility();
+  app.computeDegree();
+};
+
+app.computeDM = function(callback){
+  var start = Date.now();
+  var DMMaker = new Worker('scripts/compute-dm.js');
+  DMMaker.onmessage = function(response){
+    session.data.distance_matrix = response.data;
+    console.log('DM Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  DMMaker.postMessage({
+    nodes: session.data.nodes.filter(d => d.seq),
+    links: session.data.links.filter(l => l.tn93 && l.snps)
+  });
+};
+
+app.computeMST = function(callback){
+  var start = Date.now();
+  var mstMachine = new Worker('scripts/compute-mst.js');
+  mstMachine.onmessage = function(message){
+    message.data.forEach(l => session.data.links[l.index].mst = l.mst);
+    console.log('MST Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  mstMachine.postMessage(session.data);
+};
+
+app.computeNN = function(callback){
+  var start = Date.now();
+  var nnMachine = new Worker('scripts/compute-nn.js');
+  nnMachine.onmessage = function(message){
+    message.data.forEach(l => session.data.links[l.index].nn = l.nn);
+    console.log('NN Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  nnMachine.postMessage(session.data);
 };
 
 app.reset = function(){

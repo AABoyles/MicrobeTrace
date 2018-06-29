@@ -609,14 +609,15 @@
           if(++returned === n){
             computers.forEach(c => c.terminate());
             message(` - Found ${k} New Links from Genomic Proximity`);
-            var DMMaker = new Worker('scripts/compute-dm.js');
-            DMMaker.onmessage = function(response){
-              session.data.distance_matrix = response.data;
-              DMMaker.terminate();
-            };
-            DMMaker.postMessage({
-              nodes: session.data.nodes.filter(d => d.seq),
-              links: session.data.links.filter(l => l.tn93 && l.snps)
+            app.computeDM(function(){
+              $('.showForDM').show();
+              //Since Nearest-neighbor runs on distance matrices...
+              app.computeNN(function(){
+                $('.showForNN').show();
+              });
+            });
+            app.computeMST(function(){
+              $('.showForMST').show();
             });
             finishUp();
           }
