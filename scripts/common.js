@@ -343,11 +343,15 @@ app.reset = function(){
 app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
-      app.componentCache[view] = response;
+      app.componentCache[view] = { text: response };
       layout.registerComponent(view, function(container, state){
         container.getElement().html(state.text);
       });
-      app.launchView(view, callback);
+      if(callback){
+        app.launchView(view, callback);
+      } else {
+        return app.launchView(view);
+      }
     });
   } else {
     var contentItem = layout.contentItems.find(function(item){
@@ -358,7 +362,7 @@ app.launchView = function(view, callback){
     } else {
       layout.root.contentItems[0].addChild({
         componentName: view,
-        componentState: { text: app.componentCache[view] },
+        componentState: app.componentCache[view],
         title: app.titleize(view),
         type: 'component'
       });
@@ -384,8 +388,11 @@ app.launchView = function(view, callback){
       }).join('\n')
     );
     contentItem.element.find('[data-toggle="tooltip"]').tooltip();
-    if(callback) callback(contentItem);
-    return contentItem;
+    if(callback){
+      callback(contentItem);
+    } else {
+      return contentItem;
+    }
   }
 };
 
