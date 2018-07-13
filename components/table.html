@@ -230,7 +230,7 @@
     $('#table_export').click(function(){
       var mime = 'text/csv;';
       var handler = Papa.unparse;
-      var format = $('#export-file-format').val();
+      var format = $('#export-table-file-type').val();
       var data = session.data[$('input[name=nodelink]:checked').data('value')];
       if(format === 'json'){
         mime = 'application/json;';

@@ -1,20 +1,21 @@
+let epsilon = 1E-9;
+
 onmessage = function(e){
   let nodes = e.data.nodes;
   let links = e.data.links;
-  links.forEach(l => l.nn = false);
   let dm = e.data.distance_matrix.tn93;
   let m = links.length;
   let n = nodes.length;
+  for(let j = 0; j < m; j++){ links[j].nn = false; }
   for(let i = 0; i < n; i++){
     let minDist = Number.MAX_VALUE;
     let targets = [];
     for(let j = 0; j < i; j++){
-      if(dm[i][j] < minDist){
+      if(Math.abs(dm[i][j] - minDist) < epsilon){
+        targets.push(nodes[j].id);
+      } else if(dm[i][j] < minDist){
         minDist = dm[i][j];
         targets = [nodes[j].id];
-      } else if(dm[i][j] == minDist){
-        minDist = dm[i][j];
-        targets.push(nodes[j].id);
       }
     }
     for(let j = 0; j < m; j++){
