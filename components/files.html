@@ -611,13 +611,9 @@
             message(` - Found ${k} New Links from Genomic Proximity`);
             app.computeDM(function(){
               $('.showForDM').show();
-              //Since Nearest-neighbor runs on distance matrices...
               app.computeNN(function(){
                 $('.showForNN').show();
               });
-            });
-            app.computeMST(function(){
-              $('.showForMST').show();
             });
             finishUp();
           }

@@ -266,14 +266,11 @@ app.setNodeVisibility = function(){
 app.setLinkVisibility = function(){
   var metric  = $('#linkSortVariable').val(),
       threshold = $('#default-link-threshold').val(),
-      showMST = $('#showMSTLinks').is(':checked'),
       showNN = $('#showNNLinks').is(':checked');
   session.state.linkThreshold = threshold;
   session.data.links.forEach(function(link){
     link.visible = true;
-    if(showMST){
-      link.visible &= link.mst;
-    } else if(showNN){
+    if(showNN){
       link.visible &= link.nn;
     }
     if(metric !== 'none'){
@@ -306,17 +303,6 @@ app.computeDM = function(callback){
     nodes: session.data.nodes.filter(d => d.seq),
     links: session.data.links.filter(l => l.tn93 && l.snps)
   });
-};
-
-app.computeMST = function(callback){
-  var start = Date.now();
-  var mstMachine = new Worker('scripts/compute-mst.js');
-  mstMachine.onmessage = function(message){
-    message.data.forEach(l => session.data.links[l.index].mst = l.mst);
-    console.log('MST Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-    if(callback) callback();
-  };
-  mstMachine.postMessage(session.data);
 };
 
 app.computeNN = function(callback){
