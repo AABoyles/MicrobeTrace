@@ -77,10 +77,9 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
-          <a href="https://github.com/AABoyles/WebMicrobeTrace/wiki" class="dropdown-item ifOnline" target="_blank">Help</a>
+          <a href="#" id="HelpTab" class="viewbutton dropdown-item" data-href="help">Help</a>
           <a href="https://github.com/AABoyles/WebMicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank">Report Bug</a>
           <div class="dropdown-divider ifOnline"></div>
-          <a href="#" id="UpdateTab" class="dropdown-item ifOnline">Update</a>
           <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
         </div>
       </li>
@@ -325,13 +324,19 @@ performance of this software.</pre>
 
     $.getJSON('package.json', function(r){ $('#version').html(r.version); });
 
-    if(navigator.onLine && window.applicationCache.status !== window.applicationCache.UNCACHED){
-      window.applicationCache.update();
-      if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
-        window.applicationCache.swapCache();
+    if(navigator.onLine){
+      $('#HelpTab')
+        .removeClass('viewbutton')
+        .attr('href', 'https://github.com/AABoyles/WebMicrobeTrace/wiki')
+        .attr('target', '_blank');
+      $('.ifOnline').show();
+      if(window.applicationCache.status !== window.applicationCache.UNCACHED){
+        window.applicationCache.update();
+        if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
+          window.applicationCache.swapCache();
+        }
       }
     }
-    if(navigator.onLine) $('.ifOnline').show();
 
     window.session = app.sessionSkeleton();
 
@@ -430,21 +435,6 @@ performance of this software.</pre>
     $('#ReloadTab').click(function(){ window.location.reload(true); });
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
-
-    $('#UpdateTab').click(function(){
-      if('serviceWorker' in navigator){
-        navigator.serviceWorker.register('sw.js', { scope: '/' }).then(function(reg){
-          if(reg.installing || reg.waiting){
-            alertify.warning('MicrobeTrace is Updating...');
-          } else if(reg.active) {
-            alertify.success('You\'re running the latest available version of MicrobeTrace!');
-          }
-        }).catch(function(error){
-          alertify.error('MicrobeTrace failed to Update!');
-          console.log(error);
-        });
-      }
-    });
 
     $('[name="MSTOptions"]').change(function(){
       app.updateNetwork($('#HideSingletons').is(':checked'));
