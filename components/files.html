@@ -646,6 +646,7 @@
       app.tagClusters();
       app.computeDegree();
       app.launchView('2d_network', function(){
+        layout.contentItems.find(item => item.componentName === 'files').remove();
         session.network.render();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
         session.network.updateStatistics();
