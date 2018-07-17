@@ -188,7 +188,8 @@
     evt.stopPropagation();
     evt.preventDefault();
     var files = evt.originalEvent.dataTransfer.files;
-    for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
+    var n = files.length;
+    for(var i = 0; i < n; i++){ addFileToTable(files[i]); }
     $('#main-submit').css('display', 'inline').focus();
   });
 
@@ -197,97 +198,113 @@
     var extension = file.name.split('.').pop().slice(0,3).toLowerCase();
     var isFasta = (extension === 'fas');
     if(isFasta) $('#alignerControlsButton').css('display', 'inline');
+    var isXL = (extension === 'lsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');
-    var root = $('<div class="form-group row file-table-row"></div>');
-    $('<div class="col-8 filename"></div>')
-      .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
-        session.files.splice(session.files.indexOf(file.name), 1);
-        root.slideUp(function(){ root.remove(); });
-      }))
-      .append(`&nbsp;<a href="#" title="${file.name}">${file.name}</a>`)
-      .appendTo(root);
-    root.append(`
-      <div class="col-4 text-right">
-        <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-          <label class="btn btn-secondary${!isFasta&!isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
-          </label>
-          <label class="btn btn-secondary${!isFasta&isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
-          </label>
-          <label class="btn btn-secondary">
-            <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
-          </label>
-          <label class="btn btn-secondary${isFasta?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
-          </label>
+    if(isXL){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        var data = e.target.result;
+        var workbook = XLSX.read(data, {type: 'array'});
+        var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        var headers = Object.keys(data[0]).map(filterXSS);
+        addTableTile(headers);
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      Papa.parse(file, {
+        dynamicTyping: true,
+        header: true,
+        preview: 1,
+        complete: function(output){
+          var headers = output.meta.fields.map(filterXSS);
+          addTableTile(headers);
+        }
+      });
+    }
+    var addTableTile = function(headers){
+      var root = $('<div class="form-group row file-table-row"></div>');
+      $('<div class="col-8 filename"></div>')
+        .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
+          session.files.splice(session.files.indexOf(file.name), 1);
+          root.slideUp(function(){ root.remove(); });
+        }))
+        .append(`&nbsp;<a href="#" title="${file.name}">${file.name}</a>`)
+        .appendTo(root);
+      root.append(`
+        <div class="col-4 text-right">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary${!isFasta&!isNode?' active':''}">
+              <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
+            </label>
+            <label class="btn btn-secondary${!isFasta&isNode?' active':''}">
+              <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
+            </label>
+            <label class="btn btn-secondary${isFasta?' active':''}">
+              <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
+            </label>
+          </div>
         </div>
+      `);
+      var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
+      root.append(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
+      <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
       </div>
-    `);
-    Papa.parse(file, {
-      dynamicTyping: true,
-      header: true,
-      preview: 1,
-      complete: function(output){
-        var headers = output.meta.fields.map(filterXSS);
-        var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
-        $(`<div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
-            <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
-            <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
-          </div>
-          <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
-            <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
-            <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
-          </div>
-          <div class='col-4 '${!isFasta&&!isNode?'':' style="display: none;"'} data-file='${file.name}'>
-            <label for="file-${file.name}-field-3">Distance</label>
-            <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
-          </div>`).appendTo(root);
-        var a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-            b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
-            c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
+      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
+      <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
+      </div>
+      <div class='col-4 '${!isFasta&&!isNode?'':' style="display: none;"'} data-file='${file.name}'>
+      <label for="file-${file.name}-field-3">Distance</label>
+      <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
+      </div>`);
+      var a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+          b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+          c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
+      [a, b, c].forEach(function(list, i){
+        list.forEach(function(title){
+          if(headers.includes(title)){
+            $(root.find('select').get(i)).val(title);
+          }
+        });
+      });
+      root.appendTo('#file_table');
+      var refit = function(e){
+        var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
+        these = $(`[data-file='${file.name}']`),
+        first = $(these.get(0)),
+        second = $(these.get(1)),
+        third = $(these.get(2)),
+        a = ['SOURCE', 'Source', 'source'],
+        b = ['TARGET', 'Target', 'target'],
+        c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
+        if(type === 'node'){
+          a = ['ID', 'Id', 'id'];
+          b = ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'];
+          first.slideDown().find('label').text('ID');
+          second.slideDown().find('label').text('Sequence');
+          third.slideUp();
+        } else if(type === 'link'){
+          first.slideDown().find('label').text('Source');
+          second.slideDown().find('label').text('Target');
+          third.slideDown();
+        } else {
+          these.slideUp();
+        }
         [a, b, c].forEach(function(list, i){
           list.forEach(function(title){
             if(headers.includes(title)){
-              $(root.find('select').get(i)).val(title);
+              $(these.find('select').get(i)).find('select').val(title);
             }
           });
         });
-        root.appendTo('#file_table');
-        var refit = function(e){
-          var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
-              these = $(`[data-file='${file.name}']`),
-              first = $(these.get(0)),
-              second = $(these.get(1)),
-              third = $(these.get(2)),
-              a = ['SOURCE', 'Source', 'source'],
-              b = ['TARGET', 'Target', 'target'],
-              c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
-          if(type === 'node'){
-            a = ['ID', 'Id', 'id'];
-            b = ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'];
-            first.slideDown().find('label').text('ID');
-            second.slideDown().find('label').text('Sequence');
-            third.slideUp();
-          } else if(type === 'link'){
-            first.slideDown().find('label').text('Source');
-            second.slideDown().find('label').text('Target');
-            third.slideDown();
-          } else {
-            these.slideUp();
-          }
-          [a, b, c].forEach(function(list, i){
-            list.forEach(function(title){
-              if(headers.includes(title)){
-                $(these.find('select').get(i)).find('select').val(title);
-              }
-            });
-          });
-        };
-        $(`[name="options-${file.name}"]`).change(refit);
-        refit();
-      }
-    });
+      };
+      $(`[name="options-${file.name}"]`).change(refit);
+      refit();
+    };
   }
 
   $('#distanceMetrics').chosen({width: "100%"}).change(function(){
