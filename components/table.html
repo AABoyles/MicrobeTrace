@@ -51,7 +51,6 @@
     </div>
   </div>
 
-  <!-- component template -->
   <script type="text/x-template" id="mt-table-template">
     <table class="table table-hover table-sm" cellspacing="0">
       <thead>
@@ -92,6 +91,7 @@
             <div class="col-3">
               <select id="export-table-file-type" class="form-control form-control-sm">
                 <option selected>csv</option>
+                <option>xlsx</option>
                 <option>json</option>
               </select>
             </div>
@@ -109,7 +109,7 @@
   (function(){
     var table;
 
-    var meta = ['index', 'padding', 'selected', 'visible', 'mst'];
+    var meta = ['index', 'padding', 'selected', 'visible', 'nn'];
 
     Vue.component('mt-table', {
       template: '#mt-table-template',
@@ -228,17 +228,31 @@
     });
 
     $('#table_export').click(function(){
-      var mime = 'text/csv;';
-      var handler = Papa.unparse;
       var format = $('#export-table-file-type').val();
-      var data = session.data[$('input[name=nodelink]:checked').data('value')];
-      if(format === 'json'){
-        mime = 'application/json;';
-        handler = JSON.stringify;
-      }
+      var data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
       var name = $('#export-table-file-name').val();
-      var blob = new Blob([handler(data)], {type: mime + 'charset=utf-8'});
-      saveAs(blob, name + '.' + format);
+      if(format === 'csv'){
+        var blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
+        saveAs(blob, name + '.' + format);
+      } else if(format === 'xlsx'){
+        let headers = session.data[$('input[name=nodelink]:checked').data('value').slice(0,-1) + 'Fields'];
+        data.forEach(thing => {
+          Object.keys(thing).forEach(field => {
+            if(!headers.includes(field)){
+              delete thing[field];
+            } else if(_.isArray(thing[field])){
+              thing[field] = thing[field].join('; ');
+            }
+          });
+        });
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, name);
+        XLSX.writeFile(wb, name + '.' + format);
+      } else {
+        var blob = new Blob([JSON.stringify(data)], {type: 'application/json;charset=utf-8'});
+        saveAs(blob, name + '.' + format);
+      }
     });
 
     setTimeout(function(){
