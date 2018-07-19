@@ -714,6 +714,18 @@
           return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
         }).join('\n')
       );
+      $('#nodeColorVariable').html(
+        '<option selected>None</option>' +
+        session.data.nodeFields.map(function(field){
+          return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+        }).join('\n')
+      );
+      $('#linkColorVariable').html(
+        '<option>None</option>' +
+        session.data.linkFields.map(function(field){
+          return '<option value="' + field + '"' + (field === 'origin' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+        }).join('\n')
+      );
       try {
         app.updateThresholdHistogram();
       } catch(error){

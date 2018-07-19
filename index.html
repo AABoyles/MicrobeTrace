@@ -190,12 +190,15 @@ performance of this software.</pre>
         </div>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
+            <li class="nav-item active">
               <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="color-tab" data-toggle="tab" href="#color-config" role="tab" aria-controls="home" aria-selected="true">Coloring</a>
             </li>
           </ul>
           <div class="tab-content">
-            <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="nodes-tab">
+            <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="global-tab">
               <div class="form-group row">
                 <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
                 <div class="col-8">
@@ -236,6 +239,24 @@ performance of this software.</pre>
                 <div class="col-8">
                   <a href="#" class="btn btn-secondary btn-sm" id="RevealAllTab" role="button">All Clusters</a>
                 </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="color-config" role="tabpanel" aria-labelledby="color-tab">
+              <div class="form-group row">
+                <div class="col-4"><label for="nodeColorVariable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
+                <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+              </div>
+              <div id="node_color_value_row" class="form-group row">
+                <div class="col-4"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Node Color</label></div>
+                <div class="col-8"><input type="color" id="default-node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color Links By</label></div>
+                <div class="col-8"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>Origin</option></select></div>
+              </div>
+              <div id="link-color-row" class="form-group row">
+                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Link Color</label></div>
+                <div class="col-8"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#8dd3c7" /></div>
               </div>
             </div>
           </div>
