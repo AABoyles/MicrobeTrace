@@ -442,6 +442,7 @@
     files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
     files.forEach((file, fileNum) => {
       var filename = file.file.name;
+      var extension = _.last(filename.split('.')).toLowerCase();
 
       if(file.type === 'fasta'){
 
@@ -458,83 +459,145 @@
             n += app.addNode(node);
           });
           message(` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
-          if(fileNum == files.length - 1) nextStuff();
+          if(fileNum === files.length - 1) nextStuff();
         };
         reader.readAsText(file.file, 'UTF-8');
 
       } else if(file.type === 'link'){
 
-        message(`Parsing ${filename} as Link CSV...`);
+        message(`Parsing ${filename} as Link List...`);
         var l = 0;
-        Papa.parse(file.file, {
-          header: true,
-          worker: true,
-          dynamicTyping: true,
-          skipEmptyLines: true,
-          complete: results => {
-            results.data.forEach(link => {
-              Object.keys(link).forEach(function(key){
-                link[key] = filterXSS(link[key]);
-              });
-              l += app.addLink(Object.assign({
-                source: '' + link[file.field1],
-                target: '' + link[file.field2],
-                distance: file.field3 === 'None' ? 0 : link[file.field3],
-                origin: [filename],
-                visible: 1
-              }, link));
-            });
-            message(` - Parsed ${l} New, ${results.data.length} Total Links from Link CSV.`);
-            results.meta.fields.map(key => {
+
+        function forEachLink(link){
+          Object.keys(link).forEach(function(key){
+            link[key] = filterXSS(link[key]);
+          });
+          l += app.addLink(Object.assign({
+            source: '' + link[file.field1],
+            target: '' + link[file.field2],
+            distance: file.field3 === 'None' ? 0 : link[file.field3],
+            origin: [filename],
+            visible: 1
+          }, link));
+        }
+
+        if(extension == 'xls' || extension == 'xlsx'){
+
+          var reader = new FileReader();
+          reader.onload = function(e){
+            var data = e.target.result;
+            var workbook = XLSX.read(data, {type: 'array'});
+            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            data.map(forEachLink);
+            message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+            Object.keys(data[0]).forEach(key => {
               key = filterXSS(key);
               if(!session.data.linkFields.includes(key)){
                 session.data.linkFields.push(key);
               }
             });
             var n = 0;
-            var nodeIDs = _.union(_.map(results.data, l => l[file.field1]), _.map(results.data, l => l[file.field2]));
+            var nodeIDs = _.union(_.map(data, l => l[file.field1]), _.map(data, l => l[file.field2]));
             var t = nodeIDs.length;
             nodeIDs.forEach(d => n += app.addNode({
               id: '' + d,
               origin: [filename]
             }));
             message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
-            if(fileNum == files.length - 1) nextStuff();
-          }
-        });
+            if(fileNum === files.length - 1) nextStuff();
+          };
+          reader.readAsArrayBuffer(file.file);
 
+        } else {
+
+          Papa.parse(file.file, {
+            header: true,
+            worker: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: results => {
+              var data = results.data;
+              data.map(forEachLink);
+              message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+              results.meta.fields.forEach(key => {
+                key = filterXSS(key);
+                if(!session.data.linkFields.includes(key)){
+                  session.data.linkFields.push(key);
+                }
+              });
+              var n = 0;
+              var nodeIDs = _.union(_.map(data, l => l[file.field1]), _.map(data, l => l[file.field2]));
+              var t = nodeIDs.length;
+              nodeIDs.forEach(d => n += app.addNode({
+                id: '' + d,
+                origin: [filename]
+              }));
+              message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
+              if(fileNum === files.length - 1) nextStuff();
+            }
+          });
+        }
       } else if(file.type === 'node'){
 
-        message(`Parsing ${filename} as Node CSV...`);
+        message(`Parsing ${filename} as Node List...`);
 
         if(file.field2 !== 'None') anySequences = true;
 
         var m = 0, n = 0;
-        Papa.parse(file.file, {
-          header: true,
-          worker: true,
-          dynamicTyping: true,
-          skipEmptyLines: true,
-          step: results => {
-            if(0 === n++){
-              results.meta.fields.forEach(key => {
-                key = filterXSS(key);
-                if(!session.data.nodeFields.includes(key)){
-                  session.data.nodeFields.push(key);
-                }
-              });
-            }
-            node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
-            node.id = '' + node[file.field1];
-            if(file.field2 !== 'None') node.seq = node[file.field2];
-            node['origin'] = [filename];
-            m += app.addNode(node);
-          },
-          complete: () => {
+
+        if(extension == 'xls' || extension == 'xlsx'){
+
+          var reader = new FileReader();
+          reader.onload = function(e){
+            var data = e.target.result;
+            var workbook = XLSX.read(data, {type: 'array'});
+            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            Object.keys(data[0]).forEach(key => {
+              key = filterXSS(key);
+              if(!session.data.nodeFields.includes(key)){
+                session.data.nodeFields.push(key);
+              }
+            });
+            data.forEach(results => {
+              node = JSON.parse(filterXSS(JSON.stringify(results)));
+              node.id = '' + node[file.field1];
+              if(file.field2 !== 'None') node.seq = node[file.field2];
+              node['origin'] = [filename];
+              m += app.addNode(node);
+            });
             message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
             if(fileNum === files.length - 1) nextStuff();
-          }
-        });
+          };
+          reader.readAsArrayBuffer(file.file);
+
+        } else {
+
+          Papa.parse(file.file, {
+            header: true,
+            worker: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            step: results => {
+              if(0 === n++){
+                results.meta.fields.forEach(key => {
+                  key = filterXSS(key);
+                  if(!session.data.nodeFields.includes(key)){
+                    session.data.nodeFields.push(key);
+                  }
+                });
+              }
+              node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
+              node.id = '' + node[file.field1];
+              if(file.field2 !== 'None') node.seq = node[file.field2];
+              node['origin'] = [filename];
+              m += app.addNode(node);
+            },
+            complete: () => {
+              message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
+              if(fileNum === files.length - 1) nextStuff();
+            }
+          });
+        }
 
       } else { //Distance Matrix
 
@@ -573,7 +636,7 @@
             });
             message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
             message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
-            if(fileNum == files.length - 1) nextStuff();
+            if(fileNum === files.length - 1) nextStuff();
           }
         });
       }
