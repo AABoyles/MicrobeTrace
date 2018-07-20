@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MicrobeTrace</title>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-116308624-1"></script>
+  <script async src="https://googletagmanager.com/gtag/js?id=UA-116308624-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -20,6 +20,7 @@
   <link rel="stylesheet" type="text/css" href="node_modules/chosen-js/chosen.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/alertifyjs/build/css/alertify.min.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/msa/css/msa.css" />
   <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
 </head>
 <body>
@@ -33,26 +34,19 @@
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
             <input type="file" class="d-none" id="OpenTab" />
-            <label class="mb-0" for="OpenTab">Open</label>
+            <label class="mb-0 w-100" for="OpenTab">Open</label>
           </a>
           <a href="#" class="dropdown-item">
             <input type="file" class="d-none" id="ImportTab" />
-            <label class="mb-0" for="ImportTab">Import</label>
+            <label class="mb-0 w-100" for="ImportTab">Import</label>
           </a>
           <a href="#" id="FileTab" class="dropdown-item">New</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
         </div>
       </li>
-      <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
-        <div class="dropdown-menu">
-          <a href="#" id="FindTab" class="dropdown-item">Find</a>
-          <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
-          <a href="#" id="RevealAllTab" class="dropdown-item">Reveal All</a>
-          <div class="dropdown-divider"></div>
-          <a href="#" id="SettingsTab"  class="dropdown-item" data-toggle="modal" data-target="#global_settings_modal">Settings</a>
-        </div>
+      <li class="nav-item">
+        <a href="#" class="nav-link py-0" data-toggle="modal" data-target="#global_settings_modal">Settings</a>
       </li>
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
@@ -82,10 +76,9 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
-          <a href="https://github.com/AABoyles/WebMicrobeTrace/wiki" class="dropdown-item ifOnline" target="_blank">Help</a>
+          <a href="#" id="HelpTab" class="viewbutton dropdown-item" data-href="help">Help</a>
           <a href="https://github.com/AABoyles/WebMicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank">Report Bug</a>
           <div class="dropdown-divider ifOnline"></div>
-          <a href="#" id="UpdateTab" class="dropdown-item ifOnline">Update</a>
           <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
         </div>
       </li>
@@ -196,21 +189,21 @@ performance of this software.</pre>
         </div>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
+            <li class="nav-item active">
               <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="color-tab" data-toggle="tab" href="#color-config" role="tab" aria-controls="home" aria-selected="true">Coloring</a>
             </li>
           </ul>
           <div class="tab-content">
-            <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="nodes-tab">
+            <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="global-tab">
               <div class="form-group row">
                 <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
                       <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> None
-                    </label>
-                    <label class="btn btn-secondary">
-                      <input type="radio" name="MSTOptions" id="showMSTLinks" autocomplete="off"> MST
                     </label>
                     <label class="btn btn-secondary">
                       <input type="radio" name="MSTOptions" id="showNNLinks" autocomplete="off"> NN
@@ -239,6 +232,30 @@ performance of this software.</pre>
                     </label>
                   </div>
                 </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4">Reveal</div>
+                <div class="col-8">
+                  <a href="#" class="btn btn-secondary btn-sm" id="RevealAllTab" role="button">All Clusters</a>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="color-config" role="tabpanel" aria-labelledby="color-tab">
+              <div class="form-group row">
+                <div class="col-4"><label for="nodeColorVariable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
+                <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+              </div>
+              <div id="node_color_value_row" class="form-group row">
+                <div class="col-4"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Node Color</label></div>
+                <div class="col-8"><input type="color" id="default-node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color Links By</label></div>
+                <div class="col-8"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option><option selected>Origin</option></select></div>
+              </div>
+              <div id="link-color-row" class="form-group row">
+                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Link Color</label></div>
+                <div class="col-8"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#8dd3c7" /></div>
               </div>
             </div>
           </div>
@@ -319,6 +336,7 @@ performance of this software.</pre>
   <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   <script src="vendor/bootstrap-filestyle.min.js"></script>
   <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
+  <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
   <script src="node_modules/alignment-viewer/dist/alignment-viewer.min.js"></script>
   <script src="scripts/common.js"></script>
   <script>
@@ -327,13 +345,19 @@ performance of this software.</pre>
 
     $.getJSON('package.json', function(r){ $('#version').html(r.version); });
 
-    if(navigator.onLine && window.applicationCache.status !== window.applicationCache.UNCACHED){
-      window.applicationCache.update();
-      if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
-        window.applicationCache.swapCache();
+    if(navigator.onLine){
+      $('#HelpTab')
+        .removeClass('viewbutton')
+        .attr('href', 'https://github.com/AABoyles/WebMicrobeTrace/wiki')
+        .attr('target', '_blank');
+      $('.ifOnline').show();
+      if(window.applicationCache.status !== window.applicationCache.UNCACHED){
+        window.applicationCache.update();
+        if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
+          window.applicationCache.swapCache();
+        }
       }
     }
-    if(navigator.onLine) $('.ifOnline').show();
 
     window.session = app.sessionSkeleton();
 
@@ -427,38 +451,11 @@ performance of this software.</pre>
 
     $('#ExitTab').click(function(){ window.open('','_self').close(); });
 
-    $('#FindTab').click(function(e){ $('#search').focus(); });
-
-    $('#AddDataTab').click(function(){ app.launchView('files'); });
-
-    $('#RevealAllTab').click(function(e) {
-      session.data.clusters.forEach(function(c){ c.visible = 1; });
-      $('#HideSingletons').prop('checked', false).parent().removeClass('active');
-      $('#ShowSingletons').prop('checked', true).parent().addClass('active');
-      app.setLinkVisibility();
-      app.setNodeVisibility();
-    });
-
     $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
 
     $('#ReloadTab').click(function(){ window.location.reload(true); });
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
-
-    $('#UpdateTab').click(function(){
-      if('serviceWorker' in navigator){
-        navigator.serviceWorker.register('sw.js', { scope: '/' }).then(function(reg){
-          if(reg.installing || reg.waiting){
-            alertify.warning('MicrobeTrace is Updating...');
-          } else if(reg.active) {
-            alertify.success('You\'re running the latest available version of MicrobeTrace!');
-          }
-        }).catch(function(error){
-          alertify.error('MicrobeTrace failed to Update!');
-          console.log(error);
-        });
-      }
-    });
 
     $('[name="MSTOptions"]').change(function(){
       app.updateNetwork($('#HideSingletons').is(':checked'));
@@ -559,6 +556,14 @@ performance of this software.</pre>
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
       $(window).trigger('updateThreshold');
+    });
+
+    $('#RevealAllTab').click(function(e) {
+      session.data.clusters.forEach(function(c){ c.visible = 1; });
+      $('#HideSingletons').prop('checked', false).parent().removeClass('active');
+      $('#ShowSingletons').prop('checked', true).parent().addClass('active');
+      app.setLinkVisibility();
+      app.setNodeVisibility();
     });
 
     $('#export-data').click(function(){
