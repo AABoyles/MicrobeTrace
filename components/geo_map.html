@@ -108,6 +108,10 @@
           </div>
         </div>
         <div class="form-group row">
+          <div class="col-4">Color</div>
+          <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+        </div>
+        <!-- <div class="form-group row">
           <div class="col-3">Color By</div>
           <div class="col-9">
             <select id="nodeColorField" class="nodeVariables custom-select custom-select-sm">
@@ -120,7 +124,7 @@
           <div class="col-9">
             <input type="color" id="color" class="custom-select custom-select-sm" value="#1f77b4" />
           </div>
-        </div>
+        </div> -->
         <div class="form-group row">
           <div class="col-3">Transparency</div>
           <div class="col-9">
@@ -346,7 +350,7 @@
 
     function drawNodes(){
       var radius = parseFloat($('#radius').val()) / session.map.lastTransform.k;
-      var color = $('#color').val();
+      var color = $('#default-node-color').val();
       var normal = d3.randomNormal();
       var jitter = parseFloat($('#jitter').val()) / session.map.lastTransform.k;
       session.data.nodes.forEach(d => {
@@ -378,10 +382,11 @@
       });
       var vlinks = links.filter(l => l.visible && !Number.isNaN(l.source.lat) && !Number.isNaN(l.source.lon) && !Number.isNaN(l.target.lat) && !Number.isNaN(l.target.lon));
       var ll = linkLayer.selectAll('line').data(vlinks);
+      var color = $('default-link-color').val();
       ll.exit().remove();
       ll.enter().append('line').merge(ll)
         .attr('class', 'link')
-        .style('stroke', '#8dd3c7')
+        .style('stroke', color)
         .attr('stroke-width', 2 / session.map.lastTransform.k)
         .attr('x1', d => projection([d.source.lon, d.source.lat])[0] + d.source.jx)
         .attr('y1', d => projection([d.source.lon, d.source.lat])[1] + d.source.jy)
@@ -593,7 +598,7 @@
       nodeLayer.selectAll('circle').attr('r', radius);
     });
 
-    $('#color').on('input', e => nodeLayer.selectAll('circle').style('fill', e.target.value));
+    $('#default-node-color').on('input', e => nodeLayer.selectAll('circle').style('fill', e.target.value));
 
     $('#jitter').on('input', e => {
       drawNodes();
@@ -604,7 +609,7 @@
       var circles = nodeLayer.selectAll('circle').data(session.data.nodes.filter(d => d.visible));
       var table = $('#map_group_key').empty();
       if(e.target.value == 'none'){
-        circles.style('fill', $('#color').val());
+        circles.style('fill', $('#default-node-color').val());
         table.fadeOut();
         return;
       }
