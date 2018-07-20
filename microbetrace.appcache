@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-06-11
+# 2018-07-20
 
 CACHE:
 index.html
@@ -23,7 +23,7 @@ scripts/common.js
 scripts/compute-consensus.js
 scripts/compute-dm.js
 scripts/compute-links.js
-scripts/compute-mst.js
+scripts/compute-nn.js
 scripts/polyfills.js
 vendor/3d-force-graph.min.js
 vendor/bootstrap-filestyle.min.js
@@ -63,6 +63,7 @@ node_modules/html2canvas/dist/html2canvas.min.js
 node_modules/screenfull/dist/screenfull.js
 node_modules/clipboard/dist/clipboard.min.js
 node_modules/chosen-js/chosen.jquery.min.js
+node_modules/xlsx/dist/xlsx.full.min.js
 node_modules/alignment-viewer/dist/alignment-viewer.min.js
 node_modules/d3-force-attract/dist/d3-force-attract.min.js
 node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
@@ -79,9 +80,9 @@ node_modules/vis/dist/vis.min.css
 node_modules/chosen-js/chosen.css
 node_modules/alertifyjs/build/css/alertify.min.css
 node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css
+node_modules/msa/css/msa.css
 node_modules/bootstrap/dist/css/bootstrap.min.css
 node_modules/alertifyjs/build/css/alertify.min.css
-node_modules/msa/css/msa.css
 data/cities.json
 data/counties.json
 data/countries.json
@@ -89,6 +90,7 @@ data/labels.json
 data/states.json
 data/tracts.json
 data/zipcodes.json
+package.json
 node_modules/chosen-js/chosen-sprite.png
 node_modules/open-iconic/font/fonts/open-iconic.woff
 node_modules/open-iconic/font/fonts/open-iconic.ttf
