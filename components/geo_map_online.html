@@ -126,6 +126,19 @@
           </div>
         </div>
         <div class="form-group row">
+          <div class="col-4">Satellite</div>
+          <div class="col-8">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary">
+                <input type="radio" name="satelliteOptions" id="showSatellite" autocomplete="off"> Show
+              </label>
+              <label class="btn btn-secondary active">
+                <input type="radio" name="satelliteOptions" id="hideSatellite" autocomplete="off" checked> Hide
+              </label>
+            </div>
+          </div>
+        </div>
+        <div id="labelsRow" class="form-group row">
           <div class="col-4">Labels</div>
           <div class="col-8">
             <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
@@ -241,6 +254,8 @@
     	subdomains: 'abcd',
     	maxZoom: 19
     });
+
+    let satellite = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYWFib3lsZXMiLCJhIjoiY2o4b3QxNmtjMDhwNjMzcno4dDd1NnVraSJ9.BkjEa6NM7o7KeTaTHOaIGg');
 
     let labels = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}{r}.png', {
     	subdomains: 'abcd',
@@ -426,6 +441,20 @@
     $('#showNodes').parent().click(drawNodes);
     $('#hideNodes').parent().click(function(){
       nodes.remove();
+    });
+
+    $('#showSatellite').parent().click(function(){
+      satellite.addTo(map);
+      geography.remove();
+      $('#labelsRow').slideUp();
+      labels.remove();
+    });
+
+    $('#hideSatellite').parent().click(function(){
+      satellite.remove();
+      geography.addTo(map);
+      $('#labelsRow').slideDown();
+      if($('#showLabels').is(':checked')) labels.addTo(map);
     });
 
     $('#default-node-color').on('input', drawNodes);
