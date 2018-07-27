@@ -190,7 +190,8 @@ app.titleize = function(title){
   if(small === 'snps') return 'SNPs';
   if(small === '2d network') return '2D Network';
   if(small === '3d network') return '3D Network';
-  if(small === 'geo map') return 'Map';
+  if(small === 'geo map offline') return 'Map';
+  if(small === 'geo map online') return 'Map';
   return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
 };
 
@@ -373,6 +374,12 @@ app.launchView = function(view, callback){
         return '<option value="'+field+'">'+app.titleize(field)+'</option>';
       }).join('\n')
     );
+    $('.launch-color-options').click(function(){
+      $('#color-tab').tab('show');
+      setTimeout(() => {
+        $('#global_settings_modal').modal('show');
+      }, 250);
+    });
     contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     if(callback){
       callback(contentItem);

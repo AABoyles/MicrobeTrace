@@ -3021,6 +3021,10 @@ lazy-cache@^1.0.3:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/lazy-cache/-/lazy-cache-1.0.4.tgz#a1d78fc3a50474cb80845d3b3b6e1da49a446e8e"
 
+leaflet@^1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.3.3.tgz#5c8f2fd50e4a41ead93ab850dcd9e058811da9b9"
+
 left-pad@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/left-pad/-/left-pad-1.3.0.tgz#5b8a3a7765dfe001261dde915589e782f8c94d1e"
@@ -3687,6 +3691,18 @@ object-keys@~0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/object-keys/-/object-keys-0.4.0.tgz#28a6aae7428dd2c3a92f3d95f21335dd204e0336"
 
+ol-layerswitcher@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ol-layerswitcher/-/ol-layerswitcher-2.0.0.tgz#61fbf72f0b627f351e1be605da30c44f1cc82525"
+
+ol@^5.1.3:
+  version "5.1.3"
+  resolved "https://registry.yarnpkg.com/ol/-/ol-5.1.3.tgz#43f8fd796914c0436852cbc2087223943c0d9c7b"
+  dependencies:
+    pbf "3.1.0"
+    pixelworks "1.1.0"
+    rbush "2.0.2"
+
 on-finished@~2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
@@ -3863,7 +3879,7 @@ path-type@^2.0.0:
   dependencies:
     pify "^2.0.0"
 
-pbf@^3.0.5:
+pbf@3.1.0, pbf@^3.0.5:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/pbf/-/pbf-3.1.0.tgz#f70004badcb281761eabb1e76c92f179f08189e9"
   dependencies:
@@ -3916,6 +3932,10 @@ pinkie-promise@^2.0.0:
 pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
+
+pixelworks@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/pixelworks/-/pixelworks-1.1.0.tgz#1f095ad48dca8bf8a1c8258e0092031a44f22ca5"
 
 planar-dual@^1.0.0:
   version "1.0.2"
@@ -4138,7 +4158,7 @@ quat-slerp@^1.0.0:
   dependencies:
     gl-quat "^1.0.0"
 
-quickselect@^1.0.0:
+quickselect@^1.0.0, quickselect@^1.0.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/quickselect/-/quickselect-1.1.1.tgz#852e412ce418f237ad5b660d70cffac647ae94c2"
 
@@ -4181,6 +4201,12 @@ raw-body@2.3.2:
     http-errors "1.6.2"
     iconv-lite "0.4.19"
     unpipe "1.0.0"
+
+rbush@2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/rbush/-/rbush-2.0.2.tgz#bb6005c2731b7ba1d5a9a035772927d16a614605"
+  dependencies:
+    quickselect "^1.0.1"
 
 rc@^1.1.2:
   version "1.2.8"
@@ -5148,11 +5174,38 @@ to-px@^1.0.1:
   dependencies:
     parse-unit "^1.0.1"
 
+topojson-client@3, topojson-client@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/topojson-client/-/topojson-client-3.0.0.tgz#1f99293a77ef42a448d032a81aa982b73f360d2f"
+  dependencies:
+    commander "2"
+
 topojson-client@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/topojson-client/-/topojson-client-2.1.0.tgz#ff9f7bf38991185e0b4284c2b06ae834f0eac6c8"
   dependencies:
     commander "2"
+
+topojson-server@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/topojson-server/-/topojson-server-3.0.0.tgz#378e78e87c3972a7b5be2c5d604369b6bae69c5e"
+  dependencies:
+    commander "2"
+
+topojson-simplify@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/topojson-simplify/-/topojson-simplify-3.0.2.tgz#8a2403e639531500fafa0c6594e8b0fadebc2c02"
+  dependencies:
+    commander "2"
+    topojson-client "3"
+
+topojson@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/topojson/-/topojson-3.0.2.tgz#fcb927306c3e0fa76656fa58deed4555d2346fb4"
+  dependencies:
+    topojson-client "3.0.0"
+    topojson-server "3.0.0"
+    topojson-simplify "3.0.2"
 
 touch@0.0.3:
   version "0.0.3"

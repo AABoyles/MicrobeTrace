@@ -22,6 +22,7 @@
   <link rel="stylesheet" type="text/css" href="node_modules/alertifyjs/build/css/alertify.min.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/msa/css/msa.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
 </head>
 <body>
@@ -58,7 +59,7 @@
           <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
           <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
           <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
+          <a href="#" id="map_link" class="dropdown-item viewbutton" data-href="geo_map_offline">Map</a>
           <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
           <div class="dropdown-divider showForSequence"></div>
           <a href="#" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
@@ -336,6 +337,7 @@ performance of this software.</pre>
   <script src="node_modules/screenfull/dist/screenfull.js"></script>
   <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   <script src="vendor/bootstrap-filestyle.min.js"></script>
+  <script src="node_modules/leaflet/dist/leaflet.js"></script>
   <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
   <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
   <script src="node_modules/alignment-viewer/dist/alignment-viewer.min.js"></script>
@@ -347,6 +349,7 @@ performance of this software.</pre>
     $.getJSON('package.json', function(r){ $('#version').html(r.version); });
 
     if(navigator.onLine){
+      $('#map_link').data('href', 'geo_map_online');
       $('#HelpTab')
         .removeClass('viewbutton')
         .attr('href', 'https://github.com/AABoyles/WebMicrobeTrace/wiki')

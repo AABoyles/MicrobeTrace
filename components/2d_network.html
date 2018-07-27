@@ -808,13 +808,6 @@
     });
   });
 
-  $('.launch-color-options').click(function(){
-    $('#color-tab').tab('show');
-    setTimeout(() => {
-      $('#global_settings_modal').modal('show');
-    }, 250);
-  });
-
   $('#default-node-charge').on('input', e => {
     session.network.force.force('charge').strength(-e.target.value);
     session.network.force.alpha(0.3).alphaTarget(0).restart();
