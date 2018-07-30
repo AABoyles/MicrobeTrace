@@ -352,8 +352,8 @@
     }
 
     function drawLinks(){
-      layers.links.remove();
-      if(!$('#showLinks').is(':checked')) return;
+      layers.links = L.geoJSON(makeLinkGeoJSON());
+      layers.links.addTo(map);
     }
 
     let fields = session.data.nodeFields;
@@ -435,8 +435,8 @@
 
     $('#countryField, #stateField, #countyField, #zipcodeField, #tractField, #latField, #lonField').change(function(){
       matchCoordinates();
-      if($('#showNodes').is(':checked')) drawNodes();
       if($('#showLinks').is(':checked')) drawLinks();
+      if($('#showNodes').is(':checked')) drawNodes();
     });
 
     $('default-link-color').change(drawLinks);
@@ -483,6 +483,7 @@
     });
 
     $('#showLinks').parent().click(function(){
+      drawLinks();
       let showNodes = $('#showNodes').is(':checked');
       if(showNodes) layers.nodes.remove();
       layers.links.addTo(map);
@@ -521,26 +522,44 @@
 
     $('#showBasemap').parent().click(function(){
       layers.geography.addTo(map);
+      $('#hideSatellite').click();
       $('#hideCountries').click();
       $('#hideStates').click();
       $('#hideCounties').click();
     });
     $('#hideBasemap').parent().click(function(){
-      layers.countries.addTo(map);
       $('#showCountries').click();
       $('#showStates').click();
+      if($('#showLinks').is(':checked')){
+        layers.links.remove();
+        layers.links.addTo(map);
+      }
+      if($('#showNodes').is(':checked')){
+        layers.nodes.remove();
+        layers.nodes.addTo(map);
+      }
+      layers.geography.remove();
     });
 
     $('#showSatellite').parent().click(function(){
       layers.satellite.addTo(map);
+      $('#hideBasemap').click();
       $('#hideCountries').click();
       $('#hideStates').click();
       $('#hideCounties').click();
     });
     $('#hideSatellite').parent().click(function(){
-      layers.satellite.remove();
       $('#showCountries').click();
       $('#showStates').click();
+      if($('#showLinks').is(':checked')){
+        layers.links.remove();
+        layers.links.addTo(map);
+      }
+      if($('#showNodes').is(':checked')){
+        layers.nodes.remove();
+        layers.nodes.addTo(map);
+      }
+      layers.satellite.remove();
     });
 
     $('#default-node-color').on('change', drawNodes);
@@ -605,31 +624,33 @@
   }
 
   function makeLinkGeoJSON(){
+    let features = [];
+    session.data.links.forEach(function(d){
+      let source = session.data.nodes.find(function(node){
+        return node.id === d.source;
+      });
+      let target = session.data.nodes.find(function(node){
+        return node.id === d.target;
+      });
+      if(source && target){
+        if(source.lat && source.lon && target.lat && target.lon){
+          features.push({
+            type: 'Feature',
+            geometry: {
+              type: 'LineString',
+              coordinates: [
+                [source.lon, source.lat],
+                [target.lon, target.lat]
+              ]
+            },
+            properties: d
+          });
+        }
+      }
+    });
     return {
       type: 'FeatureCollection',
-      features:	session.data.links.map(function(d){
-        let source = session.data.nodes.find(function(node){
-          return node.id === d.source;
-        });
-        let target = session.data.nodes.find(function(node){
-          return node.id === d.target;
-        });
-        if(source && target){
-          if(source.lat && source.lon && target.lat && target.lon){
-            geojson.features.push({
-              type: 'Feature',
-              geometry: {
-                type: 'Linestring',
-                coordinates: [
-                  [source.lon, source.lat],
-                  [target.lon, target.lat]
-                ]
-              },
-              properties: d
-            });
-          }
-        }
-      })
+      features:	features
     };
   }
 

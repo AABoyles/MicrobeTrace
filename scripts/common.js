@@ -190,8 +190,7 @@ app.titleize = function(title){
   if(small === 'snps') return 'SNPs';
   if(small === '2d network') return '2D Network';
   if(small === '3d network') return '3D Network';
-  if(small === 'geo map offline') return 'Map';
-  if(small === 'geo map online') return 'Map';
+  if(small === 'geo map') return 'Map';
   return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
 };
 
