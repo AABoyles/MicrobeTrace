@@ -311,14 +311,14 @@
       });
     });
 
-    let nodes = {remove: function(){}},
-        layers.links = {remove: function(){}},
-        map = L.map('map', {
-          center: [30, 0],
-          zoom: 3,
-          zoomControl: false,
-          preferCanvas: true
-        });
+    layers.nodes = {remove: function(){}};
+    layers.links = {remove: function(){}};
+    let map = L.map('map', {
+      center: [30, 0],
+      zoom: 3,
+      zoomControl: false,
+      preferCanvas: true
+    });
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
@@ -333,6 +333,7 @@
           color: feature.selected ? '#ff8300' : '#ffffff'
         });
       }
+      let jitter = $('#jitter').val();
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
         pointToLayer: function(feature, latlng){
           return L.circleMarker(latlng, makeStyle(feature));
@@ -482,7 +483,10 @@
     });
 
     $('#showLinks').parent().click(function(){
+      let showNodes = $('#showNodes').is(':checked');
+      if(showNodes) layers.nodes.remove();
       layers.links.addTo(map);
+      if(showNodes) layers.nodes.addTo(map);
     });
     $('#hideLinks').parent().click(function(){
       layers.links.remove();
@@ -490,6 +494,8 @@
 
     $('#showCountries').parent().click(function(){
       layers.countries.addTo(map);
+      if($('#showLinks').is(':checked')) layers.links.addTo(map);
+      if($('#showNodes').is(':checked')) layers.nodes.addTo(map);
     });
     $('#hideCountries').parent().click(function(){
       layers.countries.remove();
@@ -497,6 +503,8 @@
 
     $('#showStates').parent().click(function(){
       layers.states.addTo(map);
+      if($('#showLinks').is(':checked')) layers.links.addTo(map);
+      if($('#showNodes').is(':checked')) layers.nodes.addTo(map);
     });
     $('#hideStates').parent().click(function(){
       layers.states.remove();
@@ -504,30 +512,35 @@
 
     $('#showCounties').parent().click(function(){
       layers.counties.addTo(map);
+      if($('#showLinks').is(':checked')) layers.links.addTo(map);
+      if($('#showNodes').is(':checked')) layers.nodes.addTo(map);
     });
     $('#hideCounties').parent().click(function(){
       layers.counties.remove();
     });
 
     $('#showBasemap').parent().click(function(){
-      layers.countries.remove();
-      layers.states.remove();
-      layers.counties.remove();
       layers.geography.addTo(map);
+      $('#hideCountries').click();
+      $('#hideStates').click();
+      $('#hideCounties').click();
     });
     $('#hideBasemap').parent().click(function(){
       layers.countries.addTo(map);
-      layers.geography.remove();
+      $('#showCountries').click();
+      $('#showStates').click();
     });
 
     $('#showSatellite').parent().click(function(){
       layers.satellite.addTo(map);
-      layers.geography.remove();
+      $('#hideCountries').click();
+      $('#hideStates').click();
+      $('#hideCounties').click();
     });
-
     $('#hideSatellite').parent().click(function(){
       layers.satellite.remove();
-      layers.geography.addTo(map);
+      $('#showCountries').click();
+      $('#showStates').click();
     });
 
     $('#default-node-color').on('change', drawNodes);

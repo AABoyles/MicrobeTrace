@@ -59,7 +59,7 @@
           <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
           <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
           <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
-          <a href="#" id="map_link" class="dropdown-item viewbutton" data-href="geo_map_offline">Map</a>
+          <a href="#" id="map_link" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
           <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
           <div class="dropdown-divider showForSequence"></div>
           <a href="#" class="dropdown-item viewbutton showForSequence" data-href="sequences">Sequences</a>
@@ -349,7 +349,6 @@ performance of this software.</pre>
     $.getJSON('package.json', function(r){ $('#version').html(r.version); });
 
     if(navigator.onLine){
-      $('#map_link').data('href', 'geo_map_online');
       $('#HelpTab')
         .removeClass('viewbutton')
         .attr('href', 'https://github.com/AABoyles/WebMicrobeTrace/wiki')
