@@ -212,7 +212,7 @@
             <!--select id="opacityField" class="nodeVariables custom-select custom-select-sm">
               <option selected>None</option>
             </select-->
-            <input type="range" id="opacity" min="0.00" max="1.00" step="0.01" value="0.00" />
+            <input type="range" id="mapNodeOpacity" min="0.00" max="1.00" step="0.01" value="0.00" />
           </div>
         </div>
         <div class="form-group row">
@@ -222,16 +222,34 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-4">Tooltip</div>
-          <div class="col-8">
-            <select id="nodeTooltipVariable" class="nodeVariables custom-select custom-select-sm">
-              <option selected>None</option>
-            </select>
+          <div class="form-group row">
+            <div class="col-4"><label for="mapNodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+            <div class="col-8"><select id="mapNodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option selected>None</option></select></div>
           </div>
         </div>
       </div>
       <div role="tabpanel" class="tab-pane fade" id="mapLinkConfigurations">
-        Coming Soon!
+        <div class="form-group row">
+          <div class="col-4">Color</div>
+          <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-4">Transparency</div>
+          <div class="col-8">
+            <!--select id="opacityField" class="nodeVariables custom-select custom-select-sm">
+              <option selected>None</option>
+            </select-->
+            <input type="range" id="mapLinkOpacity" min="0.00" max="1.00" step="0.01" value="0.00" />
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-4">Tooltip</div>
+          <div class="col-8">
+            <select id="mapLinkTooltipVariable" class="linkVariables custom-select custom-select-sm">
+              <option selected>None</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -280,7 +298,6 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-
   <script src="vendor/shpwrite.js"></script>
   <script>
 
@@ -288,10 +305,10 @@
     $('.ifOnline').css('display', 'flex');
   }
 
-  var layers;
+  var map;
 
   setTimeout(function(){
-    layers = {
+    let layers = {
       geography: L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
       	subdomains: 'abcd',
       	maxZoom: 19
@@ -315,7 +332,7 @@
 
     layers.nodes = {remove: function(){}};
     layers.links = {remove: function(){}};
-    let map = L.map('map', {
+    map = L.map('map', {
       center: [30, 0],
       zoom: 3,
       zoomControl: false,
@@ -324,48 +341,12 @@
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    function drawNodes(){
-      layers.nodes.remove();
-      let style = {
-        fillColor: $('#default-node-color').val(),
-        fillOpacity: 1 - $('#opacity').val()
-      };
-      function makeStyle(feature){
-        return Object.assign({}, style, {
-          color: feature.selected ? '#ff8300' : '#ffffff'
-        });
-      }
-      let jitter = $('#jitter').val();
-      layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
-        pointToLayer: function(feature, latlng){
-          return L.circleMarker(latlng, makeStyle(feature));
-        }
-      });
-      layers.nodes.on('mouseover', showTooltip);
-      layers.nodes.on('mouseout', hideTooltip);
-      layers.nodes.on('click', function(e){
-        console.log(e);
-        let node = e.sourceTarget.feature.properties;
-        let d = session.data.nodes.find(d => d.id === node.id);
-        d.selected = !d.selected;
-        $(window).trigger('node_selected');
-      });
-      layers.nodes.addTo(map);
-      layers.nodes.bringToFront();
-    }
-
-    function drawLinks(){
-      layers.links.remove();
-      layers.links = L.geoJSON(makeLinkGeoJSON());
-      layers.links.addTo(map);
-    }
-
     let fields = session.data.nodeFields;
 
     ['lat', 'lon', 'tract', 'zipcode', 'county', 'state', 'country'].forEach(v => {
       if(fields.includes(v)) $(`#${v}Field`).val(v);
     });
-    if(fields.includes('id')) $('#nodeTooltipVariable').val('id');
+    if(fields.includes('id')) $('#mapNodeTooltipVariable').val('id');
 
     function matchCoordinates(){
       if($('#countryField').val() !== 'None'){
@@ -442,13 +423,111 @@
       resetStack();
     });
 
-    $('default-link-color').change(drawLinks);
+    function makeNodeGeoJSON(){
+      let geojson = {
+        type: 'FeatureCollection',
+        features:	[]
+      };
+      let jitter = $('#jitter').val() > 0;
+      session.data.nodes.forEach(function(d){
+        if(d.visible && d.lat && d.lon){
+          geojson.features.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: jitter ? [d.lon + d.jx, d.lat + d.jy] : [d.lon, d.lat]
+            },
+            properties: d
+          });
+        }
+      });
+      return geojson;
+    }
+
+    function makeLinkGeoJSON(){
+      let features = [];
+      let jitter = $('#jitter').val() > 0;
+      session.data.links.forEach(function(d){
+        if(!d.visible) return;
+        let source = session.data.nodes.find(function(node){
+          return node.id === d.source;
+        });
+        let target = session.data.nodes.find(function(node){
+          return node.id === d.target;
+        });
+        if(source && target){
+          if(source.lat && source.lon && target.lat && target.lon){
+            features.push({
+              type: 'Feature',
+              geometry: {
+                type: 'LineString',
+                coordinates: jitter ? [
+                  [source.lon + source.jx, source.lat + source.jy],
+                  [target.lon + target.jx, target.lat + target.jy]
+                ] : [
+                  [source.lon, source.lat],
+                  [target.lon, target.lat]
+                ]
+              },
+              properties: d
+            });
+          }
+        }
+      });
+      return {
+        type: 'FeatureCollection',
+        features:	features
+      };
+    }
+
+    function drawNodes(){
+      layers.nodes.remove();
+      let style = {
+        fillColor: $('#default-node-color').val(),
+        fillOpacity: 1 - $('#mapNodeOpacity').val()
+      };
+      function makeStyle(feature){
+        return Object.assign({}, style, {
+          color: feature.selected ? '#ff8300' : '#ffffff'
+        });
+      }
+      layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
+        pointToLayer: function(feature, latlng){
+          return L.circleMarker(latlng, makeStyle(feature));
+        }
+      });
+      layers.nodes.on('mouseover', showTooltip);
+      layers.nodes.on('mouseout', hideTooltip);
+      layers.nodes.on('click', function(e){
+        console.log(e);
+        let node = e.sourceTarget.feature.properties;
+        let d = session.data.nodes.find(d => d.id === node.id);
+        d.selected = !d.selected;
+        $(window).trigger('node_selected');
+      });
+      layers.nodes.addTo(map);
+      layers.nodes.bringToFront();
+    }
+
+    function drawLinks(){
+      layers.links.remove();
+      let style = {
+        fillColor: $('#default-link-color').val(),
+        fillOpacity: 1 - $('#mapLinkOpacity').val()
+      };
+      layers.links = L.geoJSON(makeLinkGeoJSON(), {
+        pointToLayer: function(feature, latlng){
+          return L.circleMarker(latlng, style);
+        }
+      });
+      layers.links.addTo(map);
+    }
 
     function showTooltip(e){
       let tooltiptext = '';
       let d = e.sourceTarget.feature.properties;
-      if($('#nodeTooltipVariable').val() !== 'None' && d[$('#nodeTooltipVariable').val()]){
-        tooltiptext = d[$('#nodeTooltipVariable').val()];
+      if($('#mapNodeTooltipVariable').val() !== 'None' && d[$('#mapNodeTooltipVariable').val()]){
+        tooltiptext = d[$('#mapNodeTooltipVariable').val()];
         d3.select('#tooltip')
           .html(tooltiptext)
           .style('left', (e.originalEvent.pageX + 8) + 'px')
@@ -558,10 +637,18 @@
 
     $('#default-node-color').on('change', drawNodes);
 
-    $('#opacity').on('change', drawNodes);
+    $('default-link-color').change(drawLinks);
+
+    $('#mapNodeOpacity').on('change', drawNodes);
 
     $('#jitter').on('input', function(e){
-
+      let zoom = map.getZoom();
+      session.data.nodes.forEach(node => {
+        node.jx = (Math.random() * e.target.value / 2 - e.target.value) / zoom;
+        node.jy = (Math.random() * e.target.value / 2 - e.target.value) / zoom;
+      });
+      if($('#showLinks').is(':checked')) drawLinks();
+      if($('#showNodes').is(':checked')) drawNodes();
     });
 
     $(window).on('updateThreshold', drawLinks);
@@ -595,56 +682,5 @@
     }, 400);
 
   }, 200);
-
-  function makeNodeGeoJSON(){
-    let geojson = {
-      type: 'FeatureCollection',
-      features:	[]
-    };
-    session.data.nodes.forEach(function(d){
-      if(d.lat && d.lon){
-        geojson.features.push({
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [d.lon, d.lat]
-          },
-          properties: d
-        });
-      }
-    });
-    return geojson;
-  }
-
-  function makeLinkGeoJSON(){
-    let features = [];
-    session.data.links.forEach(function(d){
-      let source = session.data.nodes.find(function(node){
-        return node.id === d.source;
-      });
-      let target = session.data.nodes.find(function(node){
-        return node.id === d.target;
-      });
-      if(source && target){
-        if(source.lat && source.lon && target.lat && target.lon){
-          features.push({
-            type: 'Feature',
-            geometry: {
-              type: 'LineString',
-              coordinates: [
-                [source.lon, source.lat],
-                [target.lon, target.lat]
-              ]
-            },
-            properties: d
-          });
-        }
-      }
-    });
-    return {
-      type: 'FeatureCollection',
-      features:	features
-    };
-  }
 
   </script>
