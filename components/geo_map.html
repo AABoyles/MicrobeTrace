@@ -644,8 +644,8 @@
     $('#jitter').on('input', function(e){
       let zoom = map.getZoom();
       session.data.nodes.forEach(node => {
-        node.jx = (Math.random() * e.target.value / 2 - e.target.value) / zoom;
-        node.jy = (Math.random() * e.target.value / 2 - e.target.value) / zoom;
+        node.jx = (Math.random() * e.target.value - e.target.value / 2) / zoom / 5;
+        node.jy = (Math.random() * e.target.value - e.target.value / 2) / zoom / 9;
       });
       if($('#showLinks').is(':checked')) drawLinks();
       if($('#showNodes').is(':checked')) drawNodes();
