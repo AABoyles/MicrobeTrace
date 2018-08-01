@@ -222,10 +222,8 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="form-group row">
-            <div class="col-4"><label for="mapNodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-            <div class="col-8"><select id="mapNodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option selected>None</option></select></div>
-          </div>
+          <div class="col-4"><label for="mapNodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+          <div class="col-8"><select id="mapNodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option selected>None</option></select></div>
         </div>
       </div>
       <div role="tabpanel" class="tab-pane fade" id="mapLinkConfigurations">
@@ -512,14 +510,10 @@
     function drawLinks(){
       layers.links.remove();
       let style = {
-        fillColor: $('#default-link-color').val(),
-        fillOpacity: 1 - $('#mapLinkOpacity').val()
+        color: $('#default-link-color').val(),
+        opacity: 1 - $('#mapLinkOpacity').val()
       };
-      layers.links = L.geoJSON(makeLinkGeoJSON(), {
-        pointToLayer: function(feature, latlng){
-          return L.circleMarker(latlng, style);
-        }
-      });
+      layers.links = L.geoJSON(makeLinkGeoJSON(), {style: style});
       layers.links.addTo(map);
     }
 
@@ -635,11 +629,8 @@
       resetStack();
     });
 
-    $('#default-node-color').on('change', drawNodes);
-
-    $('default-link-color').change(drawLinks);
-
-    $('#mapNodeOpacity').on('change', drawNodes);
+    $('#default-node-color, #mapNodeOpacity').on('change', drawNodes);
+    $('#default-link-color, #mapLinkOpacity').on('change', drawLinks);
 
     $('#jitter').on('input', function(e){
       let zoom = map.getZoom();
