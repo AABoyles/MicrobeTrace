@@ -486,7 +486,7 @@
       };
       function makeStyle(feature){
         return Object.assign({}, style, {
-          color: feature.selected ? '#ff8300' : '#ffffff'
+          color: feature.properties.selected ? '#ff8300' : '#ffffff'
         });
       }
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
@@ -494,15 +494,9 @@
           return L.circleMarker(latlng, makeStyle(feature));
         }
       });
-      layers.nodes.on('mouseover', showTooltip);
+      layers.nodes.on('mouseover', showNodeTooltip);
       layers.nodes.on('mouseout', hideTooltip);
-      layers.nodes.on('click', function(e){
-        console.log(e);
-        let node = e.sourceTarget.feature.properties;
-        let d = session.data.nodes.find(d => d.id === node.id);
-        d.selected = !d.selected;
-        $(window).trigger('node_selected');
-      });
+      layers.nodes.on('click', clickHandler);
       layers.nodes.addTo(map);
       layers.nodes.bringToFront();
     }
@@ -517,7 +511,7 @@
       layers.links.addTo(map);
     }
 
-    function showTooltip(e){
+    function showNodeTooltip(e){
       let tooltiptext = '';
       let d = e.sourceTarget.feature.properties;
       if($('#mapNodeTooltipVariable').val() !== 'None' && d[$('#mapNodeTooltipVariable').val()]){
@@ -538,6 +532,18 @@
         .transition().duration(100)
         .style('opacity', 0)
         .on('end', () => tooltip.style('z-index', -1));
+    }
+
+    function clickHandler(e){
+      let node = e.sourceTarget.feature.properties;
+      let d = session.data.nodes.find(d => d.id === node.id);
+      if(!e.originalEvent.ctrlKey){
+        session.data.nodes
+          .filter(node => node !== d)
+          .forEach(node => node.selected = 0);
+      }
+      d.selected = !d.selected;
+      $(window).trigger('node_selected');
     }
 
     $('#toggle_map_settings').click(function(){
