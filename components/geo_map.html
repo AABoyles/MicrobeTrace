@@ -100,32 +100,6 @@
       </div>
       <div role="tabpanel" class="tab-pane fade" id="mapLayerConfigurations">
         <div class="form-group row">
-          <div class="col-4">Nodes</div>
-          <div class="col-8">
-            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              <label class="btn btn-secondary active">
-                <input type="radio" name="nodeOptions" id="showNodes" autocomplete="off" checked> Show
-              </label>
-              <label class="btn btn-secondary">
-                <input type="radio" name="nodeOptions" id="hideNodes" autocomplete="off"> Hide
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="col-4">Links</div>
-          <div class="col-8">
-            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              <label class="btn btn-secondary">
-                <input type="radio" name="linkOptions" id="showLinks" autocomplete="off"> Show
-              </label>
-              <label class="btn btn-secondary active">
-                <input type="radio" name="linkOptions" id="hideLinks" autocomplete="off" checked> Hide
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
           <div class="col-4">Countries</div>
           <div class="col-8">
             <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
@@ -155,11 +129,11 @@
           <div class="col-4">Counties</div>
           <div class="col-8">
             <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              <label class="btn btn-secondary active">
-                <input type="radio" name="nodeOptions" id="showCounties" autocomplete="off" checked> Show
-              </label>
               <label class="btn btn-secondary">
-                <input type="radio" name="nodeOptions" id="hideCounties" autocomplete="off"> Hide
+                <input type="radio" name="nodeOptions" id="showCounties" autocomplete="off"> Show
+              </label>
+              <label class="btn btn-secondary active">
+                <input type="radio" name="nodeOptions" id="hideCounties" autocomplete="off" checked> Hide
               </label>
             </div>
           </div>
@@ -203,6 +177,19 @@
       </div>
       <div role="tabpanel" class="tab-pane fade" id="mapNodeConfigurations">
         <div class="form-group row">
+          <div class="col-4">Nodes</div>
+          <div class="col-8">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary active">
+                <input type="radio" name="nodeOptions" id="showNodes" autocomplete="off" checked> Show
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" name="nodeOptions" id="hideNodes" autocomplete="off"> Hide
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
           <div class="col-4">Color</div>
           <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
         </div>
@@ -227,6 +214,19 @@
         </div>
       </div>
       <div role="tabpanel" class="tab-pane fade" id="mapLinkConfigurations">
+        <div class="form-group row">
+          <div class="col-4">Links</div>
+          <div class="col-8">
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+              <label class="btn btn-secondary">
+                <input type="radio" name="linkOptions" id="showLinks" autocomplete="off"> Show
+              </label>
+              <label class="btn btn-secondary active">
+                <input type="radio" name="linkOptions" id="hideLinks" autocomplete="off" checked> Hide
+              </label>
+            </div>
+          </div>
+        </div>
         <div class="form-group row">
           <div class="col-4">Color</div>
           <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
