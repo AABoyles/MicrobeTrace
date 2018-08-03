@@ -36,13 +36,9 @@
             <select id="3d_network_default-node-tooltip" class="custom-select custom-select-sm nodeVariables"></select>
           </div>
         </div>
-        <!--div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="Color Nodes according to which variable?">Color By</a></div>
-          <div class="col-8"><select id="3d_network_node-color-variable" class="custom-select custom-select-sm nodeVariables"></select></div>
-        </div-->
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color should the nodes be?">Color</a></div>
-          <div class="col-8"><input type="color" id="3d_network_default-node-color" class="custom-select custom-select-sm" value="#5656ff" /></div>
+          <div class="col-4">Color</div>
+          <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
         </div>
         <div class="form-group row">
           <div class="col-4"><a href="#" data-toggle="tooltip" title="Size nodes in proportion to which variable?">Size By</a></div>
@@ -60,13 +56,9 @@
             <select id="3d_network_default-link-tooltip" class="custom-select custom-select-sm linkVariables"></select>
           </div>
         </div>
-        <!--div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="Color Links according to which variable?">Color By</a></div>
-          <div class="col-8"><select id="3d_network_link-color-variable" class="custom-select custom-select-sm linkVariables"></select></div>
-        </div-->
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color should the links be?">Color</a></div>
-          <div class="col-8"><input type="color" id="3d_network_default-link-color" class="custom-select custom-select-sm" value="#5f5f5f" /></div>
+          <div class="col-4">Color</div>
+          <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
         </div>
         <div class="form-group row">
           <div class="col-4"><a href="#" data-toggle="tooltip" title="How transparent should the links be?">Transparency</a></div>
@@ -137,7 +129,7 @@
       // This function neutered by a bug in 3d Force Graph
       // var nodeColorBy = $('#3d_network_node-color-variable').val();
       // if(nodeColorBy === 'None'){
-      var nodeColor = $('#3d_network_default-node-color').val();
+      var nodeColor = $('#default-node-color').val();
       graph.nodeColor(d => nodeColor);
       // } else {
       //   graph.nodeAutoColorBy(d => d[nodeColorBy]);
@@ -163,7 +155,7 @@
     function updateLinkColors(){
       // var linkColorBy = $('#3d_network_link-color-variable').val();
       // if(linkColorBy === 'None'){
-      var linkColor = $('#3d_network_default-link-color').val();
+      var linkColor = $('#default-link-color').val();
       graph.linkColor(() => linkColor);
       // } else {
       //   graph.linkAutoColorBy(l => l[linkColorBy]);
@@ -238,14 +230,18 @@
 
     $('#reload-3d-network').click(updateGraph);
 
+    $('#default-node-color').change(updateNodeColors);
+    $('#default-link-color').change(updateLinkColors);
+
     $('#3d_network_default-node-tooltip').change(updateNodeTooltip);
-    $('#3d_network_default-node-color').change(updateNodeColors);
     $('#3d_network_node-radius-variable, #3d_network_default-node-radius').change(updateNodeSizes);
+
     $('#3d_network_default-link-tooltip').change(updateLinkTooltip);
-    $('#3d_network_default-link-color').change(updateLinkColors);
     $('#3d_network_default-link-opacity').change(updateLinkOpacity);
     $('#3d_network_default-link-width').change(updateLinkWidth);
+
     $('#3d_network-color').change(updateBackground);
+
     $('#linkSortVariable, #default-link-threshold').change(updateData);
 
     setTimeout(function(){

@@ -38,6 +38,10 @@
         <div class="col-8"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
+        <div class="col-4">Color</div>
+        <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+      </div>
+      <div class="form-group row">
         <div class="col-4"><label for="nodeSymbolVariable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
         <div class="col-8"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
@@ -90,6 +94,10 @@
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
         <div class="col-8"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-4">Color</div>
+        <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
       </div>
       <div id="link-transparency-row" class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
@@ -821,7 +829,8 @@
   function setLinkColor(e){
     var variable = $('#linkColorVariable').val();
     if(variable === 'None'){
-      session.network.svg.select('g#links').selectAll('line').attr('stroke', $('#default-link-color').val());
+      let color = $('#default-link-color').val();
+      session.network.svg.select('g#links').selectAll('line').attr('stroke', color);
       $('#link-color-row').slideDown();
       $('#linkColors').fadeOut();
       return;

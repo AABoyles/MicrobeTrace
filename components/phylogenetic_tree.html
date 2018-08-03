@@ -127,6 +127,9 @@
         hoverLabel: true,
         showLabels: !$('#tree_labels_hide').is(':checked'),
         alignLabels: $('#tree_labels_align').is(':checked'),
+        selectedColour: 'rgb(255,130,21)',
+        backColour: false,
+        branchColour: $('#default-node-color').val()
       });
       phylocanvas.load(session.data.trees[type]); // load your tree file
       var parent = root.parent();
@@ -167,6 +170,11 @@
 
     $('#tree_node-size-slider').on('input', e => {
       phylocanvas.setNodeSize(e.target.value);
+    });
+
+    $('#default-node-color').on('input', e => {
+      phylocanvas.branchColour = e.target.value;
+      phylocanvas.draw();
     });
 
     $('#tree_labels_align').parent().click(e => {

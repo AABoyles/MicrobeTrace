@@ -20,6 +20,7 @@ body {
   -moz-transition: all 0.5s ease;
   -o-transition: all 0.5s ease;
   transition: all 0.5s ease;
+  z-index:10000;
 }
 a {
   color: #555;
@@ -306,27 +307,14 @@ input[type="range"]{
 #map_panel{
   width: 100%;
   height: 100%;
-  background: #d4dadc;
+  background: #d3d9db;
   cursor: -webkit-grab;
 }
 #map_panel:hover:active{
   cursor: hold;
 }
-#countries, #states, #counties {
-  fill: #fafaf8;
-  stroke: #eee0df;
-}
-g#labels text {
-  pointer-events: none;
-}
-g#labels text.Ocean{
-  fill: #abb6bd;
-}
-g#labels text.Continent{
-  fill: #bdc5ca;
-}
-g#labels text.Country{
-  fill: #bdc5ca;
+#map{
+  background: #d3d9db;
 }
 #map_group_key {
   position: absolute;

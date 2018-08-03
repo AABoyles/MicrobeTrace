@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-07-20
+# 2018-08-03
 
 CACHE:
 index.html
@@ -62,6 +62,7 @@ node_modules/alertifyjs/build/alertify.min.js
 node_modules/html2canvas/dist/html2canvas.min.js
 node_modules/screenfull/dist/screenfull.js
 node_modules/clipboard/dist/clipboard.min.js
+node_modules/leaflet/dist/leaflet.js
 node_modules/chosen-js/chosen.jquery.min.js
 node_modules/xlsx/dist/xlsx.full.min.js
 node_modules/alignment-viewer/dist/alignment-viewer.min.js
@@ -81,6 +82,7 @@ node_modules/chosen-js/chosen.css
 node_modules/alertifyjs/build/css/alertify.min.css
 node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css
 node_modules/msa/css/msa.css
+node_modules/leaflet/dist/leaflet.css
 node_modules/bootstrap/dist/css/bootstrap.min.css
 node_modules/alertifyjs/build/css/alertify.min.css
 data/cities.json

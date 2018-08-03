@@ -326,6 +326,41 @@ app.reset = function(){
   app.launchView('files');
 };
 
+app.haversine = function(lat1, lon1, lat2, lon2){
+  let R = 6371e3; // metres
+  let φ1 = lat1 * Math.PI / 180;
+  let φ2 = lat2 * Math.PI / 180;
+  let Δφ = (lat2-lat1) * Math.PI / 180;
+  let Δλ = (lon2-lon1) * Math.PI / 180;
+  let a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+          Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return(c * R);
+};
+
+app.geoDM = function(){
+  let nodes = session.data.nodes;
+  let links = [];
+  let n = nodes.length;
+  let dm = Array(n);
+  for(let i = 0; i < n; i++){
+    dm[i] = Array(n);
+    dm[i][i] = 0;
+    for(let j = 0; j < i; j++){
+      let dist = haversine(nodes[i].lat, nodes[i].lon, nodes[j].lat, nodes[j].lon);
+      dm[i][j] = dist;
+      dm[j][i] = dist;
+      links.push({
+        source: nodes[i].id,
+        target: nodes[j].id,
+        geographic_distance: dist
+      })
+    }
+  }
+  return(links);
+};
+
 app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
@@ -373,6 +408,12 @@ app.launchView = function(view, callback){
         return '<option value="'+field+'">'+app.titleize(field)+'</option>';
       }).join('\n')
     );
+    $('.launch-color-options').click(function(){
+      $('#color-tab').tab('show');
+      setTimeout(() => {
+        $('#global_settings_modal').modal('show');
+      }, 250);
+    });
     contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     if(callback){
       callback(contentItem);
