@@ -829,7 +829,8 @@
   function setLinkColor(e){
     var variable = $('#linkColorVariable').val();
     if(variable === 'None'){
-      session.network.svg.select('g#links').selectAll('line').attr('stroke', $('#default-link-color').val());
+      let color = $('#default-link-color').val();
+      session.network.svg.select('g#links').selectAll('line').attr('stroke', color);
       $('#link-color-row').slideDown();
       $('#linkColors').fadeOut();
       return;
