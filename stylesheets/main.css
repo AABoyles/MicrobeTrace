@@ -441,9 +441,6 @@ input[type="range"]{
 }
 
 /* Timeline */
-.vis-timeline{
-  border: none!important;
-}
-.vis-shadow{
-  display: none!important;
+#timeline-wrapper{
+  padding-top: 50px;
 }
