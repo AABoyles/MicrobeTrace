@@ -15,7 +15,7 @@
   </button>
 </div>
 
-<div id="2d_network_settings_pane" class="left_pane">
+<div id="network_settings_pane" class="left_pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
       <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#node_settings" role="tab" aria-controls="node_settings" aria-selected="true">Nodes</a>
@@ -24,7 +24,7 @@
       <a class="nav-link" id="links-tab" data-toggle="tab" href="#link_settings" role="tab" aria-controls="link_settings" aria-selected="false">Links</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="network-tab" data-toggle="tab" href="#2d_network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
+      <a class="nav-link" id="network-tab" data-toggle="tab" href="#network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -129,7 +129,7 @@
         </div>
       </div>
     </div>
-    <div class="tab-pane fade" id="2d_network_settings" role="tabpanel" aria-labelledby="network-tab">
+    <div class="tab-pane fade" id="network_settings" role="tabpanel" aria-labelledby="network-tab">
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
         <div class="col-8">
@@ -733,7 +733,7 @@
   }
 
   $('#toggle_2d_network_settings').click(function(){
-    var pane = $('#2d_network_settings_pane');
+    var pane = $('#network_settings_pane');
     if(pane.is(':visible')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
