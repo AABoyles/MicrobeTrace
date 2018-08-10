@@ -444,3 +444,8 @@ input[type="range"]{
 #timeline-wrapper{
   padding-top: 50px;
 }
+
+/* Waterfall View */
+#waterfall-view{
+  padding: 30px;
+}
