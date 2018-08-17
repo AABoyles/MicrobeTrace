@@ -169,7 +169,7 @@
 
 <table id="network_group_key" class="floater"></table>
 
-<div id="2d-context-menu" class="dropdown-menu">
+<div id="context-menu" class="dropdown-menu">
   <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
   <a href="#" id="copyID" class="dropdown-item">Copy ID</a>
   <a href="#" id="copySeq" class="dropdown-item showForSequence">Copy Sequence</a>
@@ -588,7 +588,7 @@
         });
       }
     }
-    $('#2d-context-menu').css({
+    $('#context-menu').css({
       'z-index': 1,
       'display': 'block',
       'left': (d3.event.pageX) + 'px',
@@ -597,7 +597,7 @@
   }
 
   function hideContextMenu(){
-    $('#2d-context-menu').animate({'opacity': 0}, 80, function(){
+    $('#context-menu').animate({'opacity': 0}, 80, function(){
       $(this).css('z-index', -1);
     });
   }
