@@ -38,10 +38,6 @@
             <input type="file" class="d-none" id="OpenTab" />
             <label class="mb-0 w-100" for="OpenTab">Open</label>
           </a>
-          <a href="#" class="dropdown-item">
-            <input type="file" class="d-none" id="ImportTab" />
-            <label class="mb-0 w-100" for="ImportTab">Import</label>
-          </a>
           <a href="#" id="FileTab" class="dropdown-item">New</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
@@ -411,46 +407,44 @@ performance of this software.</pre>
 
     $('#OpenTab').change(function(e){
       if(e.target.files.length > 0){
+        var parts = e.target.files[0].name.split('.');
+        var extension = parts[parts.length - 1];
         var reader = new FileReader();
-        reader.onloadend = function(out){
-          session = JSON.parse(out.target.result);
-          app.launchView('2d_network');
-        };
-        reader.readAsText(e.target.files[0], 'UTF-8');
-      }
-    });
-
-    $('#ImportTab').change(function(e){
-      if(e.target.files.length > 0){
-        var reader = new FileReader();
-        reader.onloadend = function(out){
-          session = app.sessionSkeleton();
-          app.parseHIVTrace(JSON.parse(out.target.result));
-          app.launchView('2d_network');
-          $('#linkSortVariable').html(
-            session.data.linkFields.map(function(field){
-              return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
-            }).join('\n')
-          );
-          try {
-            app.updateThresholdHistogram();
-          } catch(error){
-            console.error(error);
-            app.reset();
-          }
-          app.setLinkVisibility();
-          app.setNodeVisibility();
-          app.tagClusters();
-          app.computeDegree();
-          setTimeout(function(){
-            session.network.render();
-            session.network.force.alpha(0.3).alphaTarget(0).restart();
-            session.network.updateStatistics();
-            session.loadTime = Date.now() - session.startTime;
-            $('.hideForHIVTrace').hide();
-            setTimeout(session.network.fit, 1500);
-          }, 80);
-        };
+        if(extension == 'microbetrace'){
+          reader.onloadend = function(out){
+            session = JSON.parse(out.target.result);
+            app.launchView('2d_network');
+          };
+        } else {
+          reader.onloadend = function(out){
+            session = app.sessionSkeleton();
+            app.parseHIVTrace(JSON.parse(out.target.result));
+            app.launchView('2d_network');
+            $('#linkSortVariable').html(
+              session.data.linkFields.map(function(field){
+                return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+              }).join('\n')
+            );
+            try {
+              app.updateThresholdHistogram();
+            } catch(error){
+              console.error(error);
+              app.reset();
+            }
+            app.setLinkVisibility();
+            app.setNodeVisibility();
+            app.tagClusters();
+            app.computeDegree();
+            setTimeout(function(){
+              session.network.render();
+              session.network.force.alpha(0.3).alphaTarget(0).restart();
+              session.network.updateStatistics();
+              session.loadTime = Date.now() - session.startTime;
+              $('.hideForHIVTrace').hide();
+              setTimeout(session.network.fit, 1500);
+            }, 80);
+          };
+        }
         reader.readAsText(e.target.files[0], 'UTF-8');
       }
     });
