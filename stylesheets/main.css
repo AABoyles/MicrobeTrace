@@ -293,6 +293,14 @@ input[type="range"]{
   text-indent: 1px;
   text-overflow: '';
 }
+#attributeModal .modal-body{
+  max-height: 600px;
+  padding: 0;
+}
+#attributeModal .table{
+  font-family: monospace;
+  margin: 0;
+}
 
 /* 3D Network */
 .graph-nav-info{
