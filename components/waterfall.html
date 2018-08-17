@@ -1,0 +1,65 @@
+  <div class="container-fluid" id="waterfall-view">
+    <div class="row">
+      <div class="col">
+        <h4>Cluster</h4>
+        <div class="list-group" id="cluster_list"></div>
+      </div>
+      <div class="col">
+        <h4>Node</h4>
+        <div class="list-group" id="node_list"></div>
+      </div>
+      <div class="col">
+        <h4>Neighbors</h4>
+        <div class="list-group" id="neighbor_list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function(){
+
+  function resetNeighbors(node){
+    let list = $('#neighbor_list').empty();
+    if(_.isUndefined(node)) return;
+    session.data.links.filter(l => l.visible).forEach(link => {
+      if(!(link.source == node || link.target == node)) return;
+      let neighbor = link.source == node ? link.target : link.source;
+      $(`<a href="#" class="list-group-item list-group-item-action">${neighbor}</a>`).click(function(){
+        $(this).addClass('active');
+      }).appendTo(list);
+    });
+  }
+
+  function resetNodes(cluster){
+    resetNeighbors();
+    let list = $('#node_list').empty();
+    if(_.isUndefined(cluster)) return;
+    session.data.nodes.forEach(node => {
+      if(node.cluster !== cluster) return;
+      $(`<a href="#" class="list-group-item list-group-item-action">${node.id}</a>`).click(function(){
+        resetNeighbors(node.id);
+        list.find('a').removeClass('active');
+        $(this).addClass('active');
+      }).appendTo(list);
+    });
+  }
+
+  function resetClusters(){
+    resetNodes();
+    let list = $('#cluster_list').empty();
+    session.data.clusters.forEach(cluster => {
+      $(`<a href="#" class="list-group-item list-group-item-action">${cluster.id}</a>`).click(function(){
+        resetNodes(cluster.id);
+        list.find('a').removeClass('active');
+        $(this).addClass('active');
+      }).appendTo(list);
+    });
+  }
+
+  $('#waterfall-view').parent().css('overflow', 'auto');
+
+  resetClusters();
+})();
+</script>
+</body>
+</html>

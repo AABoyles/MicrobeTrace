@@ -1,0 +1,142 @@
+  <div id="bubble-view"></div>
+
+  <div class="view_controls">
+    <button type="button" id="toggle_bubbles_settings" class="btn btn-light btn-sm">
+      <span class="oi oi-cog"></span>
+    </button>
+  </div>
+
+  <div id="bubbles_settings_pane" class="left_pane">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#bubbles-diagramConfigurations" id="bubbles-diagram-tab" class="nav-link active" aria-controls="bubbles-diagram" role="tab" data-toggle="tab">Bubble Diagram</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="bubbles-diagramConfigurations" role="tabpanel" aria-labelledby="bubbles-diagram-tab">
+        <div class="form-group row">
+          <div class="col-3">Group By</div>
+          <div class="col-9">
+            <select id="bubbles_group_by" class="custom-select custom-select-sm nodeVariables"></select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Color By</div>
+          <div class="col-9">
+            <select id="bubbles_color_by" class="custom-select custom-select-sm nodeVariables"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+setTimeout(function(){
+  var width = $('#bubble-view').parent().width();
+  var height = $('#bubble-view').parent().height();
+  var center = { x: width / 2, y: height / 2 };
+
+  var svg = d3.select('#bubble-view')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  var bubbles = svg.selectAll('circle').data(session.data.nodes)
+    .enter().append('circle')
+      .attr('r', 5)
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 1);
+
+  var forceStrength = 0.03;
+
+  var simulation = d3.forceSimulation().nodes(session.data.nodes)
+    .velocityDecay(0.2)
+    .force('x', d3.forceX().strength(forceStrength).x(center.x))
+    .force('y', d3.forceY().strength(forceStrength).y(center.y))
+    .force('charge', d3.forceManyBody().strength(function(d){ return -50 * forceStrength }))
+    .on('tick', function(){
+      bubbles
+        .attr('cx', function(d){return d.x})
+        .attr('cy', function(d){return d.y});
+    });
+
+  function groupBubbles(field){
+    if(field === 'None'){
+      svg.selectAll('.title').remove();
+      simulation.force('x', d3.forceX().strength(forceStrength).x(center.x));
+      simulation.alpha(1).restart();
+      return;
+    }
+    var values = [];
+    session.data.nodes.forEach(function(d){
+      if(values.indexOf(d[field]) == -1) values.push(d[field]);
+    });
+    var ratio = width/(values.length + 1);
+    var titles = svg.selectAll('.title').data(values);
+    titles.exit().remove();
+    titles.enter().append('text')
+      .attr('class', 'title')
+      .attr('y', 40)
+      .attr('text-anchor', 'middle')
+      .merge(titles)
+      .transition()
+      .text(function(d){ return d })
+      .attr('x', function(d){ return ratio * values.indexOf(d) + ratio });
+    simulation.force('x', d3.forceX().strength(forceStrength).x(function(d){
+      return ratio * values.indexOf(d[field]) + ratio;
+    }));
+    simulation.alpha(1).restart();
+  }
+
+  groupBubbles('None');
+
+  $('#bubbles_group_by').on('change', function(e){
+    groupBubbles(e.target.value);
+  });
+
+  function colorBubbles(field){
+    if(field === 'None'){
+      bubbles.attr('fill', d3.schemeCategory10[0]);
+      return;
+    }
+    var fillColor, values = [];
+    session.data.nodes.forEach(function(d){
+      if(values.indexOf(d[field]) == -1) values.push(d[field]);
+    });
+    if(field === "Age"){
+      values = values.map(parseFloat);
+      var min = values.reduce(function(e, a){ return Math.min(e, a); });
+      var max = values.reduce(function(e, a){ return Math.max(e, a); });
+      fillColor = d3.scaleLinear()
+        .domain([min, max])
+        .range(["white", "black"]);
+      bubbles.transition()
+        .attr('fill', function(d){ return fillColor(parseFloat(d[field])); });
+    } else {
+      fillColor = d3.scaleOrdinal()
+        .domain(values)
+        .range(d3.schemeCategory10.slice(0, values.length));
+      bubbles.transition()
+        .attr('fill', function(d){ return fillColor(d[field]); });
+    }
+  }
+
+  colorBubbles('None');
+
+  $('#bubbles_color_by').on('change', function(e){
+    colorBubbles(e.target.value);
+  });
+
+  $('#toggle_bubbles_settings').click(function(){
+    var pane = $('#bubbles_settings_pane');
+    if(pane.is(':visible')){
+      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    } else {
+      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    }
+  });
+
+}, 200);
+</script>
+</body>
+</html>

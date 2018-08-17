@@ -37,10 +37,6 @@
             <input type="file" class="d-none" id="OpenTab" />
             <label class="mb-0 w-100" for="OpenTab">Open</label>
           </a>
-          <a href="#" class="dropdown-item">
-            <input type="file" class="d-none" id="ImportTab" />
-            <label class="mb-0 w-100" for="ImportTab">Import</label>
-          </a>
           <a href="#" id="FileTab" class="dropdown-item">New</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
@@ -56,8 +52,10 @@
           <a href="#" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
           <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
           <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="bubbles">Bubbles</a>
           <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
           <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</a>
           <a href="#" id="map_link" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
           <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
           <div class="dropdown-divider showForSequence"></div>
@@ -340,6 +338,7 @@ performance of this software.</pre>
   <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
   <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
   <script src="node_modules/alignment-viewer/dist/alignment-viewer.min.js"></script>
+  <script src="node_modules/moment/min/moment-with-locales.min.js"></script>
   <script src="scripts/common.js"></script>
   <script>
   $(function(){
@@ -407,46 +406,44 @@ performance of this software.</pre>
 
     $('#OpenTab').change(function(e){
       if(e.target.files.length > 0){
+        var parts = e.target.files[0].name.split('.');
+        var extension = parts[parts.length - 1];
         var reader = new FileReader();
-        reader.onloadend = function(out){
-          session = JSON.parse(out.target.result);
-          app.launchView('2d_network');
-        };
-        reader.readAsText(e.target.files[0], 'UTF-8');
-      }
-    });
-
-    $('#ImportTab').change(function(e){
-      if(e.target.files.length > 0){
-        var reader = new FileReader();
-        reader.onloadend = function(out){
-          session = app.sessionSkeleton();
-          app.parseHIVTrace(JSON.parse(out.target.result));
-          app.launchView('2d_network');
-          $('#linkSortVariable').html(
-            session.data.linkFields.map(function(field){
-              return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
-            }).join('\n')
-          );
-          try {
-            app.updateThresholdHistogram();
-          } catch(error){
-            console.error(error);
-            app.reset();
-          }
-          app.setLinkVisibility();
-          app.setNodeVisibility();
-          app.tagClusters();
-          app.computeDegree();
-          setTimeout(function(){
-            session.network.render();
-            session.network.force.alpha(0.3).alphaTarget(0).restart();
-            session.network.updateStatistics();
-            session.loadTime = Date.now() - session.startTime;
-            $('.hideForHIVTrace').hide();
-            setTimeout(session.network.fit, 1500);
-          }, 80);
-        };
+        if(extension == 'microbetrace'){
+          reader.onloadend = function(out){
+            session = JSON.parse(out.target.result);
+            app.launchView('2d_network');
+          };
+        } else {
+          reader.onloadend = function(out){
+            session = app.sessionSkeleton();
+            app.parseHIVTrace(JSON.parse(out.target.result));
+            app.launchView('2d_network');
+            $('#linkSortVariable').html(
+              session.data.linkFields.map(function(field){
+                return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+              }).join('\n')
+            );
+            try {
+              app.updateThresholdHistogram();
+            } catch(error){
+              console.error(error);
+              app.reset();
+            }
+            app.setLinkVisibility();
+            app.setNodeVisibility();
+            app.tagClusters();
+            app.computeDegree();
+            setTimeout(function(){
+              session.network.render();
+              session.network.force.alpha(0.3).alphaTarget(0).restart();
+              session.network.updateStatistics();
+              session.loadTime = Date.now() - session.startTime;
+              $('.hideForHIVTrace').hide();
+              setTimeout(session.network.fit, 1500);
+            }, 80);
+          };
+        }
         reader.readAsText(e.target.files[0], 'UTF-8');
       }
     });

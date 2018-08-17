@@ -17,91 +17,208 @@
     <div class="tab-content">
       <div class="tab-pane fade show active" id="timelineConfigurations" role="tabpanel" aria-labelledby="timeline-tab">
         <div class="form-group row">
-          <div class="col-3">Date Column</div>
-          <div class="col-9"><select id="date-column" class="custom-select custom-select-sm nodeVariables">
-            <option>None</option>
-            <option value="date" selected>Date</option>
-          </select></div>
+          <div class="col-12"><button id="addDate" type="button" class="btn btn-secondary">Add Date</button></div>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="node_modules/vis/dist/vis.min.js"></script>
-  <script src="node_modules/moment/min/moment-with-locales.min.js"></script>
   <script>
-  (function(){
-    session.timeline = {destroy: function(){}};
+(function(){
+  let bars = [];
+  let margin = {
+    top : 40,
+    right : 20,
+    bottom : 0,
+    left : 40
+  };
+  let svg, x, y, xAxis, yAxis, timeDomainStart, timeDomainEnd, height, width;
+  let tickFormat = "%H:%M";
+  let clickCount = 0;
+  let refresh = function(){};
 
-    function drawTimeline(){
-      session.timeline.destroy();
-      var field = $('#date-column').val();
-      session.timeline = new vis.Timeline(
-        document.getElementById('timeline-wrapper'),
-        session.data.nodes
-          .filter(d => d[field] && d.visible)
-          .map(d => ({
-            id: d.id,
-            content: d.id,
-            start: moment('' + d[field]),
-            type: 'point'
-          })),
-        {
-          'height': $('#timeline-wrapper').parent().height(),
-          'multiselect': true
-        }
-      );
-      session.timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
+  setTimeout(function(){
+
+    height = $('#timeline-wrapper').parent().height() - margin.top - margin.bottom - 5;
+    width = $('#timeline-wrapper').parent().width() - margin.right - margin.left - 5;
+
+    svg = d3.select('#timeline-wrapper')
+      .append("svg")
+      .attr("class", "chart")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+
+    svg.append("g")
+      .attr("class", "gantt-chart")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("transform", "translate(" + margin.left + ", 0)");
+
+    svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", "translate(" + margin.left + ", " + (height - margin.top - margin.bottom) + ")");
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .attr("transform", "translate(" + margin.left + ", 0)");
+
+    refresh = function(){
+      bars = [];
+
+      $('.date-table-row').each((i, el) => {
+        let $el = $(el);
+        let dateid = $el.data('dateid');
+        let startField = $el.find(`#date-${dateid}-start`).val();
+        let endField = $el.find(`#date-${dateid}-end`).val();
+        if(endField === 'None') endField = startField;
+        session.data.nodes.filter(d => d[startField] && d[endField]).forEach(d => {
+          let startDate = moment(d[startField]).toDate();
+          let endDate = moment(d[endField]).toDate();
+          if(_.isDate(startDate) && _.isDate(endDate)){
+            bars.push({
+              "startDate" : startDate,
+              "endDate" : endDate,
+              "barID" : `date-${d.id}`,
+              "barClass" : `date-${dateid}`
+            });
+          }
+        });
+      });
+
+      if(bars.length === 0) return;
+
+      bars.sort((a, b) => b.endDate - a.endDate);
+      timeDomainEnd = bars[0].endDate;
+
+      bars.sort((a, b) => a.startDate - b.startDate);
+      timeDomainStart = bars[0].startDate;
+
+      x = d3.scaleTime()
+            .domain([timeDomainStart, timeDomainEnd])
+            .range([0, width])
+            .clamp(true);
+
+      y = d3.scaleBand()
+            .domain(Array.from(new Set(bars.map(t => t.barID))))
+            .range([0, height - margin.top - margin.bottom])
+            .padding(0.1);
+
+      xAxis = d3.axisBottom()
+            .scale(x)
+            .tickFormat(d3.timeFormat("%Y-%m-%d"))
+            .tickSize(8)
+            .tickPadding(8);
+
+      yAxis = d3.axisLeft()
+            .scale(y)
+            .tickSize(0);
+
+      svg.select('.x-axis')
+        .transition()
+        .call(xAxis);
+
+      svg.select('.y-axis')
+        .transition()
+        .call(yAxis);
+
+      let ganttChartGroup = svg.select(".gantt-chart");
+      let rect = ganttChartGroup.selectAll("rect").data(bars);
+
+      rect.exit().remove();
+
+      rect.enter()
+        .insert("rect",":first-child")
+        .attr("rx", 5)
+        .attr("ry", 5)
+        .attr("class", d => d.barClass)
+        .attr('fill-opacity', .6)
+        .transition()
+        .attr("y", 0)
+        .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.barID) + ")")
+        .attr("height", d => y.bandwidth())
+        .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
+
+      rect.merge(rect).transition()
+      	.attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.barID) + ")")
+        .attr("height", d => y.bandwidth())
+        .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
     }
 
-    $('#date-column').change(drawTimeline);
+    refresh();
 
-    setTimeout(function(){
-      ['date', 'Date', 'DATE'].forEach(name => {
-        if(session.data.nodeFields.includes(name)){
-          $('#date-column').val(name);
-        }
+    let mouseG = svg.append("g")
+      .attr("class", "mouse-over-effects")
+
+    let mouseLine = mouseG.append("path")
+      .attr("class", "mouse-line")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("opacity", "0");
+
+    mouseG.append('svg:rect')
+      .attr('width', width - 5)
+      .attr('height', height - margin.top - margin.bottom)
+      .attr('transform', 'translate(' + margin.left + ',0)')
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('mouseout', function(){
+        mouseLine.style("opacity", "0");
+      })
+      .on('mouseover', function(){
+        mouseLine.style("opacity", "1");
+      })
+      .on('mousemove', function(){
+        let xc = d3.mouse(this)[0] + margin.left;
+        let h = height - margin.top - margin.bottom;
+        mouseLine.attr("d", function(){
+          return "M" + xc + "," + h + " " + xc + ",0";
+        });
+
       });
 
-      drawTimeline();
+  }, 80);
 
-      var field = $('#date-column').val();
-
-      session.timeline.addCustomTime(_.max(session.data.nodes.map(d => moment('' + d[field]))));
-
-      session.timeline.on('timechanged', function(e){
-        var field = $('#date-column').val();
-        session.state.time = moment(e.time);
-        app.setNodeVisibility();
-        session.timeline.setItems(session.data.nodes
-          .filter(d => d[field] && d.visible)
-          .map(d => ({
-            id: d.id,
-            content: d.id,
-            start: moment('' + d[field]),
-            type: 'point'
-          })));
-      });
-
-      session.timeline.on('select', function(properties){
-        session.data.nodes.forEach(d => d.selected = properties.items.includes(d.id));
-        $(window).trigger('node_selected');
-      });
-    }, 100);
-
-    $(window).on('node_selected', e => {
-      session.timeline.setSelection(session.data.nodes.filter(d => d.visible && d.selected).map(d => d.id));
+  $('#addDate').click(function(){
+    clickCount++;
+    let root = $(`<div class="form-group row date-table-row" data-dateid='${clickCount}'></div>`);
+    $('<div class="col-1"></div>')
+      .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
+        refresh();
+        root.slideUp(function(){
+          root.remove();
+        });
+      }))
+      .appendTo(root);
+    let options = '<option>None</option>' + session.data.nodeFields.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
+    root.append(`
+      <div class='col-3'><label for="date-${clickCount}-start">Start</label></div>
+      <div class='col-8'><select id="date-${clickCount}-start" class="custom-select custom-select-sm">${options}</select></div>
+      <div class='col-3 offset-1'><label for="date-${clickCount}-end">End</label></div>
+      <div class='col-8'><select id="date-${clickCount}-end" class="custom-select custom-select-sm">${options}</select></div>
+      <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
+      <div class='col-8'><input id="date-${clickCount}-color" class="custom-select custom-select-sm" type="color"></select></div>
+      <div class='col-4'><label for="date-${clickCount}-transparency">Transparency</label></div>
+      <div class='col-8'><input id="date-${clickCount}-transparency" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
+    </div>`);
+    root.appendTo('#timelineConfigurations');
+    $(`#date-${clickCount}-start, #date-${clickCount}-end`).change(function(){
+      refresh();
     });
-
-    $('#toggle_timeline_settings').click(function(){
-      var pane = $('#timeline_settings_pane');
-      if(pane.is(':visible')){
-        pane.animate({left: '-400px'}, function(){ pane.hide(); });
-      } else {
-        pane.show(0, function(){ pane.animate({left: '0px'}); });
-      }
+    $(`#date-${clickCount}-color`).change(function(e){
+      svg.selectAll(`.date-${clickCount}`).attr('fill', e.target.value);
     });
+    $(`#date-${clickCount}-transparency`).change(function(e){
+      svg.selectAll(`.date-${clickCount}`).attr('fill-opacity', e.target.value);
+    });
+  });
 
-  })();
-
+  $('#toggle_timeline_settings').click(function(){
+    let pane = $('#timeline_settings_pane');
+    if(pane.is(':visible')){
+      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    } else {
+      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    }
+  });
+})();
   </script>

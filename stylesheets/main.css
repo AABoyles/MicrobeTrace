@@ -293,6 +293,14 @@ input[type="range"]{
   text-indent: 1px;
   text-overflow: '';
 }
+#attributeModal .modal-body{
+  max-height: 600px;
+  padding: 0;
+}
+#attributeModal .table{
+  font-family: monospace;
+  margin: 0;
+}
 
 /* 3D Network */
 .graph-nav-info{
@@ -441,9 +449,14 @@ input[type="range"]{
 }
 
 /* Timeline */
-.vis-timeline{
-  border: none!important;
+#timeline-wrapper{
+  padding-top: 50px;
 }
-.vis-shadow{
-  display: none!important;
+.date-table-row{
+  border: 1px solid lightgray;
+}
+
+/* Waterfall View */
+#waterfall-view{
+  padding: 30px;
 }
