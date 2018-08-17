@@ -452,6 +452,9 @@ input[type="range"]{
 #timeline-wrapper{
   padding-top: 50px;
 }
+.date-table-row{
+  border: 1px solid lightgray;
+}
 
 /* Waterfall View */
 #waterfall-view{
