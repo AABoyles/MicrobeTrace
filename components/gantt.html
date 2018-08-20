@@ -1,0 +1,228 @@
+  <div id="gantt-wrapper"></div>
+
+  <div class="view_controls">
+    <button type="button" id="toggle_gantt_settings" class="btn btn-light btn-sm">
+      <span class="oi oi-cog"></span>
+    </button>
+  </div>
+
+  <div id="gantt_settings_pane" class="left_pane">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#ganttConfigurations" id="gantt-tab" class="nav-link active" aria-controls="gantt" role="tab" data-toggle="tab">Gantt</a>
+      </li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="ganttConfigurations" role="tabpanel" aria-labelledby="gantt-tab">
+        <div class="form-group row">
+          <div class="col-12"><button id="addDate" type="button" class="btn btn-secondary">Add Date</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function(){
+  let bars = [];
+  let margin = {
+    top : 40,
+    right : 20,
+    bottom : 0,
+    left : 40
+  };
+  let svg = d3.select('#gantt-wrapper').append("svg");
+  let x, y, xAxis, yAxis, timeDomainStart, timeDomainEnd, height = 600, width = 800;
+  let tickFormat = d3.timeFormat("%Y-%m-%d");
+  let clickCount = 0;
+
+  function refresh(){
+    bars = [];
+
+    svg.append("g")
+      .attr("class", "gantt-chart")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+    svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", "translate(" + margin.left + ", " + height + ")");
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+    $('.date-table-row').each((i, el) => {
+      let $el = $(el);
+      let dateid = $el.data('dateid');
+      let startField = $el.find(`#date-${dateid}-start`).val();
+      let endField = $el.find(`#date-${dateid}-end`).val();
+      if(endField === 'None') endField = startField;
+      session.data.nodes.filter(d => d[startField] && d[endField]).forEach(d => {
+        let startDate = moment(d[startField]).toDate();
+        let endDate = moment(d[endField]).toDate();
+        if(_.isDate(startDate) && _.isDate(endDate)){
+          bars.push({
+            "startDate" : startDate,
+            "endDate" : endDate,
+            "barID" : `${d.id}-${dateid}`,
+            "barClass" : `date-${dateid}`,
+            "row": d.id
+          });
+        }
+      });
+    });
+
+    if(bars.length === 0) return;
+
+    bars.sort((a, b) => b.endDate - a.endDate);
+    timeDomainEnd = bars[0].endDate;
+
+    bars.sort((a, b) => a.startDate - b.startDate);
+    timeDomainStart = bars[0].startDate;
+
+    x = d3.scaleTime()
+          .domain([timeDomainStart, timeDomainEnd])
+          .range([0, width])
+          .clamp(true);
+
+    y = d3.scaleBand()
+          .domain(Array.from(new Set(bars.map(t => t.row))))
+          .range([0, height - margin.top - margin.bottom])
+          .padding(0.1);
+
+    xAxis = d3.axisBottom()
+          .scale(x)
+          .tickFormat(tickFormat)
+          .tickSize(8)
+          .tickPadding(8);
+
+    yAxis = d3.axisLeft()
+          .scale(y)
+          .tickSize(0);
+
+    svg.select('.x-axis')
+      .transition()
+      .call(xAxis);
+
+    svg.select('.y-axis')
+      .transition()
+      .call(yAxis);
+
+    let ganttChartGroup = svg.select(".gantt-chart");
+    let rect = ganttChartGroup.selectAll("rect").data(bars);
+
+    rect.exit().remove();
+
+    rect.enter()
+      .insert("rect",":first-child")
+      .attr("rx", 5)
+      .attr("ry", 5)
+      .attr("class", d => d.barClass)
+      .attr('fill-opacity', .6)
+      .transition()
+      .attr("y", 0)
+      .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
+      .attr("height", d => y.bandwidth())
+      .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
+
+    rect.merge(rect).transition()
+      .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
+      .attr("height", d => y.bandwidth())
+      .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
+
+    let mouseG = svg.append("g")
+      .attr("class", "mouse-over-effects")
+
+    let mouseLine = mouseG.append("path")
+      .attr("class", "mouse-line")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("opacity", "0");
+
+    let timestamp = mouseG.append('text').attr('y', margin.top).attr('text-anchor', 'middle');
+
+    mouseG.append('svg:rect')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height - margin.top - margin.bottom)
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('mouseout', function(){
+        mouseLine.style("opacity", "0");
+        timestamp.style("opacity", "0");
+      })
+      .on('mouseover', function(){
+        mouseLine.style("opacity", "1");
+        timestamp.style("opacity", "1");
+      })
+      .on('mousemove', function(){
+        let xc = d3.mouse(this)[0] + margin.left;
+        let h = height - margin.bottom;
+        mouseLine.attr("d", function(){
+          return "M" + xc + "," + h + " " + xc + "," + margin.top;
+        });
+        timestamp.attr('x', xc + 5).text(tickFormat(x.invert(xc - margin.left)));
+      });
+  }
+
+  $('#addDate').click(function(){
+    clickCount++;
+    let root = $(`<div class="form-group row date-table-row" data-dateid='${clickCount}'></div>`);
+    $('<div class="col-1"></div>')
+      .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
+        refresh();
+        root.slideUp(function(){
+          root.remove();
+        });
+      }))
+      .appendTo(root);
+    let options = '<option>None</option>' + session.data.nodeFields.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
+    root.append(`
+      <div class='col-3'><label for="date-${clickCount}-start">Start</label></div>
+      <div class='col-8'><select id="date-${clickCount}-start" class="custom-select custom-select-sm">${options}</select></div>
+      <div class='col-3 offset-1'><label for="date-${clickCount}-end">End</label></div>
+      <div class='col-8'><select id="date-${clickCount}-end" class="custom-select custom-select-sm">${options}</select></div>
+      <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
+      <div class='col-8'><input id="date-${clickCount}-color" class="custom-select custom-select-sm" type="color"></select></div>
+      <div class='col-4'><label for="date-${clickCount}-transparency">Transparency</label></div>
+      <div class='col-8'><input id="date-${clickCount}-transparency" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
+    </div>`);
+    root.appendTo('#ganttConfigurations');
+    $(`#date-${clickCount}-start, #date-${clickCount}-end`).change(function(){
+      refresh();
+    });
+    $(`#date-${clickCount}-color`).change(function(e){
+      svg.selectAll(`.date-${clickCount}`).attr('fill', e.target.value);
+    });
+    $(`#date-${clickCount}-transparency`).change(function(e){
+      svg.selectAll(`.date-${clickCount}`).attr('fill-opacity', e.target.value);
+    });
+  });
+
+  $('#toggle_gantt_settings').click(function(){
+    let pane = $('#gantt_settings_pane');
+    if(pane.is(':visible')){
+      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    } else {
+      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    }
+  });
+
+  setTimeout(function(){
+    height = $('#gantt-wrapper').parent().height() - margin.top - margin.bottom - 5;
+    width = $('#gantt-wrapper').parent().width() - margin.right - margin.left - 5;
+
+    svg.attr("width", width + margin.left + margin.right)
+       .attr("height", height + margin.top + margin.bottom)
+
+   let pane = $('#gantt_settings_pane');
+   pane.show(0, function(){ pane.animate({left: '0px'}); });
+
+    refresh();
+  }, 80);
+
+})();
+  </script>
