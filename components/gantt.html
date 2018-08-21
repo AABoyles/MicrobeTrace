@@ -60,13 +60,13 @@
       let startField = $el.find(`#date-${dateid}-start`).val();
       let endField = $el.find(`#date-${dateid}-end`).val();
       if(endField === 'None') endField = startField;
-      session.data.nodes.filter(d => d[startField] && d[endField]).forEach(d => {
+      session.data.nodes.filter(d => d.visible).forEach(d => {
         let startDate = moment(d[startField]).toDate();
         let endDate = moment(d[endField]).toDate();
-        if(_.isDate(startDate) && _.isDate(endDate)){
+        if(_.isDate(startDate) || _.isDate(endDate)){
           bars.push({
-            "startDate" : startDate,
-            "endDate" : endDate,
+            "startDate" : _.isDate(startDate) ? startDate : endDate,
+            "endDate" : _.isDate(endDate) ? endDate : startDate,
             "barID" : `${d.id}-${dateid}`,
             "barClass" : `date-${dateid}`,
             "row": d.id
@@ -112,7 +112,7 @@
       .call(yAxis);
 
     let ganttChartGroup = svg.select(".gantt-chart");
-    let rect = ganttChartGroup.selectAll("rect").data(bars);
+    let rect = ganttChartGroup.selectAll("rect").data(bars, d => d.barID);
 
     rect.exit().remove();
 
@@ -120,15 +120,20 @@
       .insert("rect",":first-child")
       .attr("rx", 5)
       .attr("ry", 5)
-      .attr("class", d => d.barClass)
       .attr('fill-opacity', .6)
       .transition()
       .attr("y", 0)
       .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
       .attr("height", d => y.bandwidth())
-      .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
+      .attr("width", d => {
+        if(_.isDate(d.startDate) && _.isDate(d.endDate)){
+          return Math.max(x(d.endDate) - x(d.startDate), 5);
+        }
+        return 5;
+      });
 
     rect.merge(rect).transition()
+      .attr("class", d => d.barClass)
       .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
       .attr("height", d => y.bandwidth())
       .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
@@ -173,9 +178,9 @@
     let root = $(`<div class="form-group row date-table-row" data-dateid='${clickCount}'></div>`);
     $('<div class="col-1"></div>')
       .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
-        refresh();
         root.slideUp(function(){
           root.remove();
+          refresh();
         });
       }))
       .appendTo(root);
@@ -191,9 +196,7 @@
       <div class='col-8'><input id="date-${clickCount}-transparency" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
     </div>`);
     root.appendTo('#ganttConfigurations');
-    $(`#date-${clickCount}-start, #date-${clickCount}-end`).change(function(){
-      refresh();
-    });
+    $(`#date-${clickCount}-start, #date-${clickCount}-end`).change(refresh);
     $(`#date-${clickCount}-color`).change(function(e){
       svg.selectAll(`.date-${clickCount}`).attr('fill', e.target.value);
     });
