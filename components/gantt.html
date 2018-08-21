@@ -37,22 +37,48 @@
   let tickFormat = d3.timeFormat("%Y-%m-%d");
   let clickCount = 0;
 
+  svg.append("g")
+    .attr("class", "gantt-chart")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+  svg.append("g").attr("class", "x-axis");
+
+  svg.append("g")
+    .attr("class", "y-axis")
+    .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+  let mouseG = svg.append("g").attr("class", "mouse-over-effects")
+
+  let mouseLine = mouseG.append("path")
+    .attr("class", "mouse-line")
+    .style("stroke", "black")
+    .style("stroke-width", "1px")
+    .style("opacity", "0");
+
+  let timestamp = mouseG.append('text').attr('y', margin.top).attr('text-anchor', 'middle');
+
+  let mousebox = mouseG.append('rect')
+    .attr('fill', 'none')
+    .attr('pointer-events', 'all')
+    .on('mouseout', function(){
+      mouseLine.style("opacity", "0");
+      timestamp.style("opacity", "0");
+    })
+    .on('mouseover', function(){
+      mouseLine.style("opacity", "1");
+      timestamp.style("opacity", "1");
+    });
+
   function refresh(){
+    height = $('#gantt-wrapper').parent().height() - margin.top - margin.bottom - 5;
+    width = $('#gantt-wrapper').parent().width() - margin.right - margin.left - 5;
+
     bars = [];
 
-    svg.append("g")
-      .attr("class", "gantt-chart")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-
-    svg.append("g")
-      .attr("class", "x-axis")
-      .attr("transform", "translate(" + margin.left + ", " + height + ")");
-
-    svg.append("g")
-      .attr("class", "y-axis")
-      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+    svg.attr("width", width + margin.left + margin.right)
+       .attr("height", height + margin.top + margin.bottom)
 
     $('.date-table-row').each((i, el) => {
       let $el = $(el);
@@ -61,12 +87,12 @@
       let endField = $el.find(`#date-${dateid}-end`).val();
       if(endField === 'None') endField = startField;
       session.data.nodes.filter(d => d.visible).forEach(d => {
-        let startDate = moment(d[startField]).toDate();
-        let endDate = moment(d[endField]).toDate();
-        if(_.isDate(startDate) || _.isDate(endDate)){
+        let startDate = moment(d[startField]);
+        let endDate = moment(d[endField]);
+        if(startDate.isValid() || endDate.isValid()){
           bars.push({
-            "startDate" : _.isDate(startDate) ? startDate : endDate,
-            "endDate" : _.isDate(endDate) ? endDate : startDate,
+            "startDate" : startDate.isValid() ? startDate.toDate() : endDate.toDate(),
+            "endDate" : endDate.isValid() ? endDate.toDate() : startDate.toDate(),
             "barID" : `${d.id}-${dateid}`,
             "barClass" : `date-${dateid}`,
             "row": d.id
@@ -105,14 +131,14 @@
 
     svg.select('.x-axis')
       .transition()
+      .attr("transform", "translate(" + margin.left + ", " + height + ")")
       .call(xAxis);
 
     svg.select('.y-axis')
       .transition()
       .call(yAxis);
 
-    let ganttChartGroup = svg.select(".gantt-chart");
-    let rect = ganttChartGroup.selectAll("rect").data(bars, d => d.barID);
+    let rect = svg.select(".gantt-chart").selectAll("rect").data(bars, d => d.barID);
 
     rect.exit().remove();
 
@@ -121,6 +147,7 @@
       .attr("rx", 5)
       .attr("ry", 5)
       .attr('fill-opacity', .6)
+      .attr("class", d => d.barClass)
       .transition()
       .attr("y", 0)
       .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
@@ -132,76 +159,65 @@
         return 5;
       });
 
-    rect.merge(rect).transition()
-      .attr("class", d => d.barClass)
+    rect.merge(rect)
+      .transition()
       .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
       .attr("height", d => y.bandwidth())
       .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
 
-    let mouseG = svg.append("g")
-      .attr("class", "mouse-over-effects")
-
-    let mouseLine = mouseG.append("path")
-      .attr("class", "mouse-line")
-      .style("stroke", "black")
-      .style("stroke-width", "1px")
-      .style("opacity", "0");
-
-    let timestamp = mouseG.append('text').attr('y', margin.top).attr('text-anchor', 'middle');
-
-    mouseG.append('svg:rect')
-      .attr('width', width + margin.left + margin.right)
+    mousebox
+      .attr('width', width)
       .attr('height', height - margin.top - margin.bottom)
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-      .attr('fill', 'none')
-      .attr('pointer-events', 'all')
-      .on('mouseout', function(){
-        mouseLine.style("opacity", "0");
-        timestamp.style("opacity", "0");
-      })
-      .on('mouseover', function(){
-        mouseLine.style("opacity", "1");
-        timestamp.style("opacity", "1");
-      })
       .on('mousemove', function(){
         let xc = d3.mouse(this)[0] + margin.left;
         let h = height - margin.bottom;
         mouseLine.attr("d", function(){
           return "M" + xc + "," + h + " " + xc + "," + margin.top;
         });
-        timestamp.attr('x', xc + 5).text(tickFormat(x.invert(xc - margin.left)));
+        timestamp.attr('x', Math.min(Math.max(xc, 85), width)).text(tickFormat(x.invert(xc - margin.left)));
       });
   }
 
   $('#addDate').click(function(){
     clickCount++;
-    let root = $(`<div class="form-group row date-table-row" data-dateid='${clickCount}'></div>`);
-    $('<div class="col-1"></div>')
-      .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
-        root.slideUp(function(){
-          root.remove();
-          refresh();
-        });
-      }))
-      .appendTo(root);
+    let root = $(`<div class="form-group date-table-row" data-dateid='${clickCount}'></div>`);
+    $('<a href="#"><span class="oi oi-circle-x"></span></a>').css({
+      position: 'relative',
+      top: '2px',
+      left: '2px'
+    }).click(function(e){
+      root.slideUp(function(){
+        root.remove();
+        refresh();
+      });
+    }).appendTo(root);
     let options = '<option>None</option>' + session.data.nodeFields.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
     root.append(`
-      <div class='col-3'><label for="date-${clickCount}-start">Start</label></div>
-      <div class='col-8'><select id="date-${clickCount}-start" class="custom-select custom-select-sm">${options}</select></div>
-      <div class='col-3 offset-1'><label for="date-${clickCount}-end">End</label></div>
-      <div class='col-8'><select id="date-${clickCount}-end" class="custom-select custom-select-sm">${options}</select></div>
-      <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
-      <div class='col-8'><input id="date-${clickCount}-color" class="custom-select custom-select-sm" type="color"></select></div>
-      <div class='col-4'><label for="date-${clickCount}-transparency">Transparency</label></div>
-      <div class='col-8'><input id="date-${clickCount}-transparency" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
+      <div class="row">
+        <div class='col-3 offset-1'><label for="date-${clickCount}-start">Start</label></div>
+        <div class='col-8'><select id="date-${clickCount}-start" class="custom-select custom-select-sm">${options}</select></div>
+      </div>
+      <div class="row">
+        <div class='col-3 offset-1'><label for="date-${clickCount}-end">End</label></div>
+        <div class='col-8'><select id="date-${clickCount}-end" class="custom-select custom-select-sm">${options}</select></div>
+      </div>
+      <div class="row">
+        <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
+        <div class='col-8'><input id="date-${clickCount}-color" class="custom-select custom-select-sm" type="color"></select></div>
+      </div>
+      <div class="row">
+        <div class='col-3 offset-1'><label for="date-${clickCount}-transparency">Transparency</label></div>
+        <div class='col-8'><input id="date-${clickCount}-transparency" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
+      </div>
     </div>`);
     root.appendTo('#ganttConfigurations');
-    $(`#date-${clickCount}-start, #date-${clickCount}-end`).change(refresh);
-    $(`#date-${clickCount}-color`).change(function(e){
-      svg.selectAll(`.date-${clickCount}`).attr('fill', e.target.value);
+    $('#date-' + clickCount + '-start, #date-' + clickCount + '-end').change(refresh);
+    $('#date-' + clickCount + '-color').on('change', function(e){
+      svg.selectAll('.date-' + clickCount).attr('fill', e.target.value);
     });
-    $(`#date-${clickCount}-transparency`).change(function(e){
-      svg.selectAll(`.date-${clickCount}`).attr('fill-opacity', e.target.value);
+    $('#date-' + clickCount + '-transparency').on('change', function(e){
+      svg.selectAll('.date-' + clickCount).attr('fill-opacity', e.target.value);
     });
   });
 
@@ -215,15 +231,8 @@
   });
 
   setTimeout(function(){
-    height = $('#gantt-wrapper').parent().height() - margin.top - margin.bottom - 5;
-    width = $('#gantt-wrapper').parent().width() - margin.right - margin.left - 5;
-
-    svg.attr("width", width + margin.left + margin.right)
-       .attr("height", height + margin.top + margin.bottom)
-
-   let pane = $('#gantt_settings_pane');
-   pane.show(0, function(){ pane.animate({left: '0px'}); });
-
+    let pane = $('#gantt_settings_pane');
+    pane.show(0, function(){ pane.animate({left: '0px'}); });
     refresh();
   }, 80);
 
