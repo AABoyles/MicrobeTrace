@@ -448,6 +448,12 @@ input[type="range"]{
   width: calc(100% - 30px);
 }
 
+/* Gantt */
+#gantt_settings_pane{
+  left: 0px;
+  display: block;
+}
+
 /* Timeline */
 #timeline-wrapper{
   padding-top: 50px;

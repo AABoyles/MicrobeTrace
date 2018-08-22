@@ -33,7 +33,7 @@
     left : 40
   };
   let svg = d3.select('#gantt-wrapper').append("svg");
-  let x, y, xAxis, yAxis, timeDomainStart, timeDomainEnd, height = 600, width = 800;
+  let x, y, xAxis, yAxis, timeDomainStart, timeDomainEnd, height = 600, width = 800, rect;
   let tickFormat = d3.timeFormat("%Y-%m-%d");
   let clickCount = 0;
 
@@ -138,12 +138,11 @@
       .transition()
       .call(yAxis);
 
-    let rect = svg.select(".gantt-chart").selectAll("rect").data(bars, d => d.barID);
+    rect = svg.select(".gantt-chart").selectAll("rect").data(bars, d => d.barID);
 
     rect.exit().remove();
 
-    rect.enter()
-      .insert("rect",":first-child")
+    rect.enter().append("rect")
       .attr("rx", 5)
       .attr("ry", 5)
       .attr('fill-opacity', .6)
@@ -153,13 +152,10 @@
       .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
       .attr("height", d => y.bandwidth())
       .attr("width", d => {
-        if(_.isDate(d.startDate) && _.isDate(d.endDate)){
-          return Math.max(x(d.endDate) - x(d.startDate), 5);
-        }
-        return 5;
+        return Math.max(x(d.endDate) - x(d.startDate), 5);
       });
 
-    rect.merge(rect)
+    rect = rect.merge(rect)
       .transition()
       .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
       .attr("height", d => y.bandwidth())
@@ -230,11 +226,6 @@
     }
   });
 
-  setTimeout(function(){
-    let pane = $('#gantt_settings_pane');
-    pane.show(0, function(){ pane.animate({left: '0px'}); });
-    refresh();
-  }, 80);
-
+  setTimeout(refresh, 80);
 })();
   </script>
