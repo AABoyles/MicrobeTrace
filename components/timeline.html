@@ -1,0 +1,132 @@
+  <svg id="timeline-wrapper"><path></path></svg>
+
+  <div class="view_controls">
+    <button type="button" id="toggle_timeline_settings" class="btn btn-light btn-sm">
+      <span class="oi oi-cog"></span>
+    </button>
+  </div>
+
+  <div id="timeline_settings_pane" class="left_pane">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#timelineConfigurations" id="timeline-tab" class="nav-link active" aria-controls="timeline" role="tab" data-toggle="tab">Timeline</a>
+      </li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="timelineConfigurations" role="tabpanel" aria-labelledby="timeline-tab">
+        <div class="form-group row">
+          <div class="col-3"><label for="timelineDateField">Date Field</label></div>
+          <div class="col-9"><select id="timelineDateField" class="custom-select custom-select-sm nodeVariables"></select></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3"><label for="timelineTicks">Ticks</label></div>
+          <div class="col-9"><input id="timelineTicks" type="number" class="custom-select custom-select-sm" value="50"></input></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3"><label for="timelineSmoothing">Smoothing</label></div>
+          <div class="col-9"><input id="timelineSmoothing" type="number" class="custom-select custom-select-sm" value="12"></input></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function(){
+  let svg = d3.select("#timeline-wrapper"),
+      width = 800,
+      height = 600,
+      margin = {top: 60, right: 30, bottom: 30, left: 40},
+      dateField, x, y, xAxis, yAxis;
+
+  xAxis = svg.append("g");
+
+  yAxis = svg.append("g").attr("transform", "translate(" + margin.left + ",0)");
+
+  let refresh = function(){
+    width  = $('#timeline-wrapper').parent().width();
+    height = $('#timeline-wrapper').parent().height();
+    dateField = $('#timelineDateField').val();
+
+    svg
+      .attr('width', width)
+      .attr('height', height);
+
+    let data = [],
+        timeDomainStart = new Date( 8640000000000000),
+        timeDomainEnd   = new Date(-8640000000000000);
+
+    session.data.nodes.forEach(d => {
+      if(!d.visible) return;
+      let date = moment(d[dateField]);
+      if(date.isValid()){
+        date = date.toDate();
+        data.push(date);
+        if(date < timeDomainStart) timeDomainStart = date;
+        if(date > timeDomainEnd) timeDomainEnd = date;
+      }
+    });
+
+    x = d3.scaleTime()
+          .domain([timeDomainStart, timeDomainEnd])
+          .range([margin.left, width - margin.right]);
+
+    let n = data.length,
+        density = kernelDensityEstimator(kernelEpanechnikov(parseFloat($('#timelineSmoothing').val())), x.ticks(parseFloat($('#timelineTicks').val())))(data);
+
+    let maxDensity = 0;
+    density.forEach(ra => {
+      if(ra[1] > maxDensity) maxDensity = ra[1];
+    });
+
+    y = d3.scaleLinear()
+        .domain([0, maxDensity])
+        .range([height - margin.bottom - margin.top, margin.bottom]);
+
+    xAxis
+      .attr("transform", "translate(0," + (height - margin.top - margin.bottom) + ")")
+      .call(d3.axisBottom(x));
+
+    yAxis
+      .call(d3.axisLeft(y).ticks());
+
+    svg.select('path')
+      .attr("fill", "none")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-linejoin", "round")
+      .datum(density)
+      .transition()
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(function(d) { return x(d[0]); })
+        .y(function(d) { return y(d[1]); }));
+  };
+
+  function kernelDensityEstimator(kernel, X) {
+    return function(V) {
+      return X.map(function(x) {
+        return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+      });
+    };
+  }
+
+  function kernelEpanechnikov(k) {
+    return function(v) {
+      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+    };
+  }
+
+  $('#timelineDateField, #timelineTicks, #timelineSmoothing').on('change', refresh);
+
+  $('#toggle_timeline_settings').click(function(){
+    let pane = $('#timeline_settings_pane');
+    if(pane.is(':visible')){
+      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    } else {
+      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    }
+  });
+})();
+  </script>

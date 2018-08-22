@@ -452,6 +452,10 @@ input[type="range"]{
 #timeline-wrapper{
   padding-top: 50px;
 }
+#timeline_settings_pane{
+  left: 0px;
+  display: block;
+}
 .date-table-row{
   border: 1px solid lightgray;
 }
