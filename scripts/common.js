@@ -313,7 +313,7 @@ app.getVisibleLinks = function(copy){
     }
   } else {
     for(let i = 0; i < n; i++){
-      let link = link[i];
+      let link = links[i];
       if(link.visible) out.push(link);
     }
   }
@@ -339,6 +339,18 @@ app.computeDM = function(callback){
     nodes: session.data.nodes.filter(d => d.seq),
     links: session.data.links.filter(l => l.tn93 && l.snps)
   });
+};
+
+app.updateStatistics = function(){
+  if($('#hide_2d_network_statistics').is(':checked')) return;
+  let vnodes = app.getVisibleNodes();
+  var vlinks = app.getVisibleLinks();
+  var singletons = vnodes.filter(d => d.degree === 0).length;
+  $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
+  $('#numberOfNodes').text(vnodes.length.toLocaleString());
+  $('#numberOfVisibleLinks').text(vlinks.length.toLocaleString());
+  $('#numberOfSingletonNodes').text(singletons.toLocaleString());
+  $('#numberOfDisjointComponents').text(session.data.clusters.length);
 };
 
 app.computeNN = function(callback){

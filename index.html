@@ -144,11 +144,38 @@ performance of this software.</pre>
         <p class="lead">MicrobeTrace requires Javascript to run. Please enable Javascript and refresh MicrobeTrace.</p>
       </div>
     </noscript>
+    <div id="network_group_key_wrapper">
+      <table id="network_group_key" class="floater"></table>
+    </div>
+    <div id="networkStatistics">
+      <table>
+        <tbody>
+          <tr>
+            <td class="text-right">
+              <span id="numberOfNodes"></span>
+              (<span id="numberOfSelectedNodes"></span>)
+            </td>
+            <td>Nodes (Selected)</td>
+          </tr>
+          <tr>
+            <td id="numberOfVisibleLinks" class="text-right"></td>
+            <td>Links</td>
+          </tr>
+          <tr>
+            <td id="numberOfDisjointComponents" class="text-right"></td>
+            <td>Clusters</td>
+          </tr>
+          <tr id="singletonsRow">
+            <td id="numberOfSingletonNodes" class="text-right"></td>
+            <td>Singletons</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <span id="tooltip"></span>
 
-  <table id="network_group_key" class="floater"></table>
 
   <div id="save_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
@@ -240,6 +267,19 @@ performance of this software.</pre>
                   <a href="#" class="btn btn-secondary btn-sm" id="RevealAllTab" role="button">All Clusters</a>
                 </div>
               </div>
+              <div class="form-group row">
+                <div class="col-4"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="2d_network_statisticsOptions" id="show_2d_network_statistics" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="2d_network_statisticsOptions" id="hide_2d_network_statistics" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="tab-pane fade" id="color-config" role="tabpanel" aria-labelledby="color-tab">
               <div class="form-group row">
@@ -257,6 +297,19 @@ performance of this software.</pre>
               <div id="link-color-row" class="form-group row">
                 <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Link Color</label></div>
                 <div class="col-8"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#8dd3c7" /></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label data-toggle="tooltip" title="Display the table of colors">Color Table</label></div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="colorTableShowHide" id="show_color_table" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-secondary">
+                      <input type="radio" name="colorTableShowHide" id="hide_color_table" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -438,7 +491,7 @@ performance of this software.</pre>
             setTimeout(function(){
               session.network.render();
               session.network.force.alpha(0.3).alphaTarget(0).restart();
-              session.network.updateStatistics();
+              app.updateStatistics();
               session.loadTime = Date.now() - session.startTime;
               $('.hideForHIVTrace').hide();
               setTimeout(session.network.fit, 1500);
@@ -522,7 +575,7 @@ performance of this software.</pre>
         if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
         app.computeDegree();
         session.network.render();
-        session.network.updateStatistics();
+        app.updateStatistics();
         session.network.force.alpha(0.3).alphaTarget(0).restart();
       });
 
@@ -535,7 +588,7 @@ performance of this software.</pre>
           if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
           app.computeDegree();
           session.network.render();
-          session.network.updateStatistics();
+          app.updateStatistics();
           session.network.force.alpha(0.3).alphaTarget(0).restart();
           svg
             .on('mousemove', null)
@@ -564,6 +617,14 @@ performance of this software.</pre>
       $('#ShowSingletons').prop('checked', true).parent().addClass('active');
       app.setLinkVisibility();
       app.setNodeVisibility();
+    });
+
+    $('#show_color_table').parent().click(function(){
+      $('#network_group_key').fadeIn();
+    });
+
+    $('#hide_color_table').parent().click(function(){
+      $('#network_group_key').fadeOut();
     });
 
     $('#export-data').click(function(){

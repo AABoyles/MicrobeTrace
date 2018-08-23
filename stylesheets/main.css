@@ -262,13 +262,16 @@ input[type="range"]{
   overflow-y: auto;
   z-index: 10000;
 }
-#networkStatistics,
-#network_group_key {
-  position: absolute;
+#network_group_key_wrapper {
+  position:absolute;
+  top: 73px;
+  right: 10px;
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y:scroll;
   border-radius: 0.25rem;
   color: #303030;
   background-color: #f5f5f5;
-  border: 1px solid #c0c0c0;
 }
 #network_group_key th {
   text-align: center;
@@ -278,16 +281,18 @@ input[type="range"]{
   padding: 4px;
 }
 #networkStatistics {
+  display: none;
+  position: absolute;
   bottom: 10px;
   right: 20px;
+  z-index: 10;
+  color: #303030;
+  background-color: #f5f5f5;
+  border: 1px solid #c0c0c0;
+  border-radius: 0.25rem;
 }
 #networkStatistics td{
   border: none;
-}
-#network_group_key {
-  top: 73px;
-  right: 10px;
-  z-index: 1000;
 }
 #network_group_key select {
   background: none;
