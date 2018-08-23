@@ -167,8 +167,6 @@
   </div>
 </div>
 
-<table id="network_group_key" class="floater"></table>
-
 <div id="context-menu" class="dropdown-menu">
   <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
   <a href="#" id="copyID" class="dropdown-item">Copy ID</a>
@@ -799,13 +797,13 @@
     if(variable === 'None'){
       circles.attr('fill', $('#default-node-color').val());
       $('#node_color_value_row').slideDown();
-      $('#nodeColors').remove();
+      $('#nodeColors').slideUp(function(){$(this).remove()});
       return;
     }
     $('#node_color_value_row').slideUp();
-    $('#nodeColors').slideUp(function(){$(this).remove()});
+    $('#nodeColors').remove();
     var table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th contenteditable>'+app.titleize(variable)+'</th><th>Color</th><tr>');
+    table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
     var values = _.uniq(vnodes.map(d => d[variable])).sort();
     var o = d3.scaleOrdinal([d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2))).domain(values);
     circles.attr('fill', d => o(d[variable]));
@@ -846,7 +844,7 @@
       let color = $('#default-link-color').val();
       session.network.svg.select('g#links').selectAll('line').attr('stroke', color);
       $('#link-color-row').slideDown();
-      $('#linkColors').fadeOut();
+      $('#linkColors').remove();
       return;
     }
     $('#link-color-row').slideUp();
@@ -854,7 +852,7 @@
     var links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     $('#linkColors').remove();
     var table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th contenteditable>'+app.titleize(variable)+'</th><th>Color</th><tr>');
+    table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
     var values = _.uniq(vlinks.map(l => l[variable])).sort();
     var o = d3.scaleOrdinal(d3.schemePaired).domain(values);
     links
