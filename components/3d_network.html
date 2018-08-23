@@ -234,6 +234,8 @@
 
     $('#linkSortVariable, #default-link-threshold').change(updateData);
 
+    $(window).on('node_visibility', updateData);
+
     setTimeout(function(){
       $('#3d_network_default-node-tooltip').val('id');
       updateGraph();
