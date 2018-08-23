@@ -263,13 +263,26 @@
 
   session.network = {};
 
+  let vnodes = [];
+
+  function updateVNodes(){
+    let newNodes = app.getVisibleNodes(true);
+    newNodes.forEach((d, i) => {
+      let match = vnodes.find(d2 => d2.id == d.id);
+      if(match) Object.assign(d, match);
+    });
+    vnodes = newNodes;
+  }
+
+  updateVNodes();
+
   session.network.brush = d3.brush()
     .on('start', brushstarted)
     .on('brush', brushed)
     .on('end', brushended);
 
   function brushstarted(){
-    session.data.nodes.forEach(d => {
+    vnodes.forEach(d => {
       d.previouslySelected = d.selected;
     });
   }
@@ -281,7 +294,7 @@
       session.network.transform.invert(d3.event.selection[1])
     ];
     if(selection == null) return;
-    var node = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes.filter(d => d.visible));
+    var node = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
     if(d3.event.sourceEvent.ctrlKey){
       node.classed('selected', function(d){
         return d.selected = d.previouslySelected ^ (
@@ -301,7 +314,7 @@
   function brushended() {
     if (d3.event.selection == null) return;
     d3.select(this).call(d3.event.target.move, null);
-    session.data.nodes.forEach(d => {
+    vnodes.forEach(d => {
       delete d.previouslySelected;
     });
   }
@@ -380,12 +393,12 @@
   session.network.svg.append('g').attr('id', 'nodes');
 
   session.network.render = function(){
-    var vnodes = session.data.nodes.filter(node => node.visible);
-
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
     var node = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
     node.exit().remove(); //Removing nodes with no representation in the dataset.
-    node = node.enter().append('g').attr('class', 'node').attr('tabindex', '0') //Adding nodes that weren't represented in the dataset before.
+    node = node.enter().append('g') //Adding nodes that weren't represented in the dataset before.
+      .attr('class', 'node')
+      .attr('tabindex', '0')
       .call(d3.drag() //A bunch of mouse handlers.
         .on('start', dragstarted)
         .on('drag', dragged)
@@ -449,12 +462,12 @@
 
     $(window).on('node_selected', function(){
       nodes.select('path').classed('selected', d => d.selected);
-      $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+      $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
     });
   };
 
   function getVLinks(){
-    var vlinks = UltraDeepClone(session.data.links.filter(link => link.visible));
+    var vlinks = app.getVisibleLinks(true);
     var output = [];
     var n = vlinks.length;
     for(var i = 0; i < n; i++){
@@ -465,16 +478,16 @@
               origin: o,
               oNum: j,
               origins: l.length,
-              source: session.data.nodes.find(d => d.id === vlinks[i].source),
-              target: session.data.nodes.find(d => d.id === vlinks[i].target)
+              source: vnodes.find(d => d.id === vlinks[i].source),
+              target: vnodes.find(d => d.id === vlinks[i].target)
             }));
           });
         } else {
           output.push(Object.assign({}, vlinks[i], {
             oNum: 0,
             origins: 1,
-            source: session.data.nodes.find(d => d.id === vlinks[i].source),
-            target: session.data.nodes.find(d => d.id === vlinks[i].target)
+            source: vnodes.find(d => d.id === vlinks[i].source),
+            target: vnodes.find(d => d.id === vlinks[i].target)
           }));
         }
       } else {
@@ -482,8 +495,8 @@
           origin: 'Unknown',
           oNum: 0,
           origins: 1,
-          source: session.data.nodes.find(d => d.id === vlinks[i].source),
-          target: session.data.nodes.find(d => d.id === vlinks[i].target)
+          source: vnodes.find(d => d.id === vlinks[i].source),
+          target: vnodes.find(d => d.id === vlinks[i].target)
         }));
       }
     }
@@ -493,13 +506,12 @@
   session.network.updateStatistics = function(){
     if($('#hide_2d_network_statistics').is(':checked')) return;
     var llinks = _.filter(session.data.links, e => e.visible);
-    var lnodes = _.filter(session.data.nodes, e => e.visible);
-    var singletons = session.data.clusters.filter(c => c.nodes === 1).length;
-    $('#numberOfSelectedNodes').text(lnodes.filter(d => d.selected).length.toLocaleString());
-    $('#numberOfNodes').text(lnodes.length.toLocaleString());
+    var singletons = vnodes.filter(d => d.degree === 0).length;
+    $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
+    $('#numberOfNodes').text(vnodes.length.toLocaleString());
     $('#numberOfVisibleLinks').text(llinks.length.toLocaleString());
     $('#numberOfSingletonNodes').text(singletons.toLocaleString());
-    $('#numberOfDisjointComponents').text(session.data.clusters.length - singletons);
+    $('#numberOfDisjointComponents').text(session.data.clusters.length);
   }
 
   function dragstarted(d){
@@ -523,8 +535,8 @@
 
   function clickHandler(n){
     if(!d3.event.ctrlKey){
-      session.data.nodes
-        .filter(node => node !== n)
+      vnodes
+        .filter(node => node.id !== n.id)
         .forEach(node => node.selected = 0);
     }
     n.selected = !n.selected;
@@ -691,7 +703,7 @@
     var o = (b => d3[$('#default-node-symbol').val()]);
     if(symbolVariable !== 'None'){
       var map = {};
-      var values = _.uniq(session.data.nodes.map(d => d[symbolVariable])).sort();
+      var values = _.uniq(vnodes.map(d => d[symbolVariable])).sort();
       $('#nodeShapes select').each(function(i, el){
         map[values[i]] = $(this).val();
       });
@@ -702,18 +714,17 @@
     var size = defaultSize;
     var sizeVariable = $('#nodeRadiusVariable').val();
     if(sizeVariable !== 'None'){
-      var n = session.data.nodes.length;
+      var n = vnodes.length;
       var min = Number.MAX_VALUE;
       var max = Number.MIN_VALUE;
       for(var i = 0; i < n; i++){
-        if(typeof session.data.nodes[i][sizeVariable] === 'undefined') continue;
-        if(session.data.nodes[i][sizeVariable] < min) min = session.data.nodes[i][sizeVariable];
-        if(session.data.nodes[i][sizeVariable] > max) max = session.data.nodes[i][sizeVariable];
+        if(typeof vnodes[i][sizeVariable] === 'undefined') continue;
+        if(vnodes[i][sizeVariable] < min) min = vnodes[i][sizeVariable];
+        if(vnodes[i][sizeVariable] > max) max = vnodes[i][sizeVariable];
       }
       var oldrng = max - min;
       var med = oldrng / 2;
     }
-    var vnodes = session.data.nodes.filter(n => n.visible);
     var nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
     nodes.select('path').each(function(d){
       if(symbolVariable !== 'None') type = d3[o(d[symbolVariable])];
@@ -746,7 +757,7 @@
       session.network.svg.select('g#nodes').selectAll('g.node')
         .select('text').text('');
     } else {
-      session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes.filter(n => n.visible))
+      session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes)
         .select('text').text(d => d[e.target.value]);
     }
   });
@@ -762,7 +773,7 @@
     }
     $('#node_shape_value_row').slideUp();
     table.append('<tr><th contenteditable>'+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
-    var values = _.uniq(session.data.nodes.map(d => d[e.target.value])).sort();
+    var values = _.uniq(vnodes.map(d => d[e.target.value])).sort();
     var symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'];
     var o = d3.scaleOrdinal(symbolKeys).domain(values);
     var options = $('#default-node-symbol').html();
@@ -780,9 +791,12 @@
   $('#nodeRadiusVariable').change(redrawNodes);
 
   $('#default-node-color').on('input', e => session.network.svg.select('g#nodes').selectAll('g.node').select('path').attr('fill', e.target.value));
-  $('#nodeColorVariable').change(e => {
-    var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(session.data.nodes).select('path');
-    if(e.target.value === 'None'){
+  $('#nodeColorVariable').change(recolorNodes);
+
+  function recolorNodes(){
+    let variable = $('#nodeColorVariable').val();
+    var circles = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes).select('path');
+    if(variable === 'None'){
       circles.attr('fill', $('#default-node-color').val());
       $('#node_color_value_row').slideDown();
       $('#nodeColors').remove();
@@ -791,22 +805,22 @@
     $('#node_color_value_row').slideUp();
     $('#nodeColors').slideUp(function(){$(this).remove()});
     var table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th contenteditable>'+app.titleize(e.target.value)+'</th><th>Color</th><tr>');
-    var values = _.uniq(session.data.nodes.map(d => d[e.target.value])).sort();
+    table.append('<tr><th contenteditable>'+app.titleize(variable)+'</th><th>Color</th><tr>');
+    var values = _.uniq(vnodes.map(d => d[variable])).sort();
     var o = d3.scaleOrdinal([d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2))).domain(values);
-    circles.attr('fill', d => o(d[e.target.value]));
+    circles.attr('fill', d => o(d[variable]));
     values.forEach(value => {
       var input = $('<input type="color" value="'+o(value)+'" />')
         .on('input', evt => {
           circles
-            .filter(d => d[e.target.value] === value)
+            .filter(d => d[variable] === value)
             .attr('fill', d => evt.target.value);
         });
       var cell = $('<td></td>').append(input);
       var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
       table.append(row);
     });
-  });
+  }
 
   $('#default-node-charge').on('input', e => {
     session.network.force.force('charge').strength(-e.target.value);
@@ -915,10 +929,16 @@
     scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
   });
 
-  $('#showMSTLinks, #showAllLinks, #ShowSingletons, #HideSingletons').on('change', e => {
+  $('#showNNLinks, #showAllLinks').on('change', e => {
     session.network.render();
     session.network.updateStatistics();
     session.network.force.alpha(0.3).alphaTarget(0).restart();
+  });
+
+  $('#ShowSingletons, #HideSingletons').on('change', e => {
+    app.setNodeVisibility(); //Update data model
+    updateVNodes();          //Update network's copy of data model
+    session.network.render();//Draw it
   });
 
   $('#linkSortVariable, #default-link-threshold').on('input', e => {
@@ -970,7 +990,7 @@
     var nodes = session.network.svg
       .select('g#nodes')
       .selectAll('g.node')
-      .data(session.data.nodes.filter(d => d.visible))
+      .data(vnodes)
       .select('path');
     if(session.network.allPinned){
       nodes.each(function(d){
@@ -1000,6 +1020,12 @@
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none')
       .select('rect.overlay')
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
+  });
+
+  $(window).on('node_visibility', e => {
+    updateVNodes();
+    recolorNodes();
+    session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
   setTimeout(function(){

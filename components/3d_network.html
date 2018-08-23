@@ -176,19 +176,9 @@
     }
 
     function updateData(){
-      var links = UltraDeepClone(session.data.links.filter(l => l.visible));
-      var nodes = UltraDeepClone(session.data.nodes.filter(d => d.visible));
-      nodes.forEach(d => {
-        delete d.x;
-        delete d.y;
-        delete d.fx;
-        delete d.fy;
-        delete d.vx;
-        delete d.vy;
-      });
       graph.graphData({
-        nodes: nodes,
-        links: links
+        nodes: app.getVisibleNodes(true),
+        links: app.getVisibleLinks(true)
       });
     }
 

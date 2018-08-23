@@ -91,7 +91,7 @@ app.addLink = function(newLink){
 
 app.parseHIVTrace = function(hivtrace){
   hivtrace['trace_results']['Nodes'].forEach(function(node){
-    var newNode = UltraDeepClone(node.patient_attributes);
+    var newNode = JSON.parse(JSON.stringify(node.patient_attributes));
     newNode.id = node.id;
     newNode.origin = 'HIVTRACE Import';
     app.addNode(newNode);
@@ -282,6 +282,42 @@ app.setLinkVisibility = function(){
       if(cluster) link.visible &= cluster.visible;
     }
   });
+};
+
+app.getVisibleNodes = function(copy){
+  let nodes = session.data.nodes;
+  let n = nodes.length;
+  let out = [];
+  if(copy){
+    for(let i = 0; i < n; i++){
+      let node = nodes[i];
+      if(node.visible) out.push(JSON.parse(JSON.stringify(node)));
+    }
+  } else {
+    for(let i = 0; i < n; i++){
+      let node = nodes[i];
+      if(node.visible) out.push(node);
+    }
+  }
+  return out;
+};
+
+app.getVisibleLinks = function(copy){
+  let links = session.data.links;
+  let n = links.length;
+  let out = [];
+  if(copy){
+    for(let i = 0; i < n; i++){
+      let link = links[i];
+      if(link.visible) out.push(JSON.parse(JSON.stringify(link)));
+    }
+  } else {
+    for(let i = 0; i < n; i++){
+      let link = link[i];
+      if(link.visible) out.push(link);
+    }
+  }
+  return out;
 };
 
 app.updateNetwork = function(hideSingletons){

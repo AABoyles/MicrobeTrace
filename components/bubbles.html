@@ -1,4 +1,4 @@
-  <div id="bubble-view"></div>
+  <svg id="bubble-view"></svg>
 
   <div class="view_controls">
     <button type="button" id="toggle_bubbles_settings" class="btn btn-light btn-sm">
@@ -36,9 +36,8 @@
 
   <script>
 (function(){
-  let width, height, center, forceStrength, data, simulation,
-    svg = d3.select('#bubble-view').append('svg'),
-    bubbles = svg.selectAll('circle');
+  let width, height, center, forceStrength, simulation, data,
+    svg = d3.select('#bubble-view');
 
   function reset(){
     width = $('#bubble-view').parent().width();
@@ -47,13 +46,16 @@
 
     svg.attr('width', width).attr('height', height);
 
-    data = UltraDeepClone(session.data.nodes.filter(d => d.visible));
+    data = app.getVisibleNodes(true);
 
-    bubbles = bubbles.data(data)
-      .enter().append('circle')
+    let bubbles = svg.selectAll('circle').data(data);
+    bubbles.exit().remove();
+    bubbles.enter().append('circle')
         .attr('r', 5)
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 1);
+
+    colorBubbles();
 
     forceStrength = 0.03;
 
@@ -63,13 +65,20 @@
       .force('y', d3.forceY().strength(forceStrength).y(center.y))
       .force('charge', d3.forceManyBody().strength(function(d){ return -50 * forceStrength }))
       .on('tick', function(){
-        bubbles
+        svg.selectAll('circle')
           .attr('cx', function(d){return d.x})
           .attr('cy', function(d){return d.y});
       });
+
+    groupBubblesX($('#bubbles_X').val());
+    groupBubblesY($('#bubbles_Y').val());
   }
 
-  function groupXBubbles(field){
+  $('#bubbles_X').on('change', function(e){
+    groupBubblesX(e.target.value);
+  });
+
+  function groupBubblesX(field){
     if(field === 'None'){
       svg.selectAll('.xtitle').remove();
       simulation.force('x', d3.forceX().strength(forceStrength).x(center.x));
@@ -98,11 +107,11 @@
     simulation.alpha(1).restart();
   }
 
-  $('#bubbles_X').on('change', function(e){
-    groupXBubbles(e.target.value);
+  $('#bubbles_Y').on('change', function(e){
+    groupBubblesY(e.target.value);
   });
 
-  function groupYBubbles(field){
+  function groupBubblesY(field){
     if(field === 'None'){
       svg.selectAll('.ytitle').remove();
       simulation.force('y', d3.forceY().strength(forceStrength).y(center.y));
@@ -130,11 +139,9 @@
     simulation.alpha(1).restart();
   }
 
-  $('#bubbles_Y').on('change', function(e){
-    groupYBubbles(e.target.value);
-  });
-
-  function colorBubbles(field){
+  function colorBubbles(){
+    let field = $('#nodeColorVariable').val();
+    let bubbles = svg.selectAll('circle').data(data);
     if(field === 'None'){
       let color = $('#default-node-color').val();
       bubbles.attr('fill', color);
@@ -144,31 +151,18 @@
     data.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
-    if(field === "Age"){
-      values = values.map(parseFloat);
-      let min = values.reduce(function(e, a){ return Math.min(e, a); });
-      let max = values.reduce(function(e, a){ return Math.max(e, a); });
-      fillColor = d3.scaleLinear()
-        .domain([min, max])
-        .range(["white", "black"]);
-      bubbles.transition()
-        .attr('fill', function(d){ return fillColor(parseFloat(d[field])); });
-    } else {
-      fillColor = d3.scaleOrdinal()
-        .domain(values)
-        .range(d3.schemeCategory10.slice(0, values.length));
-      bubbles.transition()
-        .attr('fill', function(d){ return fillColor(d[field]); });
-    }
+    fillColor = d3.scaleOrdinal()
+      .domain(values)
+      .range(d3.schemeCategory10.slice(0, values.length));
+    bubbles.transition()
+      .attr('fill', function(d){ return fillColor(d[field]); });
   }
 
   $('#default-node-color').on('change', function(e){
-    bubbles.attr('fill', e.target.value);
+    svg.selectAll('circle').attr('fill', e.target.value);
   });
 
-  $('#nodeColorVariable').on('change', function(e){
-    colorBubbles(e.target.value);
-  });
+  $('#nodeColorVariable').on('change', colorBubbles);
 
   $('#toggle_bubbles_settings').click(function(){
     let pane = $('#bubbles_settings_pane');
@@ -180,11 +174,9 @@
   });
 
   $(window).on('updateThreshold', reset);
+  $(window).on('node_visibility', reset);
 
-  setTimeout(function(){
-    reset();
-    colorBubbles($('#nodeColorVariable').val());
-  }, 200);
+  setTimeout(reset, 200);
 })();
 </script>
 </body>
