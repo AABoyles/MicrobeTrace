@@ -114,6 +114,9 @@
   <script src="vendor/3d-force-graph.min.js"></script>
   <script>
   (function(){
+    var links = [];
+    var nodes = [];
+
     var graph = ForceGraph3D()($('#3d-network').get(0));
 
     function updateNodeTooltip(){
@@ -176,9 +179,16 @@
     }
 
     function updateData(){
+      let newNodes = app.getVisibleNodes(true);
+      newNodes.forEach(d => {
+        let match = nodes.find(d2 => d.id == d2.id);
+        if(match) Object.assign(d, match);
+      });
+      nodes = newNodes;
+      links = app.getVisibleLinks(true);
       graph.graphData({
-        nodes: app.getVisibleNodes(true),
-        links: app.getVisibleLinks(true)
+        nodes: nodes,
+        links: links
       });
     }
 
