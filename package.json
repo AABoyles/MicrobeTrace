@@ -1,6 +1,6 @@
 {
-  "name": "WebMicrobeTrace",
-  "version": "0.3.0",
+  "name": "MicrobeTrace",
+  "version": "0.4.0",
   "main": "index.js",
   "author": "Tony Boyles <Anthony@Boyles.cc>",
   "license": "MIT",
@@ -12,7 +12,7 @@
   "scripts": {
     "appcache": "bash appcache.sh",
     "start": "node index.js",
-    "build": "yarn start && nativifier http://localhost:5000"
+    "build": "nativifier https://microbetrace.herokuapp.com/"
   },
   "devDependencies": {
     "nativefier": "^7.6.2"
