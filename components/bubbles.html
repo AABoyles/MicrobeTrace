@@ -55,7 +55,7 @@
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 1);
 
-    colorBubbles();
+    updateNodeColors();
 
     forceStrength = 0.03;
 
@@ -139,30 +139,26 @@
     simulation.alpha(1).restart();
   }
 
-  function colorBubbles(){
+  function updateNodeColors(){
     let field = $('#nodeColorVariable').val();
     let bubbles = svg.selectAll('circle').data(data);
     if(field === 'None'){
       let color = $('#default-node-color').val();
-      bubbles.attr('fill', color);
-      return;
+      bubbles.transition().attr('fill', color);
+    } else {
+      bubbles.transition().attr('fill', d => session.style.nodeColorMap(d[field]));
     }
-    let fillColor, values = [];
-    data.forEach(function(d){
-      if(values.indexOf(d[field]) == -1) values.push(d[field]);
-    });
-    fillColor = d3.scaleOrdinal()
-      .domain(values)
-      .range(d3.schemeCategory10.slice(0, values.length));
-    bubbles.transition()
-      .attr('fill', function(d){ return fillColor(d[field]); });
   }
 
-  $('#default-node-color').on('change', function(e){
+  $('#default-node-color').on('update', function(e){
     svg.selectAll('circle').attr('fill', e.target.value);
   });
 
-  $('#nodeColorVariable').on('change', colorBubbles);
+  $('.nodeColorVariables').on('change', updateNodeColors);
+  $('#nodeColorVariable').on('change', function(){
+    $('.nodeColorVariables').on('change', updateNodeColors);
+    updateNodeColors();
+  });
 
   $('#toggle_bubbles_settings').click(function(){
     let pane = $('#bubbles_settings_pane');
