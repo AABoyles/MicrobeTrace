@@ -24,7 +24,11 @@ app.sessionSkeleton = function(){
       linkThreshold: 0.015,
       time: 0
     },
-    messages: []
+    messages: [],
+    style: {
+      nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
+      nodeColorMap: function(){}
+    }
   };
 };
 
