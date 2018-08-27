@@ -1,5 +1,3 @@
-  <script src="node_modules/d3-force-3d/build/d3-force-3d.min.js"></script>
-
   <div id="3d-network"></div>
 
   <div class="view_controls">
@@ -114,13 +112,13 @@
   <script src="vendor/3d-force-graph.min.js"></script>
   <script>
   (function(){
-    var links = [];
-    var nodes = [];
+    let links = [];
+    let nodes = [];
 
-    var graph = ForceGraph3D()($('#3d-network').get(0));
+    let graph = ForceGraph3D()($('#3d-network').get(0));
 
     function updateNodeTooltip(){
-      var nodeTooltip = $('#3d_network_default-node-tooltip').val();
+      let nodeTooltip = $('#3d_network_default-node-tooltip').val();
       if(nodeTooltip === 'None' || nodeTooltip === null){
         graph.nodeLabel('');
       } else {
@@ -129,25 +127,24 @@
     }
 
     function updateNodeColors(){
-      // This function neutered by a bug in 3d Force Graph
-      // var nodeColorBy = $('#3d_network_node-color-variable').val();
-      // if(nodeColorBy === 'None'){
-      var nodeColor = $('#default-node-color').val();
-      graph.nodeColor(d => nodeColor);
-      // } else {
-      //   graph.nodeAutoColorBy(d => d[nodeColorBy]);
-      // }
+      let nodeColorBy = $('#nodeColorVariable').val();
+      if(nodeColorBy === 'None'){
+        let nodeColor = $('#default-node-color').val();
+        graph.nodeColor(d => nodeColor);
+      } else {
+        graph.nodeColor(d => session.style.nodeColorMap(d[nodeColorBy]));
+      }
       graph.nodeOpacity(1);
     }
 
     function updateNodeSizes(){
-      var nodeSizeBy = $('#3d_network_node-radius-variable').val();
+      let nodeSizeBy = $('#3d_network_node-radius-variable').val();
       if(nodeSizeBy !== 'None') graph.nodeVal(nodeSizeBy);
       graph.nodeRelSize($('#3d_network_default-node-radius').val());
     }
 
     function updateLinkTooltip(){
-      var linkTooltip = $('#3d_network_default-link-tooltip').val();
+      let linkTooltip = $('#3d_network_default-link-tooltip').val();
       if(linkTooltip === 'None'){
         graph.linkLabel('');
       } else {
@@ -156,13 +153,13 @@
     }
 
     function updateLinkColors(){
-      // var linkColorBy = $('#3d_network_link-color-variable').val();
-      // if(linkColorBy === 'None'){
-      var linkColor = $('#default-link-color').val();
-      graph.linkColor(() => linkColor);
-      // } else {
-      //   graph.linkAutoColorBy(l => l[linkColorBy]);
-      // }
+      let linkColorBy = $('#linkColorVariable').val();
+      if(linkColorBy === 'None'){
+        let linkColor = $('#default-link-color').val();
+        graph.linkColor(l => linkColor);
+      } else {
+        graph.linkAutoColorBy(linkColorBy);
+      }
     }
 
     function updateLinkOpacity(){
@@ -174,7 +171,7 @@
     }
 
     function updateBackground(){
-      var hex = $('#3d_network-color').val();
+      let hex = $('#3d_network-color').val();
       graph.backgroundColor(hex);
     }
 
@@ -205,7 +202,7 @@
     }
 
     $('#toggle_3d_network_settings').click(function(){
-      var pane = $('#3d_network_settings_pane');
+      let pane = $('#3d_network_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -213,7 +210,7 @@
       }
     });
 
-    var a, downloads = 0;
+    let a, downloads = 0;
     function download(){
       if(downloads){
         cancelAnimationFrame(a);
@@ -231,7 +228,13 @@
     $('#reload-3d-network').click(updateGraph);
 
     $('#default-node-color').change(updateNodeColors);
-    $('#default-link-color').change(updateLinkColors);
+    $('#nodeColorVariable').on('change', function(){
+      $('.nodeColorVariables').on('change', updateNodeColors);
+      updateNodeColors();
+    });
+    $('.nodeColorVariables').on('change', updateNodeColors);
+
+    $('#default-link-color, #linkColorVariable').change(updateLinkColors);
 
     $('#3d_network_default-node-tooltip').change(updateNodeTooltip);
     $('#3d_network_node-radius-variable, #3d_network_default-node-radius').change(updateNodeSizes);
