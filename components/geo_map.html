@@ -12,8 +12,6 @@
     </button>
   </div>
 
-  <table id="map_group_key"></table>
-
   <div id="map_settings_pane" class="left_pane" style="z-index:1000">
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="nav-item">
@@ -296,16 +294,12 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <script src="vendor/shpwrite.js"></script>
   <script>
+  (function(){
+    if(navigator.onLine){
+      $('#map').parent().find('.ifOnline').css('display', 'flex');
+    }
 
-  if(navigator.onLine){
-    $('.ifOnline').css('display', 'flex');
-  }
-
-  var map;
-
-  setTimeout(function(){
     let layers = {
       geography: L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
       	subdomains: 'abcd',
@@ -330,7 +324,7 @@
 
     layers.nodes = {remove: function(){}};
     layers.links = {remove: function(){}};
-    map = L.map('map', {
+    let map = L.map('map', {
       center: [30, 0],
       zoom: 3,
       zoomControl: false,
@@ -481,12 +475,14 @@
     function drawNodes(){
       layers.nodes.remove();
       let style = {
-        fillColor: $('#default-node-color').val(),
         fillOpacity: 1 - $('#mapNodeOpacity').val()
       };
+      let fillcolor = $('#default-node-color').val(),
+          colorVariable = $('#nodeColorVariable').val();
       function makeStyle(feature){
         return Object.assign({}, style, {
-          color: feature.properties.selected ? '#ff8300' : '#ffffff'
+          color: feature.properties.selected ? '#ff8300' : '#ffffff',
+          fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
         });
       }
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
@@ -635,6 +631,12 @@
       resetStack();
     });
 
+    $('.nodeColorVariables').on('change', drawNodes);
+    $('#nodeColorVariable').on('change', function(){
+      $('.nodeColorVariables').on('change', drawNodes);
+      drawNodes();
+    });
+
     $('#default-node-color, #mapNodeOpacity').on('change', drawNodes);
     $('#default-link-color, #mapLinkOpacity').on('change', drawLinks);
 
@@ -678,6 +680,5 @@
       map.flyToBounds(layers.nodes.getBounds());
     }, 400);
 
-  }, 200);
-
+  })();
   </script>
