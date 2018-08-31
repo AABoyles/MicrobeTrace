@@ -11,6 +11,10 @@ onmessage = function(e){
     let minDist = Number.MAX_VALUE;
     let targets = [];
     for(let j = 0; j < i; j++){
+      if(!dm[i][j]){
+        postMessage('Error')
+        close();
+      }
       if(Math.abs(dm[i][j] - minDist) < epsilon){
         targets.push(nodes[j].id);
       } else if(dm[i][j] < minDist){

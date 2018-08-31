@@ -360,9 +360,11 @@ app.updateStatistics = function(){
 };
 
 app.computeNN = function(callback){
+  if(!session.data.distance_matrix.tn93) return;
   var start = Date.now();
   var nnMachine = new Worker('scripts/compute-nn.js');
   nnMachine.onmessage = function(message){
+    if(message === 'Error') return;
     message.data.forEach(l => session.data.links[l.index].nn = l.nn);
     console.log('NN Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback();
