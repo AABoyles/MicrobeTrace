@@ -719,9 +719,9 @@
         }).join('\n')
       );
       $('#linkColorVariable').html(
-        '<option>None</option>' +
+        '<option selected>None</option>' +
         session.data.linkFields.map(function(field){
-          return '<option value="' + field + '"' + (field === 'origin' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+          return '<option value="' + field + '">' + app.titleize(field) + '</option>';
         }).join('\n')
       );
       try {

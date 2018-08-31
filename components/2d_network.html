@@ -304,8 +304,7 @@
     .select('rect.overlay')
       .attr('pointer-events', 'none');
 
-  session.network.svg = d3.select('svg#network')
-    .append('g')
+  session.network.svg = d3.select('svg#network').append('g');
 
   session.network.fit = function(thing, bounds){
     if(!bounds) bounds = session.network.svg.node().getBBox();
@@ -402,7 +401,7 @@
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
-    setLinkColor();
+    updateLinkColor();
     scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
 
     let nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
@@ -777,54 +776,34 @@
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
-  function setLinkColor(e){
+  function updateLinkColor(e){
     let variable = $('#linkColorVariable').val();
+    let links = session.network.svg.select('g#links').selectAll('line');
     if(variable === 'None'){
       let color = $('#default-link-color').val();
-      session.network.svg.select('g#links').selectAll('line').attr('stroke', color);
-      $('#link-color-row').slideDown();
-      $('#linkColors').remove();
-      return;
-    }
-    $('#link-color-row').slideUp();
-    let vlinks = getVLinks();
-    let links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
-    $('#linkColors').remove();
-    let table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
-    table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
-    let values = _.uniq(vlinks.map(l => l[variable])).sort();
-    let o = d3.scaleOrdinal(d3.schemePaired).domain(values);
-    links
-      .attr('stroke', d => o(d[variable]))
-      .attr('stroke-dasharray', l => {
-        let length = 15;
-        let out = new Array(l.origins * 2);
-        let ofs = new Array(l.origins).fill(1);
-        let ons = new Array(l.origins).fill(0);
-        ons[l.oNum] = 1;
-        ofs[l.oNum] = 0;
-        for(let i = 0; i < l.origins; i++){
-          out[2*i] = ons[i] * length;
-          out[2*i + 1] = ofs[i] * length;
-        }
-        return out.join(', ');
-      });
-    values.forEach(value => {
-      let input = $('<input type="color" name="'+value+'-node-color-setter" value="'+o(value)+'" />')
-        .on('input', evt => {
-          links
-            .filter(d => d[variable] === value)
-            .attr('stroke', d => evt.target.value);
+      links.attr('stroke', color);
+    } else {
+      links
+        .data(getVLinks())
+        .attr('stroke', d => session.style.linkColorMap(d[variable]))
+        .attr('stroke-dasharray', l => {
+          let length = 15;
+          let out = new Array(l.origins * 2);
+          let ofs = new Array(l.origins).fill(1);
+          let ons = new Array(l.origins).fill(0);
+          ons[l.oNum] = 1;
+          ofs[l.oNum] = 0;
+          for(let i = 0; i < l.origins; i++){
+            out[2*i] = ons[i] * length;
+            out[2*i + 1] = ofs[i] * length;
+          }
+          return out.join(', ');
         });
-      let cell = $('<td></td>').append(input);
-      let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
-      table.append(row);
-    });
-    table.fadeIn();
+    }
   }
 
-  $('#default-link-color').on('input', setLinkColor);
-  $('#linkColorVariable').change(setLinkColor);
+  $('#default-link-color').on('input', updateLinkColor);
+  $('#linkColorVariable').change(updateLinkColor);
 
   function scaleLinkThing(scalar, variable, attribute, floor){
     let vlinks = getVLinks();
@@ -884,15 +863,6 @@
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
-  $('#hide_2d_network_statistics').parent().click(function(){
-    $('#networkStatistics').fadeOut();
-  });
-
-  $('#show_2d_network_statistics').parent().click(function(){
-    app.updateStatistics();
-    $('#networkStatistics').fadeIn();
-  });
-
   $('#network-friction').on('input', e => {
     session.network.force.velocityDecay(e.target.value);
     session.network.force.alpha(0.3).alphaTarget(0).restart();
@@ -902,8 +872,6 @@
     session.network.force.force('gravity').strength(e.target.value);
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
-
-  $('#main_panel').css('background-color', $('#network-color').val());
 
   $('#network-color').on('input', e => $('#main_panel').css('background-color', e.target.value));
 
@@ -965,10 +933,6 @@
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
-  setTimeout(function(){
-    $('#nodeTooltipVariable').val('id');
-    $('#linkColorVariable').val('origin');
-    setLinkColor();
-  }, 1500);
+  $('#nodeTooltipVariable').val('id');
 })();
 </script>
