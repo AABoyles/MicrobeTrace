@@ -89,7 +89,11 @@
     data.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
-    values.sort();
+    if(_.isNumber(values[0])){
+      values.sort((a, b) => a - b);
+    } else {
+      values.sort();
+    }
     let ratio = width/(values.length + 1);
     let titles = svg.selectAll('.xtitle').data(values);
     titles.exit().remove();
@@ -122,7 +126,11 @@
     data.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
-    values.sort();
+    if(_.isNumber(values[0])){
+      values.sort((a, b) => b - a);
+    } else {
+      values.sort();
+    }
     let ratio = height/(values.length + 1);
     let titles = svg.selectAll('.ytitle').data(values);
     titles.exit().remove();
