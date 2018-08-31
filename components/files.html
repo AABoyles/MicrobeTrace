@@ -109,9 +109,7 @@
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Generate a preview of the alignment, using the current configurations.">
                   <button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button>
-                </a><br />
-                <input type="checkbox" id="autoPreview"></input>
-                <label for="autoPreview" data-toggle="tooltip" title="Update preview of the alignment whenever anything changes?">Auto-Preview?</label>
+                </a>
               </div>
               <div class="col-9">
                 <div class="text-center" id="alignmentPreview" style="overflow-x: scroll"><canvas></canvas></div>
@@ -363,12 +361,12 @@
 
   $('#swAlign').parent().click(function(){
     $('.alignConfigRow').slideDown();
-    if($('#autoPreview').is(':checked')) updatePreview();
+    updatePreview();
   });
 
   $('#doNotAlign, #nbeamAlign').parent().click(function(){
     $('.alignConfigRow').slideUp();
-    if($('#autoPreview').is(':checked')) updatePreview();
+    updatePreview();
   });
 
   $('#refSeqFileLoad').on('change', function(e){
@@ -379,7 +377,7 @@
         var node = app.parseFASTA(e.target.result)[0];
         session.data.reference = filterXSS(node.seq);
         $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
-        if($('#autoPreview').is(':checked')) updatePreview();
+        updatePreview();
       }
     };
     reader.readAsText(file);
