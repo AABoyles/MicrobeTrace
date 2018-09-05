@@ -362,7 +362,6 @@ input[type="range"]{
 }
 #map_nodes circle {
   cursor: -webkit-grab;
-
 }
 #map_nodes circle.selected {
   stroke: #ff8300;
@@ -376,7 +375,10 @@ input[type="range"]{
 
 /* Sequences */
 #sequences_panel {
+  padding: 10px;
+  padding-top: 50px;
   height: 100%;
+  overflow:auto;
 }
 .smenubar{
   position:absolute;
