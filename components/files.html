@@ -706,6 +706,13 @@
     };
 
     var finishUp = function(){
+      ['node', 'link'].forEach(v => {
+        session.data[v+'s'].forEach(d => {
+          session.data[v+'Fields'].forEach(field => {
+            if(!(field in d)) d[field] = null;
+          });
+        });
+      });
       clearTimeout(messageTimeout);
       $('#linkSortVariable').html(
         session.data.linkFields.map(function(field){
