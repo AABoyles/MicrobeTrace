@@ -19,7 +19,6 @@
   <link rel="stylesheet" type="text/css" href="node_modules/chosen-js/chosen.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/alertifyjs/build/css/alertify.min.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="node_modules/msa/css/msa.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
 </head>
@@ -29,8 +28,7 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
         <div class="dropdown-menu">
-          <a href="#" class="dropdown-item" data-toggle="modal" data-target="#save_modal">Save</a>
-          <a href="#" id="ExportDataTab" class="dropdown-item" data-toggle="modal" data-target="#export_modal">Export Data</a>
+          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#save_modal">Save</a>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
             <input type="file" class="d-none" id="OpenTab" />
@@ -176,36 +174,6 @@ performance of this software.</pre>
 
   <span id="tooltip"></span>
 
-
-  <div id="save_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Save MicrobeTrace Session</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-9">
-              <input type="text" id="save-file-name" class="form-control form-control-sm" placeholder="Filename" />
-            </div>
-            <div class="col-3">
-              <select class="form-control form-control-sm">
-                <option selected>microbetrace</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="SaveTab" class="btn btn-primary" data-dismiss="modal">Export</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
-
   <div id="global_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -323,11 +291,11 @@ performance of this software.</pre>
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="save_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Export Data</h5>
+          <h5 class="modal-title">Save</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -335,18 +303,19 @@ performance of this software.</pre>
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-9">
-              <input type="text" id="export-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              <input type="text" id="save-file-name" class="form-control form-control-sm" placeholder="Filename" />
             </div>
             <div class="col-3">
-              <select id="export-file-format" class="form-control form-control-sm">
-                <option selected>hivtrace</option>
+              <select id="save-file-format" class="form-control form-control-sm">
+                <option selected>microbetrace</option>
+                <option>hivtrace</option>
               </select>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="export-data" class="btn btn-primary" data-dismiss="modal">Export</button>
+          <button type="button" id="save-data" class="btn btn-primary" data-dismiss="modal">Save</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -455,9 +424,12 @@ performance of this software.</pre>
     // Let's set up the Nav Bar
     $('#FileTab').click(app.reset);
 
-    $('#SaveTab').click(function(){
-      var blob = new Blob([JSON.stringify(session)], {type: 'application/json;charset=utf-8'});
-      saveAs(blob, $('#save-file-name').val()+'.microbetrace');
+    $('#save-data').click(function(){
+      var format = $('#save-file-format').val();
+      var name = $('#save-file-name').val();
+      var data = format == 'microbetrace' ? JSON.stringify(session) : app.exportHIVTRACE();
+      var blob = new Blob([data], {type: 'application/json;charset=utf-8'});
+      saveAs(blob, name + '.' + format);
     });
 
     $('#OpenTab').change(function(e){
@@ -715,14 +687,6 @@ performance of this software.</pre>
 
     $('#hide_color_table').parent().click(function(){
       $('#network_group_key').fadeOut();
-    });
-
-    $('#export-data').click(function(){
-      var mime = 'application/json;';
-      var format = $('#export-file-format').val();
-      var name = $('#export-file-name').val();
-      var blob = new Blob([app.exportHIVTRACE()], {type: mime + 'charset=utf-8'});
-      saveAs(blob, name + '.' + format);
     });
 
     $('form').on('keydown', function(e){
