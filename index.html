@@ -510,6 +510,7 @@ performance of this software.</pre>
         if(x > max) max = x;
       }
       var range = max - min;
+      var ticks = 40;
 
       var x = d3.scaleLinear()
         .domain([min, max])
@@ -517,15 +518,14 @@ performance of this software.</pre>
 
       var bins = d3.histogram()
           .domain(x.domain())
-          .thresholds(x.ticks(40))
+          .thresholds(x.ticks(ticks))
           (data);
 
       var y = d3.scaleLinear()
           .domain([0, d3.max(bins, function(d) { return d.length; })])
           .range([height, 0]);
 
-      var bar = svg.selectAll('.bar')
-        .data(bins)
+      var bar = svg.selectAll('.bar').data(bins)
         .enter().append('g')
           .attr('class', 'bar')
           .attr('transform', function(d) { return 'translate(' + x(d.x0) + ',' + y(d.length) + ')'; });
@@ -536,8 +536,8 @@ performance of this software.</pre>
           .attr('height', function(d) { return height - y(d.length); });
 
       function updateThreshold(){
-        var x = d3.mouse(svg.node())[0];
-        session.state.linkThreshold = x / width * range + min;
+        var xc = d3.mouse(svg.node())[0];
+        session.state.linkThreshold = xc / width * range * 1.05 + min;
         $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
         $(window).trigger('updateThreshold');
       }
@@ -556,7 +556,7 @@ performance of this software.</pre>
       svg.on('mousedown', function(){
         d3.event.preventDefault();
         svg.on('mousemove', updateThreshold);
-        svg.on('mouseup', function(){
+        svg.on('mouseup mouseleave', function(){
           app.setLinkVisibility();
           app.tagClusters();
           if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
@@ -566,7 +566,8 @@ performance of this software.</pre>
           session.network.force.alpha(0.3).alphaTarget(0).restart();
           svg
             .on('mousemove', null)
-            .on('mouseup', null);
+            .on('mouseup', null)
+            .on('mouseleave', null);
         });
       });
 
