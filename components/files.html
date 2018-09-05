@@ -473,7 +473,7 @@
           l += app.addLink(Object.assign({
             source: '' + link[file.field1],
             target: '' + link[file.field2],
-            distance: file.field3 === 'None' ? 0 : link[file.field3],
+            distance: file.field3 === 'None' ? 0 : _.isNaN(parseFloat(link[file.field3])) ? 0 : parseFloat(link[file.field3]),
             origin: [filename],
             visible: 1
           }, link));
