@@ -1,4 +1,7 @@
-  <svg id="bubble-view"></svg>
+  <svg id="bubble-view">
+    <text id="xAxisLabel" y="20"></text>
+    <text id="yAxisLabel" x="20" transform="rotate(90)"></text>
+  </svg>
 
   <div class="view_controls">
     <button type="button" id="toggle_bubbles_settings" class="btn btn-light btn-sm">
@@ -47,6 +50,12 @@
 
     svg.attr('width', width).attr('height', height);
 
+    svg
+      .select('#xAxisLabel').attr('x', center.x);
+    svg
+      .select('#yAxisLabel').attr('y', center.y)
+      .attr('transform', 'rotate(270, 10,' + (center.y-10) + ')');
+
     data = app.getVisibleNodes(true);
 
     let bubbles = svg.selectAll('circle').data(data);
@@ -81,11 +90,13 @@
 
   function groupBubblesX(field){
     if(field === 'None'){
+      svg.select('#xAxisLabel').text('');
       svg.selectAll('.xtitle').remove();
       simulation.force('x', d3.forceX().strength(forceStrength).x(center.x));
       simulation.alpha(1).restart();
       return;
     }
+    svg.select('#xAxisLabel').text(app.titleize(field));
     let values = [];
     data.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
@@ -100,7 +111,7 @@
     titles.exit().remove();
     titles.enter().append('text')
       .attr('class', 'xtitle')
-      .attr('y', 30)
+      .attr('y', 50)
       .attr('text-anchor', 'middle')
       .merge(titles)
       .transition()
@@ -118,11 +129,13 @@
 
   function groupBubblesY(field){
     if(field === 'None'){
+      svg.select('#yAxisLabel').text('');
       svg.selectAll('.ytitle').remove();
       simulation.force('y', d3.forceY().strength(forceStrength).y(center.y));
       simulation.alpha(1).restart();
       return;
     }
+    svg.select('#yAxisLabel').text(app.titleize(field));
     let values = [];
     data.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
@@ -137,11 +150,12 @@
     titles.exit().remove();
     titles.enter().append('text')
       .attr('class', 'ytitle')
-      .attr('x', 15)
+      .attr('x', 50)
       .merge(titles)
       .transition()
       .text(function(d){ return d })
-      .attr('y', function(d){ return ratio * values.indexOf(d) + ratio });
+      .attr('y', function(d){ return ratio * values.indexOf(d) + ratio })
+      .attr('transform', function(d){ return 'rotate(270, 50,' + (ratio * values.indexOf(d) + ratio) + ')' });
     simulation.force('y', d3.forceY().strength(forceStrength).y(function(d){
       return ratio * values.indexOf(d[field]) + ratio;
     }));
@@ -181,8 +195,6 @@
   $(window).on('updateThreshold', reset);
   $(window).on('node_visibility', reset);
   layout.on('stateChanged', reset);
-
-  setTimeout(reset, 200);
 })();
 </script>
 </body>
