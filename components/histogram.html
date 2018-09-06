@@ -112,6 +112,7 @@
     ).val('links-distance');
 
     function redrawHistogram(){
+      if(!$('#histogram_panel').length) return;
       if(plot) Plotly.purge('histogram_panel');
       var temp = $('#histogram_variable').val().split('-');
       var varSource = temp[0];
@@ -218,6 +219,9 @@
       }
     });
 
-    setTimeout(redrawHistogram, 80);
+    layout.on('stateChanged', redrawHistogram);
+    setTimeout(function(){
+      redrawHistogram();
+    }, 80);
   })();
   </script>

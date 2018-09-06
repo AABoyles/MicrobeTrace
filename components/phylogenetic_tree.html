@@ -213,6 +213,7 @@
       phylocanvas.draw();
     });
 
+    layout.on('stateChanged', redrawTree);
     setTimeout(redrawTree, 80);
 
   })();

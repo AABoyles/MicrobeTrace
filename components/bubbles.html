@@ -40,6 +40,7 @@
     svg = d3.select('#bubble-view');
 
   function reset(){
+    if(!$('#bubble-view').length) return;
     width = $('#bubble-view').parent().width();
     height = $('#bubble-view').parent().height();
     center = { x: width / 2, y: height / 2 };
@@ -179,6 +180,7 @@
 
   $(window).on('updateThreshold', reset);
   $(window).on('node_visibility', reset);
+  layout.on('stateChanged', reset);
 
   setTimeout(reset, 200);
 })();

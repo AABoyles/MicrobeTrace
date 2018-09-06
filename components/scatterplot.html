@@ -107,6 +107,7 @@
     $('#scatterplot_yVar').val('distance');
 
     function redrawScatterplot(){
+      if(!$('#scatterplot_panel').length) return;
       if(plot) Plotly.purge('scatterplot_panel');
       var xVar = $('#scatterplot_xVar').val();
       var yVar = $('#scatterplot_yVar').val();
@@ -167,6 +168,7 @@
       }
     });
 
+    layout.on('stateChanged', redrawScatterplot);
     setTimeout(redrawScatterplot, 80);
   })();
   </script>

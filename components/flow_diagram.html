@@ -63,13 +63,13 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <script src="node_modules/d3-sankey/build/d3-sankey.min.js"></script>
   <script>
   (function(){
 
     function drawFlowDiagram(){
-      var width = $(window).width() - 40,
-          height = $(window).height() - 125;
+      if(!$('svg#flow_diagram').length) return;
+      var width = $('svg#flow_diagram').parent().width() - 40,
+          height = $('svg#flow_diagram').parent().height() - 60;
 
       svg = d3.select('svg#flow_diagram').html(null)
           .attr('width', width)
@@ -191,6 +191,8 @@
         });
       }
     });
+
+    layout.on('stateChanged', drawFlowDiagram);
 
     drawFlowDiagram();
   })();

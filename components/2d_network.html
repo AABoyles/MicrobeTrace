@@ -309,7 +309,7 @@
   session.network.fit = function(thing, bounds){
     if(!bounds) bounds = session.network.svg.node().getBBox();
     if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
-    let parent = session.network.svg.node().parentElement,
+    let parent = session.network.svg.node().parentElement.parentElement,
         midX = bounds.x + bounds.width / 2,
         midY = bounds.y + bounds.height / 2;
     let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
@@ -934,5 +934,13 @@
   });
 
   $('#nodeTooltipVariable').val('id');
+
+  layout.on('stateChanged', function(){
+    session.network.render();
+    setTimeout(function(){
+      session.network.fit();
+      session.network.force.alpha(0.3).alphaTarget(0).restart();
+    }, 1200);
+  });
 })();
 </script>

@@ -107,12 +107,11 @@
     );
 
     function redrawHeatmap(){
+      if(!$('#heatmap_panel').length) return;
+      if(plot) Plotly.purge('heatmap_panel');
       if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
         return alertify.error('No distance matrix could be found!');
       }
-
-      if(plot) Plotly.purge('heatmap_panel');
-
       var xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
       var yLabels = xLabels.slice();
       var data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
@@ -194,6 +193,8 @@
     $('input[type="color"]').change(redrawHeatmap);
     $('#heatmap_invertX, #heatmap_invertY').change(redrawHeatmap);
 
+
+    layout.on('stateChanged', redrawHeatmap);
     setTimeout(redrawHeatmap, 80);
 
   })();
