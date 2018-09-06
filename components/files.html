@@ -124,7 +124,7 @@
               <div class="col-8">
                 <select class="chosen-select custom-select-sm" id="distanceMetrics" multiple>
                   <option selected>TN93</option>
-                  <option>SNPs</option>
+                  <option selected>SNPs</option>
                 </select>
               </div>
             </div>
@@ -135,6 +135,7 @@
               <div class="col-8">
                 <select class="custom-select custom-select-sm" id="defaultDistanceMetric">
                   <option selected>TN93</option>
+                  <option>SNPs</option>
                 </select>
               </div>
             </div>
@@ -148,6 +149,18 @@
             </div>
           </div>
           <div id="systemConfigurations" class="tab-pane fade" role="tabpanel">
+            <div class="form-group row">
+              <div class="col-2">
+                <label for="defaultView">Default View</label>
+              </div>
+              <div class="col-10">
+                <select class="custom-select" id="defaultView">
+                  <option value="2d_network" selected>2D Network</option>
+                  <option value="3d_network">3D Network</option>
+                  <option value="bubbles">Bubbles</option>
+                </select>
+              </div>
+            </div>
             <div class="form-group row">
               <div class="col-2">
                 <label for="availableCores">Cores</label>
@@ -384,6 +397,14 @@
   });
 
   $('#alignerControlsButton, #previewAlignment').click(updatePreview);
+
+  if(localStorage.getItem('defaultView')){
+    $('#defaultView').val(localStorage.getItem('defaultView'));
+  }
+
+  $('#defaultView').change(e => {
+    localStorage.setItem('defaultView', e.target.value);
+  });
 
   $('#availableCores').html(
     _.range(1, (navigator.hardwareConcurrency|4)+1).map(i => {
@@ -742,19 +763,15 @@
       app.setNodeVisibility();
       app.tagClusters();
       app.computeDegree();
-      app.launchView('2d_network', function(){
+      app.updateStatistics();
+      $('#networkStatistics').fadeIn();
+      let defaultView = $('#defaultView').val();
+      session.loadTime = Date.now() - session.startTime;
+      console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
+      app.launchView(defaultView, function(){
         layout.contentItems.find(item => item.componentName === 'files').remove();
-        session.network.render();
-        session.network.force.alpha(0.3).alphaTarget(0).restart();
-        app.updateStatistics();
-        $('#networkStatistics').fadeIn();
-        session.loadTime = Date.now() - session.startTime;
-        console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
         $('.hideForHIVTrace').css('display', 'flex');
-        setTimeout(function(){
-          session.network.fit();
-          $('#loadingInformationModal').modal('hide');
-        }, 1500);
+        $('#loadingInformationModal').modal('hide');
       });
     };
   });
