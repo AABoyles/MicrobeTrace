@@ -119,17 +119,58 @@
       var visible = $('#histogram_vislinks').is(':checked');
       var axis = $('#histogram_xAxis').is(':checked') ? 'x' : 'y';
       var nonaxis = $('#histogram_yAxis').is(':checked') ? 'x' : 'y';
-      var data = {
-        type: 'histogram',
-        marker: {
-          color: $('#histogram_color').val(),
-        }
-      };
-      data[axis] = session.data[varSource].filter(l => !visible || l.visible).map(l => l[varName]);
+      var traces = [];
       var layout = {
         width: $('#histogram_panel').parent().width(),
         height: $('#histogram_panel').parent().height()
       };
+      if(varSource == 'nodes' && $('#nodeColorVariable').val() !== 'None'){
+        var values = [];
+        var field = $('#nodeColorVariable').val();
+        session.data.nodes.forEach(d => {
+          if(!values.includes(d[field])) values.push(d[field]);
+        });
+        values.forEach((v, i) => {
+          let trace = {
+            type: 'histogram',
+            marker: {
+              color: session.style.nodeColorMap(v),
+            },
+            showlegend: false
+          };
+          trace[axis] = session.data.nodes.filter(d => (!visible || d.visible) && d[field] === v).map(d => d[varName]);
+          traces.push(trace);
+        });
+        layout.barmode = 'stack';
+      } else if(varSource == 'links' && $('#linkColorVariable').val() !== 'None'){
+        var values = [];
+        var field = $('#linkColorVariable').val();
+        session.data.links.forEach(d => {
+          if(!(d[field] in values)) values.push(d[field]);
+        });
+        values.forEach((v, i) => {
+          let trace = {
+            type: 'histogram',
+            marker: {
+              color: session.style.linkColorMap(v),
+            },
+            showlegend: false
+          };
+          trace[axis] = session.data.links.filter(d => (!visible || d.visible) && d[field] === v).map(d => d[varName]);
+          traces.push(trace);
+        });
+        layout.barmode = 'stack';
+      } else {
+        let trace = {
+          type: 'histogram',
+          marker: {
+            color: $('#histogram_color').val(),
+          },
+          showlegend: false
+        };
+        trace[axis] = session.data[varSource].filter(l => !visible || l.visible).map(l => l[varName]);
+        traces = [trace];
+      }
       layout[axis + 'axis'] = {
         title: app.titleize(varName)
       }
@@ -137,9 +178,10 @@
         title: 'Number of ' + app.titleize(varSource),
         type: $('#histogram_logScale').is(':checked') ? 'log' : ''
       };
-      plot = Plotly.newPlot('histogram_panel', [data], layout, {
+      plot = Plotly.newPlot('histogram_panel', traces, layout, {
         displaylogo: false,
-        displayModeBar: false
+        displayModeBar: false,
+        scrollZoom: true
       });
       $('rect.bg').css('fill', $('#histogram_network-color').val());
     }
@@ -152,6 +194,12 @@
         pane.show(0, function(){ pane.animate({left: '0px'}); });
       }
     });
+
+    $('#linkColorVariable, #nodeColorVariable').change(() => {
+      $('.nodeColorVariables, .linkColorVariables').change(redrawHistogram);
+      redrawHistogram();
+    });
+    $('.nodeColorVariables, .linkColorVariables').change(redrawHistogram);
 
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
     $('#histogram_variable, #histogram_color, #histogram_network-color').change(redrawHistogram);
