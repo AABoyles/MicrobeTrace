@@ -22,7 +22,7 @@
             <label for="avwidth">Width</label>
           </div>
           <div class="col-9">
-            <input type="number" id="avwidth" class="form-control custom-select-sm" value="2"></input>
+            <input type="number" id="avwidth" class="form-control custom-select-sm" value="9"></input>
           </div>
         </div>
         <div class="form-group row">
@@ -30,18 +30,18 @@
             <label for="avheight">Height</label>
           </div>
           <div class="col-9">
-            <input type="number" id="avheight" class="form-control custom-select-sm" value="2"></input>
+            <input type="number" id="avheight" class="form-control custom-select-sm" value="12"></input>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-3">Characters</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              <label class="btn btn-secondary">
-                <input type="radio" name="showChars" id="showChar" autocomplete="off"> Show
-              </label>
               <label class="btn btn-secondary active">
-                <input type="radio" name="showChars" autocomplete="off" checked> Hide
+                <input type="radio" name="showChars" id="showChar" autocomplete="off" checked> Show
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" name="showChars" autocomplete="off"> Hide
               </label>
             </div>
           </div>
@@ -86,7 +86,7 @@
     var av = $('#sequences_panel');
 
     function update(){
-      alignmentViewer(session.data.nodes.filter(d => d.seq).map(d => d.seq), {
+      alignmentViewer(session.data.nodes.filter(d => d.seq), {
         width: 0|$('#avwidth').val(),
         height: 0|$('#avheight').val(),
         showChar: $('#showChar').is(':checked')
@@ -95,7 +95,12 @@
       });
     }
 
-    $('#avheight, #avwidth, #showChar').on('input', function(){
+    $('#avheight, #avwidth').on('input', function(){
+      av.empty();
+      update();
+    });
+
+    $('#showChar').change(function(){
       av.empty();
       update();
     });
