@@ -464,7 +464,7 @@ app.launchView = function(view, callback){
         return '<option value="'+field+'">'+app.titleize(field)+'</option>';
       }).join('\n')
     );
-    $('.launch-color-options').click(function(){
+    contentItem.element.find('.launch-color-options').click(function(){
       $('#color-tab').tab('show');
       setTimeout(() => {
         $('#global_settings_modal').modal('show');
