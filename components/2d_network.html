@@ -605,6 +605,7 @@
     session.network.svg
       .select('g#links')
       .selectAll('line')
+      .data(links)
       .attr('opacity', l => lindices.includes(l.index) ? .1 : 1);
   }
 
