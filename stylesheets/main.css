@@ -167,12 +167,6 @@ td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.showForMST {
-  display: none;
-}
-#alignerControlsButton {
-  display: none;
-}
 .custom-file-input{
   white-space: nowrap;
   overflow: hidden;

@@ -208,7 +208,6 @@
     session.files.push(file);
     var extension = file.name.split('.').pop().slice(0,3).toLowerCase();
     var isFasta = (extension === 'fas');
-    if(isFasta) $('#alignerControlsButton').css('display', 'inline');
     var isXL = (extension === 'lsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');
     if(isXL){
