@@ -197,10 +197,10 @@ performance of this software.</pre>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
-                      <input type="radio" name="MSTOptions" id="showAllLinks" autocomplete="off" checked> None
+                      <input type="radio" name="NNOptions" id="showAllLinks" autocomplete="off" checked> None
                     </label>
                     <label class="btn btn-secondary">
-                      <input type="radio" name="MSTOptions" id="showNNLinks" autocomplete="off"> NN
+                      <input type="radio" name="NNOptions" id="showNNLinks" autocomplete="off"> Nearest Neighbor
                     </label>
                   </div>
                 </div>
@@ -481,7 +481,7 @@ performance of this software.</pre>
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
 
-    $('[name="MSTOptions"]').change(function(){
+    $('[name="NNOptions"]').change(function(){
       app.updateNetwork($('#HideSingletons').is(':checked'));
     });
 
