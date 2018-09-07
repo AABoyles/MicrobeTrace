@@ -470,6 +470,7 @@ app.launchView = function(view, callback){
         $('#global_settings_modal').modal('show');
       }, 250);
     });
+    if(navigator.onLine) contentItem.element.find('.ifOnline').show();
     contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     if(callback){
       callback(contentItem);
