@@ -65,8 +65,6 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
         <div class="dropdown-menu">
-          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
-          <div class="dropdown-divider"></div>
           <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
         </div>
       </li>
@@ -423,7 +421,7 @@ performance of this software.</pre>
     }
 
     // Let's set up the Nav Bar
-    $('#FileTab').click(app.reset);
+    $('#FileTab').click(function(){ window.location.reload() });
 
     $('#save-data').click(function(){
       var format = $('#save-file-format').val();
@@ -480,8 +478,6 @@ performance of this software.</pre>
     $('#ExitTab').click(function(){ window.open('','_self').close(); });
 
     $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
-
-    $('#ReloadTab').click(function(){ window.location.reload(true); });
 
     $('#FullScreenTab').click(function(){ screenfull.toggle(); });
 
