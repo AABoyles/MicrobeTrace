@@ -413,11 +413,6 @@
     }).join()
   );
 
-  $('#loadCancelButton').click(e => {
-    $('#loadingInformationModal').modal('hide');
-    app.reset();
-  });
-
   function message(msg){
     session.messages.push(msg);
     $('#loadingInformation').html(session.messages.join('<br />'));
@@ -432,8 +427,8 @@
     $('#loadingInformation').html('');
 
     $('#loadingInformationModal').modal({
-      keyboard: false,
-      backdrop: 'static'
+      backdrop: false,
+      keyboard: false
     });
 
     messageTimeout = setTimeout(function(){
@@ -758,7 +753,12 @@
       } catch(error){
         console.error(error);
         $('#loadingInformationModal').modal('hide');
-        app.reset();
+        alertify
+          .error('Something went wrong! Please start a new session and try again.')
+          .delay(0)
+          .ondismiss(function(){
+            window.location.reload();
+          });
       }
       app.setLinkVisibility();
       app.setNodeVisibility();
