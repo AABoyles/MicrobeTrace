@@ -35,8 +35,6 @@
             <label class="mb-0 w-100" for="OpenTab">Open</label>
           </a>
           <a href="#" id="FileTab" class="dropdown-item">New</a>
-          <div class="dropdown-divider"></div>
-          <a href="#" id="ExitTab" class="dropdown-item">Exit</a>
         </div>
       </li>
       <li class="nav-item">
@@ -474,8 +472,6 @@ performance of this software.</pre>
         reader.readAsText(e.target.files[0], 'UTF-8');
       }
     });
-
-    $('#ExitTab').click(function(){ window.open('','_self').close(); });
 
     $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
 
