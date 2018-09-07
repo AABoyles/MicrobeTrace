@@ -339,6 +339,7 @@
 
   var data;
   function updatePreview(){
+    if(!session.files.find(function(f){ return f.name.includes('fas'); })) return;
     if(!data){
       var reader = new FileReader();
       reader.onloadend = function(e){
