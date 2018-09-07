@@ -172,16 +172,8 @@
       bubbles.transition().attr('fill', d => session.style.nodeColorMap(d[field]));
     }
   }
-
-  $('#default-node-color').on('update', function(e){
-    svg.selectAll('circle').attr('fill', e.target.value);
-  });
-
-  $('.nodeColorVariables').on('change', updateNodeColors);
-  $('#nodeColorVariable').on('change', function(){
-    $('.nodeColorVariables').on('change', updateNodeColors);
-    updateNodeColors();
-  });
+  
+  $(window).on('nodeColorChange', updateNodeColors);
 
   $('#toggle_bubbles_settings').click(function(){
     let pane = $('#bubbles_settings_pane');

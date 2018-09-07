@@ -105,6 +105,7 @@
   (function(){
 
     function redrawTree(){
+      if(!$('#phylogenetic_tree_panel').length) return;
       var typeSelector = $('input[type="radio"][name="tree_distanceMetric"]');
       var type = typeSelector.filter(':checked').data('value');
 
@@ -170,8 +171,8 @@
       phylocanvas.setNodeSize(e.target.value);
     });
 
-    $('#default-node-color').on('input', e => {
-      phylocanvas.branchColour = e.target.value;
+    $(window).on('nodeColorChange', e => {
+      phylocanvas.branchColour = $('#default-node-color').val();
       phylocanvas.draw();
     });
 

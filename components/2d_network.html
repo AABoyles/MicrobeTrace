@@ -395,7 +395,6 @@
     let link = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     link.exit().remove();
     link.enter().append('line')
-      .attr('stroke', $('#default-link-color').val())
       .attr('stroke-width', $('#default-link-width').val())
       .attr('opacity', 1 - $('#default-link-opacity').val())
       .on('mouseenter', showLinkToolTip)
@@ -737,15 +736,7 @@
   $('#default-node-radius').on('input', redrawNodes);
   $('#nodeRadiusVariable').change(redrawNodes);
 
-  $('#default-node-color').on('input', e => {
-    session.network.svg.select('g#nodes').selectAll('g.node').select('path').attr('fill', e.target.value);
-  });
-
-  $('#nodeColorVariable').on('change', function(){
-    $('.nodeColorVariables').on('change', updateNodeColors);
-    updateNodeColors();
-  });
-  $('.nodeColorVariables').on('change', updateNodeColors);
+  $(window).on('nodeColorChange', updateNodeColors);
 
   function updateNodeColors(){
     let variable = $('#nodeColorVariable').val();
@@ -785,7 +776,7 @@
     } else {
       links
         .data(getVLinks())
-        .attr('stroke', d => session.style.linkColorMap(d[variable]))
+        .attr('stroke', l => session.style.linkColorMap(l[variable]))
         .attr('stroke-dasharray', l => {
           //This quirky little algorithm creates the dasharray code necessary to make dash-y links.
           let length = 15;
@@ -803,8 +794,7 @@
     }
   }
 
-  $('#default-link-color').on('input', updateLinkColor);
-  $('#linkColorVariable').change(updateLinkColor);
+  $(window).on('linkColorChange', updateLinkColor);
 
   function scaleLinkThing(scalar, variable, attribute, floor){
     let vlinks = getVLinks();
@@ -935,7 +925,7 @@
   });
 
   $('#nodeTooltipVariable').val('id');
-  
+
   if(session.files.length > 1) $('#linkColorVariable').val('origin').change();
 
   layout.on('stateChanged', function(){

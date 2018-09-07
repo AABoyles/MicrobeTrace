@@ -192,11 +192,8 @@
       }
     });
 
-    $('#linkColorVariable, #nodeColorVariable').change(() => {
-      $('.nodeColorVariables, .linkColorVariables').change(redrawHistogram);
-      redrawHistogram();
-    });
-    $('.nodeColorVariables, .linkColorVariables').change(redrawHistogram);
+    $(window).on('nodeColorChange', redrawHistogram);
+    $(window).on('linkColorChange', redrawHistogram);
 
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
     $('#histogram_variable, #histogram_color, #histogram_network-color').change(redrawHistogram);

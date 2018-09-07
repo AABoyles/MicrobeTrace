@@ -623,15 +623,17 @@ performance of this software.</pre>
       session.style.nodeColors = [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2));
       session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
       values.forEach((value, i) => {
-        let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" data-i="'+i+'" class="nodeColorVariables" />')
+        let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
           .on('change', function(evt){
             session.style.nodeColors.splice(i, 1, evt.target.value);
             session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+            $(window).trigger('nodeColorChange');
           });
         let cell = $('<td></td>').append(input);
         let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
+      $(window).trigger('nodeColorChange');
     });
 
     $('#linkColorVariable').on('change', function(e){
@@ -669,12 +671,17 @@ performance of this software.</pre>
           .on('change', function(evt){
             session.style.linkColors.splice(i, 1, evt.target.value);
             session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+            $(window).trigger('linkColorChange');
           });
         let cell = $('<td></td>').append(input);
         let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
+      $(window).trigger('linkColorChange');
     });
+
+    $('#default-link-color').change(() => $(window).trigger('linkColorChange'));
+    $('#default-node-color').change(() => $(window).trigger('nodeColorChange'));
 
     $('#show_color_table').parent().click(function(){
       $('#network_group_key').fadeIn();

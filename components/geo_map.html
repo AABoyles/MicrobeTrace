@@ -631,14 +631,11 @@
       resetStack();
     });
 
-    $('.nodeColorVariables').on('change', drawNodes);
-    $('#nodeColorVariable').on('change', function(){
-      $('.nodeColorVariables').on('change', drawNodes);
-      drawNodes();
-    });
+    $(window).on('nodeColorChange', drawNodes);
+    $('#mapNodeOpacity').on('change', drawNodes);
 
-    $('#default-node-color, #mapNodeOpacity').on('change', drawNodes);
-    $('#default-link-color, #mapLinkOpacity').on('change', drawLinks);
+    $(window).on('linkColorChange', drawLinks);
+    $('#mapLinkOpacity').on('change', drawLinks);
 
     $('#jitter').on('input', function(e){
       let zoom = map.getZoom();

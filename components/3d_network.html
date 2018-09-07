@@ -158,7 +158,7 @@
         let linkColor = $('#default-link-color').val();
         graph.linkColor(l => linkColor);
       } else {
-        graph.linkAutoColorBy(linkColorBy);
+        graph.linkColor(l => session.style.linkColorMap(l[linkColorBy]));
       }
     }
 
@@ -227,14 +227,8 @@
 
     $('#reload-3d-network').click(updateGraph);
 
-    $('#default-node-color').change(updateNodeColors);
-    $('#nodeColorVariable').on('change', function(){
-      $('.nodeColorVariables').on('change', updateNodeColors);
-      updateNodeColors();
-    });
-    $('.nodeColorVariables').on('change', updateNodeColors);
-
-    $('#default-link-color, #linkColorVariable').change(updateLinkColors);
+    $(window).on('nodeColorChange', updateNodeColors);
+    $(window).on('linkColorChange', updateLinkColors);
 
     $('#3d_network_default-node-tooltip').change(updateNodeTooltip);
     $('#3d_network_node-radius-variable, #3d_network_default-node-radius').change(updateNodeSizes);
