@@ -448,9 +448,11 @@ input[type="range"]{
 }
 #table-wrapper{
   position: absolute;
-  top: 56px;
-  height: calc(100% - 66px);
-  width: calc(100% - 30px);
+  top: 40px;
+  left: 0;
+  height: calc(100% - 60px);
+  width: calc(100% - 20px);
+  margin: 10px;
 }
 
 /* Gantt */
