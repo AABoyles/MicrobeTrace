@@ -27,9 +27,9 @@ app.sessionSkeleton = function(){
     messages: [],
     style: {
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
-      nodeColorMap: function(){},
+      nodeColorMap: function(){ return session.style.nodeColors[0]; },
       linkColors: d3.schemePaired,
-      linkColorMap: function(){}
+      linkColorMap: function(){ return session.style.linkColors[0]; }
     }
   };
 };

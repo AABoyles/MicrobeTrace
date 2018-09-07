@@ -401,9 +401,6 @@
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
-    updateLinkColor();
-    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
-
     let nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
     let links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
     session.network.force.nodes(vnodes).on('tick', function(){
@@ -417,6 +414,8 @@
     });
 
     session.network.force.force('link').links(vlinks);
+
+    updateLinkColor();
 
     $(window).on('node_selected', function(){
       nodes.select('path').classed('selected', d => d.selected);
@@ -787,6 +786,7 @@
         .data(getVLinks())
         .attr('stroke', d => session.style.linkColorMap(d[variable]))
         .attr('stroke-dasharray', l => {
+          //This quirky little algorithm creates the dasharray code necessary to make dash-y links.
           let length = 15;
           let out = new Array(l.origins * 2);
           let ofs = new Array(l.origins).fill(1);
@@ -933,6 +933,7 @@
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
+  $('#linkColorVariable').val('origin').change();
   $('#nodeTooltipVariable').val('id');
 
   layout.on('stateChanged', function(){

@@ -746,7 +746,7 @@
         }).join('\n')
       );
       $('#linkColorVariable').html(
-        '<option selected>None</option>' +
+        '<option>None</option>' +
         session.data.linkFields.map(function(field){
           return '<option value="' + field + '">' + app.titleize(field) + '</option>';
         }).join('\n')
@@ -764,10 +764,9 @@
       app.computeDegree();
       app.updateStatistics();
       $('#networkStatistics').fadeIn();
-      let defaultView = $('#defaultView').val();
       session.loadTime = Date.now() - session.startTime;
       console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
-      app.launchView(defaultView, function(){
+      app.launchView($('#defaultView').val(), function(){
         layout.contentItems.find(item => item.componentName === 'files').remove();
         $('.hideForHIVTrace').css('display', 'flex');
         $('#loadingInformationModal').modal('hide');
