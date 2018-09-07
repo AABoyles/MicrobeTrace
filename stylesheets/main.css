@@ -366,6 +366,9 @@ input[type="range"]{
   animation-iteration-count: infinite;
   animation-timing-function: linear; */
 }
+.leaflet-control-attribution{
+  display: none;
+}
 
 /* Sequences */
 #sequences_panel {

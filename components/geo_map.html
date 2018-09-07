@@ -479,15 +479,14 @@
       };
       let fillcolor = $('#default-node-color').val(),
           colorVariable = $('#nodeColorVariable').val();
-      function makeStyle(feature){
-        return Object.assign({}, style, {
-          color: feature.properties.selected ? '#ff8300' : '#ffffff',
-          fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
-        });
-      }
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
         pointToLayer: function(feature, latlng){
-          return L.circleMarker(latlng, makeStyle(feature));
+          return L.circleMarker(latlng, function(feature){
+            return Object.assign({}, style, {
+              color: feature.properties.selected ? '#ff8300' : '#ffffff',
+              fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
+            });
+          });
         }
       });
       layers.nodes.on('mouseover', showNodeTooltip);
@@ -499,11 +498,22 @@
 
     function drawLinks(){
       layers.links.remove();
-      let style = {
-        color: $('#default-link-color').val(),
-        opacity: 1 - $('#mapLinkOpacity').val()
-      };
-      layers.links = L.geoJSON(makeLinkGeoJSON(), {style: style});
+      let lcv = $('#linkColorVariable').val();
+      let opacity = $('#mapLinkOpacity').val();
+      if(lcv === "None"){
+        let style = {
+          color: $('#default-link-color').val(),
+          opacity: 1 - opacity
+        };
+        layers.links = L.geoJSON(makeLinkGeoJSON(), {style: style});
+      } else {
+        layers.links = L.geoJSON(makeLinkGeoJSON(), {style: function(l){
+          return {
+            color: session.style.linkColorMap(l.properties[lcv]),
+            opacity: 1 - opacity
+          };
+        }});
+      }
       layers.links.addTo(map);
     }
 
