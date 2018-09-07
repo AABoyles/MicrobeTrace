@@ -61,10 +61,6 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the histogram be?">Color</a></div>
-          <div class="col-9"><input type="color" id="histogram_color" class="custom-select custom-select-sm" value="#5656ff" /></div>
-        </div>
-        <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
           <div class="col-9"><input type="color" id="histogram_network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
         </div>
@@ -165,7 +161,7 @@
         let trace = {
           type: 'histogram',
           marker: {
-            color: $('#histogram_color').val(),
+            color: varSource == 'nodes' ? $('#default-node-color').val() : $('#default-link-color').val(),
           },
           showlegend: false
         };
