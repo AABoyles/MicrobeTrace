@@ -933,8 +933,9 @@
     session.network.force.alpha(0.3).alphaTarget(0).restart();
   });
 
-  $('#linkColorVariable').val('origin').change();
   $('#nodeTooltipVariable').val('id');
+  
+  if(session.files.length > 1) $('#linkColorVariable').val('origin').change();
 
   layout.on('stateChanged', function(){
     session.network.render();
