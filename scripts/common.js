@@ -374,6 +374,7 @@ app.computeNN = function(callback){
 
 app.reset = function(){
   window.session = app.sessionSkeleton();
+  layout.unbind('stateChanged');
   layout.root.replaceChild(layout.root.contentItems[0], {
     type: 'stack',
     content: []
