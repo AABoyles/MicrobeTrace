@@ -205,6 +205,12 @@ input[type="range"]{
   width:inherit;
 }
 
+#hide_stats_context, #hide_group_key_context{
+  display: none;
+  position: fixed;
+  z-index: 2000;
+}
+
 /* 2D NETWORK */
 #nodes path {
   cursor: -webkit-grab;
@@ -279,7 +285,7 @@ input[type="range"]{
   position: absolute;
   bottom: 10px;
   right: 20px;
-  z-index: 10;
+  z-index: 1000;
   color: #303030;
   background-color: #f5f5f5;
   border: 1px solid #c0c0c0;

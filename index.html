@@ -141,6 +141,9 @@ performance of this software.</pre>
     <div id="network_group_key_wrapper">
       <table id="network_group_key" class="floater"></table>
     </div>
+    <div id="hide_group_key_context" class="dropdown-menu">
+      <a href="#" id="hideGroupKey" class="dropdown-item">Hide</a>
+    </div>
     <div id="networkStatistics">
       <table>
         <tbody>
@@ -165,6 +168,9 @@ performance of this software.</pre>
           </tr>
         </tbody>
       </table>
+    </div>
+    <div id="hide_stats_context" class="dropdown-menu">
+      <a href="#" id="hideStats" class="dropdown-item">Hide</a>
     </div>
   </div>
 
@@ -600,6 +606,24 @@ performance of this software.</pre>
       $('#networkStatistics').fadeIn();
     });
 
+    $('#networkStatistics').on('contextmenu', function(e){
+      e.preventDefault();
+      $('#hide_stats_context').css({
+        top: e.clientY,
+        left: e.clientX,
+        display: 'block'
+      });
+    });
+
+    $('#hideStats').click(function(e){
+      $(this).parent().hide();
+      $('#hide_2d_network_statistics').parent().click();
+    });
+
+    $(window).click(function(){
+      $('#hide_stats_context').hide();
+    });
+
     $('#RevealAllTab').click(function(e) {
       session.data.clusters.forEach(function(c){ c.visible = 1; });
       $('#HideSingletons').prop('checked', false).parent().removeClass('active');
@@ -635,6 +659,8 @@ performance of this software.</pre>
       });
       $(window).trigger('nodeColorChange');
     });
+
+    $('#default-node-color').change(() => $(window).trigger('nodeColorChange'));
 
     $('#linkColorVariable').on('change', function(e){
       let variable = e.target.value;
@@ -681,7 +707,6 @@ performance of this software.</pre>
     });
 
     $('#default-link-color').change(() => $(window).trigger('linkColorChange'));
-    $('#default-node-color').change(() => $(window).trigger('nodeColorChange'));
 
     $('#show_color_table').parent().click(function(){
       $('#network_group_key').fadeIn();
@@ -689,6 +714,24 @@ performance of this software.</pre>
 
     $('#hide_color_table').parent().click(function(){
       $('#network_group_key').fadeOut();
+    });
+
+    $('#network_group_key_wrapper').on('contextmenu', function(e){
+      e.preventDefault();
+      $('#hide_group_key_context').css({
+        top: e.clientY,
+        left: e.clientX,
+        display: 'block'
+      });
+    });
+
+    $('#hideGroupKey').click(function(e){
+      $(this).parent().hide();
+      $('#hide_color_table').parent().click();
+    });
+
+    $(window).click(function(){
+      $('#hide_group_key_context').hide();
     });
 
     $('form').on('keydown', function(e){
