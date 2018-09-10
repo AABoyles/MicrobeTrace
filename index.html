@@ -439,19 +439,23 @@ performance of this software.</pre>
 
     $('#OpenTab').change(function(e){
       if(e.target.files.length > 0){
+        var startTime = Date.now();
         var parts = e.target.files[0].name.split('.');
         var extension = parts[parts.length - 1];
         var reader = new FileReader();
         if(extension == 'microbetrace'){
           reader.onloadend = function(out){
             session = JSON.parse(out.target.result);
-            app.launchView('2d_network');
+            session.startTime = startTime;
+            app.launchView($('#defaultView').val(), function(){
+              layout.contentItems.find(item => item.componentName === 'files').remove();
+            });
           };
         } else {
           reader.onloadend = function(out){
             session = app.sessionSkeleton();
+            session.startTime = startTime;
             app.parseHIVTrace(JSON.parse(out.target.result));
-            app.launchView('2d_network');
             $('#linkSortVariable').html(
               session.data.linkFields.map(function(field){
                 return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
@@ -467,14 +471,11 @@ performance of this software.</pre>
             app.setNodeVisibility();
             app.tagClusters();
             app.computeDegree();
-            setTimeout(function(){
-              session.network.render();
-              session.network.force.alpha(0.3).alphaTarget(0).restart();
-              app.updateStatistics();
-              session.loadTime = Date.now() - session.startTime;
-              $('.hideForHIVTrace').hide();
-              setTimeout(session.network.fit, 1500);
-            }, 80);
+            session.loadTime = Date.now() - session.startTime;
+            app.updateStatistics();
+            app.launchView($('#defaultView').val(), function(){
+              layout.contentItems.find(item => item.componentName === 'files').remove();
+            });
           };
         }
         reader.readAsText(e.target.files[0], 'UTF-8');
