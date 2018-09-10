@@ -379,14 +379,14 @@
     // Speaking of merging...
     node = node.merge(node);
     // E voila! node now refers to all the g.node elements in the network,
-    // and they all have path and text elements, so we can confidently...
-    node.select('path').attr('fill', $('#default-node-color').val());
-    // And style them according to the DOM State instructions.
-    redrawNodes();
-    // And append our label text, too!
+    // and they all have path and text elements, so we can confidently append our label text
     node.select('text')
       .attr('dy', 5)
       .attr('dx', 8);
+
+    // And style them according to the DOM State instructions.
+    redrawNodes();
+    updateNodeColors();
 
     let vlinks = getVLinks();
 
@@ -836,22 +836,10 @@
     scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
   });
 
-  $('#showNNLinks, #showAllLinks').on('change', e => {
-    session.network.render();
-    app.updateStatistics();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
-  });
-
-  $('#ShowSingletons, #HideSingletons').on('change', e => {
-    app.setNodeVisibility(); //Update data model
+  $(window).on('updateThreshold', function(){
     updateVNodes();          //Update network's copy of data model
-    session.network.render();//Draw it
-  });
-
-  $('#linkSortVariable, #default-link-threshold').on('input', e => {
-    session.network.render();
-    app.updateStatistics();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+    render(); //Draw it
+    force.alpha(0.3).alphaTarget(0).restart();
   });
 
   $('#network-friction').on('input', e => {
@@ -905,12 +893,6 @@
     session.network.allPinned = !session.network.allPinned;
   });
 
-  $('#RevealAllTab').click(function(e) {
-    session.network.render();
-    session.network.fit();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
-  });
-
   d3.select(window).on('keydown keyup', function(){
     d3.select('g.brush')
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none')
@@ -920,7 +902,7 @@
 
   $(window).on('node_visibility', e => {
     updateVNodes();
-    updateNodeColors();
+    render();
     force.alpha(0.3).alphaTarget(0).restart();
   });
 

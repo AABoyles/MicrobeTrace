@@ -234,7 +234,7 @@ performance of this software.</pre>
               <div class="form-group row">
                 <div class="col-4">Reveal</div>
                 <div class="col-8">
-                  <a href="#" class="btn btn-secondary btn-sm" id="RevealAllTab" role="button">All Clusters</a>
+                  <a href="#" class="btn btn-secondary btn-sm" id="RevealAllTab" role="button">Everything</a>
                 </div>
               </div>
               <div class="form-group row">
@@ -490,7 +490,11 @@ performance of this software.</pre>
       app.updateNetwork($('#HideSingletons').is(':checked'));
     });
 
-    $('#ShowSingletons, #HideSingletons').change(app.setNodeVisibility);
+    $('#linkSortVariable').on('change', function(){
+      app.updateThresholdHistogram();
+      app.updateStatistics();
+      $(window).trigger('updateThreshold');
+    });
 
     app.updateThresholdHistogram = function(){
       var width = 280,
@@ -541,7 +545,6 @@ performance of this software.</pre>
         var xc = d3.mouse(svg.node())[0];
         session.state.linkThreshold = xc / width * range * 1.05 + min;
         $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
-        $(window).trigger('updateThreshold');
       }
 
       svg.on('click', function(){
@@ -550,9 +553,8 @@ performance of this software.</pre>
         app.tagClusters();
         if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
         app.computeDegree();
-        session.network.render();
         app.updateStatistics();
-        session.network.force.alpha(0.3).alphaTarget(0).restart();
+        $(window).trigger('updateThreshold');
       });
 
       svg.on('mousedown', function(){
@@ -563,30 +565,27 @@ performance of this software.</pre>
           app.tagClusters();
           if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
           app.computeDegree();
-          session.network.render();
           app.updateStatistics();
-          session.network.force.alpha(0.3).alphaTarget(0).restart();
+          $(window).trigger('updateThreshold');
           svg
             .on('mousemove', null)
             .on('mouseup', null)
             .on('mouseleave', null);
         });
       });
-
       session.state.linkThreshold = parseFloat($('#defaultDistanceThreshold').val());
       $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
       $(window).trigger('updateThreshold');
     };
 
-    $('#linkSortVariable').on('change', function(){
-      app.updateThresholdHistogram();
+    $('#ShowSingletons, #HideSingletons').on('change', e => {
+      app.setNodeVisibility();
       app.updateStatistics();
     });
 
     $('#showNNLinks, #showAllLinks').on('change', e => {
-      session.network.render();
       app.updateStatistics();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      $(window).trigger('updateThreshold');
     });
 
     $('#default-link-threshold').on('input', function(){
@@ -625,12 +624,10 @@ performance of this software.</pre>
       $('#hide_stats_context').hide();
     });
 
-    $('#RevealAllTab').click(function(e) {
+    $('#RevealAllTab').click(function(e){
       session.data.clusters.forEach(function(c){ c.visible = 1; });
-      $('#HideSingletons').prop('checked', false).parent().removeClass('active');
-      $('#ShowSingletons').prop('checked', true).parent().addClass('active');
       app.setLinkVisibility();
-      app.setNodeVisibility();
+      $('#ShowSingletons').parent().click(); //calls app.setNodeVisibility();
     });
 
     $('#nodeColorVariable').on('change', function(e){
