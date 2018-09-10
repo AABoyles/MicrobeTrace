@@ -233,8 +233,6 @@
     vnodes = newNodes;
   }
 
-  updateVNodes();
-
   let brush = d3.brush()
     .on('start', brushstarted)
     .on('brush', brushed)
@@ -415,6 +413,8 @@
 
     updateLinkColor();
 
+    force.alpha(0.3).alphaTarget(0).restart();
+
     $(window).on('node_selected', function(){
       nodes.select('path').classed('selected', d => d.selected);
       $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
@@ -518,7 +518,6 @@
       app.setLinkVisibility();
       app.setNodeVisibility();
       render();
-      force.alpha(0.3).alphaTarget(0).restart();
       hideContextMenu();
     });
     if(session.data.clusters.length < 2){
@@ -530,7 +529,6 @@
           app.setNodeVisibility();
           app.setLinkVisibility();
           render();
-          force.alpha(0.3).alphaTarget(0).restart();
           hideContextMenu();
         });
       } else {
@@ -539,7 +537,6 @@
           app.setLinkVisibility();
           app.setNodeVisibility();
           render();
-          force.alpha(0.3).alphaTarget(0).restart();
           hideContextMenu();
         });
       }
@@ -837,9 +834,8 @@
   });
 
   $(window).on('updateThreshold', function(){
-    updateVNodes();          //Update network's copy of data model
-    render(); //Draw it
-    force.alpha(0.3).alphaTarget(0).restart();
+    updateVNodes(); //Update network's copy of data model
+    render();       //Draw it
   });
 
   $('#network-friction').on('input', e => {
@@ -903,7 +899,6 @@
   $(window).on('node_visibility', e => {
     updateVNodes();
     render();
-    force.alpha(0.3).alphaTarget(0).restart();
   });
 
   $('#nodeTooltipVariable').val('id');
@@ -916,6 +911,7 @@
   });
 
   if(session.files.length > 1) $('#linkColorVariable').val('origin').change();
+  updateVNodes();
   render();
   $('#loadingInformationModal').modal('hide');
 
