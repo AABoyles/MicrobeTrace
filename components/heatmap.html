@@ -96,7 +96,7 @@
   <script>
   (function(){
 
-    var plot;
+    let plot;
 
     $('#heatmap_distanceMetric').html(
       Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
@@ -112,9 +112,9 @@
       if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
         return alertify.error('No distance matrix could be found!');
       }
-      var xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
-      var yLabels = xLabels.slice();
-      var data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
+      let xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
+      let yLabels = xLabels.slice();
+      let data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
 
       if($('#heatmap_invertX').is(':checked')){
         data.forEach(l => l.reverse());
@@ -126,7 +126,7 @@
         yLabels.reverse();
       }
 
-      var config = {
+      let config = {
         autotick: false,
         showticklabels: $('#heatmap_showAxisLabels').is(':checked')
       };
@@ -157,7 +157,7 @@
     }
 
     $('#toggle_heatmap_settings').click(function(){
-      var pane = $('#heatmap_settings_pane');
+      let pane = $('#heatmap_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -166,24 +166,24 @@
     });
 
     $('#heatmap_export').on('mousedown', function(){
-      var filetype = $('#export-heatmap-file-type').val();
-      var name = $('#export-heatmap-file-name').val();
+      let filetype = $('#export-heatmap-file-type').val();
+      let name = $('#export-heatmap-file-name').val();
       if(filetype === 'csv'){
         content = app.unparseDM(session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id]);
-        var blob = new Blob([content]);
+        let blob = new Blob([content]);
         saveAs(blob, name + '.' + filetype);
         return;
       }
-      var network = $('#heatmap_panel image').get(0);
+      let network = $('#heatmap_panel image').get(0);
       if(filetype === 'png'){
-        var bin = atob(network.href.baseVal.slice(22));
-        var length = bin.length;
-        var buf = new ArrayBuffer(length);
-        var arr = new Uint8Array(buf);
-        for (var i = 0; i < length; i++) {
+        let bin = atob(network.href.baseVal.slice(22));
+        let length = bin.length;
+        let buf = new ArrayBuffer(length);
+        let arr = new Uint8Array(buf);
+        for (let i = 0; i < length; i++) {
           arr[i] = bin.charCodeAt(i);
         }
-        var blob = new Blob([buf], {type: 'image/png'});
+        let blob = new Blob([buf], {type: 'image/png'});
         saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
       }
     });

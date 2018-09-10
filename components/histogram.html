@@ -100,7 +100,7 @@
 
   <script>
   (function(){
-    var plot;
+    let plot;
 
     $('#histogram_variable').html(
       session.data.linkFields.map(key => `<option value='links-${key}'>Links ${app.titleize(key)}</option>`).concat(
@@ -110,20 +110,20 @@
     function redrawHistogram(){
       if(!$('#histogram_panel').length) return;
       if(plot) Plotly.purge('histogram_panel');
-      var temp = $('#histogram_variable').val().split('-');
-      var varSource = temp[0];
-      var varName = temp[1];
-      var visible = $('#histogram_vislinks').is(':checked');
-      var axis = $('#histogram_xAxis').is(':checked') ? 'x' : 'y';
-      var nonaxis = $('#histogram_yAxis').is(':checked') ? 'x' : 'y';
-      var traces = [];
-      var layout = {
+      let temp = $('#histogram_variable').val().split('-');
+      let varSource = temp[0];
+      let varName = temp[1];
+      let visible = $('#histogram_vislinks').is(':checked');
+      let axis = $('#histogram_xAxis').is(':checked') ? 'x' : 'y';
+      let nonaxis = $('#histogram_yAxis').is(':checked') ? 'x' : 'y';
+      let traces = [];
+      let layout = {
         width: $('#histogram_panel').parent().width(),
         height: $('#histogram_panel').parent().height()
       };
       if(varSource == 'nodes' && $('#nodeColorVariable').val() !== 'None'){
-        var values = [];
-        var field = $('#nodeColorVariable').val();
+        let values = [];
+        let field = $('#nodeColorVariable').val();
         session.data.nodes.forEach(d => {
           if(!values.includes(d[field])) values.push(d[field]);
         });
@@ -140,8 +140,8 @@
         });
         layout.barmode = 'stack';
       } else if(varSource == 'links' && $('#linkColorVariable').val() !== 'None'){
-        var values = [];
-        var field = $('#linkColorVariable').val();
+        let values = [];
+        let field = $('#linkColorVariable').val();
         session.data.links.forEach(d => {
           if(!(d[field] in values)) values.push(d[field]);
         });
@@ -184,7 +184,7 @@
     }
 
     $('#toggle_histogram_settings').click(function(){
-      var pane = $('#histogram_settings_pane');
+      let pane = $('#histogram_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -199,11 +199,11 @@
     $('#histogram_variable, #histogram_color, #histogram_network-color').change(redrawHistogram);
 
     $('#histogram_export').click(function(){
-      var network = $('#histogram_panel .main-svg').get(0);
-      var content = app.unparseSVG(network);
-      var filetype = $('#export-histogram-file-type').val();
+      let network = $('#histogram_panel .main-svg').get(0);
+      let content = app.unparseSVG(network);
+      let filetype = $('#export-histogram-file-type').val();
       if(filetype === 'svg'){
-        var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, $('#export-histogram-file-name').val() + '.' + filetype);
       } else {
         app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){

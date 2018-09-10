@@ -101,16 +101,16 @@
   </div><!-- /.modal -->
 
   <script>
-  var phylocanvas;
   (function(){
+    let phylocanvas;
 
     function redrawTree(){
       if(!$('#phylogenetic_tree_panel').length) return;
-      var typeSelector = $('input[type="radio"][name="tree_distanceMetric"]');
-      var type = typeSelector.filter(':checked').data('value');
+      let typeSelector = $('input[type="radio"][name="tree_distanceMetric"]');
+      let type = typeSelector.filter(':checked').data('value');
 
       if(!session.data.trees[type]){
-        var RNJ = new RapidNeighborJoining(session.data.distance_matrix[type], session.data.distance_matrix.labels.map(function(l){
+        let RNJ = new RapidNeighborJoining(session.data.distance_matrix[type], session.data.distance_matrix.labels.map(function(l){
           return {
             'name': l,
             'genotype': l
@@ -120,7 +120,7 @@
         session.data.trees[type] = RNJ.getAsNewick();
       }
 
-      var root = $('#phylogenetic_tree_panel').empty();
+      let root = $('#phylogenetic_tree_panel').empty();
 
       phylocanvas = new Phylocanvas.Tree(root[0], {
         hoverLabel: true,
@@ -131,7 +131,7 @@
         branchColour: $('#default-node-color').val()
       });
       phylocanvas.load(session.data.trees[type]); // load your tree file
-      var parent = root.parent();
+      let parent = root.parent();
       phylocanvas.setSize(parent.width(), parent.height());
       phylocanvas.setTreeType($('#tree_layout').val().toLowerCase());
       phylocanvas.fitInPanel();
@@ -145,7 +145,7 @@
     }
 
     $('#toggle_tree_settings').click(function(){
-      var pane = $('#tree_settings_pane');
+      let pane = $('#tree_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -194,13 +194,13 @@
     });
 
     $('#tree_export').click(e => {
-      var type = $('#tree_export-img-file-type').val();
+      let type = $('#tree_export-img-file-type').val();
       if(type === 'png'){
         $('#phylogenetic_tree_panel canvas')[0].toBlob(function(blob) {
           saveAs(blob, $('#tree_export-img-file-name').val() + '.png');
         });
       } else if(type === 'nwk'){
-        var blob = new Blob([session.data.trees[$('[name="tree_distanceMetric"]:checked').data('value')]], {type: "application/newick;charset=utf-8"});
+        let blob = new Blob([session.data.trees[$('[name="tree_distanceMetric"]:checked').data('value')]], {type: "application/newick;charset=utf-8"});
         saveAs(blob, $('#tree_export-img-file-name').val() + '.nwk');
       }
     });

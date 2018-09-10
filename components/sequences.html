@@ -83,7 +83,7 @@
 
   <script>
   (function(){
-    var av = $('#sequences_panel');
+    let av = $('#sequences_panel');
 
     function update(){
       alignmentViewer(session.data.nodes.filter(d => d.seq), {
@@ -108,12 +108,12 @@
     update();
 
     $('#sequences_export').click(function(){
-      var type = $('#export-sequences-file-type').val();
+      let type = $('#export-sequences-file-type').val();
       if(type === 'fasta'){
-        var blob = new Blob([app.unparseFASTA(session.data.nodes.filter(d => d.seq))]);
+        let blob = new Blob([app.unparseFASTA(session.data.nodes.filter(d => d.seq))]);
         saveAs(blob, $('#export-sequences-file-name').val() + '.fasta');
       } else if(type === 'mega'){
-        var blob = new Blob([app.unparseMEGA(session.data.nodes.filter(d => d.seq))]);
+        let blob = new Blob([app.unparseMEGA(session.data.nodes.filter(d => d.seq))]);
         saveAs(blob, $('#export-sequences-file-name').val() + '.mega');
       } else if(type === 'png'){
         $('#sequences_panel canvas').get(0).toBlob(function(blob){
@@ -123,7 +123,7 @@
     });
 
     $('#toggle_sequences_settings').click(function(){
-      var pane = $('#sequences_settings_pane');
+      let pane = $('#sequences_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
