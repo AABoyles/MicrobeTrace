@@ -559,9 +559,10 @@
     });
   }
 
-  function showAttributeModal(d){
+  function showAttributeModal(node){
     hideContextMenu();
     let target = $('#attributeModal tbody').empty();
+    let d = session.data.nodes.find(nd => nd.id === node.id);
     for(let attribute in d){
       target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
     }
