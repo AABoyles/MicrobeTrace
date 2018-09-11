@@ -12,11 +12,15 @@
   <div id="bubbles_settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#bubbles-diagramConfigurations" id="bubbles-diagram-tab" class="nav-link active" aria-controls="bubbles-diagram" role="tab" data-toggle="tab">Bubble Diagram</a>
+        <a href="#bubbles-diagramConfigurations" id="bubbles-diagram-tab" class="nav-link active" aria-controls="bubbles-diagram" role="tab" data-toggle="tab">Nodes</a>
       </li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="bubbles-diagramConfigurations" role="tabpanel" aria-labelledby="bubbles-diagram-tab">
+        <div class="form-group row">
+          <div class="col-3">Color</div>
+          <div class="col-9"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+        </div>
         <div class="form-group row">
           <div class="col-3">X</div>
           <div class="col-9">
@@ -30,8 +34,10 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3">Color</div>
-          <div class="col-9"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+          <div class="col-3">Size</div>
+          <div class="col-9">
+            <input type="range" id="bubbles_size" min="1" value="5" max="15" step="0.1"></input>
+          </div>
         </div>
       </div>
     </div>
@@ -72,10 +78,11 @@
 
     updateVNodes();
 
+    let radius = $('#bubbles_size').val();
     let bubbles = svg.selectAll('circle').data(vnodes);
     bubbles.exit().remove();
     bubbles.enter().append('circle')
-        .attr('r', 5)
+      .attr('r', radius)
       .attr('stroke', '#ffffff')
       .attr('stroke-width', 2)
       .on('click', function(d){
@@ -180,6 +187,10 @@
     }));
     simulation.alpha(1).restart();
   }
+
+  $('#bubbles_size').on('input', function(e){
+    svg.selectAll('circle').attr('r', e.target.value);
+  });
 
   function updateNodeColors(){
     let field = $('#nodeColorVariable').val();
