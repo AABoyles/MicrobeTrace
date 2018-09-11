@@ -39,9 +39,9 @@ app.defaultNode = function(){
     id: '',
     index: session.data.nodes.length,
     padding: 0,
-    selected: 0,
+    selected: false,
     cluster: 1,
-    visible: 1,
+    visible: true,
     degree: 0,
     score: 0,
     seq: '',
@@ -212,8 +212,8 @@ app.tagClusters = function(){
         sum_distances: 0,
         links_per_node: 0,
         mean_genetic_distance: undefined,
-        visible: 1,
-        selected: 0
+        visible: true,
+        selected: false
       });
       app.DFS(node);
     }

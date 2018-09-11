@@ -463,6 +463,9 @@ input[type="range"]{
   width: calc(100% - 20px);
   margin: 10px;
 }
+.table-active{
+  background-color: #ff8300;
+}
 
 /* Gantt */
 #gantt_settings_pane{

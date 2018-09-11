@@ -228,7 +228,14 @@
     let newNodes = app.getVisibleNodes(true);
     newNodes.forEach((d, i) => {
       let match = vnodes.find(d2 => d2.id == d.id);
-      if(match) Object.assign(d, match);
+      if(match){
+        d.x = match.x;
+        d.y = match.y;
+        d.fx = match.fx;
+        d.fy = match.fy;
+        d.vx = match.vx;
+        d.vy = match.vy;
+      }
     });
     vnodes = newNodes;
   }
@@ -253,21 +260,19 @@
       transform.invert(d3.event.selection[1])
     ];
     if(selection == null) return;
-    let node = svg.select('g#nodes').selectAll('g.node').data(vnodes);
     if(d3.event.sourceEvent.ctrlKey){
-      node.classed('selected', function(d){
-        return d.selected = d.previouslySelected ^ (
+      vnodes.forEach(function(d){
+        d.selected = d.previouslySelected ^ (
           selection[0][0] <= d.x && d.x <= selection[1][0] &&
           selection[0][1] <= d.y && d.y <= selection[1][1]);
       });
     } else {
-      node.classed('selected', function(d){
-        return d.selected =
+      vnodes.forEach(function(d){
+        d.selected =
           selection[0][0] <= d.x && d.x <= selection[1][0] &&
           selection[0][1] <= d.y && d.y <= selection[1][1];
       });
     }
-    $(window).trigger('node_selected');
   }
 
   function brushended() {
@@ -276,6 +281,11 @@
     vnodes.forEach(d => {
       delete d.previouslySelected;
     });
+    session.data.nodes.forEach(node => {
+      let instance = vnodes.find(d => d.id === node.id);
+      if(instance) node.selected = instance.selected;
+    });
+    $(window).trigger('node_selected');
   }
 
   let zoom = d3.zoom().on('zoom', function(){
@@ -412,13 +422,8 @@
     force.force('link').links(vlinks);
 
     updateLinkColor();
-
+    nodes.select('path').classed('selected', d => d.selected);
     force.alpha(0.3).alphaTarget(0).restart();
-
-    $(window).on('node_selected', function(){
-      nodes.select('path').classed('selected', d => d.selected);
-      $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
-    });
   };
 
   function getVLinks(){
@@ -479,11 +484,11 @@
 
   function clickHandler(n){
     if(!d3.event.ctrlKey){
-      vnodes
+      session.data.nodes
         .filter(node => node.id !== n.id)
-        .forEach(node => node.selected = 0);
+        .forEach(node => node.selected = false);
     }
-    n.selected = !n.selected;
+    session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
     $(window).trigger('node_selected');
   }
 
@@ -520,14 +525,14 @@
       render();
       hideContextMenu();
     });
-    if(session.data.clusters.length < 2){
+    if(session.data.clusters.length <= 1){
       $('#isolateCluster').hide();
     } else {
       if(session.data.clusters.filter(c => c.visible).length === 1){
         $('#isolateCluster').show().text('De-isolate Cluster').click(e => {
-          session.data.clusters.forEach(c => c.visible = 1);
-          app.setNodeVisibility();
+          session.data.clusters.forEach(c => c.visible = true);
           app.setLinkVisibility();
+          app.setNodeVisibility();
           render();
           hideContextMenu();
         });
@@ -833,11 +838,6 @@
     scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
   });
 
-  $(window).on('updateThreshold', function(){
-    updateVNodes(); //Update network's copy of data model
-    render();       //Draw it
-  });
-
   $('#network-friction').on('input', e => {
     force.velocityDecay(e.target.value);
     force.alpha(0.3).alphaTarget(0).restart();
@@ -896,9 +896,9 @@
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
   });
 
-  $(window).on('node_visibility', e => {
-    updateVNodes();
-    render();
+  $(window).on('updateThreshold node_visibility node_selected', function(){
+    updateVNodes(); //Update network's copy of data model
+    render();       //Draw it
   });
 
   $('#nodeTooltipVariable').val('id');

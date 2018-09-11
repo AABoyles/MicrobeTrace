@@ -148,6 +148,7 @@
         select: function(entry){
           entry.selected = !entry.selected
           if($('input[name=nodelink]:checked').data('value') === 'nodes'){
+            session.data.nodes.find(d => d.id === entry.id).selected = entry.selected;
             $(window).trigger('node_selected');
           }
         }
@@ -156,9 +157,8 @@
 
     function updateTable(){
       let data_type = $('input[name=nodelink]:checked').data('value');
-      let colsToKeep = $('#columns').val();
       table.gridColumns = $('#columns').val();
-      table.gridData = session.data[data_type];
+      table.gridData = JSON.parse(JSON.stringify(session.data[data_type]));
       resetTextsize();
     }
 
@@ -219,11 +219,7 @@
 
     $('#font-size-slider').on('input', resetTextsize);
 
-    $('#linkSortVariable, #default-link-threshold').on('input', e => {
-      if($('input[name=nodelink]:checked').data('value') === 'clusters'){
-        updateTable();
-      }
-    });
+    $(window).on('updateThreshold', updateTable);
 
     $('#table_export').click(function(){
       let format = $('#export-table-file-type').val();
