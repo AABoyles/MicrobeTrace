@@ -749,6 +749,10 @@ performance of this software.</pre>
       $(window).trigger('node_selected');
     });
 
+    $(window).on('node_selected', function(){
+      $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+    });
+
     $(document).on('keydown', function(e){
       if(e.ctrlKey && e.key === 'f'){
         e.preventDefault();
