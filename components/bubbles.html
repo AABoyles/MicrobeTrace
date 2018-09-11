@@ -56,9 +56,10 @@
   }
 
   function reset(){
-    if(!$('#bubble-view').length) return;
-    width = $('#bubble-view').parent().width();
-    height = $('#bubble-view').parent().height();
+    let bv = $('#bubble-view');
+    if(!bv.length) return;
+    width = bv.parent().width();
+    height = bv.parent().height();
     center = { x: width / 2, y: height / 2 };
 
     svg.attr('width', width).attr('height', height);
@@ -75,8 +76,13 @@
     bubbles.exit().remove();
     bubbles.enter().append('circle')
         .attr('r', 5)
-        .attr('stroke', '#ffffff')
-        .attr('stroke-width', 1);
+      .attr('stroke', '#ffffff')
+      .attr('stroke-width', 2)
+      .on('click', function(d){
+        let c = session.data.nodes.find(node => d.id === node.id);
+        c.selected = !c.selected;
+        $(window).trigger('node_selected');
+      });
 
     updateNodeColors();
 
@@ -178,6 +184,7 @@
   function updateNodeColors(){
     let field = $('#nodeColorVariable').val();
     let bubbles = svg.selectAll('circle').data(vnodes);
+    bubbles.classed('selected', d => d.selected);
     if(field === 'None'){
       let color = $('#default-node-color').val();
       bubbles.transition().attr('fill', color);
@@ -199,6 +206,7 @@
 
   $(window).on('updateThreshold', reset);
   $(window).on('node_visibility', reset);
+  $(window).on('node_selected', reset);
   layout.on('stateChanged', reset);
 
   $('#loadingInformationModal').modal('hide');

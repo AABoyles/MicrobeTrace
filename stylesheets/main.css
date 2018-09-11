@@ -489,3 +489,14 @@ input[type="range"]{
 #waterfall-view{
   padding: 30px;
 }
+
+/* Bubbles View */
+#bubble-view circle.selected {
+  stroke: #ff8300;
+  stroke-width: 4px;
+  /* stroke-dasharray: 6, 13;
+  animation-duration: 1s;
+  animation-name: ripple;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear; */
+}
