@@ -39,8 +39,21 @@
 
   <script>
 (function(){
-  let width, height, center, forceStrength, simulation, data,
+  let width, height, center, forceStrength, simulation, vnodes,
     svg = d3.select('#bubble-view');
+
+  function updateVNodes(){
+    let newnodes = app.getVisibleNodes(true);
+    if(!vnodes) vnodes = newnodes;
+    newnodes.forEach(newNode => {
+      let old = vnodes.find(oldNode => oldNode.id === newNode.id);
+      if(old){
+        newNode.x = old.x;
+        newNode.y = old.y;
+      };
+    });
+    vnodes = newnodes;
+  }
 
   function reset(){
     if(!$('#bubble-view').length) return;
@@ -56,9 +69,9 @@
       .select('#yAxisLabel').attr('y', center.y)
       .attr('transform', 'rotate(270, 10,' + (center.y-10) + ')');
 
-    data = app.getVisibleNodes(true);
+    updateVNodes();
 
-    let bubbles = svg.selectAll('circle').data(data);
+    let bubbles = svg.selectAll('circle').data(vnodes);
     bubbles.exit().remove();
     bubbles.enter().append('circle')
         .attr('r', 5)
@@ -69,7 +82,7 @@
 
     forceStrength = 0.03;
 
-    simulation = d3.forceSimulation().nodes(data)
+    simulation = d3.forceSimulation().nodes(vnodes)
       .velocityDecay(0.2)
       .force('x', d3.forceX().strength(forceStrength).x(center.x))
       .force('y', d3.forceY().strength(forceStrength).y(center.y))
@@ -98,7 +111,7 @@
     }
     svg.select('#xAxisLabel').text(app.titleize(field));
     let values = [];
-    data.forEach(function(d){
+    vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
     if(_.isNumber(values[0])){
@@ -137,7 +150,7 @@
     }
     svg.select('#yAxisLabel').text(app.titleize(field));
     let values = [];
-    data.forEach(function(d){
+    vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
     if(_.isNumber(values[0])){
@@ -164,7 +177,7 @@
 
   function updateNodeColors(){
     let field = $('#nodeColorVariable').val();
-    let bubbles = svg.selectAll('circle').data(data);
+    let bubbles = svg.selectAll('circle').data(vnodes);
     if(field === 'None'){
       let color = $('#default-node-color').val();
       bubbles.transition().attr('fill', color);
@@ -172,7 +185,7 @@
       bubbles.transition().attr('fill', d => session.style.nodeColorMap(d[field]));
     }
   }
-  
+
   $(window).on('nodeColorChange', updateNodeColors);
 
   $('#toggle_bubbles_settings').click(function(){
