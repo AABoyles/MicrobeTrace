@@ -481,12 +481,10 @@
           colorVariable = $('#nodeColorVariable').val();
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
         pointToLayer: function(feature, latlng){
-          return L.circleMarker(latlng, function(feature){
-            return Object.assign({}, style, {
-              color: feature.properties.selected ? '#ff8300' : '#ffffff',
-              fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
-            });
-          });
+          return L.circleMarker(latlng, Object.assign({}, style, {
+            color: feature.properties.selected ? '#ff8300' : '#ffffff',
+            fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
+          }));
         }
       });
       layers.nodes.on('mouseover', showNodeTooltip);
