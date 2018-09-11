@@ -693,7 +693,7 @@
 
   $('#toggle_2d_network_settings').click(function(){
     let pane = $('#network_settings_pane');
-    if(pane.is(':visible')){
+    if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
       pane.show(0, function(){ pane.animate({left: '0px'}); });
