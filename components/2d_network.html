@@ -905,6 +905,7 @@
 
   layout.on('stateChanged', function(){
     setTimeout(function(){
+      $('#loadingInformationModal').modal('hide');
       fit();
       force.alpha(0.3).alphaTarget(0).restart();
     }, 1200);
