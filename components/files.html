@@ -771,7 +771,9 @@
       app.launchView($('#defaultView').val(), function(){
         layout.contentItems.find(item => item.componentName === 'files').remove();
         $('.hideForHIVTrace').css('display', 'flex');
-        $('#loadingInformationModal').modal('hide');
+        setTimeout(function(){
+          $('#loadingInformationModal').modal('hide');
+        }, 1200);
       });
     };
   });

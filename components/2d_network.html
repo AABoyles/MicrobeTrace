@@ -903,18 +903,10 @@
 
   $('#nodeTooltipVariable').val('id');
 
-  layout.on('stateChanged', function(){
-    setTimeout(function(){
-      $('#loadingInformationModal').modal('hide');
-      fit();
-      force.alpha(0.3).alphaTarget(0).restart();
-    }, 1200);
-  });
+  layout.on('stateChanged', function(){ setTimeout(fit, 1200); });
 
   if(session.files.length > 1) $('#linkColorVariable').val('origin').change();
   updateVNodes();
   render();
-  $('#loadingInformationModal').modal('hide');
-
 })();
 </script>
