@@ -200,6 +200,7 @@
 
     $('#histogram_export').click(function(){
       let network = $('#histogram_panel .main-svg').get(0);
+      $('#histogram_panel .main-svg .infolayer').detach().appendTo(network);
       let content = app.unparseSVG(network);
       let filetype = $('#export-histogram-file-type').val();
       if(filetype === 'svg'){

@@ -79,8 +79,8 @@
             </div>
             <div class="col-3">
               <select id="export-heatmap-file-type" class="form-control form-control-sm">
-                <option selected>csv</option>
-                <option>png</option>
+                <option selected>png</option>
+                <option>csv</option>
               </select>
             </div>
           </div>
@@ -168,23 +168,18 @@
     $('#heatmap_export').on('mousedown', function(){
       let filetype = $('#export-heatmap-file-type').val();
       let name = $('#export-heatmap-file-name').val();
-      if(filetype === 'csv'){
+      if(filetype === 'png'){
+        let network = $('#heatmap_panel .main-svg').get(0);
+        $('#heatmap_panel .main-svg .infolayer').detach().appendTo(network);
+        let content = app.unparseSVG(network);
+        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+          saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
+        });
+      } else {
         content = app.unparseDM(session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id]);
         let blob = new Blob([content]);
         saveAs(blob, name + '.' + filetype);
         return;
-      }
-      let network = $('#heatmap_panel image').get(0);
-      if(filetype === 'png'){
-        let bin = atob(network.href.baseVal.slice(22));
-        let length = bin.length;
-        let buf = new ArrayBuffer(length);
-        let arr = new Uint8Array(buf);
-        for (let i = 0; i < length; i++) {
-          arr[i] = bin.charCodeAt(i);
-        }
-        let blob = new Blob([buf], {type: 'image/png'});
-        saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
       }
     });
 

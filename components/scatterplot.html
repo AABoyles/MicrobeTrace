@@ -156,6 +156,7 @@
 
     $('#scatterplot_export').click(function(){
       let network = $('#scatterplot_panel .main-svg').get(0);
+      $('#scatterplot_panel .main-svg .infolayer').detach().appendTo(network);
       let content = app.unparseSVG(network);
       let filetype = $('#export-scatterplot-file-type').val();
       if(filetype === 'svg'){
