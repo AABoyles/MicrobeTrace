@@ -259,7 +259,7 @@
       transform.invert(d3.event.selection[0]),
       transform.invert(d3.event.selection[1])
     ];
-    if(selection == null) return;
+    if(selection.includes(null)) return;
     if(d3.event.sourceEvent.ctrlKey){
       vnodes.forEach(function(d){
         d.selected = d.previouslySelected ^ (
@@ -278,9 +278,7 @@
   function brushended() {
     if (d3.event.selection == null) return;
     d3.select(this).call(d3.event.target.move, null);
-    vnodes.forEach(d => {
-      delete d.previouslySelected;
-    });
+    vnodes.forEach(d => delete d.previouslySelected);
     session.data.nodes.forEach(node => {
       let instance = vnodes.find(d => d.id === node.id);
       if(instance) node.selected = instance.selected;

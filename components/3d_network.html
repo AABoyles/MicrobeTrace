@@ -130,9 +130,9 @@
       let nodeColorBy = $('#nodeColorVariable').val();
       if(nodeColorBy === 'None'){
         let nodeColor = $('#default-node-color').val();
-        graph.nodeColor(d => nodeColor);
+        graph.nodeColor(d => d.selected ? '#ff8300' : nodeColor);
       } else {
-        graph.nodeColor(d => session.style.nodeColorMap(d[nodeColorBy]));
+        graph.nodeColor(d => d.selected ? '#ff8300' : session.style.nodeColorMap(d[nodeColorBy]));
       }
       graph.nodeOpacity(1);
     }
@@ -179,7 +179,14 @@
       let newNodes = app.getVisibleNodes(true);
       newNodes.forEach(d => {
         let match = nodes.find(d2 => d.id == d2.id);
-        if(match) Object.assign(d, match);
+        if(match){
+          d.x = match.x;
+          d.y = match.y;
+          d.z = match.z;
+          d.vx = match.vx;
+          d.vy = match.vy;
+          d.vz = match.vz;
+        }
       });
       nodes = newNodes;
       links = app.getVisibleLinks(true);
@@ -200,6 +207,13 @@
       updateBackground();
       updateData();
     }
+
+    // graph.onNodeClick(function(node){
+    //   let model = session.data.nodes.find(d => node.id = d.id);
+    //   if(!model) return;
+    //   model.selected = !model.selected;
+    //   $(window).trigger('node_selected');
+    // });
 
     $('#toggle_3d_network_settings').click(function(){
       let pane = $('#3d_network_settings_pane');
@@ -242,6 +256,10 @@
     $('#linkSortVariable, #default-link-threshold').change(updateData);
 
     $(window).on('node_visibility', updateData);
+    $(window).on('node_selected', function(){
+      updateData();
+      updateNodeColors();
+    });
 
     setTimeout(function(){
       $('#3d_network_default-node-tooltip').val('id');
