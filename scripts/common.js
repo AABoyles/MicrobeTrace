@@ -69,7 +69,7 @@ app.defaultLink = function(){
     index: session.data.links.length,
     tn93: 1,
     snps: Number.INFINITY,
-    visible: 0,
+    visible: false,
     cluster: 1,
     origin: []
   }
@@ -113,7 +113,7 @@ app.parseHIVTrace = function(hivtrace){
       'target': '' + link.sequences[1],
       'distance': parseFloat(link.length),
       'origin': ['HIVTRACE Import'],
-      'visible': 1
+      'visible': true
     });
   }
 };

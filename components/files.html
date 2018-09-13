@@ -202,7 +202,7 @@
     evt.preventDefault();
     var files = evt.originalEvent.dataTransfer.files;
     var n = files.length;
-    for(var i = 0; i < n; i++){ addFileToTable(files[i]); }
+    for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
     $('#main-submit').css('display', 'inline').focus();
   });
 
@@ -492,7 +492,7 @@
             target: '' + link[file.field2],
             distance: file.field3 === 'None' ? 0 : _.isNaN(parseFloat(link[file.field3])) ? 0 : parseFloat(link[file.field3]),
             origin: [filename],
-            visible: 1
+            visible: true
           }, link));
         }
 
