@@ -71,6 +71,8 @@
       let width = $('svg#flow_diagram').parent().width() - 40,
           height = $('svg#flow_diagram').parent().height() - 60;
 
+      let nodes = app.getVisibleNodes(true);
+
       svg = d3.select('svg#flow_diagram').html(null)
           .attr('width', width)
           .attr('height', height);
@@ -100,9 +102,9 @@
 
       wrapper = {links: []};
       source_variable = $( '#flow_source_side').val();
-      source_values  = session.data.nodes.map(n => n[source_variable]+'').filter(onlyUnique);
+      source_values  = nodes.map(n => n[source_variable]+'').filter(onlyUnique);
       target_variable = $('#flow_target_side').val();
-      target_values = session.data.nodes.map(n => n[target_variable]+'').filter(onlyUnique);
+      target_values = nodes.map(n => n[target_variable]+'').filter(onlyUnique);
       wrapper['nodes'] = source_values.concat(target_values).map(n => ({'name': n}));
 
       target_list = {};
@@ -111,7 +113,7 @@
       link_matrix = {};
       source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
 
-      session.data.nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
+      nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
 
       source_values.forEach((source, i) => {
         target_values.forEach((target, j) => {
@@ -191,6 +193,21 @@
         });
       }
     });
+
+    $(window).on('node_selected', function(){
+      if($('#flow_source_side').val() === 'selected' || $('#flow_target_side').val() === 'selected'){
+        drawFlowDiagram();
+      }
+    });
+
+    $(window).on('updateThreshold', function(){
+      let affected = ['degree', 'cluster'];
+      if(affected.includes($('#flow_source_side').val()) || affected.includes($('#flow_target_side').val() === 'selected')){
+        drawFlowDiagram();
+      }
+    });
+
+    $(window).on('node_visibility', drawFlowDiagram);
 
     layout.on('stateChanged', drawFlowDiagram);
 
