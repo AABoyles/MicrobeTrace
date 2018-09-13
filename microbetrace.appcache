@@ -1,13 +1,15 @@
 CACHE MANIFEST
-# 2018-08-17
+# 2018-09-13
 
 CACHE:
 index.html
 stylesheets/main.css
 components/2d_network.html
 components/3d_network.html
+components/bubbles.html
 components/files.html
 components/flow_diagram.html
+components/gantt.html
 components/geo_map.html
 components/heatmap.html
 components/help.html
@@ -17,6 +19,7 @@ components/scatterplot.html
 components/sequences.html
 components/table.html
 components/timeline.html
+components/waterfall.html
 scripts/align-nbeam.js
 scripts/align-sw.js
 scripts/common.js
@@ -48,7 +51,6 @@ img/image64.ico
 img/image64.png
 img/spinner.gif
 node_modules/underscore/underscore-min.js
-node_modules/udc/udc.js
 node_modules/vue/dist/vue.min.js
 node_modules/jquery/dist/jquery.min.js
 node_modules/popper.js/dist/umd/popper.min.js
@@ -62,26 +64,22 @@ node_modules/alertifyjs/build/alertify.min.js
 node_modules/html2canvas/dist/html2canvas.min.js
 node_modules/screenfull/dist/screenfull.js
 node_modules/clipboard/dist/clipboard.min.js
+node_modules/d3-force-3d/build/d3-force-3d.min.js
 node_modules/leaflet/dist/leaflet.js
 node_modules/chosen-js/chosen.jquery.min.js
 node_modules/xlsx/dist/xlsx.full.min.js
 node_modules/alignment-viewer/dist/alignment-viewer.min.js
-node_modules/d3-force-attract/dist/d3-force-attract.min.js
-node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
-node_modules/d3-force-3d/build/d3-force-3d.min.js
+node_modules/moment/min/moment-with-locales.min.js
 node_modules/d3-sankey/build/d3-sankey.min.js
 node_modules/phylocanvas/dist/phylocanvas.min.js
-node_modules/msa/dist/msa.js
-node_modules/vis/dist/vis.min.js
-node_modules/moment/min/moment-with-locales.min.js
+node_modules/d3-force-attract/dist/d3-force-attract.min.js
+node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
 node_modules/bootstrap/dist/css/bootstrap.min.css
 node_modules/golden-layout/src/css/goldenlayout-base.css
 node_modules/golden-layout/src/css/goldenlayout-light-theme.css
-node_modules/vis/dist/vis.min.css
 node_modules/chosen-js/chosen.css
 node_modules/alertifyjs/build/css/alertify.min.css
 node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css
-node_modules/msa/css/msa.css
 node_modules/leaflet/dist/leaflet.css
 node_modules/bootstrap/dist/css/bootstrap.min.css
 node_modules/alertifyjs/build/css/alertify.min.css
