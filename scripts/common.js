@@ -31,9 +31,12 @@ app.sessionSkeleton = function(){
       linkColors: d3.schemePaired,
       linkColorMap: function(){ return session.style.linkColors[0]; },
       widgets: {
-        'default-link-width': 3,
-        'default-link-length': 0.125,
-        'default-node-charge': 200,
+        'node-radius': 250,
+        'node-radius-variable': 'None',
+        'node-charge': 200,
+        'link-opacity': 0,
+        'link-width': 3,
+        'link-length': 0.125,
         'network-gravity': 0.05,
       }
     }
@@ -277,7 +280,7 @@ app.setNodeVisibility = function(){
 
 app.setLinkVisibility = function(){
   var metric  = $('#linkSortVariable').val(),
-      threshold = $('#default-link-threshold').val(),
+      threshold = $('#link-threshold').val(),
       showNN = $('#showNNLinks').is(':checked');
   session.state.linkThreshold = threshold;
   session.data.links.forEach(function(link){

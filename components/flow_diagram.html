@@ -200,7 +200,7 @@
       }
     });
 
-    $(window).on('updateThreshold', function(){
+    $(window).on('link-threshold-change', function(){
       let affected = ['degree', 'cluster'];
       if(affected.includes($('#flow_source_side').val()) || affected.includes($('#flow_target_side').val() === 'selected')){
         drawFlowDiagram();

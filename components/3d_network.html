@@ -127,7 +127,7 @@
     }
 
     function updateNodeColors(){
-      let nodeColorBy = $('#nodeColorVariable').val();
+      let nodeColorBy = $('#node-color-variable').val();
       if(nodeColorBy === 'None'){
         let nodeColor = $('#default-node-color').val();
         graph.nodeColor(d => d.selected ? '#ff8300' : nodeColor);
@@ -153,7 +153,7 @@
     }
 
     function updateLinkColors(){
-      let linkColorBy = $('#linkColorVariable').val();
+      let linkColorBy = $('#link-color-variable').val();
       if(linkColorBy === 'None'){
         let linkColor = $('#default-link-color').val();
         graph.linkColor(l => linkColor);
@@ -241,8 +241,8 @@
 
     $('#reload-3d-network').click(updateGraph);
 
-    $(window).on('nodeColorChange', updateNodeColors);
-    $(window).on('linkColorChange', updateLinkColors);
+    $(window).on('node-color-change', updateNodeColors);
+    $(window).on('link-color-change', updateLinkColors);
 
     $('#3d_network_default-node-tooltip').change(updateNodeTooltip);
     $('#3d_network_node-radius-variable, #3d_network_default-node-radius').change(updateNodeSizes);

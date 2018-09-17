@@ -216,7 +216,7 @@ performance of this software.</pre>
               <div class="form-group row">
                 <div class="col-4"><a data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Filtering Threshold</a></div>
                 <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
-                <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></div>
+                <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="link-threshold" value="0.015" step="0.001" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label for="ShowSingletons" data-toggle="tooltip" title="Would you like to show or hide nodes with no visible links?">Singletons</label></div>
@@ -253,8 +253,8 @@ performance of this software.</pre>
             </div>
             <div class="tab-pane fade" id="color-config" role="tabpanel" aria-labelledby="color-tab">
               <div class="form-group row">
-                <div class="col-4"><label for="nodeColorVariable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
-                <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+                <div class="col-4"><label for="node-color-variable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
+                <div class="col-8"><select id="node-color-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
               <div id="node_color_value_row" class="form-group row">
                 <div class="col-4"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Node Color</label></div>
@@ -262,7 +262,7 @@ performance of this software.</pre>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color Links By</label></div>
-                <div class="col-8"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+                <div class="col-8"><select id="link-color-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
               <div id="link-color-row" class="form-group row">
                 <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Link Color</label></div>
@@ -495,7 +495,7 @@ performance of this software.</pre>
     $('#linkSortVariable').on('change', function(){
       app.updateThresholdHistogram();
       app.updateStatistics();
-      $(window).trigger('updateThreshold');
+      $(window).trigger('link-threshold-change');
     });
 
     app.updateThresholdHistogram = function(){
@@ -546,7 +546,7 @@ performance of this software.</pre>
       function updateThreshold(){
         var xc = d3.mouse(svg.node())[0];
         session.state.linkThreshold = xc / width * range * 1.05 + min;
-        $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+        $('#link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
       }
 
       svg.on('click', function(){
@@ -556,7 +556,7 @@ performance of this software.</pre>
         if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
         app.computeDegree();
         app.updateStatistics();
-        $(window).trigger('updateThreshold');
+        $(window).trigger('link-threshold-change');
       });
 
       svg.on('mousedown', function(){
@@ -568,7 +568,7 @@ performance of this software.</pre>
           if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
           app.computeDegree();
           app.updateStatistics();
-          $(window).trigger('updateThreshold');
+          $(window).trigger('link-threshold-change');
           svg
             .on('mousemove', null)
             .on('mouseup', null)
@@ -576,8 +576,8 @@ performance of this software.</pre>
         });
       });
       session.state.linkThreshold = parseFloat($('#defaultDistanceThreshold').val());
-      $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
-      $(window).trigger('updateThreshold');
+      $('#link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+      $(window).trigger('link-threshold-change');
     };
 
     $('#ShowSingletons, #HideSingletons').on('change', e => {
@@ -587,16 +587,16 @@ performance of this software.</pre>
 
     $('#showNNLinks, #showAllLinks').on('change', e => {
       app.updateStatistics();
-      $(window).trigger('updateThreshold');
+      $(window).trigger('link-threshold-change');
     });
 
-    $('#default-link-threshold').on('input', function(){
+    $('#link-threshold').on('input', function(){
       app.setLinkVisibility();
       app.tagClusters();
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
       app.updateStatistics();
-      $(window).trigger('updateThreshold');
+      $(window).trigger('link-threshold-change');
     });
 
     $('#hide_2d_network_statistics').parent().click(function(){
@@ -632,7 +632,7 @@ performance of this software.</pre>
       $('#ShowSingletons').parent().click(); //calls app.setNodeVisibility();
     });
 
-    $('#nodeColorVariable').on('change', function(e){
+    $('#node-color-variable').on('change', function(e){
       let variable = e.target.value;
       if(variable === 'None'){
         $('#node_color_value_row').slideDown();
@@ -644,25 +644,25 @@ performance of this software.</pre>
       let table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
       table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
       let values = _.uniq(app.getVisibleNodes().map(d => d[variable])).sort();
-      session.style.nodeColors = [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2));
       session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+      session.style.nodeColorVariable = variable;
       values.forEach((value, i) => {
         let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
           .on('change', function(evt){
             session.style.nodeColors.splice(i, 1, evt.target.value);
             session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-            $(window).trigger('nodeColorChange');
+            $(window).trigger('node-color-change');
           });
         let cell = $('<td></td>').append(input);
         let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
-      $(window).trigger('nodeColorChange');
+      $(window).trigger('node-color-change');
     });
 
-    $('#default-node-color').change(() => $(window).trigger('nodeColorChange'));
+    $('#default-node-color').change(() => $(window).trigger('node-color-change'));
 
-    $('#linkColorVariable').on('change', function(e){
+    $('#link-color-variable').on('change', function(e){
       let variable = e.target.value;
       if(variable === 'None'){
         $('#link-color-row').slideDown();
@@ -697,16 +697,16 @@ performance of this software.</pre>
           .on('change', function(evt){
             session.style.linkColors.splice(i, 1, evt.target.value);
             session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
-            $(window).trigger('linkColorChange');
+            $(window).trigger('link-color-change');
           });
         let cell = $('<td></td>').append(input);
         let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
-      $(window).trigger('linkColorChange');
+      $(window).trigger('link-color-change');
     });
 
-    $('#default-link-color').change(() => $(window).trigger('linkColorChange'));
+    $('#default-link-color').change(() => $(window).trigger('link-color-change'));
 
     $('#show_color_table').parent().click(function(){
       $('#network_group_key').fadeIn();

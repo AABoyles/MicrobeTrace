@@ -736,13 +736,13 @@
           return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
         }).join('\n')
       );
-      $('#nodeColorVariable').html(
+      $('#node-color-variable').html(
         '<option selected>None</option>' +
         session.data.nodeFields.map(function(field){
           return '<option value="' + field + '">' + app.titleize(field) + '</option>';
         }).join('\n')
       );
-      $('#linkColorVariable').html(
+      $('#link-color-variable').html(
         '<option>None</option>' +
         session.data.linkFields.map(function(field){
           return '<option value="' + field + '">' + app.titleize(field) + '</option>';

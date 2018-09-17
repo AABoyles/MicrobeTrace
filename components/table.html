@@ -219,7 +219,7 @@
 
     $('#font-size-slider').on('input', resetTextsize);
 
-    $(window).on('updateThreshold', updateTable);
+    $(window).on('link-threshold-change', updateTable);
 
     $('#table_export').click(function(){
       let format = $('#export-table-file-type').val();

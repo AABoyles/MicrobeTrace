@@ -193,7 +193,7 @@
   });
 
   function updateNodeColors(){
-    let field = $('#nodeColorVariable').val();
+    let field = $('#node-color-variable').val();
     let bubbles = svg.selectAll('circle').data(vnodes);
     bubbles.classed('selected', d => d.selected);
     if(field === 'None'){
@@ -204,7 +204,7 @@
     }
   }
 
-  $(window).on('nodeColorChange', updateNodeColors);
+  $(window).on('node-color-change', updateNodeColors);
 
   $('#toggle_bubbles_settings').click(function(){
     let pane = $('#bubbles_settings_pane');
@@ -215,7 +215,7 @@
     }
   });
 
-  $(window).on('updateThreshold', reset);
+  $(window).on('link-threshold-change', reset);
   $(window).on('node_visibility', reset);
   $(window).on('node_selected', reset);
   layout.on('stateChanged', reset);

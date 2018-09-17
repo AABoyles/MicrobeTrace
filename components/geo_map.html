@@ -478,7 +478,7 @@
         fillOpacity: 1 - $('#mapNodeOpacity').val()
       };
       let fillcolor = $('#default-node-color').val(),
-          colorVariable = $('#nodeColorVariable').val();
+          colorVariable = $('#node-color-variable').val();
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
         pointToLayer: function(feature, latlng){
           return L.circleMarker(latlng, Object.assign({}, style, {
@@ -496,7 +496,7 @@
 
     function drawLinks(){
       layers.links.remove();
-      let lcv = $('#linkColorVariable').val();
+      let lcv = $('#link-color-variable').val();
       let opacity = $('#mapLinkOpacity').val();
       if(lcv === "None"){
         let style = {
@@ -639,10 +639,10 @@
       resetStack();
     });
 
-    $(window).on('nodeColorChange', drawNodes);
+    $(window).on('node-color-change', drawNodes);
     $('#mapNodeOpacity').on('change', drawNodes);
 
-    $(window).on('linkColorChange', drawLinks);
+    $(window).on('link-color-change', drawLinks);
     $('#mapLinkOpacity').on('change', drawLinks);
 
     $('#jitter').on('input', function(e){
@@ -655,7 +655,7 @@
       if($('#showNodes').is(':checked')) drawNodes();
     });
 
-    $(window).on('updateThreshold', drawLinks);
+    $(window).on('link-threshold-change', drawLinks);
 
     $('#map_export').click(function(e){
       let geojson = makeGeoJSON();

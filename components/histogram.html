@@ -121,9 +121,9 @@
         width: $('#histogram_panel').parent().width(),
         height: $('#histogram_panel').parent().height()
       };
-      if(varSource == 'nodes' && $('#nodeColorVariable').val() !== 'None'){
+      if(varSource == 'nodes' && $('#node-color-variable').val() !== 'None'){
         let values = [];
-        let field = $('#nodeColorVariable').val();
+        let field = $('#node-color-variable').val();
         session.data.nodes.forEach(d => {
           if(!values.includes(d[field])) values.push(d[field]);
         });
@@ -139,9 +139,9 @@
           traces.push(trace);
         });
         layout.barmode = 'stack';
-      } else if(varSource == 'links' && $('#linkColorVariable').val() !== 'None'){
+      } else if(varSource == 'links' && $('#link-color-variable').val() !== 'None'){
         let values = [];
-        let field = $('#linkColorVariable').val();
+        let field = $('#link-color-variable').val();
         session.data.links.forEach(d => {
           if(!(d[field] in values)) values.push(d[field]);
         });
@@ -192,8 +192,8 @@
       }
     });
 
-    $(window).on('nodeColorChange', redrawHistogram);
-    $(window).on('linkColorChange', redrawHistogram);
+    $(window).on('node-color-change', redrawHistogram);
+    $(window).on('link-color-change', redrawHistogram);
 
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
     $('#histogram_variable, #histogram_color, #histogram_network-color').change(redrawHistogram);
