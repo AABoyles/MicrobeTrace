@@ -42,12 +42,12 @@
         <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label for="nodeSymbolVariable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
-        <div class="col-8"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="node-symbol-variable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
+        <div class="col-8"><select id="node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div id="node_shape_value_row" class="form-group row">
-        <div class="col-4"><label for="default-node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
-        <div class="col-8"><select id="default-node-symbol" class="custom-select custom-select-sm">
+        <div class="col-4"><label for="node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
+        <div class="col-8"><select id="node-symbol" class="custom-select custom-select-sm">
           <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
           <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
           <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
@@ -643,17 +643,8 @@
   function redrawNodes(){
     //Things to track in the function:
     //* Shapes:
-    let type = d3[$('#default-node-symbol').val()];
-    let symbolVariable = $('#nodeSymbolVariable').val();
-    let o = (b => d3[$('#default-node-symbol').val()]);
-    if(symbolVariable !== 'None'){
-      let map = {};
-      let values = _.uniq(vnodes.map(d => d[symbolVariable])).sort();
-      $('#nodeShapes select').each(function(i, el){
-        map[values[i]] = $(this).val();
-      });
-      o = (v => map[v]);
-    }
+    let type = d3[session.style.widgets['node-symbol']];
+    let symbolVariable = session.style.widgets['node-symbol-variable'];
     //* Sizes:
     let defaultSize = session.style.widgets['node-radius'];
     let size = defaultSize, med = defaultSize, oldrng, min, max;
@@ -672,7 +663,7 @@
     }
     let nodes = svg.select('g#nodes').selectAll('g.node').data(vnodes);
     nodes.select('path').each(function(d){
-      if(symbolVariable !== 'None') type = d3[o(d[symbolVariable])];
+      if(symbolVariable !== 'None') type = d3[session.style.nodeSymbolMap(d[symbolVariable])];
       if(sizeVariable !== 'None'){
         size = med;
         if(typeof d[sizeVariable] !== 'undefined'){
@@ -707,8 +698,12 @@
     }
   });
 
-  $('#default-node-symbol').on('input', redrawNodes);
-  $('#nodeSymbolVariable').change(e => {
+  $('#node-symbol').on('input', e => {
+    session.style.widgets['node-symbol'] = e.target.value;
+    redrawNodes();
+  });
+  $('#node-symbol-variable').change(e => {
+    session.style.widgets['node-symbol-variable'] = e.target.value;
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
     let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#network_group_key');
     if(e.target.value === 'None'){
@@ -719,11 +714,14 @@
     $('#node_shape_value_row').slideUp();
     table.append('<tr><th contenteditable>Node '+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
     let values = _.uniq(vnodes.map(d => d[e.target.value])).sort();
-    let symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'];
-    let o = d3.scaleOrdinal(symbolKeys).domain(values);
-    let options = $('#default-node-symbol').html();
-    values.forEach(v => {
-      let selector = $('<select></select>').append(options).val(o(v)).change(redrawNodes);
+    session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+    let options = $('#node-symbol').html();
+    values.forEach((v, i) => {
+      let selector = $('<select></select>').append(options).val(session.style.nodeSymbolMap(v)).change(function(e){
+        session.style.nodeSymbols.splice(i, 1, e.target.value);
+        session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+        redrawNodes();
+      });
       let cell = $('<td></td>').append(selector);
       let row = $('<tr><td contenteditable>' + app.titleize(''+v) + '</td></tr>').append(cell);
       table.append(row);

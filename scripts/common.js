@@ -28,15 +28,26 @@ app.sessionSkeleton = function(){
     style: {
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
       nodeColorMap: function(){ return session.style.nodeColors[0]; },
+      nodeSymbols: ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'],
+      nodeSymbolMap: function(){ return session.style.nodeSymbols[0]; },
       linkColors: d3.schemePaired,
       linkColorMap: function(){ return session.style.linkColors[0]; },
       widgets: {
+        // 'node-label': 'None',
+        // 'node-tooltip': 'None',
+        'node-symbol': 'symbolCircle',
+        'node-symbol-variable': 'None',
         'node-radius': 250,
         'node-radius-variable': 'None',
         'node-charge': 200,
+        // 'node-highlight': false,
+        // 'link-tooltip': 'None',
         'link-opacity': 0,
         'link-width': 3,
+        // 'link-width-variable': 'None',
+        // 'link-directionality': false,
         'link-length': 0.125,
+        // 'network-friction': 0.4,
         'network-gravity': 0.05,
       }
     }
