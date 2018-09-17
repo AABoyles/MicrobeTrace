@@ -29,7 +29,13 @@ app.sessionSkeleton = function(){
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
       nodeColorMap: function(){ return session.style.nodeColors[0]; },
       linkColors: d3.schemePaired,
-      linkColorMap: function(){ return session.style.linkColors[0]; }
+      linkColorMap: function(){ return session.style.linkColors[0]; },
+      widgets: {
+        'default-link-width': 3,
+        'default-link-length': 0.125,
+        'default-node-charge': 200,
+        'network-gravity': 0.05,
+      }
     }
   };
 };
@@ -472,6 +478,10 @@ app.launchView = function(view, callback){
       }, 250);
     });
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
+    for(let id in session.style.widgets){
+      $id = $('#' + id);
+      if($id.length > 0) $id.val(session.style.widgets[id]);
+    }
     contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     if(callback){
       callback(contentItem);

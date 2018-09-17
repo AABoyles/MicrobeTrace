@@ -310,6 +310,9 @@ input[type="range"]{
   font-family: monospace;
   margin: 0;
 }
+#link-reciprocalthickness-row{
+  display: none;
+}
 
 /* 3D Network */
 .graph-nav-info{

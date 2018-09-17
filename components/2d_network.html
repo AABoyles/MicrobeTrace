@@ -215,8 +215,6 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
-<script src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
 <script>
 (function(){
 
@@ -329,15 +327,15 @@
   let force = d3.forceSimulation()
     .force('link', d3.forceLink()
       .id(d => d.id)
-      .distance($('#default-link-length').val())
+      .distance(session.style.widgets['default-link-length'])
       .strength(0.125)
     )
     .force('charge', d3.forceManyBody()
-      .strength(-$('#default-node-charge').val())
+      .strength(-session.style.widgets['default-node-charge'])
     )
     .force('gravity', d3.forceAttract()
       .target([width/2, height/2])
-      .strength($('#network-gravity').val())
+      .strength(session.style.widgets['network-gravity'])
     )
     .force('center', d3.forceCenter(width / 2, height / 2));
 
@@ -400,7 +398,7 @@
     let link = svg.select('g#links').selectAll('line').data(vlinks);
     link.exit().remove();
     link.enter().append('line')
-      .attr('stroke-width', $('#default-link-width').val())
+      .attr('stroke-width', session.style.widgets['default-link-width'])
       .attr('opacity', 1 - $('#default-link-opacity').val())
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
@@ -752,6 +750,7 @@
   $('#default-node-charge').on('input', e => {
     force.force('charge').strength(-e.target.value);
     force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['default-node-charge'] = parseFloat(e.target.value);
   });
 
   $('#DirectedLinks').parent().click(e => {
@@ -765,6 +764,7 @@
   $('#default-link-length').on('input', e => {
     force.force('link').distance(e.target.value);
     force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['default-link-length'] = parseFloat(e.target.value);
   });
 
   function updateLinkColor(e){
@@ -796,45 +796,44 @@
 
   $(window).on('linkColorChange', updateLinkColor);
 
-  function scaleLinkThing(scalar, variable, attribute, floor){
-    let vlinks = getVLinks();
-    let links = svg.select('g#links').selectAll('line').data(vlinks);
-    if(variable === 'None'){
-      return links.attr(attribute, scalar);
-    }
-    if(!floor){floor = 1;}
-    let values = vlinks.map(l => l[variable]).filter(l => typeof l === 'undefined');
-    let min = Math.min(values);
-    let max = Math.max(values);
-    let rng = max - min;
-    let recip = $('#reciprocal-link-width').is(':checked');
-    links.attr(attribute, d => {
-      let v = d[variable];
-      if(typeof v === 'undefined') v = rng / 2 + min;
-      if(recip && attribute === 'stroke-width'){
-        return scalar * (1 - (v - min) / rng) + floor;
-      }
-      return scalar * (v - min) / rng + floor;
-    });
-  }
-
   $('#default-link-opacity').on('input', e => {
     let opacity = 1 - $('#default-link-opacity').val();
     svg.select('g#links').selectAll('line').attr('opacity', opacity);
   });
 
-  $('#default-link-width').on('input', e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
+  function scaleLinkWidth(){
+    let scalar = session.style.widgets['default-link-width'];
+    let variable = $('#linkWidthVariable').val();
+    let vlinks = getVLinks();
+    let links = svg.select('g#links').selectAll('line').data(vlinks);
+    if(variable === 'None') return links.attr('stroke-width', scalar);
+    let values = vlinks.map(l => l[variable]).filter(_.isNumber);
+    let max = Math.max(...values);
+    let min = Math.min(...values);
+    let mid = (max-min) / 2 + min;
+    let scale = d3.scaleLinear()
+      .domain($('#reciprocal-link-width').is(':checked') ? [max, min] : [min, max])
+      .range([1, scalar]);
+    links.attr('stroke-width', d => {
+      let v = d[variable];
+      if(!_.isNumber(v)) v = mid;
+      return scale(v);
+    });
+  }
+
+  $('#default-link-width').on('input', e => {
+    session.style.widgets['default-link-width'] = parseFloat(e.target.value);
+    scaleLinkWidth();
+  });
   $('#linkWidthVariable').change(e => {
     if(e.target.value === 'None'){
       $('#link-reciprocalthickness-row').slideUp();
     } else {
-      $('#link-reciprocalthickness-row').slideDown();
+      $('#link-reciprocalthickness-row').css('display', 'flex');
     }
-    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
+    scaleLinkWidth();
   });
-  $('#reciprocal-link-width').change(e => {
-    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
-  });
+  $('#reciprocal-link-width').change(scaleLinkWidth);
 
   $('#network-friction').on('input', e => {
     force.velocityDecay(e.target.value);
@@ -844,6 +843,7 @@
   $('#network-gravity').on('input', e => {
     force.force('gravity').strength(e.target.value);
     force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['network-gravity'] = parseFloat(e.target.value);
   });
 
   $('#network-color').on('input', e => $('#main_panel').css('background-color', e.target.value));
