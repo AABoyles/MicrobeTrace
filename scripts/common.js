@@ -32,8 +32,8 @@ app.sessionSkeleton = function(){
       linkColors: d3.schemePaired,
       linkColorMap: function(){ return session.style.linkColors[0]; },
       widgets: {
-        // 'node-label': 'None',
-        // 'node-tooltip': 'None',
+        'node-label-variable': 'None',
+        'node-tooltip-variable': 'None',
         'node-symbol': 'symbolCircle',
         'node-symbol-variable': 'None',
         'node-radius': 250,

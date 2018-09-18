@@ -30,12 +30,12 @@
   <div class="tab-content">
     <div class="tab-pane fade show active" id="node_settings" role="tabpanel" aria-labelledby="nodes-tab">
       <div class="form-group row">
-        <div class="col-4"><label for="nodeLabelVariable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
-        <div class="col-8"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="node-label-variable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
+        <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label for="nodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-        <div class="col-8"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="node-tooltip-variable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+        <div class="col-8"><select id="node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4">Color</div>
@@ -570,9 +570,9 @@
 
   function showNodeToolTip(d){
     if($('#highlight-neighbors').is(':checked')) highlightNeighbors(d);
-    if($('#nodeTooltipVariable').val() === 'None') return;
+    if($('#node-tooltip-variable').val() === 'None') return;
     d3.select('#tooltip')
-      .html(d[$('#nodeTooltipVariable').val()])
+      .html(d[$('#node-tooltip-variable').val()])
       .style('left', (d3.event.pageX + 8) + 'px')
       .style('top', (d3.event.pageY - 28) + 'px')
       .style('z-index', 1000)
@@ -675,8 +675,12 @@
       d3.select(this).attr('d', d3.symbol().size(size).type(type));
     });
     //* and Labels:
-    let labelVar = $('#nodeLabelVariable').val();
-    nodes.select('text').text(n => n[labelVar]);
+    let labelVar = session.style.widgets['node-label-variable'];
+    if(labelVar === 'None'){
+      nodes.select('text').text('');
+    } else {
+      nodes.select('text').text(n => n[labelVar]);
+    }
   }
 
   $('#toggle_2d_network_settings').click(function(){
@@ -688,14 +692,13 @@
     }
   });
 
-  $('#nodeLabelVariable').change(e => {
-    if(e.target.value === 'None'){
-      svg.select('g#nodes').selectAll('g.node')
-        .select('text').text('');
-    } else {
-      svg.select('g#nodes').selectAll('g.node').data(vnodes)
-        .select('text').text(d => d[e.target.value]);
-    }
+  $('#node-label-variable').change(e => {
+    session.style.widgets['node-label-variable'] = e.target.value;
+    redrawNodes();
+  });
+
+  $('#node-tooltip-variable').change(e => {
+    session.style.widgets['node-tooltip-variable'] = e.target.value;
   });
 
   $('#node-symbol').on('input', e => {
@@ -904,8 +907,6 @@
     updateVNodes(); //Update network's copy of data model
     render();       //Draw it
   });
-
-  $('#nodeTooltipVariable').val('id');
 
   layout.on('stateChanged', function(){ setTimeout(fit, 1200); });
 
