@@ -39,7 +39,7 @@ app.sessionSkeleton = function(){
         'node-radius': 250,
         'node-radius-variable': 'None',
         'node-charge': 200,
-        // 'node-highlight': false,
+        'node-highlight': false,
         // 'link-tooltip': 'None',
         'link-opacity': 0,
         'link-width': 3,

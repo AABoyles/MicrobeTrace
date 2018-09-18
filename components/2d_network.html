@@ -81,7 +81,7 @@
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
             <label class="btn btn-secondary active">
-              <input type="radio" name="HighlightOptions" autocomplete="off" checked> Normal
+              <input type="radio" name="HighlightOptions" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
             </label>
             <label class="btn btn-secondary">
               <input type="radio" name="HighlightOptions" id="highlight-neighbors" autocomplete="off"> Highlighted
@@ -569,7 +569,7 @@
   }
 
   function showNodeToolTip(d){
-    if($('#highlight-neighbors').is(':checked')) highlightNeighbors(d);
+    if(session.style.widgets['node-highlight']) highlightNeighbors(d);
     if($('#node-tooltip-variable').val() === 'None') return;
     d3.select('#tooltip')
       .html(d[$('#node-tooltip-variable').val()])
@@ -620,8 +620,16 @@
       .style('opacity', 1);
   }
 
+  $('#highlight-neighbors').parent().click(function(){
+    session.style.widgets['node-highlight'] = true;
+  });
+
+  $('#dont-highlight-neighbors').parent().click(function(){
+    session.style.widgets['node-highlight'] = false;
+  });
+
   function hideTooltip(){
-    if($('#highlight-neighbors').is(':checked')){
+    if(session.style.widgets['node-highlight']){
       svg
         .select('g#nodes')
         .selectAll('g.node')
