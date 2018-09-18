@@ -449,9 +449,10 @@ performance of this software.</pre>
           reader.onloadend = function(out){
             session = JSON.parse(out.target.result);
             session.startTime = startTime;
-            app.launchView($('#defaultView').val(), function(){
-              layout.contentItems.find(item => item.componentName === 'files').remove();
-            });
+            session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
+            session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
+            session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
+            app.finishUp();
           };
         } else {
           reader.onloadend = function(out){

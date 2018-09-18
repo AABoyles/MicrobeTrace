@@ -209,6 +209,19 @@
   function addFileToTable(file){
     session.files.push(file);
     var extension = file.name.split('.').pop().slice(0,3).toLowerCase();
+    if(extension === 'mic'){
+      var reader = new FileReader();
+      reader.onloadend = function(out){
+        session = JSON.parse(out.target.result);
+        session.startTime = Date.now();
+        session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
+        session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
+        session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
+        app.finishUp();
+      };
+      reader.readAsText(file);
+      return;
+    }
     var isFasta = (extension === 'fas');
     var isXL = (extension === 'lsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');
@@ -660,7 +673,7 @@
     function nextStuff(){
       if(!anySequences){
         $('.showForSequence').hide();
-        finishUp();
+        app.finishUp();
         return;
       }
       $('.showForSequence').show();
@@ -710,7 +723,7 @@
                 $('.showForNN').show();
               });
             });
-            finishUp();
+            app.finishUp();
           }
         };
       }
@@ -721,61 +734,61 @@
         });
       }
     };
+  });
 
-    var finishUp = function(){
-      ['node', 'link'].forEach(v => {
-        session.data[v+'s'].forEach(d => {
-          session.data[v+'Fields'].forEach(field => {
-            if(!(field in d)) d[field] = null;
-          });
+  app.finishUp = function(){
+    clearTimeout(messageTimeout);
+    ['node', 'link'].forEach(v => {
+      session.data[v+'s'].forEach(d => {
+        session.data[v+'Fields'].forEach(field => {
+          if(!(field in d)) d[field] = null;
         });
       });
-      clearTimeout(messageTimeout);
-      $('#linkSortVariable').html(
-        session.data.linkFields.map(function(field){
-          return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
-        }).join('\n')
-      );
-      $('#node-color-variable').html(
-        '<option selected>None</option>' +
-        session.data.nodeFields.map(function(field){
-          return '<option value="' + field + '">' + app.titleize(field) + '</option>';
-        }).join('\n')
-      );
-      $('#link-color-variable').html(
-        '<option>None</option>' +
-        session.data.linkFields.map(function(field){
-          return '<option value="' + field + '">' + app.titleize(field) + '</option>';
-        }).join('\n')
-      );
-      try {
-        app.updateThresholdHistogram();
-      } catch(error){
-        console.error(error);
-        $('#loadingInformationModal').modal('hide');
-        alertify
-          .error('Something went wrong! Please start a new session and try again.')
-          .delay(0)
-          .ondismiss(function(){
-            window.location.reload();
-          });
-      }
-      app.setLinkVisibility();
-      app.setNodeVisibility();
-      app.tagClusters();
-      app.computeDegree();
-      app.updateStatistics();
-      $('#networkStatistics').fadeIn();
-      session.loadTime = Date.now() - session.startTime;
-      console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
-      app.launchView($('#defaultView').val(), function(){
-        layout.contentItems.find(item => item.componentName === 'files').remove();
-        $('.hideForHIVTrace').css('display', 'flex');
-        setTimeout(function(){
-          $('#loadingInformationModal').modal('hide');
-        }, 1200);
+    });
+    $('#linkSortVariable').html(
+      session.data.linkFields.map(function(field){
+        return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+      }).join('\n')
+    );
+    $('#node-color-variable').html(
+      '<option selected>None</option>' +
+      session.data.nodeFields.map(function(field){
+        return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+      }).join('\n')
+    );
+    $('#link-color-variable').html(
+      '<option>None</option>' +
+      session.data.linkFields.map(function(field){
+        return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+      }).join('\n')
+    );
+    try {
+      app.updateThresholdHistogram();
+    } catch(error){
+      console.error(error);
+      $('#loadingInformationModal').modal('hide');
+      alertify
+      .error('Something went wrong! Please start a new session and try again.')
+      .delay(0)
+      .ondismiss(function(){
+        window.location.reload();
       });
-    };
-  });
+    }
+    app.setLinkVisibility();
+    app.setNodeVisibility();
+    app.tagClusters();
+    app.computeDegree();
+    app.updateStatistics();
+    $('#networkStatistics').fadeIn();
+    session.loadTime = Date.now() - session.startTime;
+    console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
+    app.launchView($('#defaultView').val(), function(){
+      layout.contentItems.find(item => item.componentName === 'files').remove();
+      $('.hideForHIVTrace').css('display', 'flex');
+      setTimeout(function(){
+        $('#loadingInformationModal').modal('hide');
+      }, 1200);
+    });
+  };
 })();
 </script>
