@@ -427,15 +427,15 @@
   );
 
   function message(msg){
-    session.messages.push(msg);
-    $('#loadingInformation').html(session.messages.join('<br />'));
+    messages.push(msg);
+    $('#loadingInformation').html(messages.join('<br />'));
   }
 
-  var messageTimeout;
+  var messageTimeout, messages = [];
 
   $('#main-submit').click(function(e){
+    messages = [];
     session.startTime = Date.now();
-    session.messages = [];
     session.data = app.dataSkeleton();
     $('#loadingInformation').html('');
 
