@@ -744,6 +744,8 @@ performance of this software.</pre>
       }
     });
 
+    layout.on('stateChanged', function(){ session.layout = layout.toConfig(); });
+
     $(window).on('resize', function(){ layout.root.setSize(); });
   });
 
