@@ -74,7 +74,7 @@
       </div>
       <div id="node_size_value_row" class="form-group row">
         <div class="col-4"><label for="node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
-        <div class="col-8"><input type="range" id="node-radius" min="30" value="250" step="1" max="5000" /></div>
+        <div class="col-8"><input type="range" id="node-radius" min="100" value="250" step="1" max="5000" /></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="highlight-neighbors" data-toggle="tooltip" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">Neighbors</label></div>
@@ -692,7 +692,7 @@
           size = d[sizeVariable];
         }
         size = (size - min) / oldrng;
-        size = size * size * defaultSize + 30;
+        size = size * size * defaultSize + 100;
       }
       d3.select(this).attr('d', d3.symbol().size(size).type(type));
     });
