@@ -778,9 +778,10 @@
   }
 
   $('#node-charge').on('input', e => {
-    force.force('charge').strength(-e.target.value);
+    let v = parseFloat(e.target.value);
+    force.force('charge').strength(-v);
     force.alpha(0.3).alphaTarget(0).restart();
-    session.style.widgets['node-charge'] = parseFloat(e.target.value);
+    session.style.widgets['node-charge'] = v;
   });
 
   $('#link-directed').parent().click(e => {
@@ -794,9 +795,10 @@
   });
 
   $('#link-length').on('input', e => {
+    let v = parseFloat(e.target.value);
     force.force('link').distance(e.target.value);
     force.alpha(0.3).alphaTarget(0).restart();
-    session.style.widgets['link-length'] = parseFloat(e.target.value);
+    session.style.widgets['link-length'] = v;
   });
 
   function updateLinkColor(e){
