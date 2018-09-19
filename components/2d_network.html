@@ -870,9 +870,10 @@
   });
 
   $('#network-gravity').on('input', e => {
-    force.force('gravity').strength(e.target.value);
+    let v = parseFloat(e.target.value);
+    force.force('gravity').strength(v);
     force.alpha(0.3).alphaTarget(0).restart();
-    session.style.widgets['network-gravity'] = parseFloat(e.target.value);
+    session.style.widgets['network-gravity'] = v;
   });
 
   $('#network-color').on('input', e => $('#main_panel').css('background-color', e.target.value));
