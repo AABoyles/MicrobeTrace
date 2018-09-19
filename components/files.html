@@ -134,8 +134,8 @@
               </div>
               <div class="col-8">
                 <select class="custom-select custom-select-sm" id="defaultDistanceMetric">
-                  <option selected>TN93</option>
-                  <option>SNPs</option>
+                  <option value="tn93" selected>TN93</option>
+                  <option value="snps">SNPs</option>
                 </select>
               </div>
             </div>
@@ -333,16 +333,17 @@
   }
 
   $('#distanceMetrics').chosen({width: "100%"}).change(function(){
-    $('#defaultDistanceMetric').html($(this).val().map((v, i) => {
+    $('#defaultDistanceMetric').html($(this).val().map(function(v, i){
       return '<option value="' + v.toLowerCase() + '"' + (i == 0 ? ' selected': '') + '>' + v + '</option>';
     }).join('\n'));
   });
 
-  $('#defaultDistanceMetric').change(function(){
-    if($(this).val() == 'snps'){
+  $('#defaultDistanceMetric').change(function(e){
+    session.state.linkSortVariable = e.target.value;
+    if(e.target.value == 'snps'){
       $('#defaultDistanceThreshold')
         .attr('step', 1)
-        .val(1);
+        .val(16);
     } else {
       $('#defaultDistanceThreshold')
         .attr('step', 0.001)
@@ -747,7 +748,7 @@
     });
     $('#linkSortVariable').html(
       session.data.linkFields.map(function(field){
-        return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+        return '<option value="' + field + '"' + (field === session.state.linkSortVariable ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
       }).join('\n')
     );
     $('#node-color-variable').html(

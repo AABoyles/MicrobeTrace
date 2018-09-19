@@ -459,26 +459,7 @@ performance of this software.</pre>
             session = app.sessionSkeleton();
             session.startTime = startTime;
             app.parseHIVTrace(JSON.parse(out.target.result));
-            $('#linkSortVariable').html(
-              session.data.linkFields.map(function(field){
-                return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
-              }).join('\n')
-            );
-            try {
-              app.updateThresholdHistogram();
-            } catch(error){
-              console.error(error);
-              app.reset();
-            }
-            app.setLinkVisibility();
-            app.setNodeVisibility();
-            app.tagClusters();
-            app.computeDegree();
-            session.loadTime = Date.now() - session.startTime;
-            app.updateStatistics();
-            app.launchView($('#defaultView').val(), function(){
-              layout.contentItems.find(item => item.componentName === 'files').remove();
-            });
+            app.finishUp();
           };
         }
         reader.readAsText(e.target.files[0], 'UTF-8');
