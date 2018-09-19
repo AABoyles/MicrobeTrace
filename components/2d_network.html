@@ -104,15 +104,15 @@
         <div class="col-8"><input type="range" id="link-opacity" min="0" max="1" value="0" step="0.01" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width By</label></div>
-        <div class="col-8"><select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="link-width-variable" data-toggle="tooltip" title="How thick should the links be?">Width By</label></div>
+        <div class="col-8"><select id="link-width-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
       </div>
       <div id="link-reciprocalthickness-row" class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?" checked>Reciprocal</label></div>
-        <div class="col-8"><input type="checkbox" id="reciprocal-link-width" checked /></div>
+        <div class="col-4"><label for="link-width-reciprocal" data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?" checked>Reciprocal</label></div>
+        <div class="col-8"><input type="checkbox" id="link-width-reciprocal" checked /></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
+        <div class="col-4"><label for="link-width" data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
         <div class="col-8"><input type="range" id="link-width" min="0.3" max="30" step=".3" value="3" /></div>
       </div>
       <div class="form-group row hideForHIVTrace">
@@ -824,7 +824,7 @@
 
   function scaleLinkWidth(){
     let scalar = session.style.widgets['link-width'];
-    let variable = $('#linkWidthVariable').val();
+    let variable = session.style.widgets['link-width-variable'];
     let vlinks = getVLinks();
     let links = svg.select('g#links').selectAll('line').data(vlinks);
     if(variable === 'None') return links.attr('stroke-width', scalar);
@@ -833,7 +833,7 @@
     let min = Math.min(...values);
     let mid = (max-min) / 2 + min;
     let scale = d3.scaleLinear()
-      .domain($('#reciprocal-link-width').is(':checked') ? [max, min] : [min, max])
+      .domain(session.style.widgets['link-width-reciprocal'] ? [max, min] : [min, max])
       .range([1, scalar]);
     links.attr('stroke-width', d => {
       let v = d[variable];
@@ -846,15 +846,21 @@
     session.style.widgets['link-width'] = parseFloat(e.target.value);
     scaleLinkWidth();
   });
-  $('#linkWidthVariable').change(e => {
+
+  $('#link-width-variable').change(e => {
     if(e.target.value === 'None'){
       $('#link-reciprocalthickness-row').slideUp();
     } else {
       $('#link-reciprocalthickness-row').css('display', 'flex');
     }
+    session.style.widgets['link-width-variable'] = e.target.value;
     scaleLinkWidth();
   });
-  $('#reciprocal-link-width').change(scaleLinkWidth);
+
+  $('#link-width-reciprocal').change(function(){
+    session.style.widgets['link-width-reciprocal'] = $(this).is(':checked');
+    scaleLinkWidth();
+  });
 
   $('#network-friction').on('input', e => {
     force.velocityDecay(e.target.value);
