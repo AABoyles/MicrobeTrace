@@ -48,7 +48,7 @@ app.sessionSkeleton = function(){
         'link-width-reciprocal': true,
         // 'link-directionality': false,
         'link-length': 0.125,
-        // 'network-friction': 0.4,
+        'network-friction': 0.4,
         'network-gravity': 0.05,
       }
     }
