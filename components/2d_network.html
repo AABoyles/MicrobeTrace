@@ -108,8 +108,17 @@
         <div class="col-8"><select id="link-width-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
       </div>
       <div id="link-reciprocalthickness-row" class="form-group row">
-        <div class="col-4"><label for="link-width-reciprocal" data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?" checked>Reciprocal</label></div>
-        <div class="col-8"><input type="checkbox" id="link-width-reciprocal" checked /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal</label></div>
+        <div class="col-8">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary active">
+              <input type="radio" name="link-reciprocal-options" id="link-width-reciprocal" autocomplete="off" checked> Reciprocal
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="link-reciprocal-options" id="link-width-nonreciprocal" autocomplete="off"> Non-reciprocal
+            </label>
+          </div>
+        </div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="link-width" data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
@@ -120,10 +129,10 @@
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
             <label class="btn btn-secondary active">
-              <input type="radio" name="DirectionOptions" id="UndirectedLinks" autocomplete="off" checked> Undirected
+              <input type="radio" name="DirectionOptions" id="link-undirected" autocomplete="off" checked> Undirected
             </label>
             <label class="btn btn-secondary">
-              <input type="radio" name="DirectionOptions" id="DirectedLinks" autocomplete="off"> Directed
+              <input type="radio" name="DirectionOptions" id="link-directed" autocomplete="off"> Directed
             </label>
           </div>
         </div>
@@ -420,6 +429,7 @@
     force.force('link').links(vlinks);
 
     updateLinkColor();
+    scaleLinkWidth();
     nodes.select('path').classed('selected', d => d.selected);
     force.alpha(0.3).alphaTarget(0).restart();
   };
@@ -773,12 +783,14 @@
     session.style.widgets['node-charge'] = parseFloat(e.target.value);
   });
 
-  $('#DirectedLinks').parent().click(e => {
+  $('#link-directed').parent().click(e => {
     svg.select('g#links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
+    session.style.widgets['link-directed'] = true;
   });
 
-  $('#UndirectedLinks').parent().click(e => {
+  $('#link-undirected').parent().click(e => {
     svg.select('g#links').selectAll('line').attr('marker-end', null);
+    session.style.widgets['link-directed'] = false;
   });
 
   $('#link-length').on('input', e => {
@@ -857,8 +869,13 @@
     scaleLinkWidth();
   });
 
-  $('#link-width-reciprocal').change(function(){
-    session.style.widgets['link-width-reciprocal'] = $(this).is(':checked');
+  $('#link-width-reciprocal').parent().click(function(){
+    session.style.widgets['link-width-reciprocal'] = true;
+    scaleLinkWidth();
+  });
+
+  $('#link-width-nonreciprocal').parent().click(function(){
+    session.style.widgets['link-width-reciprocal'] = false;
     scaleLinkWidth();
   });
 

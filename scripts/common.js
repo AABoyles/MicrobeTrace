@@ -46,7 +46,7 @@ app.sessionSkeleton = function(){
         'link-width': 3,
         'link-width-variable': 'None',
         'link-width-reciprocal': true,
-        // 'link-directionality': false,
+        'link-directed': false,
         'link-length': 0.125,
         'network-friction': 0.4,
         'network-gravity': 0.05,
@@ -493,7 +493,13 @@ app.launchView = function(view, callback){
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
     for(let id in session.style.widgets){
       $id = $('#' + id);
-      if($id.length > 0) $id.val(session.style.widgets[id]);
+      if($id.length > 0){
+        if(['radio', 'checkbox'].includes($id[0].type)){
+          if(session.style.widgets[id]) $id.click();
+        } else {
+          $id.val(session.style.widgets[id]);
+        }
+      }
     }
     contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     if(callback){
