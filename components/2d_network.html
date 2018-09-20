@@ -895,7 +895,9 @@
     session.style.widgets['network-gravity'] = v;
   });
 
-  $('#network-color').on('input', e => $('#network').css('background-color', e.target.value));
+  $('#network-color')
+    .on('input', e => $('#network').css('background-color', e.target.value))
+    .on('change', e => session.style.widgets['network-color'] = e.target.value);
 
   $('#svg_export').on('click', function(){
     let network = document.getElementById('network');
@@ -951,6 +953,7 @@
   layout.on('stateChanged', function(){ setTimeout(fit, 1200); });
 
   if(session.files.length > 1) $('#link-color-variable').val('origin').change();
+  if(session.style.widgets['network-color']) $('#network').css('background-color', session.style.widgets['network-color']);
   updateVNodes();
   render();
 })();
