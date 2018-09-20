@@ -730,7 +730,7 @@
   $('#node-symbol-variable').change(e => {
     session.style.widgets['node-symbol-variable'] = e.target.value;
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
-    let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#network_group_key');
+    let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#group-key');
     if(e.target.value === 'None'){
       redrawNodes();
       $('#node_shape_value_row').slideDown();

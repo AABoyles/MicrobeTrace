@@ -138,11 +138,11 @@ performance of this software.</pre>
         <p class="lead">MicrobeTrace requires Javascript to run. Please enable Javascript and refresh MicrobeTrace.</p>
       </div>
     </noscript>
-    <div id="network_group_key_wrapper">
-      <table id="network_group_key" class="floater"></table>
+    <div id="group-key-wrapper">
+      <table id="group-key" class="floater"></table>
     </div>
-    <div id="hide_group_key_context" class="dropdown-menu">
-      <a href="#" id="hideGroupKey" class="dropdown-item">Hide</a>
+    <div id="group-key-context" class="dropdown-menu">
+      <a href="#" id="group-key-hide" class="dropdown-item">Hide</a>
     </div>
     <div id="networkStatistics">
       <table>
@@ -273,10 +273,10 @@ performance of this software.</pre>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
-                      <input type="radio" name="colorTableShowHide" id="show_color_table" autocomplete="off" checked> Show
+                      <input type="radio" name="colorTableShowHide" id="color-table-show" autocomplete="off" checked> Show
                     </label>
                     <label class="btn btn-secondary">
-                      <input type="radio" name="colorTableShowHide" id="hide_color_table" autocomplete="off"> Hide
+                      <input type="radio" name="colorTableShowHide" id="color-table-hide" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -704,30 +704,30 @@ performance of this software.</pre>
       $(window).trigger('link-color-change');
     });
 
-    $('#show_color_table').parent().click(function(){
-      $('#network_group_key').fadeIn();
+    $('#color-table-show').parent().click(function(){
+      $('#group-key').fadeIn();
     });
 
-    $('#hide_color_table').parent().click(function(){
-      $('#network_group_key').fadeOut();
+    $('#color-table-hide').parent().click(function(){
+      $('#group-key').fadeOut();
     });
 
-    $('#network_group_key_wrapper').on('contextmenu', function(e){
+    $('#group-key-wrapper').on('contextmenu', function(e){
       e.preventDefault();
-      $('#hide_group_key_context').css({
+      $('#group-key-context').css({
         top: e.clientY,
         left: e.clientX,
         display: 'block'
       });
     });
 
-    $('#hideGroupKey').click(function(e){
+    $('#group-key-hide').click(function(e){
       $(this).parent().hide();
-      $('#hide_color_table').parent().click();
+      $('#color-table-hide').parent().click();
     });
 
     $(window).click(function(){
-      $('#hide_group_key_context').hide();
+      $('#group-key-context').hide();
     });
 
     $('form').on('keydown', function(e){
