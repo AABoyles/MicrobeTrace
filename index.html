@@ -257,16 +257,16 @@ performance of this software.</pre>
                 <div class="col-8"><select id="node-color-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
               <div id="node_color_value_row" class="form-group row">
-                <div class="col-4"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Node Color</label></div>
-                <div class="col-8"><input type="color" id="default-node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
+                <div class="col-4"><label for="node-color" data-toggle="tooltip" title="What color should the nodes be?">Node Color</label></div>
+                <div class="col-8"><input type="color" id="node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color Links By</label></div>
                 <div class="col-8"><select id="link-color-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
               <div id="link-color-row" class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Link Color</label></div>
-                <div class="col-8"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#a6cee3" /></div>
+                <div class="col-4"><label for="link-color" data-toggle="tooltip" title="What color should the links be?">Link Color</label></div>
+                <div class="col-8"><input type="color" id="link-color" class="custom-select custom-select-sm" value="#a6cee3" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label data-toggle="tooltip" title="Display the table of colors">Color Table</label></div>
@@ -614,81 +614,95 @@ performance of this software.</pre>
       $('#ShowSingletons').parent().click(); //calls app.setNodeVisibility();
     });
 
-    $('#node-color-variable').on('change', function(e){
-      let variable = e.target.value;
-      if(variable === 'None'){
-        $('#node_color_value_row').slideDown();
+    $('#node-color-variable')
+      .val(session.style.widgets['node-color-variable'])
+      .on('change', function(e){
+        let variable = e.target.value;
+        session.style.widgets['node-color-variable'] = variable;
+        if(variable === 'None'){
+          $('#node_color_value_row').slideDown();
+          $('#nodeColors').remove();
+          return;
+        }
+        $('#node_color_value_row').slideUp();
         $('#nodeColors').remove();
-        return;
-      }
-      $('#node_color_value_row').slideUp();
-      $('#nodeColors').remove();
-      let table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
-      table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
-      let values = _.uniq(app.getVisibleNodes().map(d => d[variable])).sort();
-      session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-      session.style.nodeColorVariable = variable;
-      values.forEach((value, i) => {
-        let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
-          .on('change', function(evt){
-            session.style.nodeColors.splice(i, 1, evt.target.value);
-            session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-            $(window).trigger('node-color-change');
-          });
-        let cell = $('<td></td>').append(input);
-        let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
-        table.append(row);
+        let table = $('<tbody id="nodeColors"></tbody>').appendTo('#group-key');
+        table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
+        let values = _.uniq(app.getVisibleNodes().map(d => d[variable])).sort();
+        session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+        session.style.nodeColorVariable = variable;
+        values.forEach((value, i) => {
+          let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
+            .on('change', function(evt){
+              session.style.nodeColors.splice(i, 1, evt.target.value);
+              session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+              $(window).trigger('node-color-change');
+            });
+          let cell = $('<td></td>').append(input);
+          let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
+          table.append(row);
+        });
+        $(window).trigger('node-color-change');
       });
-      $(window).trigger('node-color-change');
-    });
 
-    $('#default-node-color').change(() => $(window).trigger('node-color-change'));
+    $('#node-color')
+      .val(session.style.widgets['node-color'])
+      .change(function(e){
+        session.style.widgets['node-color'] = e.target.value;
+        $(window).trigger('node-color-change');
+      });
 
-    $('#link-color-variable').on('change', function(e){
-      let variable = e.target.value;
-      if(variable === 'None'){
-        $('#link-color-row').slideDown();
+    $('#link-color-variable')
+      .val(session.style.widgets['link-color-variable'])
+      .on('change', function(e){
+        let variable = e.target.value;
+        session.style.widgets['link-color-variable'] = variable;
+        if(variable === 'None'){
+          $('#link-color-row').slideDown();
+          $('#linkColors').remove();
+          return;
+        }
+        $('#link-color-row').slideUp();
         $('#linkColors').remove();
-        return;
-      }
-      $('#link-color-row').slideUp();
-      $('#linkColors').remove();
-      let values = [];
-      if(variable === 'origin'){
-        session.data.links.forEach(l => {
-          l.origin.forEach(o => {
-            if(!values.includes(o)) values.push(o);
+        let values = [];
+        if(variable === 'origin'){
+          session.data.links.forEach(l => {
+            l.origin.forEach(o => {
+              if(!values.includes(o)) values.push(o);
+            });
           });
-        });
-      } else {
-        session.data.links.forEach(l => {
-          if(!values.includes(l[variable])) values.push(l[variable]);
-        });
-      }
-      let table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
-      table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
-      if(_.isNumber(session.data.links[0][variable])){
-        values.sort((a, b) => a - b);
-      } else {
-        values.sort();
-      }
-      session.style.linkColors = d3.schemePaired;
-      session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
-      values.forEach((value, i) => {
-        let input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
-          .on('change', function(evt){
-            session.style.linkColors.splice(i, 1, evt.target.value);
-            session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
-            $(window).trigger('link-color-change');
+        } else {
+          session.data.links.forEach(l => {
+            if(!values.includes(l[variable])) values.push(l[variable]);
           });
-        let cell = $('<td></td>').append(input);
-        let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
-        table.append(row);
+        }
+        let table = $('<tbody id="linkColors"></tbody>').appendTo('#group-key');
+        table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
+        if(_.isNumber(session.data.links[0][variable])){
+          values.sort((a, b) => a - b);
+        } else {
+          values.sort();
+        }
+        session.style.linkColors = d3.schemePaired;
+        session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+        values.forEach((value, i) => {
+          let input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
+            .on('change', function(evt){
+              session.style.linkColors.splice(i, 1, evt.target.value);
+              session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+              $(window).trigger('link-color-change');
+            });
+          let cell = $('<td></td>').append(input);
+          let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
+          table.append(row);
+        });
+        $(window).trigger('link-color-change');
       });
+
+    $('#link-color').change(function(e){
+      session.style.widgets['link-color'] = e.target.value;
       $(window).trigger('link-color-change');
     });
-
-    $('#default-link-color').change(() => $(window).trigger('link-color-change'));
 
     $('#show_color_table').parent().click(function(){
       $('#network_group_key').fadeIn();

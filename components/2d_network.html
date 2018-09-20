@@ -802,10 +802,10 @@
   });
 
   function updateLinkColor(e){
-    let variable = $('#link-color-variable').val();
+    let variable = session.style.widgets['link-color-variable'];
     let links = svg.select('g#links').selectAll('line');
     if(variable === 'None'){
-      let color = $('#default-link-color').val();
+      let color = session.style.widgets['link-color'];
       links.attr('stroke', color);
     } else {
       links
