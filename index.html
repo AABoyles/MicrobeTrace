@@ -376,7 +376,10 @@ performance of this software.</pre>
   $(function(){
     'use strict';
 
-    $.getJSON('package.json', function(r){ $('#version').html(r.version); });
+    $.getJSON('package.json', function(r){
+      app.manifest = r;
+      $('#version').html(r.version);
+    });
 
     if(navigator.onLine){
       $('#HelpTab')
