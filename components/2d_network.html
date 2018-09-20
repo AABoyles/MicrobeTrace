@@ -511,7 +511,7 @@
       showAttributeModal(d);
     }).node().focus();
     if(d.fixed){
-      $('#pinNode').text('Unpin Node').click(e => {
+      $('#pinNode').text('Unpin Node').on('click', e => {
         d.fx = null;
         d.fy = null;
         d.fixed = false;
@@ -519,14 +519,14 @@
         hideContextMenu();
       });
     } else {
-      $('#pinNode').text('Pin Node').click(e => {
+      $('#pinNode').text('Pin Node').on('click', e => {
         d.fx = d.x;
         d.fy = d.y;
         d.fixed = true;
         hideContextMenu();
       });
     }
-    $('#hideCluster').click(e => {
+    $('#hideCluster').on('click', e => {
       session.data.clusters.find(c => c.id == d.cluster).visible = false;
       app.setLinkVisibility();
       app.setNodeVisibility();
@@ -537,7 +537,7 @@
       $('#isolateCluster').hide();
     } else {
       if(session.data.clusters.filter(c => c.visible).length === 1){
-        $('#isolateCluster').show().text('De-isolate Cluster').click(e => {
+        $('#isolateCluster').show().text('De-isolate Cluster').on('click', e => {
           session.data.clusters.forEach(c => c.visible = true);
           app.setLinkVisibility();
           app.setNodeVisibility();
@@ -545,7 +545,7 @@
           hideContextMenu();
         });
       } else {
-        $('#isolateCluster').show().text('Isolate Cluster').click(e => {
+        $('#isolateCluster').show().text('Isolate Cluster').on('click', e => {
           session.data.clusters.forEach(c => c.visible = c.id === d.cluster);
           app.setLinkVisibility();
           app.setNodeVisibility();
@@ -618,7 +618,7 @@
       .attr('opacity', l => lindices.includes(l.index) ? .1 : 1);
   }
 
-  $('#link-tooltip-variable').change(function(e){
+  $('#link-tooltip-variable').on('change', function(e){
     session.style.widgets['link-tooltip-variable'] = e.target.value;
   });
 
@@ -634,11 +634,11 @@
       .style('opacity', 1);
   }
 
-  $('#highlight-neighbors').parent().click(function(){
+  $('#highlight-neighbors').parent().on('click', function(){
     session.style.widgets['node-highlight'] = true;
   });
 
-  $('#dont-highlight-neighbors').parent().click(function(){
+  $('#dont-highlight-neighbors').parent().on('click', function(){
     session.style.widgets['node-highlight'] = false;
   });
 
@@ -705,7 +705,7 @@
     }
   }
 
-  $('#toggle_2d_network_settings').click(function(){
+  $('#toggle_2d_network_settings').on('click', function(){
     let pane = $('#network_settings_pane');
     if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
@@ -714,12 +714,12 @@
     }
   });
 
-  $('#node-label-variable').change(e => {
+  $('#node-label-variable').on('change', e => {
     session.style.widgets['node-label-variable'] = e.target.value;
     redrawNodes();
   });
 
-  $('#node-tooltip-variable').change(e => {
+  $('#node-tooltip-variable').on('change', e => {
     session.style.widgets['node-tooltip-variable'] = e.target.value;
   });
 
@@ -727,7 +727,7 @@
     session.style.widgets['node-symbol'] = e.target.value;
     redrawNodes();
   });
-  $('#node-symbol-variable').change(e => {
+  $('#node-symbol-variable').on('change', e => {
     session.style.widgets['node-symbol-variable'] = e.target.value;
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
     let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#group-key');
@@ -759,7 +759,7 @@
     session.style.widgets['node-radius'] = parseFloat(e.target.value);
     redrawNodes();
   });
-  $('#node-radius-variable').change(function(e){
+  $('#node-radius-variable').on('change', function(e){
     session.style.widgets['node-radius-variable'] = e.target.value;
     redrawNodes();
   });
@@ -784,12 +784,12 @@
     session.style.widgets['node-charge'] = v;
   });
 
-  $('#link-directed').parent().click(e => {
+  $('#link-directed').parent().on('click', e => {
     svg.select('g#links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
     session.style.widgets['link-directed'] = true;
   });
 
-  $('#link-undirected').parent().click(e => {
+  $('#link-undirected').parent().on('click', e => {
     svg.select('g#links').selectAll('line').attr('marker-end', null);
     session.style.widgets['link-directed'] = false;
   });
@@ -861,7 +861,7 @@
     scaleLinkWidth();
   });
 
-  $('#link-width-variable').change(e => {
+  $('#link-width-variable').on('change', e => {
     if(e.target.value === 'None'){
       $('#link-reciprocalthickness-row').slideUp();
     } else {
@@ -871,12 +871,12 @@
     scaleLinkWidth();
   });
 
-  $('#link-width-reciprocal').parent().click(function(){
+  $('#link-width-reciprocal').parent().on('click', function(){
     session.style.widgets['link-width-reciprocal'] = true;
     scaleLinkWidth();
   });
 
-  $('#link-width-nonreciprocal').parent().click(function(){
+  $('#link-width-nonreciprocal').parent().on('click', function(){
     session.style.widgets['link-width-reciprocal'] = false;
     scaleLinkWidth();
   });
@@ -897,7 +897,7 @@
 
   $('#network-color').on('input', e => $('#network').css('background-color', e.target.value));
 
-  $('#svg_export').click(function(){
+  $('#svg_export').on('click', function(){
     let network = document.getElementById('network');
     let content = app.unparseSVG(network);
     let filetype = $('#export-img-file-type').val();
@@ -911,9 +911,9 @@
     }
   });
 
-  $('#fitbutton').click(fit);
+  $('#fitbutton').on('click', fit);
 
-  $('#pinbutton').click(function(){
+  $('#pinbutton').on('click', function(){
     let nodes = svg
       .select('g#nodes')
       .selectAll('g.node')

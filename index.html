@@ -416,11 +416,11 @@ performance of this software.</pre>
 
     // Before anything else gets done, ask the user to accept the legal agreement
     if(!localStorage.getItem('licenseAccepted')){
-      $('#acceptAgreement').click(function(){
+      $('#acceptAgreement').on('click', function(){
         // Set that agreement in localStorage
         localStorage.setItem('licenseAccepted', new Date());
       });
-      $('#rejectAgreement').click(function(){
+      $('#rejectAgreement').on('click', function(){
         // If you don't agree, no app for you!
         //TODO: Show a message indicating you are not permitted to use the app without agreeing to the terms of use.
       });
@@ -432,9 +432,9 @@ performance of this software.</pre>
     }
 
     // Let's set up the Nav Bar
-    $('#FileTab').click(function(){ window.location.reload() });
+    $('#FileTab').on('click', function(){ window.location.reload() });
 
-    $('#save-data').click(function(){
+    $('#save-data').on('click', function(){
       var format = $('#save-file-format').val();
       var name = $('#save-file-name').val();
       var data = format == 'microbetrace' ? JSON.stringify(session) : app.exportHIVTRACE();
@@ -442,7 +442,7 @@ performance of this software.</pre>
       saveAs(blob, name + '.' + format);
     });
 
-    $('#OpenTab').change(function(e){
+    $('#OpenTab').on('change', function(e){
       if(e.target.files.length > 0){
         var startTime = Date.now();
         var parts = e.target.files[0].name.split('.');
@@ -469,11 +469,11 @@ performance of this software.</pre>
       }
     });
 
-    $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
+    $('.viewbutton').on('click', function(){ app.launchView($(this).data('href')); });
 
-    $('#FullScreenTab').click(function(){ screenfull.toggle(); });
+    $('#FullScreenTab').on('click', function(){ screenfull.toggle(); });
 
-    $('[name="NNOptions"]').change(function(){
+    $('[name="NNOptions"]').on('change', function(){
       app.updateNetwork($('#HideSingletons').is(':checked'));
     });
 
@@ -584,11 +584,11 @@ performance of this software.</pre>
       $(window).trigger('link-threshold-change');
     });
 
-    $('#hide_2d_network_statistics').parent().click(function(){
+    $('#hide_2d_network_statistics').parent().on('click', function(){
       $('#networkStatistics').fadeOut();
     });
 
-    $('#show_2d_network_statistics').parent().click(function(){
+    $('#show_2d_network_statistics').parent().on('click', function(){
       app.updateStatistics();
       $('#networkStatistics').fadeIn();
     });
@@ -602,16 +602,16 @@ performance of this software.</pre>
       });
     });
 
-    $('#hideStats').click(function(e){
+    $('#hideStats').on('click', function(e){
       $(this).parent().hide();
       $('#hide_2d_network_statistics').parent().click();
     });
 
-    $(window).click(function(){
+    $(window).on('click', function(){
       $('#hide_stats_context').hide();
     });
 
-    $('#RevealAllTab').click(function(e){
+    $('#RevealAllTab').on('click', function(e){
       session.data.clusters.forEach(function(c){ c.visible = 1; });
       app.setLinkVisibility();
       $('#ShowSingletons').parent().click(); //calls app.setNodeVisibility();
@@ -706,11 +706,11 @@ performance of this software.</pre>
       $(window).trigger('link-color-change');
     });
 
-    $('#color-table-show').parent().click(function(){
+    $('#color-table-show').parent().on('click', function(){
       $('#group-key').fadeIn();
     });
 
-    $('#color-table-hide').parent().click(function(){
+    $('#color-table-hide').parent().on('click', function(){
       $('#group-key').fadeOut();
     });
 
@@ -723,12 +723,12 @@ performance of this software.</pre>
       });
     });
 
-    $('#group-key-hide').click(function(e){
+    $('#group-key-hide').on('click', function(e){
       $(this).parent().hide();
       $('#color-table-hide').parent().click();
     });
 
-    $(window).click(function(){
+    $(window).on('click', function(){
       $('#group-key-context').hide();
     });
 
