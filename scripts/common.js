@@ -470,13 +470,16 @@ app.launchView = function(view, callback){
     if(contentItem){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
-      layout.root.contentItems[0].addChild({
+      //TODO: Find a way to add a thing to the newest stack instead of layout.root.contentItems[0]
+      var lastStack = _.last(layout.root.contentItems[0].getItemsByType('stack'));
+      if(!lastStack) lastStack = layout.root.contentItems[0];
+      lastStack.addChild({
         componentName: view,
         componentState: app.componentCache[view],
         title: app.titleize(view),
         type: 'component'
       });
-      contentItem = _.last(layout.root.contentItems[0].contentItems);
+      contentItem = _.last(lastStack.contentItems);
       contentItem.on('itemDestroyed', function(){
         var i = layout.contentItems.findIndex(function(item){
           return item === contentItem;
