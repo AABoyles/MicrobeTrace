@@ -452,9 +452,9 @@ performance of this software.</pre>
           reader.onloadend = function(out){
             session = JSON.parse(out.target.result);
             session.startTime = startTime;
-            session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
-            session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
-            session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
+            session.style.nodeSymbolMap = function(){ return session.style.widgets['node-symbol']; };
+            session.style.nodeColorMap  = function(){ return session.style.widgets['node-color' ]; };
+            session.style.linkColorMap  = function(){ return session.style.widgets['link-color' ]; };
             app.finishUp();
           };
         } else {
@@ -633,7 +633,6 @@ performance of this software.</pre>
         table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
         let values = _.uniq(app.getVisibleNodes().map(d => d[variable])).sort();
         session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-        session.style.nodeColorVariable = variable;
         values.forEach((value, i) => {
           let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
             .on('change', function(evt){
@@ -649,11 +648,11 @@ performance of this software.</pre>
       });
 
     $('#node-color')
-      .val(session.style.widgets['node-color'])
-      .change(function(e){
+      .on('change', function(e){
         session.style.widgets['node-color'] = e.target.value;
         $(window).trigger('node-color-change');
-      });
+      })
+      .val(session.style.widgets['node-color']);
 
     $('#link-color-variable')
       .val(session.style.widgets['link-color-variable'])
@@ -702,7 +701,7 @@ performance of this software.</pre>
         $(window).trigger('link-color-change');
       });
 
-    $('#link-color').change(function(e){
+    $('#link-color').on('change', function(e){
       session.style.widgets['link-color'] = e.target.value;
       $(window).trigger('link-color-change');
     });

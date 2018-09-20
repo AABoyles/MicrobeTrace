@@ -742,7 +742,7 @@
     session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
     let options = $('#node-symbol').html();
     values.forEach((v, i) => {
-      let selector = $('<select></select>').append(options).val(session.style.nodeSymbolMap(v)).change(function(e){
+      let selector = $('<select></select>').append(options).val(session.style.nodeSymbolMap(v)).on('change', function(e){
         session.style.nodeSymbols.splice(i, 1, e.target.value);
         session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
         redrawNodes();
@@ -767,13 +767,13 @@
   $(window).on('node-color-change', updateNodeColors);
 
   function updateNodeColors(){
-    let variable = session.style.nodeColorVariable;
-    let nodes = svg.select('g#nodes').selectAll('g.node').data(vnodes).select('path');
+    let variable = session.style.widgets['node-color-variable'];
+    let nodes = svg.select('g#nodes').selectAll('g.node').select('path');
     if(variable === 'None'){
-      let col = session.style.nodeColors[0];
+      let col = session.style.widgets['node-color'];
       nodes.attr('fill', col);
     } else {
-      nodes.attr('fill', d => session.style.nodeColorMap(d[variable]));
+      nodes.data(vnodes).attr('fill', d => session.style.nodeColorMap(d[variable]));
     }
   }
 
