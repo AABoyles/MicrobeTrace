@@ -130,9 +130,9 @@
       let nodeColorBy = session.style.widgets['node-color-variable'];
       if(nodeColorBy === 'None'){
         let nodeColor = session.style.widgets['node-color'];
-        graph.nodeColor(d => d.selected ? '#ff8300' : nodeColor);
+        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : nodeColor);
       } else {
-        graph.nodeColor(d => d.selected ? '#ff8300' : session.style.nodeColorMap(d[nodeColorBy]));
+        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : session.style.nodeColorMap(d[nodeColorBy]));
       }
       graph.nodeOpacity(1);
     }
@@ -260,6 +260,7 @@
       updateData();
       updateNodeColors();
     });
+    $(window).on('selected-color-change', updateNodeColors);
 
     setTimeout(function(){
       $('#3d_network_default-node-tooltip').val('id');

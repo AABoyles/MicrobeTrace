@@ -54,6 +54,8 @@ app.sessionSkeleton = function(){
         'link-length': 0.125,
         'network-friction': 0.4,
         'network-gravity': 0.05,
+        'selected-color': '#ff8300',
+        'selected-color-contrast': '#000000'
       }
     }
   };

@@ -482,7 +482,7 @@
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
         pointToLayer: function(feature, latlng){
           return L.circleMarker(latlng, Object.assign({}, style, {
-            color: feature.properties.selected ? '#ff8300' : '#ffffff',
+            color: feature.properties.selected ? session.style.widgets['selected-color'] : '#ffffff',
             fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
           }));
         }

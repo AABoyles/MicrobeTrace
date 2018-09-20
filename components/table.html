@@ -65,7 +65,7 @@
       <tbody>
         <tr v-for="entry in filteredData"
           @click="select(entry)"
-          :class="entry.selected ? 'table-active' : ''">
+          :class="entry.selected ? 'table-row-selected' : ''">
           <td v-for="key in columns">{{ entry[key] }}</td>
         </tr>
       </tbody>
@@ -146,7 +146,7 @@
           this.sortOrders[key] = this.sortOrders[key] * -1;
         },
         select: function(entry){
-          entry.selected = !entry.selected
+          entry.selected = !entry.selected;
           if($('input[name=nodelink]:checked').data('value') === 'nodes'){
             session.data.nodes.find(d => d.id === entry.id).selected = entry.selected;
             $(window).trigger('node_selected');
@@ -160,6 +160,7 @@
       table.gridColumns = $('#columns').val();
       table.gridData = JSON.parse(JSON.stringify(session.data[data_type]));
       resetTextsize();
+      resetColor();
     }
 
     function updateColumns(){
@@ -173,8 +174,6 @@
           }).join('\n')
         ).chosen({width: "100%"}).change(updateTable);
     }
-
-    updateColumns();
 
     $('#toggle_table_settings').click(function(){
       let pane = $('#table_settings_pane');
@@ -207,6 +206,16 @@
       $('#table-wrapper').css({
         'font-size': s + 'px',
         'line-height': s/10
+      });
+    }
+
+    function resetColor(){
+      $('#table-wrapper tr').css({
+        background: '#ffffff',
+        color: '#000000'
+      }).filter('.table-row-selected').css({
+        background: session.style.widgets['selected-color'],
+        color: session.style.widgets['selected-color-contrast']
       });
     }
 
@@ -249,15 +258,19 @@
       }
     });
 
+    $(window).on('node_selected', resetColor);
+    $(window).on('selected-color-change', resetColor);
+
     setTimeout(function(){
+      updateColumns();
       table = new Vue({
         el: '#table-wrapper',
         data: {
-          gridColumns: $('#columns').val(),
-          gridData: session.data[$('input[name=nodelink]:checked').data('value')]
+          gridColumns: [],
+          gridData: []
         }
       });
-      resetTextsize();
+      updateTable();
     }, 100);
   })();
   </script>
