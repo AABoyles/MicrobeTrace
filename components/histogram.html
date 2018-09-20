@@ -105,25 +105,27 @@
     $('#histogram_variable').html(
       session.data.linkFields.map(key => `<option value='links-${key}'>Links ${app.titleize(key)}</option>`).concat(
       session.data.nodeFields.map(key => `<option value='nodes-${key}'>Nodes ${app.titleize(key)}</option>`)).join('\n')
-    ).val('links-distance');
+    ).val(session.data.linkFields.includes('distance') ? 'links-distance' : 'links-tn93');
 
     function redrawHistogram(){
-      if(!$('#histogram_panel').length) return;
+      let panel = $('#histogram_panel');
+      if(!panel.length) return;
       if(plot) Plotly.purge('histogram_panel');
-      let temp = $('#histogram_variable').val().split('-');
-      let varSource = temp[0];
-      let varName = temp[1];
+      let varSource, varName, axis = 'x', nonAxis = 'y';
+      [varSource, ...varName] = $('#histogram_variable').val().split('-');
+      varName = varName.join('-');
       let visible = $('#histogram_vislinks').is(':checked');
-      let axis = $('#histogram_xAxis').is(':checked') ? 'x' : 'y';
-      let nonaxis = $('#histogram_yAxis').is(':checked') ? 'x' : 'y';
+      if($('#histogram_yAxis').is(':checked')){
+        axis = 'y', nonAxis = 'x';
+      }
       let traces = [];
       let layout = {
-        width: $('#histogram_panel').parent().width(),
-        height: $('#histogram_panel').parent().height()
+        width: panel.width(),
+        height: panel.parent().height()
       };
-      if(varSource == 'nodes' && $('#node-color-variable').val() !== 'None'){
+      if(varSource == 'nodes' && session.style.widgets['node-color-variable'] !== 'None'){
         let values = [];
-        let field = $('#node-color-variable').val();
+        let field = session.style.widgets['node-color-variable'];
         session.data.nodes.forEach(d => {
           if(!values.includes(d[field])) values.push(d[field]);
         });
@@ -133,15 +135,16 @@
             marker: {
               color: session.style.nodeColorMap(v),
             },
-            showlegend: false
+            showlegend: false,
+            hoverinfo: 'skip'
           };
-          trace[axis] = session.data.nodes.filter(d => (!visible || d.visible) && d[field] === v).map(d => d[varName]);
+          trace[axis] = (visible ? app.getVisibleNodes() : session.data.nodes).filter(d => d.visible && d[field] === v).map(d => d[varName]);
           traces.push(trace);
         });
         layout.barmode = 'stack';
-      } else if(varSource == 'links' && $('#link-color-variable').val() !== 'None'){
+      } else if(varSource == 'links' && !['None', 'origin'].includes(session.style.widgets['link-color-variable'])){
         let values = [];
-        let field = $('#link-color-variable').val();
+        let field = session.style.widgets['link-color-variable'];
         session.data.links.forEach(d => {
           if(!(d[field] in values)) values.push(d[field]);
         });
@@ -151,9 +154,10 @@
             marker: {
               color: session.style.linkColorMap(v),
             },
-            showlegend: false
+            showlegend: false,
+            hoverinfo: 'skip'
           };
-          trace[axis] = session.data.links.filter(d => (!visible || d.visible) && d[field] === v).map(d => d[varName]);
+          trace[axis] = (visible ? app.getVisibleLinks() : session.data.links).filter(d => d[field] === v).map(d => d[varName]);
           traces.push(trace);
         });
         layout.barmode = 'stack';
@@ -161,17 +165,18 @@
         let trace = {
           type: 'histogram',
           marker: {
-            color: varSource == 'nodes' ? $('#default-node-color').val() : $('#default-link-color').val(),
+            color: varSource == 'nodes' ? session.style.widgets['node-color'] : session.style.widgets['link-color'],
           },
-          showlegend: false
+          showlegend: false,
+          hoverinfo: 'skip'
         };
-        trace[axis] = session.data[varSource].filter(l => !visible || l.visible).map(l => l[varName]);
+        trace[axis] = (visible ? (varSource === 'nodes' ? app.getVisibleNodes() : app.getVisibleLinks()) : session.data[varSource]).map(l => l[varName]);
         traces = [trace];
       }
       layout[axis + 'axis'] = {
         title: app.titleize(varName)
       }
-      layout[nonaxis + 'axis'] = {
+      layout[nonAxis + 'axis'] = {
         title: 'Number of ' + app.titleize(varSource),
         type: $('#histogram_logScale').is(':checked') ? 'log' : ''
       };
@@ -214,8 +219,6 @@
     });
 
     layout.on('stateChanged', redrawHistogram);
-    setTimeout(function(){
-      redrawHistogram();
-    }, 80);
+    setTimeout(redrawHistogram, 80);
   })();
   </script>
