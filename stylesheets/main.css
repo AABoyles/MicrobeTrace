@@ -262,7 +262,7 @@ input[type="range"]{
   overflow-y: auto;
   z-index: 10000;
 }
-#network_group_key_wrapper {
+#group-key-wrapper {
   position:absolute;
   top: 73px;
   right: 10px;
@@ -273,10 +273,10 @@ input[type="range"]{
   color: #303030;
   background-color: #f5f5f5;
 }
-#network_group_key th {
+#group-key th {
   text-align: center;
 }
-#network_group_key th, td {
+#group-key th, td {
   border: 1px solid lightgray;
   padding: 4px;
 }
@@ -294,7 +294,7 @@ input[type="range"]{
 #networkStatistics td{
   border: none;
 }
-#network_group_key select {
+#group-key select {
   background: none;
   border: none;
   -webkit-appearance: none;
