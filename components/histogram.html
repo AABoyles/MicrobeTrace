@@ -185,7 +185,6 @@
         displayModeBar: false,
         scrollZoom: true
       });
-      $('rect.bg').css('fill', $('#histogram_network-color').val());
     }
 
     $('#toggle_histogram_settings').click(function(){
@@ -200,8 +199,17 @@
     $(window).on('node-color-change', redrawHistogram);
     $(window).on('link-color-change', redrawHistogram);
 
-    $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').change(redrawHistogram);
-    $('#histogram_variable, #histogram_color, #histogram_network-color').change(redrawHistogram);
+    $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').on('change', redrawHistogram);
+    $('#histogram_variable, #histogram_color').on('change', redrawHistogram);
+
+    $('#histogram_network-color').on('change', function(){
+      let col = $('#histogram_network-color').val(), contrast = app.contrastColor(col);
+      $('#histogram_panel svg.main-svg').first().css('background', col);
+      $('#histogram_panel rect.bg').css('fill', col);
+      $('#histogram_panel .xtitle, .ytitle').css('fill', contrast);
+      $('#histogram_panel .xaxislayer-above text').css('fill', contrast);
+      $('#histogram_panel .yaxislayer-above text').css('fill', contrast);
+    });
 
     $('#histogram_export').click(function(){
       let network = $('#histogram_panel .main-svg').get(0);

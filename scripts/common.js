@@ -441,6 +441,15 @@ app.geoDM = function(){
   return(links);
 };
 
+//Adapted from https://24ways.org/2010/calculating-color-contrast/
+app.contrastColor = function(hexcolor){
+	var r = parseInt(hexcolor.substr(1,2),16);
+	var g = parseInt(hexcolor.substr(3,2),16);
+	var b = parseInt(hexcolor.substr(5,2),16);
+	var yiq = (r*299)+(g*587)+(b*114);
+	return (yiq >= 128000) ? '#000000' : '#ffffff';
+};
+
 app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
