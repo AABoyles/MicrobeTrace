@@ -127,9 +127,9 @@
     }
 
     function updateNodeColors(){
-      let nodeColorBy = $('#node-color-variable').val();
+      let nodeColorBy = session.style.widgets['node-color-variable'];
       if(nodeColorBy === 'None'){
-        let nodeColor = $('#default-node-color').val();
+        let nodeColor = session.style.widgets['node-color'];
         graph.nodeColor(d => d.selected ? '#ff8300' : nodeColor);
       } else {
         graph.nodeColor(d => d.selected ? '#ff8300' : session.style.nodeColorMap(d[nodeColorBy]));
@@ -153,9 +153,9 @@
     }
 
     function updateLinkColors(){
-      let linkColorBy = $('#link-color-variable').val();
+      let linkColorBy = session.style.widgets['link-color-variable'];
       if(linkColorBy === 'None'){
-        let linkColor = $('#default-link-color').val();
+        let linkColor = session.style.widgets['link-color'];
         graph.linkColor(l => linkColor);
       } else {
         graph.linkColor(l => session.style.linkColorMap(l[linkColorBy]));
