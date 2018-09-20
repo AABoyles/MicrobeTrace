@@ -217,7 +217,10 @@
         session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
         session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
         session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
-        //if(session.layout) window.layout = new GoldenLayout(session.layout);
+        //if(session.layout){
+        //  TODO: Figure out how to preload all the views contained in session.layout
+        //  window.layout = new GoldenLayout(session.layout);
+        //}
         app.finishUp();
       };
       reader.readAsText(file);
@@ -632,7 +635,6 @@
       } else { //Distance Matrix
 
         message(`Parsing ${filename} as Distance Matrix...`);
-
         Papa.parse(file.file, {
           worker: true,
           dynamicTyping: true,
@@ -666,6 +668,7 @@
             });
             message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
             message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
+            if(session.data.linkFields.indexOf('distance') < 0) session.data.linkFields.push('distance');
             if(fileNum === files.length - 1) nextStuff();
           }
         });
@@ -747,7 +750,7 @@
         });
       });
     });
-    $('#linkSortVariable').html(
+    $('#links-filter-variable').html(
       session.data.linkFields.map(function(field){
         return '<option value="' + field + '"' + (field === session.state.linkSortVariable ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
       }).join('\n')
