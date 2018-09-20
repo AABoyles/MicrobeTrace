@@ -197,21 +197,21 @@ performance of this software.</pre>
           <div class="tab-content">
             <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="global-tab">
               <div class="form-group row">
-                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
+                <div class="col-4"><label data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
-                      <input type="radio" name="NNOptions" id="showAllLinks" autocomplete="off" checked> None
+                      <input type="radio" name="NNOptions" id="links-show-all" autocomplete="off" checked> None
                     </label>
                     <label class="btn btn-secondary">
-                      <input type="radio" name="NNOptions" id="showNNLinks" autocomplete="off"> Nearest Neighbor
+                      <input type="radio" name="NNOptions" id="links-show-nn" autocomplete="off"> Nearest Neighbor
                     </label>
                   </div>
                 </div>
               </div>
               <div class="form-group row">
-                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Filter Links on</label></div>
-                <div class="col-8"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
+                <div class="col-4"><label for="links-filter-variable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Filter Links on</label></div>
+                <div class="col-8"><select id="links-filter-variable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><a data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Filtering Threshold</a></div>
@@ -481,7 +481,7 @@ performance of this software.</pre>
       app.updateNetwork($('#HideSingletons').is(':checked'));
     });
 
-    $('#linkSortVariable').on('change', function(){
+    $('#links-filter-variable').on('change', function(){
       app.updateThresholdHistogram();
       app.updateStatistics();
       $(window).trigger('link-threshold-change');
@@ -495,7 +495,7 @@ performance of this software.</pre>
             .attr('width', width)
             .attr('height', height);
 
-      var lsv = $('#linkSortVariable').val(),
+      var lsv = $('#links-filter-variable').val(),
           n = session.data.links.length,
           max = Number.MIN_SAFE_INTEGER,
           min = Number.MAX_SAFE_INTEGER,
@@ -574,7 +574,7 @@ performance of this software.</pre>
       app.updateStatistics();
     });
 
-    $('#showNNLinks, #showAllLinks').on('change', e => {
+    $('#links-show-nn, #links-show-all').on('change', e => {
       app.updateStatistics();
       $(window).trigger('link-threshold-change');
     });
@@ -616,7 +616,7 @@ performance of this software.</pre>
     });
 
     $('#RevealAllTab').on('click', function(e){
-      session.data.clusters.forEach(function(c){ c.visible = 1; });
+      session.data.clusters.forEach(function(c){ c.visible = true; });
       app.setLinkVisibility();
       $('#ShowSingletons').parent().click(); //calls app.setNodeVisibility();
     });

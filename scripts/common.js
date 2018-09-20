@@ -251,7 +251,7 @@ app.DFS = function(node){
   if(typeof node === 'string') node = session.data.nodes.find(function(d){ return d.id === node; });
   if(typeof node === 'undefined') console.error('That\'s weird: An undefined node was referenced.');
   if(typeof node.cluster !== 'undefined') return;
-  var lsv = $('#linkSortVariable').val();
+  var lsv = $('#links-filter-variable').val();
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
   session.data.links.forEach(function(l){
@@ -296,7 +296,7 @@ app.setNodeVisibility = function(){
 };
 
 app.setLinkVisibility = function(){
-  var metric  = $('#linkSortVariable').val(),
+  var metric  = $('#links-filter-variable').val(),
       threshold = $('#link-threshold').val(),
       showNN = $('#showNNLinks').is(':checked');
   session.state.linkThreshold = threshold;
