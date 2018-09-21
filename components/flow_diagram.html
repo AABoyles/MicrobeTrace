@@ -1,4 +1,4 @@
-  <svg id="flow_diagram"></svg>
+  <svg id="flow-diagram"></svg>
 
   <div class="view_controls">
     <button type="button" id="toggle_flow_settings" class="btn btn-light btn-sm">
@@ -67,13 +67,13 @@
   (function(){
 
     function drawFlowDiagram(){
-      if(!$('svg#flow_diagram').length) return;
-      let width = $('svg#flow_diagram').parent().width() - 40,
-          height = $('svg#flow_diagram').parent().height() - 60;
+      if(!$('svg#flow-diagram').length) return;
+      let width = $('svg#flow-diagram').parent().width() - 40,
+          height = $('svg#flow-diagram').parent().height() - 60;
 
       let nodes = app.getVisibleNodes(true);
 
-      svg = d3.select('svg#flow_diagram').html(null)
+      svg = d3.select('svg#flow-diagram').html(null)
           .attr('width', width)
           .attr('height', height);
 
@@ -161,6 +161,8 @@
           .attr('stroke', '#000000');
 
       node.append('title').text(d => d.name + '\n' + format(d.value));
+
+      if(session.style.widgets['background-color']) $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
     }
 
     $('#toggle_flow_settings').click(function(){
@@ -181,7 +183,7 @@
       .change(drawFlowDiagram);
 
     $('#flow-diagram_export').click(function(){
-      let network = $('#flow_diagram')[0];
+      let network = $('#flow-diagram')[0];
       let content = app.unparseSVG(network);
       let filetype = $('#export-flow-diagram-file-type').val();
       if(filetype === 'svg'){
@@ -208,6 +210,10 @@
     });
 
     $(window).on('node_visibility', drawFlowDiagram);
+
+    $(window).on('background-color-change', function(){
+      $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
+    });
 
     layout.on('stateChanged', drawFlowDiagram);
 

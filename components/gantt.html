@@ -173,6 +173,8 @@
         });
         timestamp.attr('x', Math.min(Math.max(xc, 85), width)).text(tickFormat(x.invert(xc - margin.left)));
       });
+
+    setBackground();
   }
 
   $('#addDate').click(function(){
@@ -226,8 +228,21 @@
     }
   });
 
+  function setBackground(){
+    let col = session.style.widgets['background-color'];
+    $('#gantt-wrapper').css('background', col);
+
+    let contrast = session.style.widgets['background-color-contrast'];
+    $('#gantt-wrapper .x-axis, .y-axis').css('color', contrast);
+  }
+
+  $(window).on('background-color-change', setBackground);
+
   layout.on('stateChanged', refresh);
 
-  setTimeout(refresh, 80);
+  setTimeout(function(){
+    refresh();
+    setBackground();
+  }, 80);
 })();
   </script>

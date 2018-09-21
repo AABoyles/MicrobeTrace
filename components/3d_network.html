@@ -21,9 +21,9 @@
       <li role="presentation" class="nav-item">
         <a href="#threeDLinkConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Links</a>
       </li>
-      <li role="presentation" class="nav-item">
+      <!--li role="presentation" class="nav-item">
         <a href="#threeDNetworkConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Network</a>
-      </li>
+      </li-->
     </ul>
     <!-- Tab panes -->
     <div class="tab-content">
@@ -71,12 +71,9 @@
           <div class="col-8"><input type="range" id="3d_network_default-link-width" min=".1" value="1.6" step=".1" max="20" /></div>
         </div>
       </div>
-      <div id="threeDNetworkConfigurations" class="tab-pane fade" role="tabpanel">
-        <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background</a></div>
-          <div class="col-8"><input type="color" id="3d_network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
-        </div>
-      </div>
+      <!--div id="threeDNetworkConfigurations" class="tab-pane fade" role="tabpanel">
+        <div class="form-group row">(No options)</div>
+      </div-->
     </div>
   </div>
 
@@ -172,8 +169,7 @@
     }
 
     function updateBackground(){
-      let hex = $('#3d_network-color').val();
-      graph.backgroundColor(hex);
+      graph.backgroundColor(session.style.widgets['background-color']);
     }
 
     function updateData(){
@@ -271,6 +267,7 @@
       updateNodeColors();
     });
     $(window).on('selected-color-change', updateNodeColors);
+    $(window).on('background-color-change', updateBackground);
 
     // layout.on('stateChanged', function(){
     //   graph.d3Force('center', [0,0,0]);

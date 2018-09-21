@@ -60,10 +60,6 @@
             </div>
           </div>
         </div>
-        <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-          <div class="col-9"><input type="color" id="histogram_network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
-        </div>
       </div>
     </div>
   </div>
@@ -185,6 +181,7 @@
         displayModeBar: false,
         scrollZoom: true
       });
+      setBackground();
     }
 
     $('#toggle_histogram_settings').click(function(){
@@ -202,14 +199,18 @@
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').on('change', redrawHistogram);
     $('#histogram_variable, #histogram_color').on('change', redrawHistogram);
 
-    $('#histogram_network-color').on('change', function(){
-      let col = $('#histogram_network-color').val(), contrast = app.contrastColor(col);
+    function setBackground(){
+      let col = session.style.widgets['background-color'];
       $('#histogram_panel svg.main-svg').first().css('background', col);
       $('#histogram_panel rect.bg').css('fill', col);
+
+      let contrast = session.style.widgets['background-color-contrast'];
       $('#histogram_panel .xtitle, .ytitle').css('fill', contrast);
       $('#histogram_panel .xaxislayer-above text').css('fill', contrast);
       $('#histogram_panel .yaxislayer-above text').css('fill', contrast);
-    });
+    }
+
+    $(window).on('background-color-change', setBackground);
 
     $('#histogram_export').click(function(){
       let network = $('#histogram_panel .main-svg').get(0);

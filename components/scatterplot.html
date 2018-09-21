@@ -1,4 +1,4 @@
-  <div id="scatterplot_panel"></div>
+  <div id="scatterplot-panel"></div>
 
   <div class="view_controls">
     <button type="button" id="toggle_scatterplot_settings" class="btn btn-light btn-sm">
@@ -59,10 +59,6 @@
           <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the scatterplot be?">Color</a></div>
           <div class="col-9"><input type="color" id="scatterplot_color" class="custom-select custom-select-sm" value="#5656ff" /></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background Color</a></div>
-          <div class="col-9"><input type="color" id="scatterplot_network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
-        </div>
       </div>
     </div>
   </div>
@@ -107,13 +103,13 @@
     $('#scatterplot_yVar').val('distance');
 
     function redrawScatterplot(){
-      if(!$('#scatterplot_panel').length) return;
-      if(plot) Plotly.purge('scatterplot_panel');
+      if(!$('#scatterplot-panel').length) return;
+      if(plot) Plotly.purge('scatterplot-panel');
       let xVar = $('#scatterplot_xVar').val();
       let yVar = $('#scatterplot_yVar').val();
       let visible = $('#scatterplot_vislinks').is(':checked');
       let subset = session.data.links.filter(l => !visible || l.visible);
-      plot = Plotly.newPlot('scatterplot_panel', [{
+      plot = Plotly.newPlot('scatterplot-panel', [{
         x: subset.map(l => l[xVar]),
         y: subset.map(l => l[yVar]),
         type: 'scatter',
@@ -129,12 +125,13 @@
         xaxis: {
           title: app.titleize(xVar)
         },
-        width: $('#scatterplot_panel').parent().width(),
-        height: $('#scatterplot_panel').parent().height()
+        width: $('#scatterplot-panel').parent().width(),
+        height: $('#scatterplot-panel').parent().height()
       }, {
         displaylogo: false,
         displayModeBar: false
       });
+      setBackground();
     }
 
     $('#toggle_scatterplot_settings').click(function(){
@@ -146,17 +143,25 @@
       }
     });
 
-    $('#scatterplot_network-color').on('input', e => {
-      $('#scatterplot_panel').css('background-color', e.target.value);
-      $('rect.bg').css('fill', e.target.value);
-    });
+    function setBackground(){
+      let col = session.style.widgets['background-color'];
+      $('#scatterplot-panel svg.main-svg').first().css('background', col);
+      $('#scatterplot-panel rect.bg').css('fill', col);
+
+      let contrast = session.style.widgets['background-color-contrast'];
+      $('#scatterplot-panel .xtitle, .ytitle').css('fill', contrast);
+      $('#scatterplot-panel .xaxislayer-above text').css('fill', contrast);
+      $('#scatterplot-panel .yaxislayer-above text').css('fill', contrast);
+    }
+
+    $(window).on('background-color-change', setBackground);
 
     $('#scatterplot_alllinks, #scatterplot_vislinks, #scatterplot_logScale, #scatterplot_linearScale').change(redrawScatterplot);
     $('#scatterplot_xVar, #scatterplot_yVar, #scatterplot_color').change(redrawScatterplot);
 
     $('#scatterplot_export').click(function(){
-      let network = $('#scatterplot_panel .main-svg').get(0);
-      $('#scatterplot_panel .main-svg .infolayer').detach().appendTo(network);
+      let network = $('#scatterplot-panel .main-svg').get(0);
+      $('#scatterplot-panel .main-svg .infolayer').detach().appendTo(network);
       let content = app.unparseSVG(network);
       let filetype = $('#export-scatterplot-file-type').val();
       if(filetype === 'svg'){

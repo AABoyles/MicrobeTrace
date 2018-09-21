@@ -1,4 +1,4 @@
-  <div id="heatmap_panel"></div>
+  <div id="heatmap-panel"></div>
 
   <div class="view_controls">
     <button type="button" id="toggle_heatmap_settings" class="btn btn-light btn-sm">
@@ -107,8 +107,8 @@
     );
 
     function redrawHeatmap(){
-      if(!$('#heatmap_panel').length) return;
-      if(plot) Plotly.purge('heatmap_panel');
+      if(!$('#heatmap-panel').length) return;
+      if(plot) Plotly.purge('heatmap-panel');
       if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
         return alertify.error('No distance matrix could be found!');
       }
@@ -135,7 +135,7 @@
         config.ticks = '';
       }
 
-      plot = Plotly.newPlot('heatmap_panel', [{
+      plot = Plotly.newPlot('heatmap-panel', [{
         x: xLabels,
         y: yLabels,
         z: data,
@@ -148,12 +148,13 @@
       }], {
         xaxis: config,
         yaxis: config,
-        width: $('#heatmap_panel').parent().width(),
-        height: $('#heatmap_panel').parent().height()
+        width: $('#heatmap-panel').parent().width(),
+        height: $('#heatmap-panel').parent().height()
       }, {
         displaylogo: false,
         displayModeBar: false
       });
+      setBackground();
     }
 
     $('#toggle_heatmap_settings').click(function(){
@@ -169,8 +170,8 @@
       let filetype = $('#export-heatmap-file-type').val();
       let name = $('#export-heatmap-file-name').val();
       if(filetype === 'png'){
-        let network = $('#heatmap_panel .main-svg').get(0);
-        $('#heatmap_panel .main-svg .infolayer').detach().appendTo(network);
+        let network = $('#heatmap-panel .main-svg').get(0);
+        $('#heatmap-panel .main-svg .infolayer').detach().appendTo(network);
         let content = app.unparseSVG(network);
         app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
           saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
@@ -188,6 +189,18 @@
     $('input[type="color"]').change(redrawHeatmap);
     $('#heatmap_invertX, #heatmap_invertY').change(redrawHeatmap);
 
+    function setBackground(){
+      let col = session.style.widgets['background-color'];
+      $('#heatmap-panel svg.main-svg').first().css('background', col);
+      $('#heatmap-panel rect.bg').css('fill', col);
+
+      let contrast = session.style.widgets['background-color-contrast'];
+      $('#heatmap-panel .xtitle, .ytitle').css('fill', contrast);
+      $('#heatmap-panel .xaxislayer-above text').css('fill', contrast);
+      $('#heatmap-panel .yaxislayer-above text').css('fill', contrast);
+    }
+
+    $(window).on('background-color-change', setBackground);
 
     layout.on('stateChanged', redrawHeatmap);
     setTimeout(redrawHeatmap, 80);

@@ -155,10 +155,6 @@
         <div class="col-4"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
         <div class="col-8"><input type="range" id="node-charge" min="0" max="400" value="200" /></div>
       </div>
-      <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="What color should the background be?">Background</label></div>
-        <div class="col-8"><input type="color" id="network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
-      </div>
     </div>
   </div>
 </div>
@@ -895,9 +891,9 @@
     session.style.widgets['network-gravity'] = v;
   });
 
-  $('#network-color')
-    .on('input', e => $('#network').css('background-color', e.target.value))
-    .on('change', e => session.style.widgets['network-color'] = e.target.value);
+  $(window).on('background-color-change', function(){
+    $('#network').css('background-color', session.style.widgets['background-color']);
+  });
 
   $('#svg_export').on('click', function(){
     let network = document.getElementById('network');
@@ -953,7 +949,7 @@
   layout.on('stateChanged', function(){ setTimeout(fit, 1200); });
 
   if(session.files.length > 1) $('#link-color-variable').val('origin').change();
-  if(session.style.widgets['network-color']) $('#network').css('background-color', session.style.widgets['network-color']);
+  if(session.style.widgets['background-color']) $('#network').css('background-color', session.style.widgets['background-color']);
   updateVNodes();
   render();
 })();

@@ -105,8 +105,6 @@
       update();
     });
 
-    update();
-
     $('#sequences_export').click(function(){
       let type = $('#export-sequences-file-type').val();
       if(type === 'fasta'){
@@ -130,5 +128,15 @@
         pane.show(0, function(){ pane.animate({left: '0px'}); });
       }
     });
+
+    function setBackground(){
+      let col = session.style.widgets['background-color'];
+      $('#sequences_panel').css('background', col);
+    }
+
+    $(window).on('background-color-change', setBackground);
+
+    update();
+    setBackground();
   })();
   </script>

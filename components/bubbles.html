@@ -64,6 +64,7 @@
   function reset(){
     let bv = $('#bubble-view');
     if(!bv.length) return;
+    bv.css('background-color', session.style.widgets['background-color']);
     width = bv.parent().width();
     height = bv.parent().height();
     center = { x: width / 2, y: height / 2 };
@@ -218,6 +219,7 @@
   $(window).on('link-threshold-change', reset);
   $(window).on('node_visibility', reset);
   $(window).on('node_selected', reset);
+  $(window).on('background-color-change', reset);
   layout.on('stateChanged', reset);
 })();
 </script>
