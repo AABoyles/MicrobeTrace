@@ -1,4 +1,4 @@
-  <div id="3d-network"></div>
+<div id="3d-network"></div>
 
   <div class="view_controls">
     <button type="button" id="toggle_3d_network_settings" class="btn btn-light btn-sm" data-toggle="button" title="3D Network Settings">
@@ -21,9 +21,9 @@
       <li role="presentation" class="nav-item">
         <a href="#threeDLinkConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Links</a>
       </li>
-      <li role="presentation" class="nav-item">
+      <!--li role="presentation" class="nav-item">
         <a href="#threeDNetworkConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Network</a>
-      </li>
+      </li-->
     </ul>
     <!-- Tab panes -->
     <div class="tab-content">
@@ -60,7 +60,7 @@
         </div>
         <div class="form-group row">
           <div class="col-4"><a href="#" data-toggle="tooltip" title="How transparent should the links be?">Transparency</a></div>
-          <div class="col-8"><input type="range" id="3d_network_default-link-opacity" min="0" max="1" value="0.5" step="0.01" /></div>
+          <div class="col-8"><input type="range" id="3d_network_default-link-opacity" min="0" max="1" value="0" step="0.01" /></div>
         </div>
         <!--div class="form-group row">
           <div class="col-4"><a href="#" data-toggle="tooltip" title="Size link in proportion to which variable?">Width By</a></div>
@@ -68,15 +68,12 @@
         </div-->
         <div class="form-group row">
           <div class="col-4"><a href="#" data-toggle="tooltip" title="How wide should the links be?">Width</a></div>
-          <div class="col-8"><input type="range" id="3d_network_default-link-width" min=".1" value="4" step=".1" max="20" /></div>
+          <div class="col-8"><input type="range" id="3d_network_default-link-width" min=".1" value="1.6" step=".1" max="20" /></div>
         </div>
       </div>
-      <div id="threeDNetworkConfigurations" class="tab-pane fade" role="tabpanel">
-        <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What color would you like the background to be?">Background</a></div>
-          <div class="col-8"><input type="color" id="3d_network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
-        </div>
-      </div>
+      <!--div id="threeDNetworkConfigurations" class="tab-pane fade" role="tabpanel">
+        <div class="form-group row">(No options)</div>
+      </div-->
     </div>
   </div>
 
@@ -111,6 +108,7 @@
 
   <script src="vendor/3d-force-graph.min.js"></script>
   <script>
+
   (function(){
     let links = [];
     let nodes = [];
@@ -127,12 +125,12 @@
     }
 
     function updateNodeColors(){
-      let nodeColorBy = $('#nodeColorVariable').val();
+      let nodeColorBy = session.style.widgets['node-color-variable'];
       if(nodeColorBy === 'None'){
-        let nodeColor = $('#default-node-color').val();
-        graph.nodeColor(d => nodeColor);
+        let nodeColor = session.style.widgets['node-color'];
+        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : nodeColor);
       } else {
-        graph.nodeColor(d => session.style.nodeColorMap(d[nodeColorBy]));
+        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : session.style.nodeColorMap(d[nodeColorBy]));
       }
       graph.nodeOpacity(1);
     }
@@ -153,9 +151,9 @@
     }
 
     function updateLinkColors(){
-      let linkColorBy = $('#linkColorVariable').val();
+      let linkColorBy = session.style.widgets['link-color-variable'];
       if(linkColorBy === 'None'){
-        let linkColor = $('#default-link-color').val();
+        let linkColor = session.style.widgets['link-color'];
         graph.linkColor(l => linkColor);
       } else {
         graph.linkColor(l => session.style.linkColorMap(l[linkColorBy]));
@@ -171,15 +169,21 @@
     }
 
     function updateBackground(){
-      let hex = $('#3d_network-color').val();
-      graph.backgroundColor(hex);
+      graph.backgroundColor(session.style.widgets['background-color']);
     }
 
     function updateData(){
       let newNodes = app.getVisibleNodes(true);
       newNodes.forEach(d => {
         let match = nodes.find(d2 => d.id == d2.id);
-        if(match) Object.assign(d, match);
+        if(match){
+          d.x = match.x;
+          d.y = match.y;
+          d.z = match.z;
+          d.vx = match.vx;
+          d.vy = match.vy;
+          d.vz = match.vz;
+        }
       });
       nodes = newNodes;
       links = app.getVisibleLinks(true);
@@ -201,7 +205,14 @@
       updateData();
     }
 
-    $('#toggle_3d_network_settings').click(function(){
+    // graph.onNodeClick(function(node){
+    //   let model = session.data.nodes.find(d => node.id = d.id);
+    //   if(!model) return;
+    //   model.selected = !model.selected;
+    //   $(window).trigger('node_selected');
+    // });
+
+    $('#toggle_3d_network_settings').on('click', function(){
       let pane = $('#3d_network_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
@@ -220,34 +231,52 @@
         });
       }
     }
-    $('#3d_network_export').click(function(){
+    $('#3d_network_export').on('click', function(){
       downloads = 0;
       a = requestAnimationFrame(download);
     });
 
-    $('#reload-3d-network').click(updateGraph);
+    function clearCoords(){
+      nodes.forEach(d => {
+        delete d.x;
+        delete d.y;
+        delete d.z;
+      });
+      updateGraph();
+    }
 
-    $(window).on('nodeColorChange', updateNodeColors);
-    $(window).on('linkColorChange', updateLinkColors);
+    $('#reload-3d-network').on('click', clearCoords);
 
-    $('#3d_network_default-node-tooltip').change(updateNodeTooltip);
-    $('#3d_network_node-radius-variable, #3d_network_default-node-radius').change(updateNodeSizes);
+    $(window).on('node-color-change', updateNodeColors);
+    $(window).on('link-color-change', updateLinkColors);
 
-    $('#3d_network_default-link-tooltip').change(updateLinkTooltip);
-    $('#3d_network_default-link-opacity').change(updateLinkOpacity);
-    $('#3d_network_default-link-width').change(updateLinkWidth);
+    $('#3d_network_default-node-tooltip').on('change', updateNodeTooltip);
+    $('#3d_network_node-radius-variable, #3d_network_default-node-radius').on('change', updateNodeSizes);
 
-    $('#3d_network-color').change(updateBackground);
+    $('#3d_network_default-link-tooltip').on('change', updateLinkTooltip);
+    $('#3d_network_default-link-opacity').on('change', updateLinkOpacity);
+    $('#3d_network_default-link-width').on('change', updateLinkWidth);
 
-    $('#linkSortVariable, #default-link-threshold').change(updateData);
+    $('#3d_network-color').on('change', updateBackground);
+
+    $(window).on('link-threshold-change', updateData);
 
     $(window).on('node_visibility', updateData);
+    $(window).on('node_selected', function(){
+      updateData();
+      updateNodeColors();
+    });
+    $(window).on('selected-color-change', updateNodeColors);
+    $(window).on('background-color-change', updateBackground);
+
+    // layout.on('stateChanged', function(){
+    //   graph.d3Force('center', [0,0,0]);
+    //   setTimeout(clearCoords, 200);
+    // });
 
     setTimeout(function(){
       $('#3d_network_default-node-tooltip').val('id');
       updateGraph();
     }, 100);
-
-    $('#loadingInformationModal').modal('hide');
   })();
   </script>

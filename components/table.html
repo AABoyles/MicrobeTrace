@@ -65,7 +65,7 @@
       <tbody>
         <tr v-for="entry in filteredData"
           @click="select(entry)"
-          :class="entry.selected ? 'table-active' : ''">
+          :class="entry.selected ? 'table-row-selected' : ''">
           <td v-for="key in columns">{{ entry[key] }}</td>
         </tr>
       </tbody>
@@ -105,9 +105,9 @@
 
   <script>
   (function(){
-    var table;
+    let table;
 
-    var meta = ['index', 'padding', 'selected', 'visible', 'nn'];
+    let meta = ['index', 'padding', 'selected', 'visible', 'nn'];
 
     Vue.component('mt-table', {
       template: '#mt-table-template',
@@ -116,7 +116,7 @@
         columns: Array
       },
       data: function(){
-        var sortOrders = {};
+        let sortOrders = {};
         this.columns.forEach(function(key){
           sortOrders[key] = 1;
         });
@@ -127,9 +127,9 @@
       },
       computed: {
         filteredData: function(){
-          var sortKey = this.sortKey;
-          var order = this.sortOrders[sortKey] || 1;
-          var data = this.data.filter(d => d.visible);
+          let sortKey = this.sortKey;
+          let order = this.sortOrders[sortKey] || 1;
+          let data = this.data.filter(d => d.visible);
           if(sortKey){
             data = data.slice().sort(function(a, b){
               if(a.selected && !b.selected) return -1;
@@ -146,8 +146,9 @@
           this.sortOrders[key] = this.sortOrders[key] * -1;
         },
         select: function(entry){
-          entry.selected = !entry.selected
+          entry.selected = !entry.selected;
           if($('input[name=nodelink]:checked').data('value') === 'nodes'){
+            session.data.nodes.find(d => d.id === entry.id).selected = entry.selected;
             $(window).trigger('node_selected');
           }
         }
@@ -155,15 +156,15 @@
     });
 
     function updateTable(){
-      var data_type = $('input[name=nodelink]:checked').data('value');
-      var colsToKeep = $('#columns').val();
+      let data_type = $('input[name=nodelink]:checked').data('value');
       table.gridColumns = $('#columns').val();
-      table.gridData = session.data[data_type];
+      table.gridData = JSON.parse(JSON.stringify(session.data[data_type]));
       resetTextsize();
+      resetColor();
     }
 
     function updateColumns(){
-      var type = $('input[name=nodelink]:checked').data('value').slice(0,-1);
+      let type = $('input[name=nodelink]:checked').data('value').slice(0,-1);
       $('#columns')
         .chosen('destroy')
         .html(
@@ -174,10 +175,8 @@
         ).chosen({width: "100%"}).change(updateTable);
     }
 
-    updateColumns();
-
     $('#toggle_table_settings').click(function(){
-      var pane = $('#table_settings_pane');
+      let pane = $('#table_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -186,8 +185,8 @@
     });
 
     $('#tiltHeaders').on('input', function(e){
-      var theta = $(this).val();
-      var h = $('th:first').width() * Math.sin(Math.abs(theta) * Math.PI / 180);
+      let theta = $(this).val();
+      let h = $('th:first').width() * Math.sin(Math.abs(theta) * Math.PI / 180);
       $('th').css({
         'transform': `rotate(${-theta}deg)`,
         'border-bottom': '0px',
@@ -203,10 +202,20 @@
     });
 
     function resetTextsize(){
-      var s = $('#font-size-slider').val();
+      let s = $('#font-size-slider').val();
       $('#table-wrapper').css({
         'font-size': s + 'px',
         'line-height': s/10
+      });
+    }
+
+    function resetColor(){
+      $('#table-wrapper tr').css({
+        background: '#ffffff',
+        color: '#000000'
+      }).filter('.table-row-selected').css({
+        background: session.style.widgets['selected-color'],
+        color: session.style.widgets['selected-color-contrast']
       });
     }
 
@@ -219,18 +228,14 @@
 
     $('#font-size-slider').on('input', resetTextsize);
 
-    $('#linkSortVariable, #default-link-threshold').on('input', e => {
-      if($('input[name=nodelink]:checked').data('value') === 'clusters'){
-        updateTable();
-      }
-    });
+    $(window).on('link-threshold-change', updateTable);
 
     $('#table_export').click(function(){
-      var format = $('#export-table-file-type').val();
-      var data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
-      var name = $('#export-table-file-name').val();
+      let format = $('#export-table-file-type').val();
+      let data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
+      let name = $('#export-table-file-name').val();
       if(format === 'csv'){
-        var blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
+        let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
         saveAs(blob, name + '.' + format);
       } else if(format === 'xlsx'){
         let headers = session.data[$('input[name=nodelink]:checked').data('value').slice(0,-1) + 'Fields'];
@@ -248,22 +253,24 @@
         XLSX.utils.book_append_sheet(wb, ws, name);
         XLSX.writeFile(wb, name + '.' + format);
       } else {
-        var blob = new Blob([JSON.stringify(data)], {type: 'application/json;charset=utf-8'});
+        let blob = new Blob([JSON.stringify(data)], {type: 'application/json;charset=utf-8'});
         saveAs(blob, name + '.' + format);
       }
     });
 
+    $(window).on('node_selected', resetColor);
+    $(window).on('selected-color-change', resetColor);
+
     setTimeout(function(){
+      updateColumns();
       table = new Vue({
         el: '#table-wrapper',
         data: {
-          gridColumns: $('#columns').val(),
-          gridData: session.data[$('input[name=nodelink]:checked').data('value')]
+          gridColumns: [],
+          gridData: []
         }
       });
-      resetTextsize();
+      updateTable();
     }, 100);
-
-    $('#loadingInformationModal').modal('hide');
   })();
   </script>

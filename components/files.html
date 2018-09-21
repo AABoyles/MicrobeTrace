@@ -134,8 +134,8 @@
               </div>
               <div class="col-8">
                 <select class="custom-select custom-select-sm" id="defaultDistanceMetric">
-                  <option selected>TN93</option>
-                  <option>SNPs</option>
+                  <option value="tn93" selected>TN93</option>
+                  <option value="snps">SNPs</option>
                 </select>
               </div>
             </div>
@@ -202,13 +202,30 @@
     evt.preventDefault();
     var files = evt.originalEvent.dataTransfer.files;
     var n = files.length;
-    for(var i = 0; i < n; i++){ addFileToTable(files[i]); }
+    for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
     $('#main-submit').css('display', 'inline').focus();
   });
 
   function addFileToTable(file){
     session.files.push(file);
     var extension = file.name.split('.').pop().slice(0,3).toLowerCase();
+    if(extension === 'mic'){
+      var reader = new FileReader();
+      reader.onloadend = function(out){
+        session = JSON.parse(out.target.result);
+        session.startTime = Date.now();
+        session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
+        session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
+        session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
+        //if(session.layout){
+        //  TODO: Figure out how to preload all the views contained in session.layout
+        //  window.layout = new GoldenLayout(session.layout);
+        //}
+        app.finishUp();
+      };
+      reader.readAsText(file);
+      return;
+    }
     var isFasta = (extension === 'fas');
     var isXL = (extension === 'lsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');
@@ -320,16 +337,17 @@
   }
 
   $('#distanceMetrics').chosen({width: "100%"}).change(function(){
-    $('#defaultDistanceMetric').html($(this).val().map((v, i) => {
+    $('#defaultDistanceMetric').html($(this).val().map(function(v, i){
       return '<option value="' + v.toLowerCase() + '"' + (i == 0 ? ' selected': '') + '>' + v + '</option>';
     }).join('\n'));
   });
 
-  $('#defaultDistanceMetric').change(function(){
-    if($(this).val() == 'snps'){
+  $('#defaultDistanceMetric').change(function(e){
+    session.state.linkSortVariable = e.target.value;
+    if(e.target.value == 'snps'){
       $('#defaultDistanceThreshold')
         .attr('step', 1)
-        .val(1);
+        .val(16);
     } else {
       $('#defaultDistanceThreshold')
         .attr('step', 0.001)
@@ -414,15 +432,15 @@
   );
 
   function message(msg){
-    session.messages.push(msg);
-    $('#loadingInformation').html(session.messages.join('<br />'));
+    messages.push(msg);
+    $('#loadingInformation').html(messages.join('<br />'));
   }
 
-  var messageTimeout;
+  var messageTimeout, messages = [];
 
   $('#main-submit').click(function(e){
+    messages = [];
     session.startTime = Date.now();
-    session.messages = [];
     session.data = app.dataSkeleton();
     $('#loadingInformation').html('');
 
@@ -492,7 +510,7 @@
             target: '' + link[file.field2],
             distance: file.field3 === 'None' ? 0 : _.isNaN(parseFloat(link[file.field3])) ? 0 : parseFloat(link[file.field3]),
             origin: [filename],
-            visible: 1
+            visible: true
           }, link));
         }
 
@@ -617,7 +635,6 @@
       } else { //Distance Matrix
 
         message(`Parsing ${filename} as Distance Matrix...`);
-
         Papa.parse(file.file, {
           worker: true,
           dynamicTyping: true,
@@ -651,6 +668,7 @@
             });
             message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
             message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
+            if(session.data.linkFields.indexOf('distance') < 0) session.data.linkFields.push('distance');
             if(fileNum === files.length - 1) nextStuff();
           }
         });
@@ -660,7 +678,7 @@
     function nextStuff(){
       if(!anySequences){
         $('.showForSequence').hide();
-        finishUp();
+        app.finishUp();
         return;
       }
       $('.showForSequence').show();
@@ -710,7 +728,7 @@
                 $('.showForNN').show();
               });
             });
-            finishUp();
+            app.finishUp();
           }
         };
       }
@@ -721,59 +739,61 @@
         });
       }
     };
+  });
 
-    var finishUp = function(){
-      ['node', 'link'].forEach(v => {
-        session.data[v+'s'].forEach(d => {
-          session.data[v+'Fields'].forEach(field => {
-            if(!(field in d)) d[field] = null;
-          });
+  app.finishUp = function(){
+    clearTimeout(messageTimeout);
+    ['node', 'link'].forEach(v => {
+      session.data[v+'s'].forEach(d => {
+        session.data[v+'Fields'].forEach(field => {
+          if(!(field in d)) d[field] = null;
         });
       });
-      clearTimeout(messageTimeout);
-      $('#linkSortVariable').html(
-        session.data.linkFields.map(function(field){
-          return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
-        }).join('\n')
-      );
-      $('#nodeColorVariable').html(
-        '<option selected>None</option>' +
-        session.data.nodeFields.map(function(field){
-          return '<option value="' + field + '">' + app.titleize(field) + '</option>';
-        }).join('\n')
-      );
-      $('#linkColorVariable').html(
-        '<option>None</option>' +
-        session.data.linkFields.map(function(field){
-          return '<option value="' + field + '">' + app.titleize(field) + '</option>';
-        }).join('\n')
-      );
-      try {
-        app.updateThresholdHistogram();
-      } catch(error){
-        console.error(error);
-        $('#loadingInformationModal').modal('hide');
-        alertify
-          .error('Something went wrong! Please start a new session and try again.')
-          .delay(0)
-          .ondismiss(function(){
-            window.location.reload();
-          });
-      }
-      app.setLinkVisibility();
-      app.setNodeVisibility();
-      app.tagClusters();
-      app.computeDegree();
-      app.updateStatistics();
-      $('#networkStatistics').fadeIn();
-      session.loadTime = Date.now() - session.startTime;
-      console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
-      app.launchView($('#defaultView').val(), function(){
-        layout.contentItems.find(item => item.componentName === 'files').remove();
-        $('.hideForHIVTrace').css('display', 'flex');
-        $('#loadingInformationModal').modal('hide');
+    });
+    $('#links-filter-variable').html(
+      session.data.linkFields.map(function(field){
+        return '<option value="' + field + '"' + (field === session.state.linkSortVariable ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+      }).join('\n')
+    );
+    $('#node-color-variable').html(
+      '<option selected>None</option>' +
+      session.data.nodeFields.map(function(field){
+        return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+      }).join('\n')
+    );
+    $('#link-color-variable').html(
+      '<option>None</option>' +
+      session.data.linkFields.map(function(field){
+        return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+      }).join('\n')
+    );
+    try {
+      app.updateThresholdHistogram();
+    } catch(error){
+      console.error(error);
+      $('#loadingInformationModal').modal('hide');
+      alertify
+      .error('Something went wrong! Please start a new session and try again.')
+      .delay(0)
+      .ondismiss(function(){
+        window.location.reload();
       });
-    };
-  });
+    }
+    app.setLinkVisibility();
+    app.setNodeVisibility();
+    app.tagClusters();
+    app.computeDegree();
+    app.updateStatistics();
+    $('#networkStatistics').fadeIn();
+    session.loadTime = Date.now() - session.startTime;
+    console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
+    app.launchView($('#defaultView').val(), function(){
+      layout.contentItems.find(item => item.componentName === 'files').remove();
+      $('.hideForHIVTrace').css('display', 'flex');
+      setTimeout(function(){
+        $('#loadingInformationModal').modal('hide');
+      }, 1200);
+    });
+  };
 })();
 </script>

@@ -9,8 +9,8 @@ app.dataSkeleton = function(){
     clusters: [],
     distance_matrix: {},
     trees: {},
-    nodeFields: ['id', 'index', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin', 'score'],
-    linkFields: ['id', 'index', 'source', 'target', 'distance', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
+    nodeFields: ['id', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
+    linkFields: ['index', 'source', 'target', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
     clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected'],
     reference: 'CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC'
   };
@@ -22,14 +22,43 @@ app.sessionSkeleton = function(){
     data: app.dataSkeleton(),
     state: {
       linkThreshold: 0.015,
+      linkSortVariable: 'tn93',
       time: 0
     },
-    messages: [],
     style: {
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
-      nodeColorMap: function(){ return session.style.nodeColors[0]; },
+      nodeColorMap: function(){ return session.style.widgets['node-color']; },
+      nodeSymbols: ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'],
+      nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; },
       linkColors: d3.schemePaired,
-      linkColorMap: function(){ return session.style.linkColors[0]; }
+      linkColorMap: function(){ return session.style.widgets['link-colors']; },
+      widgets: {
+        'node-label-variable': 'None',
+        'node-tooltip-variable': 'None',
+        'node-symbol': 'symbolCircle',
+        'node-symbol-variable': 'None',
+        'node-radius': 250,
+        'node-radius-variable': 'None',
+        'node-charge': 200,
+        'node-highlight': false,
+        'node-color': '#1f77b4',
+        'node-color-variable': 'None',
+        'link-color': '#a6cee3',
+        'link-color-variable': 'None',
+        'link-tooltip-variable': 'None',
+        'link-opacity': 0,
+        'link-width': 3,
+        'link-width-variable': 'None',
+        'link-width-reciprocal': true,
+        'link-directed': false,
+        'link-length': 0.125,
+        'network-friction': 0.4,
+        'network-gravity': 0.05,
+        'selected-color': '#ff8300',
+        'selected-color-contrast': '#000000',
+        'background-color': '#ffffff',
+        'background-color-contrast': '#000000'
+      }
     }
   };
 };
@@ -37,13 +66,11 @@ app.sessionSkeleton = function(){
 app.defaultNode = function(){
   return {
     id: '',
-    index: session.data.nodes.length,
     padding: 0,
-    selected: 0,
+    selected: false,
     cluster: 1,
-    visible: 1,
+    visible: true,
     degree: 0,
-    score: 0,
     seq: '',
     origin: []
   }
@@ -69,7 +96,7 @@ app.defaultLink = function(){
     index: session.data.links.length,
     tn93: 1,
     snps: Number.INFINITY,
-    visible: 0,
+    visible: false,
     cluster: 1,
     origin: []
   }
@@ -113,7 +140,7 @@ app.parseHIVTrace = function(hivtrace){
       'target': '' + link.sequences[1],
       'distance': parseFloat(link.length),
       'origin': ['HIVTRACE Import'],
-      'visible': 1
+      'visible': true
     });
   }
 };
@@ -212,8 +239,8 @@ app.tagClusters = function(){
         sum_distances: 0,
         links_per_node: 0,
         mean_genetic_distance: undefined,
-        visible: 1,
-        selected: 0
+        visible: true,
+        selected: false
       });
       app.DFS(node);
     }
@@ -225,7 +252,7 @@ app.DFS = function(node){
   if(typeof node === 'string') node = session.data.nodes.find(function(d){ return d.id === node; });
   if(typeof node === 'undefined') console.error('That\'s weird: An undefined node was referenced.');
   if(typeof node.cluster !== 'undefined') return;
-  var lsv = $('#linkSortVariable').val();
+  var lsv = $('#links-filter-variable').val();
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
   session.data.links.forEach(function(l){
@@ -270,8 +297,8 @@ app.setNodeVisibility = function(){
 };
 
 app.setLinkVisibility = function(){
-  var metric  = $('#linkSortVariable').val(),
-      threshold = $('#default-link-threshold').val(),
+  var metric  = $('#links-filter-variable').val(),
+      threshold = $('#link-threshold').val(),
       showNN = $('#showNNLinks').is(':checked');
   session.state.linkThreshold = threshold;
   session.data.links.forEach(function(link){
@@ -418,6 +445,15 @@ app.geoDM = function(){
   return(links);
 };
 
+//Adapted from https://24ways.org/2010/calculating-color-contrast/
+app.contrastColor = function(hexcolor){
+	var r = parseInt(hexcolor.substr(1,2),16);
+	var g = parseInt(hexcolor.substr(3,2),16);
+	var b = parseInt(hexcolor.substr(5,2),16);
+	var yiq = (r*299)+(g*587)+(b*114);
+	return (yiq >= 128000) ? '#000000' : '#ffffff';
+};
+
 app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
@@ -438,13 +474,16 @@ app.launchView = function(view, callback){
     if(contentItem){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
-      layout.root.contentItems[0].addChild({
+      //TODO: Find a way to add a thing to the newest stack instead of layout.root.contentItems[0]
+      var lastStack = _.last(layout.root.contentItems[0].getItemsByType('stack'));
+      if(!lastStack) lastStack = layout.root.contentItems[0];
+      lastStack.addChild({
         componentName: view,
         componentState: app.componentCache[view],
         title: app.titleize(view),
         type: 'component'
       });
-      contentItem = _.last(layout.root.contentItems[0].contentItems);
+      contentItem = _.last(lastStack.contentItems);
       contentItem.on('itemDestroyed', function(){
         var i = layout.contentItems.findIndex(function(item){
           return item === contentItem;
@@ -472,6 +511,16 @@ app.launchView = function(view, callback){
       }, 250);
     });
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
+    for(let id in session.style.widgets){
+      $id = $('#' + id);
+      if($id.length > 0){
+        if(['radio', 'checkbox'].includes($id[0].type)){
+          if(session.style.widgets[id]) $id.click();
+        } else {
+          $id.val(session.style.widgets[id]);
+        }
+      }
+    }
     contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     if(callback){
       callback(contentItem);
@@ -614,7 +663,7 @@ app.exportHIVTRACE = function(){
       'Edges': links.map(function(l){ return {
         'attributes': ['BULK'],
         'directed': false,
-        'length': l.distance,
+        'length': l[session.state.linkSortVariable],
         'removed': false,
         'sequences': [l.source, l.target],
         'source': session.data.nodes.findIndex(function(d){ return d.id === l.source; }),

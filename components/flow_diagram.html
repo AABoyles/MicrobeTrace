@@ -1,4 +1,4 @@
-  <svg id="flow_diagram"></svg>
+  <svg id="flow-diagram"></svg>
 
   <div class="view_controls">
     <button type="button" id="toggle_flow_settings" class="btn btn-light btn-sm">
@@ -67,42 +67,44 @@
   (function(){
 
     function drawFlowDiagram(){
-      if(!$('svg#flow_diagram').length) return;
-      var width = $('svg#flow_diagram').parent().width() - 40,
-          height = $('svg#flow_diagram').parent().height() - 60;
+      if(!$('svg#flow-diagram').length) return;
+      let width = $('svg#flow-diagram').parent().width() - 40,
+          height = $('svg#flow-diagram').parent().height() - 60;
 
-      svg = d3.select('svg#flow_diagram').html(null)
+      let nodes = app.getVisibleNodes(true);
+
+      svg = d3.select('svg#flow-diagram').html(null)
           .attr('width', width)
           .attr('height', height);
 
-      var format = d3.format(',.0f'),
+      let format = d3.format(',.0f'),
           color = d3.scaleOrdinal(d3.schemeCategory10);
 
-      var sankey = d3.sankey()
+      let sankey = d3.sankey()
           .nodeWidth(15)
           .nodePadding(10)
           .extent([[1, 1], [width - 1, height - 6]]);
 
-      var link = svg.append('g')
+      let link = svg.append('g')
           .attr('class', 'links')
           .attr('fill', 'none')
           .attr('stroke', '#000000')
           .attr('stroke-opacity', 0.2)
         .selectAll('path');
 
-      var node = svg.append('g')
+      let node = svg.append('g')
           .attr('class', 'nodes')
           .attr('font-family', 'sans-serif')
           .attr('font-size', 10)
         .selectAll('g');
 
-      var onlyUnique = (value, index, self) => self.indexOf(value) === index;
+      let onlyUnique = (value, index, self) => self.indexOf(value) === index;
 
       wrapper = {links: []};
       source_variable = $( '#flow_source_side').val();
-      source_values  = session.data.nodes.map(n => n[source_variable]+'').filter(onlyUnique);
+      source_values  = nodes.map(n => n[source_variable]+'').filter(onlyUnique);
       target_variable = $('#flow_target_side').val();
-      target_values = session.data.nodes.map(n => n[target_variable]+'').filter(onlyUnique);
+      target_values = nodes.map(n => n[target_variable]+'').filter(onlyUnique);
       wrapper['nodes'] = source_values.concat(target_values).map(n => ({'name': n}));
 
       target_list = {};
@@ -111,7 +113,7 @@
       link_matrix = {};
       source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
 
-      session.data.nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
+      nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
 
       source_values.forEach((source, i) => {
         target_values.forEach((target, j) => {
@@ -159,10 +161,12 @@
           .attr('stroke', '#000000');
 
       node.append('title').text(d => d.name + '\n' + format(d.value));
+
+      if(session.style.widgets['background-color']) $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
     }
 
     $('#toggle_flow_settings').click(function(){
-      var pane = $('#flow_settings_pane');
+      let pane = $('#flow_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -179,17 +183,36 @@
       .change(drawFlowDiagram);
 
     $('#flow-diagram_export').click(function(){
-      var network = $('#flow_diagram')[0];
-      var content = app.unparseSVG(network);
-      var filetype = $('#export-flow-diagram-file-type').val();
+      let network = $('#flow-diagram')[0];
+      let content = app.unparseSVG(network);
+      let filetype = $('#export-flow-diagram-file-type').val();
       if(filetype === 'svg'){
-        var blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, $('#export-flow-diagram-file-name').val() + '.' + filetype);
       } else {
         app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
           saveAs(blob, $('#export-flow-diagram-file-name').val() + '.' + filetype);
         });
       }
+    });
+
+    $(window).on('node_selected', function(){
+      if($('#flow_source_side').val() === 'selected' || $('#flow_target_side').val() === 'selected'){
+        drawFlowDiagram();
+      }
+    });
+
+    $(window).on('link-threshold-change', function(){
+      let affected = ['degree', 'cluster'];
+      if(affected.includes($('#flow_source_side').val()) || affected.includes($('#flow_target_side').val() === 'selected')){
+        drawFlowDiagram();
+      }
+    });
+
+    $(window).on('node_visibility', drawFlowDiagram);
+
+    $(window).on('background-color-change', function(){
+      $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
     });
 
     layout.on('stateChanged', drawFlowDiagram);

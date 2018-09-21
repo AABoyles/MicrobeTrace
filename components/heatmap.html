@@ -1,4 +1,4 @@
-  <div id="heatmap_panel"></div>
+  <div id="heatmap-panel"></div>
 
   <div class="view_controls">
     <button type="button" id="toggle_heatmap_settings" class="btn btn-light btn-sm">
@@ -79,8 +79,8 @@
             </div>
             <div class="col-3">
               <select id="export-heatmap-file-type" class="form-control form-control-sm">
-                <option selected>csv</option>
-                <option>png</option>
+                <option selected>png</option>
+                <option>csv</option>
               </select>
             </div>
           </div>
@@ -96,7 +96,7 @@
   <script>
   (function(){
 
-    var plot;
+    let plot;
 
     $('#heatmap_distanceMetric').html(
       Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
@@ -107,14 +107,14 @@
     );
 
     function redrawHeatmap(){
-      if(!$('#heatmap_panel').length) return;
-      if(plot) Plotly.purge('heatmap_panel');
+      if(!$('#heatmap-panel').length) return;
+      if(plot) Plotly.purge('heatmap-panel');
       if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
         return alertify.error('No distance matrix could be found!');
       }
-      var xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
-      var yLabels = xLabels.slice();
-      var data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
+      let xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
+      let yLabels = xLabels.slice();
+      let data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
 
       if($('#heatmap_invertX').is(':checked')){
         data.forEach(l => l.reverse());
@@ -126,7 +126,7 @@
         yLabels.reverse();
       }
 
-      var config = {
+      let config = {
         autotick: false,
         showticklabels: $('#heatmap_showAxisLabels').is(':checked')
       };
@@ -135,7 +135,7 @@
         config.ticks = '';
       }
 
-      plot = Plotly.newPlot('heatmap_panel', [{
+      plot = Plotly.newPlot('heatmap-panel', [{
         x: xLabels,
         y: yLabels,
         z: data,
@@ -148,16 +148,17 @@
       }], {
         xaxis: config,
         yaxis: config,
-        width: $('#heatmap_panel').parent().width(),
-        height: $('#heatmap_panel').parent().height()
+        width: $('#heatmap-panel').parent().width(),
+        height: $('#heatmap-panel').parent().height()
       }, {
         displaylogo: false,
         displayModeBar: false
       });
+      setBackground();
     }
 
     $('#toggle_heatmap_settings').click(function(){
-      var pane = $('#heatmap_settings_pane');
+      let pane = $('#heatmap_settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -166,25 +167,20 @@
     });
 
     $('#heatmap_export').on('mousedown', function(){
-      var filetype = $('#export-heatmap-file-type').val();
-      var name = $('#export-heatmap-file-name').val();
-      if(filetype === 'csv'){
+      let filetype = $('#export-heatmap-file-type').val();
+      let name = $('#export-heatmap-file-name').val();
+      if(filetype === 'png'){
+        let network = $('#heatmap-panel .main-svg').get(0);
+        $('#heatmap-panel .main-svg .infolayer').detach().appendTo(network);
+        let content = app.unparseSVG(network);
+        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+          saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
+        });
+      } else {
         content = app.unparseDM(session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id]);
-        var blob = new Blob([content]);
+        let blob = new Blob([content]);
         saveAs(blob, name + '.' + filetype);
         return;
-      }
-      var network = $('#heatmap_panel image').get(0);
-      if(filetype === 'png'){
-        var bin = atob(network.href.baseVal.slice(22));
-        var length = bin.length;
-        var buf = new ArrayBuffer(length);
-        var arr = new Uint8Array(buf);
-        for (var i = 0; i < length; i++) {
-          arr[i] = bin.charCodeAt(i);
-        }
-        var blob = new Blob([buf], {type: 'image/png'});
-        saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
       }
     });
 
@@ -193,6 +189,18 @@
     $('input[type="color"]').change(redrawHeatmap);
     $('#heatmap_invertX, #heatmap_invertY').change(redrawHeatmap);
 
+    function setBackground(){
+      let col = session.style.widgets['background-color'];
+      $('#heatmap-panel svg.main-svg').first().css('background', col);
+      $('#heatmap-panel rect.bg').css('fill', col);
+
+      let contrast = session.style.widgets['background-color-contrast'];
+      $('#heatmap-panel .xtitle, .ytitle').css('fill', contrast);
+      $('#heatmap-panel .xaxislayer-above text').css('fill', contrast);
+      $('#heatmap-panel .yaxislayer-above text').css('fill', contrast);
+    }
+
+    $(window).on('background-color-change', setBackground);
 
     layout.on('stateChanged', redrawHeatmap);
     setTimeout(redrawHeatmap, 80);

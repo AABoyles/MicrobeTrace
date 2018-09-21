@@ -70,7 +70,7 @@
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
           <a href="#" id="HelpTab" class="viewbutton dropdown-item" data-href="help">Help</a>
-          <a href="https://github.com/AABoyles/WebMicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank">Report Bug</a>
+          <a href="https://github.com/CDCGov/WebMicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank">Report Bug</a>
           <div class="dropdown-divider ifOnline"></div>
           <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
         </div>
@@ -138,8 +138,11 @@ performance of this software.</pre>
         <p class="lead">MicrobeTrace requires Javascript to run. Please enable Javascript and refresh MicrobeTrace.</p>
       </div>
     </noscript>
-    <div id="network_group_key_wrapper">
-      <table id="network_group_key" class="floater"></table>
+    <div id="group-key-wrapper">
+      <table id="group-key" class="floater"></table>
+    </div>
+    <div id="group-key-context" class="dropdown-menu">
+      <a href="#" id="group-key-hide" class="dropdown-item">Hide</a>
     </div>
     <div id="networkStatistics">
       <table>
@@ -166,6 +169,9 @@ performance of this software.</pre>
         </tbody>
       </table>
     </div>
+    <div id="hide_stats_context" class="dropdown-menu">
+      <a href="#" id="hideStats" class="dropdown-item">Hide</a>
+    </div>
   </div>
 
   <span id="tooltip"></span>
@@ -191,26 +197,26 @@ performance of this software.</pre>
           <div class="tab-content">
             <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="global-tab">
               <div class="form-group row">
-                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
+                <div class="col-4"><label data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
-                      <input type="radio" name="NNOptions" id="showAllLinks" autocomplete="off" checked> None
+                      <input type="radio" name="NNOptions" id="links-show-all" autocomplete="off" checked> None
                     </label>
                     <label class="btn btn-secondary">
-                      <input type="radio" name="NNOptions" id="showNNLinks" autocomplete="off"> Nearest Neighbor
+                      <input type="radio" name="NNOptions" id="links-show-nn" autocomplete="off"> Nearest Neighbor
                     </label>
                   </div>
                 </div>
               </div>
               <div class="form-group row">
-                <div class="col-4"><label for="linkSortVariable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Filter Links on</label></div>
-                <div class="col-8"><select id="linkSortVariable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
+                <div class="col-4"><label for="links-filter-variable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Filter Links on</label></div>
+                <div class="col-8"><select id="links-filter-variable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><a data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Filtering Threshold</a></div>
                 <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
-                <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="default-link-threshold" value="0.015" step="0.001" /></div>
+                <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="link-threshold" value="0.015" step="0.001" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label for="ShowSingletons" data-toggle="tooltip" title="Would you like to show or hide nodes with no visible links?">Singletons</label></div>
@@ -228,7 +234,7 @@ performance of this software.</pre>
               <div class="form-group row">
                 <div class="col-4">Reveal</div>
                 <div class="col-8">
-                  <a href="#" class="btn btn-secondary btn-sm" id="RevealAllTab" role="button">All Clusters</a>
+                  <a href="#" class="btn btn-secondary btn-sm" id="RevealAllTab" role="button">Everything</a>
                 </div>
               </div>
               <div class="form-group row">
@@ -247,30 +253,38 @@ performance of this software.</pre>
             </div>
             <div class="tab-pane fade" id="color-config" role="tabpanel" aria-labelledby="color-tab">
               <div class="form-group row">
-                <div class="col-4"><label for="nodeColorVariable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
-                <div class="col-8"><select id="nodeColorVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+                <div class="col-4"><label for="node-color-variable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
+                <div class="col-8"><select id="node-color-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
               <div id="node_color_value_row" class="form-group row">
-                <div class="col-4"><label for="default-node-color" data-toggle="tooltip" title="What color should the nodes be?">Node Color</label></div>
-                <div class="col-8"><input type="color" id="default-node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
+                <div class="col-4"><label for="node-color" data-toggle="tooltip" title="What color should the nodes be?">Nodes</label></div>
+                <div class="col-8"><input type="color" id="node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color Links By</label></div>
-                <div class="col-8"><select id="linkColorVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+                <div class="col-8"><select id="link-color-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
               <div id="link-color-row" class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Link Color</label></div>
-                <div class="col-8"><input type="color" id="default-link-color" class="custom-select custom-select-sm" value="#a6cee3" /></div>
+                <div class="col-4"><label for="link-color" data-toggle="tooltip" title="What color should the links be?">Links</label></div>
+                <div class="col-8"><input type="color" id="link-color" class="custom-select custom-select-sm" value="#a6cee3" /></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="selected-color" data-toggle="tooltip" title="What color should denote selection?">Selected</label></div>
+                <div class="col-8"><input type="color" id="selected-color" class="custom-select custom-select-sm" value="#ff8300" /></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="background-color" data-toggle="tooltip" title="What color should the background be?">Background</label></div>
+                <div class="col-8"><input type="color" id="background-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
               </div>
               <div class="form-group row">
                 <div class="col-4"><label data-toggle="tooltip" title="Display the table of colors">Color Table</label></div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
-                      <input type="radio" name="colorTableShowHide" id="show_color_table" autocomplete="off" checked> Show
+                      <input type="radio" name="colorTableShowHide" id="color-table-show" autocomplete="off" checked> Show
                     </label>
                     <label class="btn btn-secondary">
-                      <input type="radio" name="colorTableShowHide" id="hide_color_table" autocomplete="off"> Hide
+                      <input type="radio" name="colorTableShowHide" id="color-table-hide" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -327,7 +341,7 @@ performance of this software.</pre>
         <div class="modal-body">
           <h3>MicrobeTrace <small id="version"></small></h3>
           <p>MicrobeTrace is a desktop application that renders existing data from high-risk contact networks in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to supplemental data sources and mathematical inferences like the most probable transmission pathways. MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data production and analytics and help you to discover, understand, and display relationships (links) between patients (nodes). MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby reducing both the startup cost and analysis time and effort.</p>
-          <p class="ifOnline"><a href="https://github.com/aaboyles/WebMicrobeTrace/wiki" target="_blank">Click Here to Learn More</a></p>
+          <p class="ifOnline"><a href="https://github.com/CDCGov/WebMicrobeTrace/wiki" target="_blank">Click Here to Learn More</a></p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -346,6 +360,8 @@ performance of this software.</pre>
   <script src="node_modules/papaparse/papaparse.min.js"></script>
   <script src="node_modules/xss/dist/xss.min.js"></script>
   <script src="node_modules/d3/dist/d3.min.js"></script>
+  <script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
+  <script src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
   <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
   <script src="node_modules/alertifyjs/build/alertify.min.js"></script>
   <script src="vendor/FileSaver.min.js"></script>
@@ -368,12 +384,15 @@ performance of this software.</pre>
   $(function(){
     'use strict';
 
-    $.getJSON('package.json', function(r){ $('#version').html(r.version); });
+    $.getJSON('package.json', function(r){
+      app.manifest = r;
+      $('#version').html(r.version);
+    });
 
     if(navigator.onLine){
       $('#HelpTab')
         .removeClass('viewbutton')
-        .attr('href', 'https://github.com/AABoyles/WebMicrobeTrace/wiki')
+        .attr('href', 'https://github.com/CDCGov/WebMicrobeTrace/wiki')
         .attr('target', '_blank');
       $('.ifOnline').show();
       if(window.applicationCache.status !== window.applicationCache.UNCACHED){
@@ -405,11 +424,11 @@ performance of this software.</pre>
 
     // Before anything else gets done, ask the user to accept the legal agreement
     if(!localStorage.getItem('licenseAccepted')){
-      $('#acceptAgreement').click(function(){
+      $('#acceptAgreement').on('click', function(){
         // Set that agreement in localStorage
         localStorage.setItem('licenseAccepted', new Date());
       });
-      $('#rejectAgreement').click(function(){
+      $('#rejectAgreement').on('click', function(){
         // If you don't agree, no app for you!
         //TODO: Show a message indicating you are not permitted to use the app without agreeing to the terms of use.
       });
@@ -421,9 +440,9 @@ performance of this software.</pre>
     }
 
     // Let's set up the Nav Bar
-    $('#FileTab').click(function(){ window.location.reload() });
+    $('#FileTab').on('click', function(){ window.location.reload() });
 
-    $('#save-data').click(function(){
+    $('#save-data').on('click', function(){
       var format = $('#save-file-format').val();
       var name = $('#save-file-name').val();
       var data = format == 'microbetrace' ? JSON.stringify(session) : app.exportHIVTRACE();
@@ -431,59 +450,46 @@ performance of this software.</pre>
       saveAs(blob, name + '.' + format);
     });
 
-    $('#OpenTab').change(function(e){
+    $('#OpenTab').on('change', function(e){
       if(e.target.files.length > 0){
+        var startTime = Date.now();
         var parts = e.target.files[0].name.split('.');
         var extension = parts[parts.length - 1];
         var reader = new FileReader();
         if(extension == 'microbetrace'){
           reader.onloadend = function(out){
             session = JSON.parse(out.target.result);
-            app.launchView('2d_network');
+            session.startTime = startTime;
+            session.style.nodeSymbolMap = function(){ return session.style.widgets['node-symbol']; };
+            session.style.nodeColorMap  = function(){ return session.style.widgets['node-color' ]; };
+            session.style.linkColorMap  = function(){ return session.style.widgets['link-color' ]; };
+            app.finishUp();
           };
         } else {
           reader.onloadend = function(out){
             session = app.sessionSkeleton();
+            session.startTime = startTime;
             app.parseHIVTrace(JSON.parse(out.target.result));
-            app.launchView('2d_network');
-            $('#linkSortVariable').html(
-              session.data.linkFields.map(function(field){
-                return '<option value="' + field + '"' + (field === 'distance' ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
-              }).join('\n')
-            );
-            try {
-              app.updateThresholdHistogram();
-            } catch(error){
-              console.error(error);
-              app.reset();
-            }
-            app.setLinkVisibility();
-            app.setNodeVisibility();
-            app.tagClusters();
-            app.computeDegree();
-            setTimeout(function(){
-              session.network.render();
-              session.network.force.alpha(0.3).alphaTarget(0).restart();
-              app.updateStatistics();
-              session.loadTime = Date.now() - session.startTime;
-              $('.hideForHIVTrace').hide();
-              setTimeout(session.network.fit, 1500);
-            }, 80);
+            app.finishUp();
           };
         }
         reader.readAsText(e.target.files[0], 'UTF-8');
       }
     });
 
-    $('.viewbutton').click(function(){ app.launchView($(this).data('href')); });
+    $('.viewbutton').on('click', function(){ app.launchView($(this).data('href')); });
 
-    $('#FullScreenTab').click(function(){ screenfull.toggle(); });
+    $('#FullScreenTab').on('click', function(){ screenfull.toggle(); });
 
-    $('[name="NNOptions"]').change(function(){
+    $('[name="NNOptions"]').on('change', function(){
       app.updateNetwork($('#HideSingletons').is(':checked'));
     });
 
-    $('#ShowSingletons, #HideSingletons').change(app.setNodeVisibility);
+    $('#links-filter-variable').on('change', function(){
+      app.updateThresholdHistogram();
+      app.updateStatistics();
+      $(window).trigger('link-threshold-change');
+    });
 
     app.updateThresholdHistogram = function(){
       var width = 280,
@@ -493,7 +499,7 @@ performance of this software.</pre>
             .attr('width', width)
             .attr('height', height);
 
-      var lsv = $('#linkSortVariable').val(),
+      var lsv = $('#links-filter-variable').val(),
           n = session.data.links.length,
           max = Number.MIN_SAFE_INTEGER,
           min = Number.MAX_SAFE_INTEGER,
@@ -533,8 +539,7 @@ performance of this software.</pre>
       function updateThreshold(){
         var xc = d3.mouse(svg.node())[0];
         session.state.linkThreshold = xc / width * range * 1.05 + min;
-        $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
-        $(window).trigger('updateThreshold');
+        $('#link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
       }
 
       svg.on('click', function(){
@@ -543,9 +548,8 @@ performance of this software.</pre>
         app.tagClusters();
         if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
         app.computeDegree();
-        session.network.render();
         app.updateStatistics();
-        session.network.force.alpha(0.3).alphaTarget(0).restart();
+        $(window).trigger('link-threshold-change');
       });
 
       svg.on('mousedown', function(){
@@ -556,139 +560,196 @@ performance of this software.</pre>
           app.tagClusters();
           if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
           app.computeDegree();
-          session.network.render();
           app.updateStatistics();
-          session.network.force.alpha(0.3).alphaTarget(0).restart();
+          $(window).trigger('link-threshold-change');
           svg
             .on('mousemove', null)
             .on('mouseup', null)
             .on('mouseleave', null);
         });
       });
-
       session.state.linkThreshold = parseFloat($('#defaultDistanceThreshold').val());
-      $('#default-link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
-      $(window).trigger('updateThreshold');
+      $('#link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+      $(window).trigger('link-threshold-change');
     };
 
-    $('#linkSortVariable').on('change', function(){
-      app.updateThresholdHistogram();
+    $('#ShowSingletons, #HideSingletons').on('change', e => {
+      app.setNodeVisibility();
       app.updateStatistics();
     });
 
-    $('#showNNLinks, #showAllLinks').on('change', e => {
-      session.network.render();
+    $('#links-show-nn, #links-show-all').on('change', e => {
       app.updateStatistics();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      $(window).trigger('link-threshold-change');
     });
 
-    $('#default-link-threshold').on('input', function(){
+    $('#link-threshold').on('input', function(){
       app.setLinkVisibility();
       app.tagClusters();
       if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
       app.updateStatistics();
-      $(window).trigger('updateThreshold');
+      $(window).trigger('link-threshold-change');
     });
 
-    $('#hide_2d_network_statistics').parent().click(function(){
+    $('#hide_2d_network_statistics').parent().on('click', function(){
       $('#networkStatistics').fadeOut();
     });
 
-    $('#show_2d_network_statistics').parent().click(function(){
+    $('#show_2d_network_statistics').parent().on('click', function(){
       app.updateStatistics();
       $('#networkStatistics').fadeIn();
     });
 
-    $('#RevealAllTab').click(function(e) {
-      session.data.clusters.forEach(function(c){ c.visible = 1; });
-      $('#HideSingletons').prop('checked', false).parent().removeClass('active');
-      $('#ShowSingletons').prop('checked', true).parent().addClass('active');
+    $('#networkStatistics').on('contextmenu', function(e){
+      e.preventDefault();
+      $('#hide_stats_context').css({
+        top: e.clientY,
+        left: e.clientX,
+        display: 'block'
+      });
+    });
+
+    $('#hideStats').on('click', function(e){
+      $(this).parent().hide();
+      $('#hide_2d_network_statistics').parent().click();
+    });
+
+    $(window).on('click', function(){
+      $('#hide_stats_context').hide();
+    });
+
+    $('#RevealAllTab').on('click', function(e){
+      session.data.clusters.forEach(function(c){ c.visible = true; });
       app.setLinkVisibility();
-      app.setNodeVisibility();
+      $('#ShowSingletons').parent().click(); //calls app.setNodeVisibility();
     });
 
-    $('#nodeColorVariable').on('change', function(e){
-      let variable = e.target.value;
-      if(variable === 'None'){
-        $('#node_color_value_row').slideDown();
+    $('#node-color-variable')
+      .val(session.style.widgets['node-color-variable'])
+      .on('change', function(e){
+        let variable = e.target.value;
+        session.style.widgets['node-color-variable'] = variable;
+        if(variable === 'None'){
+          $('#node_color_value_row').slideDown();
+          $('#nodeColors').remove();
+          return;
+        }
+        $('#node_color_value_row').slideUp();
         $('#nodeColors').remove();
-        return;
-      }
-      $('#node_color_value_row').slideUp();
-      $('#nodeColors').remove();
-      let table = $('<tbody id="nodeColors"></tbody>').appendTo('#network_group_key');
-      table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
-      let values = _.uniq(app.getVisibleNodes().map(d => d[variable])).sort();
-      session.style.nodeColors = [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2));
-      session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-      values.forEach((value, i) => {
-        let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
-          .on('change', function(evt){
-            session.style.nodeColors.splice(i, 1, evt.target.value);
-            session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-            $(window).trigger('nodeColorChange');
-          });
-        let cell = $('<td></td>').append(input);
-        let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
-        table.append(row);
+        let table = $('<tbody id="nodeColors"></tbody>').appendTo('#group-key');
+        table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
+        let values = _.uniq(app.getVisibleNodes().map(d => d[variable])).sort();
+        session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+        values.forEach((value, i) => {
+          let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
+            .on('change', function(evt){
+              session.style.nodeColors.splice(i, 1, evt.target.value);
+              session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+              $(window).trigger('node-color-change');
+            });
+          let cell = $('<td></td>').append(input);
+          let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
+          table.append(row);
+        });
+        $(window).trigger('node-color-change');
       });
-      $(window).trigger('nodeColorChange');
-    });
 
-    $('#linkColorVariable').on('change', function(e){
-      let variable = e.target.value;
-      if(variable === 'None'){
-        $('#link-color-row').slideDown();
+    $('#node-color')
+      .on('change', function(e){
+        session.style.widgets['node-color'] = e.target.value;
+        $(window).trigger('node-color-change');
+      })
+      .val(session.style.widgets['node-color']);
+
+    $('#link-color-variable')
+      .val(session.style.widgets['link-color-variable'])
+      .on('change', function(e){
+        let variable = e.target.value;
+        session.style.widgets['link-color-variable'] = variable;
+        if(variable === 'None'){
+          $('#link-color-row').slideDown();
+          $('#linkColors').remove();
+          return;
+        }
+        $('#link-color-row').slideUp();
         $('#linkColors').remove();
-        return;
-      }
-      $('#link-color-row').slideUp();
-      $('#linkColors').remove();
-      let values = [];
-      if(variable === 'origin'){
-        session.data.links.forEach(l => {
-          l.origin.forEach(o => {
-            if(!values.includes(o)) values.push(o);
+        let values = [];
+        if(variable === 'origin'){
+          session.data.links.forEach(l => {
+            l.origin.forEach(o => {
+              if(!values.includes(o)) values.push(o);
+            });
           });
-        });
-      } else {
-        session.data.links.forEach(l => {
-          if(!values.includes(l[variable])) values.push(l[variable]);
-        });
-      }
-      let table = $('<tbody id="linkColors"></tbody>').appendTo('#network_group_key');
-      table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
-      if(_.isNumber(session.data.links[0][variable])){
-        values.sort((a, b) => a - b);
-      } else {
-        values.sort();
-      }
-      session.style.linkColors = d3.schemePaired;
-      session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
-      values.forEach((value, i) => {
-        let input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
-          .on('change', function(evt){
-            session.style.linkColors.splice(i, 1, evt.target.value);
-            session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
-            $(window).trigger('linkColorChange');
+        } else {
+          session.data.links.forEach(l => {
+            if(!values.includes(l[variable])) values.push(l[variable]);
           });
-        let cell = $('<td></td>').append(input);
-        let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
-        table.append(row);
+        }
+        let table = $('<tbody id="linkColors"></tbody>').appendTo('#group-key');
+        table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
+        if(_.isNumber(session.data.links[0][variable])){
+          values.sort((a, b) => a - b);
+        } else {
+          values.sort();
+        }
+        session.style.linkColors = d3.schemePaired;
+        session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+        values.forEach((value, i) => {
+          let input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
+            .on('change', function(evt){
+              session.style.linkColors.splice(i, 1, evt.target.value);
+              session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+              $(window).trigger('link-color-change');
+            });
+          let cell = $('<td></td>').append(input);
+          let row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
+          table.append(row);
+        });
+        $(window).trigger('link-color-change');
       });
-      $(window).trigger('linkColorChange');
+
+    $('#link-color').on('change', function(e){
+      session.style.widgets['link-color'] = e.target.value;
+      $(window).trigger('link-color-change');
     });
 
-    $('#default-link-color').change(() => $(window).trigger('linkColorChange'));
-    $('#default-node-color').change(() => $(window).trigger('nodeColorChange'));
-
-    $('#show_color_table').parent().click(function(){
-      $('#network_group_key').fadeIn();
+    $('#selected-color').on('change', function(e){
+      session.style.widgets['selected-color'] = e.target.value;
+      session.style.widgets['selected-color-contrast'] = app.contrastColor(e.target.value);
+      $(window).trigger('selected-color-change');
     });
 
-    $('#hide_color_table').parent().click(function(){
-      $('#network_group_key').fadeOut();
+    $('#background-color').on('change', function(e){
+      session.style.widgets['background-color'] = e.target.value;
+      session.style.widgets['background-color-contrast'] = app.contrastColor(e.target.value);
+      $(window).trigger('background-color-change');
+    });
+
+    $('#color-table-show').parent().on('click', function(){
+      $('#group-key').fadeIn();
+    });
+
+    $('#color-table-hide').parent().on('click', function(){
+      $('#group-key').fadeOut();
+    });
+
+    $('#group-key-wrapper').on('contextmenu', function(e){
+      e.preventDefault();
+      $('#group-key-context').css({
+        top: e.clientY,
+        left: e.clientX,
+        display: 'block'
+      });
+    });
+
+    $('#group-key-hide').on('click', function(e){
+      $(this).parent().hide();
+      $('#color-table-hide').parent().click();
+    });
+
+    $(window).on('click', function(){
+      $('#group-key-context').hide();
     });
 
     $('form').on('keydown', function(e){
@@ -708,12 +769,18 @@ performance of this software.</pre>
       $(window).trigger('node_selected');
     });
 
+    $(window).on('node_selected', function(){
+      $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+    });
+
     $(document).on('keydown', function(e){
       if(e.ctrlKey && e.key === 'f'){
         e.preventDefault();
         $('#search').focus();
       }
     });
+
+    layout.on('stateChanged', function(){ session.layout = layout.toConfig(); });
 
     $(window).on('resize', function(){ layout.root.setSize(); });
   });

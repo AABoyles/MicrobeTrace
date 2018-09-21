@@ -30,24 +30,24 @@
   <div class="tab-content">
     <div class="tab-pane fade show active" id="node_settings" role="tabpanel" aria-labelledby="nodes-tab">
       <div class="form-group row">
-        <div class="col-4"><label for="nodeLabelVariable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
-        <div class="col-8"><select id="nodeLabelVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="node-label-variable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
+        <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label for="nodeTooltipVariable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-        <div class="col-8"><select id="nodeTooltipVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="node-tooltip-variable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+        <div class="col-8"><select id="node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4">Color</div>
         <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label for="nodeSymbolVariable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
-        <div class="col-8"><select id="nodeSymbolVariable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="node-symbol-variable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
+        <div class="col-8"><select id="node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div id="node_shape_value_row" class="form-group row">
-        <div class="col-4"><label for="default-node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
-        <div class="col-8"><select id="default-node-symbol" class="custom-select custom-select-sm">
+        <div class="col-4"><label for="node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
+        <div class="col-8"><select id="node-symbol" class="custom-select custom-select-sm">
           <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
           <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
           <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
@@ -69,19 +69,19 @@
         </select></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label for="nodeRadiusVariable" data-toggle="tooltip" title="How large should the nodes be?">Size By</label></div>
-        <div class="col-8"><select id="nodeRadiusVariable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
+        <div class="col-4"><label for="node-radius-variable" data-toggle="tooltip" title="How large should the nodes be?">Size By</label></div>
+        <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
       </div>
       <div id="node_size_value_row" class="form-group row">
-        <div class="col-4"><label for="default-node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
-        <div class="col-8"><input type="range" id="default-node-radius" min="30" value="250" step="1" max="5000" /></div>
+        <div class="col-4"><label for="node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
+        <div class="col-8"><input type="range" id="node-radius" min="100" value="250" step="1" max="5000" /></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="highlight-neighbors" data-toggle="tooltip" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">Neighbors</label></div>
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
             <label class="btn btn-secondary active">
-              <input type="radio" name="HighlightOptions" autocomplete="off" checked> Normal
+              <input type="radio" name="HighlightOptions" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
             </label>
             <label class="btn btn-secondary">
               <input type="radio" name="HighlightOptions" id="highlight-neighbors" autocomplete="off"> Highlighted
@@ -92,8 +92,8 @@
     </div>
     <div class="tab-pane fade" id="link_settings" role="tabpanel" aria-labelledby="links-tab">
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
-        <div class="col-8"><select id="linkTooltipVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="link-tooltip-variable" data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
+        <div class="col-8"><select id="link-tooltip-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4">Color</div>
@@ -101,29 +101,38 @@
       </div>
       <div id="link-transparency-row" class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
-        <div class="col-8"><input type="range" id="default-link-opacity" min="0" max="1" value="0" step="0.01" /></div>
+        <div class="col-8"><input type="range" id="link-opacity" min="0" max="1" value="0" step="0.01" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width By</label></div>
-        <div class="col-8"><select id="linkWidthVariable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+        <div class="col-4"><label for="link-width-variable" data-toggle="tooltip" title="How thick should the links be?">Width By</label></div>
+        <div class="col-8"><select id="link-width-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
       </div>
       <div id="link-reciprocalthickness-row" class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?" checked>Reciprocal</label></div>
-        <div class="col-8"><input type="checkbox" id="reciprocal-link-width" checked /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal</label></div>
+        <div class="col-8">
+          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-secondary active">
+              <input type="radio" name="link-reciprocal-options" id="link-width-reciprocal" autocomplete="off" checked> Reciprocal
+            </label>
+            <label class="btn btn-secondary">
+              <input type="radio" name="link-reciprocal-options" id="link-width-nonreciprocal" autocomplete="off"> Non-reciprocal
+            </label>
+          </div>
+        </div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
-        <div class="col-8"><input type="range" id="default-link-width" min="0.3" max="30" step=".3" value="3" /></div>
+        <div class="col-4"><label for="link-width" data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
+        <div class="col-8"><input type="range" id="link-width" min="0.3" max="30" step=".3" value="3" /></div>
       </div>
       <div class="form-group row hideForHIVTrace">
         <div class="col-4"><label data-toggle="tooltip" title="Are these links directed?">Directionality</label></div>
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
             <label class="btn btn-secondary active">
-              <input type="radio" name="DirectionOptions" id="UndirectedLinks" autocomplete="off" checked> Undirected
+              <input type="radio" name="DirectionOptions" id="link-undirected" autocomplete="off" checked> Undirected
             </label>
             <label class="btn btn-secondary">
-              <input type="radio" name="DirectionOptions" id="DirectedLinks" autocomplete="off"> Directed
+              <input type="radio" name="DirectionOptions" id="link-directed" autocomplete="off"> Directed
             </label>
           </div>
         </div>
@@ -136,7 +145,7 @@
       </div>
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How long should links be?">Length</label></div>
-        <div class="col-8"><input type="range" id="default-link-length" min = "0" max="200" value="50" /></div>
+        <div class="col-8"><input type="range" id="link-length" min = "0" max="200" value="50" /></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</label></div>
@@ -144,11 +153,7 @@
       </div>
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
-        <div class="col-8"><input type="range" id="default-node-charge" min="0" max="400" value="200" /></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="What color should the background be?">Background</label></div>
-        <div class="col-8"><input type="color" id="network-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
+        <div class="col-8"><input type="range" id="node-charge" min="0" max="400" value="200" /></div>
       </div>
     </div>
   </div>
@@ -215,12 +220,12 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
-<script src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
 <script>
 (function(){
 
-  session.network = {};
+  session.network = {
+    allPinned: false
+  };
 
   let vnodes = [];
 
@@ -228,14 +233,19 @@
     let newNodes = app.getVisibleNodes(true);
     newNodes.forEach((d, i) => {
       let match = vnodes.find(d2 => d2.id == d.id);
-      if(match) Object.assign(d, match);
+      if(match){
+        d.x = match.x;
+        d.y = match.y;
+        d.fx = match.fx;
+        d.fy = match.fy;
+        d.vx = match.vx;
+        d.vy = match.vy;
+      }
     });
     vnodes = newNodes;
   }
 
-  updateVNodes();
-
-  session.network.brush = d3.brush()
+  let brush = d3.brush()
     .on('start', brushstarted)
     .on('brush', brushed)
     .on('end', brushended);
@@ -246,45 +256,45 @@
     });
   }
 
+  let transform = {};
+
   function brushed(){
     if(d3.event.sourceEvent.type === 'end') return;
     let selection = [
-      session.network.transform.invert(d3.event.selection[0]),
-      session.network.transform.invert(d3.event.selection[1])
+      transform.invert(d3.event.selection[0]),
+      transform.invert(d3.event.selection[1])
     ];
-    if(selection == null) return;
-    let node = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    if(selection.includes(null)) return;
     if(d3.event.sourceEvent.ctrlKey){
-      node.classed('selected', function(d){
-        return d.selected = d.previouslySelected ^ (
+      vnodes.forEach(function(d){
+        d.selected = d.previouslySelected ^ (
           selection[0][0] <= d.x && d.x <= selection[1][0] &&
           selection[0][1] <= d.y && d.y <= selection[1][1]);
       });
     } else {
-      node.classed('selected', function(d){
-        return d.selected =
+      vnodes.forEach(function(d){
+        d.selected =
           selection[0][0] <= d.x && d.x <= selection[1][0] &&
           selection[0][1] <= d.y && d.y <= selection[1][1];
       });
     }
-    $(window).trigger('node_selected');
   }
 
   function brushended() {
     if (d3.event.selection == null) return;
     d3.select(this).call(d3.event.target.move, null);
-    vnodes.forEach(d => {
-      delete d.previouslySelected;
+    vnodes.forEach(d => delete d.previouslySelected);
+    session.data.nodes.forEach(node => {
+      let instance = vnodes.find(d => d.id === node.id);
+      if(instance) node.selected = instance.selected;
     });
+    $(window).trigger('node_selected');
   }
 
-  session.network.zoom = d3.zoom()
-    .on('zoom', zoomed);
-
-  function zoomed(){
-    session.network.svg.attr('transform', d3.event.transform);
-    session.network.transform = d3.event.transform;
-  }
+  let zoom = d3.zoom().on('zoom', function(){
+    svg.attr('transform', d3.event.transform);
+    transform = d3.event.transform;
+  });
 
   let width  = $('#network').parent().width(),
       height = $('#network').parent().parent().parent().height();
@@ -294,49 +304,49 @@
     .attr('height', height)
     .attr('width', width)
     .on('click', hideContextMenu)
-    .call(session.network.zoom);
+    .call(zoom);
 
   d3.select('svg#network')
       .append('g')
       .attr('class', 'brush')
-      .call(session.network.brush)
+      .call(brush)
       .attr('pointer-events', 'none')
     .select('rect.overlay')
       .attr('pointer-events', 'none');
 
-  session.network.svg = d3.select('svg#network').append('g');
+  let svg = d3.select('svg#network').append('g');
 
-  session.network.fit = function(thing, bounds){
-    if(!bounds) bounds = session.network.svg.node().getBBox();
+  let fit = function(thing, bounds){
+    if(!bounds) bounds = svg.node().getBBox();
     if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
-    let parent = session.network.svg.node().parentElement.parentElement,
+    let parent = svg.node().parentElement.parentElement,
         midX = bounds.x + bounds.width / 2,
         midY = bounds.y + bounds.height / 2;
     let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
     d3.select('svg#network')
       .transition()
       .duration(750)
-      .call(session.network.zoom.transform, d3.zoomIdentity
+      .call(zoom.transform, d3.zoomIdentity
         .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
         .scale(scale));
   };
 
-  session.network.force = d3.forceSimulation()
+  let force = d3.forceSimulation()
     .force('link', d3.forceLink()
       .id(d => d.id)
-      .distance($('#default-link-length').val())
+      .distance(session.style.widgets['link-length'])
       .strength(0.125)
     )
     .force('charge', d3.forceManyBody()
-      .strength(-$('#default-node-charge').val())
+      .strength(-session.style.widgets['node-charge'])
     )
     .force('gravity', d3.forceAttract()
       .target([width/2, height/2])
-      .strength($('#network-gravity').val())
+      .strength(session.style.widgets['network-gravity'])
     )
     .force('center', d3.forceCenter(width / 2, height / 2));
 
-  session.network.svg.append('svg:defs').append('marker')
+  svg.append('svg:defs').append('marker')
     .attr('id', 'end-arrow')
     .attr('viewBox', '0 0 10 10')
     .attr('refX', 20)
@@ -347,12 +357,12 @@
     .append('svg:path')
       .attr('d', 'M0,0 L0,10 L10,5 z');
 
-  session.network.svg.append('g').attr('id', 'links');
-  session.network.svg.append('g').attr('id', 'nodes');
+  svg.append('g').attr('id', 'links');
+  svg.append('g').attr('id', 'nodes');
 
-  session.network.render = function(){
+  let render = function(){
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
-    let node = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    let node = svg.select('g#nodes').selectAll('g.node').data(vnodes);
     node.exit().remove(); //Removing nodes with no representation in the dataset.
     node = node.enter().append('g') //Adding nodes that weren't represented in the dataset before.
       .attr('class', 'node')
@@ -380,29 +390,29 @@
     // Speaking of merging...
     node = node.merge(node);
     // E voila! node now refers to all the g.node elements in the network,
-    // and they all have path and text elements, so we can confidently...
-    node.select('path').attr('fill', $('#default-node-color').val());
-    // And style them according to the DOM State instructions.
-    redrawNodes();
-    // And append our label text, too!
+    // and they all have path and text elements, so we can confidently append our label text
     node.select('text')
       .attr('dy', 5)
       .attr('dx', 8);
 
+    // And style them according to the DOM State instructions.
+    redrawNodes();
+    updateNodeColors();
+
     let vlinks = getVLinks();
 
     // Links are considerably simpler.
-    let link = session.network.svg.select('g#links').selectAll('line').data(vlinks);
+    let link = svg.select('g#links').selectAll('line').data(vlinks);
     link.exit().remove();
     link.enter().append('line')
-      .attr('stroke-width', $('#default-link-width').val())
-      .attr('opacity', 1 - $('#default-link-opacity').val())
+      .attr('stroke-width', session.style.widgets['link-width'])
+      .attr('opacity', 1 - session.style.widgets['link-opacity'])
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
-    let nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
-    let links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
-    session.network.force.nodes(vnodes).on('tick', function(){
+    let nodes = svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    let links = svg.select('g#links').selectAll('line').data(vlinks);
+    force.nodes(vnodes).on('tick', function(){
       nodes
         .attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
       links
@@ -412,14 +422,12 @@
         .attr('y2', l => l.target.y);
     });
 
-    session.network.force.force('link').links(vlinks);
+    force.force('link').links(vlinks);
 
     updateLinkColor();
-
-    $(window).on('node_selected', function(){
-      nodes.select('path').classed('selected', d => d.selected);
-      $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
-    });
+    scaleLinkWidth();
+    nodes.select('path').classed('selected', d => d.selected);
+    force.alpha(0.3).alphaTarget(0).restart();
   };
 
   function getVLinks(){
@@ -460,7 +468,7 @@
   }
 
   function dragstarted(d){
-    if (!d3.event.active) session.network.force.alphaTarget(0.3).restart();
+    if (!d3.event.active) force.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
   }
@@ -471,7 +479,7 @@
   }
 
   function dragended(d){
-    if (!d3.event.active) session.network.force.alphaTarget(0);
+    if (!d3.event.active) force.alphaTarget(0);
     if(!d.fixed){
       d.fx = null;
       d.fy = null;
@@ -480,11 +488,11 @@
 
   function clickHandler(n){
     if(!d3.event.ctrlKey){
-      vnodes
+      session.data.nodes
         .filter(node => node.id !== n.id)
-        .forEach(node => node.selected = 0);
+        .forEach(node => node.selected = false);
     }
-    n.selected = !n.selected;
+    session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
     $(window).trigger('node_selected');
   }
 
@@ -499,54 +507,51 @@
       showAttributeModal(d);
     }).node().focus();
     if(d.fixed){
-      $('#pinNode').text('Unpin Node').click(e => {
+      $('#pinNode').text('Unpin Node').on('click', e => {
         d.fx = null;
         d.fy = null;
         d.fixed = false;
-        session.network.force.alpha(0.3).alphaTarget(0).restart();
+        force.alpha(0.3).alphaTarget(0).restart();
         hideContextMenu();
       });
     } else {
-      $('#pinNode').text('Pin Node').click(e => {
+      $('#pinNode').text('Pin Node').on('click', e => {
         d.fx = d.x;
         d.fy = d.y;
         d.fixed = true;
         hideContextMenu();
       });
     }
-    $('#hideCluster').click(e => {
-      session.data.clusters.find(c => c.id === d.cluster).visible = 0;
+    $('#hideCluster').on('click', e => {
+      session.data.clusters.find(c => c.id == d.cluster).visible = false;
       app.setLinkVisibility();
       app.setNodeVisibility();
-      session.network.render();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      render();
       hideContextMenu();
     });
-    if(session.data.clusters.length < 2){
+    if(session.data.clusters.length <= 1){
       $('#isolateCluster').hide();
     } else {
       if(session.data.clusters.filter(c => c.visible).length === 1){
-        $('#isolateCluster').show().text('De-isolate Cluster').click(e => {
-          session.data.clusters.forEach(c => c.visible = 1);
-          app.setNodeVisibility();
+        $('#isolateCluster').show().text('De-isolate Cluster').on('click', e => {
+          session.data.clusters.forEach(c => c.visible = true);
           app.setLinkVisibility();
-          session.network.render();
-          session.network.force.alpha(0.3).alphaTarget(0).restart();
+          app.setNodeVisibility();
+          render();
           hideContextMenu();
         });
       } else {
-        $('#isolateCluster').show().text('Isolate Cluster').click(e => {
+        $('#isolateCluster').show().text('Isolate Cluster').on('click', e => {
           session.data.clusters.forEach(c => c.visible = c.id === d.cluster);
           app.setLinkVisibility();
           app.setNodeVisibility();
-          session.network.render();
-          session.network.force.alpha(0.3).alphaTarget(0).restart();
+          render();
           hideContextMenu();
         });
       }
     }
     $('#context-menu').css({
-      'z-index': 1,
+      'z-index': 1000,
       'display': 'block',
       'left': (d3.event.pageX) + 'px',
       'top': (d3.event.pageY-56) + 'px',
@@ -559,9 +564,10 @@
     });
   }
 
-  function showAttributeModal(d){
+  function showAttributeModal(node){
     hideContextMenu();
     let target = $('#attributeModal tbody').empty();
+    let d = session.data.nodes.find(nd => nd.id === node.id);
     for(let attribute in d){
       target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
     }
@@ -569,10 +575,10 @@
   }
 
   function showNodeToolTip(d){
-    if($('#highlight-neighbors').is(':checked')) highlightNeighbors(d);
-    if($('#nodeTooltipVariable').val() === 'None') return;
+    if(session.style.widgets['node-highlight']) highlightNeighbors(d);
+    if($('#node-tooltip-variable').val() === 'None') return;
     d3.select('#tooltip')
-      .html(d[$('#nodeTooltipVariable').val()])
+      .html(d[$('#node-tooltip-variable').val()])
       .style('left', (d3.event.pageX + 8) + 'px')
       .style('top', (d3.event.pageY - 28) + 'px')
       .style('z-index', 1000)
@@ -596,20 +602,24 @@
         }
       }
     }
-    session.network.svg
+    svg
       .select('g#nodes')
       .selectAll('g.node')
       .selectAll('path')
       .attr('opacity', d => neighbors.includes(d.id) ? 1 : .1);
-    session.network.svg
+    svg
       .select('g#links')
       .selectAll('line')
       .data(links)
       .attr('opacity', l => lindices.includes(l.index) ? .1 : 1);
   }
 
+  $('#link-tooltip-variable').on('change', function(e){
+    session.style.widgets['link-tooltip-variable'] = e.target.value;
+  });
+
   function showLinkToolTip(d){
-    let v = $('#linkTooltipVariable').val();
+    let v = session.style.widgets['link-tooltip-variable'];
     if(v === 'None') return;
     d3.select('#tooltip')
       .html((v === 'source' || v === 'target') ? d[v].id : d[v])
@@ -620,16 +630,23 @@
       .style('opacity', 1);
   }
 
+  $('#highlight-neighbors').parent().on('click', function(){
+    session.style.widgets['node-highlight'] = true;
+  });
+
+  $('#dont-highlight-neighbors').parent().on('click', function(){
+    session.style.widgets['node-highlight'] = false;
+  });
+
   function hideTooltip(){
-    if($('#highlight-neighbors').is(':checked')){
-      let nodeOpacity = $('#default-node-opacity').val();
-      session.network.svg
+    if(session.style.widgets['node-highlight']){
+      svg
         .select('g#nodes')
         .selectAll('g.node')
         .selectAll('path')
-        .attr('opacity', nodeOpacity);
-      let linkOpacity = 1 - $('#default-link-opacity').val();
-      session.network.svg
+        .attr('opacity', 1);
+      let linkOpacity = 1 - session.style.widgets['link-opacity'];
+      svg
         .select('g#links')
         .selectAll('line')
         .attr('opacity', linkOpacity);
@@ -644,21 +661,12 @@
   function redrawNodes(){
     //Things to track in the function:
     //* Shapes:
-    let type = d3[$('#default-node-symbol').val()];
-    let symbolVariable = $('#nodeSymbolVariable').val();
-    let o = (b => d3[$('#default-node-symbol').val()]);
-    if(symbolVariable !== 'None'){
-      let map = {};
-      let values = _.uniq(vnodes.map(d => d[symbolVariable])).sort();
-      $('#nodeShapes select').each(function(i, el){
-        map[values[i]] = $(this).val();
-      });
-      o = (v => map[v]);
-    }
+    let type = d3[session.style.widgets['node-symbol']];
+    let symbolVariable = session.style.widgets['node-symbol-variable'];
     //* Sizes:
-    let defaultSize = $('#default-node-radius').val();
+    let defaultSize = session.style.widgets['node-radius'];
     let size = defaultSize, med = defaultSize, oldrng, min, max;
-    let sizeVariable = $('#nodeRadiusVariable').val();
+    let sizeVariable = session.style.widgets['node-radius-variable'];
     if(sizeVariable !== 'None'){
       let n = vnodes.length;
       min = Number.MAX_VALUE;
@@ -671,47 +679,54 @@
       oldrng = max - min;
       med = oldrng / 2;
     }
-    let nodes = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    let nodes = svg.select('g#nodes').selectAll('g.node').data(vnodes);
     nodes.select('path').each(function(d){
-      if(symbolVariable !== 'None') type = d3[o(d[symbolVariable])];
+      if(symbolVariable !== 'None') type = d3[session.style.nodeSymbolMap(d[symbolVariable])];
       if(sizeVariable !== 'None'){
         size = med;
         if(typeof d[sizeVariable] !== 'undefined'){
           size = d[sizeVariable];
         }
         size = (size - min) / oldrng;
-        size = size * size * defaultSize + 30;
+        size = size * size * defaultSize + 100;
       }
       d3.select(this).attr('d', d3.symbol().size(size).type(type));
     });
     //* and Labels:
-    let labelVar = $('#nodeLabelVariable').val();
-    nodes.select('text').text(n => n[labelVar]);
+    let labelVar = session.style.widgets['node-label-variable'];
+    if(labelVar === 'None'){
+      nodes.select('text').text('');
+    } else {
+      nodes.select('text').text(n => n[labelVar]);
+    }
   }
 
-  $('#toggle_2d_network_settings').click(function(){
+  $('#toggle_2d_network_settings').on('click', function(){
     let pane = $('#network_settings_pane');
-    if(pane.is(':visible')){
+    if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
       pane.show(0, function(){ pane.animate({left: '0px'}); });
     }
   });
 
-  $('#nodeLabelVariable').change(e => {
-    if(e.target.value === 'None'){
-      session.network.svg.select('g#nodes').selectAll('g.node')
-        .select('text').text('');
-    } else {
-      session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes)
-        .select('text').text(d => d[e.target.value]);
-    }
+  $('#node-label-variable').on('change', e => {
+    session.style.widgets['node-label-variable'] = e.target.value;
+    redrawNodes();
   });
 
-  $('#default-node-symbol').on('input', redrawNodes);
-  $('#nodeSymbolVariable').change(e => {
+  $('#node-tooltip-variable').on('change', e => {
+    session.style.widgets['node-tooltip-variable'] = e.target.value;
+  });
+
+  $('#node-symbol').on('input', e => {
+    session.style.widgets['node-symbol'] = e.target.value;
+    redrawNodes();
+  });
+  $('#node-symbol-variable').on('change', e => {
+    session.style.widgets['node-symbol-variable'] = e.target.value;
     $('#nodeShapes').fadeOut(function(){$(this).remove()});
-    let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#network_group_key');
+    let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#group-key');
     if(e.target.value === 'None'){
       redrawNodes();
       $('#node_shape_value_row').slideDown();
@@ -720,11 +735,14 @@
     $('#node_shape_value_row').slideUp();
     table.append('<tr><th contenteditable>Node '+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
     let values = _.uniq(vnodes.map(d => d[e.target.value])).sort();
-    let symbolKeys = ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'];
-    let o = d3.scaleOrdinal(symbolKeys).domain(values);
-    let options = $('#default-node-symbol').html();
-    values.forEach(v => {
-      let selector = $('<select></select>').append(options).val(o(v)).change(redrawNodes);
+    session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+    let options = $('#node-symbol').html();
+    values.forEach((v, i) => {
+      let selector = $('<select></select>').append(options).val(session.style.nodeSymbolMap(v)).on('change', function(e){
+        session.style.nodeSymbols.splice(i, 1, e.target.value);
+        session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+        redrawNodes();
+      });
       let cell = $('<td></td>').append(selector);
       let row = $('<tr><td contenteditable>' + app.titleize(''+v) + '</td></tr>').append(cell);
       table.append(row);
@@ -733,45 +751,57 @@
     table.fadeIn();
   });
 
-  $('#default-node-radius').on('input', redrawNodes);
-  $('#nodeRadiusVariable').change(redrawNodes);
+  $('#node-radius').on('input', function(e){
+    session.style.widgets['node-radius'] = parseFloat(e.target.value);
+    redrawNodes();
+  });
+  $('#node-radius-variable').on('change', function(e){
+    session.style.widgets['node-radius-variable'] = e.target.value;
+    redrawNodes();
+  });
 
-  $(window).on('nodeColorChange', updateNodeColors);
+  $(window).on('node-color-change', updateNodeColors);
 
   function updateNodeColors(){
-    let variable = $('#nodeColorVariable').val();
-    let circles = session.network.svg.select('g#nodes').selectAll('g.node').data(vnodes).select('path');
+    let variable = session.style.widgets['node-color-variable'];
+    let nodes = svg.select('g#nodes').selectAll('g.node').select('path');
     if(variable === 'None'){
-      let col = $('#default-node-color').val();
-      circles.attr('fill', col);
+      let col = session.style.widgets['node-color'];
+      nodes.attr('fill', col);
     } else {
-      circles.attr('fill', d => session.style.nodeColorMap(d[variable]));
+      nodes.data(vnodes).attr('fill', d => session.style.nodeColorMap(d[variable]));
     }
   }
 
-  $('#default-node-charge').on('input', e => {
-    session.network.force.force('charge').strength(-e.target.value);
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+  $('#node-charge').on('input', e => {
+    let v = parseFloat(e.target.value);
+    force.force('charge').strength(-v);
+    force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['node-charge'] = v;
   });
 
-  $('#DirectedLinks').parent().click(e => {
-    session.network.svg.select('g#links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
+  $('#link-directed').parent().on('click', e => {
+    svg.select('g#links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
+    session.style.widgets['link-directed'] = true;
   });
 
-  $('#UndirectedLinks').parent().click(e => {
-    session.network.svg.select('g#links').selectAll('line').attr('marker-end', null);
+  $('#link-undirected').parent().on('click', e => {
+    svg.select('g#links').selectAll('line').attr('marker-end', null);
+    session.style.widgets['link-directed'] = false;
   });
 
-  $('#default-link-length').on('input', e => {
-    session.network.force.force('link').distance(e.target.value);
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+  $('#link-length').on('input', e => {
+    let v = parseFloat(e.target.value);
+    force.force('link').distance(e.target.value);
+    force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['link-length'] = v;
   });
 
   function updateLinkColor(e){
-    let variable = $('#linkColorVariable').val();
-    let links = session.network.svg.select('g#links').selectAll('line');
+    let variable = session.style.widgets['link-color-variable'];
+    let links = svg.select('g#links').selectAll('line');
     if(variable === 'None'){
-      let color = $('#default-link-color').val();
+      let color = session.style.widgets['link-color'];
       links.attr('stroke', color);
     } else {
       links
@@ -794,79 +824,78 @@
     }
   }
 
-  $(window).on('linkColorChange', updateLinkColor);
+  $(window).on('link-color-change', updateLinkColor);
 
-  function scaleLinkThing(scalar, variable, attribute, floor){
+  $('#link-opacity').on('input', e => {
+    session.style.widgets['link-opacity'] = parseFloat(e.target.value);
+    let opacity = 1 - parseFloat(e.target.value);
+    svg.select('g#links').selectAll('line').attr('opacity', opacity);
+  });
+
+  function scaleLinkWidth(){
+    let scalar = session.style.widgets['link-width'];
+    let variable = session.style.widgets['link-width-variable'];
     let vlinks = getVLinks();
-    let links = session.network.svg.select('g#links').selectAll('line').data(vlinks);
-    if(variable === 'None'){
-      return links.attr(attribute, scalar);
-    }
-    if(!floor){floor = 1;}
-    let values = vlinks.map(l => l[variable]).filter(l => typeof l === 'undefined');
-    let min = Math.min(values);
-    let max = Math.max(values);
-    let rng = max - min;
-    let recip = $('#reciprocal-link-width').is(':checked');
-    links.attr(attribute, d => {
+    let links = svg.select('g#links').selectAll('line').data(vlinks);
+    if(variable === 'None') return links.attr('stroke-width', scalar);
+    let values = vlinks.map(l => l[variable]).filter(_.isNumber);
+    let max = Math.max(...values);
+    let min = Math.min(...values);
+    let mid = (max-min) / 2 + min;
+    let scale = d3.scaleLinear()
+      .domain(session.style.widgets['link-width-reciprocal'] ? [max, min] : [min, max])
+      .range([1, scalar]);
+    links.attr('stroke-width', d => {
       let v = d[variable];
-      if(typeof v === 'undefined') v = rng / 2 + min;
-      if(recip && attribute === 'stroke-width'){
-        return scalar * (1 - (v - min) / rng) + floor;
-      }
-      return scalar * (v - min) / rng + floor;
+      if(!_.isNumber(v)) v = mid;
+      return scale(v);
     });
   }
 
-  $('#default-link-opacity').on('input', e => {
-    let opacity = 1 - $('#default-link-opacity').val();
-    session.network.svg.select('g#links').selectAll('line').attr('opacity', opacity);
+  $('#link-width').on('input', e => {
+    session.style.widgets['link-width'] = parseFloat(e.target.value);
+    scaleLinkWidth();
   });
 
-  $('#default-link-width').on('input', e => scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width'));
-  $('#linkWidthVariable').change(e => {
+  $('#link-width-variable').on('change', e => {
     if(e.target.value === 'None'){
       $('#link-reciprocalthickness-row').slideUp();
     } else {
-      $('#link-reciprocalthickness-row').slideDown();
+      $('#link-reciprocalthickness-row').css('display', 'flex');
     }
-    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
-  });
-  $('#reciprocal-link-width').change(e => {
-    scaleLinkThing($('#default-link-width').val(), $('#linkWidthVariable').val(), 'stroke-width');
+    session.style.widgets['link-width-variable'] = e.target.value;
+    scaleLinkWidth();
   });
 
-  $('#showNNLinks, #showAllLinks').on('change', e => {
-    session.network.render();
-    app.updateStatistics();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+  $('#link-width-reciprocal').parent().on('click', function(){
+    session.style.widgets['link-width-reciprocal'] = true;
+    scaleLinkWidth();
   });
 
-  $('#ShowSingletons, #HideSingletons').on('change', e => {
-    app.setNodeVisibility(); //Update data model
-    updateVNodes();          //Update network's copy of data model
-    session.network.render();//Draw it
-  });
-
-  $('#linkSortVariable, #default-link-threshold').on('input', e => {
-    session.network.render();
-    app.updateStatistics();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+  $('#link-width-nonreciprocal').parent().on('click', function(){
+    session.style.widgets['link-width-reciprocal'] = false;
+    scaleLinkWidth();
   });
 
   $('#network-friction').on('input', e => {
-    session.network.force.velocityDecay(e.target.value);
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+    let v = parseFloat(e.target.value);
+    force.velocityDecay(v);
+    force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['network-friction'] = v;
   });
 
   $('#network-gravity').on('input', e => {
-    session.network.force.force('gravity').strength(e.target.value);
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+    let v = parseFloat(e.target.value);
+    force.force('gravity').strength(v);
+    force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['network-gravity'] = v;
   });
 
-  $('#network-color').on('input', e => $('#main_panel').css('background-color', e.target.value));
+  $(window).on('background-color-change', function(){
+    $('#network').css('background-color', session.style.widgets['background-color']);
+  });
 
-  $('#svg_export').click(function(){
+  $('#svg_export').on('click', function(){
     let network = document.getElementById('network');
     let content = app.unparseSVG(network);
     let filetype = $('#export-img-file-type').val();
@@ -880,10 +909,10 @@
     }
   });
 
-  $('#fitbutton').click(session.network.fit);
+  $('#fitbutton').on('click', fit);
 
-  $('#pinbutton').click(function(){
-    let nodes = session.network.svg
+  $('#pinbutton').on('click', function(){
+    let nodes = svg
       .select('g#nodes')
       .selectAll('g.node')
       .data(vnodes)
@@ -894,7 +923,7 @@
         delete d.fy;
         d.fixed = false;
       });
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
+      force.alpha(0.3).alphaTarget(0).restart();
     } else {
       nodes.each(function(d){
         d.fx = d.x;
@@ -905,12 +934,6 @@
     session.network.allPinned = !session.network.allPinned;
   });
 
-  $('#RevealAllTab').click(function(e) {
-    session.network.render();
-    session.network.fit();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
-  });
-
   d3.select(window).on('keydown keyup', function(){
     d3.select('g.brush')
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none')
@@ -918,24 +941,16 @@
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
   });
 
-  $(window).on('node_visibility', e => {
-    updateVNodes();
-    updateNodeColors();
-    session.network.force.alpha(0.3).alphaTarget(0).restart();
+  $(window).on('link-threshold-change node_visibility node_selected', function(){
+    updateVNodes(); //Update network's copy of data model
+    render();       //Draw it
   });
 
-  $('#nodeTooltipVariable').val('id');
+  layout.on('stateChanged', function(){ setTimeout(fit, 1200); });
 
-  if(session.files.length > 1) $('#linkColorVariable').val('origin').change();
-
-  layout.on('stateChanged', function(){
-    session.network.render();
-    setTimeout(function(){
-      session.network.fit();
-      session.network.force.alpha(0.3).alphaTarget(0).restart();
-    }, 1200);
-  });
-
-  $('#loadingInformationModal').modal('hide');
+  if(session.files.length > 1) $('#link-color-variable').val('origin').change();
+  if(session.style.widgets['background-color']) $('#network').css('background-color', session.style.widgets['background-color']);
+  updateVNodes();
+  render();
 })();
 </script>

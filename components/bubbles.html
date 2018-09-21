@@ -4,7 +4,7 @@
   </svg>
 
   <div class="view_controls">
-    <button type="button" id="toggle_bubbles_settings" class="btn btn-light btn-sm">
+    <button type="button" id="toggle_bubbles_settings" class="btn btn-light btn-sm" data-toggle="button">
       <span class="oi oi-cog"></span>
     </button>
   </div>
@@ -12,11 +12,15 @@
   <div id="bubbles_settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#bubbles-diagramConfigurations" id="bubbles-diagram-tab" class="nav-link active" aria-controls="bubbles-diagram" role="tab" data-toggle="tab">Bubble Diagram</a>
+        <a href="#bubbles-diagramConfigurations" id="bubbles-diagram-tab" class="nav-link active" aria-controls="bubbles-diagram" role="tab" data-toggle="tab">Nodes</a>
       </li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="bubbles-diagramConfigurations" role="tabpanel" aria-labelledby="bubbles-diagram-tab">
+        <div class="form-group row">
+          <div class="col-3">Color</div>
+          <div class="col-9"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+        </div>
         <div class="form-group row">
           <div class="col-3">X</div>
           <div class="col-9">
@@ -30,8 +34,10 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3">Color</div>
-          <div class="col-9"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+          <div class="col-3">Size</div>
+          <div class="col-9">
+            <input type="range" id="bubbles_size" min="1" value="5" max="15" step="0.1"></input>
+          </div>
         </div>
       </div>
     </div>
@@ -39,13 +45,28 @@
 
   <script>
 (function(){
-  let width, height, center, forceStrength, simulation, data,
+  let width, height, center, forceStrength, simulation, vnodes,
     svg = d3.select('#bubble-view');
 
+  function updateVNodes(){
+    let newnodes = app.getVisibleNodes(true);
+    if(!vnodes) vnodes = newnodes;
+    newnodes.forEach(newNode => {
+      let old = vnodes.find(oldNode => oldNode.id === newNode.id);
+      if(old){
+        newNode.x = old.x;
+        newNode.y = old.y;
+      };
+    });
+    vnodes = newnodes;
+  }
+
   function reset(){
-    if(!$('#bubble-view').length) return;
-    width = $('#bubble-view').parent().width();
-    height = $('#bubble-view').parent().height();
+    let bv = $('#bubble-view');
+    if(!bv.length) return;
+    bv.css('background-color', session.style.widgets['background-color']);
+    width = bv.parent().width();
+    height = bv.parent().height();
     center = { x: width / 2, y: height / 2 };
 
     svg.attr('width', width).attr('height', height);
@@ -56,20 +77,26 @@
       .select('#yAxisLabel').attr('y', center.y)
       .attr('transform', 'rotate(270, 10,' + (center.y-10) + ')');
 
-    data = app.getVisibleNodes(true);
+    updateVNodes();
 
-    let bubbles = svg.selectAll('circle').data(data);
+    let radius = $('#bubbles_size').val();
+    let bubbles = svg.selectAll('circle').data(vnodes);
     bubbles.exit().remove();
     bubbles.enter().append('circle')
-        .attr('r', 5)
-        .attr('stroke', '#ffffff')
-        .attr('stroke-width', 1);
+      .attr('r', radius)
+      .attr('stroke', '#ffffff')
+      .attr('stroke-width', 2)
+      .on('click', function(d){
+        let c = session.data.nodes.find(node => d.id === node.id);
+        c.selected = !c.selected;
+        $(window).trigger('node_selected');
+      });
 
     updateNodeColors();
 
     forceStrength = 0.03;
 
-    simulation = d3.forceSimulation().nodes(data)
+    simulation = d3.forceSimulation().nodes(vnodes)
       .velocityDecay(0.2)
       .force('x', d3.forceX().strength(forceStrength).x(center.x))
       .force('y', d3.forceY().strength(forceStrength).y(center.y))
@@ -98,7 +125,7 @@
     }
     svg.select('#xAxisLabel').text(app.titleize(field));
     let values = [];
-    data.forEach(function(d){
+    vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
     if(_.isNumber(values[0])){
@@ -137,7 +164,7 @@
     }
     svg.select('#yAxisLabel').text(app.titleize(field));
     let values = [];
-    data.forEach(function(d){
+    vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
     if(_.isNumber(values[0])){
@@ -162,33 +189,38 @@
     simulation.alpha(1).restart();
   }
 
+  $('#bubbles_size').on('input', function(e){
+    svg.selectAll('circle').attr('r', e.target.value);
+  });
+
   function updateNodeColors(){
-    let field = $('#nodeColorVariable').val();
-    let bubbles = svg.selectAll('circle').data(data);
+    let field = session.style.widgets['node-color-variable'];
+    let bubbles = svg.selectAll('circle').data(vnodes);
+    bubbles.attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff');
     if(field === 'None'){
-      let color = $('#default-node-color').val();
+      let color = session.style.widgets['node-color'];
       bubbles.transition().attr('fill', color);
     } else {
       bubbles.transition().attr('fill', d => session.style.nodeColorMap(d[field]));
     }
   }
-  
-  $(window).on('nodeColorChange', updateNodeColors);
+
+  $(window).on('node-color-change selected-color-change', updateNodeColors);
 
   $('#toggle_bubbles_settings').click(function(){
     let pane = $('#bubbles_settings_pane');
-    if(pane.is(':visible')){
+    if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
       pane.show(0, function(){ pane.animate({left: '0px'}); });
     }
   });
 
-  $(window).on('updateThreshold', reset);
+  $(window).on('link-threshold-change', reset);
   $(window).on('node_visibility', reset);
+  $(window).on('node_selected', reset);
+  $(window).on('background-color-change', reset);
   layout.on('stateChanged', reset);
-
-  $('#loadingInformationModal').modal('hide');
 })();
 </script>
 </body>

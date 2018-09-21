@@ -205,6 +205,12 @@ input[type="range"]{
   width:inherit;
 }
 
+#hide_stats_context, #hide_group_key_context{
+  display: none;
+  position: fixed;
+  z-index: 2000;
+}
+
 /* 2D NETWORK */
 #nodes path {
   cursor: -webkit-grab;
@@ -256,7 +262,7 @@ input[type="range"]{
   overflow-y: auto;
   z-index: 10000;
 }
-#network_group_key_wrapper {
+#group-key-wrapper {
   position:absolute;
   top: 73px;
   right: 10px;
@@ -267,10 +273,10 @@ input[type="range"]{
   color: #303030;
   background-color: #f5f5f5;
 }
-#network_group_key th {
+#group-key th {
   text-align: center;
 }
-#network_group_key th, td {
+#group-key th, td {
   border: 1px solid lightgray;
   padding: 4px;
 }
@@ -279,7 +285,7 @@ input[type="range"]{
   position: absolute;
   bottom: 10px;
   right: 20px;
-  z-index: 10;
+  z-index: 1000;
   color: #303030;
   background-color: #f5f5f5;
   border: 1px solid #c0c0c0;
@@ -288,7 +294,7 @@ input[type="range"]{
 #networkStatistics td{
   border: none;
 }
-#network_group_key select {
+#group-key select {
   background: none;
   border: none;
   -webkit-appearance: none;
@@ -304,6 +310,9 @@ input[type="range"]{
   font-family: monospace;
   margin: 0;
 }
+#link-reciprocalthickness-row{
+  display: none;
+}
 
 /* 3D Network */
 .graph-nav-info{
@@ -311,7 +320,7 @@ input[type="range"]{
 }
 
 /* FLOW DIAGRAM */
-#flow_diagram{
+#flow-diagram{
   margin: 15px;
   margin-top: 50px;
 }
@@ -479,4 +488,15 @@ input[type="range"]{
 /* Waterfall View */
 #waterfall-view{
   padding: 30px;
+}
+
+/* Bubbles View */
+#bubble-view circle.selected {
+  stroke: #ff8300;
+  stroke-width: 4px;
+  /* stroke-dasharray: 6, 13;
+  animation-duration: 1s;
+  animation-name: ripple;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear; */
 }
