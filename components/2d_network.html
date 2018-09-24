@@ -345,6 +345,7 @@
       .strength(session.style.widgets['network-gravity'])
     )
     .force('center', d3.forceCenter(width / 2, height / 2));
+  if(session.style.widgets['network-friction']) force.velocityDecay(session.style.widgets['network-friction']);
 
   svg.append('svg:defs').append('marker')
     .attr('id', 'end-arrow')
