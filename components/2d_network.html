@@ -735,7 +735,12 @@
     }
     $('#node_shape_value_row').slideUp();
     table.append('<tr><th contenteditable>Node '+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
-    let values = _.uniq(vnodes.map(d => d[e.target.value])).sort();
+    let values = _.uniq(vnodes.map(d => {
+      if(_.isArray(d[e.target.value])){
+        return d[e.target.value].join(',');
+      }
+      return d[e.target.value];
+    })).sort();
     session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
     let options = $('#node-symbol').html();
     values.forEach((v, i) => {
