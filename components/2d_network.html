@@ -953,5 +953,13 @@
   if(session.style.widgets['background-color']) $('#network').css('background-color', session.style.widgets['background-color']);
   updateVNodes();
   render();
+
+  //For some mysterious reason, this really needed a delay...
+  setTimeout(function(){
+    if(session.style.widgets['node-symbol-variable'] !== 'None'){
+      $('#node-symbol-variable').change();
+    }
+  }, 1);
+
 })();
 </script>
