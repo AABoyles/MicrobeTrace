@@ -16,6 +16,40 @@ app.dataSkeleton = function(){
   };
 };
 
+app.defaultWidgets = {
+  '3DNet-link-tooltip-variable': 'None',
+  '3DNet-link-transparency': 0,
+  '3DNet-link-width': 1.6,
+  '3DNet-node-tooltip-variable': 'id',
+  '3DNet-node-radius': 4,
+  '3DNet-node-radius-variable': 'None',
+  'background-color': '#ffffff',
+  'background-color-contrast': '#000000',
+  'link-color': '#a6cee3',
+  'link-color-variable': 'None',
+  'link-directed': false,
+  'link-length': 0.125,
+  'link-opacity': 0,
+  'link-tooltip-variable': 'None',
+  'link-width': 3,
+  'link-width-variable': 'None',
+  'link-width-reciprocal': true,
+  'network-friction': 0.4,
+  'network-gravity': 0.05,
+  'node-charge': 200,
+  'node-color': '#1f77b4',
+  'node-color-variable': 'None',
+  'node-highlight': false,
+  'node-label-variable': 'None',
+  'node-radius': 250,
+  'node-radius-variable': 'None',
+  'node-symbol': 'symbolCircle',
+  'node-symbol-variable': 'None',
+  'node-tooltip-variable': 'id',
+  'selected-color': '#ff8300',
+  'selected-color-contrast': '#000000'
+};
+
 app.sessionSkeleton = function(){
   return {
     files: [],
@@ -32,33 +66,7 @@ app.sessionSkeleton = function(){
       nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; },
       linkColors: d3.schemePaired,
       linkColorMap: function(){ return session.style.widgets['link-color']; },
-      widgets: {
-        'node-label-variable': 'None',
-        'node-tooltip-variable': 'None',
-        'node-symbol': 'symbolCircle',
-        'node-symbol-variable': 'None',
-        'node-radius': 250,
-        'node-radius-variable': 'None',
-        'node-charge': 200,
-        'node-highlight': false,
-        'node-color': '#1f77b4',
-        'node-color-variable': 'None',
-        'link-color': '#a6cee3',
-        'link-color-variable': 'None',
-        'link-tooltip-variable': 'None',
-        'link-opacity': 0,
-        'link-width': 3,
-        'link-width-variable': 'None',
-        'link-width-reciprocal': true,
-        'link-directed': false,
-        'link-length': 0.125,
-        'network-friction': 0.4,
-        'network-gravity': 0.05,
-        'selected-color': '#ff8300',
-        'selected-color-contrast': '#000000',
-        'background-color': '#ffffff',
-        'background-color-contrast': '#000000'
-      }
+      widgets: app.defaultWidgets
     }
   };
 };

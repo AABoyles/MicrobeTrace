@@ -460,7 +460,7 @@ performance of this software.</pre>
           reader.onloadend = function(out){
             session = JSON.parse(out.target.result);
             session.startTime = startTime;
-            session.style.nodeSymbolMap = function(){ return session.style.widgets['node-symbol']; };
+            session.style.widgets = Object.assign({}, app.defaultWidgets, session.style.widgets);
             $('#node-color-variable').change();
             $('#link-color-variable').change();
             app.finishUp();
