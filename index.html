@@ -462,7 +462,7 @@ performance of this software.</pre>
             session.startTime = startTime;
             session.style.nodeSymbolMap = function(){ return session.style.widgets['node-symbol']; };
             session.style.nodeColorMap  = function(){ return session.style.widgets['node-color' ]; };
-            session.style.linkColorMap  = function(){ return session.style.widgets['link-color' ]; };
+            $('#link-color-variable').change();
             app.finishUp();
           };
         } else {
@@ -693,7 +693,6 @@ performance of this software.</pre>
         } else {
           values.sort();
         }
-        session.style.linkColors = d3.schemePaired;
         session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
         values.forEach((value, i) => {
           let input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')

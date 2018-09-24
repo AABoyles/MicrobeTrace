@@ -31,7 +31,7 @@ app.sessionSkeleton = function(){
       nodeSymbols: ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'],
       nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; },
       linkColors: d3.schemePaired,
-      linkColorMap: function(){ return session.style.widgets['link-colors']; },
+      linkColorMap: function(){ return session.style.widgets['link-color']; },
       widgets: {
         'node-label-variable': 'None',
         'node-tooltip-variable': 'None',
