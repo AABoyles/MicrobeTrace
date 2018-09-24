@@ -461,7 +461,7 @@ performance of this software.</pre>
             session = JSON.parse(out.target.result);
             session.startTime = startTime;
             session.style.nodeSymbolMap = function(){ return session.style.widgets['node-symbol']; };
-            session.style.nodeColorMap  = function(){ return session.style.widgets['node-color' ]; };
+            $('#node-color-variable').change();
             $('#link-color-variable').change();
             app.finishUp();
           };
