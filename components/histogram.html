@@ -193,9 +193,6 @@
       }
     });
 
-    $(window).on('node-color-change', redrawHistogram);
-    $(window).on('link-color-change', redrawHistogram);
-
     $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').on('change', redrawHistogram);
     $('#histogram_variable, #histogram_color').on('change', redrawHistogram);
 
@@ -210,7 +207,9 @@
       $('#histogram_panel .yaxislayer-above text').css('fill', contrast);
     }
 
-    $(window).on('background-color-change', setBackground);
+    $(window)
+      .on('node-color-change link-color-change', redrawHistogram)
+      .on('background-color-change', setBackground);
 
     $('#histogram_export').click(function(){
       let network = $('#histogram_panel .main-svg').get(0);

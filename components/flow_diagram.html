@@ -196,26 +196,24 @@
       }
     });
 
-    $(window).on('node_selected', function(){
-      if($('#flow_source_side').val() === 'selected' || $('#flow_target_side').val() === 'selected'){
-        drawFlowDiagram();
-      }
-    });
-
-    $(window).on('link-threshold-change', function(){
-      let affected = ['degree', 'cluster'];
-      if(affected.includes($('#flow_source_side').val()) || affected.includes($('#flow_target_side').val() === 'selected')){
-        drawFlowDiagram();
-      }
-    });
-
-    $(window).on('node_visibility', drawFlowDiagram);
-
-    $(window).on('background-color-change', function(){
-      $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
-    });
-
     layout.on('stateChanged', drawFlowDiagram);
+
+    $(window)
+      .on('node_selected', function(){
+        if($('#flow_source_side').val() === 'selected' || $('#flow_target_side').val() === 'selected'){
+          drawFlowDiagram();
+        }
+      })
+      .on('link-threshold-change', function(){
+        let affected = ['degree', 'cluster'];
+        if(affected.includes($('#flow_source_side').val()) || affected.includes($('#flow_target_side').val())){
+          drawFlowDiagram();
+        }
+      })
+      .on('node_visibility', drawFlowDiagram)
+      .on('background-color-change', function(){
+        $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
+      });
 
     drawFlowDiagram();
   })();

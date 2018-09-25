@@ -639,10 +639,8 @@
       resetStack();
     });
 
-    $(window).on('node-color-change', drawNodes);
     $('#mapNodeOpacity').on('change', drawNodes);
 
-    $(window).on('link-color-change', drawLinks);
     $('#mapLinkOpacity').on('change', drawLinks);
 
     $('#jitter').on('input', function(e){
@@ -654,8 +652,6 @@
       if($('#showLinks').is(':checked')) drawLinks();
       if($('#showNodes').is(':checked')) drawNodes();
     });
-
-    $(window).on('link-threshold-change', drawLinks);
 
     $('#map_export').click(function(e){
       let geojson = makeGeoJSON();
@@ -674,9 +670,9 @@
       resetStack();
     });
 
-    $(window).on('node_selected', drawNodes);
-    $(window).on('node_visibility', drawNodes);
-    $(window).on('link_visibility', drawLinks);
+    $(window)
+      .on('node-color-change node_selected node_visibility', drawNodes)
+      .on('link-color-change link-threshold-change link_visibility', drawLinks);
 
     setTimeout(function(){
       matchCoordinates();

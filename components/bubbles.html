@@ -205,8 +205,6 @@
     }
   }
 
-  $(window).on('node-color-change selected-color-change', updateNodeColors);
-
   $('#toggle_bubbles_settings').click(function(){
     let pane = $('#bubbles_settings_pane');
     if($(this).hasClass('active')){
@@ -216,11 +214,11 @@
     }
   });
 
-  $(window).on('link-threshold-change', reset);
-  $(window).on('node_visibility', reset);
-  $(window).on('node_selected', reset);
-  $(window).on('background-color-change', reset);
   layout.on('stateChanged', reset);
+
+  $(window)
+    .on('node-color-change selected-color-change', updateNodeColors)
+    .on('link-threshold-change node_visibility node_selected background-color-change', reset);
 })();
 </script>
 </body>

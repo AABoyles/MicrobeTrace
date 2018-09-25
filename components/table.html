@@ -228,8 +228,6 @@
 
     $('#font-size-slider').on('input', resetTextsize);
 
-    $(window).on('link-threshold-change', updateTable);
-
     $('#table_export').click(function(){
       let format = $('#export-table-file-type').val();
       let data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
@@ -258,8 +256,9 @@
       }
     });
 
-    $(window).on('node_selected', resetColor);
-    $(window).on('selected-color-change', resetColor);
+    $(window)
+      .on('link-threshold-change', updateTable)
+      .on('node_selected selected-color-change', resetColor);
 
     setTimeout(function(){
       updateColumns();

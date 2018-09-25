@@ -615,10 +615,6 @@ performance of this software.</pre>
       $('#hide_2d_network_statistics').parent().click();
     });
 
-    $(window).on('click', function(){
-      $('#hide_stats_context').hide();
-    });
-
     $('#RevealAllTab').on('click', function(e){
       session.data.clusters.forEach(function(c){ c.visible = true; });
       app.setLinkVisibility();
@@ -747,10 +743,6 @@ performance of this software.</pre>
       $('#color-table-hide').parent().click();
     });
 
-    $(window).on('click', function(){
-      $('#group-key-context').hide();
-    });
-
     $('form').on('keydown', function(e){
       if(e.key === 'Enter'){
         e.preventDefault();
@@ -768,10 +760,6 @@ performance of this software.</pre>
       $(window).trigger('node_selected');
     });
 
-    $(window).on('node_selected', function(){
-      $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
-    });
-
     $(document).on('keydown', function(e){
       if(e.ctrlKey && e.key === 'f'){
         e.preventDefault();
@@ -781,7 +769,20 @@ performance of this software.</pre>
 
     layout.on('stateChanged', function(){ session.layout = layout.toConfig(); });
 
-    $(window).on('resize', function(){ layout.root.setSize(); });
+    $(window)
+      .on('node_selected', function(){
+        $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+      })
+      .on('click', function(){
+        $('#hide_stats_context #group-key-context').hide();
+      })
+      .on('resize', function(){
+        layout.root.setSize();
+      })
+      .on('beforeunload', function (e){
+        e.preventDefault();
+        e.returnValue = 'Are you certain? This session will be lost!';
+      });
   });
 
   alertify.defaults.transition = 'slide';

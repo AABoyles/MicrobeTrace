@@ -171,11 +171,6 @@
       phylocanvas.setNodeSize(e.target.value);
     });
 
-    $(window).on('node-color-change', e => {
-      phylocanvas.branchColour = $('#default-node-color').val();
-      phylocanvas.draw();
-    });
-
     $('#tree_labels_align').parent().click(e => {
       phylocanvas.showLabels = true;
       phylocanvas.alignLabels = true;
@@ -205,12 +200,17 @@
       }
     });
 
-    $(window).on('node_selected', function(e){
-      session.data.nodes.filter(d => d.selected).forEach(node => {
-        phylocanvas.branches[node.id].selected = true;
+    $(window)
+      .on('node-color-change', e => {
+        phylocanvas.branchColour = session.style.widgets['node-color'];
+        phylocanvas.draw();
+      })
+      .on('node_selected', function(e){
+        session.data.nodes.filter(d => d.selected).forEach(node => {
+          phylocanvas.branches[node.id].selected = true;
+        });
+        phylocanvas.draw();
       });
-      phylocanvas.draw();
-    });
 
     layout.on('stateChanged', redrawTree);
     setTimeout(redrawTree, 80);

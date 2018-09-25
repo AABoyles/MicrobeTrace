@@ -766,8 +766,6 @@
     redrawNodes();
   });
 
-  $(window).on('node-color-change', updateNodeColors);
-
   function updateNodeColors(){
     let variable = session.style.widgets['node-color-variable'];
     let nodes = svg.select('g#nodes').selectAll('g.node').select('path');
@@ -829,8 +827,6 @@
         });
     }
   }
-
-  $(window).on('link-color-change', updateLinkColor);
 
   $('#link-opacity').on('input', e => {
     session.style.widgets['link-opacity'] = parseFloat(e.target.value);
@@ -897,10 +893,6 @@
     session.style.widgets['network-gravity'] = v;
   });
 
-  $(window).on('background-color-change', function(){
-    $('#network').css('background-color', session.style.widgets['background-color']);
-  });
-
   $('#svg_export').on('click', function(){
     let network = document.getElementById('network');
     let content = app.unparseSVG(network);
@@ -947,10 +939,16 @@
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
   });
 
-  $(window).on('link-threshold-change node_visibility node_selected', function(){
-    updateVNodes(); //Update network's copy of data model
-    render();       //Draw it
-  });
+  $(window)
+    .on('node-color-change', updateNodeColors)
+    .on('link-color-change', updateLinkColor)
+    .on('background-color-change', function(){
+      $('#network').css('background-color', session.style.widgets['background-color']);
+    })
+    .on('link-threshold-change node_visibility node_selected', function(){
+      updateVNodes(); //Update network's copy of data model
+      render();       //Draw it
+    });
 
   layout.on('stateChanged', function(){ setTimeout(fit, 1200); });
 
