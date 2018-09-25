@@ -242,10 +242,10 @@ performance of this software.</pre>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-secondary active">
-                      <input type="radio" name="2d_network_statisticsOptions" id="show_2d_network_statistics" autocomplete="off" checked> Show
+                      <input type="radio" name="network-statistics-visibility" id="network-statistics-show" autocomplete="off" checked> Show
                     </label>
                     <label class="btn btn-secondary">
-                      <input type="radio" name="2d_network_statisticsOptions" id="hide_2d_network_statistics" autocomplete="off"> Hide
+                      <input type="radio" name="network-statistics-visibility" id="network-statistics-hide" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -592,11 +592,11 @@ performance of this software.</pre>
       $(window).trigger('link-threshold-change');
     });
 
-    $('#hide_2d_network_statistics').parent().on('click', function(){
+    $('#network-statistics-hide').parent().on('click', function(){
       $('#networkStatistics').fadeOut();
     });
 
-    $('#show_2d_network_statistics').parent().on('click', function(){
+    $('#network-statistics-show').parent().on('click', function(){
       app.updateStatistics();
       $('#networkStatistics').fadeIn();
     });
@@ -612,7 +612,7 @@ performance of this software.</pre>
 
     $('#hideStats').on('click', function(e){
       $(this).parent().hide();
-      $('#hide_2d_network_statistics').parent().click();
+      $('#network-statistics-hide').parent().click();
     });
 
     $('#RevealAllTab').on('click', function(e){

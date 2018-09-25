@@ -1,7 +1,7 @@
 <svg id="network"></svg>
 
 <div class="view_controls">
-  <button type="button" id="toggle_2d_network_settings" class="btn btn-light btn-sm" data-toggle="button" title="Network Settings">
+  <button type="button" id="toggle_network_settings" class="btn btn-light btn-sm" data-toggle="button" title="Network Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_svg_modal" title="Export Network">
@@ -81,10 +81,10 @@
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
             <label class="btn btn-secondary active">
-              <input type="radio" name="HighlightOptions" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
+              <input type="radio" name="network-highlight" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
             </label>
             <label class="btn btn-secondary">
-              <input type="radio" name="HighlightOptions" id="highlight-neighbors" autocomplete="off"> Highlighted
+              <input type="radio" name="network-highlight" id="highlight-neighbors" autocomplete="off"> Highlighted
             </label>
           </div>
         </div>
@@ -129,10 +129,10 @@
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
             <label class="btn btn-secondary active">
-              <input type="radio" name="DirectionOptions" id="link-undirected" autocomplete="off" checked> Undirected
+              <input type="radio" name="network-directionality" id="link-undirected" autocomplete="off" checked> Undirected
             </label>
             <label class="btn btn-secondary">
-              <input type="radio" name="DirectionOptions" id="link-directed" autocomplete="off"> Directed
+              <input type="radio" name="network-directionality" id="link-directed" autocomplete="off"> Directed
             </label>
           </div>
         </div>
@@ -214,7 +214,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-        <button type="button" id="svg_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        <button type="button" id="network-export" class="btn btn-primary" data-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -316,7 +316,7 @@
 
   let svg = d3.select('svg#network').append('g');
 
-  let fit = function(thing, bounds){
+  function fit(thing, bounds){
     if(!bounds) bounds = svg.node().getBBox();
     if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
     let parent = svg.node().parentElement.parentElement,
@@ -329,7 +329,7 @@
       .call(zoom.transform, d3.zoomIdentity
         .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
         .scale(scale));
-  };
+  }
 
   let force = d3.forceSimulation()
     .force('link', d3.forceLink()
@@ -361,7 +361,7 @@
   svg.append('g').attr('id', 'links');
   svg.append('g').attr('id', 'nodes');
 
-  let render = function(){
+  function render(){
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
     let node = svg.select('g#nodes').selectAll('g.node').data(vnodes);
     node.exit().remove(); //Removing nodes with no representation in the dataset.
@@ -429,7 +429,7 @@
     scaleLinkWidth();
     nodes.select('path').classed('selected', d => d.selected);
     force.alpha(0.3).alphaTarget(0).restart();
-  };
+  }
 
   function getVLinks(){
     let vlinks = app.getVisibleLinks(true);
@@ -702,7 +702,7 @@
     }
   }
 
-  $('#toggle_2d_network_settings').on('click', function(){
+  $('#toggle_network_settings').on('click', function(){
     let pane = $('#network_settings_pane');
     if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
@@ -893,7 +893,7 @@
     session.style.widgets['network-gravity'] = v;
   });
 
-  $('#svg_export').on('click', function(){
+  $('#network-export').on('click', function(){
     let network = document.getElementById('network');
     let content = app.unparseSVG(network);
     let filetype = $('#export-img-file-type').val();

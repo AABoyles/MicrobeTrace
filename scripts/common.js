@@ -383,7 +383,7 @@ app.computeDM = function(callback){
 };
 
 app.updateStatistics = function(){
-  if($('#hide_2d_network_statistics').is(':checked')) return;
+  if($('#network-statistics-hide').is(':checked')) return;
   let vnodes = app.getVisibleNodes();
   var vlinks = app.getVisibleLinks();
   var singletons = vnodes.filter(d => d.degree === 0).length;
