@@ -1,22 +1,22 @@
   <svg id="bubble-view">
-    <text id="xAxisLabel" y="20"></text>
-    <text id="yAxisLabel" x="20" transform="rotate(90)"></text>
+    <text id="bubble-xAxisLabel" y="20"></text>
+    <text id="bubble-yAxisLabel" x="20" transform="rotate(90)"></text>
   </svg>
 
   <div class="view_controls">
-    <button type="button" id="toggle_bubbles_settings" class="btn btn-light btn-sm" data-toggle="button">
+    <button type="button" id="bubble-toggle-settings" class="btn btn-light btn-sm" data-toggle="button">
       <span class="oi oi-cog"></span>
     </button>
   </div>
 
-  <div id="bubbles_settings_pane" class="left_pane">
+  <div id="bubble-settings-pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#bubbles-diagramConfigurations" id="bubbles-diagram-tab" class="nav-link active" aria-controls="bubbles-diagram" role="tab" data-toggle="tab">Nodes</a>
+        <a href="#bubble-configurations" id="bubble-nodes-tab" class="nav-link active" aria-controls="bubble-configurations" role="tab" data-toggle="tab">Nodes</a>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="bubbles-diagramConfigurations" role="tabpanel" aria-labelledby="bubbles-diagram-tab">
+      <div class="tab-pane fade show active" id="bubble-configurations" role="tabpanel" aria-labelledby="bubble-nodes-tab">
         <div class="form-group row">
           <div class="col-3">Color</div>
           <div class="col-9"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
@@ -24,19 +24,19 @@
         <div class="form-group row">
           <div class="col-3">X</div>
           <div class="col-9">
-            <select id="bubbles_X" class="custom-select custom-select-sm nodeVariables"></select>
+            <select id="bubble-x" class="custom-select custom-select-sm nodeVariables"></select>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-3">Y</div>
           <div class="col-9">
-            <select id="bubbles_Y" class="custom-select custom-select-sm nodeVariables"></select>
+            <select id="bubble-y" class="custom-select custom-select-sm nodeVariables"></select>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-3">Size</div>
           <div class="col-9">
-            <input type="range" id="bubbles_size" min="1" value="5" max="15" step="0.1"></input>
+            <input type="range" id="bubble-size" min="1" value="5" max="15" step="0.1"></input>
           </div>
         </div>
       </div>
@@ -72,17 +72,17 @@
     svg.attr('width', width).attr('height', height);
 
     svg
-      .select('#xAxisLabel').attr('x', center.x);
+      .select('#bubble-xAxisLabel').attr('x', center.x);
     svg
-      .select('#yAxisLabel').attr('y', center.y)
+      .select('#bubble-yAxisLabel').attr('y', center.y)
       .attr('transform', 'rotate(270, 10,' + (center.y-10) + ')');
 
     updateVNodes();
 
-    let radius = $('#bubbles_size').val();
-    let bubbles = svg.selectAll('circle').data(vnodes);
-    bubbles.exit().remove();
-    bubbles.enter().append('circle')
+    let radius = $('#bubble-size').val();
+    let bubble = svg.selectAll('circle').data(vnodes);
+    bubble.exit().remove();
+    bubble.enter().append('circle')
       .attr('r', radius)
       .attr('stroke', '#ffffff')
       .attr('stroke-width', 2)
@@ -107,23 +107,25 @@
           .attr('cy', function(d){return d.y});
       });
 
-    groupBubblesX($('#bubbles_X').val());
-    groupBubblesY($('#bubbles_Y').val());
+    groupBubblesX();
+    groupBubblesY();
   }
 
-  $('#bubbles_X').on('change', function(e){
-    groupBubblesX(e.target.value);
+  $('#bubble-x').on('change', function(e){
+    session.style.widgets['bubble-x'] = e.target.value;
+    groupBubblesX();
   });
 
-  function groupBubblesX(field){
+  function groupBubblesX(){
+    let field = session.style.widgets['bubble-x'];
     if(field === 'None'){
-      svg.select('#xAxisLabel').text('');
+      svg.select('#bubble-xAxisLabel').text('');
       svg.selectAll('.xtitle').remove();
       simulation.force('x', d3.forceX().strength(forceStrength).x(center.x));
       simulation.alpha(1).restart();
       return;
     }
-    svg.select('#xAxisLabel').text(app.titleize(field));
+    svg.select('#bubble-xAxisLabel').text(app.titleize(field));
     let values = [];
     vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
@@ -150,19 +152,21 @@
     simulation.alpha(1).restart();
   }
 
-  $('#bubbles_Y').on('change', function(e){
-    groupBubblesY(e.target.value);
+  $('#bubble-y').on('change', function(e){
+    session.style.widgets['bubble-y'] = e.target.value;
+    groupBubblesY();
   });
 
-  function groupBubblesY(field){
+  function groupBubblesY(){
+    let field = session.style.widgets['bubble-y'];
     if(field === 'None'){
-      svg.select('#yAxisLabel').text('');
+      svg.select('#bubble-yAxisLabel').text('');
       svg.selectAll('.ytitle').remove();
       simulation.force('y', d3.forceY().strength(forceStrength).y(center.y));
       simulation.alpha(1).restart();
       return;
     }
-    svg.select('#yAxisLabel').text(app.titleize(field));
+    svg.select('#bubble-yAxisLabel').text(app.titleize(field));
     let values = [];
     vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
@@ -189,24 +193,26 @@
     simulation.alpha(1).restart();
   }
 
-  $('#bubbles_size').on('input', function(e){
-    svg.selectAll('circle').attr('r', e.target.value);
+  $('#bubble-size').on('input', function(e){
+    let v = parseFloat(e.target.value);
+    svg.selectAll('circle').attr('r', v);
+    session.style.widgets['bubble-size'] = v;
   });
 
   function updateNodeColors(){
     let field = session.style.widgets['node-color-variable'];
-    let bubbles = svg.selectAll('circle').data(vnodes);
-    bubbles.attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff');
+    let bubble = svg.selectAll('circle').data(vnodes);
+    bubble.attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff');
     if(field === 'None'){
       let color = session.style.widgets['node-color'];
-      bubbles.transition().attr('fill', color);
+      bubble.transition().attr('fill', color);
     } else {
-      bubbles.transition().attr('fill', d => session.style.nodeColorMap(d[field]));
+      bubble.transition().attr('fill', d => session.style.nodeColorMap(d[field]));
     }
   }
 
-  $('#toggle_bubbles_settings').click(function(){
-    let pane = $('#bubbles_settings_pane');
+  $('#bubble-toggle-settings').click(function(){
+    let pane = $('#bubble-settings-pane');
     if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
