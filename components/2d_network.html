@@ -251,9 +251,7 @@
     .on('end', brushended);
 
   function brushstarted(){
-    vnodes.forEach(d => {
-      d.previouslySelected = d.selected;
-    });
+    vnodes.forEach(d => d.previouslySelected = d.selected);
   }
 
   let transform = {};
@@ -265,19 +263,12 @@
       transform.invert(d3.event.selection[1])
     ];
     if(selection.includes(null)) return;
-    if(d3.event.sourceEvent.ctrlKey){
-      vnodes.forEach(function(d){
-        d.selected = d.previouslySelected ^ (
-          selection[0][0] <= d.x && d.x <= selection[1][0] &&
-          selection[0][1] <= d.y && d.y <= selection[1][1]);
-      });
-    } else {
-      vnodes.forEach(function(d){
-        d.selected =
-          selection[0][0] <= d.x && d.x <= selection[1][0] &&
-          selection[0][1] <= d.y && d.y <= selection[1][1];
-      });
-    }
+    vnodes.forEach(function(d){
+      d.selected = (d.previouslySelected ^ (
+        selection[0][0] <= d.x && d.x <= selection[1][0] &&
+        selection[0][1] <= d.y && d.y <= selection[1][1]
+      )) === 1;
+    });
   }
 
   function brushended() {
