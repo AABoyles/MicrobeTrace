@@ -1,6 +1,6 @@
 {
   "name": "MicrobeTrace",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "main": "index.js",
   "author": "Tony Boyles <Anthony@Boyles.cc>",
   "license": "MIT",
@@ -10,12 +10,8 @@
     "yarn": "^1.6.0"
   },
   "scripts": {
-    "appcache": "bash appcache.sh",
-    "start": "node index.js",
-    "build": "nativifier https://microbetrace.herokuapp.com/"
-  },
-  "devDependencies": {
-    "nativefier": "^7.6.2"
+    "cache": "bash appcache.sh",
+    "start": "node index.js"
   },
   "dependencies": {
     "3d-force-graph": "^1.31.2",
