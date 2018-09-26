@@ -28,6 +28,8 @@ app.defaultWidgets = {
   'bubble-x': 'None',
   'bubble-y': 'None',
   'bubble-size': 5,
+  'flow-source-variable': 'selected',
+  'flow-target-variable': 'cluster',
   'link-color': '#a6cee3',
   'link-color-variable': 'None',
   'link-directed': false,
