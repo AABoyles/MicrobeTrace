@@ -295,7 +295,7 @@
     }
 
     let layers = {
-      geography: L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
+      basemap: L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png', {
       	subdomains: 'abcd',
       	maxZoom: 19
       }),
@@ -305,6 +305,7 @@
     let nodes = app.getVisibleNodes(true);
 
     app.mapData = {};
+
     function getMapData(type, callback){
       $.getJSON('data/' + type + '.json', response => {
         app.mapData[type] = response;
@@ -332,7 +333,14 @@
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
     ['lat', 'lon', 'tract', 'zipcode', 'county', 'state', 'country'].forEach(v => {
-      if(session.data.nodeFields.includes(v)) $(`#map-field-${v}`).val(v);
+      let name = 'map-field-'+v, s = $('#'+name);
+      s.on('change', function(e){
+        session.style.widgets[name] = e.target.value;
+        matchCoordinates();
+        drawNodes();
+        resetStack();
+      });
+      if(session.data.nodeFields.includes(v)) s.val(v);
     });
 
     function matchCoordinates(){
@@ -401,11 +409,6 @@
       }
     }
 
-    $('#map-field-country, #map-field-state, #map-field-county, #map-field-zipcode, #map-field-tract, #map-field-lat, #map-field-lon').on('change', function(){
-      matchCoordinates();
-      resetStack();
-    });
-
     function makeNodeGeoJSON(){
       let geojson = {
         type: 'FeatureCollection',
@@ -430,14 +433,10 @@
     function makeLinkGeoJSON(){
       let features = [];
       let jitter = session.style.widgets['map-node-jitter'] > 0;
-      session.data.links.forEach(function(d){
+      app.getVisibleLinks().forEach(function(d){
         if(!d.visible) return;
-        let source = nodes.find(function(node){
-          return node.id === d.source;
-        });
-        let target = nodes.find(function(node){
-          return node.id === d.target;
-        });
+        let source = nodes.find(node => node.id === d.source);
+        let target = nodes.find(node => node.id === d.target);
         if(source && target){
           if(source.lat && source.lon && target.lat && target.lon){
             features.push({
@@ -465,6 +464,7 @@
 
     function drawNodes(){
       layers.nodes.remove();
+      if(!session.style.widgets['map-node-show']) return;
       let style = {
         fillOpacity: 1 - session.style.widgets['map-node-transparency']
       };
@@ -478,15 +478,16 @@
           }));
         }
       });
-      layers.nodes.on('mouseover', showNodeTooltip);
-      layers.nodes.on('mouseout', hideTooltip);
-      layers.nodes.on('click', clickHandler);
-      layers.nodes.addTo(map);
-      layers.nodes.bringToFront();
+      layers.nodes
+        .on('mouseover', showNodeTooltip)
+        .on('mouseout', hideTooltip)
+        .on('click', clickHandler)
+        .addTo(map).bringToFront();
     }
 
     function drawLinks(){
       layers.links.remove();
+      if(!session.style.widgets['map-link-show']) return;
       let lcv = session.style.widgets['link-color-variable'];
       let opacity = 1 - session.style.widgets['map-link-transparency'];
       if(lcv === "None"){
@@ -547,11 +548,11 @@
 
     function clickHandler(e){
       let node = e.sourceTarget.feature.properties;
-      let d = nodes.find(d => d.id === node.id);
+      let d = session.data.nodes.find(d => d.id === node.id);
       if(!e.originalEvent.ctrlKey){
-        nodes
-          .filter(node => node !== d)
-          .forEach(node => node.selected = 0);
+        session.data.nodes
+          .filter(node => node.id !== d.id)
+          .forEach(node => node.selected = false);
       }
       d.selected = !d.selected;
       $(window).trigger('node_selected');
@@ -566,19 +567,23 @@
       }
     });
 
-    $('#map-fit').on('click', e => {
+    $('#map-fit').on('click', function(){
       map.flyToBounds(layers.nodes.getBounds());
     });
 
     function resetStack(){
-      //Background Layers, in reverse order:
-      if(session.style.widgets['map-counties-show']) layers.counties.bringToBack();
-      if(session.style.widgets['map-states-show']) layers.states.bringToBack();
-      if(session.style.widgets['map-countries-show']) layers.countries.bringToBack();
+      //Tile Layers, in reverse order:
+      if(layers.satellite && session.style.widgets['map-satellite-show']) layers.satellite.bringToBack();
+      if(layers.basemap && session.style.widgets['map-basemap-show']) layers.basemap.bringToBack();
+
+      //Background Layers, in order:
+      if(layers.countries && session.style.widgets['map-countries-show']) layers.countries.bringToFront();
+      if(layers.states && session.style.widgets['map-states-show']) layers.states.bringToFront();
+      if(layers.counties && session.style.widgets['map-counties-show']) layers.counties.bringToFront();
 
       //Foreground Layers, in order:
-      if(session.style.widgets['map-link-show']) layers.links.bringToFront();
-      if(session.style.widgets['map-node-show']) layers.nodes.bringToFront();
+      if(layers.links && session.style.widgets['map-link-show']) layers.links.bringToFront();
+      if(layers.nodes && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
     }
 
     $('#map-node-show').parent().on('click', function(){
@@ -593,7 +598,7 @@
     $('#map-link-show').parent().on('click', function(){
       session.style.widgets['map-link-show'] = true;
       drawLinks();
-      resetStack();
+      if(layers.nodes && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
     });
     $('#map-link-hide').parent().on('click', function(){
       session.style.widgets['map-link-show'] = false;
@@ -606,7 +611,7 @@
         layers.countries.addTo(map);
         resetStack();
       } else {
-        getMapData('countries', () => $(this).on('click', ));
+        getMapData('countries', () => $(this).trigger('click'));
       }
     });
     $('#map-countries-hide').parent().on('click', function(){
@@ -620,10 +625,10 @@
         layers.states.addTo(map);
         resetStack();
       } else {
-        getMapData('states', () => $(this).on('click', ));
+        getMapData('states', () => $(this).trigger('click'));
       }
     });
-    $('#hideStates').parent().on('click', function(){
+    $('#map-states-hide').parent().on('click', function(){
       session.style.widgets['map-states-show'] = false;
       layers.states.remove();
     });
@@ -634,43 +639,42 @@
         layers.counties.addTo(map);
         resetStack();
       } else {
-        getMapData('counties', () => $(this).on('click', ));
+        getMapData('counties', () => $(this).trigger('click'));
       }
     });
-    $('#hideCounties').parent().on('click', function(){
+    $('#map-counties-hide').parent().on('click', function(){
       session.style.widgets['map-counties-show'] = false;
       layers.counties.remove();
     });
 
     $('#map-basemap-show').parent().on('click', function(){
       session.style.widgets['map-basemap-show'] = true;
-      layers.geography.addTo(map);
-      $('#map-satellite-hide').click();
-      $('#map-countries-hide').click();
-      $('#hideStates').click();
-      $('#hideCounties').click();
+      layers.basemap.addTo(map);
+      $('#map-satellite-hide').trigger('click');
+      $('#map-countries-hide').trigger('click');
+      $('#map-states-hide').trigger('click');
+      $('#map-counties-hide').trigger('click');
     });
     $('#map-basemap-hide').parent().on('click', function(){
       session.style.widgets['map-basemap-show'] = false;
-      layers.geography.remove();
-      $('#map-countries-show').click();
-      $('#map-states-show').click();
-      resetStack();
+      layers.basemap.remove();
+      $('#map-countries-show').trigger('click');
+      $('#map-states-show').trigger('click');
     });
 
     $('#map-satellite-show').parent().on('click', function(){
       session.style.widgets['map-satellite-show'] = true;
       layers.satellite.addTo(map);
-      $('#map-basemap-hide').click();
-      $('#map-countries-hide').click();
-      $('#hideStates').click();
-      $('#hideCounties').click();
+      $('#map-basemap-hide').trigger('click');
+      $('#map-countries-hide').trigger('click');
+      $('#map-states-hide').trigger('click');
+      $('#map-counties-hide').trigger('click');
     });
     $('#map-satellite-hide').parent().on('click', function(){
       session.style.widgets['map-satellite-show'] = false;
       layers.satellite.remove();
-      $('#map-countries-show').click();
-      $('#map-states-show').click();
+      $('#map-countries-show').trigger('click');
+      $('#map-states-show').trigger('click');
       resetStack();
     });
 
@@ -709,11 +713,6 @@
       saveAs(output, $('#map-export-file-name').val() + '.' + format);
     });
 
-    $('#map-settings-pane .nodeVariables').on('change', function(){
-      matchCoordinates();
-      resetStack();
-    });
-
     $(window)
       .on('node_visibility node_selected', function(){
         nodes = app.getVisibleNodes(true);
@@ -726,9 +725,8 @@
     setTimeout(function(){
       matchCoordinates();
       drawNodes();
-      resetStack();
-      map.flyToBounds(layers.nodes.getBounds());
-    }, 400);
+      if(layers.nodes) map.flyToBounds(layers.nodes.getBounds());
+    }, 40);
 
   })();
   </script>
