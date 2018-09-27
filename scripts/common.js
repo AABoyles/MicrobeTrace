@@ -30,6 +30,9 @@ app.defaultWidgets = {
   'bubble-size': 5,
   'flow-source-variable': 'selected',
   'flow-target-variable': 'cluster',
+  'histogram-axis-x': true,
+  'histogram-scale-log': false,
+  'histogram-variable': 'links-tn93',
   'link-color': '#a6cee3',
   'link-color-variable': 'None',
   'link-directed': false,
@@ -526,15 +529,16 @@ app.launchView = function(view, callback){
     }
     contentItem.element.find('select.nodeVariables').html(
       '<option>None</option>' +
-      session.data.nodeFields.map(function(field){
-        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-      }).join('\n')
+      session.data.nodeFields.map(function(field){ return '<option value="'+field+'">'+app.titleize(field)+'</option>'; }).join('\n')
     );
     contentItem.element.find('select.linkVariables').html(
       '<option>None</option>' +
-      session.data.linkFields.map(function(field){
-        return '<option value="'+field+'">'+app.titleize(field)+'</option>';
-      }).join('\n')
+      session.data.linkFields.map(function(field){ return '<option value="'+field+'">'+app.titleize(field)+'</option>'; }).join('\n')
+    );
+    contentItem.element.find('select.mixedVariables').html(
+      '<option>None</option>' +
+      session.data.linkFields.map(function(field){ return '<option value="links-'+field+'">Links '+app.titleize(field)+'</option>'; }).concat(
+      session.data.nodeFields.map(function(field){ return '<option value="nodes-'+field+'">Nodes '+app.titleize(field)+'</option>'; })).join('\n')
     );
     contentItem.element.find('.launch-color-options').click(function(){
       $('#color-tab').tab('show');

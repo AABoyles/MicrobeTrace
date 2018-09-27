@@ -1,61 +1,48 @@
-<div id="histogram_panel"></div>
+<div id="histogram-panel"></div>
 
   <div class="view_controls">
-    <button id="toggle_histogram_settings" type="button" class="btn btn-light btn-sm">
+    <button id="toggle-histogram-settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_histogram_modal" title="Export Histogram">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export-histogram-modal" title="Export Histogram">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
 
-  <div id="histogram_settings_pane" class="left_pane">
+  <div id="histogram-settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#histogramConfigurations" id="histogram-tab" class="nav-link active" aria-controls="histogram" role="tab" data-toggle="tab">Histogram</a>
+        <a href="#histogram-settings" id="histogram-tab" class="nav-link active" aria-controls="histogram" role="tab" data-toggle="tab">Histogram</a>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="histogramConfigurations" role="tabpanel" aria-labelledby="histogram-tab">
+      <div class="tab-pane fade show active" id="histogram-settings" role="tabpanel" aria-labelledby="histogram-tab">
+        <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
+          <div class="col-9"><select id="histogram-variable" class="custom-select custom-select-sm mixedVariables"><option selected>distance</option></select></div>
+        </div>
         <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light active col">
-                <input type="radio" name="axis" id="histogram_xAxis" autocomplete="off" checked> X
+                <input type="radio" name="axis" id="histogram-axis-x" autocomplete="off" checked> X
               </label>
               <label class="btn btn-light col">
-                <input type="radio" name="axis" id="histogram_yAxis" autocomplete="off"> Y
+                <input type="radio" name="axis" id="histogram-axis-y" autocomplete="off"> Y
               </label>
             </div>
           </div>
-        </div>
-        <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the histogram be drawn from only stuff thats visible in the network, or all the data?">Dataset</a></div>
-          <div class="col-9">
-            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light active col">
-                <input type="radio" name="set" id="histogram_vislinks" autocomplete="off" checked> Visible Elements
-              </label>
-              <label class="btn btn-light col">
-                <input type="radio" name="set" id="histogram_alllinks" autocomplete="off"> All Elements
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
-          <div class="col-9"><select id="histogram_variable" class="custom-select custom-select-sm"><option selected>distance</option></select></div>
         </div>
         <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light active col">
-                <input type="radio" name="scale" id="histogram_linearScale" autocomplete="off" checked> Linear
+                <input type="radio" name="scale" id="histogram-scale-linear" autocomplete="off" checked> Linear
               </label>
               <label class="btn btn-light col">
-                <input type="radio" name="scale" id="histogram_logScale" autocomplete="off"> Log
+                <input type="radio" name="scale" id="histogram-scale-log" autocomplete="off"> Log
               </label>
             </div>
           </div>
@@ -64,7 +51,7 @@
     </div>
   </div>
 
-  <div id="export_histogram_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="export-histogram-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -88,7 +75,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="histogram_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+          <button type="button" id="histogram-export" class="btn btn-primary" data-dismiss="modal">Export</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -98,20 +85,14 @@
   (function(){
     let plot;
 
-    $('#histogram_variable').html(
-      session.data.linkFields.map(key => `<option value='links-${key}'>Links ${app.titleize(key)}</option>`).concat(
-      session.data.nodeFields.map(key => `<option value='nodes-${key}'>Nodes ${app.titleize(key)}</option>`)).join('\n')
-    ).val(session.data.linkFields.includes('distance') ? 'links-distance' : 'links-tn93');
-
     function redrawHistogram(){
-      let panel = $('#histogram_panel');
+      let panel = $('#histogram-panel');
       if(!panel.length) return;
-      if(plot) Plotly.purge('histogram_panel');
+      if(plot) Plotly.purge('histogram-panel');
       let varSource, varName, axis = 'x', nonAxis = 'y';
-      [varSource, ...varName] = $('#histogram_variable').val().split('-');
+      [varSource, ...varName] = session.style.widgets['histogram-variable'].split('-');
       varName = varName.join('-');
-      let visible = $('#histogram_vislinks').is(':checked');
-      if($('#histogram_yAxis').is(':checked')){
+      if(!session.style.widgets['histogram-axis-x']){
         axis = 'y', nonAxis = 'x';
       }
       let traces = [];
@@ -125,6 +106,7 @@
         session.data.nodes.forEach(d => {
           if(!values.includes(d[field])) values.push(d[field]);
         });
+        let vnodes = app.getVisibleNodes();
         values.forEach((v, i) => {
           let trace = {
             type: 'histogram',
@@ -134,7 +116,7 @@
             showlegend: false,
             hoverinfo: 'skip'
           };
-          trace[axis] = (visible ? app.getVisibleNodes() : session.data.nodes).filter(d => d.visible && d[field] === v).map(d => d[varName]);
+          trace[axis] = vnodes.filter(d => d[field] === v).map(d => d[varName]);
           traces.push(trace);
         });
         layout.barmode = 'stack';
@@ -144,6 +126,7 @@
         session.data.links.forEach(d => {
           if(!(d[field] in values)) values.push(d[field]);
         });
+        let vlinks = app.getVisibleLinks();
         values.forEach((v, i) => {
           let trace = {
             type: 'histogram',
@@ -153,7 +136,7 @@
             showlegend: false,
             hoverinfo: 'skip'
           };
-          trace[axis] = (visible ? app.getVisibleLinks() : session.data.links).filter(d => d[field] === v).map(d => d[varName]);
+          trace[axis] = vlinks.filter(d => d[field] === v).map(d => d[varName]);
           traces.push(trace);
         });
         layout.barmode = 'stack';
@@ -166,7 +149,7 @@
           showlegend: false,
           hoverinfo: 'skip'
         };
-        trace[axis] = (visible ? (varSource === 'nodes' ? app.getVisibleNodes() : app.getVisibleLinks()) : session.data[varSource]).map(l => l[varName]);
+        trace[axis] = (varSource === 'nodes' ? app.getVisibleNodes() : app.getVisibleLinks()).map(l => l[varName]);
         traces = [trace];
       }
       layout[axis + 'axis'] = {
@@ -174,9 +157,9 @@
       }
       layout[nonAxis + 'axis'] = {
         title: 'Number of ' + app.titleize(varSource),
-        type: $('#histogram_logScale').is(':checked') ? 'log' : ''
+        type: session.style.widgets['histogram-scale-log'] ? 'log' : ''
       };
-      plot = Plotly.newPlot('histogram_panel', traces, layout, {
+      plot = Plotly.newPlot('histogram-panel', traces, layout, {
         displaylogo: false,
         displayModeBar: false,
         scrollZoom: true
@@ -184,8 +167,19 @@
       setBackground();
     }
 
-    $('#toggle_histogram_settings').click(function(){
-      let pane = $('#histogram_settings_pane');
+    function setBackground(){
+      let col = session.style.widgets['background-color'];
+      $('#histogram-panel svg.main-svg').first().css('background', col);
+      $('#histogram-panel rect.bg').css('fill', col);
+
+      let contrast = session.style.widgets['background-color-contrast'];
+      $('#histogram-panel .xtitle, .ytitle').css('fill', contrast);
+      $('#histogram-panel .xaxislayer-above text').css('fill', contrast);
+      $('#histogram-panel .yaxislayer-above text').css('fill', contrast);
+    }
+
+    $('#toggle-histogram-settings').click(function(){
+      let pane = $('#histogram-settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -193,27 +187,38 @@
       }
     });
 
-    $('#histogram_alllinks, #histogram_vislinks, #histogram_logScale, #histogram_linearScale, #histogram_xAxis, #histogram_yAxis').on('change', redrawHistogram);
-    $('#histogram_variable, #histogram_color').on('change', redrawHistogram);
+    $('#histogram-variable').on('change', function(e){
+      session.style.widgets['histogram-variable'] = e.target.value;
+      redrawHistogram();
+    });
 
-    function setBackground(){
-      let col = session.style.widgets['background-color'];
-      $('#histogram_panel svg.main-svg').first().css('background', col);
-      $('#histogram_panel rect.bg').css('fill', col);
+    $('#histogram-scale-log').parent().on('click', function(){
+      session.style.widgets['histogram-scale-log'] = true;
+      redrawHistogram();
+    });
 
-      let contrast = session.style.widgets['background-color-contrast'];
-      $('#histogram_panel .xtitle, .ytitle').css('fill', contrast);
-      $('#histogram_panel .xaxislayer-above text').css('fill', contrast);
-      $('#histogram_panel .yaxislayer-above text').css('fill', contrast);
-    }
+    $('#histogram-scale-linear').parent().on('click', function(){
+      session.style.widgets['histogram-scale-log'] = false;
+      redrawHistogram();
+    });
+
+    $('#histogram-axis-x').parent().on('click', function(){
+      session.style.widgets['histogram-axis-x'] = true;
+      redrawHistogram();
+    });
+
+    $('#histogram-axis-y').parent().on('click', function(){
+      session.style.widgets['histogram-axis-x'] = false;
+      redrawHistogram();
+    });
 
     $(window)
       .on('node-color-change link-color-change', redrawHistogram)
       .on('background-color-change', setBackground);
 
-    $('#histogram_export').click(function(){
-      let network = $('#histogram_panel .main-svg').get(0);
-      $('#histogram_panel .main-svg .infolayer').detach().appendTo(network);
+    $('#histogram-export').click(function(){
+      let network = $('#histogram-panel .main-svg').get(0);
+      $('#histogram-panel .main-svg .infolayer').detach().appendTo(network);
       let content = app.unparseSVG(network);
       let filetype = $('#export-histogram-file-type').val();
       if(filetype === 'svg'){
