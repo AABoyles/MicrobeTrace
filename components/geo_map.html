@@ -200,7 +200,7 @@
         <div class="form-group row">
           <div class="col-4">Jitter</div>
           <div class="col-8">
-            <input type="range" id="map-node-jitter" min="0.00" max="100" step="0.5" value="0.00" />
+            <input type="range" id="map-node-jitter" min="0.00" max="5" step="0.05" value="0.00" />
           </div>
         </div>
         <div class="form-group row">
@@ -684,14 +684,17 @@
       drawLinks();
     });
 
-    $('#map-node-jitter').on('change', function(e){
-      let zoom = map.getZoom(), v = parseFloat(e.target.value);
-      nodes.forEach(node => {
-        node.jx = (Math.random() * v - v / 2) / zoom / 5;
-        node.jy = (Math.random() * v - v / 2) / zoom / 9;
-      });
-      if(session.style.widgets['map-link-show']) drawLinks();
-      if(session.style.widgets['map-node-show']) drawNodes();
+    $('#map-node-jitter').on('input', function(e){
+      let z = map.getZoom(), z5 = z*5, z9 = z*9,
+          v = parseFloat(e.target.value),
+          n = nodes.length, rand = d3.randomNormal(0, 20);
+      for(let i = 0; i < n; i++){
+        nodes[i].jx = (rand() * v) / z5;
+        nodes[i].jy = (rand() * v) / z9;
+      }
+      session.style.widgets['map-node-jitter'] = v;
+      drawLinks();
+      drawNodes();
     });
 
     $('#map-export').on('click', function(){
