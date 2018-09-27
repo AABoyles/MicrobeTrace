@@ -302,7 +302,7 @@
       satellite: L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYWFib3lsZXMiLCJhIjoiY2o4b3QxNmtjMDhwNjMzcno4dDd1NnVraSJ9.BkjEa6NM7o7KeTaTHOaIGg')
     };
 
-    let nodes = app.getVisibleNodes(true);
+    let nodes = app.getVisibleNodes();
 
     app.mapData = {};
 
@@ -347,15 +347,21 @@
       if(session.style.widgets['map-field-country'] !== 'None'){
         let val = session.style.widgets['map-field-country'];
         nodes.forEach(n => {
-          let country = app.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val] || c.properties.country == n[val] || c.properties.ccode == n[val]);
-          if(country) Object.assign(n, country.properties);
+          let country = app.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
+          if(country){
+            n._lat = country.properties._lat,
+            n._lon = country.properties._lon
+          }
         });
       }
       if(session.style.widgets['map-field-state'] !== 'None'){
         let sval = session.style.widgets['map-field-state'];
         nodes.forEach(n => {
           let state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
-          if(state) Object.assign(n, state.properties);
+          if(state){
+            n._lat = state.properties._lat;
+            n._lon = state.properties._lon;
+          }
         });
         // Counties is nested in states because Counties are typically reported by name (rather than a UID like FIPS code),
         // but counties names are non-unique (e.g. there are 31 Washington Counties). Accordingly, if we have a state and a county,
@@ -365,7 +371,10 @@
           nodes.forEach(n => {
             let state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
             let county = app.mapData.counties.features.find(c => c.properties.NAME.includes(n[cval]) && c.properties.USPS == state.properties.usps);
-            if(county) Object.assign(n, county.properties);
+            if(county){
+              n._lat = county.properties._lat;
+              n._lon = county.properties._lon;
+            }
           });
         }
       }
@@ -377,7 +386,10 @@
         let val = session.style.widgets['map-field-zipcode'];
         nodes.forEach(n => {
           let zo = app.mapData.zipcodes.find(z => z.zipcode == n[val]);
-          if(zo) Object.assign(n, zo);
+          if(zo){
+            n._lat = zo._lat;
+            n._lon = zo._lon;
+          }
         });
       }
       if(session.style.widgets['map-field-tract'] !== 'None'){
@@ -388,7 +400,10 @@
         let val = session.style.widgets['map-field-tract'];
         nodes.forEach(n => {
           let tract = app.mapData.tracts.find(t => t.tract == n[val]);
-          if(tract) Object.assign(n, tract);
+          if(tract){
+            n._lat = tract._lat;
+            n._lon = tract._lon;
+          }
         });
       }
       if(session.style.widgets['map-field-lat'] !== 'None' && session.style.widgets['map-field-lon'] !== 'None'){
@@ -396,14 +411,14 @@
             lon = session.style.widgets['map-field-lon'];
         nodes.forEach(n => {
           if(typeof n[lat] == 'string'){
-            n.lat = (n[lat].includes('S') ? -1 : 1) * parseFloat(n[lat]);
+            n._lat = (n[lat].includes('S') ? -1 : 1) * parseFloat(n[lat]);
           } else {
-            n.lat = n[lat];
+            n._lat = n[lat];
           }
           if(typeof n[lon] == 'string'){
-            n.lon = (n[lon].includes('W') ? -1 : 1) * parseFloat(n[lon]);
+            n._lon = (n[lon].includes('W') ? -1 : 1) * parseFloat(n[lon]);
           } else {
-            n.lon = n[lon];
+            n._lon = n[lon];
           }
         });
       }
@@ -416,12 +431,12 @@
       };
       let jitter = session.style.widgets['map-node-jitter'] > 0;
       nodes.forEach(function(d){
-        if(d.lat && d.lon){
+        if(d._lat && d._lon){
           geojson.features.push({
             type: 'Feature',
             geometry: {
               type: 'Point',
-              coordinates: jitter ? [d.lon + d.jx, d.lat + d.jy] : [d.lon, d.lat]
+              coordinates: jitter ? [d._lon + d._jlon, d._lat + d._jlat] : [d._lon, d._lat]
             },
             properties: d
           });
@@ -438,17 +453,17 @@
         let source = nodes.find(node => node.id === d.source);
         let target = nodes.find(node => node.id === d.target);
         if(source && target){
-          if(source.lat && source.lon && target.lat && target.lon){
+          if(source._lat && source._lon && target._lat && target._lon){
             features.push({
               type: 'Feature',
               geometry: {
                 type: 'LineString',
                 coordinates: jitter ? [
-                  [source.lon + source.jx, source.lat + source.jy],
-                  [target.lon + target.jx, target.lat + target.jy]
+                  [source._lon + source._jlon, source._lat + source._jlat],
+                  [target._lon + target._jlon, target._lat + target._jlat]
                 ] : [
-                  [source.lon, source.lat],
-                  [target.lon, target.lat]
+                  [source._lon, source._lat],
+                  [target._lon, target._lat]
                 ]
               },
               properties: d
@@ -693,8 +708,8 @@
           v = parseFloat(e.target.value),
           n = nodes.length, rand = d3.randomNormal(0, 20);
       for(let i = 0; i < n; i++){
-        nodes[i].jx = (rand() * v) / z5;
-        nodes[i].jy = (rand() * v) / z9;
+        nodes[i]._jlon = (rand() * v) / z5;
+        nodes[i]._jlat = (rand() * v) / z9;
       }
       session.style.widgets['map-node-jitter'] = v;
       drawLinks();
@@ -715,7 +730,7 @@
 
     $(window)
       .on('node_visibility node_selected', function(){
-        nodes = app.getVisibleNodes(true);
+        nodes = app.getVisibleNodes();
         matchCoordinates();
         drawNodes();
       })
@@ -725,7 +740,7 @@
     setTimeout(function(){
       matchCoordinates();
       drawNodes();
-      if(layers.nodes) map.flyToBounds(layers.nodes.getBounds());
+      if(layers.nodes.length) map.flyToBounds(layers.nodes.getBounds());
     }, 40);
 
   })();
