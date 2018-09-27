@@ -630,6 +630,7 @@ performance of this software.</pre>
         if(variable === 'None'){
           $('#node_color_value_row').slideDown();
           $('#nodeColors').remove();
+          $(window).trigger('node-color-change');
           return;
         }
         $('#node_color_value_row').slideUp();
@@ -667,6 +668,7 @@ performance of this software.</pre>
         if(variable === 'None'){
           $('#link-color-row').slideDown();
           $('#linkColors').remove();
+          $(window).trigger('link-color-change');
           return;
         }
         $('#link-color-row').slideUp();
