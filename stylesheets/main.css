@@ -195,8 +195,6 @@ button.navbar-toggler{
 }
 #file_table {
   height: 100%;
-  border: 1px dashed lightgray;
-  border-radius: 0.25rem;
 }
 #drop_zone {
   border: 2px dashed #bbb;
