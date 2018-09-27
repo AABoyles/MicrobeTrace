@@ -91,7 +91,7 @@ input[type="number"].custom-select{
 #tooltip {
   position: fixed;
   color: #333333;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa!important;
   border: 1px solid #cccccc;
   border-radius: .25rem;
   padding: .25rem;
@@ -113,7 +113,7 @@ input[type="number"].custom-select{
   overflow-y:scroll;
   border-radius: 0.25rem;
   color: #303030;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa!important;
 }
 #group-key th {
   text-align: center;
@@ -129,7 +129,7 @@ input[type="number"].custom-select{
   right: 20px;
   z-index: 1000;
   color: #303030;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa!important;
   border: 1px solid #c0c0c0;
   border-radius: 0.25rem;
 }
@@ -212,7 +212,7 @@ button.navbar-toggler{
   border: 1px solid rgba(0,0,0,.1);
   border-radius: .25rem;
   margin: 10px;
-  background: #f5f5f5;
+  background: #f8f9fa!important;
   padding: 15px;
 }
 .filename {
@@ -284,7 +284,7 @@ a.btn, button.btn, .btn-group{
   shape-rendering: crispEdges;
 }
 .btn-default {
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
 }
 .view_controls {
   position: absolute;
