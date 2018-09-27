@@ -50,14 +50,14 @@
                 <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>
               </div>
               <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active" data-toggle="tooltip" title="Do Not Align Sequences (Recommended)">
+                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <label class="btn btn-light active col" data-toggle="tooltip" title="Do Not Align Sequences (Recommended)">
                     <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
                   </label>
-                  <label class="btn btn-secondary" data-toggle="tooltip" title="Align Sequences using Smith-Waterman aligner (Recommended)">
+                  <label class="btn btn-light col" data-toggle="tooltip" title="Align Sequences using Smith-Waterman aligner (Recommended)">
                     <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
                   </label>
-                  <label class="btn btn-secondary" data-toggle="tooltip" title="Align Sequences using ungapped aligner (Not Recommended)">
+                  <label class="btn btn-light col" data-toggle="tooltip" title="Align Sequences using ungapped aligner (Not Recommended)">
                     <input type="radio" name="shouldAlign" id="nbeamAlign" data-aligner="nbeam" autocomplete="off"> NBEAM
                   </label>
                 </div>
@@ -79,11 +79,11 @@
                 <a href="#" data-toggle="tooltip" title="How should MicrobeTrace align your sequences?">Type</a>
               </div>
               <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                  <label class="btn btn-secondary active">
+                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <label class="btn btn-light active w-50">
                     <input type="radio" name="alignScope" id="globalAlign" autocomplete="off" checked> Global
                   </label>
-                  <label class="btn btn-secondary">
+                  <label class="btn btn-light w-50">
                     <input type="radio" name="alignScope" id="localAlign" autocomplete="off"> Local
                   </label>
                 </div>
@@ -108,7 +108,7 @@
             <div class="form-group row alignPreviewRow">
               <div class="col-3">
                 <a href="#" data-toggle="tooltip" title="Generate a preview of the alignment, using the current configurations.">
-                  <button type="button" id="previewAlignment" class="btn btn-secondary">Preview</button>
+                  <button type="button" id="previewAlignment" class="btn btn-light">Preview</button>
                 </a>
               </div>
               <div class="col-9">
@@ -262,16 +262,16 @@
       root.append(`
         <div class="col-4 text-right">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary${!isFasta&!isNode?' active':''}">
+            <label class="btn btn-light${!isFasta&!isNode?' active':''}">
               <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
             </label>
-            <label class="btn btn-secondary${!isFasta&isNode?' active':''}">
+            <label class="btn btn-light${!isFasta&isNode?' active':''}">
               <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
             </label>
-            <label class="btn btn-secondary">
+            <label class="btn btn-light">
               <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
             </label>
-            <label class="btn btn-secondary${isFasta?' active':''}">
+            <label class="btn btn-light${isFasta?' active':''}">
               <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
             </label>
           </div>

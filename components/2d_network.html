@@ -39,7 +39,7 @@
       </div>
       <div class="form-group row">
         <div class="col-4">Color</div>
-        <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+        <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="node-symbol-variable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
@@ -79,11 +79,11 @@
       <div class="form-group row">
         <div class="col-4"><label for="highlight-neighbors" data-toggle="tooltip" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">Neighbors</label></div>
         <div class="col-8">
-          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary active">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+            <label class="btn btn-light active w-50">
               <input type="radio" name="network-highlight" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
             </label>
-            <label class="btn btn-secondary">
+            <label class="btn btn-light w-50">
               <input type="radio" name="network-highlight" id="highlight-neighbors" autocomplete="off"> Highlighted
             </label>
           </div>
@@ -97,7 +97,7 @@
       </div>
       <div class="form-group row">
         <div class="col-4">Color</div>
-        <div class="col-8"><button class="btn btn-sm btn-secondary w-100 launch-color-options">Color Options</button></div>
+        <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
       </div>
       <div id="link-transparency-row" class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How transparent should the links be?">Transparency</label></div>
@@ -111,10 +111,10 @@
         <div class="col-4"><label data-toggle="tooltip" title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal</label></div>
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary active">
+            <label class="btn btn-light active">
               <input type="radio" name="link-reciprocal-options" id="link-width-reciprocal" autocomplete="off" checked> Reciprocal
             </label>
-            <label class="btn btn-secondary">
+            <label class="btn btn-light">
               <input type="radio" name="link-reciprocal-options" id="link-width-nonreciprocal" autocomplete="off"> Non-reciprocal
             </label>
           </div>
@@ -127,11 +127,11 @@
       <div class="form-group row hideForHIVTrace">
         <div class="col-4"><label data-toggle="tooltip" title="Are these links directed?">Directionality</label></div>
         <div class="col-8">
-          <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-secondary active">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+            <label class="btn btn-light active w-50">
               <input type="radio" name="network-directionality" id="link-undirected" autocomplete="off" checked> Undirected
             </label>
-            <label class="btn btn-secondary">
+            <label class="btn btn-light w-50">
               <input type="radio" name="network-directionality" id="link-directed" autocomplete="off"> Directed
             </label>
           </div>

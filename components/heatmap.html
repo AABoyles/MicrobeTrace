@@ -24,15 +24,20 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3">Invert Axes</div>
+          <div class="col-3">Invert X-Axis</div>
           <div class="col-9">
-            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              <label class="btn btn-secondary">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light col">
                 <input id="heatmap_invertX" type="checkbox"> X
               </label>
             </div>
-            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              <label class="btn btn-secondary">
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Invert Y-Axis</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light col">
                 <input id="heatmap_invertY" type="checkbox"> Y
               </label>
             </div>
@@ -49,11 +54,11 @@
         <div class="form-group row">
           <div class="col-3">Axis Labels</div>
           <div class="col-9">
-            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              <label class="btn btn-secondary">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light w-50">
                 <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
               </label>
-              <label class="btn btn-secondary active">
+              <label class="btn btn-light active w-50">
                 <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
               </label>
             </div>
@@ -100,7 +105,7 @@
 
     $('#heatmap_distanceMetric').html(
       Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
-        <label class="btn btn-secondary${(i===0)? ' active':''}">
+        <label class="btn btn-light${(i===0)? ' active':''}">
           <input type="radio" name="distanceMetric" id="${k}" autocomplete="off"${(i===0)? ' checked':''}>${app.titleize(k)}</input>
         </label>
       `).join('')

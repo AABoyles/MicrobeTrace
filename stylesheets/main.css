@@ -265,6 +265,10 @@ td {
 input[type="range"]{
   width:inherit;
 }
+a.btn, button.btn, .btn-group{
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+}
 
 /* 2D NETWORK */
 #nodes path {
@@ -273,19 +277,6 @@ input[type="range"]{
 #nodes path.selected {
   stroke: #ff8300;
   stroke-width: 4px;
-  /* stroke-dasharray: 6, 13;
-  animation-duration: 1s;
-  animation-name: ripple;
-  animation-iteration-count: infinite;
-  animation-timing-function: linear; */
-}
-@keyframes ripple {
-  from {
-    stroke-dashoffset: 0px;
-  }
-  to {
-    stroke-dashoffset: 19px;
-  }
 }
 .brush .extent {
   fill-opacity: .1;
@@ -353,29 +344,6 @@ input[type="range"]{
   padding-top: 50px;
   height: 100%;
   overflow:auto;
-}
-.smenubar{
-  position:absolute;
-  top: 13px;
-  left: 80px;
-}
-.smenubar .smenubar_alink {
-  border-radius: .25rem !important;
-  background-image: none !important;
-  border: 1px solid #cccccc !important;
-  color: #212529 !important;
-  background-color: #f8f9fa !important;
-  padding: 8px 4px !important;
-}
-.smenubar .smenubar_alink:hover {
-
-}
-.smenu-dropdown {
-  top: 38px !important;
-}
-.biojs_msa_stage{
-  position: absolute;
-  top: 50px;
 }
 
 /* Phylogenetic tree */
