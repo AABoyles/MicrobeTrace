@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "var cache = 'MicrobeTraceD`date +%Y-%m-%d`';
+echo "var CACHE = 'MicrobeTraceD`date +%Y-%m-%d`';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(

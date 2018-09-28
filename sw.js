@@ -1,4 +1,4 @@
-var cache = 'MicrobeTraceD2018-09-28';
+var CACHE = 'MicrobeTraceD2018-09-28';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
