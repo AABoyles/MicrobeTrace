@@ -397,12 +397,12 @@ performance of this software.</pre>
         .attr('href', 'https://github.com/CDCGov/WebMicrobeTrace/wiki')
         .attr('target', '_blank');
       $('.ifOnline').show();
-      if(window.applicationCache.status !== window.applicationCache.UNCACHED){
-        window.applicationCache.update();
-        if(window.applicationCache.status === window.applicationCache.UPDATEREADY){
-          window.applicationCache.swapCache();
-        }
-      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js', {scope: './'}).catch(function(error) {
+        console.error('Service Worker Registration failed with ' + error);
+      });
     }
 
     window.session = app.sessionSkeleton();
