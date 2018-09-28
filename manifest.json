@@ -1,0 +1,15 @@
+{
+  "short_name": "MicrobeTrace",
+  "name": "MicrobeTrace",
+  "icons": [
+    {
+      "src": "/img/image256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#f8f9fa",
+  "display": "standalone",
+  "theme_color": "#f8f9fa"
+}

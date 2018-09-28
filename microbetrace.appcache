@@ -91,6 +91,7 @@ data/states.json
 data/tracts.json
 data/zipcodes.json
 package.json
+manifest.json
 node_modules/chosen-js/chosen-sprite.png
 node_modules/open-iconic/font/fonts/open-iconic.woff
 node_modules/open-iconic/font/fonts/open-iconic.ttf
