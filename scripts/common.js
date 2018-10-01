@@ -353,11 +353,11 @@ app.setLinkVisibility = function(){
 };
 
 app.getVisibleNodes = function(copy){
-  let nodes = session.data.nodes;
-  let n = nodes.length;
-  let out = [];
-  for(let i = 0; i < n; i++){
-    let node = nodes[i];
+  var nodes = session.data.nodes;
+  var n = nodes.length;
+  var out = [];
+  for(var i = 0; i < n; i++){
+    var node = nodes[i];
     if(node.visible){
       if(copy){
         out.push(JSON.parse(JSON.stringify(node)));
@@ -370,17 +370,17 @@ app.getVisibleNodes = function(copy){
 };
 
 app.getVisibleLinks = function(copy){
-  let links = session.data.links;
-  let n = links.length;
-  let out = [];
+  var links = session.data.links;
+  var n = links.length;
+  var out = [];
   if(copy){
-    for(let i = 0; i < n; i++){
-      let link = links[i];
+    for(var i = 0; i < n; i++){
+      var link = links[i];
       if(link.visible) out.push(JSON.parse(JSON.stringify(link)));
     }
   } else {
-    for(let i = 0; i < n; i++){
-      let link = links[i];
+    for(var i = 0; i < n; i++){
+      var link = links[i];
       if(link.visible) out.push(link);
     }
   }
@@ -410,7 +410,7 @@ app.computeDM = function(callback){
 
 app.updateStatistics = function(){
   if($('#network-statistics-hide').is(':checked')) return;
-  let vnodes = app.getVisibleNodes();
+  var vnodes = app.getVisibleNodes();
   var vlinks = app.getVisibleLinks();
   var singletons = vnodes.filter(d => d.degree === 0).length;
   $('#numberOfSelectedNodes').text(vnodes.filter(d => d._selected).length.toLocaleString());
@@ -446,28 +446,28 @@ app.reset = function(){
 
 //adapted from from http://www.movable-type.co.uk/scripts/latlong.html
 app.haversine = function(a, b){
-  let R = 6371e3; // metres
-  let φ1 = a._lat * Math.PI / 180;
-  let φ2 = b._lat * Math.PI / 180;
-  let Δφ = (b._lat - a._lat) * Math.PI / 180;
-  let Δλ = (b._lon - a._lon) * Math.PI / 180;
-  let a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+  var R = 6371e3; // metres
+  var φ1 = a._lat * Math.PI / 180;
+  var φ2 = b._lat * Math.PI / 180;
+  var Δφ = (b._lat - a._lat) * Math.PI / 180;
+  var Δλ = (b._lon - a._lon) * Math.PI / 180;
+  var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
           Math.cos(φ1) * Math.cos(φ2) *
           Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return(c * R);
 };
 
 app.geoDM = function(){
-  let nodes = session.data.nodes;
-  let links = [];
-  let n = nodes.length;
-  let dm = Array(n);
-  for(let i = 0; i < n; i++){
+  var nodes = session.data.nodes;
+  var links = [];
+  var n = nodes.length;
+  var dm = Array(n);
+  for(var i = 0; i < n; i++){
     dm[i] = Array(n);
     dm[i][i] = 0;
-    for(let j = 0; j < i; j++){
-      let dist = haversine(nodes[i], nodes[j]);
+    for(var j = 0; j < i; j++){
+      var dist = haversine(nodes[i], nodes[j]);
       dm[i][j] = dist;
       dm[j][i] = dist;
       links.push({
@@ -547,7 +547,7 @@ app.launchView = function(view, callback){
       }, 250);
     });
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
-    for(let id in session.style.widgets){
+    for(var id in session.style.widgets){
       $id = $('#' + id);
       if($id.length > 0){
         if(['radio', 'checkbox'].includes($id[0].type)){
