@@ -445,12 +445,13 @@ app.reset = function(){
   app.launchView('files');
 };
 
-app.haversine = function(lat1, lon1, lat2, lon2){
+//adapted from from http://www.movable-type.co.uk/scripts/latlong.html
+app.haversine = function(a, b){
   let R = 6371e3; // metres
-  let φ1 = lat1 * Math.PI / 180;
-  let φ2 = lat2 * Math.PI / 180;
-  let Δφ = (lat2-lat1) * Math.PI / 180;
-  let Δλ = (lon2-lon1) * Math.PI / 180;
+  let φ1 = a._lat * Math.PI / 180;
+  let φ2 = b._lat * Math.PI / 180;
+  let Δφ = (b._lat - a._lat) * Math.PI / 180;
+  let Δλ = (b._lon - a._lon) * Math.PI / 180;
   let a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
           Math.cos(φ1) * Math.cos(φ2) *
           Math.sin(Δλ/2) * Math.sin(Δλ/2);
@@ -467,7 +468,7 @@ app.geoDM = function(){
     dm[i] = Array(n);
     dm[i][i] = 0;
     for(let j = 0; j < i; j++){
-      let dist = haversine(nodes[i].lat, nodes[i].lon, nodes[j].lat, nodes[j].lon);
+      let dist = haversine(nodes[i], nodes[j]);
       dm[i][j] = dist;
       dm[j][i] = dist;
       links.push({
