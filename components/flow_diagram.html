@@ -200,7 +200,7 @@
 
     $(window)
       .on('node_selected', function(){
-        if($('#flow-source-variable').val() === 'selected' || $('#flow-target-variable').val() === 'selected'){
+        if($('#flow-source-variable').val() === '_selected' || $('#flow-target-variable').val() === '_selected'){
           drawFlowDiagram();
         }
       })

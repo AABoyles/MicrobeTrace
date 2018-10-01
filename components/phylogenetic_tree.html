@@ -138,7 +138,7 @@
 
       phylocanvas.on('updated', function(e){
         session.data.nodes.forEach(function(node){
-          node.selected = e.nodeIds.includes(node.id);
+          node._selected = e.nodeIds.includes(node.id);
         });
         $(window).trigger('node_selected');
       });
@@ -206,8 +206,8 @@
         phylocanvas.draw();
       })
       .on('node_selected', function(e){
-        session.data.nodes.filter(d => d.selected).forEach(node => {
-          phylocanvas.branches[node.id].selected = true;
+        session.data.nodes.forEach(node => {
+          if(node._selected) phylocanvas.branches[node.id]._selected = true;
         });
         phylocanvas.draw();
       });

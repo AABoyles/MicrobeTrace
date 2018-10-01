@@ -9,7 +9,7 @@ app.dataSkeleton = function(){
     clusters: [],
     distance_matrix: {},
     trees: {},
-    nodeFields: ['id', 'padding', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
+    nodeFields: ['id', '_selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
     linkFields: ['index', 'source', 'target', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
     clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected'],
     reference: 'CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC'
@@ -101,8 +101,7 @@ app.sessionSkeleton = function(){
 app.defaultNode = function(){
   return {
     id: '',
-    padding: 0,
-    selected: false,
+    _selected: false,
     cluster: 1,
     visible: true,
     degree: 0,
@@ -226,6 +225,7 @@ app.align = function(params, callback){
         for(var j = 0; j < n; j++){
           var d = output[j];
           d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
+          delete d.padding;
           if(maxLength < d.seq.length) maxLength = d.seq.length;
         }
         for(var j = 0; j < n; j++){
@@ -275,7 +275,7 @@ app.tagClusters = function(){
         links_per_node: 0,
         mean_genetic_distance: undefined,
         visible: true,
-        selected: false
+        _selected: false
       });
       app.DFS(node);
     }
@@ -414,7 +414,7 @@ app.updateStatistics = function(){
   let vnodes = app.getVisibleNodes();
   var vlinks = app.getVisibleLinks();
   var singletons = vnodes.filter(d => d.degree === 0).length;
-  $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
+  $('#numberOfSelectedNodes').text(vnodes.filter(d => d._selected).length.toLocaleString());
   $('#numberOfNodes').text(vnodes.length.toLocaleString());
   $('#numberOfVisibleLinks').text(vlinks.length.toLocaleString());
   $('#numberOfSingletonNodes').text(singletons.toLocaleString());

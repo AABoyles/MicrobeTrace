@@ -251,7 +251,7 @@
     .on('end', brushended);
 
   function brushstarted(){
-    vnodes.forEach(d => d.previouslySelected = d.selected);
+    vnodes.forEach(d => d._previouslySelected = d._selected);
   }
 
   let transform = {};
@@ -264,7 +264,7 @@
     ];
     if(selection.includes(null)) return;
     vnodes.forEach(function(d){
-      d.selected = (d.previouslySelected ^ (
+      d._selected = (d._previouslySelected ^ (
         selection[0][0] <= d.x && d.x <= selection[1][0] &&
         selection[0][1] <= d.y && d.y <= selection[1][1]
       )) === 1;
@@ -274,10 +274,10 @@
   function brushended() {
     if (d3.event.selection == null) return;
     d3.select(this).call(d3.event.target.move, null);
-    vnodes.forEach(d => delete d.previouslySelected);
+    vnodes.forEach(d => delete d._previouslySelected);
     session.data.nodes.forEach(node => {
       let instance = vnodes.find(d => d.id === node.id);
-      if(instance) node.selected = instance.selected;
+      if(instance) node._selected = instance._selected;
     });
     $(window).trigger('node_selected');
   }
@@ -418,7 +418,7 @@
 
     updateLinkColor();
     scaleLinkWidth();
-    nodes.select('path').classed('selected', d => d.selected);
+    nodes.select('path').classed('selected', d => d._selected);
     force.alpha(0.3).alphaTarget(0).restart();
   }
 
@@ -482,9 +482,9 @@
     if(!d3.event.ctrlKey){
       session.data.nodes
         .filter(node => node.id !== n.id)
-        .forEach(node => node.selected = false);
+        .forEach(node => node._selected = false);
     }
-    session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
+    session.data.nodes.find(node => node.id === n.id)._selected = !n._selected;
     $(window).trigger('node_selected');
   }
 

@@ -757,10 +757,10 @@ performance of this software.</pre>
 
     $('#search').on('input', function(e){
       if(e.target.value === ''){
-        session.data.nodes.forEach(function(n){ n.selected = 0; });
+        session.data.nodes.forEach(function(n){ n._selected = false; });
       } else {
-        session.data.nodes.forEach(function(n){ n.selected = (n.id.indexOf(e.target.value)>-1); });
-        if(!session.data.nodes.some(function(n){ return n.selected; })) alertify.warning('No matches!');
+        session.data.nodes.forEach(function(n){ n._selected = (n.id.indexOf(e.target.value)>-1); });
+        if(!session.data.nodes.some(function(n){ return n._selected; })) alertify.warning('No matches!');
       }
       $(window).trigger('node_selected');
     });
@@ -776,7 +776,7 @@ performance of this software.</pre>
 
     $(window)
       .on('node_selected', function(){
-        $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+        $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d._selected).length.toLocaleString());
       })
       .on('click', function(){
         $('#hide_stats_context #group-key-context').hide();

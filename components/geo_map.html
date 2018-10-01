@@ -488,7 +488,7 @@
       layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
         pointToLayer: function(feature, latlng){
           return L.circleMarker(latlng, Object.assign({}, style, {
-            color: feature.properties.selected ? session.style.widgets['selected-color'] : '#ffffff',
+            color: feature.properties._selected ? session.style.widgets['selected-color'] : '#ffffff',
             fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
           }));
         }
@@ -567,9 +567,9 @@
       if(!e.originalEvent.ctrlKey){
         session.data.nodes
           .filter(node => node.id !== d.id)
-          .forEach(node => node.selected = false);
+          .forEach(node => node._selected = false);
       }
-      d.selected = !d.selected;
+      d._selected = !d._selected;
       $(window).trigger('node_selected');
     }
 
