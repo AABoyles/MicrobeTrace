@@ -1,10 +1,10 @@
 <svg id="network"></svg>
 
 <div class="view_controls">
-  <button type="button" id="toggle_network_settings" class="btn btn-light btn-sm" data-toggle="button" title="Network Settings">
+  <button type="button" id="network-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Network Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_svg_modal" title="Export Network">
+  <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#network-export-modal" title="Export Network">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button id="fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
@@ -15,20 +15,20 @@
   </button>
 </div>
 
-<div id="network_settings_pane" class="left_pane">
+<div id="network-settings-pane" class="left_pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#node_settings" role="tab" aria-controls="node_settings" aria-selected="true">Nodes</a>
+      <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#network-node-settings" role="tab" aria-controls="network-node-settings" aria-selected="true">Nodes</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="links-tab" data-toggle="tab" href="#link_settings" role="tab" aria-controls="link_settings" aria-selected="false">Links</a>
+      <a class="nav-link" id="links-tab" data-toggle="tab" href="#network-link-settings" role="tab" aria-controls="network-link-settings" aria-selected="false">Links</a>
     </li>
     <li class="nav-item">
       <a class="nav-link" id="network-tab" data-toggle="tab" href="#network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="node_settings" role="tabpanel" aria-labelledby="nodes-tab">
+    <div class="tab-pane fade show active" id="network-node-settings" role="tabpanel" aria-labelledby="nodes-tab">
       <div class="form-group row">
         <div class="col-4"><label for="node-label-variable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
         <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
@@ -45,7 +45,7 @@
         <div class="col-4"><label for="node-symbol-variable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
         <div class="col-8"><select id="node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
-      <div id="node_shape_value_row" class="form-group row">
+      <div id="node-symbol-row" class="form-group row">
         <div class="col-4"><label for="node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
         <div class="col-8"><select id="node-symbol" class="custom-select custom-select-sm">
           <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
@@ -72,7 +72,7 @@
         <div class="col-4"><label for="node-radius-variable" data-toggle="tooltip" title="How large should the nodes be?">Size By</label></div>
         <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
       </div>
-      <div id="node_size_value_row" class="form-group row">
+      <div class="form-group row">
         <div class="col-4"><label for="node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
         <div class="col-8"><input type="range" id="node-radius" min="100" value="250" step="1" max="5000" /></div>
       </div>
@@ -90,7 +90,7 @@
         </div>
       </div>
     </div>
-    <div class="tab-pane fade" id="link_settings" role="tabpanel" aria-labelledby="links-tab">
+    <div class="tab-pane fade" id="network-link-settings" role="tabpanel" aria-labelledby="links-tab">
       <div class="form-group row">
         <div class="col-4"><label for="link-tooltip-variable" data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
         <div class="col-8"><select id="link-tooltip-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
@@ -190,7 +190,7 @@
   </div>
 </div>
 
-<div id="export_svg_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+<div id="network-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -202,10 +202,10 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="export-svg-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            <input type="text" id="network-export-filename" class="form-control form-control-sm" placeholder="Filename" />
           </div>
           <div class="col-3">
-            <select id="export-img-file-type" class="form-control form-control-sm">
+            <select id="network-export-filetype" class="form-control form-control-sm">
               <option selected>png</option>
               <option>svg</option>
             </select>
@@ -693,8 +693,8 @@
     }
   }
 
-  $('#toggle_network_settings').on('click', function(){
-    let pane = $('#network_settings_pane');
+  $('#network-settings-toggle').on('click', function(){
+    let pane = $('#network-settings-pane');
     if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
@@ -721,10 +721,10 @@
     let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#group-key');
     if(e.target.value === 'None'){
       redrawNodes();
-      $('#node_shape_value_row').slideDown();
+      $('#node-symbol-row').slideDown();
       return table.fadeOut(e => table.remove());
     }
-    $('#node_shape_value_row').slideUp();
+    $('#node-symbol-row').slideUp();
     table.append('<tr><th contenteditable>Node '+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
     let values = _.uniq(vnodes.map(d => {
       if(_.isArray(d[e.target.value])){
@@ -887,13 +887,13 @@
   $('#network-export').on('click', function(){
     let network = document.getElementById('network');
     let content = app.unparseSVG(network);
-    let filetype = $('#export-img-file-type').val();
+    let filetype = $('#network-export-filetype').val();
     if(filetype === 'svg'){
       let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
-      saveAs(blob, $('#export-svg-file-name').val() + '.' + filetype);
+      saveAs(blob, $('#network-export-filename').val() + '.' + filetype);
     } else {
       app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
-        saveAs(blob, $('#export-svg-file-name').val() + '.' + filetype);
+        saveAs(blob, $('#network-export-filename').val() + '.' + filetype);
       });
     }
   });
