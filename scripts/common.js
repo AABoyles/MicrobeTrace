@@ -512,7 +512,6 @@ app.launchView = function(view, callback){
     if(contentItem){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
-      //TODO: Find a way to add a thing to the newest stack instead of layout.root.contentItems[0]
       var lastStack = _.last(layout.root.contentItems[0].getItemsByType('stack'));
       if(!lastStack) lastStack = layout.root.contentItems[0];
       lastStack.addChild({
@@ -566,6 +565,25 @@ app.launchView = function(view, callback){
     } else {
       return contentItem;
     }
+  }
+};
+
+app.cacheLayout = function(contentItem){
+  if(['stack', 'row', 'column'].includes(contentItem.type)){
+    return {
+      'type': contentItem.type,
+      'content': contentItem.contentItems.map(app.cacheLayout)
+    };
+  }
+  return {'type': contentItem.componentName};
+};
+
+app.loadLayout = function(component, first){
+  if(first) app.lastItem = layout.root.contentItems[0];
+  if(['stack', 'row', 'column'].includes(component.type)){
+    component.content.map(app.loadLayout);
+  } else {
+    app.launchView(component.type);
   }
 };
 

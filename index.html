@@ -467,6 +467,7 @@ performance of this software.</pre>
             $('#node-color-variable').change();
             $('#link-color-variable').change();
             app.finishUp();
+            app.loadLayout(session.layout);
           };
         } else {
           reader.onloadend = function(out){
@@ -776,7 +777,7 @@ performance of this software.</pre>
       }
     });
 
-    layout.on('stateChanged', function(){ session.layout = layout.toConfig(); });
+    layout.on('stateChanged', function(){ session.layout = app.cacheLayout(layout.root.contentItems[0]); });
 
     $(window)
       .on('node-selected', function(){
