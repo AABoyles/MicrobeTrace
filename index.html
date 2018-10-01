@@ -103,7 +103,7 @@ performance of this software.</pre>
           <p>Please Click "Accept" to accept this agreement, or "Reject" to close this application.</p>
         </div>
         <div class="modal-footer">
-          <button id="rejectAgreement" type="button" class="btn btn-danger" data-dismiss="modal">Reject</button>
+          <a href="https://www.cdc.gov/" id="rejectAgreement" class="btn btn-danger" role="button">Reject</a>
           <button id="acceptAgreement" type="button" class="btn btn-primary" data-dismiss="modal">Accept</button>
         </div>
       </div><!-- /.modal-content -->
@@ -430,10 +430,11 @@ performance of this software.</pre>
         // Set that agreement in localStorage
         localStorage.setItem('licenseAccepted', new Date());
       });
-      $('#rejectAgreement').on('click', function(){
-        // If you don't agree, no app for you!
-        //TODO: Show a message indicating you are not permitted to use the app without agreeing to the terms of use.
-      });
+      // $('#rejectAgreement').on('click', function(){
+      //   // If you don't agree, no app for you!
+      //   //TODO: Show a message indicating you are not permitted to use the app without agreeing to the terms of use.
+      //   window.location.href = "https://www.cdc.gov";
+      // });
       // No hacking around the agreement.
       $('#licenseAgreement').modal({
         backdrop: 'static',
