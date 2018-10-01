@@ -9,9 +9,9 @@ app.dataSkeleton = function(){
     clusters: [],
     distance_matrix: {},
     trees: {},
-    nodeFields: ['id', '_selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
+    nodeFields: ['id', 'selected', 'cluster', 'visible', 'degree', 'seq', 'origin'],
     linkFields: ['index', 'source', 'target', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
-    clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible', 'selected'],
+    clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible'],
     reference: 'CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC'
   };
 };
@@ -94,6 +94,10 @@ app.sessionSkeleton = function(){
       linkColors: d3.schemePaired,
       linkColorMap: function(){ return session.style.widgets['link-color']; },
       widgets: app.defaultWidgets
+    },
+    network: {
+      allPinned: false,
+      nodes: []
     }
   };
 };
@@ -101,7 +105,7 @@ app.sessionSkeleton = function(){
 app.defaultNode = function(){
   return {
     id: '',
-    _selected: false,
+    selected: false,
     cluster: 1,
     visible: true,
     degree: 0,
@@ -274,8 +278,7 @@ app.tagClusters = function(){
         sum_distances: 0,
         links_per_node: 0,
         mean_genetic_distance: undefined,
-        visible: true,
-        _selected: false
+        visible: true
       });
       app.DFS(node);
     }
@@ -413,7 +416,7 @@ app.updateStatistics = function(){
   var vnodes = app.getVisibleNodes();
   var vlinks = app.getVisibleLinks();
   var singletons = vnodes.filter(d => d.degree === 0).length;
-  $('#numberOfSelectedNodes').text(vnodes.filter(d => d._selected).length.toLocaleString());
+  $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
   $('#numberOfNodes').text(vnodes.length.toLocaleString());
   $('#numberOfVisibleLinks').text(vlinks.length.toLocaleString());
   $('#numberOfSingletonNodes').text(singletons.toLocaleString());

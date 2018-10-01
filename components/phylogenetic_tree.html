@@ -138,9 +138,9 @@
 
       phylocanvas.on('updated', function(e){
         session.data.nodes.forEach(function(node){
-          node._selected = e.nodeIds.includes(node.id);
+          node.selected = e.nodeIds.includes(node.id);
         });
-        $(window).trigger('node_selected');
+        $(window).trigger('node-selected');
       });
     }
 
@@ -205,9 +205,9 @@
         phylocanvas.branchColour = session.style.widgets['node-color'];
         phylocanvas.draw();
       })
-      .on('node_selected', function(e){
+      .on('node-selected', function(e){
         session.data.nodes.forEach(node => {
-          if(node._selected) phylocanvas.branches[node.id]._selected = true;
+          if(node.selected) phylocanvas.branches[node.id].selected = true;
         });
         phylocanvas.draw();
       });

@@ -118,9 +118,9 @@
       let nodeColorBy = session.style.widgets['node-color-variable'];
       if(nodeColorBy === 'None'){
         let nodeColor = session.style.widgets['node-color'];
-        graph.nodeColor(d => d._selected ? session.style.widgets['selected-color'] : nodeColor);
+        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : nodeColor);
       } else {
-        graph.nodeColor(d => d._selected ? session.style.widgets['selected-color'] : session.style.nodeColorMap(d[nodeColorBy]));
+        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : session.style.nodeColorMap(d[nodeColorBy]));
       }
       graph.nodeOpacity(1);
     }
@@ -198,8 +198,8 @@
     // graph.onNodeClick(function(node){
     //   let model = session.data.nodes.find(d => node.id = d.id);
     //   if(!model) return;
-    //   model._selected = !model._selected;
-    //   $(window).trigger('node_selected');
+    //   model.selected = !model.selected;
+    //   $(window).trigger('node-selected');
     // });
 
     $('#toggle_3DNet-settings').on('click', function(){
@@ -272,7 +272,7 @@
       .on('node-color-change selected-color-change', updateNodeColors)
       .on('link-color-change', updateLinkColors)
       .on('background-color-change', updateBackground)
-      .on('node_selected', function(){
+      .on('node-selected', function(){
         updateData();
         updateNodeColors();
       });

@@ -199,8 +199,8 @@
     layout.on('stateChanged', drawFlowDiagram);
 
     $(window)
-      .on('node_selected', function(){
-        if($('#flow-source-variable').val() === '_selected' || $('#flow-target-variable').val() === '_selected'){
+      .on('node-selected', function(){
+        if($('#flow-source-variable').val() === 'selected' || $('#flow-target-variable').val() === 'selected'){
           drawFlowDiagram();
         }
       })

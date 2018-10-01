@@ -65,7 +65,7 @@
       <tbody>
         <tr v-for="entry in filteredData"
           @click="select(entry)"
-          :class="entry._selected ? 'table-row-selected' : ''">
+          :class="entry.selected ? 'table-row-selected' : ''">
           <td v-for="key in columns">{{ entry[key] }}</td>
         </tr>
       </tbody>
@@ -107,7 +107,7 @@
   (function(){
     let table;
 
-    let meta = ['index', '_selected', 'visible', 'nn'];
+    let meta = ['index', 'selected', 'visible', 'nn'];
 
     Vue.component('mt-table', {
       template: '#mt-table-template',
@@ -132,8 +132,8 @@
           let data = this.data.filter(d => d.visible);
           if(sortKey){
             data = data.slice().sort(function(a, b){
-              if(a._selected && !b._selected) return -1;
-              if(b._selected && !a._selected) return 1;
+              if(a.selected && !b.selected) return -1;
+              if(b.selected && !a.selected) return 1;
               return (a[sortKey] === b[sortKey] ? 0 : a[sortKey] > b[sortKey] ? 1 : -1) * order;
             });
           }
@@ -146,10 +146,10 @@
           this.sortOrders[key] = this.sortOrders[key] * -1;
         },
         select: function(entry){
-          entry._selected = !entry._selected;
+          entry.selected = !entry.selected;
           if($('input[name=nodelink]:checked').data('value') === 'nodes'){
-            session.data.nodes.find(d => d.id === entry.id)._selected = entry._selected;
-            $(window).trigger('node_selected');
+            session.data.nodes.find(d => d.id === entry.id).selected = entry.selected;
+            $(window).trigger('node-selected');
           }
         }
       }
@@ -258,7 +258,7 @@
 
     $(window)
       .on('link-threshold-change', updateTable)
-      .on('node_selected selected-color-change', resetColor);
+      .on('node-selected selected-color-change', resetColor);
 
     setTimeout(function(){
       updateColumns();

@@ -446,8 +446,8 @@ performance of this software.</pre>
     $('#FileTab').on('click', function(){ window.location.reload() });
 
     $('#save-data').on('click', function(){
-      var format = $('#save-file-format').val();
       var name = $('#save-file-name').val();
+      var format = $('#save-file-format').val();
       var data = format == 'microbetrace' ? JSON.stringify(session) : app.exportHIVTRACE();
       var blob = new Blob([data], {type: 'application/json;charset=utf-8'});
       saveAs(blob, name + '.' + format);
@@ -457,9 +457,9 @@ performance of this software.</pre>
       if(e.target.files.length > 0){
         var startTime = Date.now();
         var parts = e.target.files[0].name.split('.');
-        var extension = parts[parts.length - 1];
+        var extension = parts[parts.length - 1].toLowerCase();
         var reader = new FileReader();
-        if(extension == 'microbetrace'){
+        if(extension === 'microbetrace'){
           reader.onloadend = function(out){
             session = JSON.parse(out.target.result);
             session.startTime = startTime;
@@ -757,12 +757,12 @@ performance of this software.</pre>
 
     $('#search').on('input', function(e){
       if(e.target.value === ''){
-        session.data.nodes.forEach(function(n){ n._selected = false; });
+        session.data.nodes.forEach(function(n){ n.selected = false; });
       } else {
-        session.data.nodes.forEach(function(n){ n._selected = (n.id.indexOf(e.target.value)>-1); });
-        if(!session.data.nodes.some(function(n){ return n._selected; })) alertify.warning('No matches!');
+        session.data.nodes.forEach(function(n){ n.selected = (n.id.indexOf(e.target.value)>-1); });
+        if(!session.data.nodes.some(function(n){ return n.selected; })) alertify.warning('No matches!');
       }
-      $(window).trigger('node_selected');
+      $(window).trigger('node-selected');
     });
 
     $(document).on('keydown', function(e){
@@ -770,13 +770,17 @@ performance of this software.</pre>
         e.preventDefault();
         $('#search').focus();
       }
+      if(e.ctrlKey && e.key === 's'){
+        e.preventDefault();
+        $('#session-save-modal').modal();
+      }
     });
 
     layout.on('stateChanged', function(){ session.layout = layout.toConfig(); });
 
     $(window)
-      .on('node_selected', function(){
-        $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d._selected).length.toLocaleString());
+      .on('node-selected', function(){
+        $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
       })
       .on('click', function(){
         $('#network-statistics-context, #group-key-context').hide();

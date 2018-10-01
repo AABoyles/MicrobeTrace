@@ -223,26 +223,17 @@
 <script>
 (function(){
 
-  session.network = {
-    allPinned: false
-  };
-
-  let vnodes = [];
-
-  function updateVNodes(){
+  function updateVisibleNodes(){
     let newNodes = app.getVisibleNodes(true);
     newNodes.forEach((d, i) => {
-      let match = vnodes.find(d2 => d2.id == d.id);
+      let match = session.network.nodes.find(d2 => d2.id === d.id);
       if(match){
-        d.x = match.x;
-        d.y = match.y;
-        d.fx = match.fx;
-        d.fy = match.fy;
-        d.vx = match.vx;
-        d.vy = match.vy;
+        ['x','y','fx','fy','vx','vy','fixed'].forEach(v => {
+          if(match[v]) d[v] = match[v];
+        });
       }
     });
-    vnodes = newNodes;
+    session.network.nodes = newNodes;
   }
 
   let brush = d3.brush()
@@ -251,7 +242,9 @@
     .on('end', brushended);
 
   function brushstarted(){
-    vnodes.forEach(d => d._previouslySelected = d._selected);
+    session.network.nodes.forEach(d => {
+      if(d.visible) d._previouslySelected = d.selected;
+    });
   }
 
   let transform = {};
@@ -263,8 +256,8 @@
       transform.invert(d3.event.selection[1])
     ];
     if(selection.includes(null)) return;
-    vnodes.forEach(function(d){
-      d._selected = (d._previouslySelected ^ (
+    session.network.nodes.forEach(function(d){
+      d.selected = (d._previouslySelected ^ (
         selection[0][0] <= d.x && d.x <= selection[1][0] &&
         selection[0][1] <= d.y && d.y <= selection[1][1]
       )) === 1;
@@ -274,12 +267,12 @@
   function brushended() {
     if (d3.event.selection == null) return;
     d3.select(this).call(d3.event.target.move, null);
-    vnodes.forEach(d => delete d._previouslySelected);
-    session.data.nodes.forEach(node => {
-      let instance = vnodes.find(d => d.id === node.id);
-      if(instance) node._selected = instance._selected;
+    session.network.nodes.forEach(d => delete d._previouslySelected);
+    session.data.nodes.forEach(d => {
+      let match = session.network.nodes.find(node => node.id === d.id);
+      if(match) d.selected = match.selected;
     });
-    $(window).trigger('node_selected');
+    $(window).trigger('node-selected');
   }
 
   let zoom = d3.zoom().on('zoom', function(){
@@ -354,7 +347,7 @@
 
   function render(){
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
-    let node = svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    let node = svg.select('g#nodes').selectAll('g.node').data(session.network.nodes);
     node.exit().remove(); //Removing nodes with no representation in the dataset.
     node = node.enter().append('g') //Adding nodes that weren't represented in the dataset before.
       .attr('class', 'node')
@@ -402,9 +395,9 @@
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
-    let nodes = svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    let nodes = svg.select('g#nodes').selectAll('g.node').data(session.network.nodes);
     let links = svg.select('g#links').selectAll('line').data(vlinks);
-    force.nodes(vnodes).on('tick', function(){
+    force.nodes(session.network.nodes).on('tick', function(){
       nodes
         .attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
       links
@@ -418,7 +411,7 @@
 
     updateLinkColor();
     scaleLinkWidth();
-    nodes.select('path').classed('selected', d => d._selected);
+    nodes.select('path').classed('selected', d => d.selected);
     force.alpha(0.3).alphaTarget(0).restart();
   }
 
@@ -434,16 +427,16 @@
               origin: o,
               oNum: j,
               origins: l.length,
-              source: vnodes.find(d => d.id === vlinks[i].source),
-              target: vnodes.find(d => d.id === vlinks[i].target)
+              source: session.network.nodes.find(d => d.id === vlinks[i].source),
+              target: session.network.nodes.find(d => d.id === vlinks[i].target)
             }));
           });
         } else {
           output.push(Object.assign({}, vlinks[i], {
             oNum: 0,
             origins: 1,
-            source: vnodes.find(d => d.id === vlinks[i].source),
-            target: vnodes.find(d => d.id === vlinks[i].target)
+            source: session.network.nodes.find(d => d.id === vlinks[i].source),
+            target: session.network.nodes.find(d => d.id === vlinks[i].target)
           }));
         }
       } else {
@@ -451,8 +444,8 @@
           origin: 'Unknown',
           oNum: 0,
           origins: 1,
-          source: vnodes.find(d => d.id === vlinks[i].source),
-          target: vnodes.find(d => d.id === vlinks[i].target)
+          source: session.network.nodes.find(d => d.id === vlinks[i].source),
+          target: session.network.nodes.find(d => d.id === vlinks[i].target)
         }));
       }
     }
@@ -479,13 +472,18 @@
   }
 
   function clickHandler(n){
-    if(!d3.event.ctrlKey){
-      session.data.nodes
-        .filter(node => node.id !== n.id)
-        .forEach(node => node._selected = false);
+    if(d3.event.ctrlKey){
+      session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
+    } else {
+      session.data.nodes.forEach(node => {
+        if(node.id !== n.id){
+          node.selected = false;
+        } else {
+          node.selected = !n.selected;
+        }
+      });
     }
-    session.data.nodes.find(node => node.id === n.id)._selected = !n._selected;
-    $(window).trigger('node_selected');
+    $(window).trigger('node-selected');
   }
 
   new Clipboard('#copyID, #copySeq');
@@ -515,7 +513,7 @@
       });
     }
     $('#hideCluster').on('click', e => {
-      session.data.clusters.find(c => c.id == d.cluster).visible = false;
+      session.data.clusters.find(c => c.id === d.cluster).visible = false;
       app.setLinkVisibility();
       app.setNodeVisibility();
       render();
@@ -559,7 +557,7 @@
   function showAttributeModal(node){
     hideContextMenu();
     let target = $('#attributeModal tbody').empty();
-    let d = session.data.nodes.find(nd => nd.id === node.id);
+    let d = session.network.nodes.find(nd => nd.id === node.id);
     for(let attribute in d){
       target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
     }
@@ -660,18 +658,19 @@
     let size = defaultSize, med = defaultSize, oldrng, min, max;
     let sizeVariable = session.style.widgets['node-radius-variable'];
     if(sizeVariable !== 'None'){
-      let n = vnodes.length;
+      let n = session.network.nodes.length;
       min = Number.MAX_VALUE;
       max = Number.MIN_VALUE;
       for(let i = 0; i < n; i++){
-        if(typeof vnodes[i][sizeVariable] === 'undefined') continue;
-        if(vnodes[i][sizeVariable] < min) min = vnodes[i][sizeVariable];
-        if(vnodes[i][sizeVariable] > max) max = vnodes[i][sizeVariable];
+        let size = session.network.nodes[i][sizeVariable];
+        if(typeof size === 'undefined') continue;
+        if(size < min) min = size;
+        if(size > max) max = size;
       }
       oldrng = max - min;
       med = oldrng / 2;
     }
-    let nodes = svg.select('g#nodes').selectAll('g.node').data(vnodes);
+    let nodes = svg.select('g#nodes').selectAll('g.node').data(session.network.nodes);
     nodes.select('path').each(function(d){
       if(symbolVariable !== 'None') type = d3[session.style.nodeSymbolMap(d[symbolVariable])];
       if(sizeVariable !== 'None'){
@@ -726,7 +725,7 @@
     }
     $('#node-symbol-row').slideUp();
     table.append('<tr><th contenteditable>Node '+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
-    let values = _.uniq(vnodes.map(d => {
+    let values = _.uniq(session.network.nodes.map(d => {
       if(_.isArray(d[e.target.value])){
         return d[e.target.value].join(',');
       }
@@ -764,7 +763,7 @@
       let col = session.style.widgets['node-color'];
       nodes.attr('fill', col);
     } else {
-      nodes.data(vnodes).attr('fill', d => session.style.nodeColorMap(d[variable]));
+      nodes.data(session.network.nodes).attr('fill', d => session.style.nodeColorMap(d[variable]));
     }
   }
 
@@ -904,7 +903,7 @@
     let nodes = svg
       .select('g#nodes')
       .selectAll('g.node')
-      .data(vnodes)
+      .data(session.network.nodes)
       .select('path');
     if(session.network.allPinned){
       nodes.each(function(d){
@@ -936,8 +935,8 @@
     .on('background-color-change', function(){
       $('#network').css('background-color', session.style.widgets['background-color']);
     })
-    .on('link-threshold-change node_visibility node_selected', function(){
-      updateVNodes(); //Update network's copy of data model
+    .on('link-threshold-change node_visibility node-selected', function(){
+      updateVisibleNodes(); //Update network's copy of data model
       render();       //Draw it
     });
 
@@ -945,7 +944,7 @@
 
   if(session.files.length > 1) $('#link-color-variable').val('origin').change();
   if(session.style.widgets['background-color']) $('#network').css('background-color', session.style.widgets['background-color']);
-  updateVNodes();
+  updateVisibleNodes();
   render();
 
   //For some mysterious reason, this really needed a delay...
