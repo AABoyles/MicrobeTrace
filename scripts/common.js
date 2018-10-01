@@ -356,15 +356,14 @@ app.getVisibleNodes = function(copy){
   let nodes = session.data.nodes;
   let n = nodes.length;
   let out = [];
-  if(copy){
-    for(let i = 0; i < n; i++){
-      let node = nodes[i];
-      if(node.visible) out.push(JSON.parse(JSON.stringify(node)));
-    }
-  } else {
-    for(let i = 0; i < n; i++){
-      let node = nodes[i];
-      if(node.visible) out.push(node);
+  for(let i = 0; i < n; i++){
+    let node = nodes[i];
+    if(node.visible){
+      if(copy){
+        out.push(JSON.parse(JSON.stringify(node)));
+      } else {
+        out.push(node);
+      }
     }
   }
   return out;
