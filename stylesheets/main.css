@@ -187,24 +187,18 @@ button.navbar-toggler{
 }
 
 /* File Panel */
-#file_panel {
+#file-panel {
   overflow-y: scroll;
   height: calc(100% - 68px);
   padding: 15px;
   background-color: #ffffff;
 }
-#file_table {
+#file-table {
   height: 100%;
 }
-#drop_zone {
-  border: 2px dashed #bbb;
-  -moz-border-radius: .25rem;
-  -webkit-border-radius: .25rem;
-  border-radius: .25rem;
-  margin: 25px;
+#file-prompt{
   text-align: center;
-  font: 20pt bold 'Vollkorn';
-  color: #bbb;
+  padding-top: 35%;
 }
 .file-table-row {
   border: 1px solid rgba(0,0,0,.1);
@@ -212,6 +206,9 @@ button.navbar-toggler{
   margin: 10px;
   background: #f8f9fa!important;
   padding: 15px;
+}
+.file-table-row .btn{
+  background-color: #ffffff;
 }
 .filename {
   white-space: nowrap;
@@ -266,6 +263,11 @@ input[type="range"]{
 a.btn, button.btn, .btn-group{
   border: 1px solid #ced4da;
   border-radius: .25rem;
+}
+#file-footer{
+  background: #f8f9fa;
+  border-top: 1px solid rgba(0,0,0,.1);
+  z-index: 1030;
 }
 
 /* 2D NETWORK */

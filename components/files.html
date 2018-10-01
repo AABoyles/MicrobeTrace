@@ -1,8 +1,10 @@
-<div id="file_panel" class="container-fluid">
-  <div id="file_table" class="container"></div>
+<div id="file-panel" class="container-fluid">
+  <div id="file-table" class="container">
+    <p id="file-prompt" class="text-muted">Drag-and-Drop Files here, or click "Add File(s)" to load data.</p>
+  </div>
 </div>
 
-<div style="background: white; border-top: 1px solid rgba(0,0,0,.1); right: 0; bottom: 0; left: 0; z-index: 1030;">
+<div id="file-footer">
   <div class="container" style="padding: 15px">
     <input type="file" id="data_files" multiple="true" />
     <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#alignerControlsModal">Settings</button>
@@ -185,6 +187,7 @@
 
   $('#data_files').on('change', function(e){
     var files = e.target.files;
+    $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
     $('#main-submit').css('display', 'inline').focus();
   }).filestyle({
@@ -193,7 +196,7 @@
     btnClass: 'btn-primary'
   });
 
-  $('#file_panel').on('dragover', function(evt){
+  $('#file-panel').on('dragover', function(evt){
     evt.stopPropagation();
     evt.preventDefault();
     evt.originalEvent.dataTransfer.dropEffect = 'copy';
@@ -202,6 +205,7 @@
     evt.preventDefault();
     var files = evt.originalEvent.dataTransfer.files;
     var n = files.length;
+    $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
     $('#main-submit').css('display', 'inline').focus();
   });
@@ -300,7 +304,7 @@
           }
         });
       });
-      root.appendTo('#file_table');
+      root.appendTo('#file-table');
       var refit = function(e){
         var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
         these = $(`[data-file='${file.name}']`),
@@ -455,7 +459,7 @@
     }, 20000);
 
     var files = [];
-    $('#file_panel .row').each((i, el) => {
+    $('#file-panel .row').each((i, el) => {
       var $el = $(el);
       var fname = $el.find('.filename').text().trim();
       var selects = $el.find('select');
