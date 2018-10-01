@@ -29,7 +29,7 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
         <div class="dropdown-menu">
-          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#save_modal">Save</a>
+          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
           <div class="dropdown-divider"></div>
           <a href="#" class="dropdown-item">
             <input type="file" class="d-none" id="OpenTab" />
@@ -39,7 +39,7 @@
         </div>
       </li>
       <li class="nav-item">
-        <a href="#" class="nav-link py-0" data-toggle="modal" data-target="#global_settings_modal">Settings</a>
+        <a href="#" class="nav-link py-0" data-toggle="modal" data-target="#global-settings-modal">Settings</a>
       </li>
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
@@ -132,7 +132,7 @@ performance of this software.</pre>
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="main_panel" class="pane-container pane-horizontal">
+  <div id="main-panel" class="pane-container pane-horizontal">
     <noscript class="container-fluid">
       <div class="jumbotron">
         <h1>Sorry!</h1>
@@ -145,7 +145,7 @@ performance of this software.</pre>
     <div id="group-key-context" class="dropdown-menu">
       <a href="#" id="group-key-hide" class="dropdown-item">Hide</a>
     </div>
-    <div id="networkStatistics">
+    <div id="network-statistics">
       <table>
         <tbody>
           <tr>
@@ -170,14 +170,14 @@ performance of this software.</pre>
         </tbody>
       </table>
     </div>
-    <div id="hide_stats_context" class="dropdown-menu">
+    <div id="network-statistics-context" class="dropdown-menu">
       <a href="#" id="hideStats" class="dropdown-item">Hide</a>
     </div>
   </div>
 
   <span id="tooltip"></span>
 
-  <div id="global_settings_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="global-settings-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -303,7 +303,7 @@ performance of this software.</pre>
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="save_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="session-save-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -416,7 +416,7 @@ performance of this software.</pre>
         type: 'stack',
         content: []
       }]
-    }, $('#main_panel'));
+    }, $('#main-panel'));
 
     layout.init();
 
@@ -596,17 +596,17 @@ performance of this software.</pre>
     });
 
     $('#network-statistics-hide').parent().on('click', function(){
-      $('#networkStatistics').fadeOut();
+      $('#network-statistics').fadeOut();
     });
 
     $('#network-statistics-show').parent().on('click', function(){
       app.updateStatistics();
-      $('#networkStatistics').fadeIn();
+      $('#network-statistics').fadeIn();
     });
 
-    $('#networkStatistics').on('contextmenu', function(e){
+    $('#network-statistics').on('contextmenu', function(e){
       e.preventDefault();
-      $('#hide_stats_context').css({
+      $('#network-statistics-context').css({
         top: e.clientY,
         left: e.clientX,
         display: 'block'
@@ -779,7 +779,7 @@ performance of this software.</pre>
         $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d._selected).length.toLocaleString());
       })
       .on('click', function(){
-        $('#hide_stats_context #group-key-context').hide();
+        $('#network-statistics-context, #group-key-context').hide();
       })
       .on('resize', function(){
         layout.root.setSize();

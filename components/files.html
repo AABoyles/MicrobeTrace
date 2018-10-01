@@ -791,7 +791,7 @@
     app.tagClusters();
     app.computeDegree();
     app.updateStatistics();
-    $('#networkStatistics').fadeIn();
+    $('#network-statistics').fadeIn();
     session.loadTime = Date.now() - session.startTime;
     console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
     app.launchView($('#defaultView').val(), function(){
