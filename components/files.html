@@ -701,8 +701,11 @@
           nodes: subset,
           cores: parseFloat($('#availableCores').val())
         }, function(response){
-          response.forEach(function(node){
-            Object.assign(subset[node.index], node);
+          subset.forEach(function(node){
+            var match = response.find(function(possible){
+              return possible.id === node.id;
+            });
+            if(match) Object.assign(node, match);
           });
           computeLinks(subset);
         });
