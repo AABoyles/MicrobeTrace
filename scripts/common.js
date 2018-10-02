@@ -460,7 +460,7 @@ app.reset = function(){
 
 //adapted from from http://www.movable-type.co.uk/scripts/latlong.html
 app.haversine = function(a, b){
-  var R = 6371e3; // metres
+  var R = 6371; // kilometers
   var φ1 = a._lat * Math.PI / 180;
   var φ2 = b._lat * Math.PI / 180;
   var Δφ = (b._lat - a._lat) * Math.PI / 180;
@@ -474,24 +474,18 @@ app.haversine = function(a, b){
 
 app.geoDM = function(){
   var nodes = session.data.nodes;
-  var links = [];
   var n = nodes.length;
   var dm = Array(n);
   for(var i = 0; i < n; i++){
     dm[i] = Array(n);
     dm[i][i] = 0;
     for(var j = 0; j < i; j++){
-      var dist = haversine(nodes[i], nodes[j]);
+      var dist = app.haversine(nodes[i], nodes[j]);
       dm[i][j] = dist;
       dm[j][i] = dist;
-      links.push({
-        source: nodes[i].id,
-        target: nodes[j].id,
-        geographic_distance: dist
-      })
     }
   }
-  return(links);
+  session.data.distance_matrix.geo = dm;
 };
 
 //Adapted from https://24ways.org/2010/calculating-color-contrast/
