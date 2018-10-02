@@ -64,6 +64,8 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
         <div class="dropdown-menu">
+          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
+          <div class="dropdown-divider"></div>
           <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
         </div>
       </li>
@@ -352,6 +354,24 @@ performance of this software.</pre>
     </div>
   </div>
 
+  <div class="modal fade" id="exit-modal" tabindex="-1" role="dialog" aria-labelledby="exitModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exitModalLabel">Exit MicrobeTrace?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          Are you certain you want to exit this MicrobeTrace session? Any unsaved configurations will be lost!
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+          <button type="button" id="exit-button" class="btn btn-danger" data-dismiss="modal">Exit MictobeTrace</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="scripts/polyfills.js"></script>
   <script src="node_modules/underscore/underscore-min.js"></script>
   <script src="node_modules/vue/dist/vue.min.js"></script>
@@ -443,7 +463,10 @@ performance of this software.</pre>
     }
 
     // Let's set up the Nav Bar
-    $('#FileTab').on('click', function(){ window.location.reload() });
+    $('#FileTab').on('click', function(){
+      $('#exit-button').on('click', app.reset);
+      $('#exit-modal').modal();
+    });
 
     $('#save-data').on('click', function(){
       var name = $('#save-file-name').val();
@@ -482,6 +505,11 @@ performance of this software.</pre>
     });
 
     $('.viewbutton').on('click', function(){ app.launchView($(this).data('href')); });
+
+    $('#ReloadTab').on('click', function(){
+      $('#exit-button').on('click', function(){ window.location.reload(); });
+      $('#exit-modal').modal();
+    });
 
     $('#FullScreenTab').on('click', function(){ screenfull.toggle(); });
 
