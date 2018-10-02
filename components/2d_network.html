@@ -24,7 +24,7 @@
       <a class="nav-link" id="links-tab" data-toggle="tab" href="#network-link-settings" role="tab" aria-controls="network-link-settings" aria-selected="false">Links</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="network-tab" data-toggle="tab" href="#network_settings" role="tab" aria-controls="network_settings" aria-selected="false">Network</a>
+      <a class="nav-link" id="network-tab" data-toggle="tab" href="#network-settings" role="tab" aria-controls="network-settings" aria-selected="false">Network</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -138,7 +138,7 @@
         </div>
       </div>
     </div>
-    <div class="tab-pane fade" id="network_settings" role="tabpanel" aria-labelledby="network-tab">
+    <div class="tab-pane fade" id="network-settings" role="tabpanel" aria-labelledby="network-tab">
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</label></div>
         <div class="col-8"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
@@ -935,7 +935,7 @@
     .on('background-color-change', function(){
       $('#network').css('background-color', session.style.widgets['background-color']);
     })
-    .on('link-threshold-change node_visibility node-selected', function(){
+    .on('link-threshold-change node-visibility node-selected', function(){
       updateVisibleNodes(); //Update network's copy of data model
       render();       //Draw it
     });

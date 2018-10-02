@@ -331,7 +331,7 @@ app.setNodeVisibility = function(){
       n.visible = n.visible && session.state.time.isAfter(n[field]);
     }
   });
-  $(window).trigger('node_visibility');
+  $(window).trigger('node-visibility');
 };
 
 app.setLinkVisibility = function(){

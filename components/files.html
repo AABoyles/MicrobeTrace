@@ -292,7 +292,6 @@
         var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
             b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
             these = $(`[data-file='${file.name}'] select`);
-            console.log(these);
         [a, b].forEach(function(list, i){
           list.forEach(function(title){
             if(headers.includes(title)){

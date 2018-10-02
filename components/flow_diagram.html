@@ -210,7 +210,7 @@
           drawFlowDiagram();
         }
       })
-      .on('node_visibility', drawFlowDiagram)
+      .on('node-visibility', drawFlowDiagram)
       .on('background-color-change', function(){
         $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
       });
