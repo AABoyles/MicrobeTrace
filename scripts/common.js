@@ -546,7 +546,7 @@ app.launchView = function(view, callback){
     contentItem.element.find('.launch-color-options').click(function(){
       $('#color-tab').tab('show');
       setTimeout(() => {
-        $('#global_settings_modal').modal('show');
+        $('#global-settings-modal').modal('show');
       }, 250);
     });
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
