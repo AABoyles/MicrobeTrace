@@ -1,44 +1,44 @@
   <div id="heatmap-panel"></div>
 
   <div class="view_controls">
-    <button type="button" id="toggle_heatmap_settings" class="btn btn-light btn-sm">
+    <button type="button" id="heatmap-settings-toggle" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_heatmap_modal" title="Export Heatmap">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#heatmap-export-modal" title="Export Heatmap">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
 
-  <div id="heatmap_settings_pane" class="left_pane">
+  <div id="heatmap-settings-pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#heatmapConfigurations" id="heatmap-tab" class="nav-link active" aria-controls="heatmap" role="tab" data-toggle="tab">Heatmap</a>
+        <a href="#heatmap-configurations" id="heatmap-tab" class="nav-link active" aria-controls="heatmap" role="tab" data-toggle="tab">Heatmap</a>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="heatmapConfigurations" role="tabpanel" aria-labelledby="heatmap-tab">
+      <div class="tab-pane fade show active" id="heatmap-configurations" role="tabpanel" aria-labelledby="heatmap-tab">
         <div class="form-group row">
           <div class="col-3">Distance Metric</div>
           <div class="col-9">
-            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" id="heatmap_distanceMetric"></div>
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons" id="heatmap-metric"></div>
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3">Invert X-Axis</div>
+          <div class="col-3">X-Axis</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light col">
-                <input id="heatmap_invertX" type="checkbox"> X
+                <input id="heatmap-invertX" type="checkbox"> Invert
               </label>
             </div>
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3">Invert Y-Axis</div>
+          <div class="col-3">Y-Axis</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light col">
-                <input id="heatmap_invertY" type="checkbox"> Y
+                <input id="heatmap-invertY" type="checkbox"> Invert
               </label>
             </div>
           </div>
@@ -46,9 +46,9 @@
         <div class="form-group row">
           <div class="col-3">Color Scheme</div>
           <div class="col-9">
-            <input type="color" id="heatmap_highColor" class="custom-select custom-select-sm" value="#a50026" />
-            <input type="color" id="heatmap_medianColor" class="custom-select custom-select-sm" value="#ffffbf" />
-            <input type="color" id="heatmap_lowColor" class="custom-select custom-select-sm" value="#313695" />
+            <input type="color" id="heatmap-color-high" class="custom-select custom-select-sm" value="#a50026" />
+            <input type="color" id="heatmap-color-medium" class="custom-select custom-select-sm" value="#ffffbf" />
+            <input type="color" id="heatmap-color-low" class="custom-select custom-select-sm" value="#313695" />
           </div>
         </div>
         <div class="form-group row">
@@ -56,10 +56,10 @@
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light col">
-                <input type="radio" name="axisLabels" id="heatmap_showAxisLabels" autocomplete="off"> Show
+                <input type="radio" name="axisLabels" id="heatmap-axislabels-show" autocomplete="off"> Show
               </label>
               <label class="btn btn-light active col">
-                <input type="radio" name="axisLabels" id="heatmap_hideAxisLabels" autocomplete="off" checked> Hide
+                <input type="radio" name="axisLabels" id="heatmap-axislabels-hide" autocomplete="off" checked> Hide
               </label>
             </div>
           </div>
@@ -68,7 +68,7 @@
     </div>
   </div>
 
-  <div id="export_heatmap_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="heatmap-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -80,10 +80,10 @@
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-9">
-              <input type="text" id="export-heatmap-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              <input type="text" id="heatmap-export-filename" class="form-control form-control-sm" placeholder="Filename" />
             </div>
             <div class="col-3">
-              <select id="export-heatmap-file-type" class="form-control form-control-sm">
+              <select id="heatmap-export-filetype" class="form-control form-control-sm">
                 <option selected>png</option>
                 <option>csv</option>
               </select>
@@ -92,7 +92,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="heatmap_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+          <button type="button" id="heatmap-export" class="btn btn-primary" data-dismiss="modal">Export</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -103,40 +103,45 @@
 
     let plot;
 
-    $('#heatmap_distanceMetric').html(
+    $('#heatmap-metric').html(
       Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) => `
-        <label class="btn btn-light${(i===0)? ' active':''}">
-          <input type="radio" name="distanceMetric" id="${k}" autocomplete="off"${(i===0)? ' checked':''}>${app.titleize(k)}</input>
+        <label class="btn btn-light col${(i===0)? ' active':''}">
+          <input type="radio" name="heatmap-metric" value="${k}" autocomplete="off"${(i===0)? ' checked':''}>${app.titleize(k)}</input>
         </label>
       `).join('')
     );
 
+    $('[name="heatmap-metric"]').on('change', function(e){
+      session.style.widgets['heatmap-metric'] = $('[name="heatmap-metric"]:checked').val();
+      redrawHeatmap();
+    });
+
     function redrawHeatmap(){
       if(!$('#heatmap-panel').length) return;
       if(plot) Plotly.purge('heatmap-panel');
-      if(!session.data.distance_matrix.tn93 && !session.data.distance_matrix.snps){
+      if(session.data.distance_matrix.length < 2){
         return alertify.error('No distance matrix could be found!');
       }
       let xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
       let yLabels = xLabels.slice();
-      let data = session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id].map(l => l.slice());
+      let data = session.data.distance_matrix[session.style.widgets['heatmap-metric']].map(l => l.slice());
 
-      if($('#heatmap_invertX').is(':checked')){
+      if(session.style.widgets['heatmap-invertX']){
         data.forEach(l => l.reverse());
         xLabels.reverse();
       }
 
-      if($('#heatmap_invertY').is(':checked')){
+      if(session.style.widgets['heatmap-invertY']){
         data.reverse();
         yLabels.reverse();
       }
 
       let config = {
         autotick: false,
-        showticklabels: $('#heatmap_showAxisLabels').is(':checked')
+        showticklabels: session.style.widgets['heatmap-axislabels-show']
       };
 
-      if(!$('#heatmap_showAxisLabels').is(':checked')){
+      if(!config.showticklabels){
         config.ticks = '';
       }
 
@@ -146,9 +151,9 @@
         z: data,
         type: 'heatmap',
         colorscale: [
-          [0, $('#heatmap_lowColor').val()],
-          [0.5, $('#heatmap_medianColor').val()],
-          [1, $('#heatmap_highColor').val()]
+          [0, session.style.widgets['heatmap-color-low']],
+          [0.5, session.style.widgets['heatmap-color-medium']],
+          [1, session.style.widgets['heatmap-color-high']]
         ]
       }], {
         xaxis: config,
@@ -162,8 +167,8 @@
       setBackground();
     }
 
-    $('#toggle_heatmap_settings').click(function(){
-      let pane = $('#heatmap_settings_pane');
+    $('#heatmap-settings-toggle').click(function(){
+      let pane = $('#heatmap-settings-pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -171,28 +176,58 @@
       }
     });
 
-    $('#heatmap_export').on('mousedown', function(){
-      let filetype = $('#export-heatmap-file-type').val();
-      let name = $('#export-heatmap-file-name').val();
+    $('#heatmap-export').on('mousedown', function(){
+      let filetype = $('#heatmap-export-filetype').val();
+      let name = $('#heatmap-export-filename').val();
       if(filetype === 'png'){
         let network = $('#heatmap-panel .main-svg').get(0);
         $('#heatmap-panel .main-svg .infolayer').detach().appendTo(network);
         let content = app.unparseSVG(network);
         app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
-          saveAs(blob, $('#export-heatmap-file-name').val() + '.' + filetype);
+          saveAs(blob, $('#heatmap-export-filename').val() + '.' + filetype);
         });
       } else {
-        content = app.unparseDM(session.data.distance_matrix[$('[name="distanceMetric"]:checked')[0].id]);
+        content = app.unparseDM(session.data.distance_matrix[$('[name="heatmap-metric"]:checked')[0].id]);
         let blob = new Blob([content]);
         saveAs(blob, name + '.' + filetype);
         return;
       }
     });
 
-    $('input[name="distanceMetric"]').change(redrawHeatmap);
-    $('input[name="axisLabels"]').change(redrawHeatmap);
-    $('input[type="color"]').change(redrawHeatmap);
-    $('#heatmap_invertX, #heatmap_invertY').change(redrawHeatmap);
+    $('#heatmap-axislabels-show').on('change', function(){
+      session.style.widgets['heatmap-axislabels-show'] = $(this).is(':checked');
+      redrawHeatmap();
+    });
+
+    $('#heatmap-axislabels-hide').on('change', function(){
+      session.style.widgets['heatmap-axislabels-show'] = !$(this).is(':checked');
+      redrawHeatmap();
+    });
+
+    $('#heatmap-invertX').on('change', function(){
+      session.style.widgets['heatmap-invertX'] = $(this).is(':checked');
+      redrawHeatmap();
+    });
+
+    $('#heatmap-invertY').on('change', function(){
+      session.style.widgets['heatmap-invertX'] = $(this).is(':checked');
+      redrawHeatmap();
+    });
+
+    $('#heatmap-color-low').on('change', function(e){
+      session.style.widgets['heatmap-color-low'] = e.target.value;
+      redrawHeatmap();
+    });
+
+    $('#heatmap-color-medium').on('change', function(e){
+      session.style.widgets['heatmap-color-medium'] = e.target.value;
+      redrawHeatmap();
+    });
+
+    $('#heatmap-color-high').on('change', function(e){
+      session.style.widgets['heatmap-color-high'] = e.target.value;
+      redrawHeatmap();
+    });
 
     function setBackground(){
       let col = session.style.widgets['background-color'];
@@ -208,7 +243,5 @@
     $(window).on('background-color-change', setBackground);
 
     layout.on('stateChanged', redrawHeatmap);
-    setTimeout(redrawHeatmap, 80);
-
   })();
   </script>
