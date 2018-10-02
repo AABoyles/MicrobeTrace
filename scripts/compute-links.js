@@ -23,7 +23,6 @@ onmessage = function(e){
       target: subset[j].id,
       tn93: distance,
       snps: hamming(subset[i]['seq'], subset[j]['seq']),
-      distance: distance,
       origin: ['Genetic Distance']
     };
     output.push(newLink);

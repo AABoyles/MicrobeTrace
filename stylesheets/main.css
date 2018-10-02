@@ -228,7 +228,7 @@ td {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#alignmentPreview{
+#alignment-preview{
   min-height: 115px;
   max-height: 200px;
   overflow-x: scroll;
@@ -237,14 +237,14 @@ td {
 .bootstrap-filestyle.input-group{
   display: inline;
 }
-#distanceMetrics_chosen .chosen-choices{
+#distance-metrics_chosen .chosen-choices{
   border: 1px solid #ced4da;
   border-radius: .25rem;
 }
 #main-submit {
   display: none;
 }
-#loadingInformation {
+#loading-information {
   font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
   font-size: 11px;
   font-style: normal;

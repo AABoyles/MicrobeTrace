@@ -336,7 +336,7 @@ app.setNodeVisibility = function(){
 
 app.setLinkVisibility = function(){
   var metric  = $('#links-filter-variable').val(),
-      threshold = $('#link-threshold').val(),
+      threshold = parseFloat($('#link-threshold').val()),
       showNN = $('#showNNLinks').is(':checked');
   session.state.linkThreshold = threshold;
   session.data.links.forEach(function(link){

@@ -6,7 +6,7 @@
 
 <div id="file-footer">
   <div class="container" style="padding: 15px">
-    <input type="file" id="data_files" multiple="true" />
+    <input type="file" id="data-files" multiple="true" />
     <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#alignerControlsModal">Settings</button>
     <button type="submit" id="main-submit" class="btn btn-success float-right" title="Please select a Network CSV or FASTA File">Submit</button>
   </div>
@@ -24,18 +24,18 @@
       <div class="modal-body">
         <ul class="nav nav-tabs" role="tablist">
           <li role="presentation" class="nav-item active">
-            <a href="#alignerConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
+            <a href="#aligner-configurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
           </li>
           <li role="presentation" class="nav-item">
-            <a href="#distanceConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Distance</a>
+            <a href="#distance-configurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Distance</a>
           </li>
           <li role="presentation" class="nav-item">
-            <a href="#systemConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">System</a>
+            <a href="#system-configurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">System</a>
           </li>
         </ul>
         <!-- Tab panes -->
         <div class="tab-content">
-          <div id="alignerConfigurations" class="tab-pane fade show active" role="tabpanel">
+          <div id="aligner-configurations" class="tab-pane fade show active" role="tabpanel">
             <div class="form-group row">
               <div class="col-12">
                 <div class="alert alert-warning alert-dismissible" role="alert">
@@ -118,24 +118,24 @@
               </div>
             </div>
           </div>
-          <div id="distanceConfigurations" class="tab-pane fade" role="tabpanel">
+          <div id="distance-configurations" class="tab-pane fade" role="tabpanel">
             <div class="form-group row">
               <div class="col-4">
-                <label for="distanceMetrics">Distance Metric(s)</label>
+                <label for="distance-metrics">Distance metric(s)</label>
               </div>
               <div class="col-8">
-                <select class="chosen-select custom-select-sm" id="distanceMetrics" multiple>
-                  <option selected>TN93</option>
-                  <option selected>SNPs</option>
+                <select class="chosen-select custom-select-sm" id="distance-metrics" multiple>
+                  <option value="tn93" selected>TN93</option>
+                  <option value="snps" selected>SNPs</option>
                 </select>
               </div>
             </div>
             <div class="form-group row">
               <div class="col-4">
-                <label for="defaultDistanceMetric">Default Distance Metric</label>
+                <label for="default-distance-metric">Default Distance metric</label>
               </div>
               <div class="col-8">
-                <select class="custom-select custom-select-sm" id="defaultDistanceMetric">
+                <select class="custom-select custom-select-sm" id="default-distance-metric">
                   <option value="tn93" selected>TN93</option>
                   <option value="snps">SNPs</option>
                 </select>
@@ -143,20 +143,20 @@
             </div>
             <div class="form-group row">
               <div class="col-4">
-                <label for="defaultDistanceThreshold">Default Link Threshold</label>
+                <label for="default-distance-threshold">Default Link Threshold</label>
               </div>
               <div class="col-8">
-                <input type="number" id="defaultDistanceThreshold" class="custom-select custom-select-sm" min="0" value="0.015" step="0.001"></input>
+                <input type="number" id="default-distance-threshold" class="custom-select custom-select-sm" min="0" value="0.015" step="0.001"></input>
               </div>
             </div>
           </div>
-          <div id="systemConfigurations" class="tab-pane fade" role="tabpanel">
+          <div id="system-configurations" class="tab-pane fade" role="tabpanel">
             <div class="form-group row">
               <div class="col-2">
-                <label for="defaultView">Default View</label>
+                <label for="default-View">Default View</label>
               </div>
               <div class="col-10">
-                <select class="custom-select" id="defaultView">
+                <select class="custom-select" id="default-View">
                   <option value="2d_network" selected>2D Network</option>
                   <option value="3d_network">3D Network</option>
                   <option value="bubbles">Bubbles</option>
@@ -167,10 +167,10 @@
             </div>
             <div class="form-group row">
               <div class="col-2">
-                <label for="availableCores">Cores</label>
+                <label for="available-cores">Cores</label>
               </div>
               <div class="col-10">
-                <select class="custom-select" id="availableCores"><option selected>1</option></select>
+                <select class="custom-select" id="available-cores"><option selected>1</option></select>
               </div>
             </div>
           </div>
@@ -185,7 +185,7 @@
 <script>
 (function(){
 
-  $('#data_files').on('change', function(e){
+  $('#data-files').on('change', function(e){
     var files = e.target.files;
     $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
@@ -286,71 +286,62 @@
       <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
       <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
       <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
-      </div>
-      <div class='col-4 '${!isFasta&&!isNode?'':' style="display: none;"'} data-file='${file.name}'>
-      <label for="file-${file.name}-field-3">Distance</label>
-      <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
       </div>`);
-      var a = isNode ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-          b = isNode ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
-          c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
-      [a, b, c].forEach(function(list, i){
-        list.forEach(function(title){
-          if(headers.includes(title)){
-            $(root.find('select').get(i)).val(title);
-          }
-        });
-      });
-      root.appendTo('#file-table');
-      var refit = function(e){
-        var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
-        these = $(`[data-file='${file.name}']`),
-        first = $(these.get(0)),
-        second = $(these.get(1)),
-        third = $(these.get(2)),
-        a = ['SOURCE', 'Source', 'source'],
-        b = ['TARGET', 'Target', 'target'],
-        c = ['SNPs', 'TN93', 'snps', 'tn93', 'length', 'distance'];
-        if(type === 'node'){
-          a = ['ID', 'Id', 'id'];
-          b = ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'];
-          first.slideDown().find('label').text('ID');
-          second.slideDown().find('label').text('Sequence');
-          third.slideUp();
-        } else if(type === 'link'){
-          first.slideDown().find('label').text('Source');
-          second.slideDown().find('label').text('Target');
-          third.slideDown();
-        } else {
-          these.slideUp();
-        }
-        [a, b, c].forEach(function(list, i){
+
+      function matchHeaders(type){
+        var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+            b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+            these = $(`[data-file='${file.name}'] select`);
+            console.log(these);
+        [a, b].forEach(function(list, i){
           list.forEach(function(title){
             if(headers.includes(title)){
-              $(these.find('select').get(i)).find('select').val(title);
+              $(these.get(i)).val(title);
             }
           });
         });
-      };
+      }
+
+      root.appendTo('#file-table');
+      matchHeaders($(`[name="options-${file.name}"]:checked`).data('type'));
+
+      function refit(e){
+        var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
+            these = $(`[data-file='${file.name}']`),
+            first = $(these.get(0)),
+            second = $(these.get(1));
+        if(type === 'node'){
+          first.slideDown().find('label').text('ID');
+          second.slideDown().find('label').text('Sequence');
+          matchHeaders(type);
+        } else if(type === 'link'){
+          first.slideDown().find('label').text('Source');
+          second.slideDown().find('label').text('Target');
+          matchHeaders(type);
+        } else {
+          these.slideUp();
+        }
+      }
+
       $(`[name="options-${file.name}"]`).change(refit);
       refit();
     };
   }
 
-  $('#distanceMetrics').chosen({width: "100%"}).change(function(){
-    $('#defaultDistanceMetric').html($(this).val().map(function(v, i){
-      return '<option value="' + v.toLowerCase() + '"' + (i == 0 ? ' selected': '') + '>' + v + '</option>';
+  $('#distance-metrics').chosen({width: "100%"}).change(function(e){
+    $('#default-distance-metric').html($(this).val().map(function(v, i){
+      return '<option value="' + v + '"' + (i == 0 ? ' selected': '') + '>' + app.titleize(v) + '</option>';
     }).join('\n'));
   });
 
-  $('#defaultDistanceMetric').change(function(e){
-    session.state.linkSortVariable = e.target.value;
+  $('#default-distance-metric').change(function(e){
+    session.state.widgets['default-distance-metric'] = e.target.value;
     if(e.target.value == 'snps'){
-      $('#defaultDistanceThreshold')
+      $('#default-distance-threshold')
         .attr('step', 1)
         .val(16);
     } else {
-      $('#defaultDistanceThreshold')
+      $('#default-distance-threshold')
         .attr('step', 0.001)
         .val(0.015);
     }
@@ -380,7 +371,7 @@
       isLocal: $('#localAlign').is(':checked'),
       match: [parseFloat($('#alignerMatch').val()), parseFloat($('#alignerMismatch').val())],
       gap: [parseFloat($('#alignerGapO').val()), parseFloat($('#alignerGapE').val())],
-      cores: $('#availableCores').val()|0
+      cores: $('#available-cores').val()|0
     }, function(output){
       alignmentViewer(output, {
         showID: false
@@ -418,15 +409,15 @@
 
   $('#alignerControlsButton, #previewAlignment').click(updatePreview);
 
-  if(localStorage.getItem('defaultView')){
-    $('#defaultView').val(localStorage.getItem('defaultView'));
+  if(localStorage.getItem('default-View')){
+    $('#default-View').val(localStorage.getItem('default-View'));
   }
 
-  $('#defaultView').change(e => {
-    localStorage.setItem('defaultView', e.target.value);
+  $('#default-View').change(e => {
+    localStorage.setItem('default-View', e.target.value);
   });
 
-  $('#availableCores').html(
+  $('#available-cores').html(
     _.range(1, (navigator.hardwareConcurrency|4)+1).map(i => {
       return `<option${i === Math.ceil((navigator.hardwareConcurrency|4)/2) ? ' selected' : ''}>${i}</option>`;
     }).join()
@@ -434,7 +425,7 @@
 
   function message(msg){
     messages.push(msg);
-    $('#loadingInformation').html(messages.join('<br />'));
+    $('#loading-information').html(messages.join('<br />'));
   }
 
   var messageTimeout, messages = [];
@@ -443,9 +434,9 @@
     messages = [];
     session.startTime = Date.now();
     session.data = app.dataSkeleton();
-    $('#loadingInformation').html('');
+    $('#loading-information').html('');
 
-    $('#loadingInformationModal').modal({
+    $('#loading-information-modal').modal({
       backdrop: false,
       keyboard: false
     });
@@ -464,14 +455,14 @@
         file: session.files.find(function(file){ return file.name === fname; }),
         type: $el.find('input[type="radio"]:checked').data('type'),
         field1: selects.get(0).value,
-        field2: selects.get(1).value,
-        field3: selects.get(2).value
+        field2: selects.get(1).value
       });
     });
+    session.files = files;
 
     var hierarchy = ['distmat', 'link', 'node', 'fasta'];
 
-    var anySequences = false;
+    var anySequences = false, metrics = $('#distance-metrics').val();
 
     files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
     files.forEach((file, fileNum) => {
@@ -506,13 +497,17 @@
           Object.keys(link).forEach(function(key){
             link[key] = filterXSS(link[key]);
           });
-          l += app.addLink(Object.assign({
+          var base = {
             source: '' + link[file.field1],
             target: '' + link[file.field2],
-            distance: file.field3 === 'None' ? 0 : _.isNaN(parseFloat(link[file.field3])) ? 0 : parseFloat(link[file.field3]),
             origin: [filename],
             visible: true
-          }, link));
+          };
+          metrics.forEach(function(metric){
+            metric = metric.toLowerCase();
+            base[metric] = 0;
+          });
+          l += app.addLink(Object.assign(base, link));
         }
 
         if(extension == 'xls' || extension == 'xlsx'){
@@ -636,9 +631,9 @@
       } else { //Distance Matrix
 
         message(`Parsing ${filename} as Distance Matrix...`);
+        var defaultMetric = $('#default-distance-metric').val();
         Papa.parse(file.file, {
           worker: true,
-          dynamicTyping: true,
           skipEmptyLines: true,
           complete: results => {
             var nodeIDs = [];
@@ -657,19 +652,23 @@
               } else {
                 row.forEach((cell, j) => {
                   if(j > i){
-                    nl += app.addLink({
+                    var base = {
                       source: '' + nodeIDs[i],
                       target: '' + nodeIDs[j],
-                      distance: cell,
                       origin: [filename]
+                    };
+                    metrics.forEach(function(metric){
+                      metric = metric.toLowerCase();
+                      base[metric] = 0;
                     });
+                    base[defaultMetric] = parseFloat(cell),
+                    nl += app.addLink(base);
                   }
                 });
               }
             });
             message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
             message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
-            if(session.data.linkFields.indexOf('distance') < 0) session.data.linkFields.push('distance');
             if(fileNum === files.length - 1) nextStuff();
           }
         });
@@ -696,7 +695,7 @@
           match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
           gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
           nodes: subset,
-          cores: parseFloat($('#availableCores').val())
+          cores: parseFloat($('#available-cores').val())
         }, function(response){
           subset.forEach(function(node){
             var match = response.find(function(possible){
@@ -713,7 +712,7 @@
       message('Computing Links based on Genomic Proximity...');
       var k = 0;
       var n = subset.length;
-      var cores = parseFloat($('#availableCores').val());
+      var cores = parseFloat($('#available-cores').val());
       var computers = Array(cores);
       var nPerI = Math.ceil(n/cores);
       var returned = 0;
@@ -775,13 +774,13 @@
       app.updateThresholdHistogram();
     } catch(error){
       console.error(error);
-      $('#loadingInformationModal').modal('hide');
+      $('#loading-information-modal').modal('hide');
       alertify
-      .error('Something went wrong! Please start a new session and try again.')
-      .delay(0)
-      .ondismiss(function(){
-        window.location.reload();
-      });
+        .error('Something went wrong! Please start a new session and try again.')
+        .delay(0)
+        .ondismiss(function(){
+          window.location.reload();
+        });
     }
     app.setLinkVisibility();
     app.setNodeVisibility();
@@ -791,11 +790,11 @@
     $('#network-statistics').fadeIn();
     session.loadTime = Date.now() - session.startTime;
     console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
-    app.launchView($('#defaultView').val(), function(){
+    app.launchView($('#default-View').val(), function(){
       layout.contentItems.find(item => item.componentName === 'files').remove();
       $('.hideForHIVTrace').css('display', 'flex');
       setTimeout(function(){
-        $('#loadingInformationModal').modal('hide');
+        $('#loading-information-modal').modal('hide');
       }, 1200);
     });
   };

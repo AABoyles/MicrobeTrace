@@ -110,7 +110,7 @@ performance of this software.</pre>
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="loadingInformationModal" class="modal fade" tabindex="-1" role="dialog">
+  <div id="loading-information-modal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -120,9 +120,9 @@ performance of this software.</pre>
           <div class="text-center">
             <img src="img/1DNA.gif" alt="Loading Spinner" />
           </div>
-          <a class="btn btn-primary" data-toggle="collapse" href="#collapseDetails" role="button" aria-expanded="false" aria-controls="collapseDetails">Details</a>
-          <div class="collapse" id="collapseDetails">
-            <div id="loadingInformation" class="card card-body"></div>
+          <a class="btn btn-primary" data-toggle="collapse" href="#loading-information-collapse" role="button" aria-expanded="true" aria-controls="loading-information-collapse">Details</a>
+          <div id="loading-information-collapse" class="collapse show">
+            <div id="loading-information" class="card card-body"></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -572,8 +572,6 @@ performance of this software.</pre>
             .on('mouseleave', null);
         });
       });
-      session.state.linkThreshold = parseFloat($('#defaultDistanceThreshold').val());
-      $('#link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
       $(window).trigger('link-threshold-change');
     };
 
@@ -670,12 +668,12 @@ performance of this software.</pre>
         session.style.widgets['link-color-variable'] = variable;
         if(variable === 'None'){
           $('#link-color-row').slideDown();
-          $('#linkColors').remove();
+          $('#link-colors').remove();
           $(window).trigger('link-color-change');
           return;
         }
         $('#link-color-row').slideUp();
-        $('#linkColors').remove();
+        $('#link-colors').remove();
         let values = [];
         if(variable === 'origin'){
           session.data.links.forEach(l => {
@@ -688,7 +686,7 @@ performance of this software.</pre>
             if(!values.includes(l[variable])) values.push(l[variable]);
           });
         }
-        let table = $('<tbody id="linkColors"></tbody>').appendTo('#group-key');
+        let table = $('<tbody id="link-colors"></tbody>').appendTo('#group-key');
         table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
         if(_.isNumber(session.data.links[0][variable])){
           values.sort((a, b) => a - b);

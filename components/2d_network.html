@@ -716,8 +716,8 @@
   });
   $('#node-symbol-variable').on('change', e => {
     session.style.widgets['node-symbol-variable'] = e.target.value;
-    $('#nodeShapes').fadeOut(function(){$(this).remove()});
-    let table = $('<tbody id="nodeShapes"></tbody>').appendTo('#group-key');
+    $('#node-symbols').fadeOut(function(){$(this).remove()});
+    let table = $('<tbody id="node-symbols"></tbody>').appendTo('#group-key');
     if(e.target.value === 'None'){
       redrawNodes();
       $('#node-symbol-row').slideDown();
