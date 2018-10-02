@@ -73,6 +73,9 @@ app.defaultWidgets = {
   'node-symbol': 'symbolCircle',
   'node-symbol-variable': 'None',
   'node-tooltip-variable': 'id',
+  'scatterplot-xVar': 'snps',
+  'scatterplot-yVar': 'tn93',
+  'scatterplot-logScale': false,
   'selected-color': '#ff8300',
   'selected-color-contrast': '#000000'
 };

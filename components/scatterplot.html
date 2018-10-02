@@ -1,15 +1,15 @@
   <div id="scatterplot-panel"></div>
 
   <div class="view_controls">
-    <button type="button" id="toggle_scatterplot_settings" class="btn btn-light btn-sm">
+    <button type="button" id="toggle-scatterplot-settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_scatterplot_modal" title="Export Scatterplot">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export-scatterplot-modal" title="Export Scatterplot">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
 
-  <div id="scatterplot_settings_pane" class="left_pane">
+  <div id="scatterplot-settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="nav-item active">
         <a href="#scatterplotConfigurations" aria-controls="scatterplotConfigurations" class="nav-link active" role="tab" data-toggle="tab">Scatterplot</a>
@@ -18,48 +18,35 @@
     <div class="tab-content">
       <div role="tabpanel" class="tab-pane fade show active" id="scatterplotConfigurations">
         <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which dataset should the scatterplot be drawn from?">Dataset</a></div>
-          <div class="col-9">
-            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light active col">
-                <input type="radio" name="set" id="scatterplot_vislinks" autocomplete="off" checked> Visible Links
-              </label>
-              <label class="btn btn-light col">
-                <input type="radio" name="set" id="scatterplot_alllinks" autocomplete="off"> All Links
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the scatterplot be drawn from?">X Variable</a></div>
-          <div class="col-9"><select id="scatterplot_xVar" class="custom-select custom-select-sm"></select></div>
+          <div class="col-9"><select id="scatterplot-xVar" class="custom-select custom-select-sm linkVariables"></select></div>
         </div>
         <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the scatterplot be drawn from?">Y Variable</a></div>
-          <div class="col-9"><select id="scatterplot_yVar" class="custom-select custom-select-sm"></select></div>
+          <div class="col-9"><select id="scatterplot-yVar" class="custom-select custom-select-sm linkVariables"></select></div>
         </div>
         <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light active col">
-                <input type="radio" name="scale" id="scatterplot_linearScale" autocomplete="off" checked> Linear
+                <input type="radio" name="scale" id="scatterplot-linearScale" autocomplete="off" checked> Linear
               </label>
               <label class="btn btn-light col">
-                <input type="radio" name="scale" id="scatterplot_logScale" autocomplete="off"> Log
+                <input type="radio" name="scale" id="scatterplot-logScale" autocomplete="off"> Log
               </label>
             </div>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="What color should the scatterplot be?">Color</a></div>
-          <div class="col-9"><input type="color" id="scatterplot_color" class="custom-select custom-select-sm" value="#5656ff" /></div>
+          <div class="col-9"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="export_scatterplot_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="export-scatterplot-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -83,7 +70,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="scatterplot_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+          <button type="button" id="scatterplot-export" class="btn btn-primary" data-dismiss="modal">Export</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -93,30 +80,24 @@
   (function(){
     let plot;
 
-    let options = session.data.linkFields.map(key => `<option value='${key}'>${app.titleize(key)}</option>`).join('\n');
-    $('#scatterplot_xVar, #scatterplot_yVar').html(options);
-    $('#scatterplot_xVar').val('snps');
-    $('#scatterplot_yVar').val('distance');
-
     function redrawScatterplot(){
       if(!$('#scatterplot-panel').length) return;
       if(plot) Plotly.purge('scatterplot-panel');
-      let xVar = $('#scatterplot_xVar').val();
-      let yVar = $('#scatterplot_yVar').val();
-      let visible = $('#scatterplot_vislinks').is(':checked');
-      let subset = session.data.links.filter(l => !visible || l.visible);
+      let xVar = session.style.widgets['scatterplot-xVar'];
+      let yVar = session.style.widgets['scatterplot-yVar'];
+      let subset = session.data.links.filter(l => l.visible);
       plot = Plotly.newPlot('scatterplot-panel', [{
         x: subset.map(l => l[xVar]),
         y: subset.map(l => l[yVar]),
         type: 'scatter',
         mode: 'markers',
         marker: {
-          color: $('#scatterplot_color').val(),
+          color: session.style.widgets['link-color'],
         }
       }], {
         yaxis: {
           title: app.titleize(yVar),
-          type: $('#scatterplot_logScale').is(':checked') ? 'log' : ''
+          type: session.style.widgets['scatterplot-logScale']
         },
         xaxis: {
           title: app.titleize(xVar)
@@ -130,8 +111,8 @@
       setBackground();
     }
 
-    $('#toggle_scatterplot_settings').click(function(){
-      let pane = $('#scatterplot_settings_pane');
+    $('#toggle-scatterplot-settings').on('click', function(){
+      let pane = $('#scatterplot-settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -148,14 +129,34 @@
       $('#scatterplot-panel .xtitle, .ytitle').css('fill', contrast);
       $('#scatterplot-panel .xaxislayer-above text').css('fill', contrast);
       $('#scatterplot-panel .yaxislayer-above text').css('fill', contrast);
+      $('#scatterplot-panel .zl.crisp, .xgrid.crisp, .ygrid.crisp').css('stroke', contrast);
     }
 
-    $(window).on('background-color-change', setBackground);
+    $(window)
+      .on('background-color-change', setBackground)
+      .on('link-color-change', redrawScatterplot);
 
-    $('#scatterplot_alllinks, #scatterplot_vislinks, #scatterplot_logScale, #scatterplot_linearScale').change(redrawScatterplot);
-    $('#scatterplot_xVar, #scatterplot_yVar, #scatterplot_color').change(redrawScatterplot);
+    $('#scatterplot-logScale').on('change', function(){
+      session.style.widgets['scatterplot-logScale'] = true;
+      redrawScatterplot();
+    });
 
-    $('#scatterplot_export').click(function(){
+    $('#scatterplot-linearScale').on('change', function(){
+      session.style.widgets['scatterplot-logScale'] = false;
+      redrawScatterplot();
+    });
+
+    $('#scatterplot-xVar').on('change', function(e){
+      session.style.widgets['scatterplot-xVar'] = e.target.value;
+      redrawScatterplot();
+    });
+
+    $('#scatterplot-yVar').on('change', function(e){
+      session.style.widgets['scatterplot-yVar'] = e.target.value;
+      redrawScatterplot();
+    });
+
+    $('#scatterplot-export').on('click', function(){
       let network = $('#scatterplot-panel .main-svg').get(0);
       $('#scatterplot-panel .main-svg .infolayer').detach().appendTo(network);
       let content = app.unparseSVG(network);
@@ -171,6 +172,5 @@
     });
 
     layout.on('stateChanged', redrawScatterplot);
-    setTimeout(redrawScatterplot, 80);
   })();
   </script>
