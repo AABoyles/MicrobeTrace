@@ -221,10 +221,7 @@
         session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
         session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
         session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
-        //if(session.layout){
-        //  TODO: Figure out how to preload all the views contained in session.layout
-        //  window.layout = new GoldenLayout(session.layout);
-        //}
+        if(session.layout) app.loadLayout(session.layout, true);
         app.finishUp();
       };
       reader.readAsText(file);
