@@ -428,7 +428,7 @@ app.computeNN = function(callback){
   var start = Date.now();
   var nnMachine = new Worker('scripts/compute-nn.js');
   nnMachine.onmessage = function(message){
-    if(message === 'Error') return;
+    if(message.data === 'Error') return;
     message.data.forEach(l => session.data.links[l.index].nn = l.nn);
     console.log('NN Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback();

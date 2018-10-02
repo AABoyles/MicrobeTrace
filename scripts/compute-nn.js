@@ -12,7 +12,7 @@ onmessage = function(e){
     let targets = [];
     for(let j = 0; j < i; j++){
       if(!dm[i][j]){
-        postMessage('Error')
+        postMessage('Error');
         close();
       }
       if(Math.abs(dm[i][j] - minDist) < epsilon){
