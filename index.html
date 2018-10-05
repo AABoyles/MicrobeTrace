@@ -489,8 +489,7 @@ performance of this software.</pre>
             session.style.widgets = Object.assign({}, app.defaultWidgets, session.style.widgets);
             $('#node-color-variable').change();
             $('#link-color-variable').change();
-            app.finishUp();
-            app.loadLayout(session.layout);
+            app.finishUp(true);
           };
         } else {
           reader.onloadend = function(out){

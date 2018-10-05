@@ -221,8 +221,7 @@
         session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
         session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
         session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
-        if(session.layout) app.loadLayout(session.layout, true);
-        app.finishUp();
+        app.finishUp(true);
       };
       reader.readAsText(file);
       return;
@@ -414,6 +413,7 @@
 
   $('#default-View').change(e => {
     localStorage.setItem('default-View', e.target.value);
+    session.layout.content[0].type = e.target.value;
   });
 
   $('#available-cores').html(
@@ -743,7 +743,7 @@
     };
   });
 
-  app.finishUp = function(){
+  app.finishUp = function(oldSession){
     clearTimeout(messageTimeout);
     ['node', 'link'].forEach(v => {
       session.data[v+'s'].forEach(d => {
@@ -789,13 +789,22 @@
     $('#network-statistics').fadeIn();
     session.loadTime = Date.now() - session.startTime;
     console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
-    app.launchView($('#default-View').val(), function(){
-      layout.contentItems.find(item => item.componentName === 'files').remove();
-      $('.hideForHIVTrace').css('display', 'flex');
-      setTimeout(function(){
-        $('#loading-information-modal').modal('hide');
-      }, 1200);
-    });
+    if(oldSession){
+      app.loadLayout(session.layout, true);
+    } else {
+      app.loadLayout({
+        type: 'stack',
+        content: [{
+          type: $('#default-View').val()
+        }]
+      }, true);
+    }
+    $('.hideForHIVTrace').css('display', 'flex');
+    setTimeout(function(){
+      let files = layout.contentItems.find(item => item.componentName === 'files');
+      if(files) files.remove();
+      $('#loading-information-modal').modal('hide');
+    }, 1200);
   };
 })();
 </script>

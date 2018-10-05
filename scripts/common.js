@@ -1,6 +1,6 @@
 var app = {};
 
-app.componentCache = [];
+app.componentCache = {};
 
 app.dataSkeleton = function(){
   return {
@@ -108,6 +108,12 @@ app.sessionSkeleton = function(){
     network: {
       allPinned: false,
       nodes: []
+    },
+    layout: {
+      type: 'stack',
+      content: [{
+        type: 'files'
+      }]
     }
   };
 };
