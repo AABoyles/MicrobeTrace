@@ -506,7 +506,7 @@ app.contrastColor = function(hexcolor){
 app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
-      app.componentCache[view] = { text: response };
+      app.componentCache[view] = response;
       layout.registerComponent(view, function(container, state){
         container.getElement().html(state.text);
       });
@@ -527,7 +527,7 @@ app.launchView = function(view, callback){
       if(!lastStack) lastStack = layout.root.contentItems[0];
       lastStack.addChild({
         componentName: view,
-        componentState: app.componentCache[view],
+        componentState: {text: app.componentCache[view]},
         title: app.titleize(view),
         type: 'component'
       });
