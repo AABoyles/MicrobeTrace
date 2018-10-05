@@ -225,7 +225,7 @@
         let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, $('#export-histogram-file-name').val() + '.' + filetype);
       } else {
-        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, function(blob){
           saveAs(blob, $('#export-histogram-file-name').val() + '.' + filetype);
         });
       }

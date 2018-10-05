@@ -664,28 +664,21 @@ app.unparseSVG = function(svgNode){
   var refNode = svgNode.hasChildNodes() ? svgNode.children[0] : null;
   svgNode.insertBefore(styleElement, refNode);
 	var serializer = new XMLSerializer();
-	var svgString = serializer.serializeToString(svgNode);
-	return svgString;
+	return serializer.serializeToString(svgNode);
 };
 
-app.blobifySVG = function(svgString, width, height, format, callback){
-	var format = format ? format : 'png';
-	var imgsrc = 'data:image/svg+xml;base64,'+ btoa( unescape( encodeURIComponent( svgString ) ) ); // Convert SVG string to data URL
+app.blobifySVG = function(svgString, width, height, callback){
 	var canvas = document.createElement('canvas');
-	var context = canvas.getContext('2d');
-
 	canvas.width = width;
 	canvas.height = height;
-
 	var image = new Image();
-	image.onload = function() {
-		context.clearRect ( 0, 0, width, height );
+	image.onload = function(){
+    var context = canvas.getContext('2d');
+		context.clearRect(0, 0, width, height);
 		context.drawImage(image, 0, 0, width, height);
-		canvas.toBlob(function(blob){
-			if(callback) callback(blob);
-		});
+		canvas.toBlob(callback);
 	};
-	image.src = imgsrc;
+	image.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
 };
 
 app.exportHIVTRACE = function(){

@@ -183,7 +183,7 @@
         let network = $('#heatmap-panel .main-svg').get(0);
         $('#heatmap-panel .main-svg .infolayer').detach().appendTo(network);
         let content = app.unparseSVG(network);
-        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, function(blob){
           saveAs(blob, $('#heatmap-export-filename').val() + '.' + filetype);
         });
       } else {

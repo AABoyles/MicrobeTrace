@@ -211,6 +211,27 @@
             </select>
           </div>
         </div>
+        <button id="network-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#network-export-advanced" aria-expanded="false" aria-controls="network-export-advanced">Advanced</button>
+        <div class="collapse" id="network-export-advanced">
+          <div class="card card-body">
+            <div class="form-group row">
+              <div class="col">
+                <label for="network-export-width">Width</label>
+                <input type="number" id="network-export-width" class="form-control form-control-sm" />
+              </div>
+              <div class="col">
+                <label for="network-export-height">Height</label>
+                <input type="number" id="network-export-height" class="form-control form-control-sm" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col text-right">
+                <input type="checkbox" id="network-export-preserveaspect" checked />
+                <label for="network-export-preserveaspect" class="form-check-label">Preserve Aspect Ratio?</label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
@@ -883,15 +904,47 @@
     session.style.widgets['network-gravity'] = v;
   });
 
+  $('#network-export-filetype').on('change', function(e){
+    if(e.target.value === 'png'){
+      $('#network-export-advanced-button').slideDown();
+    } else {
+      $('#network-export-advanced-button').slideUp();
+    }
+  });
+
+  $('#network-export-width').on('input', function(e){
+    if(!$('#network-export-preserveaspect').is(':checked')) return;
+    let wrapper = $('#network').parent();
+    let ratio = wrapper.height()/wrapper.width();
+    $('#network-export-height').val(Math.round(e.target.value*ratio));
+  });
+
+  $('#network-export-height').on('input', function(e){
+    if(!$('#network-export-preserveaspect').is(':checked')) return;
+    let wrapper = $('#network').parent();
+    let ratio = wrapper.width()/wrapper.height();
+    $('#network-export-width').val(Math.round(e.target.value*ratio));
+  });
+
+  $('#network-export-preserveaspect').on('click', function(e){
+    if(!$(this).is(':checked')) return;
+    let wrapper = $('#network').parent();
+    let height = wrapper.height();
+    let ratio = height/wrapper.width();
+    $('#network-export-height').val(Math.round($('#network-export-width').val()*ratio));
+  });
+
   $('#network-export').on('click', function(){
     let network = document.getElementById('network');
     let content = app.unparseSVG(network);
     let filetype = $('#network-export-filetype').val();
+    let width  = parseFloat($('#network-export-width' ).val());
+    let height = parseFloat($('#network-export-height').val());
     if(filetype === 'svg'){
       let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
       saveAs(blob, $('#network-export-filename').val() + '.' + filetype);
     } else {
-      app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, 'png', function(blob, size){
+      app.blobifySVG(content, width, height, function(blob){
         saveAs(blob, $('#network-export-filename').val() + '.' + filetype);
       });
     }
@@ -940,7 +993,12 @@
       render();       //Draw it
     });
 
-  layout.on('stateChanged', function(){ setTimeout(fit, 1200); });
+  layout.on('stateChanged', function(){
+    let wrapper = $('#network').parent();
+    $('#network-export-width' ).val(wrapper.width());
+    $('#network-export-height').val(wrapper.height());
+    setTimeout(fit, 1200);
+  });
 
   if(session.files.length > 1) $('#link-color-variable').val('origin').change();
   if(session.style.widgets['background-color']) $('#network').css('background-color', session.style.widgets['background-color']);
