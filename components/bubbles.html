@@ -1,4 +1,4 @@
-  <svg id="bubble-view">
+  <svg id="bubbles">
     <text id="bubble-xAxisLabel" y="20"></text>
     <text id="bubble-yAxisLabel" x="20" transform="rotate(90)"></text>
   </svg>
@@ -6,6 +6,9 @@
   <div class="view_controls">
     <button type="button" id="bubble-toggle-settings" class="btn btn-light btn-sm" data-toggle="button">
       <span class="oi oi-cog"></span>
+    </button>
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#bubbles-export-modal" title="Export Bubbles">
+      <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
 
@@ -43,10 +46,61 @@
     </div>
   </div>
 
+  <div id="bubbles-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Export Bubbles Image</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group row">
+            <div class="col-9">
+              <input type="text" id="bubbles-export-filename" class="form-control form-control-sm" placeholder="Filename" />
+            </div>
+            <div class="col-3">
+              <select id="bubbles-export-filetype" class="form-control form-control-sm">
+                <option selected>png</option>
+                <option>svg</option>
+              </select>
+            </div>
+          </div>
+          <button id="bubbles-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#bubbles-export-advanced" aria-expanded="false" aria-controls="bubbles-export-advanced">Advanced</button>
+          <div class="collapse" id="bubbles-export-advanced">
+            <div class="card card-body">
+              <div class="form-group row">
+                <div class="col">
+                  <label for="bubbles-export-width">Width</label>
+                  <input type="number" id="bubbles-export-width" class="form-control form-control-sm" />
+                </div>
+                <div class="col">
+                  <label for="bubbles-export-height">Height</label>
+                  <input type="number" id="bubbles-export-height" class="form-control form-control-sm" />
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col text-right">
+                  <input type="checkbox" id="bubbles-export-preserveaspect" checked />
+                  <label for="bubbles-export-preserveaspect" class="form-check-label">Preserve Aspect Ratio?</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+          <button type="button" id="bubbles-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
   <script>
 (function(){
   let width, height, center, forceStrength, simulation, vnodes,
-    svg = d3.select('#bubble-view');
+    svg = d3.select('#bubbles');
 
   function updateVNodes(){
     let newnodes = app.getVisibleNodes(true);
@@ -62,7 +116,7 @@
   }
 
   function reset(){
-    let bv = $('#bubble-view');
+    let bv = $('#bubbles');
     if(!bv.length) return;
     bv.css('background-color', session.style.widgets['background-color']);
     width = bv.parent().width();
@@ -220,7 +274,58 @@
     }
   });
 
-  layout.on('stateChanged', reset);
+  $('#bubbles-export-filetype').on('change', function(e){
+    if(e.target.value === 'png'){
+      $('#bubbles-export-advanced-button').slideDown();
+    } else {
+      $('#bubbles-export-advanced-button').slideUp();
+    }
+  });
+
+  $('#bubbles-export-width').on('input', function(e){
+    if(!$('#bubbles-export-preserveaspect').is(':checked')) return;
+    let wrapper = $('#bubbles').parent();
+    let ratio = wrapper.height()/wrapper.width();
+    $('#bubbles-export-height').val(Math.round(e.target.value*ratio));
+  });
+
+  $('#bubbles-export-height').on('input', function(e){
+    if(!$('#bubbles-export-preserveaspect').is(':checked')) return;
+    let wrapper = $('#bubbles').parent();
+    let ratio = wrapper.width()/wrapper.height();
+    $('#bubbles-export-width').val(Math.round(e.target.value*ratio));
+  });
+
+  $('#bubbles-export-preserveaspect').on('click', function(e){
+    if(!$(this).is(':checked')) return;
+    let wrapper = $('#bubbles').parent();
+    let height = wrapper.height();
+    let ratio = height/wrapper.width();
+    $('#bubbles-export-height').val(Math.round($('#bubbles-export-width').val()*ratio));
+  });
+
+  $('#bubbles-export').on('click', function(){
+    let bubbles = document.getElementById('bubbles');
+    let content = app.unparseSVG(bubbles);
+    let filetype = $('#bubbles-export-filetype').val();
+    let width  = parseFloat($('#bubbles-export-width' ).val());
+    let height = parseFloat($('#bubbles-export-height').val());
+    if(filetype === 'svg'){
+      let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+      saveAs(blob, $('#bubbles-export-filename').val() + '.' + filetype);
+    } else {
+      app.blobifySVG(content, width, height, function(blob){
+        saveAs(blob, $('#bubbles-export-filename').val() + '.' + filetype);
+      });
+    }
+  });
+
+  layout.on('stateChanged', function(){
+    let wrapper = $('#bubbles').parent();
+    $('#bubbles-export-width' ).val(wrapper.width());
+    $('#bubbles-export-height').val(wrapper.height());
+    reset();
+  });
 
   $(window)
     .on('node-color-change selected-color-change', updateNodeColors)
