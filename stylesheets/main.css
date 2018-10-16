@@ -440,7 +440,7 @@ stroke: #CCC;
 .tree-widget {
   height: 100%;
   overflow: scroll;
-  margin-left: 70px;
+  margin-top: 30px;
 }
 
 #tree_tooltip {
@@ -457,6 +457,13 @@ stroke: #CCC;
   display: none;
 }
 
+#d3v3_layout_phylotree_context_menu{
+  padding: 10px;
+}
+
+#d3v3_layout_phylotree_context_menu li:hover{
+  background: #f8f9fa !important;
+}
 
 /* Table */
 #table-type-panel{

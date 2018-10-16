@@ -1,45 +1,42 @@
 
-  <div id="phylogenetic_tree_panel" class="tree-widget"><svg></svg></div>
+  <div id="tree-view" class="tree-widget"><svg></svg></div>
 
-  <div id="tree_tooltip" />
+  <div id="tree-tooltip" />
 
   <div class="view_controls">
-    <button id="toggle_tree_settings" type="button" class="btn btn-light btn-sm">
+    <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_tree_modal" title="Export Tree">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export-tree-modal" title="Export Tree">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
 
-  <div id="tree_settings_pane" class="left_pane">
+  <div id="tree-settings_pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#phylogeneticTreeConfigurations" id="phylogeneticTree-tab" class="nav-link active" aria-controls="phylogeneticTree" role="tab" data-toggle="tab">Phylogenetic Tree</a>
+        <a href="#tree-configurations" id="tree-tab" class="nav-link active" aria-controls="tree" role="tab" data-toggle="tab">Phylogenetic Tree</a>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="phylogeneticTreeConfigurations" role="tabpanel" aria-labelledby="phylogeneticTree-tab">
+      <div class="tab-pane fade show active" id="tree-configurations" role="tabpanel" aria-labelledby="tree-tab">
         <div class="form-group row">
           <div class="col-3">Distance Metric</div>
           <div class="col-9">
-            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-              <label class="btn btn-light btn-sm col active">
-                <input type="radio" name="tree_distanceMetric" data-value="tn93" autocomplete="off" checked> TN93
-              </label>
-              <label class="btn btn-light btn-sm col">
-                <input type="radio" name="tree_distanceMetric" data-value="snps" autocomplete="off"> SNPs
-              </label>
-            </div>
+            <div id="tree-metric" class="btn-group btn-group-toggle w-100" data-toggle="buttons"></div>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-3">Layout</div>
           <div class="col-9">
-            <select id="tree_layout" class="custom-select custom-select-sm">
-              <option checked>Rectangular</option>
-              <option>Circular</option>
-            </select>
+            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+              <label class="btn btn-light btn-sm active col">
+                <input type="radio" name="tree-layout" id="tree-layout-rectangular" autocomplete="off" checked> Rectangular
+              </label>
+              <label class="btn btn-light btn-sm col">
+                <input type="radio" name="tree-layout" id="tree-layout-circular" autocomplete="off"> Circular
+              </label>
+            </div>
           </div>
         </div>
         <div class="form-group row">
@@ -47,55 +44,50 @@
           <div class="col-9">
             <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
               <label class="btn btn-light btn-sm active col">
-                <input type="radio" name="tree_labels" id="tree_labels_show" autocomplete="off" checked> Show
+                <input type="radio" name="tree-labels" id="tree-labels-show" autocomplete="off" checked> Show
               </label>
               <label class="btn btn-light btn-sm col">
-                <input type="radio" name="tree_labels" id="tree_labels_align" autocomplete="off"> Align
+                <input type="radio" name="tree-labels" id="tree-labels-align" autocomplete="off"> Align
+              </label>
+              <label class="btn btn-light btn-sm col">
+                <input type="radio" name="tree-labels" id="tree-labels-hide" autocomplete="off"> Hide
               </label>
             </div>
           </div>
         </div>
-        <!--div class="form-group row">
-          <div class="col-3">Text Size</div>
-          <div class="col-9"><input type="range" id="tree_font-size-slider" min="6" value="10" max="24" step="1" /></div>
-        </div>
         <div class="form-group row">
-          <div class="col-3">Node Radius</div>
-          <div class="col-9"><input type="range" id="tree_node-size-slider" min="1" value="4" max="36" step="1" /></div>
-        </div-->
-        <div class="row">
           <div class="col-3">Height</div>
           <div class="col-9">
-            <button type="button" class="btn btn-default btn-sm" data-direction="vertical" data-amount="1" title="Expand vertical spacing">Increase</button>
-            <button type="button" class="btn btn-default btn-sm" data-direction="vertical" data-amount="-1" title="Compress vertical spacing">Decrease</button>
+            <div class="btn-group w-100">
+              <button type="button" class="btn btn-light btn-sm col" data-direction="vertical" data-amount="1" title="Expand vertical spacing">Increase</button>
+              <button type="button" class="btn btn-light btn-sm col" data-direction="vertical" data-amount="-1" title="Compress vertical spacing">Decrease</button>
+            </div>
           </div>
         </div>
-        <div class="row">
+        <div class="form-group row">
           <div class="col-3">Width</div>
           <div class="col-9">
-            <button type="button" class="btn btn-default btn-sm" data-direction="horizontal" data-amount="1" title="Expand horizonal spacing">Increase</button>
-            <button type="button" class="btn btn-default btn-sm" data-direction="horizontal" data-amount="-1" title="Compress horizonal spacing">Decrease</button>
+            <div class="btn-group w-100">
+              <button type="button" class="btn btn-light btn-sm col" data-direction="horizontal" data-amount="1" title="Expand horizonal spacing">Increase</button>
+              <button type="button" class="btn btn-light btn-sm col" data-direction="horizontal" data-amount="-1" title="Compress horizonal spacing">Decrease</button>
+            </div>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-3">Sort</div>
           <div class="col-9">
-            <button type="button" class="btn btn-default btn-sm" id="sort_ascending" title="Sort deepest clades to the bototm">
-              <span class="oi oi-sort-ascending"></span>
-            </button>
-            <button type="button" class="btn btn-default btn-sm" id="sort_descending" title="Sort deepsest clades to the top">
-              <span class="oi oi-sort-descending"></span>
-            </button>
-            <button type="button" class="btn btn-default btn-sm" id="sort_original" title="Restore original order">
-              <span class="oi oi-align-left"></span>
-            </button>
+            <div class="btn-group btn-group-toggle w-100">
+              <button type="button" class="btn btn-light btn-sm col" id="tree-sort-original" title="Restore original order">Default</button>
+              <button type="button" class="btn btn-light btn-sm col" id="tree-sort-ascending" title="Sort deepest clades to the bottom">Ascending</button>
+              <button type="button" class="btn btn-light btn-sm col" id="tree-sort-descending" title="Sort deepest clades to the top">Descending</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="export_tree_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="export-tree-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -107,19 +99,20 @@
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-9">
-              <input type="text" id="tree_export-img-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              <input type="text" id="tree-export-file-name" class="form-control form-control-sm" placeholder="Filename" />
             </div>
             <div class="col-3">
-              <select id="tree_export-img-file-type" class="form-control form-control-sm">
-                <option selected>nwk</option>
-                <option>png</option>
+              <select id="tree-export-file-type" class="form-control form-control-sm">
+                <option selected>png</option>
+                <option>svg</option>
+                <option>nwk</option>
               </select>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="tree_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+          <button type="button" id="tree-export" class="btn btn-primary" data-dismiss="modal">Export</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -128,22 +121,16 @@
   <script src="vendor/d3.v3.min.js"></script>
   <script src="vendor/phylotree.js"></script>
   <script>
-  (function(){
+(function(){
     var tree;
 
     function redrawTree(){
-      var panel = $('#phylogenetic_tree_panel');
+      let panel = $('#tree-view');
       if(!panel.length) return;
-      var width = panel.width(), //$(container_id).width(),
-      height = panel.height(), //$(container_id).height()
-      selection_set = ['Foreground'],
-      current_selection_name = $('#selection_name_box').val(),
-      current_selection_id=0,
-      max_selections       = 10;
-      color_scheme = d3v3.scale.category10(),
-      selection_menu_element_action = 'phylotree_menu_element_action';
-      let typeSelector = $('input[type="radio"][name="tree_distanceMetric"]');
-      let type = typeSelector.filter(':checked').data('value');
+      let width = panel.width(),
+          height = panel.height(),
+          color_scheme = d3v3.scale.category10(),
+          type = session.style.widgets['tree-metric'];
 
       if(!session.data.trees[type]){
         let RNJ = new RapidNeighborJoining(session.data.distance_matrix[type], session.data.distance_matrix.labels.map(function(l){
@@ -155,280 +142,156 @@
         RNJ.run();
         session.data.trees[type] = RNJ.getAsNewick();
       }
-      var svg = d3v3.select('#phylogenetic_tree_panel svg')
+      let svg = d3v3.select('#tree-view svg')
           .attr('width', width)
           .attr('height', height);
 
-      tree = d3v3.layout.phylotree('body')
-          .size([height, width])
-          .separation (function (a,b) {return 0;})
-          .count_handler (function (count) {
-                  $('#selected_branch_counter').text (function (d) {return count[current_selection_name];});
-                  $('#selected_filtered_counter').text (count.tag);
-              }
-          );
+      tree = d3v3.layout.phylotree('body').size([height, width]).separation(function(a,b){return 0;});
 
-      tree.branch_length (null);
-      tree.branch_name (null);
-      tree.node_span ('equal');
-      tree.options ({'draw-size-bubbles' : false}, false);
-      tree.style_nodes (node_colorizer);
-      tree.style_edges (edge_colorizer);
-      tree.selection_label (current_selection_name);
-      tree.node_circle_size (undefined);
-      tree.radial(false);
+      tree.branch_length(null);
+      tree.branch_name(null);
+      tree.node_span('equal');
+      tree.options({
+        'brush': false,
+        'draw-size-bubbles' : false,
+        'zoom': true
+      }, false);
+      if(session.style.widgets['tree-labels-show']){
+        tree.align_tips(session.style.widgets['tree-labels-align']);
+      } else {
+        d3.select('#tree-view svg').selectAll('.node').style('display', 'none');
+      }
+      tree.style_nodes(node_colorizer);
+      tree.style_edges(edge_colorizer);
+      tree.node_circle_size(undefined);
+      tree.radial(session.style.widgets['tree-layout-circular']);
 
       tree(session.data.trees[type]).svg(svg).layout();
     }
 
-    $('#mp_label').on ('click', function (e) {
-        tree.max_parsimony (true);
+    $('#tree-metric').html(
+      Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) =>
+        `<label class="btn btn-light btn-sm col${(k===session.style.widgets['tree-metric'])? ' active':''}">
+          <input type="radio" name="tree-metric" value="${k}" autocomplete="off"${(k===session.style.widgets['tree-metric'])? ' checked':''}>${app.titleize(k)}</input>
+        </label>`
+      ).join('')
+    );
+
+    $('[name="tree-metric"]').on('change', function(e){
+      session.style.widgets['tree-metric'] = $('[name="tree-metric"]:checked').val();
+      redrawTree();
     });
 
-    $ ('[data-direction]').on ('click', function (e) {
-        var which_function = $(this).data ('direction') == 'vertical' ? tree.spacing_x : tree.spacing_y;
-        which_function (which_function () + (+ $(this).data ('amount'))).update();
+    $('#tree-layout-rectangular').parent().on('click', e => {
+      session.style.widgets['tree-layout-circular'] = false;
+      tree.radial(false);
+      tree.placenodes().update();
     });
 
-    function sort_nodes (asc) {
-        tree.traverse_and_compute (function (n) {
-                var d = 1;
-                if (n.children && n.children.length) {
-                    d += d3v3.max (n.children, function (d) { return d['count_depth'];});
-                }
-                n['count_depth'] = d;
-            });
-            tree.resort_children (function (a,b) {
-                return (a['count_depth'] - b['count_depth']) * (asc ? 1 : -1);
-            });
+    $('#tree-layout-circular').parent().on('click', e => {
+      session.style.widgets['tree-layout-circular'] = true;
+      tree.radial(true);
+      tree.placenodes().update();
+    });
+
+    $('#tree-labels-align').parent().on('click', e => {
+      if(!tree) return;
+      session.style.widgets['tree-labels-show'] = true;
+      session.style.widgets['tree-labels-align'] = true;
+      d3.select('#tree-view svg').selectAll('.node').style('display', 'inline');
+      tree.align_tips(true);
+      tree.placenodes().update();
+    });
+
+    $('#tree-labels-show').parent().on('click', e => {
+      if(!tree) return;
+      session.style.widgets['tree-labels-show'] = true;
+      session.style.widgets['tree-labels-align'] = false;
+      d3.select('#tree-view svg').selectAll('.node').style('display', 'inline');
+      tree.align_tips(false);
+      tree.placenodes().update();
+    });
+
+    $('#tree-labels-hide').parent().on('click', e => {
+      if(!tree) return;
+      session.style.widgets['tree-labels-show'] = false;
+      d3.select('#tree-view svg').selectAll('.node').style('display', 'none');
+    });
+
+    $('[data-direction]').on('click', function(e){
+      let which_function = $(this).data('direction') == 'vertical' ? tree.spacing_x : tree.spacing_y;
+      which_function(which_function() + (+$(this).data('amount')));
+      tree.update();
+    });
+
+    function sort_nodes(asc){
+      tree.traverse_and_compute(function(n){
+        let d = 1;
+        if(n.children && n.children.length){
+          d += d3.max(n.children, d => d.count_depth);
+        }
+        n['count_depth'] = d;
+      });
+      tree.resort_children(function(a,b){
+        return(a['count_depth'] - b['count_depth']) *(asc ? 1 : -1);
+      });
     }
 
-    $('#sort_original').on ('click', function (e) {
-        tree.resort_children (function (a,b) {
-            return a['original_child_order'] - b['original_child_order'];
-        });
+    $('#tree-sort-original').on('click', function(e){
+      tree.resort_children(function(a,b){
+        return a['original_child_order'] - b['original_child_order'];
+      });
     });
 
-    $('#sort_ascending').on ('click', function (e) {
-        sort_nodes (true);
+    $('#tree-sort-ascending').on('click', function(e){
+      sort_nodes(true);
     });
 
-    $('#sort_descending').on ('click', function (e) {
-        sort_nodes (false);
+    $('#tree-sort-descending').on('click', function(e){
+      sort_nodes(false);
     });
 
-    $('#and_label').on ('click', function (e) {
-        tree.internal_label (function (d) { return d.reduce (function (prev, curr) { return curr[current_selection_name] && prev; }, true)}, true);
-    });
-
-    $('#or_label').on ('click', function (e) {
-        tree.internal_label (function (d) { return d.reduce (function (prev, curr) { return curr[current_selection_name] || prev; }, false)}, true);
-    });
-
-    $('#filter_add').on ('click', function (e) {
-        tree.modify_selection (function (d) { return d.tag || d[current_selection_name];}, current_selection_name, false, true)
-            .modify_selection (function (d) { return false; }, 'tag', false, false);
-    });
-
-    $('#filter_remove').on ('click', function (e) {
-        tree.modify_selection (function (d) { return !d.tag;});
-    });
-
-    $('#select_all').on ('click', function (e) {
-        tree.modify_selection (function (d) { return true;});
-    });
-
-    $('#select_all_internal').on ('click', function (e) {
-        tree.modify_selection (function (d) { return !d3v3.layout.phylotree.is_leafnode (d.target);});
-    });
-
-    $('#select_all_leaves').on ('click', function (e) {
-        tree.modify_selection (function (d) { return d3v3.layout.phylotree.is_leafnode (d.target);});
-    });
-
-    $('#select_none').on ('click', function (e) {
-        tree.modify_selection (function (d) { return false;});
-    });
-
-    $('#clear_internal').on ('click', function (e) {
-        tree.modify_selection (function (d) { return d3v3.layout.phylotree.is_leafnode (d.target) ? d.target[current_selection_name] : false;});
-    });
-
-    $('#clear_leaves').on ('click', function (e) {
-        tree.modify_selection (function (d) { return !d3v3.layout.phylotree.is_leafnode (d.target) ? d.target[current_selection_name] : false;});
-    });
-
-    $('#display_dengrogram').on ('click', function (e) {
-        tree.options ({'branches' : 'step'}, true);
-    });
-
-    $('#branch_filter').on ('input propertychange', function (e) {
-       var filter_value = $(this).val();
-       var rx = new RegExp (filter_value,'i');
-      tree.modify_selection (function (n) {
-        return filter_value.length && (tree.branch_name () (n.target).search (rx)) != -1;
-       },'tag');
-    });
-
-    function update_controls () {
-        $("[data-mode='" + (tree.radial()      ? 'radial' : 'linear') + "']").click();
-        $("[data-align='"  + (tree.align_tips () ? 'right' : 'left') + "']").click();
-    }
-
-    function node_colorizer (element, data) {
+    function node_colorizer(element, data){
       try{
-         var count_class=0;
-
-          selection_set.forEach (function (d,i) { if (data[d]) {count_class ++; element.style ('fill', color_scheme(i), i == current_selection_id ?  'important' : null);}});
-
-          if (count_class > 1) {
-
-          } else {
-              if (count_class == 0) {
-                  element.style ('fill', null);
-             }
+        let count_class = 0;
+        selection_set.forEach(function(d,i){
+          if(data[d]){
+            count_class++;
+            // element.style('fill', color_scheme(i), i == current_selection_id ? 'important' : null);
           }
+        });
+        if(count_class > 1){
+
+        } else {
+          if(count_class == 0){
+            element.style('fill', null);
+          }
+        }
       }
       catch(e){}
     }
 
-    function edge_colorizer (element, data) {
-       //console.log (data[current_selection_name]);
+    function edge_colorizer(element, data){
       try {
-          var count_class=0;
-          selection_set.forEach (function (d,i) { if (data[d]) {count_class ++; element.style ('stroke', color_scheme(i), i == current_selection_id ?  'important' : null);}});
-          if (count_class > 1) {
-              element.classed ('branch-multiple', true);
-          } else
-          if (count_class == 0) {
-                   element.style ('stroke', null)
-                         .classed ('branch-multiple', false);
-          }
-      }
-      catch (e) {
-      }
-    }
-
-    var valid_id=new RegExp ('^[\\w]+$');
-
-    $('#selection_name_box').on ('input propertychange', function (e) {
-       var name = $(this).val();
-       var accept_name = (selection_set.indexOf (name) < 0) &&
-                         valid_id.exec (name) ;
-       d3v3.select ('#save_selection_button').classed ('disabled', accept_name ? null : true );
-    });
-
-    $('#selection_rename > a').on ('click', function (e) {
-        d3v3.select ('#save_selection_button')
-               .classed ('disabled',true)
-               .on ('click', function (e) { // save selection handler
-                    var old_selection_name = current_selection_name;
-                    selection_set[current_selection_id] = current_selection_name = $('#selection_name_box').val();
-
-                    if (old_selection_name != current_selection_name) {
-                        tree.update_key_name (old_selection_name, current_selection_name);
-                        update_selection_names (current_selection_id);
-                    }
-                    send_click_event_to_menu_objects (new CustomEvent (selection_menu_element_action,
-                                 {'detail' : ['save', this]}));
-               });
-
-        d3v3.select ('#cancel_selection_button')
-                   .classed ('disabled',false)
-                   .on ('click', function (e) { // save selection handler
-                        $('#selection_name_box').val(current_selection_name);
-                        send_click_event_to_menu_objects (new CustomEvent (selection_menu_element_action,
-                                     {'detail' : ['cancel', this]}));
-                  });
-
-        send_click_event_to_menu_objects (new CustomEvent (selection_menu_element_action,
-                                     {'detail' : ['rename', this]}));
-        e.preventDefault    ();
-    });
-
-    $('#selection_delete > a').on ('click', function (e) {
-
-        tree.update_key_name (selection_set[current_selection_id], null)
-        selection_set.splice (current_selection_id, 1);
-
-        if (current_selection_id > 0) {
-            current_selection_id --;
+        let count_class = 0;
+        selection_set.forEach(function(d,i){
+          // if(data[d]){count_class ++; element.style('stroke', color_scheme(i), i == current_selection_id ?  'important' : null);}
+        });
+        if(count_class > 1){
+          element
+            .classed('branch-multiple', true);
+        } else if(count_class == 0){
+          element
+            .classed('branch-multiple', false)
+            .style('stroke', null);
         }
-        current_selection_name = selection_set[current_selection_id];
-        update_selection_names (current_selection_id)
-        $('#selection_name_box').val(current_selection_name)
-
-
-        send_click_event_to_menu_objects (new CustomEvent (selection_menu_element_action,
-                                     {'detail' : ['save', this]}));
-        e.preventDefault    ();
-
-    });
-
-    $('#selection_new > a').on ('click', function (e) {
-
-        d3v3.select ('#save_selection_button')
-                   .classed ('disabled',true)
-                   .on ('click', function (e) { // save selection handler
-                        current_selection_name = $('#selection_name_box').val();
-                        current_selection_id=selection_set.length;
-                        selection_set.push (current_selection_name);
-                        update_selection_names (current_selection_id);
-                        send_click_event_to_menu_objects (new CustomEvent (selection_menu_element_action,
-                                     {'detail' : ['save', this]}));
-                  });
-
-         d3v3.select ('#cancel_selection_button')
-                   .classed ('disabled',false)
-                   .on ('click', function (e) { // save selection handler
-                        $('#selection_name_box').val(current_selection_name);
-                        send_click_event_to_menu_objects (new CustomEvent (selection_menu_element_action,
-                                     {'detail' : ['cancel', this]}));
-                  });
-
-        send_click_event_to_menu_objects (new CustomEvent (selection_menu_element_action,
-                                     {'detail' : ['new', this]}));
-        e.preventDefault    ();
-
-    });
-
-    function send_click_event_to_menu_objects (e) {
-        $('#selection_new, #selection_delete, #selection_rename, #save_selection_name, #selection_name_box, #selection_name_dropdown').get().forEach (
-            function (d) {
-                d.dispatchEvent (e);
-            }
-        );
+      }
+      catch(e){
+      }
     }
 
-    function update_selection_names (id, skip_rebuild) {
-        skip_rebuild = skip_rebuild || false;
-        id=id || 0;
-        current_selection_name = selection_set[id];
-        current_selection_id=id;
-        if (!skip_rebuild) {
-            d3v3.selectAll ('.selection_set').remove();
-            d3v3.select ('#selection_name_dropdown')
-              .selectAll ('.selection_set')
-              .data (selection_set)
-              .enter()
-              .append ('li')
-              .attr ('class', 'selection_set')
-              .append ('a')
-              .attr ('href', '#')
-              .text (function (d) { return d;})
-              .style ('color', function (d,i) {return color_scheme(i);})
-              .on ('click', function (d,i) {update_selection_names (i,true);});
-        }
-
-        d3v3.select ('#selection_name_box')
-          .style ('color',  color_scheme(id))
-          .property ('value', current_selection_name);
-
-        tree.selection_label (selection_set[id]);
-    }
-
-    $('#toggle_tree_settings').click(function(){
-      let pane = $('#tree_settings_pane');
+    $('#toggle-tree-settings').on('click', function(){
+      let pane = $('#tree-settings_pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -436,61 +299,34 @@
       }
     });
 
-    $('[name="tree_distanceMetric"]').change(function(){
-      redrawTree();
-      phylocanvas.draw();
-    });
-
-    $('#tree_layout').change(e => {
-      var type = e.target.value.toLowerCase();
-      if(tree.radial() !== (type == 'circular')){
-        tree.radial(!tree.radial()).placenodes().update();
-      }
-    });
-
-    $('#tree_font-size-slider').on('input', e => {
-      phylocanvas.setTextSize(e.target.value);
-    });
-
-    $('#tree_node-size-slider').on('input', e => {
-      phylocanvas.setNodeSize(e.target.value);
-    });
-
-    $('#tree_labels_align').parent().click(e => {
-      tree.align_tips(true);
-      tree.placenodes().update();
-    });
-
-    $('#tree_labels_show').parent().click(e => {
-      tree.align_tips(false);
-      tree.placenodes().update();
-    });
-
-    $('#tree_export').click(e => {
-      let type = $('#tree_export-img-file-type').val();
+    $('#tree-export').on('click', e => {
+      let type = $('#tree-export-file-type').val();
       if(type === 'png'){
-        $('#phylogenetic_tree_panel canvas')[0].toBlob(function(blob) {
-          saveAs(blob, $('#tree_export-img-file-name').val() + '.png');
+        let root = $('#tree-view svg')[0];
+        let content = app.unparseSVG(root);
+        app.blobifySVG(content, root.width.baseVal.value, root.height.baseVal.value, function(blob){
+          saveAs(blob, $('#tree-export-file-name').val() + '.png');
         });
+      } else if(type === 'svg'){
+        let blob = new Blob([app.unparseSVG($('#tree-view svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
+        saveAs(blob, $('#tree-export-file-name').val() + '.svg');
       } else if(type === 'nwk'){
-        let blob = new Blob([session.data.trees[$('[name="tree_distanceMetric"]:checked').data('value')]], {type: 'application/newick;charset=utf-8'});
-        saveAs(blob, $('#tree_export-img-file-name').val() + '.nwk');
+        let blob = new Blob([session.data.trees[session.style.widgets['tree-metric']]], {type: 'application/newick;charset=utf-8'});
+        saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
       }
     });
 
     $(window)
-      .on('node-color-change', e => {
-        phylocanvas.branchColour = session.style.widgets['node-color'];
-        phylocanvas.draw();
-      })
-      .on('node-selected', function(e){
-        session.data.nodes.forEach(node => {
-          if(node.selected) phylocanvas.branches[node.id].selected = true;
-        });
-        phylocanvas.draw();
+      .on('node-color-change', function(){})
+      .on('node-selected', function(){})
+      .on('background-color-change', function(){
+        $('#tree-view').parent().css('background-color', session.style.widgets['background-color']);
       });
 
-    layout.on('stateChanged', redrawTree);
-    setTimeout(redrawTree, 80);
+    layout.on('stateChanged', function(){
+      redrawTree();
+    });
+
+    $('#tree-view').parent().css('background-color', session.style.widgets['background-color']);
   })();
   </script>

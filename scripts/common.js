@@ -84,7 +84,11 @@ app.defaultWidgets = {
   'scatterplot-yVar': 'tn93',
   'scatterplot-logScale': false,
   'selected-color': '#ff8300',
-  'selected-color-contrast': '#000000'
+  'selected-color-contrast': '#000000',
+  'tree-metric': 'tn93',
+  'tree-layout-circular': false,
+  'tree-labels-align': false,
+  'tree-labels-show': true
 };
 
 app.sessionSkeleton = function(){
