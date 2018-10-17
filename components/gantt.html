@@ -258,7 +258,7 @@
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-transparency">Transparency</label></div>
-        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
+        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" min="0" max="1" step="0.01" value="0.5"></select></div>
       </div>
     </div>`);
     root.appendTo('#ganttConfigurations');
@@ -267,7 +267,7 @@
       svg.selectAll('.date-' + $(this).data('dateid')).attr('fill', e.target.value);
     });
     $('#date-' + clickCount + '-transparency').on('change', function(e){
-      svg.selectAll('.date-' + $(this).data('dateid')).attr('fill-opacity', e.target.value);
+      svg.selectAll('.date-' + $(this).data('dateid')).attr('fill-opacity', 1 - e.target.value);
     });
   });
 
