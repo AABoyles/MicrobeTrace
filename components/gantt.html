@@ -223,7 +223,7 @@
         mouseLine.attr("d", function(){
           return "M" + xc + "," + h + " " + xc + "," + margin.top;
         });
-        timestamp.attr('x', Math.min(Math.max(xc, 85), width)).text(tickFormat(x.invert(xc - margin.left)));
+        timestamp.attr('x', Math.min(Math.max(xc, 125), width)).text(tickFormat(x.invert(xc - margin.left)));
       });
 
     setBackground();
