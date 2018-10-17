@@ -1,4 +1,4 @@
-  <div id="gantt-wrapper"></div>
+  <div id="gantt"></div>
 
   <div class="view_controls">
     <button type="button" id="toggle_gantt_settings" class="btn btn-light btn-sm">
@@ -86,7 +86,7 @@
     bottom : 0,
     left : 40
   };
-  let svg = d3.select('#gantt-wrapper').append("svg");
+  let svg = d3.select('#gantt').append("svg");
   let x, y, height = 600, width = 800, rect;
   let tickFormat = d3.timeFormat("%Y-%m-%d");
   let clickCount = 0;
@@ -126,13 +126,15 @@
     });
 
   function refresh(){
-    height = $('#gantt-wrapper').parent().height() - margin.top - margin.bottom - 5;
-    width = $('#gantt-wrapper').parent().width() - margin.right - margin.left - 5;
+    let wrapper = $('#gantt').parent();
+    if(!wrapper.length) return;
+    height = wrapper.height() - margin.top  - margin.bottom - 5;
+    width  = wrapper.width()  - margin.left - margin.right  - 5;
 
     bars = [];
 
-    svg.attr("width", width + margin.left + margin.right)
-       .attr("height", height + margin.top + margin.bottom)
+    svg.attr("width",  width  + margin.left + margin.right)
+       .attr("height", height + margin.top  + margin.bottom);
 
     $('.date-table-row').each((i, el) => {
       let $el = $(el);
@@ -309,7 +311,7 @@
   });
 
   $('#gantt-export').on('click', function(){
-    let gantt = $('#gantt-wrapper svg')[0];
+    let gantt = $('#gantt svg')[0];
     let content = app.unparseSVG(gantt);
     let filetype = $('#gantt-export-filetype').val();
     let width  = parseFloat($('#gantt-export-width' ).val());
@@ -326,17 +328,17 @@
 
   function setBackground(){
     let col = session.style.widgets['background-color'];
-    $('#gantt-wrapper').css('background', col);
+    $('#gantt').css('background', col);
 
     let contrast = session.style.widgets['background-color-contrast'];
-    $('#gantt-wrapper .x-axis, .y-axis').css('color', contrast);
+    $('#gantt .x-axis, .y-axis').css('color', contrast);
   }
 
   $(window).on('background-color-change', setBackground);
 
   layout.on('stateChanged', function(){
     refresh();
-    let wrapper = $('#gantt-wrapper').parent();
+    let wrapper = $('#gantt').parent();
     $('#gantt-export-width' ).val(wrapper.width());
     $('#gantt-export-height').val(wrapper.height());
   });
