@@ -22,6 +22,9 @@ cat components/*.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/
 ls img/ | sed -e 's/^/img\//' | sed "s/.*/        '&',/" >> sw.js
 
 ls data/ | sed -e 's/^/data\//' | sed "s/.*/        '&',/" >> sw.js
+
+ls help/*.md | sed "s/.*/        '&',/" >> sw.js
+
 cat cache.extra | sed "s/.*/        '&',/" >> sw.js
 
 echo "      ]);

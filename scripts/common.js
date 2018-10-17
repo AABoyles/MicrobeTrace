@@ -691,6 +691,12 @@ app.blobifySVG = function(svgString, width, height, callback){
 	image.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
 };
 
+app.getHelp = function(filename, callback){
+  $.get('help/' + filename, function(response){
+    callback(marked(response));
+  });
+};
+
 app.exportHIVTRACE = function(){
   var links = session.data.links.filter(function(l){ return l.visible });
   var geneticLinks = links.filter(function(l){ return l.origin.includes('Genetic Distance'); });
