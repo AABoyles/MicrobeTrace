@@ -87,7 +87,7 @@
     left : 40
   };
   let svg = d3.select('#gantt-wrapper').append("svg");
-  let x, y, xAxis, yAxis, timeDomainStart, timeDomainEnd, height = 600, width = 800, rect;
+  let x, y, height = 600, width = 800, rect;
   let tickFormat = d3.timeFormat("%Y-%m-%d");
   let clickCount = 0;
 
@@ -158,10 +158,10 @@
     if(bars.length === 0) return;
 
     bars.sort((a, b) => b.endDate - a.endDate);
-    timeDomainEnd = bars[0].endDate;
+    let timeDomainEnd = bars[0].endDate;
 
     bars.sort((a, b) => a.startDate - b.startDate);
-    timeDomainStart = bars[0].startDate;
+    let timeDomainStart = bars[0].startDate;
 
     x = d3.scaleTime()
           .domain([timeDomainStart, timeDomainEnd])
@@ -173,24 +173,20 @@
           .range([0, height - margin.top - margin.bottom])
           .padding(0.1);
 
-    xAxis = d3.axisBottom()
-          .scale(x)
-          .tickFormat(tickFormat)
-          .tickSize(8)
-          .tickPadding(8);
-
-    yAxis = d3.axisLeft()
-          .scale(y)
-          .tickSize(0);
-
     svg.select('.x-axis')
       .transition()
       .attr("transform", "translate(" + margin.left + ", " + height + ")")
-      .call(xAxis);
+      .call(d3.axisBottom()
+            .scale(x)
+            .tickFormat(tickFormat)
+            .tickSize(8)
+            .tickPadding(8));
 
     svg.select('.y-axis')
       .transition()
-      .call(yAxis);
+      .call(d3.axisLeft()
+            .scale(y)
+            .tickSize(0));
 
     rect = svg.select(".gantt-chart").selectAll("rect").data(bars, d => d.barID);
 
