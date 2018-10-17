@@ -122,7 +122,7 @@
   <script src="vendor/phylotree.js"></script>
   <script>
 (function(){
-    var tree;
+    var tree, nodes;
 
     function redrawTree(){
       let panel = $('#tree-view');
@@ -153,7 +153,10 @@
       tree.node_span('equal');
       tree.options({
         'brush': false,
-        'draw-size-bubbles' : false,
+        'draw-size-bubbles': true,
+        // // Ideally, we'd use these, but they're buggy. :/
+        // 'left-right-spacing': 'fit-to-size',
+        // 'top-bottom-spacing': 'fit-to-size',
         'zoom': true
       }, false);
       if(session.style.widgets['tree-labels-show']){
@@ -161,8 +164,8 @@
       } else {
         d3.select('#tree-view svg').selectAll('.node').style('display', 'none');
       }
+      nodes = app.getVisibleNodes();
       tree.style_nodes(node_colorizer);
-      tree.style_edges(edge_colorizer);
       tree.node_circle_size(undefined);
       tree.radial(session.style.widgets['tree-layout-circular']);
 
@@ -184,14 +187,12 @@
 
     $('#tree-layout-rectangular').parent().on('click', e => {
       session.style.widgets['tree-layout-circular'] = false;
-      tree.radial(false);
-      tree.placenodes().update();
+      tree.radial(false).placenodes().update();
     });
 
     $('#tree-layout-circular').parent().on('click', e => {
       session.style.widgets['tree-layout-circular'] = true;
-      tree.radial(true);
-      tree.placenodes().update();
+      tree.radial(true).placenodes().update();
     });
 
     $('#tree-labels-align').parent().on('click', e => {
@@ -199,8 +200,7 @@
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = true;
       d3.select('#tree-view svg').selectAll('.node').style('display', 'inline');
-      tree.align_tips(true);
-      tree.placenodes().update();
+      tree.align_tips(true).placenodes().update();
     });
 
     $('#tree-labels-show').parent().on('click', e => {
@@ -208,8 +208,7 @@
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = false;
       d3.select('#tree-view svg').selectAll('.node').style('display', 'inline');
-      tree.align_tips(false);
-      tree.placenodes().update();
+      tree.align_tips(false).placenodes().update();
     });
 
     $('#tree-labels-hide').parent().on('click', e => {
@@ -252,41 +251,11 @@
     });
 
     function node_colorizer(element, data){
-      try{
-        let count_class = 0;
-        selection_set.forEach(function(d,i){
-          if(data[d]){
-            count_class++;
-            // element.style('fill', color_scheme(i), i == current_selection_id ? 'important' : null);
-          }
-        });
-        if(count_class > 1){
-
-        } else {
-          if(count_class == 0){
-            element.style('fill', null);
-          }
-        }
-      }
-      catch(e){}
-    }
-
-    function edge_colorizer(element, data){
-      try {
-        let count_class = 0;
-        selection_set.forEach(function(d,i){
-          // if(data[d]){count_class ++; element.style('stroke', color_scheme(i), i == current_selection_id ?  'important' : null);}
-        });
-        if(count_class > 1){
-          element
-            .classed('branch-multiple', true);
-        } else if(count_class == 0){
-          element
-            .classed('branch-multiple', false)
-            .style('stroke', null);
-        }
-      }
-      catch(e){
+      let d = nodes.find(d => d.id == data.name);
+      if(d){
+        let color = session.style.nodeColorMap(d[session.style.widgets['node-color-variable']]);
+        d3v3.select(element[0][0]).select('text'  ).style('fill', color);
+        d3v3.select(element[0][0]).select('circle').style('fill', color);
       }
     }
 
@@ -317,7 +286,7 @@
     });
 
     $(window)
-      .on('node-color-change', function(){})
+      .on('node-color-change', function(){ tree.style_nodes(node_colorizer).layout(); })
       .on('node-selected', function(){})
       .on('background-color-change', function(){
         $('#tree-view').parent().css('background-color', session.style.widgets['background-color']);
