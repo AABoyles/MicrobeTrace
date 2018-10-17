@@ -248,28 +248,28 @@
     root.append(`
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-start">Start</label></div>
-        <div class='col-8'><select id="date-${clickCount}-start" class="custom-select custom-select-sm">${options}</select></div>
+        <div class='col-8'><select id="date-${clickCount}-start" data-dateid="${clickCount}" class="custom-select custom-select-sm">${options}</select></div>
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-end">End</label></div>
-        <div class='col-8'><select id="date-${clickCount}-end" class="custom-select custom-select-sm">${options}</select></div>
+        <div class='col-8'><select id="date-${clickCount}-end" data-dateid="${clickCount}" class="custom-select custom-select-sm">${options}</select></div>
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
-        <div class='col-8'><input id="date-${clickCount}-color" class="custom-select custom-select-sm" type="color"></select></div>
+        <div class='col-8'><input id="date-${clickCount}-color" data-dateid="${clickCount}" class="custom-select custom-select-sm" type="color"></select></div>
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-transparency">Transparency</label></div>
-        <div class='col-8'><input id="date-${clickCount}-transparency" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
+        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" min="0" max="1" step="0.01" value="0.6"></select></div>
       </div>
     </div>`);
     root.appendTo('#ganttConfigurations');
-    $('#date-' + clickCount + '-start, #date-' + clickCount + '-end').change(refresh);
+    $('#date-' + clickCount + '-start, #date-' + clickCount + '-end').on('change', refresh);
     $('#date-' + clickCount + '-color').on('change', function(e){
-      svg.selectAll('.date-' + clickCount).attr('fill', e.target.value);
+      svg.selectAll('.date-' + $(this).data('dateid')).attr('fill', e.target.value);
     });
     $('#date-' + clickCount + '-transparency').on('change', function(e){
-      svg.selectAll('.date-' + clickCount).attr('fill-opacity', e.target.value);
+      svg.selectAll('.date-' + $(this).data('dateid')).attr('fill-opacity', e.target.value);
     });
   });
 
