@@ -297,6 +297,11 @@
               $(these.get(i)).val(title);
             }
           });
+          if($(these.get(i)).val() === 'None'){
+            if(!(i === 1 && type === 'node')){
+              $(these.get(i)).val(headers[i]);
+            }
+          }
         });
       }
 
