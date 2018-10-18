@@ -685,6 +685,7 @@
         app.finishUp();
         return;
       }
+      session.data.nodeFields.push('seq');
       $('.showForSequence').show();
       var allDashes = /^-*$/;
       var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
