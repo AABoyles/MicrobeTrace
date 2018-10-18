@@ -8,7 +8,7 @@ function hamming(s1, s2){
     if(s1[i] !== s2[i] && s1[i] !== '-' && s2[i] !== '-') sum++;
   }
   return sum;
-};
+}
 
 onmessage = function(e){
   var subset = e.data.nodes;

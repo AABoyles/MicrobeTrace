@@ -274,6 +274,17 @@ app.computeConsensus = function(callback){
   computer.postMessage(nodes);
 };
 
+app.computeConsensusDistances = function(callback){
+  var computer = new Worker('scripts/compute-consensus-distances.js');
+  computer.onmessage = function(response){
+    if(callback) callback(response.data);
+  };
+  computer.postMessage({
+    consensus: session.data.consensus,
+    nodes: session.data.nodes.filter(d => d.seq)
+  });
+};
+
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';

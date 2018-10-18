@@ -717,6 +717,15 @@
       message('Computing Links based on Genomic Proximity...');
       var k = 0;
       var n = subset.length;
+      app.computeConsensus(function(consensus){
+        session.data.consensus = consensus;
+        app.computeConsensusDistances(function(nodes){
+          for(var i = 0; i < n; i++){
+            session.data.nodes.find(d => d.id === nodes[i].id)._diff = nodes[i]._diff;
+          }
+        });
+      });
+      session.data.nodeFields.push('_diff');
       var cores = parseFloat($('#available-cores').val());
       var computers = Array(cores);
       var nPerI = Math.ceil(n/cores);
