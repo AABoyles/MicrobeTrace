@@ -270,19 +270,45 @@ app.computeConsensus = function(callback){
   computer.onmessage = function(response){
     session.data.consensus = response.data;
     if(callback) callback(response.data);
+    computer.terminate();
   };
   computer.postMessage(nodes);
 };
 
+//TODO: Parallelize
 app.computeConsensusDistances = function(callback){
   var computer = new Worker('scripts/compute-consensus-distances.js');
   computer.onmessage = function(response){
     if(callback) callback(response.data);
+    computer.terminate();
   };
   computer.postMessage({
     consensus: session.data.consensus,
     nodes: session.data.nodes.filter(d => d.seq)
   });
+};
+
+app.computeLinks = function(subset, cores, callback){
+  var n = subset.length, nPerI = Math.ceil(n/cores), k = 0, returned = 0;
+  var computers = Array(cores);
+  for(var i = 0; i < cores; i++){
+    computers[i] = new Worker('scripts/compute-links.js');
+    computers[i].onmessage = function(response){
+      response.data.forEach(function(link, j){
+        k += app.addLink(link);
+      });
+      if(++returned === n){
+        computers.forEach(c => c.terminate());
+        callback(k);
+      }
+    };
+  }
+  for(var j = 0; j < n; j++){
+    computers[j % cores].postMessage({
+      j: j,
+      nodes: subset
+    });
+  }
 };
 
 app.titleize = function(title){

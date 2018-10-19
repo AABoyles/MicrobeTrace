@@ -715,29 +715,12 @@
 
     function computeLinks(subset){
       message('Computing Links based on Genomic Proximity...');
-      var k = 0;
       var n = subset.length;
       app.computeConsensus(function(consensus){
         session.data.consensus = consensus;
         app.computeConsensusDistances(function(nodes){
-          for(var i = 0; i < n; i++){
-            session.data.nodes.find(d => d.id === nodes[i].id)._diff = nodes[i]._diff;
-          }
-        });
-      });
-      session.data.nodeFields.push('_diff');
-      var cores = parseFloat($('#available-cores').val());
-      var computers = Array(cores);
-      var nPerI = Math.ceil(n/cores);
-      var returned = 0;
-      for(var i = 0; i < cores; i++){
-        computers[i] = new Worker('scripts/compute-links.js');
-        computers[i].onmessage = function(response){
-          response.data.forEach(function(link, j){
-            k += app.addLink(link);
-          });
-          if(++returned === n){
-            computers.forEach(c => c.terminate());
+          for(var i = 0; i < n; i++) session.data.nodes.find(d => d.id === nodes[i].id)._diff = nodes[i]._diff;
+          app.computeLinks(subset, parseFloat($('#available-cores').val()), function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
             app.computeDM(function(){
               $('.showForDM').show();
@@ -746,15 +729,10 @@
               });
             });
             app.finishUp();
-          }
-        };
-      }
-      for(var j = 0; j < n; j++){
-        computers[j % cores].postMessage({
-          j: j,
-          nodes: subset
+          });
         });
-      }
+      });
+      session.data.nodeFields.push('_diff');
     };
   });
 
