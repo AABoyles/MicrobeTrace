@@ -265,10 +265,12 @@ app.align = function(params, callback){
 };
 
 app.computeConsensus = function(callback){
+  var start = Date.now();
   var nodes = session.data.nodes.filter(d => d.seq);
   var computer = new Worker('scripts/compute-consensus.js');
   computer.onmessage = function(response){
     session.data.consensus = response.data;
+    console.log('Consensus Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback(response.data);
     computer.terminate();
   };
@@ -277,8 +279,10 @@ app.computeConsensus = function(callback){
 
 //TODO: Parallelize
 app.computeConsensusDistances = function(callback){
+  var start = Date.now();
   var computer = new Worker('scripts/compute-consensus-distances.js');
   computer.onmessage = function(response){
+    console.log('Consensus Difference Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback(response.data);
     computer.terminate();
   };
@@ -289,6 +293,7 @@ app.computeConsensusDistances = function(callback){
 };
 
 app.computeLinks = function(subset, cores, callback){
+  var start = Date.now();
   var n = subset.length, nPerI = Math.ceil(n/cores), k = 0, returned = 0;
   var computers = Array(cores);
   for(var i = 0; i < cores; i++){
@@ -298,6 +303,7 @@ app.computeLinks = function(subset, cores, callback){
         k += app.addLink(link);
       });
       if(++returned === n){
+        console.log('Links Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
         computers.forEach(c => c.terminate());
         callback(k);
       }
