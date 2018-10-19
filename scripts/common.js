@@ -141,6 +141,7 @@ app.addNode = function(newNode){
     Object.assign(oldNode, newNode);
     return 0;
   } else {
+    if('seq' in newNode) newNode._seqInt = newNode.seq.split('').map(c => tn93.mapChar[c.charCodeAt(0)]);
     session.data.nodes.push(Object.assign(app.defaultNode(), newNode));
     return 1;
   }

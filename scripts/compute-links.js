@@ -15,7 +15,7 @@ onmessage = function(e){
   var j = e.data.j;
   var output = [];
   for(var i = 0; i < j; i++){
-    var t = tn93(subset[i]['seq'], subset[j]['seq'], 'AVERAGE'),
+    var t = tn93.onInts(subset[i]['_seqInt'], subset[j]['_seqInt'], 'AVERAGE'),
         s = hamming(subset[i]['seq'], subset[j]['seq']);
     output.push({
       source: subset[i].id,
