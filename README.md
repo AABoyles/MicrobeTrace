@@ -1,3 +1,5 @@
+# THIS IS AN ARCHIVED MIRROR OF THE MICROBETRACE REPOSITORY. PLEASE GO TO https://github.com/CDCgov/WebMicrobeTrace/ TO ACCESS THE OFFICIAL MICROBETRACE REPOSITORY.
+
 [![MicrobeTrace](https://raw.githubusercontent.com/AABoyles/WebMicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
 
 ©2017-2018 [Centers for Disease Control and Prevention](https://www.cdc.gov)
