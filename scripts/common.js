@@ -165,23 +165,21 @@ app.defaultLink = function(){
 };
 
 app.addLink = function(newLink){
-  var oldLink = session.data.links.find(function(l){
-    return (
-      (l.source === newLink.source & l.target === newLink.target) |
-      (l.source === newLink.target & l.target === newLink.source)
-    );
-  });
-  if(oldLink){
-    if(newLink.origin){
-      if(oldLink.origin.includes(newLink.origin)) return 0;
-      newLink.origin = newLink.origin.concat(oldLink.origin);
+  var links = session.data.links;
+  var n = links.length;
+  for(var i = 0; i < n; i++){
+    var l = links[i];
+    if((l.source === newLink.source & l.target === newLink.target) |
+       (l.source === newLink.target & l.target === newLink.source)){
+       if(newLink.origin && !l.origin.includes(newLink.origin)){
+         newLink.origin = newLink.origin.concat(l.origin);
+       }
+       Object.assign(l, newLink);
+       return 0;
     }
-    Object.assign(oldLink, newLink);
-    return 0;
-  } else {
-    session.data.links.push(Object.assign(app.defaultLink(), newLink));
-    return 1;
   }
+  links.push(Object.assign(app.defaultLink(), newLink));
+  return 1;
 };
 
 app.parseHIVTrace = function(hivtrace){
@@ -291,13 +289,23 @@ app.computeConsensusDistances = function(callback){
     if(callback) callback(response.data);
     computer.terminate();
   };
+  var subset = [];
+  var n = session.data.nodes.length;
+  for(var i = 0; i < n; i++){
+    var node = session.data.nodes[i];
+    if(node.seq) subset.push({
+      index: i,
+      seq: node.seq
+    });
+  }
   computer.postMessage({
     consensus: session.data.consensus,
-    nodes: session.data.nodes.filter(d => d.seq)
+    nodes: subset
   });
 };
 
 app.computeLinks = function(subset, cores, callback){
+  cores = 1;
   var start = Date.now();
   var n = subset.length, nPerI = Math.ceil(n/cores), k = 0, returned = 0;
   var computers = Array(cores);

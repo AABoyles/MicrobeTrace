@@ -11,7 +11,7 @@ onmessage = function(e){
       if(s1[j] !== consensus[j] && s1[j] !== '-' && consensus[j] !== '-') sum++;
     }
     output[i] = {
-      id: subset[i].id,
+      index: subset[i].index,
       _diff: sum
     };
   }

@@ -1,6 +1,6 @@
 importScripts('../node_modules/tn93/dist/tn93.min.js');
 
-function hamming(s1, s2){
+function snps(s1, s2){
   //If we aligned them, these will definitely be the same length. If not...
   var i = Math.min(s1.length, s2.length);
   var sum = 0;
@@ -15,13 +15,11 @@ onmessage = function(e){
   var j = e.data.j;
   var output = [];
   for(var i = 0; i < j; i++){
-    var t = tn93.onInts(subset[i]['_seqInt'], subset[j]['_seqInt'], 'AVERAGE'),
-        s = hamming(subset[i]['seq'], subset[j]['seq']);
     output.push({
       source: subset[i].id,
       target: subset[j].id,
-      tn93: t,
-      snps: s,
+      tn93: tn93.onInts(subset[i]['_seqInt'], subset[j]['_seqInt'], 'AVERAGE'),
+      snps: snps(subset[i]['seq'], subset[j]['seq']),
       origin: ['Genetic Distance']
     });
   }

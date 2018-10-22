@@ -713,12 +713,14 @@
 
     function computeLinks(subset){
       message('Computing Links based on Genomic Proximity...');
-      var n = subset.length;
       app.computeConsensus(function(consensus){
         session.data.consensus = consensus;
         app.computeConsensusDistances(function(nodes){
-          //TODO: This is really f***ing slow. Fix it!
-          for(var i = 0; i < n; i++) session.data.nodes.find(d => d.id === nodes[i].id)._diff = nodes[i]._diff;
+          var n = nodes.length;
+          for(var i = 0; i < n; i++){
+            var node = nodes[i];
+            session.data.nodes[node.index]._diff = node._diff;
+          }
           app.computeLinks(subset, parseFloat($('#available-cores').val()), function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
             app.computeDM(function(){
