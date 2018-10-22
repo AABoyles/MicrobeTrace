@@ -1,4 +1,24 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+ls components/ | sed -e 's/^/components\//' | sed "s/.*/        '&',/" >> temp
+
+ls scripts/ | sed -e 's/^/scripts\//' | sed "s/.*/        '&',/" >> temp
+cat index.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
+cat components/*.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
+cat scripts/*.js | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
+ls vendor/ | sed -e 's/^/vendor\//' | sed "s/.*/        '&',/" >> temp
+
+ls stylesheets/ | sed -e 's/^/stylesheets\//' | sed "s/.*/        '&',/" >> temp
+cat index.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> temp
+cat components/*.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> temp
+
+ls img/ | sed -e 's/^/img\//' | sed "s/.*/        '&',/" >> temp
+
+ls data/ | sed -e 's/^/data\//' | sed "s/.*/        '&',/" >> temp
+
+ls help/*.md | sed "s/.*/        '&',/" >> temp
+
+cat cache.extra | sed "s/.*/        '&',/" >> temp
 
 echo "var CACHE = 'MicrobeTraceD`date +%Y-%m-%d`';
 
@@ -7,27 +27,10 @@ self.addEventListener('install', function(event) {
     caches.open(CACHE).then(function(cache) {
       return cache.addAll([" > sw.js
 
-ls components/ | sed -e 's/^/components\//' | sed "s/.*/        '&',/" >> sw.js
+awk '!seen[$0]++' temp >> sw.js
+rm temp
 
-ls scripts/ | sed -e 's/^/scripts\//' | sed "s/.*/        '&',/" >> sw.js
-cat index.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> sw.js
-cat components/*.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> sw.js
-cat scripts/*.js | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> sw.js
-ls vendor/ | sed -e 's/^/vendor\//' | sed "s/.*/        '&',/" >> sw.js
-
-ls stylesheets/ | sed -e 's/^/stylesheets\//' | sed "s/.*/        '&',/" >> sw.js
-cat index.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> sw.js
-cat components/*.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> sw.js
-
-ls img/ | sed -e 's/^/img\//' | sed "s/.*/        '&',/" >> sw.js
-
-ls data/ | sed -e 's/^/data\//' | sed "s/.*/        '&',/" >> sw.js
-
-ls help/*.md | sed "s/.*/        '&',/" >> sw.js
-
-cat cache.extra | sed "s/.*/        '&',/" >> sw.js
-
-echo "      ]);
+echo """      ]);
     })
   );
 });
@@ -60,4 +63,4 @@ function update(request){
     });
   });
 }
-" >> sw.js
+""" >> sw.js

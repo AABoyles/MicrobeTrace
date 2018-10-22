@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-10-17';
+var CACHE = 'MicrobeTraceD2018-10-22';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -23,12 +23,14 @@ self.addEventListener('install', function(event) {
         'scripts/align-nbeam.js',
         'scripts/align-sw.js',
         'scripts/common.js',
+        'scripts/compute-consensus-distances.js',
         'scripts/compute-consensus.js',
         'scripts/compute-dm.js',
         'scripts/compute-links.js',
         'scripts/compute-nn.js',
         'scripts/polyfills.js',
         'node_modules/underscore/underscore-min.js',
+        'node_modules/tn93/dist/tn93.min.js',
         'node_modules/vue/dist/vue.min.js',
         'node_modules/jquery/dist/jquery.min.js',
         'node_modules/popper.js/dist/umd/popper.min.js',
@@ -44,7 +46,7 @@ self.addEventListener('install', function(event) {
         'node_modules/html2canvas/dist/html2canvas.min.js',
         'node_modules/screenfull/dist/screenfull.js',
         'node_modules/clipboard/dist/clipboard.min.js',
-        'node_modules/d3-force-3d/build/d3-force-3d.min.js',
+        'node_modules/d3-force-3d/dist/d3-force-3d.min.js',
         'node_modules/leaflet/dist/leaflet.js',
         'node_modules/chosen-js/chosen.jquery.min.js',
         'node_modules/xlsx/dist/xlsx.full.min.js',
@@ -53,7 +55,6 @@ self.addEventListener('install', function(event) {
         'node_modules/d3-sankey/build/d3-sankey.min.js',
         'node_modules/marked/marked.min.js',
         'node_modules/bioseq/dist/bioseq.min.js',
-        'node_modules/tn93/dist/tn93.min.js',
         'vendor/3d-force-graph.min.js',
         'vendor/bootstrap-filestyle.min.js',
         'vendor/d3.v3.min.js',
