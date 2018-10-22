@@ -217,7 +217,7 @@
       var reader = new FileReader();
       reader.onloadend = function(out){
         session = JSON.parse(out.target.result);
-        session.startTime = Date.now();
+        session.meta.startTime = Date.now();
         session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
         session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
         session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
@@ -434,7 +434,7 @@
 
   $('#main-submit').click(function(e){
     messages = [];
-    session.startTime = Date.now();
+    session.meta.startTime = Date.now();
     session.data = app.dataSkeleton();
     $('#loading-information').html('');
 
@@ -779,8 +779,7 @@
     app.computeDegree();
     app.updateStatistics();
     $('#network-statistics').fadeIn();
-    session.loadTime = Date.now() - session.startTime;
-    console.log('Network Loadtime:', (session.loadTime/1000).toLocaleString() + 's');
+    session.meta.loadTime = Date.now() - session.meta.startTime;
     if(oldSession){
       app.loadLayout(session.layout, true);
     } else {

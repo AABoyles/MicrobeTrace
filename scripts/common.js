@@ -93,31 +93,35 @@ app.defaultWidgets = {
 
 app.sessionSkeleton = function(){
   return {
-    files: [],
     data: app.dataSkeleton(),
-    state: {
-      linkThreshold: 0.015,
-      linkSortVariable: 'tn93',
-      time: 0
+    files: [],
+    layout: {
+      content: [{
+        type: 'files'
+      }],
+      type: 'stack'
     },
-    style: {
-      nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
-      nodeColorMap: function(){ return session.style.widgets['node-color']; },
-      nodeSymbols: ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'],
-      nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; },
-      linkColors: d3.schemePaired,
-      linkColorMap: function(){ return session.style.widgets['link-color']; },
-      widgets: app.defaultWidgets
+    meta: {
+      loadTime: 0,
+      startTime: 0
     },
     network: {
       allPinned: false,
       nodes: []
     },
-    layout: {
-      type: 'stack',
-      content: [{
-        type: 'files'
-      }]
+    state: {
+      linkSortVariable: 'tn93',
+      linkThreshold: 0.015,
+      time: 0
+    },
+    style: {
+      linkColors: d3.schemePaired,
+      linkColorMap: function(){ return session.style.widgets['link-color']; },
+      nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
+      nodeColorMap: function(){ return session.style.widgets['node-color']; },
+      nodeSymbols: ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'],
+      nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; },
+      widgets: app.defaultWidgets
     }
   };
 };
