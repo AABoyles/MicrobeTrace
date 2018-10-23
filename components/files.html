@@ -386,12 +386,16 @@
 
   $('#swAlign').parent().click(function(){
     $('.alignConfigRow').slideDown();
-    updatePreview();
+    $('#alignmentPreview').slideUp(function(){
+      $(this).empty().show();
+    });
   });
 
   $('#doNotAlign, #nbeamAlign').parent().click(function(){
     $('.alignConfigRow').slideUp();
-    updatePreview();
+    $('#alignmentPreview').slideUp(function(){
+      $(this).empty().show();
+    });
   });
 
   $('#refSeqFileLoad').on('change', function(e){
