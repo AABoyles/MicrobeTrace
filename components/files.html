@@ -329,25 +329,6 @@
     };
   }
 
-  $('#distance-metrics').chosen({width: "100%"}).change(function(e){
-    $('#default-distance-metric').html($(this).val().map(function(v, i){
-      return '<option value="' + v + '"' + (i == 0 ? ' selected': '') + '>' + app.titleize(v) + '</option>';
-    }).join('\n'));
-  });
-
-  $('#default-distance-metric').change(function(e){
-    session.state.widgets['default-distance-metric'] = e.target.value;
-    if(e.target.value == 'snps'){
-      $('#default-distance-threshold')
-        .attr('step', 1)
-        .val(16);
-    } else {
-      $('#default-distance-threshold')
-        .attr('step', 0.001)
-        .val(0.015);
-    }
-  });
-
   var data;
   function updatePreview(){
     if(!session.files.find(function(f){ return f.name.includes('fas'); })) return;
@@ -413,6 +394,26 @@
   });
 
   $('#alignerControlsButton, #previewAlignment').click(updatePreview);
+
+  $('#distance-metrics').chosen({width: "100%"}).change(function(e){
+    $('#default-distance-metric, #links-filter-variable').html($(this).val().map(function(v, i){
+      return '<option value="' + v + '"' + (i == 0 ? ' selected': '') + '>' + app.titleize(v) + '</option>';
+    }).join('\n')).trigger('change');
+  });
+
+  $('#default-distance-metric, #links-filter-variable').change(function(e){
+    session.state.linkSortVariable = e.target.value;
+    $('#default-distance-metric, #links-filter-variable').val(session.state.linkSortVariable);
+    if(session.state.linkSortVariable === 'snps'){
+      $('#default-distance-threshold, #link-threshold')
+        .attr('step', 1)
+        .val(16);
+    } else {
+      $('#default-distance-threshold, #link-threshold')
+        .attr('step', 0.001)
+        .val(0.015);
+    }
+  });
 
   if(localStorage.getItem('default-View')){
     $('#default-View').val(localStorage.getItem('default-View'));
@@ -689,6 +690,7 @@
       }
       session.data.nodeFields.push('seq');
       $('.showForSequence').show();
+      $('.showForSequence.row').css('display', 'flex');
       var allDashes = /^-*$/;
       var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
       if($('#doNotAlign').is(':checked')){
