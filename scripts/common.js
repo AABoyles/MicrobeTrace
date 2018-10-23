@@ -9,8 +9,8 @@ app.dataSkeleton = function(){
     clusters: [],
     distance_matrix: {},
     trees: {},
-    linkFields: ['index', 'source', 'target', 'tn93', 'snps', 'visible', 'cluster', 'origin'],
     nodeFields: ['index', 'id', 'selected', 'cluster', 'visible', 'degree', 'origin'],
+    linkFields: ['index', 'source', 'target', 'visible', 'cluster', 'origin'],
     clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible'],
     reference: 'CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC'
   };
@@ -303,7 +303,7 @@ app.computeConsensusDistances = function(callback){
   });
 };
 
-app.computeLinks = function(subset, cores, callback){
+app.computeLinks = function(subset, cores, metrics, callback){
   cores = 1;
   var start = Date.now();
   var n = subset.length, nPerI = Math.ceil(n/cores), k = 0, returned = 0;
@@ -324,7 +324,8 @@ app.computeLinks = function(subset, cores, callback){
   for(var j = 0; j < n; j++){
     computers[j % cores].postMessage({
       j: j,
-      nodes: subset
+      nodes: subset,
+      metrics: metrics
     });
   }
 };
@@ -472,7 +473,7 @@ app.updateNetwork = function(hideSingletons){
   app.computeDegree();
 };
 
-app.computeDM = function(callback){
+app.computeDM = function(metrics, callback){
   var start = Date.now();
   var DMMaker = new Worker('scripts/compute-dm.js');
   DMMaker.onmessage = function(response){
@@ -482,7 +483,8 @@ app.computeDM = function(callback){
   };
   DMMaker.postMessage({
     nodes: session.data.nodes.filter(d => d.seq),
-    links: session.data.links.filter(l => l.tn93 && l.snps)
+    links: session.data.links.filter(l => _.any(metrics.map(m => _.isNumber(l[m])))),
+    metrics: metrics
   });
 };
 
@@ -498,8 +500,11 @@ app.updateStatistics = function(){
   $('#numberOfDisjointComponents').text(session.data.clusters.length);
 };
 
-app.computeNN = function(callback){
-  if(!session.data.distance_matrix.tn93) return;
+app.computeNN = function(metric, callback){
+  if(!session.data.distance_matrix[metric]){
+    console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
+    return;
+  }
   var start = Date.now();
   var nnMachine = new Worker('scripts/compute-nn.js');
   nnMachine.onmessage = function(message){
@@ -508,7 +513,11 @@ app.computeNN = function(callback){
     console.log('NN Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
-  nnMachine.postMessage(session.data);
+  nnMachine.postMessage({
+    links: session.data.links,
+    nodes: session.data.nodes,
+    matrix: session.data.distance_matrix[metric]
+  });
 };
 
 app.reset = function(){

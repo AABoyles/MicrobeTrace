@@ -719,6 +719,7 @@
 
     function computeLinks(subset){
       message('Computing Links based on Genomic Proximity...');
+      session.data.linkFields = session.data.linkFields.concat(metrics);
       app.computeConsensus(function(consensus){
         session.data.consensus = consensus;
         app.computeConsensusDistances(function(nodes){
@@ -727,11 +728,11 @@
             var node = nodes[i];
             session.data.nodes[node.index]._diff = node._diff;
           }
-          app.computeLinks(subset, parseFloat($('#available-cores').val()), function(k){
+          app.computeLinks(subset, parseFloat($('#available-cores').val()), metrics, function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
-            app.computeDM(function(){
+            app.computeDM(metrics, function(){
               $('.showForDM').show();
-              app.computeNN(function(){
+              app.computeNN(session.state.linkSortVariable, function(){
                 $('.showForNN').show();
               });
             });
@@ -754,9 +755,9 @@
     });
     $('#links-filter-variable').html(
       session.data.linkFields.map(function(field){
-        return '<option value="' + field + '"' + (field === session.state.linkSortVariable ? ' selected' : '') + '>' + app.titleize(field) + '</option>';
+        return '<option value="' + field + '">' + app.titleize(field) + '</option>';
       }).join('\n')
-    );
+    ).val(session.state.linkSortVariable);
     $('#node-color-variable').html(
       '<option selected>None</option>' +
       session.data.nodeFields.map(function(field){

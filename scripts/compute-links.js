@@ -5,23 +5,23 @@ function snps(s1, s2){
   var i = Math.min(s1.length, s2.length);
   var sum = 0;
   while(--i >= 0){
-    if(s1[i] !== s2[i] && s1[i] !== '-' && s2[i] !== '-') sum++;
+    if(s1[i] !== s2[i] & s1[i] !== 17 & s2[i] !== 17) sum++;
   }
   return sum;
 }
 
 onmessage = function(e){
-  var subset = e.data.nodes;
-  var j = e.data.j;
+  var subset = e.data.nodes, metrics = e.data.metrics, j = e.data.j;
   var output = [];
   for(var i = 0; i < j; i++){
-    output.push({
+    var link = {
       source: subset[i].id,
       target: subset[j].id,
-      tn93: tn93.onInts(subset[i]['_seqInt'], subset[j]['_seqInt'], 'AVERAGE'),
-      snps: snps(subset[i]['seq'], subset[j]['seq']),
       origin: ['Genetic Distance']
-    });
+    }
+    if(metrics.includes('tn93')) link.tn93 = tn93.onInts(subset[i]['_seqInt'], subset[j]['_seqInt'], 'AVERAGE');
+    if(metrics.includes('snps')) link.snps = snps(subset[i]['_seqInt'], subset[j]['_seqInt']);
+    output.push(link);
   }
   postMessage(output);
 };

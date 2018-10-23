@@ -1,12 +1,11 @@
 let epsilon = 1E-9;
 
 onmessage = function(e){
-  let nodes = e.data.nodes;
-  let links = e.data.links;
-  let dm = e.data.distance_matrix.tn93;
-  let m = links.length;
-  let n = nodes.length;
-  for(let j = 0; j < m; j++){ links[j].nn = false; }
+  let nodes = e.data.nodes, links = e.data.links, dm = e.data.matrix;
+  let n = nodes.length, m = links.length;
+  for(let j = 0; j < m; j++){
+    links[j].nn = false;
+  }
   for(let i = 0; i < n; i++){
     let minDist = Number.MAX_VALUE;
     let targets = [];
