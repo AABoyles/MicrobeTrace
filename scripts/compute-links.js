@@ -11,17 +11,19 @@ function snps(s1, s2){
 }
 
 onmessage = function(e){
-  var subset = e.data.nodes, metrics = e.data.metrics, j = e.data.j;
+  var subset = e.data.nodes, metrics = e.data.metrics, n = subset.length;
   var output = [];
-  for(var i = 0; i < j; i++){
-    var link = {
-      source: subset[i].id,
-      target: subset[j].id,
-      origin: ['Genetic Distance']
+  for(var i = 0; i < n; i++){
+    for(var j = 0; j < i; j++){
+      var link = {
+        source: subset[i].id,
+        target: subset[j].id,
+        origin: ['Genetic Distance']
+      }
+      if(metrics.includes('tn93')) link.tn93 = tn93.onInts(subset[i]['_seqInt'], subset[j]['_seqInt'], 'AVERAGE');
+      if(metrics.includes('snps')) link.snps = snps(subset[i]['_seqInt'], subset[j]['_seqInt']);
+      output.push(link);
     }
-    if(metrics.includes('tn93')) link.tn93 = tn93.onInts(subset[i]['_seqInt'], subset[j]['_seqInt'], 'AVERAGE');
-    if(metrics.includes('snps')) link.snps = snps(subset[i]['_seqInt'], subset[j]['_seqInt']);
-    output.push(link);
   }
   postMessage(output);
 };

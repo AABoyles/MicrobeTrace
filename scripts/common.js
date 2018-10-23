@@ -225,45 +225,34 @@ app.parseFASTA = function(text){
 
 app.align = function(params, callback){
   if(params.aligner === 'none'){
-    if(callback){
-      callback(params.nodes);
-    }
-    return params.nodes;
+    if(callback) callback(params.nodes);
+    return;
   }
-  if(!params.cores) params.cores = 2;
+  var start = Date.now();
   var n = params.nodes.length;
-  var aligners = Array(params.cores);
-  var nPerI = Math.ceil(n/params.cores);
-  var returned = 0;
-  var output = [];
-  for(var i = 0; i < params.cores; i++){
-    aligners[i] = new Worker('scripts/align-'+params.aligner+'.js');
-    aligners[i].onmessage = function(response){
-      output = output.concat(response.data);
-      if(++returned === aligners.length){
-        var minPadding = Number.MAX_SAFE_INTEGER,
-            maxLength = 0;
-        for(var j = 0; j < n; j++){
-          var d = output[j];
-          if(minPadding > d.padding) minPadding = d.padding;
-        }
-        for(var j = 0; j < n; j++){
-          var d = output[j];
-          d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
-          delete d.padding;
-          if(maxLength < d.seq.length) maxLength = d.seq.length;
-        }
-        for(var j = 0; j < n; j++){
-          var d = output[j];
-          d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
-        }
-        callback(output);
-      }
-    };
-    aligners[i].postMessage(Object.assign({}, params, {
-      nodes: params.nodes.slice(i*nPerI, Math.min((i+1)*nPerI, n))
-    }));
-  }
+  aligner = new Worker('scripts/align-'+params.aligner+'.js');
+  aligner.onmessage = function(response){
+    output = response.data;
+    var minPadding = Number.MAX_SAFE_INTEGER,
+        maxLength = 0;
+    for(var j = 0; j < n; j++){
+      var d = output[j];
+      if(minPadding > d.padding) minPadding = d.padding;
+    }
+    for(var j = 0; j < n; j++){
+      var d = output[j];
+      d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
+      delete d.padding;
+      if(maxLength < d.seq.length) maxLength = d.seq.length;
+    }
+    for(var j = 0; j < n; j++){
+      var d = output[j];
+      d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
+    }
+    console.log('Alignment time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    callback(output);
+  };
+  aligner.postMessage(params);
 };
 
 app.computeConsensus = function(callback){
@@ -279,7 +268,6 @@ app.computeConsensus = function(callback){
   computer.postMessage(nodes);
 };
 
-//TODO: Parallelize
 app.computeConsensusDistances = function(callback){
   var start = Date.now();
   var computer = new Worker('scripts/compute-consensus-distances.js');
@@ -303,31 +291,22 @@ app.computeConsensusDistances = function(callback){
   });
 };
 
-app.computeLinks = function(subset, cores, metrics, callback){
-  cores = 1;
+app.computeLinks = function(subset, metrics, callback){
   var start = Date.now();
-  var n = subset.length, nPerI = Math.ceil(n/cores), k = 0, returned = 0;
-  var computers = Array(cores);
-  for(var i = 0; i < cores; i++){
-    computers[i] = new Worker('scripts/compute-links.js');
-    computers[i].onmessage = function(response){
-      response.data.forEach(function(link, j){
-        k += app.addLink(link);
-      });
-      if(++returned === n){
-        console.log('Links Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-        computers.forEach(c => c.terminate());
-        callback(k);
-      }
-    };
-  }
-  for(var j = 0; j < n; j++){
-    computers[j % cores].postMessage({
-      j: j,
-      nodes: subset,
-      metrics: metrics
+  var n = subset.length, k = 0;
+  computer = new Worker('scripts/compute-links.js');
+  computer.onmessage = function(response){
+    response.data.forEach(function(link, j){
+      k += app.addLink(link);
     });
-  }
+    console.log('Links Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    computer.terminate();
+    callback(k);
+  };
+  computer.postMessage({
+    nodes: subset,
+    metrics: metrics
+  });
 };
 
 app.titleize = function(title){

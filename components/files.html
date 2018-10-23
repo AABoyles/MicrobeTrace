@@ -165,14 +165,6 @@
                 </select>
               </div>
             </div>
-            <div class="form-group row">
-              <div class="col-2">
-                <label for="available-cores">Cores</label>
-              </div>
-              <div class="col-10">
-                <select class="custom-select" id="available-cores"><option selected>1</option></select>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -352,8 +344,7 @@
       aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
       isLocal: $('#localAlign').is(':checked'),
       match: [parseFloat($('#alignerMatch').val()), parseFloat($('#alignerMismatch').val())],
-      gap: [parseFloat($('#alignerGapO').val()), parseFloat($('#alignerGapE').val())],
-      cores: $('#available-cores').val()|0
+      gap: [parseFloat($('#alignerGapO').val()), parseFloat($('#alignerGapE').val())]
     }, function(output){
       alignmentViewer(output, {
         showID: false
@@ -423,12 +414,6 @@
     localStorage.setItem('default-View', e.target.value);
     session.layout.content[0].type = e.target.value;
   });
-
-  $('#available-cores').html(
-    _.range(1, (navigator.hardwareConcurrency|4)+1).map(i => {
-      return `<option${i === Math.ceil((navigator.hardwareConcurrency|4)/2) ? ' selected' : ''}>${i}</option>`;
-    }).join()
-  );
 
   function message(msg){
     messages.push(msg);
@@ -703,8 +688,7 @@
           isLocal: $('#localAlign').is(':checked'),
           match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
           gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-          nodes: subset,
-          cores: parseFloat($('#available-cores').val())
+          nodes: subset
         }, function(response){
           subset.forEach(function(node){
             var match = response.find(function(possible){
@@ -728,7 +712,7 @@
             var node = nodes[i];
             session.data.nodes[node.index]._diff = node._diff;
           }
-          app.computeLinks(subset, parseFloat($('#available-cores').val()), metrics, function(k){
+          app.computeLinks(subset, metrics, function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
             app.computeDM(metrics, function(){
               $('.showForDM').show();
