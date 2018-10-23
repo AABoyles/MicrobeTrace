@@ -257,14 +257,16 @@ app.align = function(params, callback){
   aligner.postMessage(params);
 };
 
+app.decoder = new TextDecoder('utf-8');
+
 app.computeConsensus = function(callback){
   var start = Date.now();
   var nodes = session.data.nodes.filter(d => d.seq);
   var computer = new Worker('scripts/compute-consensus.js');
   computer.onmessage = function(response){
-    session.data.consensus = response.data;
+    consensus = app.decoder.decode(new Uint8Array(response.data.consensus));
     console.log('Consensus Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-    if(callback) callback(response.data);
+    if(callback) callback(consensus);
     computer.terminate();
   };
   computer.postMessage(nodes);
@@ -274,8 +276,9 @@ app.computeConsensusDistances = function(callback){
   var start = Date.now();
   var computer = new Worker('scripts/compute-consensus-distances.js');
   computer.onmessage = function(response){
+    var nodes = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
     console.log('Consensus Difference Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-    if(callback) callback(response.data);
+    if(callback) callback(nodes);
     computer.terminate();
   };
   var subset = [];
@@ -296,9 +299,7 @@ app.computeConsensusDistances = function(callback){
 app.computeLinks = function(subset, metrics, callback){
   var k = 0, computer = new Worker('scripts/compute-links.js');
   computer.onmessage = function(response){
-    var decoder = new TextDecoder('utf-8');
-    var decoded = decoder.decode(new Uint8Array(response.data.links));
-    var links = JSON.parse(decoded);
+    var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
     var start = Date.now();
     var check = session.files.length > 1;
     links.forEach(function(link, j){

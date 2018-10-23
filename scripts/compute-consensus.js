@@ -23,5 +23,7 @@ onmessage = function(e){
     });
     consensus += maxKey;
   }
-  postMessage(consensus);
+  var encoder = new TextEncoder();
+  consensus = encoder.encode(consensus).buffer;
+  postMessage({consensus: consensus}, [consensus]);
 };
