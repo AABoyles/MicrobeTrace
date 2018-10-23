@@ -23,8 +23,8 @@ onmessage = function(e){
     }
     for(let j = 0; j < m; j++){
       let l = links[j];
-      if((l.source == nodes[i].id && targets.includes(l.target)) ||
-         (l.target == nodes[i].id && targets.includes(l.source))){
+      if((l.source === nodes[i].id & targets.includes(l.target)) |
+         (l.target === nodes[i].id & targets.includes(l.source))){
         l.nn = true;
       }
     }
