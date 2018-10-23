@@ -499,7 +499,7 @@
             metric = metric.toLowerCase();
             base[metric] = 0;
           });
-          l += app.addLink(Object.assign(base, link));
+          l += app.addLink(Object.assign(base, link), true);
         }
 
         if(extension == 'xls' || extension == 'xlsx'){
@@ -642,6 +642,7 @@
                   }
                 });
               } else {
+                var check = session.data.files > 1;
                 row.forEach((cell, j) => {
                   if(j > i){
                     var base = {
@@ -654,7 +655,7 @@
                       base[metric] = 0;
                     });
                     base[defaultMetric] = parseFloat(cell),
-                    nl += app.addLink(base);
+                    nl += app.addLink(base, check);
                   }
                 });
               }

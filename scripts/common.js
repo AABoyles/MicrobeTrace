@@ -163,18 +163,20 @@ app.defaultLink = function(){
   }
 };
 
-app.addLink = function(newLink){
+app.addLink = function(newLink, check){
   var links = session.data.links;
-  var n = links.length;
-  for(var i = 0; i < n; i++){
-    var l = links[i];
-    if((l.source === newLink.source & l.target === newLink.target) |
-       (l.source === newLink.target & l.target === newLink.source)){
-       if(newLink.origin && !l.origin.includes(newLink.origin)){
-         newLink.origin = newLink.origin.concat(l.origin);
-       }
-       Object.assign(l, newLink);
-       return 0;
+  if(check){
+    var n = links.length;
+    for(var i = 0; i < n; i++){
+      var l = links[i];
+      if((l.source === newLink.source & l.target === newLink.target) |
+      (l.source === newLink.target & l.target === newLink.source)){
+        if(newLink.origin && !l.origin.includes(newLink.origin)){
+          newLink.origin = newLink.origin.concat(l.origin);
+        }
+        Object.assign(l, newLink);
+        return 0;
+      }
     }
   }
   links.push(Object.assign(app.defaultLink(), newLink));
@@ -200,7 +202,7 @@ app.parseHIVTrace = function(hivtrace){
       'distance': parseFloat(link.length),
       'origin': ['HIVTRACE Import'],
       'visible': true
-    });
+    }, false);
   }
 };
 
@@ -292,14 +294,17 @@ app.computeConsensusDistances = function(callback){
 };
 
 app.computeLinks = function(subset, metrics, callback){
-  var start = Date.now();
-  var n = subset.length, k = 0;
-  computer = new Worker('scripts/compute-links.js');
+  var k = 0, computer = new Worker('scripts/compute-links.js');
   computer.onmessage = function(response){
-    response.data.forEach(function(link, j){
-      k += app.addLink(link);
+    var decoder = new TextDecoder('utf-8');
+    var decoded = decoder.decode(new Uint8Array(response.data.links));
+    var links = JSON.parse(decoded);
+    var start = Date.now();
+    var check = session.files.length > 1;
+    links.forEach(function(link, j){
+      k += app.addLink(link, check);
     });
-    console.log('Links Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('Links Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     computer.terminate();
     callback(k);
   };
