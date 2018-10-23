@@ -133,7 +133,7 @@
           type = session.style.widgets['tree-metric'];
 
       if(!session.data.trees[type]){
-        let RNJ = new RapidNeighborJoining(session.data.distance_matrix[type], session.data.distance_matrix.labels.map(function(l){
+        let RNJ = new RapidNeighborJoining(session.data.distance_matrix[type].map(l => l.slice()), session.data.distance_matrix.labels.map(function(l){
           return {
             'name': l,
             'genotype': l
