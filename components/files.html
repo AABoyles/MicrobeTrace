@@ -497,7 +497,7 @@
           };
           metrics.forEach(function(metric){
             metric = metric.toLowerCase();
-            base[metric] = 0;
+            base[metric] = null;
           });
           l += app.addLink(Object.assign(base, link), true);
         }
@@ -732,11 +732,14 @@
   app.finishUp = function(oldSession){
     clearTimeout(messageTimeout);
     ['node', 'link'].forEach(v => {
-      session.data[v+'s'].forEach(d => {
-        session.data[v+'Fields'].forEach(field => {
+      var n = session.data[v+'s'].length;
+      var fields = session.data[v+'Fields'];
+      for(var i = 0; i < n; i++){
+        var d = session.data[v+'s'][i];
+        fields.forEach(field => {
           if(!(field in d)) d[field] = null;
         });
-      });
+      }
     });
     $('#links-filter-variable').html(
       session.data.linkFields.map(function(field){
