@@ -12,7 +12,6 @@ onmessage = function(e){
     var best = map.best();
     node.padding = best.position;
     node.score = best.score;
-    console.log(best.score);
   });
 
   postMessage(subset);
