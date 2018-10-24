@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-10-22';
+var CACHE = 'MicrobeTraceD2018-10-24';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -46,7 +46,7 @@ self.addEventListener('install', function(event) {
         'node_modules/html2canvas/dist/html2canvas.min.js',
         'node_modules/screenfull/dist/screenfull.js',
         'node_modules/clipboard/dist/clipboard.min.js',
-        'node_modules/d3-force-3d/dist/d3-force-3d.min.js',
+        'node_modules/3d-force-graph/dist/3d-force-graph.min.js',
         'node_modules/leaflet/dist/leaflet.js',
         'node_modules/chosen-js/chosen.jquery.min.js',
         'node_modules/xlsx/dist/xlsx.full.min.js',
