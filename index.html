@@ -489,7 +489,13 @@ performance of this software.</pre>
         var reader = new FileReader();
         if(extension === 'microbetrace'){
           reader.onloadend = function(out){
-            session = JSON.parse(out.target.result);
+            try {
+              session = JSON.parse(out.target.result);
+            } catch(error) {
+              alertify.error('File Not Recognized! Are you certain this is a MicrobeTrace Session or HIV-TRACE Output File?');
+              console.error(error);
+              return;
+            }
             session.startTime = startTime;
             session.style.widgets = Object.assign({}, app.defaultWidgets, session.style.widgets);
             $('#node-color-variable').change();
@@ -500,7 +506,14 @@ performance of this software.</pre>
           reader.onloadend = function(out){
             session = app.sessionSkeleton();
             session.startTime = startTime;
-            app.parseHIVTrace(JSON.parse(out.target.result));
+            try {
+              content = JSON.parse(out.target.result);
+            } catch(error) {
+              alertify.error('File Not Recognized! Are you certain this is a MicrobeTrace Session or HIV-TRACE Output File?');
+              console.error(error);
+              return;
+            }
+            app.parseHIVTrace(content);
             app.finishUp();
           };
         }
