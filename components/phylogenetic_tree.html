@@ -133,14 +133,8 @@
           type = session.style.widgets['tree-metric'];
 
       if(!session.data.trees[type]){
-        let RNJ = new RapidNeighborJoining(session.data.distance_matrix[type].map(l => l.slice()), session.data.distance_matrix.labels.map(function(l){
-          return {
-            'name': l,
-            'genotype': l
-          }
-        }));
-        RNJ.run();
-        session.data.trees[type] = RNJ.getAsNewick();
+        app.computeTree(type, redrawTree);
+        return;
       }
       let svg = d3v3.select('#tree-view svg')
           .attr('width', width)

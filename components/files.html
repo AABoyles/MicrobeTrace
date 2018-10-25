@@ -726,6 +726,7 @@
               app.computeNN(session.state.linkSortVariable, function(){
                 $('.showForNN').show();
               });
+              metrics.forEach(app.computeTree);
             });
             app.finishUp();
           });

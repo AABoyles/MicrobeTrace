@@ -315,6 +315,21 @@ app.computeLinks = function(subset, metrics, callback){
   });
 };
 
+app.computeTree = function(type, callback){
+  var start = Date.now();
+  var computer = new Worker('scripts/compute-tree.js');
+  computer.onmessage = function(response){
+    session.data.trees[type] = app.decoder.decode(new Uint8Array(response.data.tree));
+    console.log(app.titleize(type) + ' Tree Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    computer.terminate();
+    if(callback) callback();
+  };
+  computer.postMessage({
+    matrix: session.data.distance_matrix[type],
+    labels: session.data.distance_matrix.labels
+  });
+};
+
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
