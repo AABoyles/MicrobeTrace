@@ -327,22 +327,27 @@
     };
   }
 
-  var data;
-  function updatePreview(){
-    if(!session.files.find(function(f){ return f.name.includes('fas'); })) return;
-    if(!data){
+  function readFastas(){
+    var read = 0, data = [];
+    var fastas = session.files.filter(function(f){ return f.name.includes('fas'); });
+    if(fastas.length < 1) return;
+    fastas.forEach(function(fasta){
       var reader = new FileReader();
       reader.onloadend = function(e){
-        data = app.parseFASTA(e.target.result);
-        data.forEach(function(node){
-          node.id = filterXSS(node.id);
-          node.seq = filterXSS(node.seq);
-        });
-        updatePreview();
+        app
+          .parseFASTA(e.target.result)
+          .forEach(function(node){
+            node.id = filterXSS(node.id);
+            node.seq = filterXSS(node.seq);
+            data.push(node);
+          });
+        if(++read === fastas.length) updatePreview(data);
       };
-      reader.readAsText(session.files.find(function(f){ return f.name.includes('fas'); }), 'UTF-8');
-      return;
-    }
+      reader.readAsText(fasta, 'UTF-8');
+    });
+  }
+
+  function updatePreview(data){
     $('#alignmentPreview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
     app.align({
       nodes: data,
@@ -384,13 +389,13 @@
         var node = app.parseFASTA(e.target.result)[0];
         session.data.reference = filterXSS(node.seq);
         $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
-        updatePreview();
+        readFastas();
       }
     };
     reader.readAsText(file);
   });
 
-  $('#alignerControlsButton, #previewAlignment').click(updatePreview);
+  $('#alignerControlsButton, #previewAlignment').click(readFastas);
 
   $('#distance-metrics').chosen({width: "100%"}).change(function(e){
     $('#default-distance-metric, #links-filter-variable').html($(this).val().map(function(v, i){
