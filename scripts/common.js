@@ -225,6 +225,8 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
+app.decoder = new TextDecoder('utf-8');
+
 app.align = function(params, callback){
   if(params.aligner === 'none'){
     if(callback) callback(params.nodes);
@@ -257,17 +259,13 @@ app.align = function(params, callback){
   aligner.postMessage(params);
 };
 
-app.decoder = new TextDecoder('utf-8');
-
 app.computeConsensus = function(callback){
-  var start = Date.now();
   var nodes = session.data.nodes.filter(d => d.seq);
   var computer = new Worker('scripts/compute-consensus.js');
   computer.onmessage = function(response){
     consensus = app.decoder.decode(new Uint8Array(response.data.consensus));
-    console.log('Consensus Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('Consensus Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     if(callback) callback(consensus);
-    computer.terminate();
   };
   computer.postMessage(nodes);
 };
@@ -277,9 +275,8 @@ app.computeConsensusDistances = function(callback){
   var computer = new Worker('scripts/compute-consensus-distances.js');
   computer.onmessage = function(response){
     var nodes = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
-    console.log('Consensus Difference Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('Consensus Difference Transit time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback(nodes);
-    computer.terminate();
   };
   var subset = [];
   var n = session.data.nodes.length;
@@ -300,13 +297,13 @@ app.computeLinks = function(subset, metrics, callback){
   var k = 0, computer = new Worker('scripts/compute-links.js');
   computer.onmessage = function(response){
     var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
+    console.log('Links Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     var start = Date.now();
     var check = session.files.length > 1;
     links.forEach(function(link, j){
       k += app.addLink(link, check);
     });
     console.log('Links Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-    computer.terminate();
     callback(k);
   };
   computer.postMessage({
@@ -315,13 +312,25 @@ app.computeLinks = function(subset, metrics, callback){
   });
 };
 
+app.computeDM = function(metrics, callback){
+  var computer = new Worker('scripts/compute-dm.js');
+  computer.onmessage = function(response){
+    session.data.distance_matrix = JSON.parse(app.decoder.decode(new Uint8Array(response.data.matrices)));
+    console.log('DM Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  computer.postMessage({
+    nodes: session.data.nodes,
+    links: session.data.links.filter(l => _.any(metrics.map(m => _.isNumber(l[m])))),
+    metrics: metrics
+  });
+};
+
 app.computeTree = function(type, callback){
-  var start = Date.now();
   var computer = new Worker('scripts/compute-tree.js');
   computer.onmessage = function(response){
     session.data.trees[type] = app.decoder.decode(new Uint8Array(response.data.tree));
-    console.log(app.titleize(type) + ' Tree Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-    computer.terminate();
+    console.log('Tree (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
   computer.postMessage({
@@ -473,21 +482,6 @@ app.updateNetwork = function(hideSingletons){
   app.computeDegree();
 };
 
-app.computeDM = function(metrics, callback){
-  var start = Date.now();
-  var DMMaker = new Worker('scripts/compute-dm.js');
-  DMMaker.onmessage = function(response){
-    session.data.distance_matrix = response.data;
-    console.log('DM Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-    if(callback) callback();
-  };
-  DMMaker.postMessage({
-    nodes: session.data.nodes.filter(d => d.seq),
-    links: session.data.links.filter(l => _.any(metrics.map(m => _.isNumber(l[m])))),
-    metrics: metrics
-  });
-};
-
 app.updateStatistics = function(){
   if($('#network-statistics-hide').is(':checked')) return;
   var vnodes = app.getVisibleNodes();
@@ -505,12 +499,17 @@ app.computeNN = function(metric, callback){
     console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
     return;
   }
-  var start = Date.now();
   var nnMachine = new Worker('scripts/compute-nn.js');
-  nnMachine.onmessage = function(message){
-    if(message.data === 'Error') return;
-    message.data.forEach(l => session.data.links[l.index].nn = l.nn);
-    console.log('NN Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  nnMachine.onmessage = function(response){
+    if(response.data === 'Error'){
+      console.error('Nearest Neighbor washed out');
+      return;
+    }
+    var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
+    console.log('NN Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    var start = Date.now();
+    links.forEach(l => session.data.links[l.index].nn = l.nn);
+    console.log('NN Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
   nnMachine.postMessage({

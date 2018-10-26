@@ -1,6 +1,7 @@
 let epsilon = 1E-9;
 
 onmessage = function(e){
+  let start = Date.now();
   let nodes = e.data.nodes, links = e.data.links, dm = e.data.matrix;
   let n = nodes.length, m = links.length;
   for(let j = 0; j < m; j++){
@@ -29,6 +30,10 @@ onmessage = function(e){
       }
     }
   }
-  postMessage(links);
+  console.log('NN Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  start = Date.now();
+  var encoder = new TextEncoder();
+  links = encoder.encode(JSON.stringify(links)).buffer;
+  postMessage({links: links, start: start}, [links]);
   close();
 };

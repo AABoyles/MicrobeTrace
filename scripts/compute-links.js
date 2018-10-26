@@ -29,7 +29,9 @@ onmessage = function(e){
     }
   }
   console.log('Links Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  start = Date.now();
   var encoder = new TextEncoder();
   output = encoder.encode(JSON.stringify(output)).buffer;
-  postMessage({links: output}, [output]);
+  postMessage({links: output, start: start}, [output]);
+  close();
 };

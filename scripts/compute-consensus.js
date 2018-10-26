@@ -1,4 +1,5 @@
 onmessage = function(e){
+  var start = Date.now();
   var subset = e.data;
   var n = subset.length;
   var k = subset[0].seq.length;
@@ -23,7 +24,10 @@ onmessage = function(e){
     });
     consensus += maxKey;
   }
+  console.log('Consensus Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  start = Date.now();
   var encoder = new TextEncoder();
   consensus = encoder.encode(consensus).buffer;
-  postMessage({consensus: consensus}, [consensus]);
+  postMessage({consensus: consensus, start: start}, [consensus]);
+  close();
 };
