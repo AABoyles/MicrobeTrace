@@ -182,7 +182,7 @@ input[type="number"].custom-select{
 button.navbar-toggler{
   font-size:1rem;
 }
-.showForSequence{
+.show-for-seq, .show-for-dm, .show-for-nn{
   display: none;
 }
 

@@ -682,13 +682,13 @@
 
     function nextStuff(){
       if(!anySequences){
-        $('.showForSequence').hide();
+        $('.show-for-seq').hide();
         app.finishUp();
         return;
       }
       session.data.nodeFields.push('seq');
-      $('.showForSequence').show();
-      $('.showForSequence.row').css('display', 'flex');
+      $('.show-for-seq').show();
+      $('.show-for-seq.row').css('display', 'flex');
       var allDashes = /^-*$/;
       var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
       if($('#doNotAlign').is(':checked')){
@@ -738,9 +738,9 @@
   app.finishUp = function(oldSession){
     if(!oldSession){
       app.computeDM(metrics, function(){
-        $('.showForDM').show();
+        $('.show-for-dm').css('display', 'flex');
         app.computeNN(session.state.linkSortVariable, function(){
-          $('.showForNN').show();
+          $('.show-for-nn').css('display', 'flex');
         });
         metrics.forEach(m => app.computeTree(m));
       });
