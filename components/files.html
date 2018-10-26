@@ -245,7 +245,7 @@
     var addTableTile = function(headers){
       var root = $('<div class="file-table-row"></div>');
       var fnamerow = $('<div class="row w-100"></div>');
-      $('<div class="filename col"></div>')
+      $('<div class="file-name col"></div>')
         .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
           session.files.splice(session.files.indexOf(file.name), 1);
           root.slideUp(function(){ root.remove(); });
@@ -452,7 +452,7 @@
     var files = [];
     $('#file-panel .file-table-row').each((i, el) => {
       var $el = $(el);
-      var fname = $el.find('.filename').text().trim();
+      var fname = $el.find('.file-name').text().trim();
       var selects = $el.find('select');
       files.push({
         file: session.files.find(function(file){ return file.name === fname; }),
@@ -469,6 +469,8 @@
     metrics = $('#distance-metrics').val();
 
     files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
+
+    //First Pass: Read all files, identify all distinct nodes.
     files.forEach((file, fileNum) => {
       var filename = file.file.name;
       var extension = _.last(filename.split('.')).toLowerCase();
@@ -522,7 +524,7 @@
             var workbook = XLSX.read(data, {type: 'array'});
             var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
             data.map(forEachLink);
-            message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+            message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
             Object.keys(data[0]).forEach(key => {
               key = filterXSS(key);
               if(!session.data.linkFields.includes(key)){
@@ -536,7 +538,7 @@
               id: '' + d,
               origin: [filename]
             }));
-            message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
+            message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
             if(fileNum === files.length - 1) nextStuff();
           };
           reader.readAsArrayBuffer(file.file);
@@ -598,7 +600,7 @@
               node['origin'] = [filename];
               m += app.addNode(node);
             });
-            message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
+            message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
             if(fileNum === files.length - 1) nextStuff();
           };
           reader.readAsArrayBuffer(file.file);
