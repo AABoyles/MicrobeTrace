@@ -431,7 +431,7 @@
     $('#loading-information').html(messages.join('<br />'));
   }
 
-  var messageTimeout, messages = [];
+  var messageTimeout, messages = [], metrics = [];
 
   $('#main-submit').click(function(e){
     messages = [];
@@ -465,7 +465,8 @@
 
     var hierarchy = ['distmat', 'link', 'node', 'fasta'];
 
-    var anySequences = false, metrics = $('#distance-metrics').val();
+    var anySequences = false;
+    metrics = $('#distance-metrics').val();
 
     files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
     files.forEach((file, fileNum) => {
@@ -653,7 +654,7 @@
                   }
                 });
               } else {
-                var check = session.data.files > 1;
+                var check = session.data.files.length > 1;
                 row.forEach((cell, j) => {
                   if(j > i){
                     var base = {
@@ -726,13 +727,6 @@
           }
           app.computeLinks(subset, metrics, function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
-            app.computeDM(metrics, function(){
-              $('.showForDM').show();
-              app.computeNN(session.state.linkSortVariable, function(){
-                $('.showForNN').show();
-              });
-              metrics.forEach(app.computeTree);
-            });
             app.finishUp();
           });
         });
@@ -742,6 +736,15 @@
   });
 
   app.finishUp = function(oldSession){
+    if(!oldSession){
+      app.computeDM(metrics, function(){
+        $('.showForDM').show();
+        app.computeNN(session.state.linkSortVariable, function(){
+          $('.showForNN').show();
+        });
+        metrics.forEach(m => app.computeTree(m));
+      });
+    }
     clearTimeout(messageTimeout);
     ['node', 'link'].forEach(v => {
       var n = session.data[v+'s'].length;
