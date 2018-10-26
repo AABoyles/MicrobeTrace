@@ -6,8 +6,8 @@
   "license": "MIT",
   "repository": "https://github.com/CDCGov/WebMicrobeTrace.git",
   "engines": {
-    "node": "^10.0.0",
-    "yarn": "^1.6.0"
+    "node": ">=8.0.0",
+    "yarn": ">=1.6.0"
   },
   "scripts": {
     "cache": "./appcache.sh && ./sw.sh",

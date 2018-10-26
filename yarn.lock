@@ -4202,7 +4202,7 @@ tinyqueue@^1.1.0:
   resolved "https://registry.yarnpkg.com/tinyqueue/-/tinyqueue-1.2.3.tgz#b6a61de23060584da29f82362e45df1ec7353f3d"
   integrity sha512-Qz9RgWuO9l8lT+Y9xvbzhPT2efIUIFd69N7eF7tJ9lnQl0iLj1M7peK7IoUGZL9DJHw9XftqLreccfxcQgYLxA==
 
-tn93@^0.2.1:
+tn93@^0.2.2:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/tn93/-/tn93-0.2.2.tgz#a48ebd6a7024dcd577381bbb09596f3c6a31bcc5"
   integrity sha512-tz4hNLs2cCMTmaCDHewx3DCB9lQ52ghanvRYSMXX6o2VOefy68P6PQbjUvqGdNsmAXPHycpnBtJIqyyhFpwkIQ==
