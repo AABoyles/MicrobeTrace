@@ -526,3 +526,8 @@ stroke: #CCC;
   animation-iteration-count: infinite;
   animation-timing-function: linear; */
 }
+
+/* Auditor */
+#auditor-panel{
+  padding-top: 50px;
+}

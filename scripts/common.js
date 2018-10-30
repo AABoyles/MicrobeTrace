@@ -122,7 +122,8 @@ app.sessionSkeleton = function(){
       nodeSymbols: ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'],
       nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; },
       widgets: app.defaultWidgets
-    }
+    },
+    warnings: []
   };
 };
 
