@@ -303,6 +303,7 @@ app.computeLinks = function(subset, metrics, callback){
     links.forEach(function(link, j){
       k += app.addLink(link, check);
     });
+    computer.terminate();
     console.log('Links Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     callback(k);
   };
@@ -336,6 +337,31 @@ app.computeTree = function(type, callback){
   computer.postMessage({
     matrix: session.data.distance_matrix[type],
     labels: session.data.distance_matrix.labels
+  });
+};
+
+app.computeNN = function(metric, callback){
+  if(!session.data.distance_matrix[metric]){
+    console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
+    return;
+  }
+  var nnMachine = new Worker('scripts/compute-nn.js');
+  nnMachine.onmessage = function(response){
+    if(response.data === 'Error'){
+      console.error('Nearest Neighbor washed out');
+      return;
+    }
+    var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
+    console.log('NN Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    var start = Date.now();
+    links.forEach(l => session.data.links[l.index].nn = l.nn);
+    console.log('NN Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  nnMachine.postMessage({
+    links: session.data.links,
+    nodes: session.data.nodes,
+    matrix: session.data.distance_matrix[metric]
   });
 };
 
@@ -492,31 +518,6 @@ app.updateStatistics = function(){
   $('#numberOfVisibleLinks').text(vlinks.length.toLocaleString());
   $('#numberOfSingletonNodes').text(singletons.toLocaleString());
   $('#numberOfDisjointComponents').text(session.data.clusters.length);
-};
-
-app.computeNN = function(metric, callback){
-  if(!session.data.distance_matrix[metric]){
-    console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
-    return;
-  }
-  var nnMachine = new Worker('scripts/compute-nn.js');
-  nnMachine.onmessage = function(response){
-    if(response.data === 'Error'){
-      console.error('Nearest Neighbor washed out');
-      return;
-    }
-    var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
-    console.log('NN Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
-    var start = Date.now();
-    links.forEach(l => session.data.links[l.index].nn = l.nn);
-    console.log('NN Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
-    if(callback) callback();
-  };
-  nnMachine.postMessage({
-    links: session.data.links,
-    nodes: session.data.nodes,
-    matrix: session.data.distance_matrix[metric]
-  });
 };
 
 app.reset = function(){
