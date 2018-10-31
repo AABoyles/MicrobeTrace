@@ -1,10 +1,11 @@
 CACHE MANIFEST
-# 2018-09-28
+# 2018-10-31
 
 CACHE:
 index.html
 components/2d_network.html
 components/3d_network.html
+components/auditor.html
 components/bubbles.html
 components/files.html
 components/flow_diagram.html
@@ -22,12 +23,16 @@ components/waterfall.html
 scripts/align-nbeam.js
 scripts/align-sw.js
 scripts/common.js
+scripts/compute-consensus-distances.js
 scripts/compute-consensus.js
 scripts/compute-dm.js
 scripts/compute-links.js
 scripts/compute-nn.js
+scripts/compute-patristic-matrix.js
+scripts/compute-tree.js
 scripts/polyfills.js
 node_modules/underscore/underscore-min.js
+node_modules/tn93/dist/tn93.min.js
 node_modules/vue/dist/vue.min.js
 node_modules/jquery/dist/jquery.min.js
 node_modules/popper.js/dist/umd/popper.min.js
@@ -43,21 +48,22 @@ node_modules/alertifyjs/build/alertify.min.js
 node_modules/html2canvas/dist/html2canvas.min.js
 node_modules/screenfull/dist/screenfull.js
 node_modules/clipboard/dist/clipboard.min.js
-node_modules/d3-force-3d/build/d3-force-3d.min.js
+node_modules/3d-force-graph/dist/3d-force-graph.min.js
 node_modules/leaflet/dist/leaflet.js
 node_modules/chosen-js/chosen.jquery.min.js
 node_modules/xlsx/dist/xlsx.full.min.js
 node_modules/alignment-viewer/dist/alignment-viewer.min.js
 node_modules/moment/min/moment-with-locales.min.js
 node_modules/d3-sankey/build/d3-sankey.min.js
-node_modules/phylocanvas/dist/phylocanvas.min.js
+node_modules/marked/marked.min.js
 node_modules/bioseq/dist/bioseq.min.js
 node_modules/tn93/dist/tn93.min.js
-vendor/3d-force-graph.min.js
-vendor/bootstrap-filestyle.min.js
 vendor/FileSaver.min.js
+vendor/bootstrap-filestyle.min.js
+vendor/d3.v3.min.js
 vendor/neighbor-joining.js
 vendor/ntseq.js
+vendor/phylotree.js
 vendor/shpwrite.js
 stylesheets/main.css
 node_modules/bootstrap/dist/css/bootstrap.min.css
@@ -67,8 +73,6 @@ node_modules/chosen-js/chosen.css
 node_modules/alertifyjs/build/css/alertify.min.css
 node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css
 node_modules/leaflet/dist/leaflet.css
-node_modules/bootstrap/dist/css/bootstrap.min.css
-node_modules/alertifyjs/build/css/alertify.min.css
 img/1DNA.gif
 img/Back_Arrow.png
 img/icon.ico

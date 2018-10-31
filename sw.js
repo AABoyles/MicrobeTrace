@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-10-24';
+var CACHE = 'MicrobeTraceD2018-10-31';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -6,6 +6,7 @@ self.addEventListener('install', function(event) {
       return cache.addAll([
         'components/2d_network.html',
         'components/3d_network.html',
+        'components/auditor.html',
         'components/bubbles.html',
         'components/files.html',
         'components/flow_diagram.html',
@@ -28,6 +29,8 @@ self.addEventListener('install', function(event) {
         'scripts/compute-dm.js',
         'scripts/compute-links.js',
         'scripts/compute-nn.js',
+        'scripts/compute-patristic-matrix.js',
+        'scripts/compute-tree.js',
         'scripts/polyfills.js',
         'node_modules/underscore/underscore-min.js',
         'node_modules/tn93/dist/tn93.min.js',
@@ -55,10 +58,9 @@ self.addEventListener('install', function(event) {
         'node_modules/d3-sankey/build/d3-sankey.min.js',
         'node_modules/marked/marked.min.js',
         'node_modules/bioseq/dist/bioseq.min.js',
-        'vendor/3d-force-graph.min.js',
+        'vendor/FileSaver.min.js',
         'vendor/bootstrap-filestyle.min.js',
         'vendor/d3.v3.min.js',
-        'vendor/FileSaver.min.js',
         'vendor/neighbor-joining.js',
         'vendor/ntseq.js',
         'vendor/phylotree.js',
@@ -102,7 +104,6 @@ self.addEventListener('install', function(event) {
         'help/Edge-CSVs.md',
         'help/FASTA-Files.md',
         'help/Flow-Diagram.md',
-        'help/_Footer.md',
         'help/Heatmap.md',
         'help/Histogram.md',
         'help/Home.md',
@@ -116,15 +117,16 @@ self.addEventListener('install', function(event) {
         'help/Node-CSVs.md',
         'help/Offline-Usage.md',
         'help/References.md',
+        'help/SNPs.md',
         'help/Security.md',
         'help/Sequences.md',
-        'help/SNPs.md',
         'help/Suspicious-Network-Topologies.md',
         'help/System-Requirements.md',
         'help/Table.md',
         'help/Theory.md',
         'help/Tile-Maps.md',
         'help/Troubleshooting.md',
+        'help/_Footer.md',
         'help/z-Create-a-New-View.md',
         'help/z-Deployment.md',
         'help/z-Development.md',
