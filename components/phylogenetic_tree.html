@@ -1,4 +1,4 @@
-  <svg id="tree-view" class="tree-widget"></svg>
+  <svg id="tree"></svg>
 
   <div class="view_controls">
     <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm">
@@ -122,7 +122,7 @@
     var tree, nodes;
 
     function redrawTree(){
-      let panel = $('svg#tree-view').parent();
+      let panel = $('svg#tree').parent();
       if(!panel.length) return;
       let width = panel.width(),
           height = panel.height(),
@@ -133,7 +133,7 @@
         app.computeTree(type, redrawTree);
         return;
       }
-      let svg = d3v3.select('svg#tree-view')
+      let svg = d3v3.select('svg#tree')
           .attr('width', width)
           .attr('height', height);
 
@@ -153,7 +153,7 @@
       if(session.style.widgets['tree-labels-show']){
         tree.align_tips(session.style.widgets['tree-labels-align']);
       } else {
-        d3.select('svg#tree-view').selectAll('.node').style('display', 'none');
+        d3.select('svg#tree').selectAll('.node').style('display', 'none');
       }
       nodes = app.getVisibleNodes();
       tree.style_nodes(node_colorizer);
@@ -164,7 +164,7 @@
 
       tree.modify_selection(modify_selection);
 
-      $('svg#tree-view .branch-selected').css('stroke', session.style.widgets['selected-color']);
+      $('svg#tree .branch-selected').css('stroke', session.style.widgets['selected-color']);
     }
 
     $('#tree-metric').html(
@@ -194,7 +194,7 @@
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = true;
-      d3.select('svg#tree-view').selectAll('.node').style('display', 'inline');
+      d3.select('svg#tree').selectAll('.node').style('display', 'inline');
       tree.align_tips(true).placenodes().update();
     });
 
@@ -202,14 +202,14 @@
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = false;
-      d3.select('svg#tree-view').selectAll('.node').style('display', 'inline');
+      d3.select('svg#tree').selectAll('.node').style('display', 'inline');
       tree.align_tips(false).placenodes().update();
     });
 
     $('#tree-labels-hide').parent().on('click', e => {
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = false;
-      d3.select('svg#tree-view').selectAll('.node').style('display', 'none');
+      d3.select('svg#tree').selectAll('.node').style('display', 'none');
     });
 
     $('[data-direction]').on('click', function(e){
@@ -266,13 +266,13 @@
     $('#tree-export').on('click', e => {
       let type = $('#tree-export-file-type').val();
       if(type === 'png'){
-        let root = $('svg#tree-view')[0];
+        let root = $('svg#tree')[0];
         let content = app.unparseSVG(root);
         app.blobifySVG(content, root.width.baseVal.value, root.height.baseVal.value, function(blob){
           saveAs(blob, $('#tree-export-file-name').val() + '.png');
         });
       } else if(type === 'svg'){
-        let blob = new Blob([app.unparseSVG($('svg#tree-view')[0])], {type: 'image/svg+xml;charset=utf-8'});
+        let blob = new Blob([app.unparseSVG($('svg#tree')[0])], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, $('#tree-export-file-name').val() + '.svg');
       } else if(type === 'nwk'){
         let blob = new Blob([session.data.trees[session.style.widgets['tree-metric']]], {type: 'application/newick;charset=utf-8'});
@@ -291,13 +291,13 @@
       .on('node-color-change', function(){ tree.style_nodes(node_colorizer).layout(); })
       .on('node-selected', function(){
         tree.modify_selection(modify_selection);
-        $('svg#tree-view .branch-selected').css('stroke', session.style.widgets['selected-color']);
+        $('svg#tree .branch-selected').css('stroke', session.style.widgets['selected-color']);
       })
       .on('background-color-change', function(){
-        $('svg#tree-view').parent().css('background-color', session.style.widgets['background-color']);
+        $('svg#tree').parent().css('background-color', session.style.widgets['background-color']);
       });
 
-    $('svg#tree-view').parent().css('background-color', session.style.widgets['background-color']);
+    $('svg#tree').parent().css('background-color', session.style.widgets['background-color']);
 
     redrawTree();
 
