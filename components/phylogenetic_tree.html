@@ -183,8 +183,6 @@
 
       tree(session.data.trees[type]).svg(svg).layout();
 
-      tree.modify_selection(modify_selection);
-
       $('svg#tree .branch-selected').css('stroke', session.style.widgets['selected-color']);
     }
 
@@ -359,19 +357,7 @@
     });
 
     redrawTree();
-
-    tree.selection_callback(function(nodes){
-      let trigger = false;
-      nodes.forEach(node => {
-        if(node.name === '') return;
-        let match = session.data.nodes.find(d => d.id === node.name);
-        if(match){
-          match.selected = !match.selected;
-          trigger = true;
-        }
-      });
-      if(trigger) $(window).trigger('node-selected');
-    });
+    tree.modify_selection(modify_selection);
 
   })();
   </script>
