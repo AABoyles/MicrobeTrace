@@ -406,7 +406,6 @@ opacity: 0.5;
 }
 
 .branch-selected {
-stroke: #f00 !important;
 stroke-width: 3px;
 }
 
@@ -439,8 +438,9 @@ stroke: #CCC;
 
 .tree-widget {
   height: 100%;
+  width: 100%;
   overflow: scroll;
-  margin-top: 30px;
+  margin-top: 50px;
 }
 
 #tree_tooltip {

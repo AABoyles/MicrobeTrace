@@ -1,7 +1,4 @@
-
-  <div id="tree-view" class="tree-widget"><svg></svg></div>
-
-  <div id="tree-tooltip" />
+  <svg id="tree-view" class="tree-widget"></svg>
 
   <div class="view_controls">
     <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm">
@@ -125,7 +122,7 @@
     var tree, nodes;
 
     function redrawTree(){
-      let panel = $('#tree-view');
+      let panel = $('svg#tree-view').parent();
       if(!panel.length) return;
       let width = panel.width(),
           height = panel.height(),
@@ -136,11 +133,11 @@
         app.computeTree(type, redrawTree);
         return;
       }
-      let svg = d3v3.select('#tree-view svg')
+      let svg = d3v3.select('svg#tree-view')
           .attr('width', width)
           .attr('height', height);
 
-      tree = d3v3.layout.phylotree('body').size([height, width]).separation(function(a,b){return 0;});
+      tree = d3v3.layout.phylotree().separation(function(a,b){return 0;});
 
       tree.branch_length(null);
       tree.branch_name(null);
@@ -156,14 +153,18 @@
       if(session.style.widgets['tree-labels-show']){
         tree.align_tips(session.style.widgets['tree-labels-align']);
       } else {
-        d3.select('#tree-view svg').selectAll('.node').style('display', 'none');
+        d3.select('svg#tree-view').selectAll('.node').style('display', 'none');
       }
       nodes = app.getVisibleNodes();
       tree.style_nodes(node_colorizer);
-      tree.node_circle_size(undefined);
+      tree.node_circle_size(0);
       tree.radial(session.style.widgets['tree-layout-circular']);
 
       tree(session.data.trees[type]).svg(svg).layout();
+
+      tree.modify_selection(modify_selection);
+
+      $('svg#tree-view .branch-selected').css('stroke', session.style.widgets['selected-color']);
     }
 
     $('#tree-metric').html(
@@ -193,7 +194,7 @@
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = true;
-      d3.select('#tree-view svg').selectAll('.node').style('display', 'inline');
+      d3.select('svg#tree-view').selectAll('.node').style('display', 'inline');
       tree.align_tips(true).placenodes().update();
     });
 
@@ -201,14 +202,14 @@
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = false;
-      d3.select('#tree-view svg').selectAll('.node').style('display', 'inline');
+      d3.select('svg#tree-view').selectAll('.node').style('display', 'inline');
       tree.align_tips(false).placenodes().update();
     });
 
     $('#tree-labels-hide').parent().on('click', e => {
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = false;
-      d3.select('#tree-view svg').selectAll('.node').style('display', 'none');
+      d3.select('svg#tree-view').selectAll('.node').style('display', 'none');
     });
 
     $('[data-direction]').on('click', function(e){
@@ -265,13 +266,13 @@
     $('#tree-export').on('click', e => {
       let type = $('#tree-export-file-type').val();
       if(type === 'png'){
-        let root = $('#tree-view svg')[0];
+        let root = $('svg#tree-view')[0];
         let content = app.unparseSVG(root);
         app.blobifySVG(content, root.width.baseVal.value, root.height.baseVal.value, function(blob){
           saveAs(blob, $('#tree-export-file-name').val() + '.png');
         });
       } else if(type === 'svg'){
-        let blob = new Blob([app.unparseSVG($('#tree-view svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
+        let blob = new Blob([app.unparseSVG($('svg#tree-view')[0])], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, $('#tree-export-file-name').val() + '.svg');
       } else if(type === 'nwk'){
         let blob = new Blob([session.data.trees[session.style.widgets['tree-metric']]], {type: 'application/newick;charset=utf-8'});
@@ -279,17 +280,39 @@
       }
     });
 
+    function modify_selection(node){
+      if(node.target.name === "") return false;
+      let match = session.data.nodes.find(d => node.target.name === d.id);
+      if(match) return match.selected;
+      return false;
+    }
+
     $(window)
       .on('node-color-change', function(){ tree.style_nodes(node_colorizer).layout(); })
-      .on('node-selected', function(){})
+      .on('node-selected', function(){
+        tree.modify_selection(modify_selection);
+        $('svg#tree-view .branch-selected').css('stroke', session.style.widgets['selected-color']);
+      })
       .on('background-color-change', function(){
-        $('#tree-view').parent().css('background-color', session.style.widgets['background-color']);
+        $('svg#tree-view').parent().css('background-color', session.style.widgets['background-color']);
       });
 
-    layout.on('stateChanged', function(){
-      redrawTree();
+    $('svg#tree-view').parent().css('background-color', session.style.widgets['background-color']);
+
+    redrawTree();
+
+    tree.selection_callback(function(nodes){
+      let trigger = false;
+      nodes.forEach(node => {
+        if(node.name === '') return;
+        let match = session.data.nodes.find(d => d.id === node.name);
+        if(match){
+          match.selected = !match.selected;
+          trigger = true;
+        }
+      });
+      if(trigger) $(window).trigger('node-selected');
     });
 
-    $('#tree-view').parent().css('background-color', session.style.widgets['background-color']);
   })();
   </script>
