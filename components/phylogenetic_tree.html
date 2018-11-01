@@ -164,11 +164,12 @@
       tree.branch_name(null);
       tree.node_span('equal');
       tree.options({
-        'brush': false,
-        'draw-size-bubbles': true,
         // // Ideally, we'd use these, but they're buggy. :/
         // 'left-right-spacing': 'fit-to-size',
         // 'top-bottom-spacing': 'fit-to-size',
+        // 'restricted-selectable': 'all-leaf-nodes',
+        'draw-size-bubbles': true,
+        'brush': false,
         'zoom': true
       }, false);
       if(session.style.widgets['tree-labels-show']){
@@ -182,8 +183,7 @@
       tree.radial(session.style.widgets['tree-layout-circular']);
 
       tree(session.data.trees[type]).svg(svg).layout();
-
-      $('svg#tree .branch-selected').css('stroke', session.style.widgets['selected-color']);
+      modifySelection();
     }
 
     $('#tree-metric').html(
@@ -331,19 +331,25 @@
       }
     });
 
-    function modify_selection(node){
-      if(node.target.name === "") return false;
-      let match = session.data.nodes.find(d => node.target.name === d.id);
-      if(match) return match.selected;
-      return false;
+    function modifySelection(){
+      tree.modify_selection(function(node){
+        if(node.target.name === '') return false;
+        let match = session.data.nodes.find(d => node.target.name === d.id);
+        if(match){
+          return match.selected;
+        } else {
+          return false;
+        }
+      });
+      $('svg#tree .branch')
+        .css('stroke', '#999')
+        .filter('.branch-selected')
+        .css('stroke', session.style.widgets['selected-color']);
     }
 
     $(window)
       .on('node-color-change', function(){ tree.style_nodes(node_colorizer).layout(); })
-      .on('node-selected', function(){
-        tree.modify_selection(modify_selection);
-        $('svg#tree .branch-selected').css('stroke', session.style.widgets['selected-color']);
-      })
+      .on('node-selected', modifySelection)
       .on('background-color-change', function(){
         $('svg#tree').parent().css('background-color', session.style.widgets['background-color']);
       });
@@ -357,7 +363,31 @@
     });
 
     redrawTree();
-    tree.modify_selection(modify_selection);
+    tree.selection_callback(function(nodes){
+      let thunk = false;
+      nodes.forEach(node => {
+        if(node.name === '') return;
+        let match = session.data.nodes.find(d => d.id === node.name);
+        if(match){
+          if(!match.selected){
+            match.selected = true;
+            thunk = true;
+          }
+        }
+      });
+      session.data.nodes.forEach(node => {
+        let match = nodes.find(d => d.name === node.id);
+        if(!match && node.selected){
+          node.selected = false;
+          thunk = true;
+        }
+      });
+      if(thunk) $(window).trigger('node-selected');
+      $('svg#tree .branch')
+        .css('stroke', '#999')
+        .filter('.branch-selected')
+        .css('stroke', session.style.widgets['selected-color']);
+    });
 
   })();
   </script>
