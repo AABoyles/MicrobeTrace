@@ -88,7 +88,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Export SVG</h5>
+          <h5 class="modal-title">Export Phylogenetic Tree</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -104,6 +104,27 @@
                 <option>svg</option>
                 <option>nwk</option>
               </select>
+            </div>
+          </div>
+          <button id="tree-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#tree-export-advanced" aria-expanded="false" aria-controls="tree-export-advanced">Advanced</button>
+          <div class="collapse" id="tree-export-advanced">
+            <div class="card card-body">
+              <div class="form-group row">
+                <div class="col">
+                  <label for="tree-export-width">Width</label>
+                  <input type="number" id="tree-export-width" class="form-control form-control-sm" />
+                </div>
+                <div class="col">
+                  <label for="tree-export-height">Height</label>
+                  <input type="number" id="tree-export-height" class="form-control form-control-sm" />
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col text-right">
+                  <input type="checkbox" id="tree-export-preserveaspect" checked />
+                  <label for="tree-export-preserveaspect" class="form-check-label">Preserve Aspect Ratio?</label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -263,12 +284,44 @@
       }
     });
 
+    $('#tree-export-filetype').on('change', function(e){
+      if(e.target.value === 'png'){
+        $('#tree-export-advanced-button').slideDown();
+      } else {
+        $('#tree-export-advanced-button').slideUp();
+      }
+    });
+
+    $('#tree-export-width').on('input', function(e){
+      if(!$('#tree-export-preserveaspect').is(':checked')) return;
+      let wrapper = $('#tree').parent();
+      let ratio = wrapper.height()/wrapper.width();
+      $('#tree-export-height').val(Math.round(e.target.value*ratio));
+    });
+
+    $('#tree-export-height').on('input', function(e){
+      if(!$('#tree-export-preserveaspect').is(':checked')) return;
+      let wrapper = $('#tree').parent();
+      let ratio = wrapper.width()/wrapper.height();
+      $('#tree-export-width').val(Math.round(e.target.value*ratio));
+    });
+
+    $('#tree-export-preserveaspect').on('click', function(e){
+      if(!$(this).is(':checked')) return;
+      let wrapper = $('#tree').parent();
+      let height = wrapper.height();
+      let ratio = height/wrapper.width();
+      $('#tree-export-height').val(Math.round($('#tree-export-width').val()*ratio));
+    });
+
     $('#tree-export').on('click', e => {
       let type = $('#tree-export-file-type').val();
       if(type === 'png'){
         let root = $('svg#tree')[0];
         let content = app.unparseSVG(root);
-        app.blobifySVG(content, root.width.baseVal.value, root.height.baseVal.value, function(blob){
+        let width  = parseFloat($('#tree-export-width' ).val());
+        let height = parseFloat($('#tree-export-height').val());
+        app.blobifySVG(content, width, height, function(blob){
           saveAs(blob, $('#tree-export-file-name').val() + '.png');
         });
       } else if(type === 'svg'){
@@ -298,6 +351,12 @@
       });
 
     $('svg#tree').parent().css('background-color', session.style.widgets['background-color']);
+
+    layout.on('stateChanged', function(){
+      let wrapper = $('#tree').parent();
+      $('#tree-export-width' ).val(wrapper.width());
+      $('#tree-export-height').val(wrapper.height());
+    });
 
     redrawTree();
 
