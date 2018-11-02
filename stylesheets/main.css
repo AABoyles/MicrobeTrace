@@ -466,16 +466,17 @@ stroke: #CCC;
 
 /* Table */
 #table-type-panel{
-  position: absolute;
-  top: 10px;
-  left: 85px;
-  display: flex;
-  z-index: 2;
+  width: calc(100% - 100px);
+  margin-top:10px;
+  margin-left:90px;
 }
 #table-type-panel .chosen-container{
   margin-left: 8px;
+  margin-right: 8px;
+  width: auto !important;
 }
-#table-type-panel ul.chosen-choices{
+#table-type-panel .chosen-choices{
+  max-height: 30px;
   border-radius: .25rem;
   padding: 2px;
 }
@@ -484,12 +485,11 @@ stroke: #CCC;
   background-color: #f8f9fa;
 }
 #table-wrapper{
-  position: absolute;
-  top: 40px;
-  left: 0;
-  height: calc(100% - 60px);
+  height: calc(100% - 60px) !important;
   width: calc(100% - 20px);
   margin: 10px;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
 }
 
 /* Gantt */

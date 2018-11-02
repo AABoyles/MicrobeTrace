@@ -1,8 +1,8 @@
   <div class="view_controls">
-    <button type="button" id="toggle_table_settings" class="btn btn-light btn-sm">
+    <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table_export_modal">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table-export_modal">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
@@ -19,60 +19,28 @@
         <input type="radio" name="nodelink" data-value="clusters" autocomplete="off"> Clusters
       </label>
     </div>
-    <select id="columns" class="chosen-select" multiple></select>
+    <select id="table-columns" class="chosen-select" multiple></select>
   </div>
 
-  <div id="table_settings_pane" class="left_pane left_pane_opaque">
+  <div id="table-wrapper" class="table-sm"></div>
+
+  <div id="table-settings-pane" class="left_pane left_pane_opaque">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#tableConfigurations" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
+        <a href="#table-settings" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
       </li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="table-tab">
         <div class="form-group row">
-          <div class="col-3">Text Size</div>
-          <div class="col-9"><input type="range" id="font-size-slider" min="6" value="14" max="72" step="1" /></div>
-        </div>
-        <div class="form-group row">
-          <div class="col-3">Header Tilt</div>
-          <div class="col-9"><input type="range" id="tiltHeaders" min="-7.5" value="0" max="7.5" step=".25" /></div>
+          <div class="col-4">Text Size</div>
+          <div class="col-8"><input type="range" id="table-font-size" min="6" value="14" max="72" step="1" /></div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="table-wrapper" class="table-responsive">
-    <mt-table
-      :data="gridData"
-      :columns="gridColumns">
-    </mt-table>
-  </div>
-
-  <script type="text/x-template" id="mt-table-template">
-    <table class="table table-hover table-sm" cellspacing="0">
-      <thead>
-        <tr>
-          <th v-for="key in columns"
-            @click="sortBy(key)"
-            :class="{ active: sortKey == key }">
-            {{ app.titleize(key) }}
-            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
-            </span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="entry in filteredData"
-          @click="select(entry)"
-          :class="entry.selected ? 'table-row-selected' : ''">
-          <td v-for="key in columns">{{ entry[key] }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </script>
-
-  <div id="table_export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="table-export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -97,7 +65,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="table_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+          <button type="button" id="table-export" class="btn btn-primary" data-dismiss="modal">Export</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -105,67 +73,11 @@
 
   <script>
   (function(){
-    let table;
-
-    let meta = ['index', 'selected', 'visible', 'nn'];
-
-    Vue.component('mt-table', {
-      template: '#mt-table-template',
-      props: {
-        data: Array,
-        columns: Array
-      },
-      data: function(){
-        let sortOrders = {};
-        this.columns.forEach(function(key){
-          sortOrders[key] = 1;
-        });
-        return {
-          sortKey: 'id',
-          sortOrders: sortOrders
-        }
-      },
-      computed: {
-        filteredData: function(){
-          let sortKey = this.sortKey;
-          let order = this.sortOrders[sortKey] || 1;
-          let data = this.data.filter(d => d.visible);
-          if(sortKey){
-            data = data.slice().sort(function(a, b){
-              if(a.selected && !b.selected) return -1;
-              if(b.selected && !a.selected) return 1;
-              return (a[sortKey] === b[sortKey] ? 0 : a[sortKey] > b[sortKey] ? 1 : -1) * order;
-            });
-          }
-          return data;
-        }
-      },
-      methods: {
-        sortBy: function(key){
-          this.sortKey = key;
-          this.sortOrders[key] = this.sortOrders[key] * -1;
-        },
-        select: function(entry){
-          entry.selected = !entry.selected;
-          if($('input[name=nodelink]:checked').data('value') === 'nodes'){
-            session.data.nodes.find(d => d.id === entry.id).selected = entry.selected;
-            $(window).trigger('node-selected');
-          }
-        }
-      }
-    });
-
-    function updateTable(){
-      let data_type = $('input[name=nodelink]:checked').data('value');
-      table.gridColumns = $('#columns').val();
-      table.gridData = JSON.parse(JSON.stringify(session.data[data_type]));
-      resetTextsize();
-      resetColor();
-    }
+    let table, meta = ['index', 'selected', 'visible', 'nn'];
 
     function updateColumns(){
       let type = $('input[name=nodelink]:checked').data('value').slice(0,-1);
-      $('#columns')
+      $('#table-columns')
         .chosen('destroy')
         .html(
           session.data[type+'Fields'].map((d, i) => {
@@ -175,8 +87,38 @@
         ).chosen({width: "100%"}).change(updateTable);
     }
 
-    $('#toggle_table_settings').click(function(){
-      let pane = $('#table_settings_pane');
+    function updateTable(){
+      let data_type = $('input[name=nodelink]:checked').data('value');
+      let columns = $('#table-columns').val();
+      table = new Tabulator("#table-wrapper", {
+       	height: "calc(100% - 60px) !important",
+       	layout: "fitColumns",
+       	columns: columns.map(c => ({title: app.titleize(c), field: c})),
+       	rowClick: function(e, row){
+       		let entity = row.getData();
+          entity.selected = !entity.selected;
+          if(entity.selected){
+            $(row.getElement()).css("background", session.style.widgets['selected-color']);
+          }
+          $(window).trigger('node-selected');
+       	},
+        rowFormatter: function(row){
+          if(row.getData().selected){
+            $(row.getElement()).css("background", session.style.widgets['selected-color']);
+          }
+        }
+      });
+      table.setData(session.data[data_type]);
+      resetTextsize();
+    }
+
+    function updateData(){
+      let type = $('input[name=nodelink]:checked').data('value');
+      table.replaceData(session.data[type]);
+    }
+
+    $('#table-settings-toggle').click(function(){
+      let pane = $('#table-settings-pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -184,38 +126,11 @@
       }
     });
 
-    $('#tiltHeaders').on('input', function(e){
-      let theta = $(this).val();
-      let h = $('th:first').width() * Math.sin(Math.abs(theta) * Math.PI / 180);
-      $('th').css({
-        'transform': `rotate(${-theta}deg)`,
-        'border-bottom': '0px',
-        'height': `${h}px`,
-        'overflow': 'visible'
-      });
-      if($(this).val() === 0){
-        $('th').css({
-          'border-bottom': '1px solid black',
-          'overflow': 'hidden'
-        });
-      }
-    });
-
     function resetTextsize(){
-      let s = $('#font-size-slider').val();
+      let s = $('#table-font-size').val();
       $('#table-wrapper').css({
         'font-size': s + 'px',
         'line-height': s/10
-      });
-    }
-
-    function resetColor(){
-      $('#table-wrapper tr').css({
-        background: '#ffffff',
-        color: '#000000'
-      }).filter('.table-row-selected').css({
-        background: session.style.widgets['selected-color'],
-        color: session.style.widgets['selected-color-contrast']
       });
     }
 
@@ -224,11 +139,11 @@
       updateTable();
     });
 
-    $('#columns').on('change', updateTable);
+    $('#table-columns').on('change', updateTable);
 
-    $('#font-size-slider').on('input', resetTextsize);
+    $('#table-font-size').on('input', resetTextsize);
 
-    $('#table_export').click(function(){
+    $('#table-export').click(function(){
       let format = $('#export-table-file-type').val();
       let data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
       let name = $('#export-table-file-name').val();
@@ -258,18 +173,10 @@
 
     $(window)
       .on('link-threshold-change', updateTable)
-      .on('node-selected selected-color-change', resetColor);
+      .on('node-selected', updateData)
+      .on('selected-color-change', updateTable);
 
-    setTimeout(function(){
-      updateColumns();
-      table = new Vue({
-        el: '#table-wrapper',
-        data: {
-          gridColumns: [],
-          gridData: []
-        }
-      });
-      updateTable();
-    }, 100);
+    updateColumns();
+    updateTable();
   })();
   </script>
