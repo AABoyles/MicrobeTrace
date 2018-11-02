@@ -467,6 +467,8 @@
 
     var anySequences = false;
     metrics = $('#distance-metrics').val();
+    session.data.linkFields = session.data.linkFields.concat(metrics);
+    var check = files.length > 1;
 
     files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
 
@@ -513,7 +515,7 @@
             metric = metric.toLowerCase();
             base[metric] = null;
           });
-          l += app.addLink(Object.assign(base, link), true);
+          l += app.addLink(Object.assign(base, link), check);
         }
 
         if(extension == 'xls' || extension == 'xlsx'){
@@ -644,6 +646,7 @@
           complete: results => {
             var nodeIDs = [];
             var nn = 0, nl = 0;
+            let check = files.length > 1;
             results.data.forEach((row, i) => {
               if(i == 0){
                 nodeIDs = row.map(filterXSS);
@@ -656,7 +659,6 @@
                   }
                 });
               } else {
-                var check = session.data.files.length > 1;
                 row.forEach((cell, j) => {
                   if(j > i){
                     var base = {
@@ -718,7 +720,6 @@
 
     function computeLinks(subset){
       message('Computing Links based on Genomic Proximity...');
-      session.data.linkFields = session.data.linkFields.concat(metrics);
       app.computeConsensus(function(consensus){
         session.data.consensus = consensus;
         app.computeConsensusDistances(function(nodes){
