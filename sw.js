@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-10-31';
+var CACHE = 'MicrobeTraceD2018-11-02';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -172,4 +172,16 @@ function update(request){
     });
   });
 }
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches.keys().then(function(keyList) {
+      return Promise.all(keyList.map(function(key) {
+        if(key !== CACHE) {
+          return caches.delete(key);
+        }
+      }));
+    })
+  );
+});
 
