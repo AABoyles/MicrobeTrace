@@ -237,11 +237,14 @@ app.align = function(params, callback){
   var n = params.nodes.length;
   aligner = new Worker('scripts/align-'+params.aligner+'.js');
   aligner.onmessage = function(response){
-    output = response.data;
+    output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
+    console.log('Alignment transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    start = Date.now();
     var minPadding = Number.MAX_SAFE_INTEGER,
         maxLength = 0;
     for(var j = 0; j < n; j++){
       var d = output[j];
+      if(!d.seq) d.seq = '';
       if(minPadding > d.padding) minPadding = d.padding;
     }
     for(var j = 0; j < n; j++){
@@ -254,7 +257,7 @@ app.align = function(params, callback){
       var d = output[j];
       d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
     }
-    console.log('Alignment time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('Alignment Padding time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     callback(output);
   };
   aligner.postMessage(params);
