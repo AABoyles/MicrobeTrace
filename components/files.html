@@ -421,7 +421,7 @@
     $('#default-View').val(localStorage.getItem('default-View'));
   }
 
-  $('#default-View').change(e => {
+  $('#default-View').change(function(e){
     localStorage.setItem('default-View', e.target.value);
     session.layout.content[0].type = e.target.value;
   });
@@ -450,7 +450,7 @@
     }, 20000);
 
     var files = [];
-    $('#file-panel .file-table-row').each((i, el) => {
+    $('#file-panel .file-table-row').each(function(i, el){
       var $el = $(el);
       var fname = $el.find('.file-name').text().trim();
       var selects = $el.find('select');
@@ -470,10 +470,10 @@
     session.data.linkFields = session.data.linkFields.concat(metrics);
     var check = files.length > 1;
 
-    files.sort((a, b) => hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type));
+    files.sort(function(a, b){ return hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type); });
 
     //First Pass: Read all files, identify all distinct nodes.
-    files.forEach((file, fileNum) => {
+    files.forEach(function(file, fileNum){
       var filename = file.file.name;
       var extension = _.last(filename.split('.')).toLowerCase();
 
@@ -483,15 +483,18 @@
         var reader = new FileReader();
         reader.onloadend = function(e){
           anySequences = true;
-          var n = 0;
+          var newNodes = 0;
           var seqs = app.parseFASTA(e.target.result);
-          seqs.forEach(node => {
+          var n = seqs.length;
+          for(var i = 0; i < n; i++){
+            var node = seqs[i];
+            if(!node) continue;
             node.id = filterXSS(node.id);
             node.seq = filterXSS(node.seq);
-            node['origin'] = [filename];
+            node.origin = [filename];
             n += app.addNode(node);
-          });
-          message(` - Parsed ${n} New, ${seqs.length} Total Nodes from FASTA.`);
+          }
+          message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
           if(fileNum === files.length - 1) nextStuff();
         };
         reader.readAsText(file.file, 'UTF-8');
@@ -527,19 +530,24 @@
             var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
             data.map(forEachLink);
             message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-            Object.keys(data[0]).forEach(key => {
+            Object.keys(data[0]).forEach(function(key){
               key = filterXSS(key);
               if(!session.data.linkFields.includes(key)){
                 session.data.linkFields.push(key);
               }
             });
             var n = 0;
-            var nodeIDs = _.union(_.map(data, l => l[file.field1]), _.map(data, l => l[file.field2]));
+            var nodeIDs = _.union(
+              _.map(data, function(l){ return l[file.field1]; }),
+              _.map(data, function(l){ return l[file.field2]; })
+            );
             var t = nodeIDs.length;
-            nodeIDs.forEach(d => n += app.addNode({
-              id: '' + d,
-              origin: [filename]
-            }));
+            nodeIDs.forEach(function(d){
+              n += app.addNode({
+                id: '' + d,
+                origin: [filename]
+              });
+            });
             message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
             if(fileNum === files.length - 1) nextStuff();
           };
@@ -552,23 +560,28 @@
             worker: true,
             dynamicTyping: true,
             skipEmptyLines: true,
-            complete: results => {
+            complete: function(results){
               var data = results.data;
               data.map(forEachLink);
               message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
-              results.meta.fields.forEach(key => {
+              results.meta.fields.forEach(function(key){
                 key = filterXSS(key);
                 if(!session.data.linkFields.includes(key)){
                   session.data.linkFields.push(key);
                 }
               });
               var n = 0;
-              var nodeIDs = _.union(_.map(data, l => l[file.field1]), _.map(data, l => l[file.field2]));
+              var nodeIDs = _.union(
+                _.map(data, function(l){ return l[file.field1]; }),
+                _.map(data, function(l){ return l[file.field2]; })
+              );
               var t = nodeIDs.length;
-              nodeIDs.forEach(d => n += app.addNode({
-                id: '' + d,
-                origin: [filename]
-              }));
+              nodeIDs.forEach(function(d){
+                n += app.addNode({
+                  id: '' + d,
+                  origin: [filename]
+                });
+              });
               message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
               if(fileNum === files.length - 1) nextStuff();
             }
@@ -589,13 +602,13 @@
             var data = e.target.result;
             var workbook = XLSX.read(data, {type: 'array'});
             var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            Object.keys(data[0]).forEach(key => {
+            Object.keys(data[0]).forEach(function(key){
               key = filterXSS(key);
               if(!session.data.nodeFields.includes(key)){
                 session.data.nodeFields.push(key);
               }
             });
-            data.forEach(results => {
+            data.forEach(function(results){
               node = JSON.parse(filterXSS(JSON.stringify(results)));
               node.id = '' + node[file.field1];
               if(file.field2 !== 'None') node.seq = node[file.field2];
@@ -614,9 +627,9 @@
             worker: true,
             dynamicTyping: true,
             skipEmptyLines: true,
-            step: results => {
+            step: function(results){
               if(0 === n++){
-                results.meta.fields.forEach(key => {
+                results.meta.fields.forEach(function(key){
                   key = filterXSS(key);
                   if(!session.data.nodeFields.includes(key)){
                     session.data.nodeFields.push(key);
@@ -629,7 +642,7 @@
               node['origin'] = [filename];
               m += app.addNode(node);
             },
-            complete: () => {
+            complete: function(){
               message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
               if(fileNum === files.length - 1) nextStuff();
             }
@@ -643,14 +656,14 @@
         Papa.parse(file.file, {
           worker: true,
           skipEmptyLines: true,
-          complete: results => {
+          complete: function(results){
             var nodeIDs = [];
             var nn = 0, nl = 0;
             let check = files.length > 1;
-            results.data.forEach((row, i) => {
+            results.data.forEach(function(row, i){
               if(i == 0){
                 nodeIDs = row.map(filterXSS);
-                nodeIDs.forEach((cell, k) => {
+                nodeIDs.forEach(function(cell, k){
                   if(k > 0){
                     nn += app.addNode({
                       id: '' + cell,
@@ -659,7 +672,7 @@
                   }
                 });
               } else {
-                row.forEach((cell, j) => {
+                row.forEach(function(cell, j){
                   if(j > i){
                     var base = {
                       source: '' + nodeIDs[i],
@@ -694,7 +707,7 @@
       $('.show-for-seq').show();
       $('.show-for-seq.row').css('display', 'flex');
       var allDashes = /^-*$/;
-      var subset = session.data.nodes.filter(d => !allDashes.test(d.seq));
+      var subset = session.data.nodes.filter(function(d){ return !allDashes.test(d.seq); });
       if($('#doNotAlign').is(':checked')){
         computeLinks(subset);
       } else {
@@ -745,16 +758,16 @@
         app.computeNN(session.state.linkSortVariable, function(){
           $('.show-for-nn').css('display', 'flex');
         });
-        metrics.forEach(m => app.computeTree(m));
+        metrics.forEach(function(m){ app.computeTree(m); });
       });
     }
     clearTimeout(messageTimeout);
-    ['node', 'link'].forEach(v => {
+    ['node', 'link'].forEach(function(v){
       var n = session.data[v+'s'].length;
       var fields = session.data[v+'Fields'];
       for(var i = 0; i < n; i++){
         var d = session.data[v+'s'][i];
-        fields.forEach(field => {
+        fields.forEach(function(field){
           if(!(field in d)) d[field] = null;
         });
       }
@@ -807,7 +820,7 @@
     }
     $('.hideForHIVTrace').css('display', 'flex');
     setTimeout(function(){
-      let files = layout.contentItems.find(item => item.componentName === 'files');
+      let files = layout.contentItems.find(function(item){ return item.componentName === 'files'; });
       if(files) files.remove();
       $('#loading-information-modal').modal('hide');
     }, 1200);

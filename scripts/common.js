@@ -147,7 +147,7 @@ app.addNode = function(newNode){
     Object.assign(oldNode, newNode);
     return 0;
   } else {
-    if('seq' in newNode) newNode._seqInt = newNode.seq.split('').map(c => tn93.mapChar[c.charCodeAt(0)]);
+    if('seq' in newNode) newNode._seqInt = newNode.seq.split('').map(function(c){ return tn93.mapChar[c.charCodeAt(0)]; });
     session.data.nodes.push(Object.assign(app.defaultNode(), newNode));
     return 1;
   }
@@ -264,7 +264,7 @@ app.align = function(params, callback){
 };
 
 app.computeConsensus = function(callback){
-  var nodes = session.data.nodes.filter(d => d.seq);
+  var nodes = session.data.nodes.filter(function(d){ return d.seq; });
   var computer = new Worker('scripts/compute-consensus.js');
   computer.onmessage = function(response){
     consensus = app.decoder.decode(new Uint8Array(response.data.consensus));
@@ -326,7 +326,9 @@ app.computeDM = function(metrics, callback){
   };
   computer.postMessage({
     nodes: session.data.nodes,
-    links: session.data.links.filter(l => _.any(metrics.map(m => _.isNumber(l[m])))),
+    links: session.data.links.filter(function(l){
+      return _.any(metrics.map(function(m){ return _.isNumber(l[m]); }));
+    }),
     metrics: metrics
   });
 };
@@ -358,7 +360,7 @@ app.computeNN = function(metric, callback){
     var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
     console.log('NN Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     var start = Date.now();
-    links.forEach(l => session.data.links[l.index].nn = l.nn);
+    links.forEach(function(l){ session.data.links[l.index].nn = l.nn });
     console.log('NN Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
@@ -369,6 +371,10 @@ app.computeNN = function(metric, callback){
   });
 };
 
+app.capitalize = function(c){
+  return c.toUpperCase();
+};
+
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
   if(small === 'id') return 'ID';
@@ -377,7 +383,7 @@ app.titleize = function(title){
   if(small === '2d network') return '2D Network';
   if(small === '3d network') return '3D Network';
   if(small === 'geo map') return 'Map';
-  return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
+  return small.replace(/(?:^|\s|-)\S/g, app.capitalize);
 };
 
 app.tagClusters = function(){
@@ -516,8 +522,8 @@ app.updateStatistics = function(){
   if($('#network-statistics-hide').is(':checked')) return;
   var vnodes = app.getVisibleNodes();
   var vlinks = app.getVisibleLinks();
-  var singletons = vnodes.filter(d => d.degree === 0).length;
-  $('#numberOfSelectedNodes').text(vnodes.filter(d => d.selected).length.toLocaleString());
+  var singletons = vnodes.filter(function(d){ return d.degree === 0; }).length;
+  $('#numberOfSelectedNodes').text(vnodes.filter(function(d){ return d.selected; }).length.toLocaleString());
   $('#numberOfNodes').text(vnodes.length.toLocaleString());
   $('#numberOfVisibleLinks').text(vlinks.length.toLocaleString());
   $('#numberOfSingletonNodes').text(singletons.toLocaleString());
@@ -627,7 +633,7 @@ app.launchView = function(view, callback){
     );
     contentItem.element.find('.launch-color-options').click(function(){
       $('#color-tab').tab('show');
-      setTimeout(() => {
+      setTimeout(function(){
         $('#global-settings-modal').modal('show');
       }, 250);
     });

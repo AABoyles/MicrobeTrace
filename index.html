@@ -56,7 +56,7 @@
           <!--a href="#" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</a-->
           <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
           <a href="#" class="dropdown-item viewbutton" data-href="gantt">Gantt</a>
-          <!--a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a-->
+          <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
           <a href="#" class="dropdown-item viewbutton" data-href="heatmap">Heatmap</a>
           <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
           <div class="dropdown-divider show-for-seq"></div>
@@ -622,12 +622,12 @@ performance of this software.</pre>
       $(window).trigger('link-threshold-change');
     };
 
-    $('#ShowSingletons, #HideSingletons').on('change', e => {
+    $('#ShowSingletons, #HideSingletons').on('change', function(e){
       app.setNodeVisibility();
       app.updateStatistics();
     });
 
-    $('#links-show-nn, #links-show-all').on('change', e => {
+    $('#links-show-nn, #links-show-all').on('change', function(e){
       app.updateStatistics();
       $(window).trigger('link-threshold-change');
     });
@@ -685,9 +685,9 @@ performance of this software.</pre>
         $('#nodeColors').remove();
         let table = $('<tbody id="nodeColors"></tbody>').appendTo('#group-key');
         table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
-        let values = _.uniq(app.getVisibleNodes().map(d => d[variable])).sort();
+        let values = _.chain(app.getVisibleNodes()).pluck(variable).uniq().sort().value();
         session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-        values.forEach((value, i) => {
+        values.forEach(function(value, i){
           let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.nodeColors.splice(i, 1, evt.target.value);
@@ -723,25 +723,25 @@ performance of this software.</pre>
         $('#link-colors').remove();
         let values = [];
         if(variable === 'origin'){
-          session.data.links.forEach(l => {
-            l.origin.forEach(o => {
+          session.data.links.forEach(function(l){
+            l.origin.forEach(function(o){
               if(!values.includes(o)) values.push(o);
             });
           });
         } else {
-          session.data.links.forEach(l => {
+          session.data.links.forEach(function(l){
             if(!values.includes(l[variable])) values.push(l[variable]);
           });
         }
         let table = $('<tbody id="link-colors"></tbody>').appendTo('#group-key');
         table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
         if(_.isNumber(session.data.links[0][variable])){
-          values.sort((a, b) => a - b);
+          values.sort(function(a, b){ return a - b; });
         } else {
           values.sort();
         }
         session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
-        values.forEach((value, i) => {
+        values.forEach(function(value, i){
           let input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.linkColors.splice(i, 1, evt.target.value);
@@ -826,7 +826,7 @@ performance of this software.</pre>
 
     $(window)
       .on('node-selected', function(){
-        $('#numberOfSelectedNodes').text(session.data.nodes.filter(d => d.selected).length.toLocaleString());
+        $('#numberOfSelectedNodes').text(session.data.nodes.filter(function(d){ return d.selected; }).length.toLocaleString());
       })
       .on('click', function(){
         $('#network-statistics-context, #group-key-context').hide();
@@ -834,8 +834,10 @@ performance of this software.</pre>
       .on('resize', function(){
         layout.root.setSize();
       })
-      .on('beforeunload', function (e){
+      .on('beforeunload', function(e){
         e.preventDefault();
+        $('#exit-button').on('click', function(){ window.location.reload(); });
+        $('#exit-modal').modal();
         e.returnValue = 'Are you certain? This session will be lost!';
       });
   });
