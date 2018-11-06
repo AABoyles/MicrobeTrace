@@ -1,32 +1,29 @@
-  <svg id="timeline-wrapper"><path></path></svg>
-
   <div class="view_controls">
-    <button type="button" id="toggle_timeline_settings" class="btn btn-light btn-sm">
+    <button type="button" id="timeline-toggle-settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
+    </button>
+    <button type="button" id="timeline-play" class="btn btn-light btn-sm">
+      <span class="oi oi-media-play"></span>
     </button>
   </div>
 
-  <div id="timeline_settings_pane" class="left_pane">
-    <!-- Nav tabs -->
+  <div id="timeline-wrapper"></div>
+
+  <div id="timeline-settings-pane" class="left_pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
-        <a href="#timelineConfigurations" id="timeline-tab" class="nav-link active" aria-controls="timeline" role="tab" data-toggle="tab">Timeline</a>
+        <a href="#timeline-configurations" id="timeline-nodes-tab" class="nav-link active" aria-controls="timeline-configurations" role="tab" data-toggle="tab">Timeline</a>
       </li>
     </ul>
-    <!-- Tab panes -->
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="timelineConfigurations" role="tabpanel" aria-labelledby="timeline-tab">
+      <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel" aria-labelledby="timeline-nodes-tab">
         <div class="form-group row">
-          <div class="col-3"><label for="timelineDateField">Date Field</label></div>
-          <div class="col-9"><select id="timelineDateField" class="custom-select custom-select-sm nodeVariables"></select></div>
+          <div class="col-4"><label for="timeline-date-field">Date Field</label></div>
+          <div class="col-8"><select id="timeline-date-field" class="custom-select custom-select-sm nodeVariables"></select></div>
         </div>
         <div class="form-group row">
-          <div class="col-3"><label for="timelineTicks">Ticks</label></div>
-          <div class="col-9"><input id="timelineTicks" type="number" class="custom-select custom-select-sm" value="50"></input></div>
-        </div>
-        <div class="form-group row">
-          <div class="col-3"><label for="timelineSmoothing">Smoothing</label></div>
-          <div class="col-9"><input id="timelineSmoothing" type="number" class="custom-select custom-select-sm" value="12"></input></div>
+          <div class="col-4"><label for="timeline-speed">Play Speed</label></div>
+          <div class="col-8"><input type="range" id="timeline-speed" min="1" max="1000" /></div>
         </div>
       </div>
     </div>
@@ -34,99 +31,105 @@
 
   <script>
 (function(){
-  let svg = d3.select("#timeline-wrapper"),
-      width = 800,
-      height = 600,
-      margin = {top: 60, right: 30, bottom: 30, left: 40},
-      dateField, x, y, xAxis, yAxis;
+  let svg, timeDomainStart, timeDomainEnd, x, brush, brushG, timer,
+      margin = {top: 50, left: 80, right: 20, bottom: 30};
 
-  xAxis = svg.append("g");
+  function refresh(){
+    let wrapper = $('#timeline-wrapper').empty().parent();
+    let width  = wrapper.width() - margin.left - margin.right,
+        height = wrapper.height() - margin.top - margin.bottom;
+    let tickFormat = d3.timeFormat("%Y-%m-%d");
 
-  yAxis = svg.append("g").attr("transform", "translate(" + margin.left + ",0)");
-
-  let refresh = function(){
-    width  = $('#timeline-wrapper').parent().width();
-    height = $('#timeline-wrapper').parent().height();
-    dateField = $('#timelineDateField').val();
-
-    svg
-      .attr('width', width)
-      .attr('height', height);
-
-    let data = [],
-        timeDomainStart = new Date( 8640000000000000),
-        timeDomainEnd   = new Date(-8640000000000000);
-
+    let field = $('#timeline-date-field').val();
+    let times = [];
     session.data.nodes.forEach(d => {
-      if(!d.visible) return;
-      let date = moment(d[dateField]);
-      if(date.isValid()){
-        date = date.toDate();
-        data.push(date);
-        if(date < timeDomainStart) timeDomainStart = date;
-        if(date > timeDomainEnd) timeDomainEnd = date;
-      }
+      let time = moment(d[field]);
+      if(time.isValid()) times.push(time.toDate())
     });
+    if(times.length < 2){
+      times.push(new Date(2000, 1, 1));
+      times.push(new Date());
+    }
+    timeDomainStart = Math.min(...times);
+    timeDomainEnd = Math.max(...times);
 
     x = d3.scaleTime()
-          .domain([timeDomainStart, timeDomainEnd])
-          .range([margin.left, width - margin.right]);
+      .domain([timeDomainStart, timeDomainEnd])
+      .rangeRound([0, width]);
 
-    let n = data.length,
-        density = kernelDensityEstimator(kernelEpanechnikov(parseFloat($('#timelineSmoothing').val())), x.ticks(parseFloat($('#timelineTicks').val())))(data);
+    svg = d3.select("#timeline-wrapper").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    let maxDensity = 0;
-    density.forEach(ra => {
-      if(ra[1] > maxDensity) maxDensity = ra[1];
-    });
+    svg.append("g")
+      .attr("class", "axis axis--grid")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x)
+        .ticks(d3.timeYear)
+        .tickSize(-height)
+        .tickFormat(function(){ return null; })
+      );
 
-    y = d3.scaleLinear()
-        .domain([0, maxDensity])
-        .range([height - margin.bottom - margin.top, margin.bottom]);
+    svg.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x)
+        .tickSize(8)
+        .tickPadding(8)
+        .tickFormat(tickFormat)
+      )
+      .attr("text-anchor", null)
+      .selectAll("text")
+      .attr("x", 6);
 
-    xAxis
-      .attr("transform", "translate(0," + (height - margin.top - margin.bottom) + ")")
-      .call(d3.axisBottom(x));
+    brush = d3.brushX().extent([[0, 0], [width, height]]);
 
-    yAxis
-      .call(d3.axisLeft(y).ticks());
-
-    svg.select('path')
-      .attr("fill", "none")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1.5)
-      .attr("stroke-linejoin", "round")
-      .datum(density)
-      .transition()
-      .attr("d", d3.line()
-        .curve(d3.curveBasis)
-        .x(function(d) { return x(d[0]); })
-        .y(function(d) { return y(d[1]); }));
-  };
-
-  function kernelDensityEstimator(kernel, X) {
-    return function(V) {
-      return X.map(function(x) {
-        return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-      });
-    };
+    brushG = svg.append("g")
+      .attr("class", "brush")
+      .call(brush);
   }
 
-  function kernelEpanechnikov(k) {
-    return function(v) {
-      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-    };
+  let timer;
+  $('#timeline-play').click(function(){
+    let $this = $(this);
+    if($this.html() === '<span class="oi oi-media-pause"></span>'){
+      $this.html('<span class="oi oi-media-play"></span>');
+      unsetTimer();
+    } else {
+      $this.html('<span class="oi oi-media-pause"></span>');
+      setTimer();
+    }
+  });
+
+  function unsetTimer(){
+    timer.stop();
   }
 
-  $('#timelineDateField, #timelineTicks, #timelineSmoothing').on('change', refresh);
+  function setTimer(){
+    if(timer) timer.restart();
+    let delay = 1010 - parseInt($('#timeline-speed').val());
+    timer = d3.timer(function(){
+      let selection = d3.brushSelection(brushG.node());
+      if(!selection) return; // Ignore empty selections.
+      brushG.transition().call(brush.move, selection.map(s => s + 1));
+    }, delay);
+  }
 
-  $('#toggle_timeline_settings').click(function(){
-    let pane = $('#timeline_settings_pane');
+  $('#timeline-toggle-settings').click(function(){
+    let pane = $('#timeline-settings-pane');
     if(pane.is(':visible')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
       pane.show(0, function(){ pane.animate({left: '0px'}); });
     }
-  });
+  }).trigger('click');
+
+  $('#timeline-speed').on('change', setTimer);
+
+  $('#timeline-date-field').on('change', refresh);
+
+  layout.on('stateChanged', refresh);
 })();
   </script>

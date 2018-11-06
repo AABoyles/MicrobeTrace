@@ -499,15 +499,24 @@ stroke: #CCC;
 }
 
 /* Timeline */
-#timeline-wrapper{
+#timeline{
   padding-top: 50px;
 }
-#timeline_settings_pane{
-  left: 0px;
-  display: block;
+#timeline .axis--grid .domain {
+  fill: #ddd;
+  stroke: none;
 }
-.date-table-row{
-  border: 1px solid lightgray;
+
+#timeline .axis--x .domain,
+#timeline .axis--grid .tick line {
+  stroke: #fff;
+}
+
+#timeline .axis--grid .tick--minor line {
+  stroke-opacity: .5;
+}
+#timeline-date-field{
+  width:auto;
 }
 
 /* Waterfall View */
