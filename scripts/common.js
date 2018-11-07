@@ -112,7 +112,8 @@ app.sessionSkeleton = function(){
     state: {
       linkSortVariable: 'tn93',
       linkThreshold: 0.015,
-      time: 0
+      timeStart: 0,
+      timeEnd: Date.now()
     },
     style: {
       linkColors: d3.schemePaired,
