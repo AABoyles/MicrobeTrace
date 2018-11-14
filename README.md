@@ -1,14 +1,15 @@
-[![MicrobeTrace](https://raw.githubusercontent.com/AABoyles/WebMicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
+[![MicrobeTrace](https://raw.githubusercontent.com/AABoyles/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
 
 ©2017-2018 [Centers for Disease Control and Prevention](https://www.cdc.gov)
 
 Developed By [Tony Boyles](http://github.com/aaboyles) and Eric Aslakson
 
 ## [Click Here to Launch MicrobeTrace](https://microbetrace.herokuapp.com)
-* [Download Sample Data](https://github.com/CDCgov/MicrobeTRACE/releases/download/v0.2.1/MicrobetraceDemoData.zip)
-* [View Help Wiki](https://github.com/CDCGov/WebMicrobeTrace/wiki)
-* [Report Bugs or Request Features](https://github.com/CDCGov/WebMicrobeTrace/issues)
-* [How to Deploy Your Own Instance of MicrobeTrace](https://github.com/CDCGov/WebMicrobeTrace/wiki/Deployment)
+* [Download Sample Data](https://github.com/CDCgov/MicrobeTRACE/master/demo/MicrobetraceDemoData.zip)
+* [View Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
+* [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/master/docs/MicrobeTrace_Manual.docx)
+* [Report Bugs or Request Features](https://github.com/CDCgov/MicrobeTrace/issues)
+* [How to Deploy Your Own Instance of MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/Deployment)
 
 (Everything below this is legal stuff that the CDC lawyers made us put in.)
 
