@@ -5,7 +5,7 @@
 Developed By [Tony Boyles](http://github.com/aaboyles) and Eric Aslakson
 
 ## [Click Here to Launch MicrobeTrace](https://microbetrace.herokuapp.com)
-* [Download Sample Data](https://github.com/CDCgov/MicrobeTRACE/master/demo/MicrobetraceDemoData.zip)
+* [Download Sample Data](https://github.com/CDCgov/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
 * [View Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
 * [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/master/docs/MicrobeTrace_Manual.docx)
 * [Report Bugs or Request Features](https://github.com/CDCgov/MicrobeTrace/issues)
