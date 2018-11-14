@@ -1,4 +1,4 @@
-[![MicrobeTrace](https://raw.githubusercontent.com/AABoyles/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
+[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
 
 ©2017-2018 [Centers for Disease Control and Prevention](https://www.cdc.gov)
 
