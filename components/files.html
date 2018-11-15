@@ -153,6 +153,14 @@
           <div id="system-configurations" class="tab-pane fade" role="tabpanel">
             <div class="form-group row">
               <div class="col-2">
+                <label for="import-style">Import Style</label>
+              </div>
+              <div class="col-10">
+                <input id="import-style" type="file" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-2">
                 <label for="default-View">Default View</label>
               </div>
               <div class="col-10">
@@ -204,8 +212,8 @@
 
   function addFileToTable(file){
     session.files.push(file);
-    var extension = file.name.split('.').pop().slice(0,3).toLowerCase();
-    if(extension === 'mic'){
+    var extension = file.name.split('.').pop().toLowerCase();
+    if(extension === 'microbetrace'){
       var reader = new FileReader();
       reader.onloadend = function(out){
         session = JSON.parse(out.target.result);
@@ -218,8 +226,8 @@
       reader.readAsText(file);
       return;
     }
-    var isFasta = (extension === 'fas');
-    var isXL = (extension === 'lsx' || extension === 'xls');
+    var isFasta = (extension === 'fasta');
+    var isXL = (extension === 'xlsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');
     if(isXL){
       var reader = new FileReader();
@@ -475,7 +483,7 @@
     //First Pass: Read all files, identify all distinct nodes.
     files.forEach(function(file, fileNum){
       var filename = file.file.name;
-      var extension = _.last(filename.split('.')).toLowerCase();
+      var extension = filename.split('.').pop().toLowerCase();
 
       if(file.type === 'fasta'){
 
@@ -752,6 +760,20 @@
   });
 
   app.finishUp = function(oldSession){
+    var styleFileEl = $('#import-style').get(0);
+    if(styleFileEl.files.length > 0){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        session.style = JSON.parse(e.target.result);
+        if(session.style.widgets['node-color-variable'] !== 'None'){
+          app.createNodeColorMap();
+        }
+        if(session.style.widgets['link-color-variable'] !== 'None'){
+          app.createLinkColorMap();
+        }
+      };
+      reader.readAsText(styleFileEl.files[0]);
+    }
     if(!oldSession){
       app.computeDM(metrics, function(){
         $('.show-for-dm').css('display', 'flex');

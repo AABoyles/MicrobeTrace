@@ -531,6 +531,51 @@ app.updateStatistics = function(){
   $('#numberOfDisjointComponents').text(session.data.clusters.length);
 };
 
+app.createNodeColorMap = function(){
+  let variable = session.style.widgets['node-color-variable'];
+  let values = _.chain(session.data.nodes).pluck(variable).uniq().value();
+  if(_.isNumber(session.data.nodes[0][variable])){
+    values.sort(function(a, b){ return a - b; });
+  } else {
+    values.sort();
+  }
+  if(values.length > session.style.nodeColors.length){
+    var temp = [];
+    var n = Math.ceil(values.length/session.style.nodeColors.length);
+    while(n-- > 0) temp = temp.concat(session.style.nodeColors);
+    session.style.nodeColors = temp;
+  }
+  session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+  return values;
+};
+
+app.createLinkColorMap = function(){
+  let variable = session.style.widgets['link-color-variable'];
+  let values = [];
+  if(variable === 'origin'){
+    session.data.links.forEach(function(l){
+      l.origin.forEach(function(o){
+        if(!values.includes(o)) values.push(o);
+      });
+    });
+  } else {
+    values = _.chain(session.data.links).pluck(variable).uniq().value();
+  }
+  if(_.isNumber(session.data.links[0][variable])){
+    values.sort(function(a, b){ return a - b; });
+  } else {
+    values.sort();
+  }
+  if(values.length > session.style.linkColors.length){
+    var temp = [];
+    var n = Math.ceil(values.length/session.style.linkColors.length);
+    while(n-- > 0) temp = temp.concat(session.style.linkColors);
+    session.style.linkColors = temp;
+  }
+  session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+  return values;
+};
+
 app.reset = function(){
   $('#network-statistics-hide, #color-table-hide').parent().trigger('click');
   window.session = app.sessionSkeleton();
