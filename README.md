@@ -2,7 +2,7 @@
 
 ©2017-2018 [Centers for Disease Control and Prevention](https://www.cdc.gov)
 
-Developed By [Tony Boyles](http://github.com/aaboyles) and Eric Aslakson
+Developed By [Tony Boyles](http://github.com/aaboyles)
 
 ## [Click Here to Launch MicrobeTrace](https://microbetrace.herokuapp.com)
 * [Download Sample Data](https://github.com/CDCgov/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
