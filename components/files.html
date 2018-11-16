@@ -661,14 +661,15 @@
 
         message(`Parsing ${filename} as Distance Matrix...`);
         var defaultMetric = $('#default-distance-metric').val();
-        Papa.parse(file.file, {
-          worker: true,
-          skipEmptyLines: true,
-          complete: function(results){
-            var nodeIDs = [];
-            var nn = 0, nl = 0;
-            let check = files.length > 1;
-            results.data.forEach(function(row, i){
+
+        if(extension == 'xls' || extension == 'xlsx'){
+          var reader = new FileReader();
+          reader.onload = function(e){
+            var data = e.target.result;
+            var workbook = XLSX.read(data, {type: 'array'});
+            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
+            var nodeIDs = [], nn = 0, nl = 0;
+            data.forEach(function(row, i){
               if(i == 0){
                 nodeIDs = row.map(filterXSS);
                 nodeIDs.forEach(function(cell, k){
@@ -697,11 +698,54 @@
                 });
               }
             });
-            message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
-            message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
+            message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
             if(fileNum === files.length - 1) nextStuff();
-          }
-        });
+          };
+          reader.readAsArrayBuffer(file.file);
+
+        } else {
+          Papa.parse(file.file, {
+            worker: true,
+            skipEmptyLines: true,
+            complete: function(results){
+              var nodeIDs = [];
+              var nn = 0, nl = 0;
+              let check = files.length > 1;
+              results.data.forEach(function(row, i){
+                if(i == 0){
+                  nodeIDs = row.map(filterXSS);
+                  nodeIDs.forEach(function(cell, k){
+                    if(k > 0){
+                      nn += app.addNode({
+                        id: '' + cell,
+                        origin: [filename]
+                      });
+                    }
+                  });
+                } else {
+                  row.forEach(function(cell, j){
+                    if(j > i){
+                      var base = {
+                        source: '' + nodeIDs[i],
+                        target: '' + nodeIDs[j],
+                        origin: [filename]
+                      };
+                      metrics.forEach(function(metric){
+                        metric = metric.toLowerCase();
+                        base[metric] = 0;
+                      });
+                      base[defaultMetric] = parseFloat(cell),
+                      nl += app.addLink(base, check);
+                    }
+                  });
+                }
+              });
+              message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
+              message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
+              if(fileNum === files.length - 1) nextStuff();
+            }
+          });
+        }
       }
     });
 
