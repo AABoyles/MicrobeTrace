@@ -341,8 +341,12 @@ app.computeTree = function(type, callback){
     console.log('Tree (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
+  var epsilon = 0.000001;
+  if(type === 'snps'){
+    epsilon = 0.001;
+  }
   computer.postMessage({
-    matrix: session.data.distance_matrix[type],
+    matrix: session.data.distance_matrix[type].map(a => a = a.map(b => Math.max(b, epsilon))),
     labels: session.data.distance_matrix.labels
   });
 };
