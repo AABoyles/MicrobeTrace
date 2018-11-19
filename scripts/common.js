@@ -533,7 +533,11 @@ app.updateStatistics = function(){
 
 app.createNodeColorMap = function(){
   let variable = session.style.widgets['node-color-variable'];
-  let values = _.chain(session.data.nodes).pluck(variable).uniq().value();
+  if(variable === 'None'){
+    session.style.nodeColorMap = function(){ return session.style.widgets['node-color']; };
+    return [];
+  }
+  values = _.chain(session.data.nodes).pluck(variable).uniq().value();
   if(_.isNumber(session.data.nodes[0][variable])){
     values.sort(function(a, b){ return a - b; });
   } else {
@@ -542,7 +546,7 @@ app.createNodeColorMap = function(){
   if(values.length > session.style.nodeColors.length){
     var temp = [];
     var n = Math.ceil(values.length/session.style.nodeColors.length);
-    while(n-- > 0) temp = temp.concat(session.style.nodeColors);
+    while(n --> 0) temp = temp.concat(session.style.nodeColors);
     session.style.nodeColors = temp;
   }
   session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
@@ -551,6 +555,10 @@ app.createNodeColorMap = function(){
 
 app.createLinkColorMap = function(){
   let variable = session.style.widgets['link-color-variable'];
+  if(variable === 'None'){
+    session.style.linkColorMap = function(){ return session.style.widgets['link-color']; };
+    return [];
+  }
   let values = [];
   if(variable === 'origin'){
     session.data.links.forEach(function(l){
@@ -574,6 +582,22 @@ app.createLinkColorMap = function(){
   }
   session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
   return values;
+};
+
+app.applyStyle = function(style){
+  session.style = style;
+  app.createLinkColorMap();
+  app.createNodeColorMap();
+  for(var id in session.style.widgets){
+    $id = $('#' + id);
+    if($id.length > 0){
+      if(['radio', 'checkbox'].includes($id[0].type)){
+        if(session.style.widgets[id]) $id.trigger('click');
+      } else {
+        $id.val(session.style.widgets[id]).trigger('change');
+      }
+    }
+  }
 };
 
 app.reset = function(){
