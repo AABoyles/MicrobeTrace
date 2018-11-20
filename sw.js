@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-11-02';
+var CACHE = 'MicrobeTraceD2018-11-20';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -122,6 +122,7 @@ self.addEventListener('install', function(event) {
         'help/Security.md',
         'help/Sequences.md',
         'help/SNPs.md',
+        'help/Style-Files.md',
         'help/Suspicious-Network-Topologies.md',
         'help/System-Requirements.md',
         'help/Table.md',
@@ -140,6 +141,8 @@ self.addEventListener('install', function(event) {
         'node_modules/open-iconic/font/fonts/open-iconic.ttf',
         'node_modules/open-iconic/font/fonts/open-iconic.otf',
         'node_modules/papaparse/papaparse.min.js?papaworker',
+        '.git/HEAD',
+        '.git/refs/heads/master',
       ]);
     })
   );
