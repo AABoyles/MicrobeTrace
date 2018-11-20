@@ -16,7 +16,7 @@ or have something addressed, you can [open an issue in this repository](http://g
 Team members will respond to the issue as soon as possible.
 
 ## Submit a pull request
-If you would like to [contribute](https://github.com/CDCgov/MicrobeTRACE/wiki/Contributing),
+If you would like to [contribute](https://github.com/CDCgov/MicrobeTrace/wiki/Contributing),
 please submit a pull request. In order for us to merge a pull request, it must:
 * Be at least seven days old. Pull requests may be held longer if necessary
   to give people the opportunity to assess it.
