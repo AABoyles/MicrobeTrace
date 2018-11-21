@@ -1,7 +1,5 @@
 [![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
 
-©2017-2018 [Centers for Disease Control and Prevention](https://www.cdc.gov)
-
 Developed By [Tony Boyles](http://github.com/aaboyles)
 
 ## [Click Here to Launch MicrobeTrace](https://microbetrace.herokuapp.com)
