@@ -182,6 +182,9 @@ app.addLink = function(newLink, check){
       }
     }
   }
+  session.state.metrics.forEach(function(m){
+    newLink[m] = parseFloat(newLink[m]);
+  });
   links.push(Object.assign(app.defaultLink(), newLink));
   return 1;
 };
