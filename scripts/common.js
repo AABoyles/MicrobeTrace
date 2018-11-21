@@ -112,6 +112,7 @@ app.sessionSkeleton = function(){
     state: {
       linkSortVariable: 'tn93',
       linkThreshold: 0.015,
+      metrics: ['tn93', 'snps'],
       timeStart: 0,
       timeEnd: Date.now()
     },
@@ -317,7 +318,7 @@ app.computeConsensusDistances = function(callback){
   });
 };
 
-app.computeLinks = function(subset, metrics, callback){
+app.computeLinks = function(subset, callback){
   var k = 0, computer = new Worker('scripts/compute-links.js');
   computer.onmessage = function(response){
     var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
@@ -333,11 +334,11 @@ app.computeLinks = function(subset, metrics, callback){
   };
   computer.postMessage({
     nodes: subset,
-    metrics: metrics
+    metrics: session.state.metrics
   });
 };
 
-app.computeDM = function(metrics, callback){
+app.computeDM = function(callback){
   var computer = new Worker('scripts/compute-dm.js');
   computer.onmessage = function(response){
     session.data.distance_matrix = JSON.parse(app.decoder.decode(new Uint8Array(response.data.matrices)));
@@ -347,9 +348,9 @@ app.computeDM = function(metrics, callback){
   computer.postMessage({
     nodes: session.data.nodes,
     links: session.data.links.filter(function(l){
-      return _.any(metrics.map(function(m){ return _.isNumber(l[m]); }));
+      return _.any(session.state.metrics.map(function(m){ return _.isNumber(l[m]); }));
     }),
-    metrics: metrics
+    metrics: session.state.metrics
   });
 };
 

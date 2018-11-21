@@ -409,6 +409,7 @@
     $('#default-distance-metric, #links-filter-variable').html($(this).val().map(function(v, i){
       return '<option value="' + v + '"' + (i == 0 ? ' selected': '') + '>' + app.titleize(v) + '</option>';
     }).join('\n')).trigger('change');
+    session.state.metrics = $(this).val();
   });
 
   $('#default-distance-metric, #links-filter-variable').change(function(e){
@@ -439,7 +440,7 @@
     $('#loading-information').html(messages.join('<br />'));
   }
 
-  var messageTimeout, messages = [], metrics = [];
+  var messageTimeout, messages = [];
 
   $('#main-submit').click(function(e){
     messages = [];
@@ -474,8 +475,8 @@
     var hierarchy = ['distmat', 'link', 'node', 'fasta'];
 
     var anySequences = false;
-    metrics = $('#distance-metrics').val();
-    session.data.linkFields = session.data.linkFields.concat(metrics);
+    session.state.metrics = $('#distance-metrics').val();
+    session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
     var check = files.length > 1;
 
     files.sort(function(a, b){ return hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type); });
@@ -522,7 +523,7 @@
             origin: [filename],
             visible: true
           };
-          metrics.forEach(function(metric){
+          session.state.metrics.forEach(function(metric){
             metric = metric.toLowerCase();
             base[metric] = null;
           });
@@ -688,7 +689,7 @@
                       target: '' + nodeIDs[j],
                       origin: [filename]
                     };
-                    metrics.forEach(function(metric){
+                    session.state.metrics.forEach(function(metric){
                       metric = metric.toLowerCase();
                       base[metric] = 0;
                     });
@@ -730,7 +731,7 @@
                         target: '' + nodeIDs[j],
                         origin: [filename]
                       };
-                      metrics.forEach(function(metric){
+                      session.state.metrics.forEach(function(metric){
                         metric = metric.toLowerCase();
                         base[metric] = 0;
                       });
@@ -793,7 +794,7 @@
             var node = nodes[i];
             session.data.nodes[node.index]._diff = node._diff;
           }
-          app.computeLinks(subset, metrics, function(k){
+          app.computeLinks(subset, function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
             app.finishUp();
           });
@@ -805,12 +806,12 @@
 
   app.finishUp = function(oldSession){
     if(!oldSession){
-      app.computeDM(metrics, function(){
+      app.computeDM(function(){
         $('.show-for-dm').css('display', 'flex');
         app.computeNN(session.state.linkSortVariable, function(){
           $('.show-for-nn').css('display', 'flex');
         });
-        metrics.forEach(function(m){ app.computeTree(m); });
+        session.state.metrics.forEach(function(m){ app.computeTree(m); });
       });
     }
     clearTimeout(messageTimeout);
