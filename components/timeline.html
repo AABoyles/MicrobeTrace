@@ -44,7 +44,7 @@
 
   <script>
 (function(){
-  let width, height, svg, timeDomainStart, timeDomainEnd, x, brush, brushG, timer, isPlaying = false,
+  let width, height, middle, svg, timeDomainStart, timeDomainEnd, x, brush, brushG, timer, isPlaying = false,
       margin = {top: 50, left: 80, right: 20, bottom: 30};
 
   function refresh(){
@@ -52,12 +52,16 @@
     let tickFormat = d3.timeFormat("%Y-%m-%d");
     width  = wrapper.width() - margin.left - margin.right,
     height = wrapper.height() - margin.top - margin.bottom;
+    middle = height / 2;
 
     let field = $('#timeline-date-field').val();
-    let times = [];
-    session.data.nodes.forEach(d => {
+    let times = [], vnodes = app.getVisibleNodes(true);
+    vnodes.forEach(d => {
       let time = moment(d[field]);
-      if(time.isValid()) times.push(time.toDate())
+      if(time.isValid()){
+        d[field] = time.toDate();
+        times.push(d[field]);
+      }
     });
     if(times.length < 2){
       times.push(new Date(2000, 1, 1));
@@ -96,6 +100,21 @@
       .attr("text-anchor", null)
       .selectAll("text")
       .attr("x", 6);
+
+    svg.append("g")
+      .attr('class', 'nodes');
+
+    svg.select('.nodes')
+      .selectAll('circle')
+      .data(vnodes)
+      .enter().append('circle')
+        .attr('cx', d => x(d[field]))
+        .attr('cy', middle)
+        .attr('r', 10)
+        .attr('stroke-width', 2)
+        .attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff')
+        .attr('fill', d => session.style.nodeColorMap(d[session.style.widgets['node-color-variable']]))
+      .exit().remove();
 
     brush = d3.brushX().extent([[0, 0], [width, height]]).on('end', function(){
       let selection = d3.brushSelection(brushG.node());
@@ -161,6 +180,16 @@
   });
 
   $('#timeline-speed').on('change', setTimer);
+
+  $(window)
+    .on('node-selected', function(){
+      svg.select('.nodes').selectAll('circle')
+        .attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff')
+    })
+    .on('node-color-change', function(){
+      svg.select('.nodes').selectAll('circle')
+        .attr('fill', d => session.style.nodeColorMap(d[session.style.widgets['node-color-variable']]))
+    });
 
   layout.on('stateChanged', refresh);
 })();
