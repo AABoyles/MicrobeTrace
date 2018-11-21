@@ -203,21 +203,29 @@
   });
 
   function addFileToTable(file){
-    session.files.push(file);
     var extension = file.name.split('.').pop().toLowerCase();
-    if(extension === 'microbetrace'){
-      var reader = new FileReader();
-      reader.onloadend = function(out){
-        session = JSON.parse(out.target.result);
-        session.meta.startTime = Date.now();
-        session.style.nodeSymbolMap = function(){ return session.style.nodeSymbols[0]; };
-        session.style.nodeColorMap  = function(){ return session.style.nodeColors[ 0]; };
-        session.style.linkColorMap  = function(){ return session.style.linkColors[ 0]; };
-        app.finishUp(true);
-      };
-      reader.readAsText(file);
+    if(extension === 'zip'){
+      var new_zip = new JSZip();
+      new_zip
+        .loadAsync(file)
+        .then(function(zip){
+          zip.forEach(function(relativePath, zipEntry){
+            extension = zipEntry.name.split('.').pop();
+            zipEntry.async("string").then(function(c){
+              app.processJSON(c, extension);
+            });
+          });
+        });
       return;
     }
+    if(extension === 'microbetrace' || extension === 'hivtrace'){
+      var reader = new FileReader();
+      reader.onloadend = function(out){
+        app.processJSON(out.target.result, extension);
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+    session.files.push(file);
     var isFasta = (extension === 'fasta');
     var isXL = (extension === 'xlsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');

@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-11-20';
+var CACHE = 'MicrobeTraceD2018-11-21';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -56,6 +56,7 @@ self.addEventListener('install', function(event) {
         'node_modules/alignment-viewer/dist/alignment-viewer.min.js',
         'node_modules/d3-sankey/build/d3-sankey.min.js',
         'node_modules/marked/marked.min.js',
+        'node_modules/jszip/dist/jszip.min.js',
         'node_modules/bioseq/dist/bioseq.min.js',
         'vendor/bootstrap-filestyle.min.js',
         'vendor/d3.v3.min.js',

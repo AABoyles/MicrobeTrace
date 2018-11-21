@@ -185,7 +185,25 @@ app.addLink = function(newLink, check){
   return 1;
 };
 
-app.parseHIVTrace = function(hivtrace){
+app.processJSON = function(json, extension){
+  var data;
+  try {
+    data = JSON.parse(json);
+  } catch(error) {
+    alertify.error('File Not Recognized! Are you certain this is a MicrobeTrace Session or HIV-TRACE Output File?');
+    console.error(error);
+    return;
+  }
+  if(extension === 'microbetrace'){
+    app.applySession(data);
+  } else {
+    app.applyHIVTrace(data);
+  }
+};
+
+app.applyHIVTrace = function(hivtrace){
+  session = app.sessionSkeleton();
+  session.meta.startTime = Date.now();
   hivtrace['trace_results']['Nodes'].forEach(function(node){
     var newNode = JSON.parse(JSON.stringify(node.patient_attributes));
     newNode.id = node.id;
@@ -206,6 +224,7 @@ app.parseHIVTrace = function(hivtrace){
       'visible': true
     }, false);
   }
+  app.finishUp();
 };
 
 app.parseFASTA = function(text){
@@ -590,6 +609,7 @@ app.createLinkColorMap = function(){
 
 app.applyStyle = function(style){
   session.style = style;
+  session.style.widgets = Object.assign({}, app.defaultWidgets, session.style.widgets);
   app.createLinkColorMap();
   app.createNodeColorMap();
   for(var id in session.style.widgets){
@@ -602,6 +622,14 @@ app.applyStyle = function(style){
       }
     }
   }
+};
+
+app.applySession = function(data, startTime){
+  session = data;
+  if(!startTime) startTime = Date.now();
+  session.meta.startTime = startTime;
+  app.applyStyle(session.style);
+  app.finishUp(true);
 };
 
 app.reset = function(){
@@ -843,6 +871,38 @@ app.getHelp = function(filename, callback){
   $.get('help/' + filename, function(response){
     callback(marked(response));
   });
+};
+
+app.ab2str = function(buf){
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
+};
+
+app.str2ab = function(str){
+  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  var bufView = new Uint8Array(buf);
+  for (var i=0, strLen=str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+};
+
+app.encrypt = async (plainText, password) => {
+  const ptUtf8 = new TextEncoder().encode(plainText);
+  const pwUtf8 = new TextEncoder().encode(password);
+  const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const alg = { name: 'AES-GCM', iv: iv };
+  const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['encrypt']);
+  return { iv, encBuffer: await crypto.subtle.encrypt(alg, key, ptUtf8) };
+};
+
+app.decrypt = async (ctBuffer, iv, password) => {
+  const pwUtf8 = new TextEncoder().encode(password);
+  const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
+  const alg = { name: 'AES-GCM', iv: iv };
+  const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['decrypt']);
+  const ptBuffer = await crypto.subtle.decrypt(alg, key, ctBuffer);
+  return new TextDecoder().decode(ptBuffer);
 };
 
 app.exportHIVTRACE = function(){

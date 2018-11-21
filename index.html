@@ -338,6 +338,14 @@ performance of this software.</pre>
               </select>
             </div>
           </div>
+          <div class="form-group row">
+            <div class="col">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="save-file-compress" checked />
+                <label class="form-check-label" for="save-file-compress">Compress?</label>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
@@ -413,6 +421,7 @@ performance of this software.</pre>
   <script src="node_modules/d3-sankey/build/d3-sankey.min.js"></script>
   <script src="node_modules/marked/marked.min.js"></script>
   <script src="vendor/FileSaver.min.js"></script>
+  <script src="node_modules/jszip/dist/jszip.min.js"></script>
   <script src="vendor/shpwrite.js"></script>
   <script src="scripts/common.js"></script>
   <script>
@@ -504,47 +513,44 @@ performance of this software.</pre>
       } else {
         data = JSON.stringify(session);
       }
-      var blob = new Blob([data], {type: 'application/json;charset=utf-8'});
-      saveAs(blob, name + '.' + format);
+      if($('#save-file-compress').is(':checked')){
+        var zip = new JSZip();
+        zip.file(name + '.' + format, data);
+        zip.generateAsync({
+          type:"blob",
+          compression: "DEFLATE",
+          compressionOptions: {
+          level: 9
+        }}).then(function(content) {
+          saveAs(content, name + '.zip');
+        });
+      } else {
+        var blob = new Blob([data], {type: 'application/json;charset=utf-8'});
+        saveAs(blob, name + '.' + format);
+      }
     });
 
     $('#OpenTab').on('change', function(e){
       if(e.target.files.length > 0){
-        var startTime = Date.now();
-        var parts = e.target.files[0].name.split('.');
-        var extension = parts[parts.length - 1].toLowerCase();
-        var reader = new FileReader();
-        if(extension === 'microbetrace'){
-          reader.onloadend = function(out){
-            try {
-              session = JSON.parse(out.target.result);
-            } catch(error) {
-              alertify.error('File Not Recognized! Are you certain this is a MicrobeTrace Session or HIV-TRACE Output File?');
-              console.error(error);
-              return;
-            }
-            session.startTime = startTime;
-            session.style.widgets = Object.assign({}, app.defaultWidgets, session.style.widgets);
-            $('#node-color-variable').change();
-            $('#link-color-variable').change();
-            app.finishUp(true);
-          };
+        var extension = e.target.files[0].name.split('.').pop().toLowerCase();
+        if(extension === 'zip'){
+          var new_zip = new JSZip();
+          new_zip.loadAsync(e.target.files[0])
+            .then(function(zip) {
+              zip.forEach(function(relativePath, zipEntry){
+                extension = zipEntry.name.split('.').pop();
+                zipEntry.async("string").then(function(c){
+                  app.processJSON(c, extension);
+                });
+              });
+            });
         } else {
+          var reader = new FileReader();
           reader.onloadend = function(out){
-            session = app.sessionSkeleton();
-            session.startTime = startTime;
-            try {
-              content = JSON.parse(out.target.result);
-            } catch(error) {
-              alertify.error('File Not Recognized! Are you certain this is a MicrobeTrace Session or HIV-TRACE Output File?');
-              console.error(error);
-              return;
-            }
-            app.parseHIVTrace(content);
-            app.finishUp();
+            app.processJSON(out.target.result, extension);
           };
+          reader.readAsText(e.target.files[0], 'UTF-8');
         }
-        reader.readAsText(e.target.files[0], 'UTF-8');
       }
     });
 
