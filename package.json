@@ -5,10 +5,6 @@
   "author": "Tony Boyles <Anthony@Boyles.cc>",
   "license": "MIT",
   "repository": "https://github.com/CDCgov/MicrobeTrace.git",
-  "engines": {
-    "node": ">=8.0.0",
-    "yarn": ">=1.6.0"
-  },
   "scripts": {
     "cache": "./appcache.sh && ./sw.sh",
     "start": "node index.js"
@@ -42,7 +38,6 @@
     "tabulator-tables": "^4.0.5",
     "tn93": "^0.2.2",
     "underscore": "^1.9.0",
-    "vue": "^2.5.16",
     "xlsx": "^0.13.2",
     "xss": "^0.3.8"
   }
