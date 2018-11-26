@@ -3,7 +3,7 @@
   "version": "0.4.3",
   "main": "index.js",
   "author": "Tony Boyles <Anthony@Boyles.cc>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": "https://github.com/CDCgov/MicrobeTrace.git",
   "scripts": {
     "cache": "./appcache.sh && ./sw.sh",
