@@ -2,16 +2,13 @@
 
 Developed By [Tony Boyles](http://github.com/aaboyles)
 
-## [Click Here to Launch MicrobeTrace](https://microbetrace.herokuapp.com)
+* **[Launch MicrobeTrace](https://microbetrace.herokuapp.com)**
 * [Download Sample Data](https://github.com/CDCgov/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
-* [View Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
-* [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/master/docs/MicrobeTrace_Manual.docx)
+* [View the Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
+* [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.docx)
 * [Report Bugs or Request Features](https://github.com/CDCgov/MicrobeTrace/issues)
-* [How to Deploy Your Own Instance of MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/Deployment)
-
-(Everything below this is legal stuff that the CDC lawyers made us put in.)
-
----
+* [Deploy Your Own Instance of MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/Deployment)
+* [Help us Develop MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/z-Development)
 
 ## Public Domain
 This project constitutes a work of the United States Government and is not
@@ -53,7 +50,7 @@ non-exclusive, transferable license to all users under the terms of the
 [Apache Software License v2](http://www.apache.org/licenses/LICENSE-2.0.html) or
 later.
 
-[Developer's Guide to MicrobeTrace Code Contribution Process.](https://github.com/CDCgov/MicrobeTrace/wiki/z-Development)
+Before you get started, please read the [Developer's Guide to MicrobeTrace.](https://github.com/CDCgov/MicrobeTrace/wiki/z-Development)
 
 All comments, messages, pull requests, and other submissions received through
 CDC including this GitHub page are subject to the [Presidential Records Act](http://www.archives.gov/about/laws/presidential-records.html)
@@ -69,10 +66,3 @@ Please refer to [CDC's Template Repository](https://github.com/CDCgov/template)
 for more information about [contributing to this repository](https://github.com/CDCgov/template/blob/master/CONTRIBUTING.md),
 [public domain notices and disclaimers](https://github.com/CDCgov/template/blob/master/DISCLAIMER.md),
 and [code of conduct](https://github.com/CDCgov/template/blob/master/code-of-conduct.md).
-
-## Hat-tips
-Thanks to [18F](https://18f.gsa.gov/)'s [open source policy](https://github.com/18F/open-source-policy)
-and [code of conduct](https://github.com/CDCgov/code-of-conduct/blob/master/code-of-conduct.md)
-that were very useful in setting up this GitHub organization. Thanks to CDC's
-[Informatics Innovation Unit](https://www.phiresearchlab.org/index.php/code-of-conduct/)
-that was helpful in modeling the code of conduct.
