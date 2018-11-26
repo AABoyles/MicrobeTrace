@@ -53,6 +53,8 @@ non-exclusive, transferable license to all users under the terms of the
 [Apache Software License v2](http://www.apache.org/licenses/LICENSE-2.0.html) or
 later.
 
+[Developer's Guide to MicrobeTrace Code Contribution Process.](https://github.com/CDCgov/MicrobeTrace/wiki/z-Development)
+
 All comments, messages, pull requests, and other submissions received through
 CDC including this GitHub page are subject to the [Presidential Records Act](http://www.archives.gov/about/laws/presidential-records.html)
 and may be archived. Learn more at [http://www.cdc.gov/other/privacy.html](http://www.cdc.gov/other/privacy.html).
