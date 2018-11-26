@@ -7,7 +7,7 @@ Developed By [Tony Boyles](http://github.com/aaboyles)
 * [View the Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
 * [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.docx)
 * [Report Bugs or Request Features](https://github.com/CDCgov/MicrobeTrace/issues)
-* [Deploy Your Own Instance of MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/Deployment)
+* [Deploy Your Own Instance of MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/z-Deployment)
 * [Help us Develop MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/z-Development)
 
 ## Public Domain
