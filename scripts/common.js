@@ -85,6 +85,7 @@ app.defaultWidgets = {
   'scatterplot-logScale': false,
   'selected-color': '#ff8300',
   'selected-color-contrast': '#000000',
+  'tree-epsilon': -10,
   'tree-metric': 'tn93',
   'tree-layout-circular': false,
   'tree-labels-align': false,
@@ -357,17 +358,14 @@ app.computeDM = function(callback){
   });
 };
 
-app.computeTree = function(type, callback){
+app.computeTree = function(type, callback, epsilon){
   var computer = new Worker('scripts/compute-tree.js');
   computer.onmessage = function(response){
     session.data.trees[type] = app.decoder.decode(new Uint8Array(response.data.tree));
     console.log('Tree (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
-  var epsilon = 0.000001;
-  if(type === 'snps'){
-    epsilon = 0.001;
-  }
+  if(!_.isNumber(epsilon)) epsilon = (type === 'snps') ? 0.001 : 0.000001;
   computer.postMessage({
     matrix: session.data.distance_matrix[type].map(a => a = a.map(b => Math.max(b, epsilon))),
     labels: session.data.distance_matrix.labels
