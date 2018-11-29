@@ -14,7 +14,7 @@ onmessage = function(e){
     let best = map.best();
     node.padding = best.position;
     node.score = best.score;
-  });
+  }
   console.log('Alignment time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
   start = Date.now();
   let encoder = new TextEncoder();
