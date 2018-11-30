@@ -358,17 +358,19 @@ app.computeDM = function(callback){
   });
 };
 
-app.computeTree = function(type, callback, epsilon){
+app.computeTree = function(type, callback){
   var computer = new Worker('scripts/compute-tree.js');
   computer.onmessage = function(response){
     session.data.trees[type] = app.decoder.decode(new Uint8Array(response.data.tree));
     console.log('Tree (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
-  if(!_.isNumber(epsilon)) epsilon = (type === 'snps') ? 0.001 : 0.000001;
+  var epsilon = session.style.widgets['tree-epsilon'] == -10 ? 0 : 10**session.style.widgets['tree-epsilon'];
   computer.postMessage({
     matrix: session.data.distance_matrix[type].map(a => a = a.map(b => Math.max(b, epsilon))),
-    labels: session.data.distance_matrix.labels
+    labels: session.data.distance_matrix.labels,
+    round: session.style.widgets['tree-round'],
+    addOne: session.style.widgets['tree-addOne']
   });
 };
 

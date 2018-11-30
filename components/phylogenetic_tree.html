@@ -24,9 +24,35 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3">Distance Epsilon</div>
+          <div class="col-3">Epsilon</div>
           <div class="col-9">
-            <input type="range" id="tree-epsilon" class="w-100" min="-10" max="1" step=".333"></input>
+            <input type="range" id="tree-epsilon" class="w-100" min="-10" max="1" step="1/3" value="-10"></input>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Addend</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+              <label class="btn btn-light btn-sm col active">
+                <input type="radio" name="tree-addend" id="tree-addZero" autocomplete="off" checked> 0
+              </label>
+              <label class="btn btn-light btn-sm col">
+                <input type="radio" name="tree-addend" id="tree-addOne" autocomplete="off"> 1
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3">Rounding</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+              <label class="btn btn-light btn-sm active col">
+                <input type="radio" name="tree-round" id="tree-round-false" autocomplete="off" checked> Unrounded
+              </label>
+              <label class="btn btn-light btn-sm col">
+                <input type="radio" name="tree-round" id="tree-round" autocomplete="off"> Rounded
+              </label>
+            </div>
           </div>
         </div>
         <div class="form-group row">
@@ -157,7 +183,7 @@
           type = session.style.widgets['tree-metric'];
 
       if(!session.data.trees[type]){
-        app.computeTree(type, redrawTree, session.style.widgets['tree-epsilon']);
+        app.computeTree(type, redrawTree);
         return;
       }
       let svg = d3v3.select('svg#tree')
@@ -207,7 +233,27 @@
 
     $('#tree-epsilon').on('change', function(e){
       session.style.widgets['tree-epsilon'] = parseFloat($(this).val());
-      app.computeTree(session.style.widgets['tree-metric'], redrawTree, session.style.widgets['tree-epsilon']);
+      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
+    });
+
+    $('#tree-addZero').parent().on('click', function(){
+      session.style.widgets['tree-addOne'] = false;
+      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
+    });
+
+    $('#tree-addOne').parent().on('click', function(){
+      session.style.widgets['tree-addOne'] = true;
+      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
+    });
+
+    $('#tree-round').parent().on('click', function(){
+      session.style.widgets['tree-round'] = true;
+      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
+    });
+
+    $('#tree-round-false').parent().on('click', function(){
+      session.style.widgets['tree-round'] = false;
+      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
     });
 
     $('#tree-layout-rectangular').parent().on('click', e => {
