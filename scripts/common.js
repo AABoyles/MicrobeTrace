@@ -374,6 +374,20 @@ app.computeTree = function(type, callback){
   });
 };
 
+app.computePatristicMatrix = function(type, callback){
+  var computer = new Worker('scripts/compute-patristic-matrix.js');
+  computer.onmessage = function(response){
+    var output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.output)));
+    session.data.distance_matrix['patristic-'+type] = output.matrix;
+    session.data.distance_matrix['patristic-'+type].labels = output.labels;
+    console.log('Patristic Matrix (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  computer.postMessage({
+    newick: session.data.trees[type]
+  });
+};
+
 app.computeNN = function(metric, callback){
   if(!session.data.distance_matrix[metric]){
     console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
@@ -650,16 +664,16 @@ app.reset = function(){
 
 //adapted from from http://www.movable-type.co.uk/scripts/latlong.html
 app.haversine = function(a, b){
-  var R = 6371; // kilometers
-  var φ1 = a._lat * Math.PI / 180;
-  var φ2 = b._lat * Math.PI / 180;
-  var Δφ = (b._lat - a._lat) * Math.PI / 180;
-  var Δλ = (b._lon - a._lon) * Math.PI / 180;
-  var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-          Math.cos(φ1) * Math.cos(φ2) *
-          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  var r = Math.PI / 180;
+  var φ1 = a._lat * r;
+  var φ2 = b._lat * r;
+  var Δλ = (b._lon - a._lon) * r;
+  var Δφ = (b._lat - a._lat) * r;
+  var a = Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2) +
+          Math.sin(Δφ/2)**2;
   var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return(c * R);
+  return(c * 6378.1); // kilometers
 };
 
 app.geoDM = function(){
@@ -954,13 +968,13 @@ app.exportHIVTRACE = function(){
         'target': session.data.nodes.findIndex(function(d){ return d.id === l.target; })
       }}),
       'HIV Stages': {
-        "A-1": 0,
-        "A-2": 0,
-        "A-3": 0,
-        "Chronic": session.data.nodes.length,
-        "E-1": 0,
-        "E-2": 0,
-        "E-3": 0
+        'A-1': 0,
+        'A-2': 0,
+        'A-3': 0,
+        'Chronic': session.data.nodes.length,
+        'E-1': 0,
+        'E-2': 0,
+        'E-3': 0
       },
       'Multiple sequences': {
         'Followup, days': null,
