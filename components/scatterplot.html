@@ -18,6 +18,19 @@
     <div class="tab-content">
       <div role="tabpanel" class="tab-pane fade show active" id="scatterplotConfigurations">
         <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the scatterplot show Node or Link Variables?">Dataset</a></div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light col">
+                <input type="radio" name="scatterplot-show" id="scatterplot-showNodes" autocomplete="off"> Nodes
+              </label>
+              <label class="btn btn-light col active">
+                <input type="radio" name="scatterplot-show" id="scatterplot-showLinks" autocomplete="off" checked> Links
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
           <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the scatterplot be drawn from?">X Variable</a></div>
           <div class="col-9"><select id="scatterplot-xVar" class="custom-select custom-select-sm linkVariables"></select></div>
         </div>
@@ -83,16 +96,17 @@
     function redrawScatterplot(){
       if(!$('#scatterplot-panel').length) return;
       if(plot) Plotly.purge('scatterplot-panel');
+      let dataset = session.style.widgets['scatterplot-showNodes'] ? 'node' : 'link';
       let xVar = session.style.widgets['scatterplot-xVar'];
       let yVar = session.style.widgets['scatterplot-yVar'];
-      let subset = session.data.links.filter(l => l.visible);
+      let subset = session.data[dataset+'s'].filter(l => l.visible);
       plot = Plotly.newPlot('scatterplot-panel', [{
         x: subset.map(l => l[xVar]),
         y: subset.map(l => l[yVar]),
         type: 'scatter',
         mode: 'markers',
         marker: {
-          color: session.style.widgets['link-color'],
+          color: session.style.widgets[dataset + '-color'],
         }
       }], {
         yaxis: {
@@ -120,30 +134,20 @@
       }
     });
 
-    function setBackground(){
-      let col = session.style.widgets['background-color'];
-      $('#scatterplot-panel svg.main-svg').first().css('background', col);
-      $('#scatterplot-panel rect.bg').css('fill', col);
-
-      let contrast = session.style.widgets['background-color-contrast'];
-      $('#scatterplot-panel .xtitle, .ytitle').css('fill', contrast);
-      $('#scatterplot-panel .xaxislayer-above text').css('fill', contrast);
-      $('#scatterplot-panel .yaxislayer-above text').css('fill', contrast);
-      $('#scatterplot-panel .zl.crisp, .xgrid.crisp, .ygrid.crisp').css('stroke', contrast);
-    }
-
-    $(window)
-      .on('background-color-change', setBackground)
-      .on('link-color-change', redrawScatterplot);
-
-    $('#scatterplot-logScale').on('change', function(){
-      session.style.widgets['scatterplot-logScale'] = true;
-      redrawScatterplot();
+    $('#scatterplot-showNodes').parent().on('click', function(e){
+      session.style.widgets['scatterplot-showNodes'] = true;
+      $('#scatterplot-panel').parent().find('#scatterplot-xVar, #scatterplot-yVar').html(
+        session.data.nodeFields.map(function(field){ return '<option value="'+field+'">'+app.titleize(field)+'</option>'; }).join('\n')
+      );
+      //redrawScatterplot();
     });
 
-    $('#scatterplot-linearScale').on('change', function(){
-      session.style.widgets['scatterplot-logScale'] = false;
-      redrawScatterplot();
+    $('#scatterplot-showLinks').parent().on('click', function(e){
+      session.style.widgets['scatterplot-showNodes'] = false;
+      $('#scatterplot-panel').parent().find('#scatterplot-xVar, #scatterplot-yVar').html(
+        session.data.linkFields.map(function(field){ return '<option value="'+field+'">'+app.titleize(field)+'</option>'; }).join('\n')
+      );
+      //redrawScatterplot();
     });
 
     $('#scatterplot-xVar').on('change', function(e){
@@ -155,6 +159,28 @@
       session.style.widgets['scatterplot-yVar'] = e.target.value;
       redrawScatterplot();
     });
+
+    $('#scatterplot-logScale').on('change', function(){
+      session.style.widgets['scatterplot-logScale'] = true;
+      redrawScatterplot();
+    });
+
+    $('#scatterplot-linearScale').on('change', function(){
+      session.style.widgets['scatterplot-logScale'] = false;
+      redrawScatterplot();
+    });
+
+    function setBackground(){
+      let col = session.style.widgets['background-color'];
+      $('#scatterplot-panel svg.main-svg').first().css('background', col);
+      $('#scatterplot-panel rect.bg').css('fill', col);
+
+      let contrast = session.style.widgets['background-color-contrast'];
+      $('#scatterplot-panel .xtitle, .ytitle').css('fill', contrast);
+      $('#scatterplot-panel .xaxislayer-above text').css('fill', contrast);
+      $('#scatterplot-panel .yaxislayer-above text').css('fill', contrast);
+      $('#scatterplot-panel .zl.crisp, .xgrid.crisp, .ygrid.crisp').css('stroke', contrast);
+    }
 
     $('#scatterplot-export').on('click', function(){
       let network = $('#scatterplot-panel .main-svg').get(0);
@@ -172,5 +198,10 @@
     });
 
     layout.on('stateChanged', redrawScatterplot);
+
+    $(window)
+      .on('background-color-change', setBackground)
+      .on('link-color-change', redrawScatterplot);
+
   })();
   </script>

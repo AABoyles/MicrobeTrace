@@ -83,6 +83,7 @@ app.defaultWidgets = {
   'scatterplot-xVar': 'snps',
   'scatterplot-yVar': 'tn93',
   'scatterplot-logScale': false,
+  'scatterplot-showNodes': false,
   'selected-color': '#ff8300',
   'selected-color-contrast': '#000000',
   'tree-epsilon': -10,
