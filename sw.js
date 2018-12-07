@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-11-29';
+var CACHE = 'MicrobeTraceD2018-12-07';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -58,6 +58,7 @@ self.addEventListener('install', function(event) {
         'node_modules/marked/marked.min.js',
         'node_modules/jszip/dist/jszip.min.js',
         'node_modules/bioseq/dist/bioseq.min.js',
+        'node_modules/patristic/dist/patristic.min.js',
         'node_modules/neighborjoining/dist/neighborjoining.min.js',
         'vendor/bootstrap-filestyle.min.js',
         'vendor/d3.v3.min.js',
