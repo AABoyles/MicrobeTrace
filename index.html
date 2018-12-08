@@ -864,7 +864,13 @@ performance of this software.</pre>
         e.returnValue = 'Are you certain? This session will be lost!';
       });
   });
-
+      function msieversion(){
+        var ua = window.navigator.userAgent;
+        var msie = ua.includes("MSIE");
+        // If Internet Explorer, call the alert
+        if (msie) alert("MicrobeTrace does not and will never work on Internet Explorer");
+      }
+      msieversion();
   alertify.defaults.transition = 'slide';
   alertify.defaults.theme.ok = 'btn btn-primary';
   alertify.defaults.theme.cancel = 'btn btn-danger';
