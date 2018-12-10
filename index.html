@@ -443,9 +443,11 @@ performance of this software.</pre>
           .attr('href', 'https://github.com/CDCgov/MicrobeTrace/commit/' + r)
           .text(r.slice(0,7));
       });
+    }).fail(function(){
+      $('#branch').parent().remove();
     });
 
-    if(navigator.onLine){
+    if(window.navigator.onLine){
       $('#HelpTab')
         .removeClass('viewbutton')
         .attr('href', 'https://github.com/CDCgov/MicrobeTrace/wiki')
@@ -453,8 +455,8 @@ performance of this software.</pre>
       $('.ifOnline').show();
     }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js', {scope: './'}).catch(function(error) {
+    if ('serviceWorker' in window.navigator) {
+      window.navigator.serviceWorker.register('sw.js', {scope: './'}).catch(function(error) {
         console.error('Service Worker Registration failed with ' + error);
       });
     }
