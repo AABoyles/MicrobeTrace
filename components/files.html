@@ -2,6 +2,13 @@
   <div id="file-table" class="container">
     <p id="file-prompt" class="text-muted">Drag-and-Drop Files here, or click "Add File(s)" to load data.</p>
   </div>
+  <div class="ie-warning">
+    This page does not support Internet Explorer. To use MicrobeTrace, please switch to one of the following browsers:<br />
+    <a href='https://support.google.com/chrome/answer/95346'>Chrome</a> /
+    <a href='https://www.microsoft.com/en-us/windows/microsoft-edge'>Edge</a> /
+    <a href='https://support.apple.com/downloads/safari'>Safari</a> /
+    <a href='https://www.mozilla.org/en-US/firefox/new/'>Firefox</a>
+  </div>
 </div>
 
 <div id="file-footer">
@@ -176,6 +183,11 @@
 </div>
 <script>
 (function(){
+
+  if(window.navigator.userAgent.indexOf('MSIE') > -1 || window.navigator.appName.indexOf('Microsoft Internet Explorer') > -1){
+    $('.ie-warning').show();
+    throw new Error('MicrobeTrace does not work on Internet Explorer.');
+  }
 
   $('#data-files').on('change', function(e){
     var files = e.target.files;

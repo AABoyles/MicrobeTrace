@@ -25,11 +25,11 @@ body {
   transition: all 0.5s ease;
 }
 a {
-  color: #555;
+  color: #555555;
   text-decoration: none;
 }
 a:hover, a:focus {
-  color: #555;
+  color: #555555;
   text-decoration: none;
 }
 #export-dm-row{
@@ -192,6 +192,20 @@ button.navbar-toggler{
   height: calc(100% - 68px);
   padding: 15px;
   background-color: #ffffff;
+}
+.ie-warning {
+  display: none;
+  position: absolute;
+  top: 35%;
+  left: 0;
+  width: calc(100% - 15px);
+  background-color: red;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+.ie-warning a{
+  color: #ffffff;
 }
 #file-table {
   height: 100%;
