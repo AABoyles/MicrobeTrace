@@ -7,6 +7,7 @@
   "repository": "https://github.com/CDCgov/MicrobeTrace.git",
   "scripts": {
     "cache": "./appcache.sh && ./sw.sh",
+    "demo": "node_modules/http-server/bin/http-server",
     "start": "node index.js"
   },
   "dependencies": {
@@ -42,5 +43,8 @@
     "underscore": "^1.9.0",
     "xlsx": "^0.13.2",
     "xss": "^0.3.8"
+  },
+  "devDependencies": {
+    "http-server": "^0.11.1"
   }
 }
