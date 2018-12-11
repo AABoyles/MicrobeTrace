@@ -336,7 +336,7 @@
   let force = d3.forceSimulation()
     .force('link', d3.forceLink()
       .id(d => d.id)
-      .distance(session.style.widgets['link-length'])
+      .distance(l => l.origin.length * session.style.widgets['link-length'])
       .strength(0.125)
     )
     .force('charge', d3.forceManyBody()
@@ -387,18 +387,16 @@
     node.append('path')  // Adding a path?
       .attr('stroke', '#ffffff')
       .attr('stroke-width', '2px');
-    node.append('text'); // And a text? Wouldn't those already be attached to the nodes?
+    node.append('text') // And a text? Wouldn't those already be attached to the nodes?
+      .attr('dy', 5)
+      .attr('dx', 8);
     // Well, they would for nodes that already existed. The wouldn't for new nodes.
     // And until we merge the old and new nodes, `node` refers only to the *added* nodes.
     // Speaking of merging...
     node = node.merge(node);
     // E voila! node now refers to all the g.node elements in the network,
-    // and they all have path and text elements, so we can confidently append our label text
-    node.select('text')
-      .attr('dy', 5)
-      .attr('dx', 8);
-
-    // And style them according to the DOM State instructions.
+    // and they all have path and text elements, so we can confidently
+    // And style everything according to the DOM State instructions.
     redrawNodes();
     updateNodeColors();
 
@@ -512,7 +510,14 @@
     $('#copyID').attr('data-clipboard-text', d.id);
     $('#copySeq').attr('data-clipboard-text', d.seq);
     d3.select('#viewAttributes').on('click', e => {
-      showAttributeModal(d);
+      hideContextMenu();
+      let target = $('#attributeModal tbody').empty();
+      let nd = session.data.nodes.find(nd => nd.id === d.id);
+      for(let attribute in nd){
+        if(attribute[0] === '_') continue;
+        target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
+      }
+      $('#attributeModal').modal('show');
     }).node().focus();
     if(d.fixed){
       $('#pinNode').text('Unpin Node').on('click', e => {
@@ -542,16 +547,6 @@
     $('#context-menu').animate({'opacity': 0}, 80, function(){
       $(this).css('z-index', -1);
     });
-  }
-
-  function showAttributeModal(node){
-    hideContextMenu();
-    let target = $('#attributeModal tbody').empty();
-    let d = session.network.nodes.find(nd => nd.id === node.id);
-    for(let attribute in d){
-      target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
-    }
-    $('#attributeModal').modal('show');
   }
 
   function showNodeToolTip(d){
