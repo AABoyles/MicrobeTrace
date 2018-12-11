@@ -160,13 +160,10 @@
 </div>
 
 <div id="context-menu" class="dropdown-menu">
-  <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
+  <a href="#" id="pinNode" class="dropdown-item">Pin Node</a>
   <a href="#" id="copyID" class="dropdown-item">Copy ID</a>
   <a href="#" id="copySeq" class="dropdown-item show-for-seq">Copy Sequence</a>
-  <a href="#" id="pinNode" class="dropdown-item">Pin Node</a>
-  <div class="dropdown-divider" />
-  <a href="#" id="isolateCluster" class="dropdown-item">Isolate Cluster</a>
-  <a href="#" id="hideCluster" class="dropdown-item">Hide Cluster</a>
+  <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
 </div>
 
 <div id="attributeModal" class="modal fade" tabindex="-1" role="dialog">
@@ -532,34 +529,6 @@
         d.fixed = true;
         hideContextMenu();
       });
-    }
-    $('#hideCluster').on('click', e => {
-      session.data.clusters.find(c => c.id === d.cluster).visible = false;
-      app.setLinkVisibility();
-      app.setNodeVisibility();
-      render();
-      hideContextMenu();
-    });
-    if(session.data.clusters.length <= 1){
-      $('#isolateCluster').hide();
-    } else {
-      if(session.data.clusters.filter(c => c.visible).length === 1){
-        $('#isolateCluster').show().text('De-isolate Cluster').on('click', e => {
-          session.data.clusters.forEach(c => c.visible = true);
-          app.setLinkVisibility();
-          app.setNodeVisibility();
-          render();
-          hideContextMenu();
-        });
-      } else {
-        $('#isolateCluster').show().text('Isolate Cluster').on('click', e => {
-          session.data.clusters.forEach(c => c.visible = c.id === d.cluster);
-          app.setLinkVisibility();
-          app.setNodeVisibility();
-          render();
-          hideContextMenu();
-        });
-      }
     }
     $('#context-menu').css({
       'z-index': 1000,
