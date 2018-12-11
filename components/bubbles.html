@@ -261,7 +261,7 @@
       let color = session.style.widgets['node-color'];
       bubble.transition().attr('fill', color);
     } else {
-      bubble.transition().attr('fill', d => session.style.nodeColorMap(d[field]));
+      bubble.transition().attr('fill', d => temp.style.nodeColorMap(d[field]));
     }
   }
 

@@ -657,7 +657,7 @@
     }
     let nodes = svg.select('g#nodes').selectAll('g.node').data(session.network.nodes);
     nodes.select('path').each(function(d){
-      if(symbolVariable !== 'None') type = d3[session.style.nodeSymbolMap(d[symbolVariable])];
+      if(symbolVariable !== 'None') type = d3[temp.style.nodeSymbolMap(d[symbolVariable])];
       if(sizeVariable !== 'None'){
         size = med;
         if(typeof d[sizeVariable] !== 'undefined'){
@@ -716,12 +716,12 @@
       }
       return d[e.target.value];
     })).sort();
-    session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+    temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
     let options = $('#node-symbol').html();
     values.forEach((v, i) => {
-      let selector = $('<select></select>').append(options).val(session.style.nodeSymbolMap(v)).on('change', function(e){
+      let selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function(e){
         session.style.nodeSymbols.splice(i, 1, e.target.value);
-        session.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+        temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
         redrawNodes();
       });
       let cell = $('<td></td>').append(selector);
@@ -748,7 +748,7 @@
       let col = session.style.widgets['node-color'];
       nodes.attr('fill', col);
     } else {
-      nodes.data(session.network.nodes).attr('fill', d => session.style.nodeColorMap(d[variable]));
+      nodes.data(session.network.nodes).attr('fill', d => temp.style.nodeColorMap(d[variable]));
     }
   }
 
@@ -785,7 +785,7 @@
     } else {
       links
         .data(getVLinks())
-        .attr('stroke', l => session.style.linkColorMap(l[variable]))
+        .attr('stroke', l => temp.style.linkColorMap(l[variable]))
         .attr('stroke-dasharray', l => {
           //This quirky little algorithm creates the dasharray code necessary to make dash-y links.
           let length = 15;

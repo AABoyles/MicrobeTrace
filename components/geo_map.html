@@ -490,7 +490,7 @@
         pointToLayer: function(feature, latlng){
           return L.circleMarker(latlng, Object.assign({}, style, {
             color: feature.properties.selected ? session.style.widgets['selected-color'] : '#ffffff',
-            fillColor: colorVariable === 'None' ? fillcolor : session.style.nodeColorMap(feature.properties[colorVariable])
+            fillColor: colorVariable === 'None' ? fillcolor : temp.style.nodeColorMap(feature.properties[colorVariable])
           }));
         }
       });
@@ -515,7 +515,7 @@
       } else {
         layers.links = L.geoJSON(makeLinkGeoJSON(), {style: function(l){
           return {
-            color: session.style.linkColorMap(l.properties[lcv]),
+            color: temp.style.linkColorMap(l.properties[lcv]),
             opacity: opacity
           };
         }});

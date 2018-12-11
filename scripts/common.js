@@ -120,14 +120,21 @@ app.sessionSkeleton = function(){
     },
     style: {
       linkColors: d3.schemePaired,
-      linkColorMap: function(){ return session.style.widgets['link-color']; },
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
-      nodeColorMap: function(){ return session.style.widgets['node-color']; },
       nodeSymbols: ['symbolCircle', 'symbolCross', 'symbolDiamond', 'symbolSquare', 'symbolStar', 'symbolTriangle', 'symbolWye', 'symbolTriangleDown', 'symbolTriangleLeft', 'symbolTriangleRight', 'symbolDiamondAlt', 'symbolDiamondSquare', 'symbolPentagon', 'symbolHexagon', 'symbolHexagonAlt', 'symbolOctagon', 'symbolOctagonAlt', 'symbolX'],
-      nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; },
       widgets: app.defaultWidgets
     },
     warnings: []
+  };
+};
+
+app.tempSkeleton = function(){
+  return {
+    style: {
+      linkColorMap: function(){ return session.style.widgets['link-color']; },
+      nodeColorMap: function(){ return session.style.widgets['node-color']; },
+      nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; }
+    }
   };
 };
 
@@ -576,7 +583,7 @@ app.updateStatistics = function(){
 app.createNodeColorMap = function(){
   let variable = session.style.widgets['node-color-variable'];
   if(variable === 'None'){
-    session.style.nodeColorMap = function(){ return session.style.widgets['node-color']; };
+    temp.style.nodeColorMap = function(){ return session.style.widgets['node-color']; };
     return [];
   }
   values = _.chain(session.data.nodes).pluck(variable).uniq().value();
@@ -586,19 +593,19 @@ app.createNodeColorMap = function(){
     values.sort();
   }
   if(values.length > session.style.nodeColors.length){
-    var temp = [];
+    var colors = [];
     var n = Math.ceil(values.length/session.style.nodeColors.length);
-    while(n --> 0) temp = temp.concat(session.style.nodeColors);
-    session.style.nodeColors = temp;
+    while(n --> 0) colors = colors.concat(session.style.nodeColors);
+    session.style.nodeColors = colors;
   }
-  session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+  temp.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
   return values;
 };
 
 app.createLinkColorMap = function(){
   let variable = session.style.widgets['link-color-variable'];
   if(variable === 'None'){
-    session.style.linkColorMap = function(){ return session.style.widgets['link-color']; };
+    temp.style.linkColorMap = function(){ return session.style.widgets['link-color']; };
     return [];
   }
   let values = [];
@@ -617,12 +624,12 @@ app.createLinkColorMap = function(){
     values.sort();
   }
   if(values.length > session.style.linkColors.length){
-    var temp = [];
+    var colors = [];
     var n = Math.ceil(values.length/session.style.linkColors.length);
-    while(n-- > 0) temp = temp.concat(session.style.linkColors);
-    session.style.linkColors = temp;
+    while(n-- > 0) colors = colors.concat(session.style.linkColors);
+    session.style.linkColors = colors;
   }
-  session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+  temp.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
   return values;
 };
 

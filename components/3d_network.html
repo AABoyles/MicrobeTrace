@@ -119,7 +119,7 @@
         let nodeColor = session.style.widgets['node-color'];
         graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : nodeColor);
       } else {
-        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : session.style.nodeColorMap(d[nodeColorBy]));
+        graph.nodeColor(d => d.selected ? session.style.widgets['selected-color'] : temp.style.nodeColorMap(d[nodeColorBy]));
       }
       graph.nodeOpacity(1);
     }
@@ -145,7 +145,7 @@
         let linkColor = session.style.widgets['link-color'];
         graph.linkColor(l => linkColor);
       } else {
-        graph.linkColor(l => session.style.linkColorMap(l[linkColorBy]));
+        graph.linkColor(l => temp.style.linkColorMap(l[linkColorBy]));
       }
     }
 

@@ -461,6 +461,7 @@ performance of this software.</pre>
     }
 
     window.session = app.sessionSkeleton();
+    window.temp = app.tempSkeleton();
 
     window.layout = new window.GoldenLayout({
       settings: {
@@ -719,10 +720,10 @@ performance of this software.</pre>
         table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
         let values = app.createNodeColorMap();
         values.forEach(function(value, i){
-          let input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
+          let input = $('<input type="color" value="'+temp.style.nodeColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.nodeColors.splice(i, 1, evt.target.value);
-              session.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
+              temp.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
               $(window).trigger('node-color-change');
             });
           let cell = $('<td></td>').append(input);
@@ -756,10 +757,10 @@ performance of this software.</pre>
         let table = $('<tbody id="link-colors"></tbody>').appendTo('#group-key');
         table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
         values.forEach(function(value, i){
-          let input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
+          let input = $('<input type="color" value="'+temp.style.linkColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.linkColors.splice(i, 1, evt.target.value);
-              session.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
+              temp.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
               $(window).trigger('link-color-change');
             });
           let cell = $('<td></td>').append(input);

@@ -324,7 +324,7 @@
     function node_colorizer(element, data){
       let d = nodes.find(d => d.id == data.name);
       if(d){
-        let color = session.style.nodeColorMap(d[session.style.widgets['node-color-variable']]);
+        let color = temp.style.nodeColorMap(d[session.style.widgets['node-color-variable']]);
         d3v3.select(element[0][0]).select('text'  ).style('fill', color);
         d3v3.select(element[0][0]).select('circle').style('fill', color);
       }
