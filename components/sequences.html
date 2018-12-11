@@ -66,9 +66,9 @@
             </div>
             <div class="col-3">
               <select id="export-sequences-file-type" class="form-control form-control-sm">
-                <option selected>fasta</option>
+                <option selected>png</option>
+                <option>fasta</option>
                 <option>mega</option>
-                <option>png</option>
               </select>
             </div>
           </div>
@@ -83,6 +83,7 @@
 
   <script>
   (function(){
+    let canvas, context, width, height;
     let av = $('#sequences-panel');
 
     function update(){
@@ -90,17 +91,35 @@
         width: 0|$('#avwidth').val(),
         height: 0|$('#avheight').val(),
         showChar: $('#showChar').is(':checked')
-      }).then(function(canvas){
-        av.append(canvas);
+      }).then(function(c){
+        av.append(c);
+        canvas = d3.select('#sequences-panel canvas');
+        context = canvas.node().getContext('2d');
+        let rect = canvas.node().getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        d3.select('#sequences-panel').call(d3.zoom().scaleExtent([0.1, 8]).on('zoom', function(){
+          var t = d3.event.transform;
+          canvas.style('transform', 'translate(' + Math.round(t.x-width/2) + 'px,' + Math.round(t.y-height/2) + 'px) scale(' + t.k + ',' + t.k + ')');
+        }));
+        av.trigger('zoom');
       });
     }
+
+    av.on('mouseup', function(){
+      console.log('up');
+      av.css('cursor', 'grab');
+    });
+    av.on('mousedown', function(){
+      av.css('cursor', 'grabbing');
+    });
 
     $('#avheight, #avwidth').on('input', function(){
       av.empty();
       update();
     });
 
-    $('#showChar').change(function(){
+    $('#showChar').on('change', function(){
       av.empty();
       update();
     });

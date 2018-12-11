@@ -353,11 +353,11 @@ a.btn, button.btn, .btn-group{
 }
 
 /* Sequences */
-#sequences_panel {
+#sequences-panel {
   padding: 10px;
   padding-top: 50px;
   height: 100%;
-  overflow:auto;
+  cursor: grab;
 }
 
 /* Phylogenetic tree */
