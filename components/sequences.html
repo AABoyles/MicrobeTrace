@@ -1,15 +1,15 @@
-  <div id="sequences_panel"></div>
+  <div id="sequences-panel"></div>
 
-  <div id="sequences_view_controls" class="view_controls">
-    <button type="button" id="toggle_sequences_settings" class="btn btn-light btn-sm">
+  <div id="sequences-view-controls" class="view-controls">
+    <button type="button" id="toggle-sequences-settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#sequences_export_modal">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#sequences-export_modal">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
 
-  <div id="sequences_settings_pane" class="left_pane">
+  <div id="sequences-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
         <a href="#sequencesConfigurations" id="sequences-tab" class="nav-link active" aria-controls="sequences" role="tab" data-toggle="tab">Sequences</a>
@@ -50,7 +50,7 @@
     </div>
   </div>
 
-  <div id="sequences_export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="sequences-export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -75,7 +75,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="sequences_export" class="btn btn-primary" data-dismiss="modal">Export</button>
+          <button type="button" id="sequences-export" class="btn btn-primary" data-dismiss="modal">Export</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -83,7 +83,7 @@
 
   <script>
   (function(){
-    let av = $('#sequences_panel');
+    let av = $('#sequences-panel');
 
     function update(){
       alignmentViewer(session.data.nodes.filter(d => d.seq), {
@@ -105,7 +105,7 @@
       update();
     });
 
-    $('#sequences_export').click(function(){
+    $('#sequences-export').on('click', function(){
       let type = $('#export-sequences-file-type').val();
       if(type === 'fasta'){
         let blob = new Blob([app.unparseFASTA(session.data.nodes.filter(d => d.seq))]);
@@ -114,14 +114,14 @@
         let blob = new Blob([app.unparseMEGA(session.data.nodes.filter(d => d.seq))]);
         saveAs(blob, $('#export-sequences-file-name').val() + '.mega');
       } else if(type === 'png'){
-        $('#sequences_panel canvas').get(0).toBlob(function(blob){
+        $('#sequences-panel canvas').get(0).toBlob(function(blob){
           saveAs(blob, $('#export-sequences-file-name').val() + '.png');
         });
       }
     });
 
-    $('#toggle_sequences_settings').click(function(){
-      let pane = $('#sequences_settings_pane');
+    $('#toggle-sequences-settings').on('click', function(){
+      let pane = $('#sequences-settings-pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
@@ -131,7 +131,7 @@
 
     function setBackground(){
       let col = session.style.widgets['background-color'];
-      $('#sequences_panel').css('background', col);
+      $('#sequences-panel').css('background', col);
     }
 
     $(window).on('background-color-change', setBackground);

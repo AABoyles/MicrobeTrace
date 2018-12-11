@@ -1,7 +1,7 @@
 <div id="3DNet"></div>
 
-  <div class="view_controls">
-    <button type="button" id="toggle_3DNet-settings" class="btn btn-light btn-sm" data-toggle="button" title="3D Network Settings">
+  <div class="view-controls">
+    <button type="button" id="toggle-3DNet-settings" class="btn btn-light btn-sm" data-toggle="button" title="3D Network Settings">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export_3d_modal" title="Export Network">
@@ -12,7 +12,7 @@
     </button>
   </div>
 
-  <div id="3DNet-settings_pane" class="left_pane">
+  <div id="3DNet-settings-pane" class="left-pane">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="nav-item">
@@ -201,8 +201,8 @@
     //   $(window).trigger('node-selected');
     // });
 
-    $('#toggle_3DNet-settings').on('click', function(){
-      let pane = $('#3DNet-settings_pane');
+    $('#toggle-3DNet-settings').on('click', function(){
+      let pane = $('#3DNet-settings-pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {

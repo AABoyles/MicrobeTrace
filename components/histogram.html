@@ -1,6 +1,6 @@
 <div id="histogram-panel"></div>
 
-  <div class="view_controls">
+  <div class="view-controls">
     <button id="toggle-histogram-settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
@@ -9,7 +9,7 @@
     </button>
   </div>
 
-  <div id="histogram-settings_pane" class="left_pane">
+  <div id="histogram-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
         <a href="#histogram-settings" id="histogram-tab" class="nav-link active" aria-controls="histogram" role="tab" data-toggle="tab">Histogram</a>
@@ -179,7 +179,7 @@
     }
 
     $('#toggle-histogram-settings').click(function(){
-      let pane = $('#histogram-settings_pane');
+      let pane = $('#histogram-settings-pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {

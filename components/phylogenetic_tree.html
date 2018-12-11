@@ -1,6 +1,6 @@
   <svg id="tree"></svg>
 
-  <div class="view_controls">
+  <div class="view-controls">
     <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
@@ -9,7 +9,7 @@
     </button>
   </div>
 
-  <div id="tree-settings_pane" class="left_pane">
+  <div id="tree-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
         <a href="#tree-configurations" id="tree-tab" class="nav-link active" aria-controls="tree" role="tab" data-toggle="tab">Phylogenetic Tree</a>
@@ -331,7 +331,7 @@
     }
 
     $('#toggle-tree-settings').on('click', function(){
-      let pane = $('#tree-settings_pane');
+      let pane = $('#tree-settings-pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {

@@ -1,7 +1,7 @@
   <div id="gantt"></div>
 
-  <div class="view_controls">
-    <button type="button" id="toggle_gantt_settings" class="btn btn-light btn-sm">
+  <div class="view-controls">
+    <button type="button" id="toggle-gantt-settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#gantt-export-modal" title="Export Gantt">
@@ -9,7 +9,7 @@
     </button>
   </div>
 
-  <div id="gantt_settings_pane" class="left_pane">
+  <div id="gantt-settings-pane" class="left-pane">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item active">
@@ -271,8 +271,8 @@
     });
   });
 
-  $('#toggle_gantt_settings').click(function(){
-    let pane = $('#gantt_settings_pane');
+  $('#toggle-gantt-settings').click(function(){
+    let pane = $('#gantt-settings-pane');
     if(pane.is(':visible')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {

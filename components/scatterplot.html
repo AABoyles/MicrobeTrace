@@ -1,6 +1,6 @@
   <div id="scatterplot-panel"></div>
 
-  <div class="view_controls">
+  <div class="view-controls">
     <button type="button" id="toggle-scatterplot-settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
@@ -9,7 +9,7 @@
     </button>
   </div>
 
-  <div id="scatterplot-settings_pane" class="left_pane">
+  <div id="scatterplot-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="nav-item active">
         <a href="#scatterplotConfigurations" aria-controls="scatterplotConfigurations" class="nav-link active" role="tab" data-toggle="tab">Scatterplot</a>
@@ -126,7 +126,7 @@
     }
 
     $('#toggle-scatterplot-settings').on('click', function(){
-      let pane = $('#scatterplot-settings_pane');
+      let pane = $('#scatterplot-settings-pane');
       if(pane.is(':visible')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {

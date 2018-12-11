@@ -38,7 +38,7 @@ a:hover, a:focus {
 .lm_controls .lm_popout {
   display: none;
 }
-.view_controls button{
+.view-controls button{
   border: 1px solid #cccccc;
 }
 .floater{
@@ -59,7 +59,7 @@ svg#link-threshold-sparkline{
   width: 280px;
   height: 48px;
 }
-.left_pane{
+.left-pane{
   position: absolute;
   top: 0px;
   left: -400px;
@@ -70,15 +70,15 @@ svg#link-threshold-sparkline{
   background: rgba(0, 0, 0, 0.1);
   z-index: 1;
 }
-.left_pane .nav{
+.left-pane .nav{
   padding-top: 40px;
 }
-.left_pane .active{
+.left-pane .active{
   background:#ffffff;
   border-width: 2px;
   border-color: #ffffff #ffffff transparent #ffffff;
 }
-.left_pane div.tab-content{
+.left-pane div.tab-content{
   background:#ffffff;
 }
 .ifOnline{
@@ -300,7 +300,7 @@ a.btn, button.btn, .btn-group{
 .btn-default {
   background-color: #f8f9fa;
 }
-.view_controls {
+.view-controls {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -507,7 +507,7 @@ stroke: #CCC;
 }
 
 /* Gantt */
-#gantt_settings_pane{
+#gantt-settings-pane{
   left: 0px;
   display: block;
 }
