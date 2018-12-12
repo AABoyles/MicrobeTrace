@@ -32,10 +32,10 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
         <div class="dropdown-menu">
-          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
           <a href="#" id="StashDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-stash-modal">Stash</a>
-          <div class="dropdown-divider"></div>
           <a href="#" id="RecallDataTab" class="dropdown-item">Recall</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
           <a href="#" class="dropdown-item">
             <input type="file" class="d-none" id="OpenTab" />
             <label class="mb-0 w-100" for="OpenTab">Open</label>
@@ -548,20 +548,14 @@ performance of this software.</pre>
     });
 
     $('#stash-data').on('click', function(){
-      localforage.setItem('stash-'+Date.now()+'-'+$('#stash-name').val(), JSON.stringify(session));
+      localforage.setItem('stash-'+Date.now()+'-'+$('#stash-name').val(), JSON.stringify(session)).then(function(){
+        alertify.success('Session Stashed Successfully!');
+      });
     });
 
     var table;
-    $('#RecallDataTab').on('click', function(){
-      table = new Tabulator('#recall-stashes-available', {
-        height: '100%',
-        layout: "fitColumns",
-        selectable: 1,
-        columns: [
-          {title:"Name", field:"name"},
-          {title:"Date", field:"date", align:"right", sorter:"date"}
-        ]
-      });
+
+    function updateTable(){
       localforage.keys().then(function(keys){
         var rows = [];
         keys.forEach(function(k){
@@ -573,16 +567,27 @@ performance of this software.</pre>
           });
         });
         table.setData(rows);
-        $('#session-recall-modal').modal('show');
-      }).catch(function(err){
-        // This code runs if there were any errors
-        console.log(err);
       });
+    }
+
+    $('#RecallDataTab').on('click', function(){
+      table = new Tabulator('#recall-stashes-available', {
+        height: '100%',
+        layout: "fitColumns",
+        selectable: 1,
+        columns: [
+          {title:"Name", field:"name"},
+          {title:"Date", field:"date", align:"right", sorter:"date"}
+        ]
+      });
+      updateTable();
+      $('#session-recall-modal').modal('show');
     });
 
     $('#recall-delete-stash').on('click', function(){
       var key = table.getSelectedData()[0].fullname;
       localforage.removeItem(key).then(function(){
+        updateTable();
         alertify.success('That stash has been deleted.');
       });
     });

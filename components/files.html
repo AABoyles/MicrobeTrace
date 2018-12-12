@@ -172,6 +172,21 @@
                 </select>
               </div>
             </div>
+            <div class="form-group row">
+              <div class="col-2">
+                <label for="stash-auto">Autostashing?</label>
+              </div>
+              <div class="col-10">
+                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <label class="btn btn-light active col" data-toggle="tooltip" title="Do Not Automatically Stash Sessions">
+                    <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> No
+                  </label>
+                  <label class="btn btn-light col" data-toggle="tooltip" title="Automatically Stash Sessions">
+                    <input type="radio" name="stash-auto" id="stash-auto-yes" autocomplete="off"> Yes
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -436,6 +451,19 @@
         .attr('step', 0.001)
         .val(0.015);
     }
+  });
+
+  $('#stash-auto-yes').parent().on('click', function(){
+    localStorage.setItem('stash-auto', 'true');
+  });
+
+  if(localStorage.getItem('stash-auto') === 'true'){
+    $('#stash-auto-yes').parent().trigger('click');
+  }
+
+  $('#stash-auto-no').parent().on('click', function(){
+    if(temp.autostash) clearInterval(temp.autostash.interval);
+    localStorage.setItem('stash-auto', 'false');
   });
 
   if(localStorage.getItem('default-View')){
@@ -882,6 +910,19 @@
           type: $('#default-View').val()
         }]
       }, true);
+    }
+    if(localStorage.getItem('stash-auto') === 'true'){
+      temp.autostash = {
+        time: Date.now(),
+        interval: setInterval(function(){
+          var newTime = Date.now();
+          localforage.setItem('stash-' + newTime + '-autostash', JSON.stringify(session)).then(function(){
+            localforage.removeItem('stash-' + temp.autostash.time + '-autostash').then(function(){
+              temp.autostash.time = newTime;
+            });
+          });
+        }, 60000)
+      };
     }
     $('.hideForHIVTrace').css('display', 'flex');
     setTimeout(function(){
