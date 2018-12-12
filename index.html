@@ -476,31 +476,15 @@ performance of this software.</pre>
   $(function(){
     'use strict';
 
-    $.getJSON('package.json', function(r){
-      app.manifest = r;
-      $('#version').html(r.version);
-    });
-
-    $.get('.git/HEAD', function(ref){
-      var branch = ref.split('/').pop();
-      $('#branch')
-        .attr('href', 'https://github.com/CDCgov/MicrobeTRACE/tree/' + branch)
-        .text(branch);
-      $.get('.git/' + ref.split(' ').pop(), function(r){
-        $('#commit')
-          .attr('href', 'https://github.com/CDCgov/MicrobeTrace/commit/' + r)
-          .text(r.slice(0,7));
+    // Before anything else gets done, ask the user to accept the legal agreement
+    if(!localStorage.getItem('licenseAccepted')){
+      $('#acceptAgreement').on('click', function(){
+        localStorage.setItem('licenseAccepted', new Date());
       });
-    }).fail(function(){
-      $('#branch').parent().remove();
-    });
-
-    if(window.navigator.onLine){
-      $('#HelpTab')
-        .removeClass('viewbutton')
-        .attr('href', 'https://github.com/CDCgov/MicrobeTrace/wiki')
-        .attr('target', '_blank');
-      $('.ifOnline').show();
+      $('#licenseAgreement').modal({
+        backdrop: 'static',
+        keyboard: false
+      });
     }
 
     if ('serviceWorker' in window.navigator) {
@@ -528,24 +512,6 @@ performance of this software.</pre>
     layout.contentItems = [];
 
     app.launchView('files');
-
-    // Before anything else gets done, ask the user to accept the legal agreement
-    if(!localStorage.getItem('licenseAccepted')){
-      $('#acceptAgreement').on('click', function(){
-        // Set that agreement in localStorage
-        localStorage.setItem('licenseAccepted', new Date());
-      });
-      // $('#rejectAgreement').on('click', function(){
-      //   // If you don't agree, no app for you!
-      //   //TODO: Show a message indicating you are not permitted to use the app without agreeing to the terms of use.
-      //   window.location.href = "https://www.cdc.gov";
-      // });
-      // No hacking around the agreement.
-      $('#licenseAgreement').modal({
-        backdrop: 'static',
-        keyboard: false
-      });
-    }
 
     // Let's set up the Nav Bar
     $('#FileTab').on('click', function(){
@@ -900,6 +866,33 @@ performance of this software.</pre>
         };
         reader.readAsText(this.files[0]);
       }
+    });
+
+    if(window.navigator.onLine){
+      $('#HelpTab')
+        .removeClass('viewbutton')
+        .attr('href', 'https://github.com/CDCgov/MicrobeTrace/wiki')
+        .attr('target', '_blank');
+      $('.ifOnline').show();
+    }
+
+    $.getJSON('package.json', function(r){
+      app.manifest = r;
+      $('#version').html(r.version);
+    });
+
+    $.get('.git/HEAD', function(ref){
+      var branch = ref.split('/').pop();
+      $('#branch')
+        .attr('href', 'https://github.com/CDCgov/MicrobeTRACE/tree/' + branch)
+        .text(branch);
+      $.get('.git/' + ref.split(' ').pop(), function(r){
+        $('#commit')
+          .attr('href', 'https://github.com/CDCgov/MicrobeTrace/commit/' + r)
+          .text(r.slice(0,7));
+      });
+    }).fail(function(){
+      $('#branch').parent().remove();
     });
 
     $('#group-key-wrapper').on('contextmenu', function(e){
