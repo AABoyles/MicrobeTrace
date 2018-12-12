@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-12-11';
+var CACHE = 'MicrobeTraceD2018-12-12';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -57,6 +57,7 @@ self.addEventListener('install', function(event) {
         'node_modules/d3-sankey/build/d3-sankey.min.js',
         'node_modules/marked/marked.min.js',
         'node_modules/jszip/dist/jszip.min.js',
+        'node_modules/localforage/dist/localforage.min.js',
         'node_modules/bioseq/dist/bioseq.min.js',
         'node_modules/patristic/dist/patristic.min.js',
         'node_modules/neighborjoining/dist/neighborjoining.min.js',
@@ -143,8 +144,6 @@ self.addEventListener('install', function(event) {
         'node_modules/open-iconic/font/fonts/open-iconic.ttf',
         'node_modules/open-iconic/font/fonts/open-iconic.otf',
         'node_modules/papaparse/papaparse.min.js?papaworker',
-        '.git/HEAD',
-        '.git/refs/heads/master',
       ]);
     })
   );
