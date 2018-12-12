@@ -502,7 +502,9 @@
     $(window).trigger('node-selected');
   }
 
-  new Clipboard('#copyID, #copySeq');
+  var clipboard = new ClipboardJS('#copyID, #copySeq');
+
+  clipboard.on('success', hideContextMenu);
 
   function showContextMenu(d){
     d3.event.preventDefault();
