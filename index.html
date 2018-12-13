@@ -788,7 +788,7 @@ performance of this software.</pre>
         table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
         var values = app.createNodeColorMap();
         values.forEach(function(value, i){
-          var input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
+          var input = $('<input type="color" value="'+temp.style.nodeColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.nodeColors.splice(i, 1, evt.target.value);
               temp.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
@@ -825,7 +825,7 @@ performance of this software.</pre>
         var table = $('<tbody id="link-colors"></tbody>').appendTo('#group-key');
         table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
         values.forEach(function(value, i){
-          var input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
+          var input = $('<input type="color" value="'+temp.style.linkColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.linkColors.splice(i, 1, evt.target.value);
               temp.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
@@ -950,6 +950,16 @@ performance of this software.</pre>
       })
       .on('click', function(){
         $('#network-statistics-context, #group-key-context').hide();
+      })
+      .on('link-threshold-change', function(){
+        if(session.style.widgets['link-color-variable'] !== 'None'){
+          $('#link-color-variable').trigger('change');
+        }
+      })
+      .on('node-visibility', function(){
+        if(session.style.widgets['node-color-variable'] !== 'None'){
+          $('#node-color-variable').trigger('change');
+        }
       })
       .on('resize', function(){
         layout.root.setSize();

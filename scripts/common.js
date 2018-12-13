@@ -586,7 +586,11 @@ app.createNodeColorMap = function(){
     temp.style.nodeColorMap = function(){ return session.style.widgets['node-color']; };
     return [];
   }
-  values = _.chain(session.data.nodes).pluck(variable).uniq().value();
+  values = _.chain(session.data.nodes)
+            .filter(function(d){return d.visible;})
+            .pluck(variable)
+            .uniq()
+            .value();
   if(_.isNumber(session.data.nodes[0][variable])){
     values.sort(function(a, b){ return a - b; });
   } else {
@@ -616,7 +620,11 @@ app.createLinkColorMap = function(){
       });
     });
   } else {
-    values = _.chain(session.data.links).pluck(variable).uniq().value();
+    values = _.chain(session.data.links)
+              .filter(function(l){ return l.visible; })
+              .pluck(variable)
+              .uniq()
+              .value();
   }
   if(_.isNumber(session.data.links[0][variable])){
     values.sort(function(a, b){ return a - b; });
