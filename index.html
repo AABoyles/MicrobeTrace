@@ -40,7 +40,9 @@
             <input type="file" class="d-none" id="OpenTab" />
             <label class="mb-0 w-100" for="OpenTab">Open</label>
           </a>
-          <a href="#" id="FileTab" class="dropdown-item">New</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
+          <a href="#" id="NewTab" class="dropdown-item">New</a>
         </div>
       </li>
       <li class="nav-item">
@@ -512,12 +514,57 @@ performance of this software.</pre>
 
     layout.contentItems = [];
 
-    app.launchView('files');
-
     // Let's set up the Nav Bar
-    $('#FileTab').on('click', function(){
-      $('#exit-button').on('click', app.reset);
-      $('#exit-modal').modal();
+    $('#stash-data').on('click', function(){
+      localforage.setItem('stash-'+Date.now()+'-'+$('#stash-name').val(), JSON.stringify(session)).then(function(){
+        alertify.success('Session Stashed Successfully!');
+      });
+    });
+
+    var table = new Tabulator('#recall-stashes-available', {
+      height: '100%',
+      layout: "fitColumns",
+      selectable: 1,
+      columns: [
+        {title:"Name", field:"name"},
+        {title:"Date", field:"date", align:"right", sorter:"date"}
+      ]
+    });
+
+    function updateTable(){
+      localforage.keys().then(function(keys){
+        var rows = [];
+        keys.forEach(function(k){
+          if(!k.substring(0, 5) === 'stash') return;
+          rows.push({
+            fullname: k,
+            name: k.substring(20),
+            date: (new Date(parseFloat(k.substring(6,19)))).toISOString()
+          });
+        });
+        table.setData(rows);
+      });
+    }
+
+    $('#RecallDataTab').on('click', function(){
+      updateTable();
+      $('#session-recall-modal').modal('show');
+    });
+
+    $('#recall-delete-stash').on('click', function(){
+      var key = table.getSelectedData()[0].fullname;
+      localforage.removeItem(key).then(function(){
+        updateTable();
+        alertify.success('That stash has been deleted.');
+      });
+    });
+
+    $('#recall-load-stash').on('click', function(){
+      var key = table.getSelectedData()[0].fullname;
+      localforage.getItem(key).then(function(json){
+        app.applySession(JSON.parse(json));
+        $('#session-recall-modal').modal('hide');
+      });
     });
 
     $('#save-data').on('click', function(){
@@ -548,59 +595,6 @@ performance of this software.</pre>
       }
     });
 
-    $('#stash-data').on('click', function(){
-      localforage.setItem('stash-'+Date.now()+'-'+$('#stash-name').val(), JSON.stringify(session)).then(function(){
-        alertify.success('Session Stashed Successfully!');
-      });
-    });
-
-    var table;
-
-    function updateTable(){
-      localforage.keys().then(function(keys){
-        var rows = [];
-        keys.forEach(function(k){
-          if(!k.substring(0, 5) === 'stash') return;
-          rows.push({
-            fullname: k,
-            name: k.substring(20),
-            date: (new Date(parseFloat(k.substring(6,19)))).toISOString()
-          });
-        });
-        table.setData(rows);
-      });
-    }
-
-    $('#RecallDataTab').on('click', function(){
-      table = new Tabulator('#recall-stashes-available', {
-        height: '100%',
-        layout: "fitColumns",
-        selectable: 1,
-        columns: [
-          {title:"Name", field:"name"},
-          {title:"Date", field:"date", align:"right", sorter:"date"}
-        ]
-      });
-      updateTable();
-      $('#session-recall-modal').modal('show');
-    });
-
-    $('#recall-delete-stash').on('click', function(){
-      var key = table.getSelectedData()[0].fullname;
-      localforage.removeItem(key).then(function(){
-        updateTable();
-        alertify.success('That stash has been deleted.');
-      });
-    });
-
-    $('#recall-load-stash').on('click', function(){
-      var key = table.getSelectedData()[0].fullname;
-      localforage.getItem(key).then(function(json){
-        app.applySession(JSON.parse(json));
-        $('#session-recall-modal').modal('hide');
-      });
-    });
-
     $('#OpenTab').on('change', function(e){
       if(e.target.files.length > 0){
         var extension = e.target.files[0].name.split('.').pop().toLowerCase();
@@ -624,6 +618,16 @@ performance of this software.</pre>
         }
       }
     });
+
+    $('#AddDataTab').on('click', function(){
+      app.launchView('files');
+    });
+
+    $('#NewTab').on('click', function(){
+      $('#exit-modal').modal();
+    });
+
+    $('#exit-button').on('click', app.reset);
 
     $('.viewbutton').on('click', function(){ app.launchView($(this).data('href')); });
 
@@ -931,6 +935,8 @@ performance of this software.</pre>
       }
       $(window).trigger('node-selected');
     });
+
+    app.launchView('files');
 
     $(document).on('keydown', function(e){
       if(e.ctrlKey && e.key === 'f'){
