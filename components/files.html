@@ -293,6 +293,10 @@
         session.files.splice(session.files.indexOf(file.name), 1);
         root.slideUp(function(){ root.remove(); });
       }))
+      .append($('<a href="#"><span class="oi oi-data-transfer-download"></span></a>').on('click', function(e){
+        let blob = new Blob([file.contents], {type: file.type | 'text'});
+        saveAs(blob, file.name);
+      }))
       .append(`&nbsp;<a href="#" title="${file.name}">${file.name}</a>`)
       .appendTo(fnamerow);
       fnamerow.append(`
