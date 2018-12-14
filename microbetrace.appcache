@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2018-12-12
+# 2018-12-14
 
 CACHE:
 index.html
@@ -38,6 +38,7 @@ node_modules/bootstrap/dist/js/bootstrap.min.js
 node_modules/alertifyjs/build/alertify.min.js
 node_modules/golden-layout/dist/goldenlayout.min.js
 node_modules/chosen-js/chosen.jquery.min.js
+node_modules/fileto/index.js
 node_modules/screenfull/dist/screenfull.js
 node_modules/clipboard/dist/clipboard.min.js
 node_modules/moment/min/moment-with-locales.min.js

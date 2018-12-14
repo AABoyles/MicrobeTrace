@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-12-12';
+var CACHE = 'MicrobeTraceD2018-12-14';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -39,6 +39,7 @@ self.addEventListener('install', function(event) {
         'node_modules/alertifyjs/build/alertify.min.js',
         'node_modules/golden-layout/dist/goldenlayout.min.js',
         'node_modules/chosen-js/chosen.jquery.min.js',
+        'node_modules/fileto/index.js',
         'node_modules/screenfull/dist/screenfull.js',
         'node_modules/clipboard/dist/clipboard.min.js',
         'node_modules/moment/min/moment-with-locales.min.js',
