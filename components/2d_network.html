@@ -365,7 +365,7 @@
 
   function render(){
     //OK, this is a little bit of expert-level D3 voodoo that deserves some explanation.
-    let node = svg.select('g#nodes').selectAll('g.node').data(session.network.nodes);
+    let node = svg.select('g#nodes').selectAll('g').data(session.network.nodes);
     node.exit().remove(); //Removing nodes with no representation in the dataset.
     node = node.enter().append('g') //Adding nodes that weren't represented in the dataset before.
       .attr('class', 'node')
@@ -468,22 +468,53 @@
     return output;
   }
 
-  function dragstarted(d){
+  let nodes, multidrag = false;
+
+  function dragstarted(n){
     if (!d3.event.active) force.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
+    multidrag = n.selected;
+    nodes = svg.select('g#nodes')
+      .selectAll('g.node')
+      .data(session.network.nodes);
+    if(multidrag){
+      nodes
+        .filter(function(d) { return d.selected; })
+        .each(function(d){
+          d.fx = d.x;
+          d.fy = d.y;
+        });
+    } else {
+      n.fx = n.x;
+      n.fy = n.y;
+    }
   }
 
-  function dragged(d){
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
+  function dragged(n){
+    if(multidrag){
+      nodes
+        .filter(function(d) { return d.selected; })
+        .each(function(d) {
+          d.fx += d3.event.dx;
+          d.fy += d3.event.dy;
+        });
+    } else {
+      n.fx = d3.event.x;
+      n.fy = d3.event.y;
+    }
   }
 
-  function dragended(d){
+  function dragended(n){
     if (!d3.event.active) force.alphaTarget(0);
-    if(!d.fixed){
-      d.fx = null;
-      d.fy = null;
+    if(multidrag){
+      nodes.each(function(d){
+        if(!d.fixed){
+          d.fx = null;
+          d.fy = null;
+        }
+      });
+    } else {
+      n.fx = null;
+      n.fy = null;
     }
   }
 
@@ -492,10 +523,10 @@
       session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
     } else {
       session.data.nodes.forEach(node => {
-        if(node.id !== n.id){
-          node.selected = false;
-        } else {
+        if(node.id === n.id){
           node.selected = !n.selected;
+        } else {
+          node.selected = false;
         }
       });
     }
