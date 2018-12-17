@@ -29,69 +29,77 @@
   </ul>
   <div class="tab-content">
     <div class="tab-pane fade show active" id="network-node-settings" role="tabpanel" aria-labelledby="nodes-tab">
-      <div class="form-group row">
-        <div class="col-4"><label for="node-label-variable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
-        <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
-      </div>
-      <div id="node-label-row" class="form-group row">
-        <div class="col-4"><label for="node-label-size" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label Size</label></div>
-        <div class="col-8">
-          <input type="range" id="node-label-size" min="6" value="16" max="72"></input>
+      <div class="accordion" id="node-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#node-controls-labels" aria-expanded="true" aria-controls="node-controls-labels" style="color:#495057">Labels and Tooltips</button>
+          </div>
+          <div id="node-controls-labels" class="collapse show" data-parent="#node-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row">
+                <div class="col-4"><label for="node-label-variable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
+                <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+              </div>
+              <div id="node-label-row" class="form-group row">
+                <div class="col-4"><label for="node-label-size" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label Size</label></div>
+                <div class="col-8">
+                  <input type="range" id="node-label-size" min="6" value="16" max="72"></input>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="node-tooltip-variable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+                <div class="col-8"><select id="node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4"><label for="node-tooltip-variable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
-        <div class="col-8"><select id="node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4">Color</div>
-        <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4"><label for="node-symbol-variable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
-        <div class="col-8"><select id="node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
-      </div>
-      <div id="node-symbol-row" class="form-group row">
-        <div class="col-4"><label for="node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
-        <div class="col-8"><select id="node-symbol" class="custom-select custom-select-sm">
-          <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
-          <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
-          <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
-          <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
-          <option value="symbolTriangleRight">&nbsp;&#9654; (Right Triangle)</option>
-          <option value="symbolDiamond">&nbsp;&#10731; (Vertical Diamond)</option>
-          <option value="symbolDiamondAlt">&nbsp;&#10731; (Horizontal Diamond)</option>
-          <option value="symbolSquare">&nbsp;&#9632; (Square)</option>
-          <option value="symbolDiamondSquare">&nbsp;&#9670; (Tilted Square)</option>
-          <option value="symbolPentagon">&nbsp;&#11039; (Pentagon)</option>
-          <option value="symbolHexagon">&nbsp;&#11042; (Hexagon)</option>
-          <option value="symbolHexagonAlt">&nbsp;&#11043; (Tilted Hexagon)</option>
-          <option value="symbolOctagon">&nbsp;&#11204; (Octagon)</option>
-          <option value="symbolOctagonAlt">&nbsp;&#11203; (Tilted Octagon)</option>
-          <option value="symbolCross">&nbsp;&#10010; (Addition Sign)</option>
-          <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
-          <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
-          <option value="symbolStar">&nbsp;&#9733; (Star)</option>
-        </select></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4"><label for="node-radius-variable" data-toggle="tooltip" title="How large should the nodes be?">Size By</label></div>
-        <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4"><label for="node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
-        <div class="col-8"><input type="range" id="node-radius" min="100" value="250" step="1" max="5000" /></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4"><label for="highlight-neighbors" data-toggle="tooltip" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">Neighbors</label></div>
-        <div class="col-8">
-          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-            <label class="btn btn-light active col">
-              <input type="radio" name="network-highlight" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
-            </label>
-            <label class="btn btn-light col">
-              <input type="radio" name="network-highlight" id="highlight-neighbors" autocomplete="off"> Highlighted
-            </label>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#node-controls-shapes" aria-expanded="false" aria-controls="node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+          </div>
+          <div id="node-controls-shapes" class="collapse" data-parent="#node-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row">
+                <div class="col-4"><label for="node-symbol-variable" data-toggle="tooltip" title="What shape should the nodes be?">Shape By</label></div>
+                <div class="col-8"><select id="node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+              </div>
+              <div id="node-symbol-row" class="form-group row">
+                <div class="col-4"><label for="node-symbol" data-toggle="tooltip" title="What shape should the nodes be?">Shape</label></div>
+                <div class="col-8"><select id="node-symbol" class="custom-select custom-select-sm">
+                  <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
+                  <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
+                  <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
+                  <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
+                  <option value="symbolTriangleRight">&nbsp;&#9654; (Right Triangle)</option>
+                  <option value="symbolDiamond">&nbsp;&#10731; (Vertical Diamond)</option>
+                  <option value="symbolDiamondAlt">&nbsp;&#10731; (Horizontal Diamond)</option>
+                  <option value="symbolSquare">&nbsp;&#9632; (Square)</option>
+                  <option value="symbolDiamondSquare">&nbsp;&#9670; (Tilted Square)</option>
+                  <option value="symbolPentagon">&nbsp;&#11039; (Pentagon)</option>
+                  <option value="symbolHexagon">&nbsp;&#11042; (Hexagon)</option>
+                  <option value="symbolHexagonAlt">&nbsp;&#11043; (Tilted Hexagon)</option>
+                  <option value="symbolOctagon">&nbsp;&#11204; (Octagon)</option>
+                  <option value="symbolOctagonAlt">&nbsp;&#11203; (Tilted Octagon)</option>
+                  <option value="symbolCross">&nbsp;&#10010; (Addition Sign)</option>
+                  <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
+                  <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
+                  <option value="symbolStar">&nbsp;&#9733; (Star)</option>
+                </select></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="node-radius-variable" data-toggle="tooltip" title="How large should the nodes be?">Size By</label></div>
+                <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"><label for="node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
+                <div class="col-8"><input type="range" id="node-radius" min="100" value="250" step="1" max="5000" /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
@@ -139,6 +147,19 @@
             </label>
             <label class="btn btn-light col">
               <input type="radio" name="network-directionality" id="link-directed" autocomplete="off"> Directed
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-4"><label for="highlight-neighbors" data-toggle="tooltip" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">Neighbors</label></div>
+        <div class="col-8">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+            <label class="btn btn-light active col">
+              <input type="radio" name="network-highlight" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
+            </label>
+            <label class="btn btn-light col">
+              <input type="radio" name="network-highlight" id="highlight-neighbors" autocomplete="off"> Highlighted
             </label>
           </div>
         </div>
@@ -704,12 +725,18 @@
       }
       d3.select(this).attr('d', d3.symbol().size(size).type(type));
     });
-    //* and Labels:
-    let labelVar = session.style.widgets['node-label-variable'];
+  }
+
+  function redrawLabels(){
+    let nodes = svg.select('g#nodes').selectAll('g.node').data(session.network.nodes).select('text'),
+        labelVar = session.style.widgets['node-label-variable'];
     if(labelVar === 'None'){
-      nodes.select('text').text('');
+      nodes.text('');
     } else {
-      nodes.select('text').text(n => n[labelVar]);
+      let size = session.style.widgets['node-label-size'];
+      nodes
+        .text(n => n[labelVar])
+        .style('font-size', size + 'px');
     }
   }
 
@@ -729,13 +756,12 @@
     } else {
       $('#node-label-row').css('display', 'flex');
     }
-    redrawNodes();
+    redrawLabels();
   });
 
   $('#node-label-size').on('input', e => {
-    var size = parseFloat(e.target.value);
-    session.style.widgets['node-label-size'] = size;
-    svg.select('g#nodes').selectAll('g.node').selectAll('text').style('font-size', size + 'px');
+    session.style.widgets['node-label-size'] = parseFloat(e.target.value);
+    redrawLabels();
   });
 
   $('#node-tooltip-variable').on('change', e => {
