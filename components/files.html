@@ -319,22 +319,27 @@
       var optionsrow = $('<div class="row w-100"></div>');
       var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
       optionsrow.append(`
-      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
         <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
       </div>
-      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
         <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
+      </div>
+      <div class='col '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+        <label for="file-${file.name}-field-3">Distance</label>
+        <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
       </div>
       `);
       optionsrow.appendTo(root);
 
       function matchHeaders(type){
         var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-        b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+            b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+            c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
         these = $(`[data-file='${file.name}'] select`);
-        [a, b].forEach(function(list, i){
+        [a, b, c].forEach(function(list, i){
           list.forEach(function(title){
             if(headers.includes(title)){
               $(these.get(i)).val(title);
@@ -356,13 +361,16 @@
         these = $(`[data-file='${file.name}']`),
         first = $(these.get(0)),
         second = $(these.get(1));
+        third = $(these.get(2));
         if(type === 'node'){
           first.slideDown().find('label').text('ID');
           second.slideDown().find('label').text('Sequence');
+          third.slideUp();
           matchHeaders(type);
         } else if(type === 'link'){
           first.slideDown().find('label').text('Source');
           second.slideDown().find('label').text('Target');
+          third.slideDown();
           matchHeaders(type);
         } else {
           these.slideUp();
@@ -514,6 +522,7 @@
       f.format = $el.find('input[type="radio"]:checked').data('type');
       f.field1 = selects.get(0).value;
       f.field2 = selects.get(1).value;
+      f.field3 = selects.get(2).value;
     });
 
     var hierarchy = ['distmat', 'link', 'node', 'fasta'];
@@ -561,7 +570,8 @@
             source: '' + link[file.field1],
             target: '' + link[file.field2],
             origin: [filename],
-            visible: true
+            visible: true,
+            distance: parseFloat(link[file.field3])
           };
           session.state.metrics.forEach(function(metric){
             metric = metric.toLowerCase();
