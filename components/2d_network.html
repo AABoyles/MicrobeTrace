@@ -33,6 +33,12 @@
         <div class="col-4"><label for="node-label-variable" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label</label></div>
         <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
+      <div id="node-label-row" class="form-group row">
+        <div class="col-4"><label for="node-label-size" data-toggle="tooltip" title="What field should be displayed as a label for the node?">Label Size</label></div>
+        <div class="col-8">
+          <input type="range" id="node-label-size" min="6" value="16" max="72"></input>
+        </div>
+      </div>
       <div class="form-group row">
         <div class="col-4"><label for="node-tooltip-variable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
         <div class="col-8"><select id="node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
@@ -70,7 +76,7 @@
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="node-radius-variable" data-toggle="tooltip" title="How large should the nodes be?">Size By</label></div>
-        <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables numeric"><option>None</option></select></div>
+        <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label for="node-radius" data-toggle="tooltip" title="How large should the nodes be?">Size</label></div>
@@ -718,7 +724,18 @@
 
   $('#node-label-variable').on('change', e => {
     session.style.widgets['node-label-variable'] = e.target.value;
+    if(e.target.value === 'None'){
+      $('#node-label-row').slideUp();
+    } else {
+      $('#node-label-row').css('display', 'flex');
+    }
     redrawNodes();
+  });
+
+  $('#node-label-size').on('input', e => {
+    var size = parseFloat(e.target.value);
+    session.style.widgets['node-label-size'] = size;
+    svg.select('g#nodes').selectAll('g.node').selectAll('text').style('font-size', size + 'px');
   });
 
   $('#node-tooltip-variable').on('change', e => {

@@ -320,6 +320,9 @@ a.btn, button.btn, .btn-group{
   font-family: monospace;
   margin: 0;
 }
+#node-label-row{
+  display: none;
+}
 #link-reciprocalthickness-row{
   display: none;
 }

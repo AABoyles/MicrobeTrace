@@ -74,6 +74,7 @@ app.defaultWidgets = {
   'node-color': '#1f77b4',
   'node-color-variable': 'None',
   'node-highlight': false,
+  'node-label-size': 16,
   'node-label-variable': 'None',
   'node-radius': 250,
   'node-radius-variable': 'None',
