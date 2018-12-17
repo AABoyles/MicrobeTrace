@@ -468,53 +468,50 @@
     return output;
   }
 
-  let nodes, multidrag = false;
+  let selected, multidrag = false;
 
   function dragstarted(n){
     if (!d3.event.active) force.alphaTarget(0.3).restart();
+    function setNode(d){
+      d.fx = d.x;
+      d.fy = d.y;
+    }
     multidrag = n.selected;
-    nodes = svg.select('g#nodes')
+    selected = svg.select('g#nodes')
       .selectAll('g.node')
-      .data(session.network.nodes);
+      .data(session.network.nodes)
+      .filter(function(d) { return d.selected; });
     if(multidrag){
-      nodes
-        .filter(function(d) { return d.selected; })
-        .each(function(d){
-          d.fx = d.x;
-          d.fy = d.y;
-        });
+      selected.each(setNode);
     } else {
-      n.fx = n.x;
-      n.fy = n.y;
+      setNode(n);
     }
   }
 
   function dragged(n){
+    function updateNode(d){
+      d.fx += d3.event.dx;
+      d.fy += d3.event.dy;
+    }
     if(multidrag){
-      nodes
-        .filter(function(d) { return d.selected; })
-        .each(function(d) {
-          d.fx += d3.event.dx;
-          d.fy += d3.event.dy;
-        });
+      selected.each(updateNode);
     } else {
-      n.fx = d3.event.x;
-      n.fy = d3.event.y;
+      updateNode(n);
     }
   }
 
   function dragended(n){
     if (!d3.event.active) force.alphaTarget(0);
+    function unsetNode(d){
+      if(!d.fixed){
+        d.fx = null;
+        d.fy = null;
+      }
+    }
     if(multidrag){
-      nodes.each(function(d){
-        if(!d.fixed){
-          d.fx = null;
-          d.fy = null;
-        }
-      });
+      selected.each(unsetNode);
     } else {
-      n.fx = null;
-      n.fy = null;
+      unsetNode(n);
     }
   }
 
