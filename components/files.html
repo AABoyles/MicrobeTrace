@@ -172,6 +172,21 @@
                 </select>
               </div>
             </div>
+            <div class="form-group row">
+              <div class="col-2">
+                <label for="stash-auto">Autostashing?</label>
+              </div>
+              <div class="col-10">
+                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <label class="btn btn-light active col" data-toggle="tooltip" title="Do Not Automatically Stash Sessions">
+                    <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> No
+                  </label>
+                  <label class="btn btn-light col" data-toggle="tooltip" title="Automatically Stash Sessions">
+                    <input type="radio" name="stash-auto" id="stash-auto-yes" autocomplete="off"> Yes
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -189,10 +204,15 @@
     throw new Error('MicrobeTrace does not work on Internet Explorer.');
   }
 
+  if(session.files.length > 0){
+    $('#file-prompt').remove();
+    session.files.forEach(addToTable);
+  }
+
   $('#data-files').on('change', function(e){
     var files = e.target.files;
     $('#file-prompt').remove();
-    for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
+    for(var i = 0, f; f = files[i]; i++) processFile(f);
     $('#main-submit').css('display', 'inline').focus();
   }).filestyle({
     text: 'Add File(s)',
@@ -210,16 +230,16 @@
     var files = evt.originalEvent.dataTransfer.files;
     var n = files.length;
     $('#file-prompt').remove();
-    for(var i = 0, f; f = files[i]; i++) addFileToTable(f);
+    for(var i = 0, f; f = files[i]; i++) processFile(f);
     $('#main-submit').css('display', 'inline').focus();
   });
 
-  function addFileToTable(file){
-    var extension = file.name.split('.').pop().toLowerCase();
+  function processFile(rawfile){
+    var extension = rawfile.name.split('.').pop().toLowerCase();
     if(extension === 'zip'){
       var new_zip = new JSZip();
       new_zip
-        .loadAsync(file)
+        .loadAsync(rawfile)
         .then(function(zip){
           zip.forEach(function(relativePath, zipEntry){
             extension = zipEntry.name.split('.').pop();
@@ -235,24 +255,27 @@
       reader.onloadend = function(out){
         app.processJSON(out.target.result, extension);
       };
-      reader.readAsText(file, 'UTF-8');
+      reader.readAsText(rawfile, 'UTF-8');
     }
-    session.files.push(file);
-    var isFasta = (extension === 'fasta');
+    var isXL = (extension === 'xlsx' || extension === 'xls');
+    fileto.promise(rawfile, isXL ? 'ArrayBuffer' : 'Text').then(function(file){
+      session.files.push(file);
+      addToTable(file);
+    });
+  }
+
+  function addToTable(file){
+    var extension = file.name.split('.').pop();
+    var isFasta = extension.indexOf('fas') > -1;
     var isXL = (extension === 'xlsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');
     if(isXL){
-      var reader = new FileReader();
-      reader.onload = function(e){
-        var data = e.target.result;
-        var workbook = XLSX.read(data, {type: 'array'});
-        var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        var headers = Object.keys(data[0]).map(filterXSS);
-        addTableTile(headers);
-      };
-      reader.readAsArrayBuffer(file);
+      var workbook = XLSX.read(file.contents, {type: 'array'});
+      var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+      var headers = Object.keys(data[0]).map(filterXSS);
+      addTableTile(headers);
     } else {
-      Papa.parse(file, {
+      Papa.parse(file.contents, {
         dynamicTyping: true,
         header: true,
         preview: 1,
@@ -262,52 +285,61 @@
         }
       });
     }
-    var addTableTile = function(headers){
+    function addTableTile(headers){
       var root = $('<div class="file-table-row"></div>');
       var fnamerow = $('<div class="row w-100"></div>');
       $('<div class="file-name col"></div>')
-        .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
-          session.files.splice(session.files.indexOf(file.name), 1);
-          root.slideUp(function(){ root.remove(); });
-        }))
-        .append(`&nbsp;<a href="#" title="${file.name}">${file.name}</a>`)
-        .appendTo(fnamerow);
+      .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
+        session.files.splice(session.files.indexOf(file.name), 1);
+        root.slideUp(function(){ root.remove(); });
+      }))
+      .append($('<a href="#"><span class="oi oi-data-transfer-download"></span></a>').on('click', function(e){
+        let blob = new Blob([file.contents], {type: file.type | 'text'});
+        saveAs(blob, file.name);
+      }))
+      .append(`&nbsp;<a href="#" title="${file.name}">${file.name}</a>`)
+      .appendTo(fnamerow);
       fnamerow.append(`
-        <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-          <label class="btn btn-light${!isFasta&!isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
-          </label>
-          <label class="btn btn-light${!isFasta&isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
-          </label>
-          <label class="btn btn-light">
-            <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
-          </label>
-          <label class="btn btn-light${isFasta?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
-          </label>
-        </div>
+      <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+        <label class="btn btn-light${!isFasta&!isNode?' active':''}">
+          <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
+        </label>
+        <label class="btn btn-light${!isFasta&isNode?' active':''}">
+          <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
+        </label>
+        <label class="btn btn-light">
+          <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
+        </label>
+        <label class="btn btn-light${isFasta?' active':''}">
+          <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
+        </label>
+      </div>
       `);
       fnamerow.appendTo(root);
       var optionsrow = $('<div class="row w-100"></div>');
       var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
       optionsrow.append(`
-        <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
-          <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
-          <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
-        </div>
-        <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
-          <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
-          <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
-        </div>
+      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+        <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
+        <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
+      </div>
+      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+        <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
+        <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
+      </div>
+      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+        <label for="file-${file.name}-field-3">Distance</label>
+        <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
+      </div>
       `);
       optionsrow.appendTo(root);
 
       function matchHeaders(type){
         var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
             b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
-            these = $(`[data-file='${file.name}'] select`);
-        [a, b].forEach(function(list, i){
+            c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
+        these = $(`[data-file='${file.name}'] select`);
+        [a, b, c].forEach(function(list, i){
           list.forEach(function(title){
             if(headers.includes(title)){
               $(these.get(i)).val(title);
@@ -326,16 +358,19 @@
 
       function refit(e){
         var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
-            these = $(`[data-file='${file.name}']`),
-            first = $(these.get(0)),
-            second = $(these.get(1));
+        these = $(`[data-file='${file.name}']`),
+        first = $(these.get(0)),
+        second = $(these.get(1));
+        third = $(these.get(2));
         if(type === 'node'){
           first.slideDown().find('label').text('ID');
           second.slideDown().find('label').text('Sequence');
+          third.slideUp();
           matchHeaders(type);
         } else if(type === 'link'){
           first.slideDown().find('label').text('Source');
           second.slideDown().find('label').text('Target');
+          third.slideDown();
           matchHeaders(type);
         } else {
           these.slideUp();
@@ -344,26 +379,22 @@
 
       $(`[name="options-${file.name}"]`).change(refit);
       refit();
-    };
+    }
   }
 
   function readFastas(){
     var read = 0, data = [];
-    var fastas = session.files.filter(function(f){ return f.name.includes('fas'); });
-    if(fastas.length < 1) return;
+    var fastas = session.files.filter(function(f){ return f.name.split('.').pop().includes('fas'); });
+    if(fastas.length === 0) return;
     fastas.forEach(function(fasta){
-      var reader = new FileReader();
-      reader.onloadend = function(e){
-        app
-          .parseFASTA(e.target.result)
-          .forEach(function(node){
-            node.id = filterXSS(node.id);
-            node.seq = filterXSS(node.seq);
-            data.push(node);
-          });
-        if(++read === fastas.length) updatePreview(data);
-      };
-      reader.readAsText(fasta, 'UTF-8');
+      app
+        .parseFASTA(fasta.contents)
+        .forEach(function(node){
+          node.id = filterXSS(node.id);
+          node.seq = filterXSS(node.seq);
+          data.push(node);
+        });
+      if(++read === fastas.length) updatePreview(data);
     });
   }
 
@@ -438,6 +469,19 @@
     }
   });
 
+  $('#stash-auto-yes').parent().on('click', function(){
+    localStorage.setItem('stash-auto', 'true');
+  });
+
+  if(localStorage.getItem('stash-auto') === 'true'){
+    $('#stash-auto-yes').parent().trigger('click');
+  }
+
+  $('#stash-auto-no').parent().on('click', function(){
+    if(temp.autostash) clearInterval(temp.autostash.interval);
+    localStorage.setItem('stash-auto', 'false');
+  });
+
   if(localStorage.getItem('default-View')){
     $('#default-View').val(localStorage.getItem('default-View'));
   }
@@ -470,57 +514,50 @@
       alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
     }, 20000);
 
-    var files = [];
     $('#file-panel .file-table-row').each(function(i, el){
       var $el = $(el);
       var fname = $el.find('.file-name').text().trim();
       var selects = $el.find('select');
-      files.push({
-        file: session.files.find(function(file){ return file.name === fname; }),
-        type: $el.find('input[type="radio"]:checked').data('type'),
-        field1: selects.get(0).value,
-        field2: selects.get(1).value
-      });
+      var f = session.files.find(function(file){ return file.name === fname; });
+      f.format = $el.find('input[type="radio"]:checked').data('type');
+      f.field1 = selects.get(0).value;
+      f.field2 = selects.get(1).value;
+      f.field3 = selects.get(2).value;
     });
-    session.files = files;
 
     var hierarchy = ['distmat', 'link', 'node', 'fasta'];
 
     var anySequences = false;
     session.state.metrics = $('#distance-metrics').val();
     session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
-    var check = files.length > 1;
+    var check = session.files.length > 1;
 
-    files.sort(function(a, b){ return hierarchy.indexOf(a.type) - hierarchy.indexOf(b.type); });
+    session.files.sort(function(a, b){ return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
 
     //First Pass: Read all files, identify all distinct nodes.
-    files.forEach(function(file, fileNum){
-      var filename = file.file.name;
+    session.files.forEach(function(file, fileNum){
+      var filename = file.name;
       var extension = filename.split('.').pop().toLowerCase();
 
-      if(file.type === 'fasta'){
+      if(file.format === 'fasta'){
 
         message(`Parsing ${filename} as FASTA...`);
-        var reader = new FileReader();
-        reader.onloadend = function(e){
-          anySequences = true;
-          var newNodes = 0;
-          var seqs = app.parseFASTA(e.target.result);
-          var n = seqs.length;
-          for(var i = 0; i < n; i++){
-            var node = seqs[i];
-            if(!node) continue;
-            node.id = filterXSS(node.id);
-            node.seq = filterXSS(node.seq);
-            node.origin = [filename];
-            n += app.addNode(node);
-          }
-          message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
-          if(fileNum === files.length - 1) nextStuff();
-        };
-        reader.readAsText(file.file, 'UTF-8');
+        anySequences = true;
+        var newNodes = 0;
+        var seqs = app.parseFASTA(file.contents);
+        var n = seqs.length;
+        for(var i = 0; i < n; i++){
+          var node = seqs[i];
+          if(!node) continue;
+          node.id = filterXSS(node.id);
+          node.seq = filterXSS(node.seq);
+          node.origin = [filename];
+          n += app.addNode(node);
+        }
+        message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
+        if(fileNum === session.files.length - 1) nextStuff();
 
-      } else if(file.type === 'link'){
+      } else if(file.format === 'link'){
 
         message(`Parsing ${filename} as Link List...`);
         var l = 0;
@@ -539,44 +576,40 @@
             metric = metric.toLowerCase();
             base[metric] = null;
           });
+          base[session.state.linkSortVariable] = parseFloat(link[file.field3]);
           l += app.addLink(Object.assign(base, link), check);
         }
 
         if(extension == 'xls' || extension == 'xlsx'){
 
-          var reader = new FileReader();
-          reader.onload = function(e){
-            var data = e.target.result;
-            var workbook = XLSX.read(data, {type: 'array'});
-            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            data.map(forEachLink);
-            message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-            Object.keys(data[0]).forEach(function(key){
-              key = filterXSS(key);
-              if(!session.data.linkFields.includes(key)){
-                session.data.linkFields.push(key);
-              }
+          var workbook = XLSX.read(file.contents, {type: 'array'});
+          var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+          data.map(forEachLink);
+          message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
+          Object.keys(data[0]).forEach(function(key){
+            key = filterXSS(key);
+            if(!session.data.linkFields.includes(key)){
+              session.data.linkFields.push(key);
+            }
+          });
+          var n = 0;
+          var nodeIDs = _.union(
+            _.map(data, function(l){ return l[file.field1]; }),
+            _.map(data, function(l){ return l[file.field2]; })
+          );
+          var t = nodeIDs.length;
+          nodeIDs.forEach(function(d){
+            n += app.addNode({
+              id: '' + d,
+              origin: [filename]
             });
-            var n = 0;
-            var nodeIDs = _.union(
-              _.map(data, function(l){ return l[file.field1]; }),
-              _.map(data, function(l){ return l[file.field2]; })
-            );
-            var t = nodeIDs.length;
-            nodeIDs.forEach(function(d){
-              n += app.addNode({
-                id: '' + d,
-                origin: [filename]
-              });
-            });
-            message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
-            if(fileNum === files.length - 1) nextStuff();
-          };
-          reader.readAsArrayBuffer(file.file);
+          });
+          message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
+          if(fileNum === session.files.length - 1) nextStuff();
 
         } else {
 
-          Papa.parse(file.file, {
+          Papa.parse(file.contents, {
             header: true,
             worker: true,
             dynamicTyping: true,
@@ -604,11 +637,11 @@
                 });
               });
               message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
-              if(fileNum === files.length - 1) nextStuff();
+              if(fileNum === session.files.length - 1) nextStuff();
             }
           });
         }
-      } else if(file.type === 'node'){
+      } else if(file.format === 'node'){
 
         message(`Parsing ${filename} as Node List...`);
 
@@ -618,32 +651,27 @@
 
         if(extension == 'xls' || extension == 'xlsx'){
 
-          var reader = new FileReader();
-          reader.onload = function(e){
-            var data = e.target.result;
-            var workbook = XLSX.read(data, {type: 'array'});
-            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            Object.keys(data[0]).forEach(function(key){
-              key = filterXSS(key);
-              if(!session.data.nodeFields.includes(key)){
-                session.data.nodeFields.push(key);
-              }
-            });
-            data.forEach(function(results){
-              node = JSON.parse(filterXSS(JSON.stringify(results)));
-              node.id = '' + node[file.field1];
-              if(file.field2 !== 'None') node.seq = node[file.field2];
-              node['origin'] = [filename];
-              m += app.addNode(node);
-            });
-            message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
-            if(fileNum === files.length - 1) nextStuff();
-          };
-          reader.readAsArrayBuffer(file.file);
+          var workbook = XLSX.read(file.contents, {type: 'array'});
+          var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+          Object.keys(data[0]).forEach(function(key){
+            key = filterXSS(key);
+            if(!session.data.nodeFields.includes(key)){
+              session.data.nodeFields.push(key);
+            }
+          });
+          data.forEach(function(results){
+            node = JSON.parse(filterXSS(JSON.stringify(results)));
+            node.id = '' + node[file.field1];
+            if(file.field2 !== 'None') node.seq = node[file.field2];
+            node['origin'] = [filename];
+            m += app.addNode(node);
+          });
+          message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
+          if(fileNum === session.files.length - 1) nextStuff();
 
         } else {
 
-          Papa.parse(file.file, {
+          Papa.parse(file.contents, {
             header: true,
             worker: true,
             dynamicTyping: true,
@@ -665,7 +693,7 @@
             },
             complete: function(){
               message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
-              if(fileNum === files.length - 1) nextStuff();
+              if(fileNum === session.files.length - 1) nextStuff();
             }
           });
         }
@@ -676,54 +704,51 @@
         var defaultMetric = $('#default-distance-metric').val();
 
         if(extension == 'xls' || extension == 'xlsx'){
-          var reader = new FileReader();
-          reader.onload = function(e){
-            var data = e.target.result;
-            var workbook = XLSX.read(data, {type: 'array'});
-            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
-            var nodeIDs = [], nn = 0, nl = 0;
-            data.forEach(function(row, i){
-              if(i == 0){
-                nodeIDs = row.map(filterXSS);
-                nodeIDs.forEach(function(cell, k){
-                  if(k > 0){
-                    nn += app.addNode({
-                      id: '' + cell,
-                      origin: [filename]
-                    });
-                  }
-                });
-              } else {
-                row.forEach(function(cell, j){
-                  if(j > i){
-                    var base = {
-                      source: '' + nodeIDs[i],
-                      target: '' + nodeIDs[j],
-                      origin: [filename]
-                    };
-                    session.state.metrics.forEach(function(metric){
-                      metric = metric.toLowerCase();
-                      base[metric] = 0;
-                    });
-                    base[defaultMetric] = parseFloat(cell),
-                    nl += app.addLink(base, check);
-                  }
-                });
-              }
-            });
-            message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
-            if(fileNum === files.length - 1) nextStuff();
-          };
-          reader.readAsArrayBuffer(file.file);
+
+          var workbook = XLSX.read(file.contents, {type: 'array'});
+          var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
+          var nodeIDs = [], nn = 0, nl = 0;
+          data.forEach(function(row, i){
+            if(i == 0){
+              nodeIDs = row.map(filterXSS);
+              nodeIDs.forEach(function(cell, k){
+                if(k > 0){
+                  nn += app.addNode({
+                    id: '' + cell,
+                    origin: [filename]
+                  });
+                }
+              });
+            } else {
+              row.forEach(function(cell, j){
+                if(j > i){
+                  var base = {
+                    source: '' + nodeIDs[i],
+                    target: '' + nodeIDs[j],
+                    origin: [filename]
+                  };
+                  session.state.metrics.forEach(function(metric){
+                    metric = metric.toLowerCase();
+                    base[metric] = 0;
+                  });
+                  base[defaultMetric] = parseFloat(cell),
+                  nl += app.addLink(base, check);
+                }
+              });
+            }
+          });
+          message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
+          if(fileNum === session.files.length - 1) nextStuff();
 
         } else {
-          Papa.parse(file.file, {
+
+          Papa.parse(file.contents, {
             worker: true,
             skipEmptyLines: true,
             complete: function(results){
               var nodeIDs = [];
               var nn = 0, nl = 0;
-              let check = files.length > 1;
+              let check = session.files.length > 1;
               results.data.forEach(function(row, i){
                 if(i == 0){
                   nodeIDs = row.map(filterXSS);
@@ -755,7 +780,7 @@
               });
               message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
-              if(fileNum === files.length - 1) nextStuff();
+              if(fileNum === session.files.length - 1) nextStuff();
             }
           });
         }
@@ -882,6 +907,19 @@
           type: $('#default-View').val()
         }]
       }, true);
+    }
+    if(localStorage.getItem('stash-auto') === 'true'){
+      temp.autostash = {
+        time: Date.now(),
+        interval: setInterval(function(){
+          var newTime = Date.now();
+          localforage.setItem('stash-' + newTime + '-autostash', JSON.stringify(session)).then(function(){
+            localforage.removeItem('stash-' + temp.autostash.time + '-autostash').then(function(){
+              temp.autostash.time = newTime;
+            });
+          });
+        }, 60000)
+      };
     }
     $('.hideForHIVTrace').css('display', 'flex');
     setTimeout(function(){

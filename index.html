@@ -32,15 +32,17 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
         <div class="dropdown-menu">
-          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
           <a href="#" id="StashDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-stash-modal">Stash</a>
-          <div class="dropdown-divider"></div>
           <a href="#" id="RecallDataTab" class="dropdown-item">Recall</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
           <a href="#" class="dropdown-item">
             <input type="file" class="d-none" id="OpenTab" />
             <label class="mb-0 w-100" for="OpenTab">Open</label>
           </a>
-          <a href="#" id="FileTab" class="dropdown-item">New</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
+          <a href="#" id="NewTab" class="dropdown-item">New</a>
         </div>
       </li>
       <li class="nav-item">
@@ -204,7 +206,7 @@ performance of this software.</pre>
               <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="color-tab" data-toggle="tab" href="#color-config" role="tab" aria-controls="home" aria-selected="true">Coloring</a>
+              <a class="nav-link" id="style-tab" data-toggle="tab" href="#style-config" role="tab" aria-controls="home" aria-selected="true">Styling</a>
             </li>
           </ul>
           <div class="tab-content">
@@ -265,7 +267,7 @@ performance of this software.</pre>
                 </div>
               </div>
             </div>
-            <div class="tab-pane fade" id="color-config" role="tabpanel" aria-labelledby="color-tab">
+            <div class="tab-pane fade" id="style-config" role="tabpanel" aria-labelledby="style-tab">
               <div class="form-group row">
                 <div class="col-4"><label for="node-color-variable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
                 <div class="col-8"><select id="node-color-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
@@ -392,14 +394,12 @@ performance of this software.</pre>
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-group row">
-            <div id="recall-stashes-available" class="col-12">
-
-            </div>
-          </div>
+          <div id="recall-stashes-available" class="table-sm"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="recall-delete-stash">Delete</button>
+          <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" id="recall-load-stash">Recall</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -452,6 +452,7 @@ performance of this software.</pre>
   <script src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
   <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
   <script src="vendor/bootstrap-filestyle.min.js"></script>
+  <script src="node_modules/fileto/index.js"></script>
   <script src="node_modules/screenfull/dist/screenfull.js"></script>
   <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   <script src="node_modules/moment/min/moment-with-locales.min.js"></script>
@@ -478,31 +479,15 @@ performance of this software.</pre>
   $(function(){
     'use strict';
 
-    $.getJSON('package.json', function(r){
-      app.manifest = r;
-      $('#version').html(r.version);
-    });
-
-    $.get('.git/HEAD', function(ref){
-      var branch = ref.split('/').pop();
-      $('#branch')
-        .attr('href', 'https://github.com/CDCgov/MicrobeTRACE/tree/' + branch)
-        .text(branch);
-      $.get('.git/' + ref.split(' ').pop(), function(r){
-        $('#commit')
-          .attr('href', 'https://github.com/CDCgov/MicrobeTrace/commit/' + r)
-          .text(r.slice(0,7));
+    // Before anything else gets done, ask the user to accept the legal agreement
+    if(!localStorage.getItem('licenseAccepted')){
+      $('#acceptAgreement').on('click', function(){
+        localStorage.setItem('licenseAccepted', new Date());
       });
-    }).fail(function(){
-      $('#branch').parent().remove();
-    });
-
-    if(window.navigator.onLine){
-      $('#HelpTab')
-        .removeClass('viewbutton')
-        .attr('href', 'https://github.com/CDCgov/MicrobeTrace/wiki')
-        .attr('target', '_blank');
-      $('.ifOnline').show();
+      $('#licenseAgreement').modal({
+        backdrop: 'static',
+        keyboard: false
+      });
     }
 
     if ('serviceWorker' in window.navigator) {
@@ -529,30 +514,57 @@ performance of this software.</pre>
 
     layout.contentItems = [];
 
-    app.launchView('files');
-
-    // Before anything else gets done, ask the user to accept the legal agreement
-    if(!localStorage.getItem('licenseAccepted')){
-      $('#acceptAgreement').on('click', function(){
-        // Set that agreement in localStorage
-        localStorage.setItem('licenseAccepted', new Date());
+    // Let's set up the Nav Bar
+    $('#stash-data').on('click', function(){
+      localforage.setItem('stash-'+Date.now()+'-'+$('#stash-name').val(), JSON.stringify(session)).then(function(){
+        alertify.success('Session Stashed Successfully!');
       });
-      // $('#rejectAgreement').on('click', function(){
-      //   // If you don't agree, no app for you!
-      //   //TODO: Show a message indicating you are not permitted to use the app without agreeing to the terms of use.
-      //   window.location.href = "https://www.cdc.gov";
-      // });
-      // No hacking around the agreement.
-      $('#licenseAgreement').modal({
-        backdrop: 'static',
-        keyboard: false
+    });
+
+    var table = new Tabulator('#recall-stashes-available', {
+      height: '100%',
+      layout: "fitColumns",
+      selectable: 1,
+      columns: [
+        {title:"Name", field:"name"},
+        {title:"Date", field:"date", align:"right", sorter:"date"}
+      ]
+    });
+
+    function updateTable(){
+      localforage.keys().then(function(keys){
+        var rows = [];
+        keys.forEach(function(k){
+          if(!k.substring(0, 5) === 'stash') return;
+          rows.push({
+            fullname: k,
+            name: k.substring(20),
+            date: (new Date(parseFloat(k.substring(6,19)))).toISOString()
+          });
+        });
+        table.setData(rows);
       });
     }
 
-    // Let's set up the Nav Bar
-    $('#FileTab').on('click', function(){
-      $('#exit-button').on('click', app.reset);
-      $('#exit-modal').modal();
+    $('#RecallDataTab').on('click', function(){
+      updateTable();
+      $('#session-recall-modal').modal('show');
+    });
+
+    $('#recall-delete-stash').on('click', function(){
+      var key = table.getSelectedData()[0].fullname;
+      localforage.removeItem(key).then(function(){
+        updateTable();
+        alertify.success('That stash has been deleted.');
+      });
+    });
+
+    $('#recall-load-stash').on('click', function(){
+      var key = table.getSelectedData()[0].fullname;
+      localforage.getItem(key).then(function(json){
+        app.applySession(JSON.parse(json));
+        $('#session-recall-modal').modal('hide');
+      });
     });
 
     $('#save-data').on('click', function(){
@@ -583,29 +595,6 @@ performance of this software.</pre>
       }
     });
 
-    $('#stash-data').on('click', function(){
-      localforage.setItem('stash-'+$('#stash-name').val(), JSON.stringify(session));
-    });
-
-    $('#RecallDataTab').on('click', function(){
-      localforage.keys().then(function(keys){
-        var h = $('#recall-stashes-available');
-        keys.forEach(function(k){
-          if(!k.substring(0, 5) === 'stash') return;
-          $('<a href="#" data-stash="' + k + '">' + k.slice(6) + '</a>').on('click', function(){
-            localforage.getItem($(this).data('stash')).then(function(json){
-              app.applySession(JSON.parse(json));
-            });
-          }).appendTo(h);
-        });
-        $('#session-recall-modal').modal('show');
-      }).catch(function(err){
-        // This code runs if there were any errors
-        console.log(err);
-      });
-    });
-
-
     $('#OpenTab').on('change', function(e){
       if(e.target.files.length > 0){
         var extension = e.target.files[0].name.split('.').pop().toLowerCase();
@@ -629,6 +618,17 @@ performance of this software.</pre>
         }
       }
     });
+
+    $('#AddDataTab').on('click', function(){
+      $('#network-statistics-hide').trigger('click');
+      app.launchView('files');
+    });
+
+    $('#NewTab').on('click', function(){
+      $('#exit-modal').modal();
+    });
+
+    $('#exit-button').on('click', app.reset);
 
     $('.viewbutton').on('click', function(){ app.launchView($(this).data('href')); });
 
@@ -794,7 +794,7 @@ performance of this software.</pre>
         table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
         var values = app.createNodeColorMap();
         values.forEach(function(value, i){
-          var input = $('<input type="color" value="'+session.style.nodeColorMap(value)+'" />')
+          var input = $('<input type="color" value="'+temp.style.nodeColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.nodeColors.splice(i, 1, evt.target.value);
               temp.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
@@ -831,7 +831,7 @@ performance of this software.</pre>
         var table = $('<tbody id="link-colors"></tbody>').appendTo('#group-key');
         table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
         values.forEach(function(value, i){
-          var input = $('<input type="color" value="'+session.style.linkColorMap(value)+'" />')
+          var input = $('<input type="color" value="'+temp.style.linkColorMap(value)+'" />')
             .on('change', function(evt){
               session.style.linkColors.splice(i, 1, evt.target.value);
               temp.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
@@ -879,6 +879,33 @@ performance of this software.</pre>
       }
     });
 
+    if(window.navigator.onLine){
+      $('#HelpTab')
+        .removeClass('viewbutton')
+        .attr('href', 'https://github.com/CDCgov/MicrobeTrace/wiki')
+        .attr('target', '_blank');
+      $('.ifOnline').show();
+    }
+
+    $.getJSON('package.json', function(r){
+      app.manifest = r;
+      $('#version').html(r.version);
+    });
+
+    $.get('.git/HEAD', function(ref){
+      var branch = ref.split('/').pop();
+      $('#branch')
+        .attr('href', 'https://github.com/CDCgov/MicrobeTRACE/tree/' + branch)
+        .text(branch);
+      $.get('.git/' + ref.split(' ').pop(), function(r){
+        $('#commit')
+          .attr('href', 'https://github.com/CDCgov/MicrobeTrace/commit/' + r)
+          .text(r.slice(0,7));
+      });
+    }).fail(function(){
+      $('#branch').parent().remove();
+    });
+
     $('#group-key-wrapper').on('contextmenu', function(e){
       e.preventDefault();
       $('#group-key-context').css({
@@ -910,6 +937,8 @@ performance of this software.</pre>
       $(window).trigger('node-selected');
     });
 
+    app.launchView('files');
+
     $(document).on('keydown', function(e){
       if(e.ctrlKey && e.key === 'f'){
         e.preventDefault();
@@ -929,6 +958,16 @@ performance of this software.</pre>
       })
       .on('click', function(){
         $('#network-statistics-context, #group-key-context').hide();
+      })
+      .on('link-threshold-change', function(){
+        if(session.style.widgets['link-color-variable'] !== 'None'){
+          $('#link-color-variable').trigger('change');
+        }
+      })
+      .on('node-visibility', function(){
+        if(session.style.widgets['node-color-variable'] !== 'None'){
+          $('#node-color-variable').trigger('change');
+        }
       })
       .on('resize', function(){
         layout.root.setSize();

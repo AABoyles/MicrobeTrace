@@ -43,6 +43,7 @@ app.defaultWidgets = {
   'link-color': '#a6cee3',
   'link-color-variable': 'None',
   'link-directed': false,
+  'link-label-variable': 'None',
   'link-length': 0.125,
   'link-opacity': 0,
   'link-tooltip-variable': 'None',
@@ -74,6 +75,7 @@ app.defaultWidgets = {
   'node-color': '#1f77b4',
   'node-color-variable': 'None',
   'node-highlight': false,
+  'node-label-size': 16,
   'node-label-variable': 'None',
   'node-radius': 250,
   'node-radius-variable': 'None',
@@ -586,7 +588,11 @@ app.createNodeColorMap = function(){
     temp.style.nodeColorMap = function(){ return session.style.widgets['node-color']; };
     return [];
   }
-  values = _.chain(session.data.nodes).pluck(variable).uniq().value();
+  values = _.chain(session.data.nodes)
+            .filter(function(d){return d.visible;})
+            .pluck(variable)
+            .uniq()
+            .value();
   if(_.isNumber(session.data.nodes[0][variable])){
     values.sort(function(a, b){ return a - b; });
   } else {
@@ -616,7 +622,11 @@ app.createLinkColorMap = function(){
       });
     });
   } else {
-    values = _.chain(session.data.links).pluck(variable).uniq().value();
+    values = _.chain(session.data.links)
+              .filter(function(l){ return l.visible; })
+              .pluck(variable)
+              .uniq()
+              .value();
   }
   if(_.isNumber(session.data.links[0][variable])){
     values.sort(function(a, b){ return a - b; });
