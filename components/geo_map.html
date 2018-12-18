@@ -10,6 +10,10 @@
     <button id="map-fit" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
       <span class="oi oi-target"></span>
     </button>
+    <button id="map-layer-upload" type="button" class="btn btn-light btn-sm" title="Upload Map Layer">
+      <span class="oi oi-data-transfer-upload"></span>
+    </button>
+    <input type="file" id="map-file-input" style="display: none" multiple/>
   </div>
 
   <div id="map-settings-pane" class="left-pane" style="z-index:1000">
@@ -585,6 +589,34 @@
 
     $('#map-fit').on('click', function(){
       map.flyToBounds(layers.nodes.getBounds());
+    });
+
+
+    $('#map-layer-upload').on('click', function() {
+      $('#map-file-input').click();
+    });
+
+    $('#map-file-input').on('change', event => {
+      Array.from(event.target.files).forEach(file => {
+        const { name } = file;
+        if (name.endsWith(".geojson")) {
+          const layerName = name.toLowerCase().replace(".geojson", "");
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            app.mapData[layerName] = JSON.parse(event.target.result);
+            layers[layerName] = L.geoJSON(app.mapData[layerName], {
+              color: '#f00',
+              weight: .75,
+              fillColor: '#fafaf8',
+              fillOpacity: .5
+            });
+            layers[layerName].addTo(map);
+          };
+          reader.readAsText(file);
+        } else {
+          alert("Only GeoJSON Files are currently Supported.");
+        }
+      });
     });
 
     function resetStack(){
