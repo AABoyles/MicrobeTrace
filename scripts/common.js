@@ -663,6 +663,7 @@ app.applyStyle = function(style){
 app.applySession = function(data, startTime){
   session = data;
   if(!startTime) startTime = Date.now();
+  if(!session.meta) session.meta = {};
   session.meta.startTime = startTime;
   app.applyStyle(session.style);
   app.finishUp(true);
