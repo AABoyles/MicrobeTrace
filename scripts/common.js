@@ -671,6 +671,7 @@ app.applySession = function(data, startTime){
 
 app.reset = function(){
   $('#network-statistics-hide, #color-table-hide').parent().trigger('click');
+  $('#SettingsTab').attr('data-target', '#aligner-controls-modal');
   window.session = app.sessionSkeleton();
   layout.unbind('stateChanged');
   layout.root.replaceChild(layout.root.contentItems[0], {

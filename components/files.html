@@ -14,16 +14,16 @@
 <div id="file-footer">
   <div class="container" style="padding: 15px">
     <input type="file" id="data-files" multiple="true" />
-    <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#alignerControlsModal">Settings</button>
+    <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Settings</button>
     <button type="submit" id="main-submit" class="btn btn-success float-right" title="Please select a Network CSV or FASTA File">Submit</button>
   </div>
 </div>
 
-<div id="alignerControlsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#alignerControlsModalTitle" aria-hidden="true">
+<div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="alignerControlsModalTitle" class="modal-title">Load Settings</h5>
+        <h5 id="aligner-controls-title" class="modal-title">Load Settings</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -499,8 +499,9 @@
   var messageTimeout, messages = [];
 
   $('#main-submit').click(function(e){
-    messages = [];
     session.meta.startTime = Date.now();
+    messages = [];
+    $('#SettingsTab').attr('data-target', '#global-settings-modal');
     session.data = app.dataSkeleton();
     $('#loading-information').html('');
 
