@@ -43,6 +43,7 @@ app.defaultWidgets = {
   'link-color': '#a6cee3',
   'link-color-variable': 'None',
   'link-directed': false,
+  'link-label-variable': 'None',
   'link-length': 0.125,
   'link-opacity': 0,
   'link-tooltip-variable': 'None',

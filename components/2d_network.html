@@ -122,6 +122,10 @@
         <div class="col-8"><select id="link-tooltip-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
       </div>
       <div class="form-group row">
+        <div class="col-4"><label for="link-label-variable" data-toggle="tooltip" title="What data should be displayed when you hover over a link?">Label</label></div>
+        <div class="col-8"><select id="link-label-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
+      </div>
+      <div class="form-group row">
         <div class="col-4">Color</div>
         <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
       </div>
@@ -149,6 +153,10 @@
       <div class="form-group row">
         <div class="col-4"><label for="link-width" data-toggle="tooltip" title="How thick should the links be?">Width</label></div>
         <div class="col-8"><input type="range" id="link-width" min="0.3" max="30" step=".3" value="3" /></div>
+      </div>
+      <div class="form-group row">
+        <div class="col-4"><label data-toggle="tooltip" title="How long should links be?">Length</label></div>
+        <div class="col-8"><input type="range" id="link-length" min = "0" max="200" value="50" /></div>
       </div>
       <div class="form-group row hideForHIVTrace">
         <div class="col-4"><label data-toggle="tooltip" title="Are these links directed?">Directionality</label></div>
@@ -179,20 +187,16 @@
         </div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</label></div>
-        <div class="col-8"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
-      </div>
-      <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How long should links be?">Length</label></div>
-        <div class="col-8"><input type="range" id="link-length" min = "0" max="200" value="50" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
+        <div class="col-8"><input type="range" id="node-charge" min="0" max="400" value="200" /></div>
       </div>
       <div class="form-group row">
         <div class="col-4"><label data-toggle="tooltip" title="How attractive is the mass of the graph?">Gravity</label></div>
         <div class="col-8"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
       </div>
       <div class="form-group row">
-        <div class="col-4"><label data-toggle="tooltip" title="How strongly are the nodes repulsed by each other?">Charge</label></div>
-        <div class="col-8"><input type="range" id="node-charge" min="0" max="400" value="200" /></div>
+        <div class="col-4"><label data-toggle="tooltip" title="How quickly should moving nodes lose their momentum?">Friction</label></div>
+        <div class="col-8"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
       </div>
     </div>
   </div>
@@ -341,11 +345,11 @@
       height = $('#network').parent().parent().parent().height();
 
   d3.select('svg#network')
-    .html(null) //Let's make sure the canvas is blank.
-    .attr('height', height)
-    .attr('width', width)
-    .on('click', hideContextMenu)
-    .call(zoom);
+      .html(null) //Let's make sure the canvas is blank.
+      .attr('height', height)
+      .attr('width', width)
+      .on('click', hideContextMenu)
+      .call(zoom);
 
   d3.select('svg#network')
       .append('g')
@@ -450,8 +454,17 @@
       .on('mouseenter', showLinkToolTip)
       .on('mouseout', hideTooltip);
 
+    let llinks = getLLinks();
+    let linklabel = svg.select('g#links').selectAll('text').data(llinks);
+    linklabel.exit().remove();
+    linklabel.enter().append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', session.style.widgets['link-width'] + 2)
+      .text(l => l[session.style.widgets['link-label-variable']]);
+
     let nodes = svg.select('g#nodes').selectAll('g.node').data(session.network.nodes);
     let links = svg.select('g#links').selectAll('line').data(vlinks);
+    let linklabels = svg.select('g#links').selectAll('text').data(llinks);
     force.nodes(session.network.nodes).on('tick', function(){
       nodes
         .attr('transform', d => d.fixed ? `translate(${d.fx}, ${d.fy})` : `translate(${d.x}, ${d.y})`);
@@ -460,6 +473,12 @@
         .attr('y1', l => l.source.y)
         .attr('x2', l => l.target.x)
         .attr('y2', l => l.target.y);
+      if(session.style.widgets['link-label-variable'] !== 'None'){
+        linklabels
+          .attr('x', l => (l.source.x + l.target.x)/2)
+          .attr('y', l => (l.source.y + l.target.y)/2)
+          .attr('transform', l => 'rotate('+calcAngle(l.source, l.target)+' '+(l.source.x + l.target.x)/2+' '+(l.source.y + l.target.y)/2+')');
+      }
     });
 
     force.force('link').links(vlinks);
@@ -468,6 +487,13 @@
     scaleLinkWidth();
     nodes.select('path').classed('selected', d => d.selected);
     force.alpha(0.3).alphaTarget(0).restart();
+  }
+
+  function calcAngle(source, target){
+    let opposite = source.x - target.x;
+    let adjacent = source.y - target.y;
+    let degrees = Math.atan(opposite / adjacent) * 180 / Math.PI;
+    return (degrees < 180) ? 90-degrees : 270-degrees;
   }
 
   function getVLinks(){
@@ -505,6 +531,16 @@
       }
     }
     return output;
+  }
+
+  function getLLinks(){
+    let vlinks = app.getVisibleLinks(true);
+    let n = vlinks.length;
+    for(let i = 0; i < n; i++){
+      vlinks[i].source = session.network.nodes.find(d => d.id === vlinks[i].source);
+      vlinks[i].target = session.network.nodes.find(d => d.id === vlinks[i].target);
+    }
+    return vlinks;
   }
 
   let selected, multidrag = false;
@@ -889,6 +925,17 @@
   $('#link-undirected').parent().on('click', e => {
     svg.select('g#links').selectAll('line').attr('marker-end', null);
     session.style.widgets['link-directed'] = false;
+  });
+
+  $('#link-label-variable').on('change', e => {
+    let label = e.target.value;
+    session.style.widgets['link-label-variable'] = label;
+    if(label === 'None'){
+      svg.select('g#links').selectAll('text').text('');
+    } else {
+      svg.select('g#links').selectAll('text').data(getLLinks()).text(l => l[label]);
+      force.alpha(0.01).alphaTarget(0).restart();
+    }
   });
 
   $('#link-length').on('input', e => {
