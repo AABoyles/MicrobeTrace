@@ -49,7 +49,7 @@
 
   function refresh(){
     let wrapper = $('#timeline-wrapper').empty().parent();
-    let tickFormat = d3.timeFormat("%Y-%m-%d");
+    let tickFormat = d3.timeFormat('%Y-%m-%d');
     width  = wrapper.width() - margin.left - margin.right,
     height = wrapper.height() - margin.top - margin.bottom;
     middle = height / 2;
@@ -64,8 +64,7 @@
       }
     });
     if(times.length < 2){
-      times.push(new Date(2000, 1, 1));
-      times.push(new Date());
+      times = [new Date(2000, 1, 1), new Date()];
     }
     timeDomainStart = Math.min(...times);
     timeDomainEnd = Math.max(...times);
@@ -74,34 +73,34 @@
       .domain([timeDomainStart, timeDomainEnd])
       .rangeRound([0, width]);
 
-    svg = d3.select("#timeline-wrapper").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    svg = d3.select('#timeline-wrapper').append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    svg.append("g")
-      .attr("class", "axis axis--grid")
-      .attr("transform", "translate(0," + height + ")")
+    svg.append('g')
+      .attr('class', 'axis axis--grid')
+      .attr('transform', 'translate(0,' + height + ')')
       .call(d3.axisBottom(x)
         .ticks(d3.timeYear)
         .tickSize(-height)
         .tickFormat(function(){ return null; })
       );
 
-    svg.append("g")
-      .attr("class", "axis axis--x")
-      .attr("transform", "translate(0," + height + ")")
+    svg.append('g')
+      .attr('class', 'axis axis--x')
+      .attr('transform', 'translate(0,' + height + ')')
       .call(d3.axisBottom(x)
         .tickSize(8)
         .tickPadding(8)
         .tickFormat(tickFormat)
       )
-      .attr("text-anchor", null)
-      .selectAll("text")
-      .attr("x", 6);
+      .attr('text-anchor', null)
+      .selectAll('text')
+      .attr('x', 6);
 
-    svg.append("g")
+    svg.append('g')
       .attr('class', 'nodes');
 
     svg.select('.nodes')
@@ -124,8 +123,8 @@
       }
     });
 
-    brushG = svg.append("g")
-      .attr("class", "brush")
+    brushG = svg.append('g')
+      .attr('class', 'brush')
       .call(brush);
   }
 
