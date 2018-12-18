@@ -319,15 +319,15 @@
       var optionsrow = $('<div class="row w-100"></div>');
       var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
       optionsrow.append(`
-      <div class='col '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
         <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
       </div>
-      <div class='col '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
         <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
       </div>
-      <div class='col '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-3">Distance</label>
         <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
       </div>
@@ -570,13 +570,13 @@
             source: '' + link[file.field1],
             target: '' + link[file.field2],
             origin: [filename],
-            visible: true,
-            distance: parseFloat(link[file.field3])
+            visible: true
           };
           session.state.metrics.forEach(function(metric){
             metric = metric.toLowerCase();
             base[metric] = null;
           });
+          base[session.state.linkSortVariable] = parseFloat(link[file.field3]);
           l += app.addLink(Object.assign(base, link), check);
         }
 
