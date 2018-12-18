@@ -576,7 +576,12 @@
             metric = metric.toLowerCase();
             base[metric] = null;
           });
-          base[session.state.linkSortVariable] = parseFloat(link[file.field3]);
+          var num = parseFloat(link[file.field3]);
+          if(_.isNumber(num) && !_.isNaN(num)){
+            base[session.state.linkSortVariable] = num;
+          } else {
+            base[session.state.linkSortVariable] = 0;
+          }
           l += app.addLink(Object.assign(base, link), check);
         }
 
