@@ -540,6 +540,7 @@
       if(file.format === 'fasta'){
 
         message(`Parsing ${filename} as FASTA...`);
+        var start = Date.now();
         anySequences = true;
         var newNodes = 0;
         var seqs = app.parseFASTA(file.contents);
@@ -550,14 +551,16 @@
           node.id = filterXSS(node.id);
           node.seq = filterXSS(node.seq);
           node.origin = [filename];
-          n += app.addNode(node);
+          newNodes += app.addNode(node);
         }
+        console.log('FASTA Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
         message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
         if(fileNum === session.files.length - 1) nextStuff();
 
       } else if(file.format === 'link'){
 
         message(`Parsing ${filename} as Link List...`);
+        var start = Date.now();
         var l = 0;
 
         function forEachLink(link){
@@ -607,6 +610,7 @@
               origin: [filename]
             });
           });
+          console.log('Link Excel Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
           message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
           if(fileNum === session.files.length - 1) nextStuff();
 
@@ -639,6 +643,7 @@
                   origin: [filename]
                 });
               });
+              console.log('Link CSV Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
               message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
               if(fileNum === session.files.length - 1) nextStuff();
             }
@@ -647,7 +652,7 @@
       } else if(file.format === 'node'){
 
         message(`Parsing ${filename} as Node List...`);
-
+        var start = Date.now();
         if(file.field2 !== 'None') anySequences = true;
 
         var m = 0, n = 0;
@@ -669,6 +674,7 @@
             node['origin'] = [filename];
             m += app.addNode(node);
           });
+          console.log('Node Excel Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
           message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
           if(fileNum === session.files.length - 1) nextStuff();
 
@@ -695,6 +701,7 @@
               m += app.addNode(node);
             },
             complete: function(){
+              console.log('Node CSV Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
               message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
               if(fileNum === session.files.length - 1) nextStuff();
             }
@@ -704,6 +711,7 @@
       } else { //Distance Matrix
 
         message(`Parsing ${filename} as Distance Matrix...`);
+        var start = Date.now();
         var defaultMetric = session.state.linkSortVariable;
 
         if(extension == 'xls' || extension == 'xlsx'){
@@ -742,6 +750,7 @@
               });
             }
           });
+          console.log('Distance Matrix Excel Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
           message(` - Parsed ${nn} New, ${data.length-1} Total Nodes from Excel Distance Matrix.`);
           message(` - Parsed ${nl} New, ${((data.length-1)**2-(data.length-1))/2} Total Links from Excel Distance Matrix.`);
           if(fileNum === session.files.length - 1) nextStuff();
@@ -786,6 +795,7 @@
                   });
                 }
               });
+              console.log('Distance Matrix CSV Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
               message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${nl} New, ${((results.data.length-1)**2 - (results.data.length-1))/2} Total Links from Distance Matrix.`);
               if(fileNum === session.files.length - 1) nextStuff();
