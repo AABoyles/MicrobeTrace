@@ -33,7 +33,6 @@
     "marked": "^0.5.1",
     "moment": "^2.23.0",
     "neighborjoining": "git+https://github.com/CDCgov/neighborjoining.git",
-    "ntseq": "^1.1.0",
     "open-iconic": "^1.1.1",
     "papaparse": "^4.4.0",
     "patristic": "git+https://github.com/CDCgov/patristic.git",
