@@ -338,6 +338,16 @@ a.btn, button.btn, .btn-group{
   margin-top: 50px;
   height: calc(100% - 65px);
 }
+#flow-variables{
+  padding-left: 0;
+}
+.flow-items{
+  list-style-type: none;
+}
+.flow-selector{
+  width: calc(100% - 42px);
+  margin: 5px;
+}
 
 /* MAP */
 #map{

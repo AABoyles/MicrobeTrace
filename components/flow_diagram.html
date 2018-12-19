@@ -18,15 +18,10 @@
     <div class="tab-content">
       <div class="tab-pane fade show active" id="flow-configurations" role="tabpanel" aria-labelledby="flow-tab">
         <div class="form-group row">
-          <div class="col-3">Left Side Variable</div>
+          <div class="col-3">Variables</div>
           <div class="col-9">
-            <select id="flow-source-variable" class="custom-select custom-select-sm"></select>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="col-3">Right Side Variable</div>
-          <div class="col-9">
-            <select id="flow-target-variable" class="custom-select custom-select-sm"></select>
+            <ul id="flow-variables"></ul>
+            <button type="button" class="btn btn-primary btn-sm w-100" id="flow-add-variable">Add Variable</button>
           </div>
         </div>
       </div>
@@ -74,35 +69,43 @@
       let width = $('#flow').parent().width() - 40,
           height = $('#flow').parent().height() - 60;
 
-      let nodes = app.getVisibleNodes(), labels = [];
+      let nodes = app.getVisibleNodes();
 
       let onlyUnique = (value, index, self) => self.indexOf(value) === index;
 
-      let source_variable = $('#flow-source-variable').val();
-      let source_values  = nodes.map(n => n[source_variable]+'').filter(onlyUnique);
+      let order = [];
+      $($('#flow-variables').find('select')).each(function(i){ order.push($(this).val()); });
 
-      source_values.forEach(sv => labels.push(sv));
+      let source_values = [], target_values = [], all_values = [], labels = [];
+      order.forEach((variable, i) => {
+        let values = nodes.map(n => n[variable]+'').filter(onlyUnique);
+        values.forEach(value => all_values.push(variable + '-' + value + '-' + i));
+        if(i < order.length-1){
+          values.forEach(value => source_values.push(variable + '-' + value + '-' + i));
+        }
+        if(i > 0){
+          values.forEach(value => target_values.push(variable + '-' + value + '-' + i));
+        }
+        values.forEach(value => labels.push(app.titleize(variable + ' ' + value)));
+      });
 
-      let target_variable = $('#flow-target-variable').val();
-      let target_values = nodes.map(n => n[target_variable]+'').filter(onlyUnique);
-
-      target_values.forEach(tv => labels.push(tv));
-
-      let target_list = {};
+      let link_matrix = {}, target_list = {};
       target_values.forEach(target => target_list[target] = 0);
-
-      let link_matrix = {};
-
       source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
-      nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
+
+      for(let i = 0; i < order.length-1; i++){
+        let source_variable = order[i];
+        let target_variable = order[i+1];
+        nodes.forEach(n => link_matrix[source_variable + '-' + n[source_variable] + '-' + i][target_variable + '-' + n[target_variable] + '-' + (i+1)]++);
+      }
 
       let source = [], target = [], value = [];
 
-      source_values.forEach((s, i) => {
-        target_values.forEach((t, j) => {
+      source_values.forEach(s => {
+        target_values.forEach(t => {
           if(link_matrix[s][t] > 0){
-            source.push(i);
-            target.push(source_values.length + j);
+            source.push(all_values.indexOf(s));
+            target.push(all_values.indexOf(t));
             value.push(link_matrix[s][t]);
           }
         });
@@ -120,7 +123,7 @@
             color: "black",
             width: 0.5
           },
-          label: labels,
+          label: labels.map(app.titleize),
           color: 'blue'
         },
         link: { source, target, value }
@@ -146,15 +149,18 @@
       }
     });
 
-    
+    $('#flow-add-variable').on('click', function(){
+      $('#flow-variables').append(`<li class='flow-items'><span class="oi oi-elevator"></span><select class='custom-select custom-select-sm flow-selector'>${session.data.nodeFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join('')}</select><span class="oi oi-x flow-remove"></span></li>`);
 
-    $('#flow-source-variable')
-      .html(session.data.nodeFields.map((field, i) => `<option${field==session.style.widgets['flow-source-variable']?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
-      .change(drawFlowDiagram);
+      sortable('#flow-variables')[0].addEventListener('sortupdate', drawFlowDiagram);
 
-    $('#flow-target-variable')
-      .html(session.data.nodeFields.map((field, i) => `<option${field==session.style.widgets['flow-target-variable']?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
-      .change(drawFlowDiagram);
+      $('.flow-selector').on('change', drawFlowDiagram);
+
+      $('.flow-remove').on('click', function(){
+        $(this).parent().slideUp().remove();
+        drawFlowDiagram();
+      });
+    }).trigger('click').trigger('click');
 
     $('#flow-export').click(function(){
       let network = $('#flow')[0];
@@ -173,22 +179,11 @@
     layout.on('stateChanged', drawFlowDiagram);
 
     $(window)
-      .on('node-selected', function(){
-        if($('#flow-source-variable').val() === 'selected' || $('#flow-target-variable').val() === 'selected'){
-          drawFlowDiagram();
-        }
-      })
-      .on('link-threshold-change', function(){
-        let affected = ['degree', 'cluster'];
-        if(affected.includes($('#flow-source-variable').val()) || affected.includes($('#flow-target-variable').val())){
-          drawFlowDiagram();
-        }
-      })
+      .on('node-selected', drawFlowDiagram)
+      .on('link-threshold-change', drawFlowDiagram)
       .on('node-visibility', drawFlowDiagram)
       .on('background-color-change', function(){
         $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
       });
-
-    drawFlowDiagram();
   })();
   </script>
