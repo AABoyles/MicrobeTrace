@@ -178,13 +178,14 @@ app.defaultLink = function(){
 };
 
 app.addLink = function(newLink, check){
+  if(newLink.source === newLink.target) return;
   var links = session.data.links;
   if(check){
     var n = links.length;
     for(var i = 0; i < n; i++){
       var l = links[i];
-      if((l.source === newLink.source & l.target === newLink.target) |
-      (l.source === newLink.target & l.target === newLink.source)){
+      if((l.source == newLink.source && l.target == newLink.target) ||
+         (l.source == newLink.target && l.target == newLink.source)){
         if(newLink.origin && !l.origin.includes(newLink.origin)){
           newLink.origin = newLink.origin.concat(l.origin);
         }

@@ -707,7 +707,7 @@
       } else { //Distance Matrix
 
         message(`Parsing ${filename} as Distance Matrix...`);
-        var defaultMetric = $('#default-distance-metric').val();
+        var defaultMetric = session.state.linkSortVariable;
 
         if(extension == 'xls' || extension == 'xlsx'){
 
@@ -726,20 +726,22 @@
                 }
               });
             } else {
+              var source = '' + row[0];
               row.forEach(function(cell, j){
-                if(j > i){
-                  var base = {
-                    source: '' + nodeIDs[i],
-                    target: '' + nodeIDs[j],
-                    origin: [filename]
-                  };
-                  session.state.metrics.forEach(function(metric){
-                    metric = metric.toLowerCase();
-                    base[metric] = 0;
-                  });
-                  base[defaultMetric] = parseFloat(cell),
-                  nl += app.addLink(base, check);
-                }
+                if(j === 0) return;
+                var target = '' + nodeIDs[j];
+                if(source === target) return;
+                var base = {
+                  source: source,
+                  target: target,
+                  origin: [filename]
+                };
+                session.state.metrics.forEach(function(metric){
+                  metric = metric.toLowerCase();
+                  base[metric] = 0;
+                });
+                base[defaultMetric] = parseFloat(cell),
+                nl += app.addLink(base, true);
               });
             }
           });
@@ -757,7 +759,7 @@
               var nn = 0, nl = 0;
               let check = session.files.length > 1;
               results.data.forEach(function(row, i){
-                if(i == 0){
+                if(i === 0){
                   nodeIDs = row.map(filterXSS);
                   nodeIDs.forEach(function(cell, k){
                     if(k > 0){
@@ -768,20 +770,22 @@
                     }
                   });
                 } else {
+                  var source = '' + row[0];
                   row.forEach(function(cell, j){
-                    if(j > i){
-                      var base = {
-                        source: '' + nodeIDs[i],
-                        target: '' + nodeIDs[j],
-                        origin: [filename]
-                      };
-                      session.state.metrics.forEach(function(metric){
-                        metric = metric.toLowerCase();
-                        base[metric] = 0;
-                      });
-                      base[defaultMetric] = parseFloat(cell),
-                      nl += app.addLink(base, check);
-                    }
+                    if(j === 0) return;
+                    var target = '' + nodeIDs[j];
+                    if(source === target) return;
+                    var base = {
+                      source: source,
+                      target: target,
+                      origin: [filename]
+                    };
+                    session.state.metrics.forEach(function(metric){
+                      metric = metric.toLowerCase();
+                      base[metric] = 0;
+                    });
+                    base[defaultMetric] = parseFloat(cell),
+                    nl += app.addLink(base, true);
                   });
                 }
               });
