@@ -1,4 +1,4 @@
-  <svg id="flow"></svg>
+  <div id="flow"></div>
 
   <div class="view-controls">
     <button type="button" id="toggle-flow-settings" class="btn btn-light btn-sm">
@@ -66,101 +66,73 @@
   <script>
   (function(){
 
+    let plot;
+
     function drawFlowDiagram(){
-      if(!$('svg#flow').length) return;
-      let width = $('svg#flow').parent().width() - 40,
-          height = $('svg#flow').parent().height() - 60;
+      if(!$('#flow').length) return;
+      if(plot) Plotly.purge('flow');
+      let width = $('#flow').parent().width() - 40,
+          height = $('#flow').parent().height() - 60;
 
-      let nodes = app.getVisibleNodes(true);
-
-      svg = d3.select('svg#flow').html(null)
-          .attr('width', width)
-          .attr('height', height);
-
-      let format = d3.format(',.0f'),
-          color = d3.scaleOrdinal(d3.schemeCategory10);
-
-      let sankey = d3.sankey()
-          .nodeWidth(15)
-          .nodePadding(10)
-          .extent([[1, 1], [width - 1, height - 6]]);
-
-      let link = svg.append('g')
-          .attr('class', 'links')
-          .attr('fill', 'none')
-          .attr('stroke', '#000000')
-          .attr('stroke-opacity', 0.2)
-        .selectAll('path');
-
-      let node = svg.append('g')
-          .attr('class', 'nodes')
-          .attr('font-family', 'sans-serif')
-          .attr('font-size', 10)
-        .selectAll('g');
+      let nodes = app.getVisibleNodes(), labels = [];
 
       let onlyUnique = (value, index, self) => self.indexOf(value) === index;
 
-      wrapper = {links: []};
-      source_variable = $( '#flow-source-variable').val();
-      source_values  = nodes.map(n => n[source_variable]+'').filter(onlyUnique);
-      target_variable = $('#flow-target-variable').val();
-      target_values = nodes.map(n => n[target_variable]+'').filter(onlyUnique);
-      wrapper['nodes'] = source_values.concat(target_values).map(n => ({'name': n}));
+      let source_variable = $('#flow-source-variable').val();
+      let source_values  = nodes.map(n => n[source_variable]+'').filter(onlyUnique);
 
-      target_list = {};
+      source_values.forEach(sv => labels.push(sv));
+
+      let target_variable = $('#flow-target-variable').val();
+      let target_values = nodes.map(n => n[target_variable]+'').filter(onlyUnique);
+
+      target_values.forEach(tv => labels.push(tv));
+
+      let target_list = {};
       target_values.forEach(target => target_list[target] = 0);
 
-      link_matrix = {};
-      source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
+      let link_matrix = {};
 
+      source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
       nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
 
-      source_values.forEach((source, i) => {
-        target_values.forEach((target, j) => {
-          if(link_matrix[source][target] > 0){
-            wrapper.links.push({
-              'source': i,
-              'target': source_values.length + j,
-              'value':  link_matrix[source][target]
-            });
+      let source = [], target = [], value = [];
+
+      source_values.forEach((s, i) => {
+        target_values.forEach((t, j) => {
+          if(link_matrix[s][t] > 0){
+            source.push(i);
+            target.push(source_values.length + j);
+            value.push(link_matrix[s][t]);
           }
         });
       });
 
-      sankey(wrapper);
+      let data = {
+        type: "sankey",
+        showLegend: false,
+        orientation: "h",
+        arrangement: 'perpendicular',
+        node: {
+          pad: 15,
+          thickness: 30,
+          line: {
+            color: "black",
+            width: 0.5
+          },
+          label: labels,
+          color: 'blue'
+        },
+        link: { source, target, value }
+      };
 
-      link = link
-        .data(wrapper.links)
-        .enter().append('path')
-          .attr('d', d3.sankeyLinkHorizontal())
-          .attr('stroke-width', d => Math.max(1, d.width));
-
-      link.append('title')
-          .text(d => d.source.name + ' → ' + d.target.name + '\n' + format(d.value));
-
-      node = node
-        .data(wrapper.nodes)
-        .enter().append('g');
-
-      node.append('text')
-          .attr('x', d => d.x0 - 6)
-          .attr('y', d => (d.y1 + d.y0) / 2)
-          .attr('dy', '0.35em')
-          .attr('text-anchor', 'end')
-          .text(d => d.name)
-        .filter(d => d.x0 < width / 2)
-          .attr('x', d => d.x1 + 6)
-          .attr('text-anchor', 'start');
-
-      node.append('rect')
-          .attr('x', d => d.x0)
-          .attr('y', d => d.y0)
-          .attr('height', d => Math.abs(d.y1 - d.y0))
-          .attr('width', d => d.x1 - d.x0)
-          .attr('fill', d => color((d.name+'').replace(/ .*/, '')))
-          .attr('stroke', '#000000');
-
-      node.append('title').text(d => d.name + '\n' + format(d.value));
+      Plotly.react('flow', [data], {
+        width: width,
+        height: height
+      }, {
+        displaylogo: false,
+        displayModeBar: false
+      });
 
       if(session.style.widgets['background-color']) $('#flow').parent().css('background-color', session.style.widgets['background-color']);
     }
@@ -173,6 +145,8 @@
         pane.show(0, function(){ pane.animate({left: '0px'}); });
       }
     });
+
+    
 
     $('#flow-source-variable')
       .html(session.data.nodeFields.map((field, i) => `<option${field==session.style.widgets['flow-source-variable']?' selected ':''} value="${field}">${app.titleize(field)}</option>`))

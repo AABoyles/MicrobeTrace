@@ -336,6 +336,7 @@ a.btn, button.btn, .btn-group{
 #flow{
   margin: 15px;
   margin-top: 50px;
+  height: calc(100% - 65px);
 }
 
 /* MAP */
