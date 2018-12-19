@@ -743,7 +743,8 @@
               });
             }
           });
-          message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
+          message(` - Parsed ${nn} New, ${data.length-1} Total Nodes from Excel Distance Matrix.`);
+          message(` - Parsed ${nl} New, ${((data.length-1)**2-(data.length-1))/2} Total Links from Excel Distance Matrix.`);
           if(fileNum === session.files.length - 1) nextStuff();
 
         } else {
@@ -785,7 +786,7 @@
                 }
               });
               message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
-              message(` - Parsed ${nl} New, ${(Math.pow(results.data.length-1, 2) - results.data.length + 1)/2} Total Links from Distance Matrix.`);
+              message(` - Parsed ${nl} New, ${((results.data.length-1)**2 - (results.data.length-1))/2} Total Links from Distance Matrix.`);
               if(fileNum === session.files.length - 1) nextStuff();
             }
           });
