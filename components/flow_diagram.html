@@ -153,7 +153,7 @@
             width: 0.5
           },
           label: labels.map(app.titleize),
-          color: 'blue'
+          color: session.style.widgets['flow-showNodes'] ? session.style.widgets['node-color'] : session.style.widgets['link-color']
         },
         link: { source, target, value }
       }], {
