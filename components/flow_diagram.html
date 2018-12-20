@@ -205,8 +205,8 @@
       drawFlowDiagram();
     });
 
-    $('#flow-export').click(function(){
-      let network = $('#flow')[0];
+    $('#flow-export').on('click', function(){
+      let network = $('#flow .main-svg').get(0);
       let content = app.unparseSVG(network);
       let filetype = $('#export-flow-file-type').val();
       if(filetype === 'svg'){
