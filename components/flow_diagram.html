@@ -37,6 +37,17 @@
             <button type="button" class="btn btn-primary btn-sm w-100" id="flow-add-variable">Add Variable</button>
           </div>
         </div>
+        <div class="form-group row">
+          <div class="col-3">Arrangement</div>
+          <div class="col-9">
+            <select id='flow-arrangement' class='custom-select custom-select-sm'>
+              <option value='snap'>Snap</option>
+              <option value='perpendicular'>Perpendicular</option>
+              <option value='freeform'>Freeform</option>
+              <option value='fixed'>Fixed</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -133,7 +144,7 @@
         type: 'sankey',
         showLegend: false,
         orientation: 'h',
-        arrangement: 'perpendicular',
+        arrangement: session.style.widgets['flow-arrangement'],
         node: {
           pad: 15,
           thickness: 30,
@@ -188,6 +199,11 @@
         drawFlowDiagram();
       });
     }).trigger('click').trigger('click');
+
+    $('#flow-arrangement').on('change', function(e){
+      session.style.widgets['flow-arrangement'] = e.target.value;
+      drawFlowDiagram();
+    });
 
     $('#flow-export').click(function(){
       let network = $('#flow')[0];
