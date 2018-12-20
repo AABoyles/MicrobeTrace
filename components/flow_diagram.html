@@ -18,6 +18,19 @@
     <div class="tab-content">
       <div class="tab-pane fade show active" id="flow-configurations" role="tabpanel" aria-labelledby="flow-tab">
         <div class="form-group row">
+          <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the Flow Diagram show Node or Link Variables?">Dataset</a></div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light col active">
+                <input type="radio" name="flow-show" id="flow-showNodes" autocomplete="off" checked> Nodes
+              </label>
+              <label class="btn btn-light col">
+                <input type="radio" name="flow-show" id="flow-showLinks" autocomplete="off"> Links
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
           <div class="col-3">Variables</div>
           <div class="col-9">
             <ul id="flow-variables"></ul>
@@ -69,7 +82,12 @@
       let width = $('#flow').parent().width() - 40,
           height = $('#flow').parent().height() - 60;
 
-      let nodes = app.getVisibleNodes();
+      let data;
+      if(session.style.widgets['flow-showNodes']){
+        data = app.getVisibleNodes();
+      } else {
+        data = app.getVisibleLinks();
+      }
 
       let onlyUnique = (value, index, self) => self.indexOf(value) === index;
 
@@ -78,7 +96,7 @@
 
       let source_values = [], target_values = [], all_values = [], labels = [];
       order.forEach((variable, i) => {
-        let values = nodes.map(n => n[variable]+'').filter(onlyUnique);
+        let values = data.map(n => n[variable]+'').filter(onlyUnique);
         values.forEach(value => all_values.push(variable + '-' + value + '-' + i));
         if(i < order.length-1){
           values.forEach(value => source_values.push(variable + '-' + value + '-' + i));
@@ -96,7 +114,7 @@
       for(let i = 0; i < order.length-1; i++){
         let source_variable = order[i];
         let target_variable = order[i+1];
-        nodes.forEach(n => link_matrix[source_variable + '-' + n[source_variable] + '-' + i][target_variable + '-' + n[target_variable] + '-' + (i+1)]++);
+        data.forEach(n => link_matrix[source_variable + '-' + n[source_variable] + '-' + i][target_variable + '-' + n[target_variable] + '-' + (i+1)]++);
       }
 
       let source = [], target = [], value = [];
@@ -111,25 +129,23 @@
         });
       });
 
-      let data = {
-        type: "sankey",
+      Plotly.react('flow', [{
+        type: 'sankey',
         showLegend: false,
-        orientation: "h",
+        orientation: 'h',
         arrangement: 'perpendicular',
         node: {
           pad: 15,
           thickness: 30,
           line: {
-            color: "black",
+            color: 'black',
             width: 0.5
           },
           label: labels.map(app.titleize),
           color: 'blue'
         },
         link: { source, target, value }
-      };
-
-      Plotly.react('flow', [data], {
+      }], {
         width: width,
         height: height
       }, {
@@ -149,8 +165,19 @@
       }
     });
 
+    $('#flow-showNodes').parent().on('click', function(){
+      session.style.widgets['flow-showNodes'] = true;
+      $('.flow-selector').html(session.data.nodeFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join(''));
+    });
+
+    $('#flow-showLinks').parent().on('click', function(){
+      session.style.widgets['flow-showNodes'] = false;
+      $('.flow-selector').html(session.data.linkFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join(''));
+    });
+
     $('#flow-add-variable').on('click', function(){
-      $('#flow-variables').append(`<li class='flow-items'><span class="oi oi-elevator"></span><select class='custom-select custom-select-sm flow-selector'>${session.data.nodeFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join('')}</select><span class="oi oi-x flow-remove"></span></li>`);
+      let fields = session.style.widgets['flow-showNodes'] ? session.data.nodeFields : session.data.linkFields;
+      $('#flow-variables').append(`<li class='flow-items'><span class="oi oi-elevator"></span><select class='custom-select custom-select-sm flow-selector'>${fields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join('')}</select><span class="oi oi-x flow-remove"></span></li>`);
 
       sortable('#flow-variables')[0].addEventListener('sortupdate', drawFlowDiagram);
 
