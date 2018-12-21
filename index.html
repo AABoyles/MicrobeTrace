@@ -72,8 +72,9 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
         <div class="dropdown-menu">
-          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
+          <a href="#" id="MicroReactTab" class="dropdown-item">MicroReact Mode</a>
           <div class="dropdown-divider"></div>
+          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
           <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
         </div>
       </li>
@@ -878,6 +879,12 @@ performance of this software.</pre>
         reader.readAsText(this.files[0]);
       }
     });
+
+    $('#MicroReactTab').on('click', function(){
+      var l = {"type":"column","content":[{"type":"row","content":[{"type":"stack","content":[{"type":"geo_map"}]},{"type":"stack","content":[{"type":"phylogenetic_tree"}]}]},{"type":"stack","content":[{"type":"timeline"}]}]};
+      app.loadLayout(l);
+      setTimeout(function(){ app.loadLayout(l); }, 80);
+    })
 
     if(window.navigator.onLine){
       $('#HelpTab')

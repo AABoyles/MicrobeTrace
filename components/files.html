@@ -917,14 +917,10 @@
     $('#network-statistics').fadeIn();
     session.meta.loadTime = Date.now() - session.meta.startTime;
     if(oldSession){
-      app.loadLayout(session.layout, true);
+      layout.root.contentItems[0].remove();
+      setTimeout(function(){app.loadLayout(session.layout)}, 80);
     } else {
-      app.loadLayout({
-        type: 'stack',
-        content: [{
-          type: $('#default-View').val()
-        }]
-      }, true);
+      app.launchView($('#default-View').val());
     }
     if(localStorage.getItem('stash-auto') === 'true'){
       temp.autostash = {

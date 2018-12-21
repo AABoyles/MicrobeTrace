@@ -807,10 +807,14 @@ app.cacheLayout = function(contentItem){
   return {'type': contentItem.componentName};
 };
 
-app.loadLayout = function(component, first){
-  if(first) app.lastItem = layout.root.contentItems[0];
+app.loadLayout = function(component, parent){
+  if(!parent){
+    parent = layout.root;
+    try { parent.contentItems[0].remove(); } catch(e){}
+  }
   if(['stack', 'row', 'column'].includes(component.type)){
-    component.content.map(app.loadLayout);
+    parent.addChild({type: component.type});
+    component.content.forEach(function(c){ app.loadLayout(c, _.last(parent.contentItems)); });
   } else {
     app.launchView(component.type);
   }
