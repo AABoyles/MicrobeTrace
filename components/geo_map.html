@@ -770,6 +770,12 @@
       .on('node-color-change', drawNodes)
       .on('link-color-change link-threshold-change link_visibility', drawLinks);
 
+    layout.on('stateChanged', function(){
+      setTimeout(function(){
+        map.invalidateSize();
+      }, 80);
+    });
+
     setTimeout(function(){
       matchCoordinates();
       drawNodes();
