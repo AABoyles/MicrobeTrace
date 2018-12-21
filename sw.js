@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2018-12-18';
+var CACHE = 'MicrobeTraceD2018-12-21';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -21,7 +21,6 @@ self.addEventListener('install', function(event) {
         'components/table.html',
         'components/timeline.html',
         'components/waterfall.html',
-        'scripts/align-nbeam.js',
         'scripts/align-sw.js',
         'scripts/common.js',
         'scripts/compute-consensus-distances.js',
@@ -50,12 +49,12 @@ self.addEventListener('install', function(event) {
         'node_modules/d3/dist/d3.min.js',
         'node_modules/d3-force-attract/dist/d3-force-attract.min.js',
         'node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js',
+        'node_modules/html5sortable/dist/html5sortable.min.js',
         'node_modules/plotly.js/dist/plotly.min.js',
         'node_modules/tabulator-tables/dist/js/tabulator.min.js',
         'node_modules/3d-force-graph/dist/3d-force-graph.min.js',
         'node_modules/leaflet/dist/leaflet.js',
         'node_modules/alignment-viewer/dist/alignment-viewer.min.js',
-        'node_modules/d3-sankey/build/d3-sankey.min.js',
         'node_modules/marked/marked.min.js',
         'node_modules/jszip/dist/jszip.min.js',
         'node_modules/localforage/dist/localforage.min.js',
@@ -65,7 +64,6 @@ self.addEventListener('install', function(event) {
         'vendor/bootstrap-filestyle.min.js',
         'vendor/d3.v3.min.js',
         'vendor/FileSaver.min.js',
-        'vendor/ntseq.js',
         'vendor/phylotree.js',
         'vendor/shpwrite.js',
         'stylesheets/main.css',
