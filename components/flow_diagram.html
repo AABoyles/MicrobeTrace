@@ -100,45 +100,57 @@
         data = app.getVisibleLinks();
       }
 
-      let onlyUnique = (value, index, self) => self.indexOf(value) === index;
-
       let order = [];
       $($('#flow-variables').find('select')).each(function(i){ order.push($(this).val()); });
+      let variables = order.length;
 
-      let source_values = [], target_values = [], all_values = [], labels = [];
-      order.forEach((variable, i) => {
-        let values = data.map(n => n[variable]+'').filter(onlyUnique);
-        values.forEach(value => all_values.push(variable + '-' + value + '-' + i));
-        if(i < order.length-1){
-          values.forEach(value => source_values.push(variable + '-' + value + '-' + i));
+      let values = [], source_values = [], target_values = [], all_values = [], labels = [];
+      for(let i = 0; i < variables; i++){
+        variable = order[i];
+        let n = data.length;
+        for(let j = 0; j < n; j++){
+          let value = data[j][variable]+'';
+          if(!values.includes(value)) values.push(value);
         }
-        if(i > 0){
-          values.forEach(value => target_values.push(variable + '-' + value + '-' + i));
+        n = values.length;
+        for(let j = 0; j < n; j++){
+          labels.push(app.titleize(variable + ' ' + values[j]));
+          let value = variable + '-' + values[j] + '-' + i;
+          if(i < variables-1) source_values.push(value);
+          if(i > 0) target_values.push(value);
+          all_values.push(value);
         }
-        values.forEach(value => labels.push(app.titleize(variable + ' ' + value)));
-      });
+      }
 
       let link_matrix = {}, target_list = {};
       target_values.forEach(target => target_list[target] = 0);
       source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
 
-      for(let i = 0; i < order.length-1; i++){
+      let m = order.length-1, n = data.length;
+      for(let i = 0; i < m; i++){
         let source_variable = order[i];
         let target_variable = order[i+1];
-        data.forEach(n => link_matrix[source_variable + '-' + n[source_variable] + '-' + i][target_variable + '-' + n[target_variable] + '-' + (i+1)]++);
+        for(let j = 0; j < n; j++){
+          let point = data[j];
+          link_matrix[source_variable + '-' + point[source_variable] + '-' + i][target_variable + '-' + point[target_variable] + '-' + (i+1)]++;
+        }
       }
 
       let source = [], target = [], value = [];
 
-      source_values.forEach(s => {
-        target_values.forEach(t => {
+      m = source_values.length, n = target_values.length;
+      for(let i = 0; i < m; i++){
+        let s = source_values[i];
+        let index = all_values.indexOf(s);
+        for(let j = 0; j < n; j++){
+          let t = target_values[j];
           if(link_matrix[s][t] > 0){
-            source.push(all_values.indexOf(s));
+            source.push(index);
             target.push(all_values.indexOf(t));
             value.push(link_matrix[s][t]);
           }
-        });
-      });
+        }
+      }
 
       Plotly.react('flow', [{
         type: 'sankey',
