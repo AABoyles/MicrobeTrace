@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 ls components/ | sed -e 's/^/components\//' | sed "s/.*/        '&',/" >> temp
 
@@ -43,7 +43,7 @@ self.addEventListener('fetch', function(event) {
 
 // Open the cache where the assets were stored and search for the requested
 // resource. Notice that in case of no matching, the promise still resolves
-// but it does with `undefined` as value.
+// but it does with \`undefined\` as value.
 function fromCache(request){
   return caches.open(CACHE).then(function(cache){
     return cache.match(request).then(function(matching){
