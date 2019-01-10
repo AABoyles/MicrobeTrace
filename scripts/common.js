@@ -772,7 +772,7 @@ app.launchView = function(view, callback){
       session.data.nodeFields.map(function(field){ return '<option value="nodes-'+field+'">Nodes '+app.titleize(field)+'</option>'; })).join('\n')
     );
     contentItem.element.find('.launch-color-options').click(function(){
-      $('#color-tab').tab('show');
+      $('#style-tab').tab('show');
       setTimeout(function(){
         $('#global-settings-modal').modal('show');
       }, 250);
