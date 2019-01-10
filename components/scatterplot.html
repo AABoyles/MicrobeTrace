@@ -1,7 +1,7 @@
   <div id="scatterplot-panel"></div>
 
   <div class="view-controls">
-    <button type="button" id="toggle-scatterplot-settings" class="btn btn-light btn-sm">
+    <button type="button" id="toggle-scatterplot-settings" class="btn btn-light btn-sm" title="Toggle Scatterplot Settings">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export-scatterplot-modal" title="Export Scatterplot">
@@ -17,8 +17,8 @@
     </ul>
     <div class="tab-content">
       <div role="tabpanel" class="tab-pane fade show active" id="scatterplotConfigurations">
-        <div class="form-group row">
-          <div class="col-3" title="Should the scatterplot show Node or Link Variables?">Dataset</div>
+        <div class="form-group row" title="Should the scatterplot show Node or Link Variables?">
+          <div class="col-3">Dataset</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light col">
@@ -30,16 +30,16 @@
             </div>
           </div>
         </div>
-        <div class="form-group row">
-          <div class="col-3"><label for="scatterplot-xVar" title="Which variable should the scatterplot be drawn from?">X Variable</label></div>
+        <div class="form-group row" title="Which variable should the scatterplot be drawn from?">
+          <div class="col-3"><label for="scatterplot-xVar">X Variable</label></div>
           <div class="col-9"><select id="scatterplot-xVar" class="custom-select custom-select-sm linkVariables"></select></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3"><label for="scatterplot-yVar" title="Which variable should the scatterplot be drawn from?">Y Variable</label></div>
+        <div class="form-group row" title="Which variable should the scatterplot be drawn from?">
+          <div class="col-3"><label for="scatterplot-yVar">Y Variable</label></div>
           <div class="col-9"><select id="scatterplot-yVar" class="custom-select custom-select-sm linkVariables"></select></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3" title="Should the y-axis show a linear or logarithmic scale?">Scale</div>
+        <div class="form-group row" title="Should the y-axis show a linear or logarithmic scale?">
+          <div class="col-3">Scale</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light active col">
@@ -51,8 +51,8 @@
             </div>
           </div>
         </div>
-        <div class="form-group row">
-          <div class="col-3" title="What color should the scatterplot be?">Color</div>
+        <div class="form-group row" title="What color should the scatterplot be?">
+          <div class="col-3">Color</div>
           <div class="col-9"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
         </div>
       </div>

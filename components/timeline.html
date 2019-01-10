@@ -17,11 +17,11 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel" aria-labelledby="timeline-nodes-tab">
-        <div class="form-group row">
+        <div class="form-group row" title="Which variable in your data contains the date?">
           <div class="col-4"><label for="timeline-date-field">Date Field</label></div>
           <div class="col-8"><select id="timeline-date-field" class="custom-select custom-select-sm w-100 nodeVariables"></select></div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" title="Would you like to play a fixed time window forward, or see all the past up to a given point?">
           <div class="col-4">Timeline Mode</div>
           <div class="col-8">
             <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
@@ -34,7 +34,7 @@
             </div>
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" title="How quickly would you like the timeline to advance?">
           <div class="col-4"><label for="timeline-speed">Play Speed</label></div>
           <div class="col-8"><input type="range" id="timeline-speed" min="0" max="100" step="10" /></div>
         </div>

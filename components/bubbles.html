@@ -4,7 +4,7 @@
   </svg>
 
   <div class="view-controls">
-    <button type="button" id="bubble-toggle-settings" class="btn btn-light btn-sm" data-toggle="button">
+    <button type="button" id="bubble-toggle-settings" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Bubble Settings">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#bubbles-export-modal" title="Export Bubbles">
@@ -24,23 +24,17 @@
           <div class="col-3">Color</div>
           <div class="col-9"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3">X</div>
-          <div class="col-9">
-            <select id="bubble-x" class="custom-select custom-select-sm nodeVariables"></select>
-          </div>
+        <div class="form-group row" title="What variable should be used for the Bubbles' X axis?">
+          <div class="col-3"><label for="bubble-x">X</label></div>
+          <div class="col-9"><select id="bubble-x" class="custom-select custom-select-sm nodeVariables"></select></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3">Y</div>
-          <div class="col-9">
-            <select id="bubble-y" class="custom-select custom-select-sm nodeVariables"></select>
-          </div>
+        <div class="form-group row" title="What variable should be used for the Bubbles' Y axis?">
+          <div class="col-3"><label for="bubble-y">Y</label></div>
+          <div class="col-9"><select id="bubble-y" class="custom-select custom-select-sm nodeVariables"></select></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3">Size</div>
-          <div class="col-9">
-            <input type="range" id="bubble-size" min="1" value="5" max="15" step="0.1"></input>
-          </div>
+        <div class="form-group row" title="By what variable should bubble sizes be set?">
+          <div class="col-3"><label for="bubble-size">Size</label></div>
+          <div class="col-9"><input type="range" id="bubble-size" min="1" value="5" max="15" step="0.1"></input></div>
         </div>
       </div>
     </div>

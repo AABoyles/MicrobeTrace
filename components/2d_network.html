@@ -1,7 +1,7 @@
 <svg id="network"></svg>
 
 <div class="view-controls">
-  <button type="button" id="network-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Network Settings">
+  <button type="button" id="network-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Network Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#network-export-modal" title="Export Network">
@@ -36,16 +36,16 @@
           </div>
           <div id="node-controls-labels" class="collapse show" data-parent="#node-controls-accordion">
             <div class="card-body">
-              <div class="form-group row">
-                <div class="col-4"><label for="node-label-variable" title="What field should be displayed as a label for the node?">Label</label></div>
+              <div class="form-group row" title="What field should be displayed as a label for the node?">
+                <div class="col-4"><label for="node-label-variable">Label</label></div>
                 <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
-              <div class="form-group row node-label-row">
-                <div class="col-4"><label for="node-label-size" title="How big should node labels be?">Label Size</label></div>
+              <div class="form-group row node-label-row" title="How big should node labels be?">
+                <div class="col-4"><label for="node-label-size">Label Size</label></div>
                 <div class="col-8"><input type="range" id="node-label-size" min="6" value="16" max="72"></input></div>
               </div>
-              <div class="form-group row node-label-row">
-                <div class="col-4"><label for="node-label-orientation" title="How should the labels be oriented relative to their nodes?">Orientation</label></div>
+              <div class="form-group row node-label-row" title="How should the labels be oriented relative to their nodes?">
+                <div class="col-4"><label for="node-label-orientation">Orientation</label></div>
                 <div class="col-8">
                   <select id="node-label-orientation" class="custom-select custom-select-sm">
                     <option selected>Right</option>
@@ -56,8 +56,8 @@
                   </select>
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="node-tooltip-variable" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+              <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
+                <div class="col-4"><label for="node-tooltip-variable">Tooltip</label></div>
                 <div class="col-8"><select id="node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
             </div>
@@ -69,12 +69,12 @@
           </div>
           <div id="node-controls-shapes" class="collapse" data-parent="#node-controls-accordion">
             <div class="card-body">
-              <div class="form-group row">
-                <div class="col-4"><label for="node-symbol-variable" title="Which variable should determine the shape of the node?">Shape By</label></div>
+              <div class="form-group row" title="Which variable should determine the shape of the node?">
+                <div class="col-4"><label for="node-symbol-variable">Shape By</label></div>
                 <div class="col-8"><select id="node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
-              <div id="node-symbol-row" class="form-group row">
-                <div class="col-4"><label for="node-symbol" title="What shape should the nodes be?">Shape</label></div>
+              <div id="node-symbol-row" class="form-group row" title="What shape should the nodes be?">
+                <div class="col-4"><label for="node-symbol">Shape</label></div>
                 <div class="col-8"><select id="node-symbol" class="custom-select custom-select-sm">
                   <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
                   <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
@@ -96,12 +96,12 @@
                   <option value="symbolStar">&nbsp;&#9733; (Star)</option>
                 </select></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="node-radius-variable" title="Which variable should determine the size of the node?">Size By</label></div>
+              <div class="form-group row" title="Which variable should determine the size of the node?">
+                <div class="col-4"><label for="node-radius-variable">Size By</label></div>
                 <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="node-radius" title="How big should the nodes be?">Size</label></div>
+              <div class="form-group row" title="How big should the nodes be?">
+                <div class="col-4"><label for="node-radius">Size</label></div>
                 <div class="col-8"><input type="range" id="node-radius" min="100" value="250" step="1" max="5000" /></div>
               </div>
             </div>
@@ -122,12 +122,12 @@
           </div>
           <div id="link-controls-labels" class="collapse show" data-parent="#link-controls-accordion">
             <div class="card-body">
-              <div class="form-group row">
-                <div class="col-4"><label for="link-tooltip-variable" title="What data should be displayed when you hover over a link?">Tooltip</label></div>
+              <div class="form-group row" title="What data should be displayed when you hover over a link?">
+                <div class="col-4"><label for="link-tooltip-variable">Tooltip</label></div>
                 <div class="col-8"><select id="link-tooltip-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="link-label-variable" title="What data should be displayed when you hover over a link?">Label</label></div>
+              <div class="form-group row" title="What data should be displayed when you hover over a link?">
+                <div class="col-4"><label for="link-label-variable">Label</label></div>
                 <div class="col-8"><select id="link-label-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
             </div>
@@ -139,16 +139,16 @@
           </div>
           <div id="link-controls-shapes" class="collapse" data-parent="#link-controls-accordion">
             <div class="card-body">
-              <div id="link-transparency-row" class="form-group row">
-                <div class="col-4"><label title="How transparent should the links be?">Transparency</label></div>
+              <div id="link-transparency-row" class="form-group row" title="How transparent should the links be?">
+                <div class="col-4"><label for="link-opacity">Transparency</label></div>
                 <div class="col-8"><input type="range" id="link-opacity" min="0" max="1" value="0" step="0.01" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="link-width-variable" title="Which variable should determine the width of a link?">Width By</label></div>
+              <div class="form-group row" title="Which variable should determine the width of a link?">
+                <div class="col-4"><label for="link-width-variable">Width By</label></div>
                 <div class="col-8"><select id="link-width-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
-              <div id="link-reciprocalthickness-row" class="form-group row">
-                <div class="col-4"><label title="Should link widths be proportioned to the reciprocal of this variable?">Reciprocal</label></div>
+              <div id="link-reciprocalthickness-row" class="form-group row" title="Should link widths be proportioned to the reciprocal of this variable?">
+                <div class="col-4">Reciprocal</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
                     <label class="btn btn-light active">
@@ -160,16 +160,16 @@
                   </div>
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="link-width" title="How thick should the links be?">Width</label></div>
+              <div class="form-group row" title="How thick should the links be?">
+                <div class="col-4"><label for="link-width">Width</label></div>
                 <div class="col-8"><input type="range" id="link-width" min="0.3" max="30" step=".3" value="3" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label title="How long should links be?">Length</label></div>
+              <div class="form-group row" title="How long should links be?">
+                <div class="col-4"><label for="link-length">Length</label></div>
                 <div class="col-8"><input type="range" id="link-length" min = "0" max="200" value="50" /></div>
               </div>
-              <div class="form-group row hideForHIVTrace">
-                <div class="col-4"><label title="Are these links directed?">Directionality</label></div>
+              <div class="form-group row hideForHIVTrace" title="Are these links directed?">
+                <div class="col-4">Directionality</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
@@ -199,8 +199,8 @@
           </div>
           <div id="network-controls-labels" class="collapse show" data-parent="#network-controls-accordion">
             <div class="card-body">
-              <div class="form-group row">
-                <div class="col-4"><label for="highlight-neighbors" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">Neighbors</label></div>
+              <div class="form-group row" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
+                <div class="col-4">Neighbors</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col" title="Do not highlight anything.
@@ -223,16 +223,16 @@ Note that this may cause slow performance on larger networks.">
           </div>
           <div id="network-controls-physics" class="collapse" data-parent="#network-controls-accordion">
             <div class="card-body">
-              <div class="form-group row">
-                <div class="col-4"><label title="How strongly are the nodes repulsed by each other?">Charge</label></div>
+              <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
+                <div class="col-4"><label for="node-charge">Charge</label></div>
                 <div class="col-8"><input type="range" id="node-charge" min="0" max="400" value="200" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label title="How attractive is the mass of the graph?">Gravity</label></div>
+              <div class="form-group row" title="How attractive is the mass of the graph?">
+                <div class="col-4"><label for="network-gravity">Gravity</label></div>
                 <div class="col-8"><input type="range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label title="How quickly should moving nodes lose their momentum?">Friction</label></div>
+              <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
+                <div class="col-4"><label for="network-friction">Friction</label></div>
                 <div class="col-8"><input type="range" id="network-friction" min="0" max="1" value="0.4" step="0.025" /></div>
               </div>
             </div>
