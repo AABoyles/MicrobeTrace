@@ -1,19 +1,19 @@
 <div id="map" class="h-100"></div>
 
   <div class="view-controls" style="z-index:1001">
-    <button type="button" id="toggle-map-settings" class="btn btn-light btn-sm">
+    <button type="button" id="toggle-map-settings" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#map-export-modal">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#map-export-modal" title="Export Map Data">
       <span class="oi oi-data-transfer-download"></span>
     </button>
     <button id="map-fit" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
       <span class="oi oi-target"></span>
     </button>
-    <button id="map-layer-upload" type="button" class="btn btn-light btn-sm" title="Upload Map Layer">
+    <button id="map-layer-upload" type="button" class="btn btn-light btn-sm" title="Import Map Data">
       <span class="oi oi-data-transfer-upload"></span>
     </button>
-    <input type="file" id="map-file-input" style="display: none" multiple/>
+    <input type="file" id="map-file-input" class="d-none" multiple />
   </div>
 
   <div id="map-settings-pane" class="left-pane" style="z-index:1000">
@@ -208,7 +208,7 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><label for="map-node-tooltip-variable" data-toggle="tooltip" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
+          <div class="col-4"><label for="map-node-tooltip-variable" title="What node data should be displayed as a tooltip for the node?">Tooltip</label></div>
           <div class="col-8"><select id="map-node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option selected>None</option></select></div>
         </div>
       </div>

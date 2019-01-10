@@ -40,8 +40,7 @@
             <div class="form-group row">
               <div class="col-12">
                 <div class="alert alert-warning alert-dismissible" role="alert">
-                  <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank">an external tool</a> before loading them into MicrobeTrace.</p>
-                  <p class="ifOnline"><a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" target="_blank">Click here for additional information.</a></p>
+                  <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank">an external tool</a> before loading them into MicrobeTrace. <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank">Click here for additional information.</a></p>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
@@ -49,24 +48,20 @@
               </div>
             </div>
             <div class="form-group row">
-              <div class="col-3">
-                <a href="#" data-toggle="tooltip" title="Should MicrobeTrace align your sequences?">Align</a>
-              </div>
+              <div class="col-3" title="Should MicrobeTrace align your sequences?">Align</div>
               <div class="col-9">
                 <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col" data-toggle="tooltip" title="Do Not Align Sequences (Recommended)">
+                  <label class="btn btn-light active col" title="Do Not Align Sequences">
                     <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
                   </label>
-                  <label class="btn btn-light col" data-toggle="tooltip" title="Align Sequences using Smith-Waterman aligner (Recommended)">
+                  <label class="btn btn-light col" title="Align Sequences using Smith-Waterman aligner">
                     <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
                   </label>
                 </div>
               </div>
             </div>
             <div class="form-group row alignConfigRow">
-              <div class="col-3">
-                <a href="#" data-toggle="tooltip" title="Against what sequence should MicrobeTrace align your sequences?">Reference</a>
-              </div>
+              <div class="col-3" title="Against what sequence should MicrobeTrace align your sequences?">Reference</div>
               <div class="col-9">
                 <div class="custom-file">
                   <input type="file" class="custom-file-input" id="refSeqFileLoad" />
@@ -75,9 +70,7 @@
               </div>
             </div>
             <div class="form-group row alignConfigRow">
-              <div class="col-3">
-                <a href="#" data-toggle="tooltip" title="How should MicrobeTrace align your sequences?">Type</a>
-              </div>
+              <div class="col-3" title="How should MicrobeTrace align your sequences?">Type</div>
               <div class="col-9">
                 <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                   <label class="btn btn-light active col">
@@ -89,37 +82,35 @@
                 </div>
               </div>
             </div>
-            <div class="form-group row alignConfigRow">
-              <div class="col-3">
-                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace reward matching bases?"><label for="alignerMatch">Match</label></a>/
-                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace penalize non-matching bases?"><label for="alignerMismatch">Mismatch</label></a>
+            <div class="row alignConfigRow">
+              <div class="form-group col offset-3" title="How much should MicrobeTrace reward matching bases?">
+                <label for="alignerMatch">Match Reward</label>
+                <input type="number" id="alignerMatch" class="form-control" value="1" min="0"></input>
               </div>
-              <div class="col"><input type="number" id="alignerMatch" class="form-control" value="1" min="0"></input></div>
-              <div class="col"><input type="number" id="alignerMismatch" class="form-control" value="1" min="0"></input></div>
+              <div class="form-group col" title="How much should MicrobeTrace penalize non-matching bases?">
+                <label for="alignerMismatch">Mismatch Cost</label>
+                <input type="number" id="alignerMismatch" class="form-control" value="1" min="0"></input>
+              </div>
             </div>
-            <div class="form-group row alignConfigRow">
-              <div class="col-3">
-                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace Penalize opening a gap?"><label for="alignerGapO">Gap Open</label></a>/
-                <a href="#" data-toggle="tooltip" title="How much should MicrobeTrace Penalize extending a gap?"><label for="alignerGapE">Extension</label></a>
+            <div class="row alignConfigRow">
+              <div class="form-group col offset-3" title="How much should MicrobeTrace Penalize opening a gap?">
+                <label for="alignerGapO">Gap Opening Cost</label>
+                <input type="number" id="alignerGapO" class="form-control" value="1" min="0"></input>
               </div>
-              <div class="col"><input type="number" id="alignerGapO" class="form-control" value="1" min="0"></input></div>
-              <div class="col"><input type="number" id="alignerGapE" class="form-control" value="1" min="0"></input></div>
+              <div class="form-group col" title="How much should MicrobeTrace Penalize extending a gap?">
+                <label for="alignerGapE">Gap Extension Cost</label>
+                <input type="number" id="alignerGapE" class="form-control" value="1" min="0"></input>
+              </div>
             </div>
-            <div class="form-group row alignPreviewRow">
-              <div class="col-3">
-                <a href="#" data-toggle="tooltip" title="Generate a preview of the alignment, using the current configurations.">
-                  <button type="button" id="previewAlignment" class="btn btn-light">Preview</button>
-                </a>
-              </div>
-              <div class="col-9">
-                <div class="text-center" id="alignmentPreview" style="overflow-x: scroll"><canvas></canvas></div>
-              </div>
+            <div class="row alignPreviewRow">
+              <div class="col-3"><button type="button" id="previewAlignment" class="btn btn-light w-100" title="Generate a preview of the alignment, using the current configurations.">Preview</button></div>
+              <div id="alignment-preview" class="col text-center"><canvas></canvas></div>
             </div>
           </div>
           <div id="distance-configurations" class="tab-pane fade" role="tabpanel">
-            <div class="form-group row">
+            <div class="form-group row" title="Which genetic distance metrics should MicrobeTrace compute?">
               <div class="col-4">
-                <label for="distance-metrics">Distance metric(s)</label>
+                <label for="distance-metrics">Distance Metric(s)</label>
               </div>
               <div class="col-8">
                 <select class="chosen-select custom-select-sm" id="distance-metrics" multiple>
@@ -128,9 +119,9 @@
                 </select>
               </div>
             </div>
-            <div class="form-group row">
+            <div class="form-group row" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
               <div class="col-4">
-                <label for="default-distance-metric">Default Distance metric</label>
+                <label for="default-distance-metric">Default Distance Metric</label>
               </div>
               <div class="col-8">
                 <select class="custom-select custom-select-sm" id="default-distance-metric">
@@ -139,7 +130,7 @@
                 </select>
               </div>
             </div>
-            <div class="form-group row">
+            <div class="form-group row" title="What distance threshold should Microbe use to first construct the network?">
               <div class="col-4">
                 <label for="default-distance-threshold">Default Link Threshold</label>
               </div>
@@ -149,7 +140,7 @@
             </div>
           </div>
           <div id="system-configurations" class="tab-pane fade" role="tabpanel">
-            <div class="form-group row">
+            <div class="form-group row" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
               <div class="col-2">
                 <label for="default-View">Default View</label>
               </div>
@@ -163,17 +154,18 @@
                 </select>
               </div>
             </div>
-            <div class="form-group row">
+            <div class="form-group row" title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
+Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
               <div class="col-2">
-                <label for="stash-auto">Autostashing?</label>
+                <label for="stash-auto">Autostash</label>
               </div>
               <div class="col-10">
                 <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col" data-toggle="tooltip" title="Do Not Automatically Stash Sessions">
-                    <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> No
+                  <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
+                    <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> Off
                   </label>
-                  <label class="btn btn-light col" data-toggle="tooltip" title="Automatically Stash Sessions">
-                    <input type="radio" name="stash-auto" id="stash-auto-yes" autocomplete="off"> Yes
+                  <label class="btn btn-light col" title="Automatically Stash Sessions">
+                    <input type="radio" name="stash-auto" id="stash-auto-yes" autocomplete="off"> On
                   </label>
                 </div>
               </div>
@@ -182,7 +174,7 @@
         </div>
       </div>
       <div class="modal-footer clearfix">
-        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="Confirm Alignment Configurations are All Properly Set">Confirm</button>
+        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="Confirm Load Settings are All Properly Set">Confirm</button>
       </div>
     </div>
   </div>
@@ -273,35 +265,34 @@
       });
     }
     function addTableTile(headers){
-      var root = $('<div class="file-table-row"></div>');
+      var root = $('<div class="file-table-row"></div>').data('filename', file.name);
       var fnamerow = $('<div class="row w-100"></div>');
       $('<div class="file-name col"></div>')
-      .append($('<a href="#"><span class="oi oi-circle-x"></span></a>').click(function(e){
-        session.files.splice(session.files.indexOf(file.name), 1);
-        root.slideUp(function(){ root.remove(); });
-      }))
-      .append($('<a href="#"><span class="oi oi-data-transfer-download"></span></a>').on('click', function(e){
-        let blob = new Blob([file.contents], {type: file.type | 'text'});
-        saveAs(blob, file.name);
-      }))
-      .append(`&nbsp;<a href="#" title="${file.name}">${file.name}</a>`)
-      .appendTo(fnamerow);
-      fnamerow.append(`
-      <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-        <label class="btn btn-light${!isFasta&!isNode?' active':''}">
-          <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
-        </label>
-        <label class="btn btn-light${!isFasta&isNode?' active':''}">
-          <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
-        </label>
-        <label class="btn btn-light">
-          <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
-        </label>
-        <label class="btn btn-light${isFasta?' active':''}">
-          <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
-        </label>
-      </div>
-      `);
+        .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').click(function(e){
+          session.files.splice(session.files.indexOf(file.name), 1);
+          root.slideUp(function(){ root.remove(); });
+        }))
+        .append($('<a href="#" class="oi oi-data-transfer-download align-middle p-1" title="Resave this file"></a>').on('click', function(){
+          saveAs(new Blob([file.contents], {type: file.type | 'text'}), file.name);
+        }))
+        .append('<span class="p-1">' + file.name + '</span>')
+        .append(`
+        <div class="btn-group btn-group-toggle btn-group-sm float-right" data-toggle="buttons">
+          <label class="btn btn-light${!isFasta&!isNode?' active':''}">
+            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
+          </label>
+          <label class="btn btn-light${!isFasta&isNode?' active':''}">
+            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
+          </label>
+          <label class="btn btn-light">
+            <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
+          </label>
+          <label class="btn btn-light${isFasta?' active':''}">
+            <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
+          </label>
+        </div>
+        `)
+        .appendTo(fnamerow);
       fnamerow.appendTo(root);
       var optionsrow = $('<div class="row w-100"></div>');
       var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
@@ -322,21 +313,15 @@
       optionsrow.appendTo(root);
 
       function matchHeaders(type){
+        var these = $(`[data-file='${file.name}'] select`);
         var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
             b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
             c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
-        these = $(`[data-file='${file.name}'] select`);
         [a, b, c].forEach(function(list, i){
           list.forEach(function(title){
-            if(headers.includes(title)){
-              $(these.get(i)).val(title);
-            }
+            if(headers.includes(title)) $(these.get(i)).val(title);
           });
-          if($(these.get(i)).val() === 'None'){
-            if(!(i === 1 && type === 'node')){
-              $(these.get(i)).val(headers[i]);
-            }
-          }
+          if($(these.get(i)).val() === 'None' && !(i === 1 && type === 'node')) $(these.get(i)).val(headers[i]);
         });
       }
 
@@ -386,7 +371,7 @@
   }
 
   function updatePreview(data){
-    $('#alignmentPreview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
+    $('#alignment-preview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
     app.align({
       nodes: data,
       reference: session.data.reference,
@@ -398,7 +383,7 @@
       alignmentViewer(output, {
         showID: false
       }).then(function(canvas){
-        $('#alignmentPreview').empty().append(canvas);
+        $('#alignment-preview').empty().append(canvas);
       });
     });
   }
@@ -407,14 +392,14 @@
 
   $('#swAlign').parent().click(function(){
     $('.alignConfigRow').slideDown();
-    $('#alignmentPreview').slideUp(function(){
+    $('#alignment-preview').slideUp(function(){
       $(this).empty().show();
     });
   });
 
   $('#doNotAlign, #nbeamAlign').parent().click(function(){
     $('.alignConfigRow').slideUp();
-    $('#alignmentPreview').slideUp(function(){
+    $('#alignment-preview').slideUp(function(){
       $(this).empty().show();
     });
   });
@@ -504,7 +489,7 @@
 
     $('#file-panel .file-table-row').each(function(i, el){
       var $el = $(el);
-      var fname = $el.find('.file-name').text().trim();
+      var fname = $el.data('filename');
       var selects = $el.find('select');
       var f = session.files.find(function(file){ return file.name === fname; });
       f.format = $el.find('input[type="radio"]:checked').data('type');

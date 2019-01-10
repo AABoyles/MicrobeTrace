@@ -788,7 +788,6 @@ app.launchView = function(view, callback){
         }
       }
     }
-    contentItem.element.find('[data-toggle="tooltip"]').tooltip();
     if(callback){
       callback(contentItem);
     } else {

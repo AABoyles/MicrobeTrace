@@ -36,10 +36,7 @@
           <a href="#" id="RecallDataTab" class="dropdown-item">Recall</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
-          <a href="#" class="dropdown-item">
-            <input type="file" class="d-none" id="OpenTab" />
-            <label class="mb-0 w-100" for="OpenTab">Open</label>
-          </a>
+          <label class="dropdown-item" for="OpenTab">Open</label><input type="file" class="d-none" id="OpenTab" />
           <div class="dropdown-divider"></div>
           <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
           <a href="#" id="NewTab" class="dropdown-item">New</a>
@@ -66,7 +63,7 @@
           <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
           <div class="dropdown-divider show-for-seq"></div>
           <a href="#" class="dropdown-item viewbutton show-for-seq" data-href="sequences">Sequences</a>
-          <a href="#" class="dropdown-item viewbutton show-for-seq" data-href="auditor">Auditor</a>
+          <!-- <a href="#" class="dropdown-item viewbutton show-for-seq" data-href="auditor">Auditor</a> -->
         </div>
       </li>
       <li class="nav-item dropdown">
@@ -237,7 +234,7 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Global Configurations</h5>
+          <h5 class="modal-title">Global Settings</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -245,38 +242,38 @@ performance of this software.</pre>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item active">
-              <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
+              <a class="nav-link active" id="filtering-tab" data-toggle="tab" href="#filtering-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" id="style-tab" data-toggle="tab" href="#style-config" role="tab" aria-controls="home" aria-selected="true">Styling</a>
             </li>
           </ul>
           <div class="tab-content">
-            <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="global-tab">
-              <div class="form-group row show-for-nn">
-                <div class="col-4"><label data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
+            <div class="tab-pane fade show active" id="filtering-config" role="tabpanel" aria-labelledby="filtering-tab">
+              <div class="form-group row show-for-nn" title="By what algorithm would you like to prune links from the network?">
+                <div class="col-4">Prune With</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
+                    <label class="btn btn-light active col" title="Show all links within threshold">
                       <input type="radio" name="NNOptions" id="links-show-all" autocomplete="off" checked> None
                     </label>
-                    <label class="btn btn-light col">
+                    <label class="btn btn-light col" title="Prune links by Nearest Neighbor">
                       <input type="radio" name="NNOptions" id="links-show-nn" autocomplete="off"> Nearest Neighbor
                     </label>
                   </div>
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="links-filter-variable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Filter Links on</label></div>
+              <div class="form-group row" title="By what variable would you like to prune links from the network?">
+                <div class="col-4"><label for="links-filter-variable">Filter Links on</label></div>
                 <div class="col-8"><select id="links-filter-variable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><a data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Filtering Threshold</a></div>
+              <div class="form-group row" title="What's the maximum genetic distance you're willing to call a link?">
+                <div class="col-4"><label for="link-threshold">Filtering Threshold</label></div>
                 <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
                 <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="link-threshold" value="0.015" step="0.001" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="ShowSingletons" data-toggle="tooltip" title="Would you like to show or hide nodes with no visible links?">Singletons</label></div>
+              <div class="form-group row" title="Would you like to show or hide nodes with no visible links?">
+                <div class="col-4"><label for="ShowSingletons">Singletons</label></div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
@@ -288,21 +285,19 @@ performance of this software.</pre>
                   </div>
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4">Reveal</div>
-                <div class="col-8">
-                  <a href="#" class="btn btn-light btn-sm w-100" id="RevealAllTab" role="button">Everything</a>
-                </div>
+              <div class="form-group row" title="Click to reveal all hidden elements of the network.">
+                <div class="col-4"><label for="RevealAllTab">Reveal</label></div>
+                <div class="col-8"><button id="RevealAllTab" type="button" class="btn btn-light btn-sm w-100">Everything</button></div>
               </div>
               <hr />
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
+              <div class="form-group row" title="Display a table of overview statistics for the network">
+                <div class="col-4">Statistics</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
+                    <label class="btn btn-light active col" title="Show a table of overview statistics for the network">
                       <input type="radio" name="network-statistics-visibility" id="network-statistics-show" autocomplete="off" checked> Show
                     </label>
-                    <label class="btn btn-light col">
+                    <label class="btn btn-light col" title="Do not show a table of overview statistics for the network">
                       <input type="radio" name="network-statistics-visibility" id="network-statistics-hide" autocomplete="off"> Hide
                     </label>
                   </div>
@@ -310,32 +305,32 @@ performance of this software.</pre>
               </div>
             </div>
             <div class="tab-pane fade" id="style-config" role="tabpanel" aria-labelledby="style-tab">
-              <div class="form-group row">
-                <div class="col-4"><label for="node-color-variable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
+              <div class="form-group row" title="By what variable nodes be colored?">
+                <div class="col-4"><label for="node-color-variable">Color Nodes By</label></div>
                 <div class="col-8"><select id="node-color-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
-              <div id="node_color_value_row" class="form-group row">
-                <div class="col-4"><label for="node-color" data-toggle="tooltip" title="What color should the nodes be?">Nodes</label></div>
+              <div id="node_color_value_row" class="form-group row" title="What color should the nodes be?">
+                <div class="col-4"><label for="node-color">Nodes</label></div>
                 <div class="col-8"><input type="color" id="node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color Links By</label></div>
+              <div class="form-group row" title="By what variable should links be colored?">
+                <div class="col-4"><label for="link-color-variable">Color Links By</label></div>
                 <div class="col-8"><select id="link-color-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
-              <div id="link-color-row" class="form-group row">
-                <div class="col-4"><label for="link-color" data-toggle="tooltip" title="What color should the links be?">Links</label></div>
+              <div id="link-color-row" class="form-group row" title="What color should the links be?">
+                <div class="col-4"><label for="link-color">Links</label></div>
                 <div class="col-8"><input type="color" id="link-color" class="custom-select custom-select-sm" value="#a6cee3" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="selected-color" data-toggle="tooltip" title="What color should denote selection?">Selected</label></div>
+              <div class="form-group row" title="What color should denote selection?">
+                <div class="col-4"><label for="selected-color">Selected</label></div>
                 <div class="col-8"><input type="color" id="selected-color" class="custom-select custom-select-sm" value="#ff8300" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="background-color" data-toggle="tooltip" title="What color should the background be?">Background</label></div>
+              <div class="form-group row" title="What color should the background be?">
+                <div class="col-4"><label for="background-color">Background</label></div>
                 <div class="col-8"><input type="color" id="background-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="Display the table of colors">Color Table</label></div>
+              <div class="form-group row" title="Should MicrobeTrace display the table of colors?">
+                <div class="col-4">Color Table</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
@@ -347,9 +342,12 @@ performance of this software.</pre>
                   </div>
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="Load an existing style file">Apply Style</label></div>
-                <div class="col-8"><input type="file" id="apply-style" /></div>
+              <div class="form-group row" title="Load an existing MicrobeTrace style file">
+                <div class="col-4">Apply Style</div>
+                <div class="col-8">
+                  <input type="file" id="apply-style" class="d-none" />
+                  <label class="custom-file-label" for="apply-style">Choose MicrobeTrace Style File</label>
+                </div>
               </div>
             </div>
           </div>
@@ -375,17 +373,17 @@ performance of this software.</pre>
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-8">
-              <input type="text" id="save-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              <input type="text" id="save-file-name" class="form-control form-control-sm" title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename" />
             </div>
             <div class="col-4">
-              <select id="save-file-format" class="form-control form-control-sm">
+              <select id="save-file-format" class="form-control form-control-sm" title="What format file would you like to save?">
                 <option selected>microbetrace</option>
                 <option>hivtrace</option>
                 <option>microbetracestyle</option>
               </select>
             </div>
           </div>
-          <div class="form-group row">
+          <div class="form-group row" title="Should MicrobeTrace compress this save file?">
             <div class="col">
               <div class="form-check form-check-inline">
                 <input class="form-check-input" type="checkbox" id="save-file-compress" checked />
@@ -412,8 +410,8 @@ performance of this software.</pre>
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-12">
+          <div class="form-group row" title="What would you like to call this Stash?">
+            <div class="col">
               <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Name your stash!" />
             </div>
           </div>
@@ -430,7 +428,7 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Recall Stashes</h5>
+          <h5 class="modal-title">Recall Stash</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>

@@ -26,41 +26,41 @@
     <div class="tab-content">
       <div id="threeDNodeConfigurations" class="tab-pane fade show active" role="tabpanel">
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What do you want to see when you hover over a node?">Tooltip</a></div>
+          <div class="col-4"><label for="3DNet-node-tooltip-variable" title="What do you want to see when you hover over a node?">Tooltip</label></div>
           <div class="col-8">
             <select id="3DNet-node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"></select>
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-4">Color</div>
+          <div class="col-4" title="Launch Global Color Options">Color</div>
           <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="Size nodes in proportion to which variable?">Size By</a></div>
+          <div class="col-4"><label for="3DNet-node-radius-variable" title="Size nodes in proportion to which variable?">Size By</label></div>
           <div class="col-8"><select id="3DNet-node-radius-variable" class="custom-select custom-select-sm nodeVariables"></select></div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="How large should the nodes be?">Size</a></div>
+          <div class="col-4"><label title="3DNet-node-radius" title="How large should the nodes be?">Size</label></div>
           <div class="col-8"><input type="range" id="3DNet-node-radius" min=".1" value="4" step=".1" max="20" /></div>
         </div>
       </div>
       <div id="threeDLinkConfigurations" class="tab-pane fade" role="tabpanel">
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="What do you want to see when you hover over a node?">Tooltip</a></div>
+          <div class="col-4"><label for="3DNet-link-tooltip-variable" title="What do you want to see when you hover over a node?">Tooltip</label></div>
           <div class="col-8">
             <select id="3DNet-link-tooltip-variable" class="custom-select custom-select-sm linkVariables"></select>
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-4">Color</div>
+          <div class="col-4" title="Launch Global Color Options">Color</div>
           <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="How transparent should the links be?">Transparency</a></div>
+          <div class="col-4"><label for="3DNet-link-transparency" title="How transparent should the links be?">Transparency</label></div>
           <div class="col-8"><input type="range" id="3DNet-link-transparency" min="0" max="1" value="0" step="0.01" /></div>
         </div>
         <div class="form-group row">
-          <div class="col-4"><a href="#" data-toggle="tooltip" title="How wide should the links be?">Width</a></div>
+          <div class="col-4"><label for="3DNet-link-width" title="How wide should the links be?">Width</label></div>
           <div class="col-8"><input type="range" id="3DNet-link-width" min=".1" value="1.6" step=".1" max="20" /></div>
         </div>
       </div>

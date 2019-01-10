@@ -149,6 +149,15 @@ input[type="number"].custom-select{
   position: fixed;
   z-index: 2000;
 }
+label[for="apply-style"]{
+  width: calc(100% - 30px);
+  margin: 0 15px;
+}
+.chosen-container-multi .chosen-choices {
+  border-radius: 0.25rem;
+  border: 1px solid #ced4da;
+  background-image: none !important;
+}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after{
@@ -184,6 +193,9 @@ button.navbar-toggler{
 }
 .show-for-seq, .show-for-dm, .show-for-nn{
   display: none;
+}
+label[for="OpenTab"]{
+  cursor:pointer;
 }
 
 /* File Panel */
@@ -243,6 +255,8 @@ td {
   text-overflow: ellipsis;
 }
 #alignment-preview{
+  margin: 0 15px;
+  padding: 0;
   min-height: 115px;
   max-height: 200px;
   overflow-x: scroll;

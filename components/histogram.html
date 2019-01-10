@@ -18,30 +18,30 @@
     <div class="tab-content">
       <div class="tab-pane fade show active" id="histogram-settings" role="tabpanel" aria-labelledby="histogram-tab">
         <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
+          <div class="col-3"><label for="histogram-variable" title="Which variable should the histogram be drawn from?">Variable</label></div>
           <div class="col-9"><select id="histogram-variable" class="custom-select custom-select-sm mixedVariables"><option selected>distance</option></select></div>
         </div>
         <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
+          <div class="col-3" title="Which axis should the histogram be drawn across?">Axis</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light active col">
+              <label class="btn btn-light active col" title="Align the histogram along the X Axis">
                 <input type="radio" name="axis" id="histogram-axis-x" autocomplete="off" checked> X
               </label>
-              <label class="btn btn-light col">
+              <label class="btn btn-light col" title="Align the histogram along the Y Axis">
                 <input type="radio" name="axis" id="histogram-axis-y" autocomplete="off"> Y
               </label>
             </div>
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
+          <div class="col-3" title="Should the y-axis show a linear or logarithmic scale?">Scale</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light active col">
+              <label class="btn btn-light col active" title="Scale the Histogram linearly">
                 <input type="radio" name="scale" id="histogram-scale-linear" autocomplete="off" checked> Linear
               </label>
-              <label class="btn btn-light col">
+              <label class="btn btn-light col" title="Scale the Histogram logarithmically">
                 <input type="radio" name="scale" id="histogram-scale-log" autocomplete="off"> Log
               </label>
             </div>
