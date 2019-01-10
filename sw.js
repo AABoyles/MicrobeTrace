@@ -76,7 +76,6 @@ self.addEventListener('install', function(event) {
         'node_modules/leaflet/dist/leaflet.css',
         'node_modules/tabulator-tables/dist/css/tabulator.min.css',
         'node_modules/tabulator-tables/dist/css/bootstrap/tabulator_bootstrap4.min.css',
-        'img/1DNA.gif',
         'img/Back_Arrow.png',
         'img/icon.ico',
         'img/image128.ico',
@@ -156,7 +155,7 @@ self.addEventListener('fetch', function(event) {
 
 // Open the cache where the assets were stored and search for the requested
 // resource. Notice that in case of no matching, the promise still resolves
-// but it does with  as value.
+// but it does with `undefined` as value.
 function fromCache(request){
   return caches.open(CACHE).then(function(cache){
     return cache.match(request).then(function(matching){

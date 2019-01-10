@@ -36,7 +36,6 @@
     "open-iconic": "^1.1.1",
     "papaparse": "^4.4.0",
     "patristic": "git+https://github.com/CDCgov/patristic.git",
-    "plotly.js": "^1.37.1",
     "popper.js": "^1.14.6",
     "screenfull": "^3.3.2",
     "tabulator-tables": "^4.1.4",

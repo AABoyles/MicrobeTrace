@@ -265,6 +265,106 @@ td {
   padding: 10px;
   white-space: pre-line;
 }
+.dna {
+  margin: 40px auto;
+  width: 360px;
+  height: 70px;
+  perspective: 466px;
+  transform-style: preserve-3d;
+}
+.ele {
+  width: 1px;
+  height: 70px;
+  float: left;
+  margin: 0 8px;
+  border-left: 1px #B0B0B0 dashed;
+  position: relative;
+  transform: rotateX(-360deg);
+  animation: run 2s linear infinite;
+}
+.ele:before, .ele:after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: deepskyblue;
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.ele:before {
+  top: -2px;
+  background: #000000;
+}
+.ele:after {
+  bottom: -2px;
+}
+.ele:nth-of-type(1) {
+  animation-delay: -0.15s;
+}
+.ele:nth-of-type(2) {
+  animation-delay: -0.3s;
+}
+.ele:nth-of-type(3) {
+  animation-delay: -0.45s;
+}
+.ele:nth-of-type(4) {
+  animation-delay: -0.6s;
+}
+.ele:nth-of-type(5) {
+  animation-delay: -0.75s;
+}
+.ele:nth-of-type(6) {
+  animation-delay: -0.9s;
+}
+.ele:nth-of-type(7) {
+  animation-delay: -1.05s;
+}
+.ele:nth-of-type(8) {
+  animation-delay: -1.2s;
+}
+.ele:nth-of-type(9) {
+  animation-delay: -1.35s;
+}
+.ele:nth-of-type(10) {
+  animation-delay: -1.5s;
+}
+.ele:nth-of-type(11) {
+  animation-delay: -1.65s;
+}
+.ele:nth-of-type(12) {
+  animation-delay: -1.8s;
+}
+.ele:nth-of-type(13) {
+  animation-delay: -1.95s;
+}
+.ele:nth-of-type(14) {
+  animation-delay: -2.1s;
+}
+.ele:nth-of-type(15) {
+  animation-delay: -2.25s;
+}
+.ele:nth-of-type(16) {
+  animation-delay: -2.4s;
+}
+.ele:nth-of-type(17) {
+  animation-delay: -2.55s;
+}
+.ele:nth-of-type(18) {
+  animation-delay: -2.7s;
+}
+.ele:nth-of-type(19) {
+  animation-delay: -2.85s;
+}
+.ele:nth-of-type(20) {
+  animation-delay: -3s;
+}
+
+@keyframes run {
+  to {
+    transform: none;
+  }
+}
 #loadCancelButton {
   display: none;
 }
