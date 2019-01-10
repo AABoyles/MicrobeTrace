@@ -248,9 +248,6 @@ td {
   overflow-x: scroll;
   overflow-y: auto;
 }
-.bootstrap-filestyle.input-group{
-  display: inline;
-}
 #distance-metrics_chosen .chosen-choices{
   border: 1px solid #ced4da;
   border-radius: .25rem;

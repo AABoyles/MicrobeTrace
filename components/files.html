@@ -6,7 +6,8 @@
 
 <div id="file-footer">
   <div class="container" style="padding: 15px">
-    <input type="file" id="data-files" multiple="true" />
+    <input type="file" id="data-files" class="d-none" multiple="true" />
+    <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
     <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Settings</button>
     <button type="submit" id="main-submit" class="btn btn-success float-right" title="Please select a Network CSV or FASTA File">Submit</button>
   </div>
@@ -204,10 +205,6 @@
     $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) processFile(f);
     $('#main-submit').css('display', 'inline').focus();
-  }).filestyle({
-    text: 'Add File(s)',
-    input: false,
-    btnClass: 'btn-primary'
   });
 
   $('#file-panel').on('dragover', function(evt){
