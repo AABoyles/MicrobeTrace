@@ -1015,7 +1015,7 @@ performance of this software.</pre>
         }
       })
       .on('resize', function(){
-        layout.root.setSize();
+        layout.updateSize();
       })
       .on('beforeunload', function(e){
         e.preventDefault();
