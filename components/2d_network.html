@@ -539,11 +539,9 @@ Note that this may cause slow performance on larger networks.">
     force.alpha(0.3).alphaTarget(0).restart();
   }
 
+  var scalar = 180 / Math.PI;
   function calcAngle(source, target){
-    let opposite = source.x - target.x;
-    let adjacent = source.y - target.y;
-    let degrees = Math.atan(opposite / adjacent) * 180 / Math.PI;
-    return (degrees < 180) ? 90-degrees : 270-degrees;
+    return Math.atan((source.y - target.y) / (source.x - target.x)) * scalar;
   }
 
   function getVLinks(){
