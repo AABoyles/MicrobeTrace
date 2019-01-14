@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-01-10';
+var CACHE = 'MicrobeTraceD2019-01-14';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -43,7 +43,8 @@ self.addEventListener('install', function(event) {
         'node_modules/clipboard/dist/clipboard.min.js',
         'node_modules/moment/min/moment-with-locales.min.js',
         'node_modules/papaparse/papaparse.min.js',
-        'node_modules/xlsx/dist/xlsx.full.min.js',
+        'node_modules/jszip/dist/jszip.min.js',
+        'node_modules/xlsx/dist/xlsx.core.min.js',
         'node_modules/xss/dist/xss.min.js',
         'node_modules/tn93/dist/tn93.min.js',
         'node_modules/d3/dist/d3.min.js',
@@ -55,7 +56,6 @@ self.addEventListener('install', function(event) {
         'node_modules/leaflet/dist/leaflet.js',
         'node_modules/alignment-viewer/dist/alignment-viewer.min.js',
         'node_modules/marked/marked.min.js',
-        'node_modules/jszip/dist/jszip.min.js',
         'node_modules/localforage/dist/localforage.min.js',
         'node_modules/bioseq/dist/bioseq.min.js',
         'node_modules/patristic/dist/patristic.min.js',
