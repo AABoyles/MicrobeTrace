@@ -93,8 +93,8 @@ img/spinner.gif
 data/counties.json
 data/countries.json
 data/states.json
-data/tracts.json
-data/zipcodes.json
+data/tracts.csv
+data/zipcodes.csv
 package.json
 manifest.json
 node_modules/chosen-js/chosen-sprite.png

@@ -345,8 +345,14 @@
     app.mapData = {};
 
     function getMapData(type, callback){
-      $.getJSON('data/' + type + '.json', response => {
-        app.mapData[type] = response;
+      var format = type.split('.')[1];
+      $.get('data/' + type, response => {
+        if(format === 'csv'){
+          app.mapData[type] = Papa.parse(response, {header: true}).data;
+        }
+        if(format === 'json'){
+          app.mapData[type] = JSON.parse(response);
+        }
         if(['countries', 'states', 'counties'].includes(type)){
           layers[type] = L.geoJSON(app.mapData[type], {
             color: '#dadde0',
@@ -418,7 +424,7 @@
       }
       if(session.style.widgets['map-field-zipcode'] !== 'None'){
         if(!app.mapData.zipcodes){
-          getMapData('zipcodes', matchCoordinates);
+          getMapData('zipcodes.csv', matchCoordinates);
           return;
         }
         let val = session.style.widgets['map-field-zipcode'];
@@ -432,7 +438,7 @@
       }
       if(session.style.widgets['map-field-tract'] !== 'None'){
         if(!app.mapData.tracts){
-          getMapData('tracts', matchCoordinates);
+          getMapData('tracts.csv', matchCoordinates);
           return;
         }
         let val = session.style.widgets['map-field-tract'];
@@ -693,7 +699,7 @@
         layers.countries.addTo(map);
         resetStack();
       } else {
-        getMapData('countries', () => $(this).trigger('click'));
+        getMapData('countries.json', () => $(this).trigger('click'));
       }
     });
     $('#map-countries-hide').parent().on('click', function(){
@@ -707,7 +713,7 @@
         layers.states.addTo(map);
         resetStack();
       } else {
-        getMapData('states', () => $(this).trigger('click'));
+        getMapData('states.json', () => $(this).trigger('click'));
       }
     });
     $('#map-states-hide').parent().on('click', function(){
@@ -721,7 +727,7 @@
         layers.counties.addTo(map);
         resetStack();
       } else {
-        getMapData('counties', () => $(this).trigger('click'));
+        getMapData('counties.json', () => $(this).trigger('click'));
       }
     });
     $('#map-counties-hide').parent().on('click', function(){
