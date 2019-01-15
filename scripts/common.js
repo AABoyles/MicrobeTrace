@@ -777,6 +777,16 @@ app.launchView = function(view, callback){
         $('#global-settings-modal').modal('show');
       }, 250);
     });
+    contentItem.element.find('.modal-header').on('mousedown', function(e1){
+      var body = $('body');
+      var parent = $(this).parent().parent().parent();
+      body.on('mousemove', e2 => {
+        parent
+          .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
+          .css('left', parseFloat(parent.css('left')) + e2.originalEvent.movementX + 'px');
+      });
+      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    });
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
     for(var id in session.style.widgets){
       $id = $('#' + id);
