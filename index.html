@@ -196,6 +196,7 @@ performance of this software.</pre>
 
   <div id="group-key-context" class="dropdown-menu">
     <a href="#" id="group-key-hide" class="dropdown-item">Hide</a>
+    <a href="#" id="group-key-expand" class="dropdown-item">Expand</a>
   </div>
 
   <div id="network-statistics">
@@ -518,17 +519,6 @@ performance of this software.</pre>
   $(function(){
     'use strict';
 
-    $('.modal-header').on('mousedown', function(e1){
-      var body = $('body');
-      var parent = $(this).parent().parent().parent();
-      body.on('mousemove', e2 => {
-        parent
-          .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
-          .css('left', parseFloat(parent.css('left')) + e2.originalEvent.movementX + 'px');
-      });
-      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
-    });
-
     // Before anything else gets done, ask the user to accept the legal agreement
     if(!localStorage.getItem('licenseAccepted')){
       $('#acceptAgreement').on('click', function(){
@@ -563,6 +553,17 @@ performance of this software.</pre>
     layout.init();
 
     layout.contentItems = [];
+
+    $('.modal-header').on('mousedown', function(e1){
+      var body = $('body');
+      var parent = $(this).parent().parent().parent();
+      body.on('mousemove', e2 => {
+        parent
+          .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
+          .css('left', parseFloat(parent.css('left')) + e2.originalEvent.movementX + 'px');
+      });
+      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    });
 
     // Let's set up the Nav Bar
     $('#stash-data').on('click', function(){
@@ -971,9 +972,26 @@ performance of this software.</pre>
       });
     });
 
-    $('#group-key-hide').on('click', function(e){
+    $('#group-key-hide').on('click', function(){
       $(this).parent().hide();
       $('#color-table-hide').parent().click();
+    });
+
+    $('#group-key-expand').on('click', function(){
+      var $this = $(this);
+      if($this.text() === 'Expand'){
+        $('#group-key-wrapper').css({
+          'max-height': 'none',
+          'overflow-y': 'auto'
+        });
+        $this.text('Contract');
+      } else {
+        $('#group-key-wrapper').css({
+          'max-height': '400px',
+          'overflow-y': 'scroll'
+        });
+        $this.text('Expand');
+      }
     });
 
     $('form').on('keydown', function(e){
