@@ -45,6 +45,8 @@ app.defaultWidgets = {
   'link-label-variable': 'None',
   'link-length': 0.125,
   'link-opacity': 0,
+  'link-sort-variable': 'tn93',
+  'link-threshold': 0.015,
   'link-tooltip-variable': 'None',
   'link-width': 3,
   'link-width-variable': 'None',
@@ -113,8 +115,6 @@ app.sessionSkeleton = function(){
       nodes: []
     },
     state: {
-      linkSortVariable: 'tn93',
-      linkThreshold: 0.015,
       metrics: ['tn93', 'snps'],
       timeStart: 0,
       timeEnd: Date.now()
@@ -462,7 +462,7 @@ app.DFS = function(node){
   if(typeof node === 'string') node = session.data.nodes.find(function(d){ return d.id === node; });
   if(typeof node === 'undefined') console.error('That\'s weird: An undefined node was referenced.');
   if(typeof node.cluster !== 'undefined') return;
-  var lsv = $('#links-filter-variable').val();
+  var lsv = session.style.widgets['link-sort-variable'];
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
   session.data.links.forEach(function(l){
@@ -494,7 +494,7 @@ app.computeDegree = function(){
 };
 
 app.setNodeVisibility = function(){
-  var showSingletons = $('#ShowSingletons').is(':checked');
+  var showSingletons = $('#node-singletons-show').is(':checked');
   var field = $('#date-column').val();
   session.data.nodes.forEach(function(n){
     var cluster = session.data.clusters.find(function(c){ return c.id === n.cluster; });
@@ -507,10 +507,10 @@ app.setNodeVisibility = function(){
 };
 
 app.setLinkVisibility = function(){
-  var metric  = $('#links-filter-variable').val(),
+  var metric  = session.style.widgets['link-sort-variable'],
       threshold = parseFloat($('#link-threshold').val()),
       showNN = $('#links-show-nn').is(':checked');
-  session.state.linkThreshold = threshold;
+  session.style.widgets['link-threshold'] = threshold;
   session.data.links.forEach(function(link){
     link.visible = true;
     if(showNN){
@@ -993,7 +993,7 @@ app.exportHIVTRACE = function(){
       'Edges': links.map(function(l){ return {
         'attributes': ['BULK'],
         'directed': false,
-        'length': l[session.state.linkSortVariable],
+        'length': l[session.style.widgets['link-sort-variable']],
         'removed': false,
         'sequences': [l.source, l.target],
         'source': session.data.nodes.findIndex(function(d){ return d.id === l.source; }),
@@ -1032,7 +1032,7 @@ app.exportHIVTRACE = function(){
         'contaminant-ids': [],
         'contaminants': 'remove',
         'edge-filtering': 'remove',
-        'threshold': session.state.linkThreshold
+        'threshold': session.style.widgets['link-threshold']
       },
     }
   }, null, 2)

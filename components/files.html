@@ -421,16 +421,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   $('#alignerControlsButton, #previewAlignment').click(readFastas);
 
   $('#distance-metrics').chosen({width: "100%"}).change(function(e){
-    $('#default-distance-metric, #links-filter-variable').html($(this).val().map(function(v, i){
+    $('#default-distance-metric, #link-sort-variable').html($(this).val().map(function(v, i){
       return '<option value="' + v + '"' + (i == 0 ? ' selected': '') + '>' + app.titleize(v) + '</option>';
     }).join('\n')).trigger('change');
     session.state.metrics = $(this).val();
   });
 
-  $('#default-distance-metric, #links-filter-variable').change(function(e){
-    session.state.linkSortVariable = e.target.value;
-    $('#default-distance-metric, #links-filter-variable').val(session.state.linkSortVariable);
-    if(session.state.linkSortVariable === 'snps'){
+  $('#default-distance-metric, #link-sort-variable').change(function(e){
+    var lsv = e.target.value;
+    session.style.widgets['link-sort-variable'] = lsv;
+    $('#default-distance-metric, #link-sort-variable').val(lsv);
+    if(lsv === 'snps'){
       $('#default-distance-threshold, #link-threshold')
         .attr('step', 1)
         .val(16);
@@ -554,9 +555,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           });
           var num = parseFloat(link[file.field3]);
           if(_.isNumber(num) && !_.isNaN(num)){
-            base[session.state.linkSortVariable] = num;
+            base[session.style.widgets['link-sort-variable']] = num;
           } else {
-            base[session.state.linkSortVariable] = 0;
+            base[session.style.widgets['link-sort-variable']] = 0;
           }
           l += app.addLink(Object.assign(base, link), check);
         }
@@ -687,7 +688,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         message(`Parsing ${filename} as Distance Matrix...`);
         var start = Date.now();
-        var defaultMetric = session.state.linkSortVariable;
+        var defaultMetric = session.style.widgets['link-sort-variable'];
 
         if(extension == 'xls' || extension == 'xlsx'){
 
@@ -838,7 +839,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     if(!oldSession){
       app.computeDM(function(){
         $('.show-for-dm').css('display', 'flex');
-        app.computeNN(session.state.linkSortVariable, function(){
+        app.computeNN(session.style.widgets['link-sort-variable'], function(){
           $('.show-for-nn').css('display', 'flex');
         });
         session.state.metrics.forEach(function(m){ app.computeTree(m); });
@@ -855,11 +856,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         });
       }
     });
-    $('#links-filter-variable').html(
+    $('#link-sort-variable').html(
       session.data.linkFields.map(function(field){
         return '<option value="' + field + '">' + app.titleize(field) + '</option>';
       }).join('\n')
-    ).val(session.state.linkSortVariable);
+    ).val(session.style.widgets['link-sort-variable']);
     $('#node-color-variable').html(
       '<option selected>None</option>' +
       session.data.nodeFields.map(function(field){
