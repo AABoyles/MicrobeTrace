@@ -18,7 +18,7 @@
         <a href="#map-data-configurations" class="nav-link active" aria-controls="map-data-configurations" role="tab" data-toggle="tab">Data</a>
       </li>
       <li role="presentation" class="nav-item">
-        <a href="#map-layer-configurations" class="nav-link" aria-controls="map-layer-configurations" role="tab" data-toggle="tab">Layers</a>
+        <a href="#map-layer-configurations" class="nav-link" aria-controls="map-layer-configurations" role="tab" data-toggle="tab">Components</a>
       </li>
       <li role="presentation" class="nav-item">
         <a href="#map-node-configurations" class="nav-link" aria-controls="map-node-configurations" role="tab" data-toggle="tab">Nodes</a>
@@ -135,7 +135,7 @@
           </div>
           <div class="card">
             <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-vectors" aria-expanded="true" aria-controls="map-layers-vectors" style="color:#495057">Vector</button>
+              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-vectors" aria-expanded="true" aria-controls="map-layers-vectors" style="color:#495057">Offline</button>
             </div>
             <div id="map-layers-vectors" class="collapse show" data-parent="#map-layers-accordion">
               <div class="card-body">
@@ -183,7 +183,7 @@
           </div>
           <div class="card">
             <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-tiles" aria-expanded="true" aria-controls="map-layers-tiles" style="color:#495057">Tiles</button>
+              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-tiles" aria-expanded="true" aria-controls="map-layers-tiles" style="color:#495057">Online</button>
             </div>
             <div id="map-layers-tiles" class="collapse" data-parent="#map-layers-accordion">
               <div class="card-body">
@@ -232,6 +232,16 @@
             </div>
             <div id="map-layers-user" class="collapse" data-parent="#map-layers-accordion">
               <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="alert alert-info alert-dismissible" role="alert">
+                      Load a GeoJSON file below to add it to the map.
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <div class="form-group row" title="Import GeoJSON Map Data here">
                   <div class="custom-file">
                     <input type="file" id="map-file-input" class="custom-file-input" multiple />
@@ -345,20 +355,21 @@
     app.mapData = {};
 
     function getMapData(type, callback){
-      var format = type.split('.')[1];
+      let parts = type.split('.');
+      let name = parts[0], format = parts[1];
       $.get('data/' + type, response => {
         if(format === 'csv'){
-          app.mapData[type] = Papa.parse(response, {header: true}).data;
+          app.mapData[name] = Papa.parse(response, {header: true}).data;
         }
         if(format === 'json'){
-          app.mapData[type] = JSON.parse(response);
+          app.mapData[name] = response;
         }
-        if(['countries', 'states', 'counties'].includes(type)){
-          layers[type] = L.geoJSON(app.mapData[type], {
+        if(['countries', 'states', 'counties'].includes(name)){
+          layers[name] = L.geoJSON(app.mapData[name], {
             color: '#dadde0',
-            weight: type === 'countries' ? 1 : 0.5,
+            weight: name === 'countries' ? 1 : 0.5,
             fillColor: '#fafaf8',
-            fillOpacity: type === 'countries' ? 1 : 0
+            fillOpacity: name === 'countries' ? 1 : 0
           });
         }
         callback();
