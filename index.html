@@ -190,17 +190,20 @@ performance of this software.</pre>
     </noscript>
   </div>
 
-  <div id="group-key-wrapper">
-    <table id="group-key" class="floater"></table>
+  <div id="group-key-wrapper" class="floater">
+    <div id="group-key-draghandle"><span class="oi oi-move"></span></div>
+    <table id="group-key"></table>
   </div>
 
   <div id="group-key-context" class="dropdown-menu">
+    <a href="#" id="group-key-drag" class="dropdown-item">Drag</a>
     <a href="#" id="group-key-hide" class="dropdown-item">Hide</a>
     <a href="#" id="group-key-expand" class="dropdown-item">Expand</a>
   </div>
 
-  <div id="network-statistics">
-    <table>
+  <div id="network-statistics-wrapper" class="floater">
+    <div id="network-statistics-draghandle"><span class="oi oi-move"></span></div>
+    <table id="network-statistics">
       <tbody>
         <tr>
           <td class="text-right">
@@ -226,6 +229,7 @@ performance of this software.</pre>
   </div>
 
   <div id="network-statistics-context" class="dropdown-menu">
+    <a href="#" id="moveStats" class="dropdown-item">Drag</a>
     <a href="#" id="hideStats" class="dropdown-item">Hide</a>
   </div>
 
@@ -800,15 +804,15 @@ performance of this software.</pre>
     });
 
     $('#network-statistics-hide').parent().on('click', function(){
-      $('#network-statistics').fadeOut();
+      $('#network-statistics-wrapper').fadeOut();
     });
 
     $('#network-statistics-show').parent().on('click', function(){
       app.updateStatistics();
-      $('#network-statistics').fadeIn();
+      $('#network-statistics-wrapper').fadeIn();
     });
 
-    $('#network-statistics').on('contextmenu', function(e){
+    $('#network-statistics-wrapper').on('contextmenu', function(e){
       e.preventDefault();
       $('#network-statistics-context').css({
         top: e.clientY,
@@ -820,6 +824,29 @@ performance of this software.</pre>
     $('#hideStats').on('click', function(e){
       $(this).parent().hide();
       $('#network-statistics-hide').parent().click();
+    });
+
+    $('#moveStats').on('click', function(){
+      var $this = $(this);
+      $this.parent().hide();
+      if($this.text() == 'Drag'){
+        $('#network-statistics-draghandle').slideDown();
+        $this.text('Pin');
+      } else {
+        $('#network-statistics-draghandle').slideUp();
+        $this.text('Drag');
+      }
+    });
+
+    $('#network-statistics-draghandle').on('mousedown', function(){
+      var body = $('body');
+      var parent = $(this).parent();
+      body.on('mousemove', e2 => {
+        parent
+          .css('bottom', parseFloat(parent.css('bottom')) - e2.originalEvent.movementY + 'px')
+          .css('right', parseFloat(parent.css('right')) - e2.originalEvent.movementX + 'px');
+      });
+      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
     });
 
     $('#RevealAllTab').on('click', function(e){
@@ -970,6 +997,29 @@ performance of this software.</pre>
         left: e.clientX,
         display: 'block'
       });
+    });
+
+    $('#group-key-drag').on('click', function(){
+      var $this = $(this);
+      $this.parent().hide();
+      if($this.text() == 'Drag'){
+        $('#group-key-draghandle').slideDown();
+        $this.text('Pin');
+      } else {
+        $('#group-key-draghandle').slideUp();
+        $this.text('Drag');
+      }
+    });
+
+    $('#group-key-draghandle').on('mousedown', function(){
+      var body = $('body');
+      var parent = $(this).parent();
+      body.on('mousemove', e2 => {
+        parent
+          .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
+          .css('right', parseFloat(parent.css('right')) - e2.originalEvent.movementX + 'px');
+      });
+      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
     });
 
     $('#group-key-hide').on('click', function(){

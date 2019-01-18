@@ -889,7 +889,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     app.tagClusters();
     app.computeDegree();
     app.updateStatistics();
-    $('#network-statistics').fadeIn();
+    $('#network-statistics-wrapper').fadeIn();
     session.meta.loadTime = Date.now() - session.meta.startTime;
     if(oldSession){
       layout.root.contentItems[0].remove();
