@@ -12,6 +12,22 @@ body {
   align-items: center;
   padding-top: 42px;
   background-color: #f8f9fa;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
+}
+.selectable, [type="text"] {
+  -webkit-touch-callout: auto; /* iOS Safari */
+  -webkit-user-select: auto; /* Safari */
+   -khtml-user-select: auto; /* Konqueror HTML */
+     -moz-user-select: auto; /* Firefox */
+      -ms-user-select: auto; /* Internet Explorer/Edge */
+          user-select: auto; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
 }
 .navbar{
   padding: 0.25rem 0.25rem 0 0;
