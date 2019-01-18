@@ -654,19 +654,22 @@ app.applyStyle = function(style){
       if(['radio', 'checkbox'].includes($id[0].type)){
         if(session.style.widgets[id]) $id.trigger('click');
       } else {
-        $id.val(session.style.widgets[id]).trigger('change');
+        $id.val(session.style.widgets[id]);
       }
     }
   }
 };
 
 app.applySession = function(data, startTime){
+  $('#main-submit').fadeOut();
+  messages = [];
   session = data;
   if(!startTime) startTime = Date.now();
   if(!session.meta) session.meta = {};
   session.meta.startTime = startTime;
   app.applyStyle(session.style);
   app.finishUp(true);
+  $('#SettingsTab').attr('data-target', '#global-settings-modal');
 };
 
 app.reset = function(){

@@ -473,6 +473,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
   $('#main-submit').click(function(e){
     session.meta.startTime = Date.now();
+    $('#main-submit').fadeOut();
     messages = [];
     $('#SettingsTab').attr('data-target', '#global-settings-modal');
     session.data = app.dataSkeleton();
