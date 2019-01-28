@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-01-14';
+var CACHE = 'MicrobeTraceD2019-01-28';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -6,6 +6,7 @@ self.addEventListener('install', function(event) {
       return cache.addAll([
         'components/2d_network.html',
         'components/3d_network.html',
+        'components/aggregation.html',
         'components/auditor.html',
         'components/bubbles.html',
         'components/files.html',
@@ -51,6 +52,7 @@ self.addEventListener('install', function(event) {
         'node_modules/d3-force-attract/dist/d3-force-attract.min.js',
         'node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js',
         'node_modules/html5sortable/dist/html5sortable.min.js',
+        'node_modules/plotly.js/dist/plotly.min.js',
         'node_modules/tabulator-tables/dist/js/tabulator.min.js',
         'node_modules/3d-force-graph/dist/3d-force-graph.min.js',
         'node_modules/leaflet/dist/leaflet.js',
@@ -63,7 +65,6 @@ self.addEventListener('install', function(event) {
         'vendor/d3.v3.min.js',
         'vendor/FileSaver.min.js',
         'vendor/phylotree.js',
-        'vendor/plotly-cartesian-1.43.2.min.js',
         'vendor/shpwrite.js',
         'stylesheets/main.css',
         'node_modules/bootstrap/dist/css/bootstrap.min.css',
