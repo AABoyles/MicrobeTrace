@@ -37,17 +37,6 @@
             <button type="button" class="btn btn-primary btn-sm w-100" id="flow-add-variable">Add Variable</button>
           </div>
         </div>
-        <div class="form-group row">
-          <div class="col-3"><label for="flow-arrangement" title="How should the elements of the flow diagram be arranged?">Arrangement</label></div>
-          <div class="col-9">
-            <select id='flow-arrangement' class='custom-select custom-select-sm'>
-              <option value='snap'>Snap</option>
-              <option value='perpendicular'>Perpendicular</option>
-              <option value='freeform'>Freeform</option>
-              <option value='fixed'>Fixed</option>
-            </select>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -156,7 +145,7 @@
         type: 'sankey',
         showLegend: false,
         orientation: 'h',
-        arrangement: session.style.widgets['flow-arrangement'],
+        arrangement: 'snap',
         node: {
           pad: 15,
           thickness: 30,
@@ -200,7 +189,13 @@
 
     $('#flow-add-variable').on('click', function(){
       let fields = session.style.widgets['flow-showNodes'] ? session.data.nodeFields : session.data.linkFields;
-      $('#flow-variables').append(`<li class='flow-items'><span class="oi oi-elevator"></span><select class='custom-select custom-select-sm flow-selector'>${fields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join('')}</select><span class="oi oi-x flow-remove"></span></li>`);
+      $('#flow-variables').append(`<li class='flow-items'>
+        <span class="oi oi-x flow-remove"></span>
+        <select class='custom-select custom-select-sm flow-selector'>
+          ${fields.map(v => `<option value="${v}" ${v === 'cluster' ? 'selected' : ''}>${app.titleize(v)}</option>`).join('\n')}
+        </select>
+        <span class="oi oi-elevator"></span>
+      </li>`);
 
       sortable('#flow-variables')[0].addEventListener('sortupdate', drawFlowDiagram);
 
@@ -211,11 +206,6 @@
         drawFlowDiagram();
       });
     }).trigger('click').trigger('click');
-
-    $('#flow-arrangement').on('change', function(e){
-      session.style.widgets['flow-arrangement'] = e.target.value;
-      drawFlowDiagram();
-    });
 
     $('#flow-export').on('click', function(){
       let network = $('#flow .main-svg').get(0);

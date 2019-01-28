@@ -482,7 +482,7 @@ a.btn, button.btn, .btn-group{
   list-style-type: none;
 }
 .flow-selector{
-  width: calc(100% - 42px);
+  width: calc(100% - 47px);
   margin: 5px;
 }
 
