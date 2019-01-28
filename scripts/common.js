@@ -562,6 +562,24 @@ app.getVisibleLinks = function(copy){
   return out;
 };
 
+app.getVisibleClusters = function(copy){
+  var clusters = session.data.clusters;
+  var n = clusters.length;
+  var out = [];
+  if(copy){
+    for(var i = 0; i < n; i++){
+      var cluster = clusters[i];
+      if(cluster.visible) out.push(JSON.parse(JSON.stringify(cluster)));
+    }
+  } else {
+    for(var i = 0; i < n; i++){
+      var cluster = clusters[i];
+      if(cluster.visible) out.push(cluster);
+    }
+  }
+  return out;
+};
+
 // TODO: hideSingletons should be inferred from session.state, not passed.
 app.updateNetwork = function(hideSingletons){
   app.setLinkVisibility();

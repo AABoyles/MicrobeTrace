@@ -90,7 +90,7 @@
         session.data[dataset + 'Fields']
           .map(l => `<option value="${l}">${app.titleize(l)}</option>`)
           .join('\n')
-      );
+      ).val(dataset === 'cluster' ? 'ID' : 'cluster');
     }
 
     function updateTable(){
@@ -98,7 +98,9 @@
       let column = $('#aggregate-variable').val();
       let values = [];
       data = [];
-      session.data[dataset + 's'].forEach(row => {
+      let rawdata = app['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
+      let n = rawdata.length;
+      rawdata.forEach(row => {
         let val = row[column];
         if(values.includes(val)){
           data[values.indexOf(val)].n++;
@@ -110,9 +112,11 @@
           data.push(newRow);
         }
       });
+      data.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
       aggregation.setColumns([
         {title: app.titleize(dataset + ' ' + column), field: column},
-        {title: 'Number of '  + app.titleize(dataset) + 's', field: 'n'}
+        {title: 'Number of '  + app.titleize(dataset) + 's', field: 'n'},
+        {title: 'Percentage', field: 'percent', headerSort: false}
       ]);
       aggregation.setData(data);
       aggregation.setSort([
