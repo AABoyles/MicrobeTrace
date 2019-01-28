@@ -39,6 +39,25 @@
             <select id="aggregate-variable" class="custom-select custom-select-sm"></select>
           </div>
         </div>
+        <div class="form-group row" title="Would you like to group variables that are close together?">
+          <div class="col-4">Binning</div>
+          <div class="col-8">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light col active">
+                <input type="radio" name="aggregate-binning" data-value="off" autocomplete="off" checked> Unbinned
+              </label>
+              <label class="btn btn-light col">
+                <input type="radio" name="aggregate-binning" data-value="on" autocomplete="off"> Binned
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row" id="aggregate-bins-row" title="How many bins would you like to sort that data into?">
+          <div class="col-4">Number of Bins</div>
+          <div class="col-8">
+            <input id="aggregate-bins" class="custom-select custom-select-sm" type="number" min="1" value="10" step="1"></input>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -96,22 +115,46 @@
     function updateTable(){
       let dataset = $('input[name=aggregate-dataset]:checked').data('value');
       let column = $('#aggregate-variable').val();
+      let binned = $('[name="aggregate-binning"]:checked').data('value') === 'on';
       let values = [];
       data = [];
       let rawdata = app['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
       let n = rawdata.length;
-      rawdata.forEach(row => {
-        let val = row[column];
-        if(values.includes(val)){
-          data[values.indexOf(val)].n++;
-        } else {
-          values.push(val);
-          let newRow = {};
-          newRow[column] = val;
-          newRow.n = 1;
-          data.push(newRow);
-        }
-      });
+      if(binned){
+        let nBins = $('#aggregate-bins').val(),
+            perBin = Math.ceil(n/nBins);
+        let values = rawdata.map(r => r[column]).sort((a, b) => a - b);
+        let min = values[0], max = values[n-1];
+        values.forEach((row, i) => {
+          let j = Math.ceil(i/perBin);
+          if(data[j]){
+            data[j].n++;
+            if(Math.ceil((i+1)/perBin) > j){
+              data[j].max = row;
+              data[j][column] = app.titleize(column) + ' ' + data[j].min + '-' + data[j].max;
+            }
+          } else {
+            data[j] = {
+              n: 1,
+              min: row
+            };
+          }
+        });
+        console.log(data);
+      } else {
+        rawdata.forEach(row => {
+          let val = row[column];
+          if(values.includes(val)){
+            data[values.indexOf(val)].n++;
+          } else {
+            values.push(val);
+            let newRow = {};
+            newRow[column] = val;
+            newRow.n = 1;
+            data.push(newRow);
+          }
+        });
+      }
       data.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
       aggregation.setColumns([
         {title: app.titleize(dataset + ' ' + column), field: column},
@@ -140,6 +183,17 @@
     });
 
     $('#aggregate-variable').on('change', updateTable);
+
+    $('[name="aggregate-binning"]').on('change', function(){
+      let val = $(this).data('value');
+      if(val == 'on'){
+        $('#aggregate-bins-row').css('display', 'flex');
+      } else {
+        $('#aggregate-bins-row').slideUp();
+      }
+    });
+
+    $('#aggregate-bins').on('change', updateTable);
 
     $('#aggregation-export').click(function(){
       let format = $('#export-aggregation-file-type').val();

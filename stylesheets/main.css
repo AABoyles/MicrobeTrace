@@ -830,4 +830,5 @@ stroke: #CCC;
   border-radius: .25rem;
 }
 #aggregate-bins-row{
+  display: none;
 }
