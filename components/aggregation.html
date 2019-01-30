@@ -121,23 +121,20 @@
       let rawdata = app['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
       let n = rawdata.length;
       if(binned){
-        let nBins = $('#aggregate-bins').val(),
-            perBin = Math.ceil(n/nBins);
         let values = rawdata.map(r => r[column]).sort((a, b) => a - b);
-        let min = values[0], max = values[n-1];
+        let perBin = Math.ceil(n/$('#aggregate-bins').val());
         values.forEach((row, i) => {
-          let j = Math.ceil(i/perBin);
-          if(data[j]){
-            data[j].n++;
-            if(Math.ceil((i+1)/perBin) > j){
-              data[j].max = row;
-              data[j][column] = app.titleize(column) + ' ' + data[j].min + '-' + data[j].max;
-            }
+          let bin = data[Math.floor(i/perBin)];
+          if(bin){
+            bin.n++;
+            bin.max = row;
+            bin[column] = bin.min + '-' + bin.max;
           } else {
-            data[j] = {
+            data.push({
               n: 1,
-              min: row
-            };
+              min: row,
+              max: row
+            });
           }
         });
         console.log(data);
@@ -162,10 +159,12 @@
         {title: 'Percentage', field: 'percent', headerSort: false}
       ]);
       aggregation.setData(data);
-      aggregation.setSort([
-        {column:'n', dir:'desc'},
-        {column:column, dir:'asc'}
-      ]);
+      if(!binned){
+        aggregation.setSort([
+          {column: 'n', dir: 'desc'},
+          {column: column, dir: 'asc'}
+        ]);
+      }
     }
 
     $('#aggregation-settings-toggle').click(function(){
@@ -177,7 +176,7 @@
       }
     });
 
-    $('input[name=aggregate-dataset]').on('change', e => {
+    $('input[name="aggregate-dataset"]').on('change', e => {
       updateColumns();
       updateTable();
     });
@@ -191,6 +190,7 @@
       } else {
         $('#aggregate-bins-row').slideUp();
       }
+      updateTable();
     });
 
     $('#aggregate-bins').on('change', updateTable);
