@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-01-28';
+var CACHE = 'MicrobeTraceD2019-02-04';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -54,17 +54,15 @@ self.addEventListener('install', function(event) {
         'node_modules/html5sortable/dist/html5sortable.min.js',
         'node_modules/plotly.js/dist/plotly.min.js',
         'node_modules/tabulator-tables/dist/js/tabulator.min.js',
+        'node_modules/patristic/dist/patristic.min.js',
+        'node_modules/tidytree/dist/tidytree.min.js',
         'node_modules/3d-force-graph/dist/3d-force-graph.min.js',
         'node_modules/leaflet/dist/leaflet.js',
         'node_modules/alignment-viewer/dist/alignment-viewer.min.js',
         'node_modules/marked/marked.min.js',
         'node_modules/localforage/dist/localforage.min.js',
         'node_modules/bioseq/dist/bioseq.min.js',
-        'node_modules/patristic/dist/patristic.min.js',
-        'node_modules/neighborjoining/dist/neighborjoining.min.js',
-        'vendor/d3.v3.min.js',
         'vendor/FileSaver.min.js',
-        'vendor/phylotree.js',
         'vendor/shpwrite.js',
         'stylesheets/main.css',
         'node_modules/bootstrap/dist/css/bootstrap.min.css',
