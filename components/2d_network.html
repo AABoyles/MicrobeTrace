@@ -346,19 +346,23 @@ Note that this may cause slow performance on larger networks.">
     });
     session.network.nodes = newNodes;
   }
-
-  let brush = d3.brush()
-    .on('start', brushstarted)
-    .on('brush', brushed)
-    .on('end', brushended);
+  let width  = $('#network').parent().width(),
+      height = $('#network').parent().parent().parent().height(),
+      transform = {},
+      zoom = d3.zoom().on('zoom', function(){
+        transform = d3.event.transform;
+        svg.attr('transform', transform);
+      }),
+      brush = d3.brush()
+        .on('start', brushstarted)
+        .on('brush', brushed)
+        .on('end', brushended);
 
   function brushstarted(){
     session.network.nodes.forEach(d => {
       if(d.visible) d._previouslySelected = d.selected;
     });
   }
-
-  let transform = {};
 
   function brushed(){
     if(d3.event.sourceEvent.type === 'end') return;
@@ -375,8 +379,8 @@ Note that this may cause slow performance on larger networks.">
     });
   }
 
-  function brushended() {
-    if (d3.event.selection == null) return;
+  function brushended(){
+    if(d3.event.selection == null) return;
     d3.select(this).call(d3.event.target.move, null);
     session.network.nodes.forEach(d => delete d._previouslySelected);
     session.data.nodes.forEach(d => {
@@ -385,14 +389,6 @@ Note that this may cause slow performance on larger networks.">
     });
     $(window).trigger('node-selected');
   }
-
-  let zoom = d3.zoom().on('zoom', function(){
-    svg.attr('transform', d3.event.transform);
-    transform = d3.event.transform;
-  });
-
-  let width  = $('#network').parent().width(),
-      height = $('#network').parent().parent().parent().height();
 
   d3.select('svg#network')
       .html(null) //Let's make sure the canvas is blank.
@@ -411,21 +407,6 @@ Note that this may cause slow performance on larger networks.">
 
   let svg = d3.select('svg#network').append('g');
 
-  function fit(thing, bounds){
-    if(!bounds) bounds = svg.node().getBBox();
-    if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
-    let parent = svg.node().parentElement.parentElement,
-        midX = bounds.x + bounds.width / 2,
-        midY = bounds.y + bounds.height / 2;
-    let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
-    d3.select('svg#network')
-      .transition()
-      .duration(750)
-      .call(zoom.transform, d3.zoomIdentity
-        .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
-        .scale(scale));
-  }
-
   let force = d3.forceSimulation()
     .force('link', d3.forceLink()
       .id(d => d.id)
@@ -440,6 +421,7 @@ Note that this may cause slow performance on larger networks.">
       .strength(session.style.widgets['network-gravity'])
     )
     .force('center', d3.forceCenter(width / 2, height / 2));
+
   if(session.style.widgets['network-friction']) force.velocityDecay(session.style.widgets['network-friction']);
 
   svg.append('svg:defs').append('marker')
@@ -527,7 +509,11 @@ Note that this may cause slow performance on larger networks.">
         linklabels
           .attr('x', l => (l.source.x + l.target.x)/2)
           .attr('y', l => (l.source.y + l.target.y)/2)
-          .attr('transform', l => 'rotate('+calcAngle(l.source, l.target)+' '+(l.source.x + l.target.x)/2+' '+(l.source.y + l.target.y)/2+')');
+          .attr('transform', l => 'rotate('+
+            calcAngle(l.source, l.target)+' '+
+            (l.source.x + l.target.x)/2+' '+
+            (l.source.y + l.target.y)/2+')'
+          );
       }
     });
 
@@ -537,11 +523,6 @@ Note that this may cause slow performance on larger networks.">
     scaleLinkWidth();
     nodes.select('path').classed('selected', d => d.selected);
     force.alpha(0.3).alphaTarget(0).restart();
-  }
-
-  var scalar = 180 / Math.PI;
-  function calcAngle(source, target){
-    return Math.atan((source.y - target.y) / (source.x - target.x)) * scalar;
   }
 
   function getVLinks(){
@@ -592,6 +573,11 @@ Note that this may cause slow performance on larger networks.">
   }
 
   let selected, multidrag = false;
+  const radToDeg = 180 / Math.PI;
+  function calcAngle(source, target){
+    return Math.atan((source.y - target.y) / (source.x - target.x)) * radToDeg;
+  }
+
 
   function dragstarted(n){
     if (!d3.event.active) force.alphaTarget(0.3).restart();
@@ -653,7 +639,7 @@ Note that this may cause slow performance on larger networks.">
     $(window).trigger('node-selected');
   }
 
-  var clipboard = new ClipboardJS('#copyID, #copySeq');
+  let clipboard = new ClipboardJS('#copyID, #copySeq');
 
   clipboard.on('success', hideContextMenu);
 
@@ -1130,6 +1116,21 @@ Note that this may cause slow performance on larger networks.">
       });
     }
   });
+
+  function fit(thing, bounds){
+    if(!bounds) bounds = svg.node().getBBox();
+    if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
+    let parent = svg.node().parentElement.parentElement,
+        midX = bounds.x + bounds.width / 2,
+        midY = bounds.y + bounds.height / 2;
+    let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
+    d3.select('svg#network')
+      .transition()
+      .duration(750)
+      .call(zoom.transform, d3.zoomIdentity
+        .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
+        .scale(scale));
+  }
 
   $('#fitbutton').on('click', fit);
 
