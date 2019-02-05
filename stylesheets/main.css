@@ -627,99 +627,9 @@ a.btn, button.btn, .btn-group{
 }
 
 /* Phylogenetic tree */
-#tree .tree-selection-brush .extent {
-    fill-opacity: .05;
-    stroke: #fff;
-    shape-rendering: crispEdges;
-}
-
-#tree .tree-scale-bar text {
-  font: sans-serif;
-}
-
-#tree .tree-scale-bar line,
-#tree .tree-scale-bar path {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-#tree .node circle, #tree .node ellipse, #tree .node rect {
-fill: steelblue;
-stroke: black;
-stroke-width: 0.5px;
-}
-
-#tree .internal-node circle, #tree .internal-node ellipse, #tree .internal-node rect{
-fill: #CCC;
-stroke: black;
-stroke-width: 0.5px;
-}
-
-#tree .node {
-font: 10px sans-serif;
-}
-
-#tree .node-selected {
-fill: #f00 !important;
-}
-
-#tree .node-collapsed circle, #tree .node-collapsed ellipse, #tree .node-collapsed rect{
-fill: black !important;
-}
-
-#tree .node-tagged {
-fill: #00f;
-}
-
-.branch {
-fill: none;
-stroke: #999;
-stroke-width: 2px;
-}
-
-.clade {
-fill: #1f77b4;
-stroke: #444;
-stroke-width: 2px;
-opacity: 0.5;
-}
-
-.branch-selected {
-stroke-width: 3px;
-}
-
-.branch-tagged {
-stroke: #00f;
-stroke-dasharray: 10,5;
-stroke-width: 2px;
-}
-
-.branch-tracer {
-stroke: #bbb;
-stroke-dasharray: 3,4;
-stroke-width: 1px;
-}
-
-
-.branch-multiple {
-stroke-dasharray: 5, 5, 1, 5;
-stroke-width: 3px;
-}
-
-.branch:hover {
-stroke-width: 10px;
-}
-
-#tree .internal-node circle:hover, #tree .internal-node ellipse:hover, .internal-node rect:hover {
-fill: black;
-stroke: #CCC;
-}
-
 #tree {
   height: 100%;
   width: 100%;
-  margin-top: 50px;
 }
 
 #tree_tooltip {
@@ -734,14 +644,6 @@ stroke: #CCC;
   -moz-border-radius: 12px;
   border-radius: 12px;
   display: none;
-}
-
-#d3v3_layout_phylotree_context_menu{
-  padding: 10px;
-}
-
-#d3v3_layout_phylotree_context_menu li:hover{
-  background: #f8f9fa !important;
 }
 
 /* Table */

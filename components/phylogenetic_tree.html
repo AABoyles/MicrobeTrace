@@ -1,4 +1,4 @@
-  <svg id="tree"></svg>
+  <div id="tree"></div>
 
   <div class="view-controls">
     <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm">
@@ -23,23 +23,6 @@
             <div id="tree-metric" class="btn-group btn-group-toggle w-100" data-toggle="buttons"></div>
           </div>
         </div>
-        <div class="form-group row" title="What error scale would you like to use to render the tree?">
-          <div class="col-3"><label for="tree-epsilon">Epsilon</label></div>
-          <div class="col-9"><input type="range" id="tree-epsilon" class="w-100" min="-10" max="1" step="1/3" value="-10"></input></div>
-        </div>
-        <div class="form-group row" title="Would you like to add one to every element in the tree?">
-          <div class="col-3">Addend</div>
-          <div class="col-9">
-            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-              <label class="btn btn-light btn-sm col active">
-                <input type="radio" name="tree-addend" id="tree-addZero" autocomplete="off" checked> 0
-              </label>
-              <label class="btn btn-light btn-sm col">
-                <input type="radio" name="tree-addend" id="tree-addOne" autocomplete="off"> 1
-              </label>
-            </div>
-          </div>
-        </div>
         <div class="form-group row" title="Would you like to round disctances in the tree to integers?">
           <div class="col-3">Rounding</div>
           <div class="col-9">
@@ -58,7 +41,10 @@
           <div class="col-9">
             <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
               <label class="btn btn-light btn-sm active col">
-                <input type="radio" name="tree-layout" id="tree-layout-rectangular" autocomplete="off" checked> Rectangular
+                <input type="radio" name="tree-layout" id="tree-layout-vertical" autocomplete="off" checked> Vertical
+              </label>
+              <label class="btn btn-light btn-sm col">
+                <input type="radio" name="tree-layout" id="tree-layout-horizontal" autocomplete="off"> Horizontal
               </label>
               <label class="btn btn-light btn-sm col">
                 <input type="radio" name="tree-layout" id="tree-layout-circular" autocomplete="off"> Circular
@@ -74,39 +60,8 @@
                 <input type="radio" name="tree-labels" id="tree-labels-show" autocomplete="off" checked> Show
               </label>
               <label class="btn btn-light btn-sm col">
-                <input type="radio" name="tree-labels" id="tree-labels-align" autocomplete="off"> Align
-              </label>
-              <label class="btn btn-light btn-sm col">
                 <input type="radio" name="tree-labels" id="tree-labels-hide" autocomplete="off"> Hide
               </label>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row" title="Change the height of the tree.">
-          <div class="col-3">Height</div>
-          <div class="col-9">
-            <div class="btn-group w-100">
-              <button type="button" class="btn btn-light btn-sm col" data-direction="vertical" data-amount="1" title="Expand vertical spacing">Increase</button>
-              <button type="button" class="btn btn-light btn-sm col" data-direction="vertical" data-amount="-1" title="Compress vertical spacing">Decrease</button>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row" title="Change the width of the tree.">
-          <div class="col-3">Width</div>
-          <div class="col-9">
-            <div class="btn-group w-100">
-              <button type="button" class="btn btn-light btn-sm col" data-direction="horizontal" data-amount="1" title="Expand horizonal spacing">Increase</button>
-              <button type="button" class="btn btn-light btn-sm col" data-direction="horizontal" data-amount="-1" title="Compress horizonal spacing">Decrease</button>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row" title="How would you like to sort the tree?">
-          <div class="col-3">Sort</div>
-          <div class="col-9">
-            <div class="btn-group btn-group-toggle w-100">
-              <button type="button" class="btn btn-light btn-sm col" id="tree-sort-original" title="Restore original order">Default</button>
-              <button type="button" class="btn btn-light btn-sm col" id="tree-sort-ascending" title="Sort deepest clades to the bottom">Ascending</button>
-              <button type="button" class="btn btn-light btn-sm col" id="tree-sort-descending" title="Sort deepest clades to the top">Descending</button>
             </div>
           </div>
         </div>
@@ -166,54 +121,68 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <script src="vendor/d3.v3.min.js"></script>
-  <script src="vendor/phylotree.js"></script>
   <script>
 (function(){
     var tree, nodes;
 
     function redrawTree(){
-      let panel = $('svg#tree').parent();
+      let panel = $('#tree').parent();
       if(!panel.length) return;
-      let width = panel.width(),
-          height = panel.height(),
-          color_scheme = d3v3.scale.category10(),
-          type = session.style.widgets['tree-metric'];
+      let type = session.style.widgets['tree-metric'];
 
       if(!session.data.trees[type]){
         app.computeTree(type, redrawTree);
         return;
       }
-      let svg = d3v3.select('svg#tree')
-          .attr('width', width)
-          .attr('height', height);
+      tree = new TidyTree(session.data.trees[type], {
+        parent: '#tree',
+        // layout: d3.select('#layout').node().value,
+        // mode: d3.select('#mode').node().value,
+        // type: d3.select('#type').node().value,
+        // leafNodes: d3.select('#leafNodes').node().checked,
+        // branchNodes: d3.select('#branchNodes').node().checked,
+        // leafLabels: d3.select('#leafLabels').node().checked,
+        // branchLabels: d3.select('#branchLabels').node().checked,
+        // branchDistances: d3.select('#branchDistances').node().checked,
+        // animation: parseFloat(d3.select('#animation').node().value),
+        contextMenu: contextMenu,
+        tooltip: tooltip
+      });
+    }
 
-      tree = d3v3.layout.phylotree().separation(function(a,b){return 0;});
+    function contextMenu(d){
+      let e = d3.event;
+      e.preventDefault();
+      d3.selectAll('#tooltip')
+        .style('z-index', -1)
+        .style('display', 'none');
+      d3.select('#context-menu')
+        .style('top', e.pageY + 'px')
+        .style('left', e.pageX + 'px')
+        .style('z-index', 1000)
+        .style('display', 'block');
+      d3.select('#reroot').on('click', function(){
+        var newTree = d.data.reroot();
+        newTree.fixParenthood();
+        tree.setData(newTree);
+      });
+      d3.select('#remove').on('click', function(){
+        tree.setData(d.data.remove());
+      });
+      d3.select('#isolate').on('click', function(){
+        tree.setData(d.data.isolate());
+      });
+    }
 
-      tree.branch_length(null);
-      tree.branch_name(null);
-      tree.node_span('equal');
-      tree.options({
-        // // Ideally, we'd use these, but they're buggy. :/
-        // 'left-right-spacing': 'fit-to-size',
-        // 'top-bottom-spacing': 'fit-to-size',
-        // 'restricted-selectable': 'all-leaf-nodes',
-        'draw-size-bubbles': true,
-        'brush': false,
-        'zoom': true
-      }, false);
-      if(session.style.widgets['tree-labels-show']){
-        tree.align_tips(session.style.widgets['tree-labels-align']);
-      } else {
-        d3.select('svg#tree').selectAll('.node').style('display', 'none');
-      }
-      nodes = app.getVisibleNodes();
-      tree.style_nodes(node_colorizer);
-      tree.node_circle_size(0);
-      tree.radial(session.style.widgets['tree-layout-circular']);
-
-      tree(session.data.trees[type]).svg(svg).layout();
-      modifySelection();
+    function tooltip(d){
+      let e = d3.event;
+      e.preventDefault();
+      d3.select('#tooltip')
+        .text(d.data.id)
+        .style('top', e.pageY + 'px')
+        .style('left', (e.pageX+5) + 'px')
+        .style('z-index', 1000)
+        .style('display', 'block');
     }
 
     $('#tree-metric').html(
@@ -229,21 +198,6 @@
       redrawTree();
     });
 
-    $('#tree-epsilon').on('change', function(e){
-      session.style.widgets['tree-epsilon'] = parseFloat($(this).val());
-      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
-    });
-
-    $('#tree-addZero').parent().on('click', function(){
-      session.style.widgets['tree-addOne'] = false;
-      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
-    });
-
-    $('#tree-addOne').parent().on('click', function(){
-      session.style.widgets['tree-addOne'] = true;
-      app.computeTree(session.style.widgets['tree-metric'], redrawTree);
-    });
-
     $('#tree-round').parent().on('click', function(){
       session.style.widgets['tree-round'] = true;
       app.computeTree(session.style.widgets['tree-metric'], redrawTree);
@@ -256,77 +210,31 @@
 
     $('#tree-layout-rectangular').parent().on('click', e => {
       session.style.widgets['tree-layout-circular'] = false;
-      tree.radial(false).placenodes().update();
     });
 
     $('#tree-layout-circular').parent().on('click', e => {
       session.style.widgets['tree-layout-circular'] = true;
-      tree.radial(true).placenodes().update();
     });
 
     $('#tree-labels-align').parent().on('click', e => {
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = true;
-      d3.select('svg#tree').selectAll('.node').style('display', 'inline');
-      tree.align_tips(true).placenodes().update();
+      d3.select('#tree svg').selectAll('.node').style('display', 'inline');
     });
 
     $('#tree-labels-show').parent().on('click', e => {
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = true;
       session.style.widgets['tree-labels-align'] = false;
-      d3.select('svg#tree').selectAll('.node').style('display', 'inline');
-      tree.align_tips(false).placenodes().update();
+      d3.select('#tree svg').selectAll('.node').style('display', 'inline');
     });
 
     $('#tree-labels-hide').parent().on('click', e => {
       if(!tree) return;
       session.style.widgets['tree-labels-show'] = false;
-      d3.select('svg#tree').selectAll('.node').style('display', 'none');
+      d3.select('#tree svg').selectAll('.node').style('display', 'none');
     });
-
-    $('[data-direction]').on('click', function(e){
-      let which_function = $(this).data('direction') == 'vertical' ? tree.spacing_x : tree.spacing_y;
-      which_function(which_function() + (+$(this).data('amount')));
-      tree.update();
-    });
-
-    function sort_nodes(asc){
-      tree.traverse_and_compute(function(n){
-        let d = 1;
-        if(n.children && n.children.length){
-          d += d3.max(n.children, d => d.count_depth);
-        }
-        n['count_depth'] = d;
-      });
-      tree.resort_children(function(a,b){
-        return(a['count_depth'] - b['count_depth']) *(asc ? 1 : -1);
-      });
-    }
-
-    $('#tree-sort-original').on('click', function(e){
-      tree.resort_children(function(a,b){
-        return a['original_child_order'] - b['original_child_order'];
-      });
-    });
-
-    $('#tree-sort-ascending').on('click', function(e){
-      sort_nodes(true);
-    });
-
-    $('#tree-sort-descending').on('click', function(e){
-      sort_nodes(false);
-    });
-
-    function node_colorizer(element, data){
-      let d = nodes.find(d => d.id == data.name);
-      if(d){
-        let color = temp.style.nodeColorMap(d[session.style.widgets['node-color-variable']]);
-        d3v3.select(element[0][0]).select('text'  ).style('fill', color);
-        d3v3.select(element[0][0]).select('circle').style('fill', color);
-      }
-    }
 
     $('#toggle-tree-settings').on('click', function(){
       let pane = $('#tree-settings-pane');
@@ -370,7 +278,7 @@
     $('#tree-export').on('click', e => {
       let type = $('#tree-export-file-type').val();
       if(type === 'png'){
-        let root = $('svg#tree')[0];
+        let root = $('#tree svg')[0];
         let content = app.unparseSVG(root);
         let width  = parseFloat($('#tree-export-width' ).val());
         let height = parseFloat($('#tree-export-height').val());
@@ -378,7 +286,7 @@
           saveAs(blob, $('#tree-export-file-name').val() + '.png');
         });
       } else if(type === 'svg'){
-        let blob = new Blob([app.unparseSVG($('svg#tree')[0])], {type: 'image/svg+xml;charset=utf-8'});
+        let blob = new Blob([app.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, $('#tree-export-file-name').val() + '.svg');
       } else if(type === 'nwk'){
         let blob = new Blob([session.data.trees[session.style.widgets['tree-metric']]], {type: 'application/newick;charset=utf-8'});
@@ -386,30 +294,12 @@
       }
     });
 
-    function modifySelection(){
-      tree.modify_selection(function(node){
-        if(node.target.name === '') return false;
-        let match = session.data.nodes.find(d => node.target.name === d.id);
-        if(match){
-          return match.selected;
-        } else {
-          return false;
-        }
-      });
-      $('svg#tree .branch')
-        .css('stroke', '#999')
-        .filter('.branch-selected')
-        .css('stroke', session.style.widgets['selected-color']);
-    }
-
     $(window)
-      .on('node-color-change', function(){ tree.style_nodes(node_colorizer).layout(); })
-      .on('node-selected', modifySelection)
       .on('background-color-change', function(){
-        $('svg#tree').parent().css('background-color', session.style.widgets['background-color']);
+        $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
       });
 
-    $('svg#tree').parent().css('background-color', session.style.widgets['background-color']);
+    $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
 
     layout.on('stateChanged', function(){
       let wrapper = $('#tree').parent();
@@ -417,32 +307,6 @@
       $('#tree-export-height').val(wrapper.height());
     });
 
-    redrawTree();
-    tree.selection_callback(function(nodes){
-      let thunk = false;
-      nodes.forEach(node => {
-        if(node.name === '') return;
-        let match = session.data.nodes.find(d => d.id === node.name);
-        if(match){
-          if(!match.selected){
-            match.selected = true;
-            thunk = true;
-          }
-        }
-      });
-      session.data.nodes.forEach(node => {
-        let match = nodes.find(d => d.name === node.id);
-        if(!match && node.selected){
-          node.selected = false;
-          thunk = true;
-        }
-      });
-      if(thunk) $(window).trigger('node-selected');
-      $('svg#tree .branch')
-        .css('stroke', '#999')
-        .filter('.branch-selected')
-        .css('stroke', session.style.widgets['selected-color']);
-    });
-
+    setTimeout(redrawTree(), 100);
   })();
   </script>
