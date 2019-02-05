@@ -537,10 +537,10 @@ a.btn, button.btn, .btn-group{
 }
 
 /* 2D NETWORK */
-#nodes path {
+.nodes path {
   cursor: -webkit-grab;
 }
-#nodes path.selected {
+.nodes path.selected {
   stroke: #ff8300;
   stroke-width: 4px;
 }
