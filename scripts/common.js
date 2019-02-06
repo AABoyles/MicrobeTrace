@@ -876,7 +876,8 @@ app.unparseSVG = function(svgNode){
 
   // Add Parent element Id and Classes to the list
   selectorTextArr.push( '#'+svgNode.id );
-  for (var c = 0; c < svgNode.classList.length; c++){
+  var nClasses = svgNode.classList.length;
+  for (var c = 0; c < nClasses; c++){
     if (!('.'+svgNode.classList[c]).includes(selectorTextArr)){
       selectorTextArr.push('.'+svgNode.classList[c]);
     }
@@ -884,7 +885,8 @@ app.unparseSVG = function(svgNode){
 
   // Add Children element Ids and Classes to the list
   var nodes = svgNode.getElementsByTagName('*');
-  for(var i = 0; i < nodes.length; i++){
+  var nNodes = nodes.length;
+  for(var i = 0; i < nNodes; i++){
     var id = nodes[i].id;
     if(!('#'+id).includes(selectorTextArr)){
       selectorTextArr.push( '#'+id );
@@ -899,7 +901,8 @@ app.unparseSVG = function(svgNode){
 
   // Extract CSS Rules
   var extractedCSSText = '';
-  for (var i = 0; i < document.styleSheets.length; i++) {
+  var nStylesheets = document.styleSheets.length;
+  for (var i = 0; i < nStylesheets; i++) {
     var s = document.styleSheets[i];
     try {
       if(!s.cssRules) continue;
@@ -908,10 +911,12 @@ app.unparseSVG = function(svgNode){
       continue;
     }
     var cssRules = s.cssRules;
-    for (var r = 0; r < cssRules.length; r++) {
-      if(!cssRules[r].selectorText) continue;
-      if(cssRules[r].selectorText.includes(selectorTextArr)){
-        extractedCSSText += cssRules[r].cssText;
+    var nRules = cssRules.length;
+    for (var r = 0; r < nRules; r++) {
+      var rule = cssRules[r];
+      if(!rule.selectorText) continue;
+      if(rule.selectorText.includes(selectorTextArr)){
+        extractedCSSText += rule.cssText;
       }
     }
   }
