@@ -537,6 +537,10 @@ a.btn, button.btn, .btn-group{
 }
 
 /* 2D NETWORK */
+#network{
+  width: 100%;
+  height: 100%;
+}
 .nodes path {
   cursor: -webkit-grab;
 }

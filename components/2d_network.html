@@ -334,9 +334,9 @@ Note that this may cause slow performance on larger networks.">
 <script>
 (function(){
 
-  let width  = $('#network').parent().width(),
-      height = $('#network').parent().parent().parent().height(),
-      transform = {},
+  let halfWidth  = $('#network').parent().width()/2,
+      halfHeight = $('#network').parent().parent().parent().height()/2,
+      transform  = {},
       zoom = d3.zoom().on('zoom', function(){
         transform = d3.event.transform;
         svg.attr('transform', transform);
@@ -380,8 +380,6 @@ Note that this may cause slow performance on larger networks.">
 
   d3.select('svg#network')
       .html(null) //Let's make sure the canvas is blank.
-      .attr('height', height)
-      .attr('width', width)
       .on('click', hideContextMenu)
       .call(zoom);
 
@@ -419,10 +417,10 @@ Note that this may cause slow performance on larger networks.">
       .strength(-session.style.widgets['node-charge'])
     )
     .force('gravity', d3.forceAttract()
-      .target([width/2, height/2])
+      .target([halfWidth, halfHeight])
       .strength(session.style.widgets['network-gravity'])
     )
-    .force('center', d3.forceCenter(width / 2, height / 2));
+    .force('center', d3.forceCenter(halfWidth, halfHeight));
 
   if(session.style.widgets['network-friction']) force.velocityDecay(session.style.widgets['network-friction']);
 
