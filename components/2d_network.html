@@ -379,6 +379,8 @@ Note that this may cause slow performance on larger networks.">
 
   d3.select('svg#network')
       .html(null) //Let's make sure the canvas is blank.
+      .attr('height', halfHeight*2)
+      .attr('width', halfWidth*2)
       .on('click', hideContextMenu)
       .call(zoom);
 
@@ -1154,6 +1156,7 @@ Note that this may cause slow performance on larger networks.">
     let wrapper = $('#network').parent();
     $('#network-export-width' ).val(wrapper.width());
     $('#network-export-height').val(wrapper.height());
+    brush.extent(brush.extent());
   });
 
   if(session.files.length > 1) $('#link-color-variable').val('origin').change();
