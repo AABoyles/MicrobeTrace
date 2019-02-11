@@ -293,6 +293,8 @@ Note that this may cause slow performance on larger networks.">
           <div class="col-3">
             <select id="network-export-filetype" class="form-control form-control-sm">
               <option selected>png</option>
+              <option>jpeg</option>
+              <option>webp</option>
               <option>svg</option>
             </select>
           </div>
@@ -305,18 +307,31 @@ Note that this may cause slow performance on larger networks.">
         <div class="collapse" id="network-export-advanced">
           <div class="card card-body">
             <div class="form-group row">
-              <div class="col">
+              <div class="col-3">
                 <label for="network-export-scale">Scale</label>
+              </div>
+              <div class="col-9">
                 <input type="number" id="network-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
               </div>
             </div>
             <div class="form-group row">
-              <div id="network-export-dimensions" class="col text-right"></div>
+              <div class="col-3">Resolution</div>
+              <div id="network-export-dimensions" class="col-9 text-right"></div>
             </div>
             <div class="row">
-              <div class="col">
+              <div class="col-3">
+                <label for="network-export-quality">Quality</label>
+              </div>
+              <div class="col-9">
+                <input type="range" id="network-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-3">
                 <label for="network-export-opacity">Watermark Opacity</label>
-                <input type="range" id="network-export-opacity" min=".2" max="1.0" value="1.0" step="0.01"></input>
+              </div>
+              <div class="col-9">
+                <input type="range" id="network-export-opacity" min=".4" max="1.0" value="0.4" step="0.01"></input>
               </div>
             </div>
           </div>
@@ -1060,10 +1075,10 @@ Note that this may cause slow performance on larger networks.">
   });
 
   $('#network-export-filetype').on('change', function(e){
-    if(e.target.value === 'png'){
-      $('#network-export-advanced-button').parent().parent().slideDown();
-    } else {
+    if(e.target.value === 'svg'){
       $('#network-export-advanced-button').parent().parent().slideUp();
+    } else {
+      $('#network-export-advanced-button').parent().parent().slideDown();
     }
   });
 
@@ -1071,10 +1086,10 @@ Note that this may cause slow performance on larger networks.">
     let scale = parseFloat(e.target.value);
     let wrapper = $('#network').parent();
     $('#network-export-dimensions').text(
-      Math.round(wrapper.width() *scale)+'px wide by '+
-      Math.round(wrapper.height()*scale)+'px high'
+      Math.round(wrapper.width() *scale)+'x'+
+      Math.round(wrapper.height()*scale)+'px'
     );
-  });
+  }).trigger('input');
 
   $('#network-export').on('click', function(){
     let network = document.getElementById('network');
@@ -1082,6 +1097,7 @@ Note that this may cause slow performance on larger networks.">
       .attr('xlink:href', app.watermark)
       .attr('height', 128)
       .attr('width', 128)
+      .attr('x', 10)
       .style('opacity', $('#network-export-opacity').val());
     let filetype = $('#network-export-filetype').val(),
         filename = $('#network-export-filename').val();
@@ -1092,7 +1108,10 @@ Note that this may cause slow performance on larger networks.">
       watermark.remove();
     } else {
       saveSvgAsPng(network, filename + '.' + filetype, {
-        scale: parseFloat($('#network-export-scale').val())
+        scale: parseFloat($('#network-export-scale').val()),
+        backgroundColor: session.style.widgets['background-color'],
+        encoderType: 'image/' + filetype,
+        encoderOptions: parseFloat($('#network-export-quality').val())
       }).then(() => watermark.remove());
     }
   });
