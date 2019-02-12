@@ -8,7 +8,7 @@ onmessage = function(e){
   console.log('Tree Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
   start = Date.now();
   var encoder = new TextEncoder();
-  var output = encoder.encode(RNJ.toNewick()).buffer;
+  var output = encoder.encode(JSON.stringify(RNJ.toObject())).buffer;
   postMessage({tree: output, start: start}, [output]);
   close();
 };

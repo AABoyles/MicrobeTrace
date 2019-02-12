@@ -8,7 +8,6 @@ app.dataSkeleton = function(){
     links: [],
     clusters: [],
     distance_matrix: {},
-    trees: {},
     nodeFields: ['index', 'id', 'selected', 'cluster', 'visible', 'degree', 'origin'],
     linkFields: ['index', 'source', 'target', 'visible', 'cluster', 'origin'],
     clusterFields: ['id', 'index', 'nodes', 'links', 'sum_distances', 'links_per_node', 'mean_genetic_distance', 'visible'],
@@ -89,11 +88,17 @@ app.defaultWidgets = {
   'scatterplot-showNodes': false,
   'selected-color': '#ff8300',
   'selected-color-contrast': '#000000',
-  'tree-epsilon': -10,
-  'tree-metric': 'tn93',
+  'tree-layout-vertical': true,
+  'tree-layout-horizontal': false,
   'tree-layout-circular': false,
   'tree-labels-align': false,
-  'tree-labels-show': true
+  'tree-labels-show': true,
+  'tree-metric': 'tn93',
+  'tree-mode-square': true,
+  'tree-mode-smooth': false,
+  'tree-mode-straight': false,
+  'tree-ruler-show': true,
+  'tree-type': 'weighted'
 };
 
 app.sessionSkeleton = function(){
@@ -135,7 +140,8 @@ app.tempSkeleton = function(){
       linkColorMap: function(){ return session.style.widgets['link-color']; },
       nodeColorMap: function(){ return session.style.widgets['node-color']; },
       nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; }
-    }
+    },
+    trees: {}
   };
 };
 
@@ -371,16 +377,14 @@ app.computeDM = function(callback){
 app.computeTree = function(type, callback){
   var computer = new Worker('scripts/compute-tree.js');
   computer.onmessage = function(response){
-    session.data.trees[type] = app.decoder.decode(new Uint8Array(response.data.tree));
+    temp.trees[type] = patristic.parseJSON(app.decoder.decode(new Uint8Array(response.data.tree)));
     console.log('Tree (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     if(callback) callback();
   };
-  var epsilon = session.style.widgets['tree-epsilon'] == -10 ? 0 : 10**session.style.widgets['tree-epsilon'];
   computer.postMessage({
-    matrix: session.data.distance_matrix[type].map(a => a = a.map(b => Math.max(b, epsilon))),
+    matrix: session.data.distance_matrix[type],
     labels: session.data.distance_matrix.labels,
-    round: session.style.widgets['tree-round'],
-    addOne: session.style.widgets['tree-addOne']
+    round: session.style.widgets['tree-round']
   });
 };
 
@@ -394,7 +398,7 @@ app.computePatristicMatrix = function(type, callback){
     if(callback) callback();
   };
   computer.postMessage({
-    newick: session.data.trees[type]
+    newick: temp.trees[type]
   });
 };
 
