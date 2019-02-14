@@ -1,4 +1,4 @@
-  <div id="tree"></div>
+<div id="tree"></div>
 
   <div class="view-controls">
     <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm">
@@ -126,10 +126,10 @@
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                       <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-branch-nodes" id="tree-branch-nodes-show" autocomplete="off"> Show
+                        <input type="radio" name="tree-branch-nodes" id="tree-branch-node-show" autocomplete="off"> Show
                       </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-branch-nodes" id="tree-branch-nodes-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-branch-nodes" id="tree-branch-node-hide" autocomplete="off" checked> Hide
                       </label>
                     </div>
                   </div>
@@ -139,10 +139,10 @@
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                       <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-branch-labels" id="tree-branch-labels-show" autocomplete="off"> Show
+                        <input type="radio" name="tree-branch-labels" id="tree-branch-label-show" autocomplete="off"> Show
                       </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-branch-labels" id="tree-branch-labels-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-branch-labels" id="tree-branch-label-hide" autocomplete="off" checked> Hide
                       </label>
                     </div>
                   </div>
@@ -160,10 +160,10 @@
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                       <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-branch-distances" id="tree-branch-distances-show" autocomplete="off"> Show
+                        <input type="radio" name="tree-branch-distances" id="tree-branch-distance-show" autocomplete="off"> Show
                       </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-branch-distances" id="tree-branch-distances-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-branch-distances" id="tree-branch-distance-hide" autocomplete="off" checked> Hide
                       </label>
                     </div>
                   </div>
@@ -190,10 +190,10 @@
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-leaf-nodes" id="tree-leaf-nodes-show" autocomplete="off" checked> Show
+                        <input type="radio" name="tree-leaf-nodes" id="tree-leaf-node-show" autocomplete="off" checked> Show
                       </label>
                       <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-leaf-nodes" id="tree-leaf-nodes-hide" autocomplete="off"> Hide
+                        <input type="radio" name="tree-leaf-nodes" id="tree-leaf-node-hide" autocomplete="off"> Hide
                       </label>
                     </div>
                   </div>
@@ -203,20 +203,20 @@
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                       <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-labels-show" autocomplete="off"> Show
+                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-show" autocomplete="off"> Show
                       </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-labels-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-hide" autocomplete="off" checked> Hide
                       </label>
                     </div>
                   </div>
                 </div>
                 <div class="form-group row">
                   <div class="col-3">
-                    <label for="leafLabelSize">Label Size</label>
+                    <label for="tree-leaf-label-size">Label Size</label>
                   </div>
                   <div class="col-9">
-                    <input id="leafLabelSize" type="range" min="1" max="32" value="6" step="1" />
+                    <input id="tree-leaf-label-size" type="range" min="1" max="32" value="6" step="1" />
                   </div>
                 </div>
                 <div class="form-group row">
@@ -469,23 +469,23 @@
     tree.setMode('straight');
   });
 
-  $('#tree-branch-nodes-show').parent().on('click', e => {
-    session.style.widgets['tree-branch-nodes-hide'] = false;
+  $('#tree-branch-node-show').parent().on('click', e => {
+    session.style.widgets['tree-branch-node-hide'] = false;
     tree.setBranchNodes(true);
   });
 
-  $('#tree-branch-nodes-hide').parent().on('click', e => {
-    session.style.widgets['tree-branch-nodes-hide'] = true;
+  $('#tree-branch-node-hide').parent().on('click', e => {
+    session.style.widgets['tree-branch-node-hide'] = true;
     tree.setBranchNodes(false);
   });
 
-  $('#tree-branch-labels-show').parent().on('click', e => {
-    session.style.widgets['tree-branch-labels-hide'] = false;
+  $('#tree-branch-label-show').parent().on('click', e => {
+    session.style.widgets['tree-branch-label-hide'] = false;
     tree.setBranchLabels(true);
   });
 
-  $('#tree-branch-labels-hide').parent().on('click', e => {
-    session.style.widgets['tree-branch-labels-hide'] = true;
+  $('#tree-branch-label-hide').parent().on('click', e => {
+    session.style.widgets['tree-branch-label-hide'] = true;
     tree.setBranchLabels(false);
   });
 
@@ -494,13 +494,13 @@
     tree.setBranchLabelSize(e.target.value);
   });
 
-  $('#tree-branch-distances-show').parent().on('click', e => {
-    session.style.widgets['tree-branch-distances-show'] = true;
+  $('#tree-branch-distance-show').parent().on('click', e => {
+    session.style.widgets['tree-branch-distance-show'] = true;
     tree.setBranchDistances(true);
   });
 
-  $('#tree-branch-distances-hide').parent().on('click', e => {
-    session.style.widgets['tree-branch-labels-show'] = false;
+  $('#tree-branch-distance-hide').parent().on('click', e => {
+    session.style.widgets['tree-branch-label-show'] = false;
     tree.setBranchDistances(false);
   });
 
