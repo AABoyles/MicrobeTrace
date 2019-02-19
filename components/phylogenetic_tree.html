@@ -572,7 +572,7 @@
       let blob = new Blob([app.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.svg');
     } else if(type === 'nwk'){
-      let blob = new Blob([temp.trees[session.style.widgets['tree-metric']]], {type: 'application/newick;charset=utf-8'});
+      let blob = new Blob([temp.trees[session.style.widgets['tree-metric']].toNewick()], {type: 'application/newick;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
     }
   });
