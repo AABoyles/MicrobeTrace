@@ -244,8 +244,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   }
 
   function addToTable(file){
-    var extension = file.name.split('.').pop();
+    var extension = file.name.split('.').pop().toLowerCase();
     var isFasta = extension.indexOf('fas') > -1;
+    var isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
     var isXL = (extension === 'xlsx' || extension === 'xls');
     var isNode = file.name.toLowerCase().includes('node');
     if(isXL){
@@ -278,17 +279,20 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         .append('<span class="p-1">' + file.name + '</span>')
         .append(`
         <div class="btn-group btn-group-toggle btn-group-sm float-right" data-toggle="buttons">
-          <label class="btn btn-light${!isFasta&!isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNode?' checked':''}>Link</input>
+          <label class="btn btn-light${!isFasta&!isNewick&!isNode?' active':''}">
+            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNewick&!isNode?' checked':''}>Link</input>
           </label>
-          <label class="btn btn-light${!isFasta&isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&isNode?' checked':''}>Node</input>
+          <label class="btn btn-light${!isFasta&!isNewick&isNode?' active':''}">
+            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&!isNewick&isNode?' checked':''}>Node</input>
           </label>
           <label class="btn btn-light">
-            <input type="radio" name="options-${file.name}" data-type="distmat" autocomplete="off">Dist. Mat.</input>
+            <input type="radio" name="options-${file.name}" data-type="matrix" autocomplete="off">Matrix</input>
           </label>
           <label class="btn btn-light${isFasta?' active':''}">
             <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
+          </label>
+          <label class="btn btn-light${isNewick?' active':''}">
+            <input type="radio" name="options-${file.name}" data-type="newick" autocomplete="off"${isNewick?' checked':''}>Newick</input>
           </label>
         </div>
         `)
@@ -297,15 +301,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       var optionsrow = $('<div class="row w-100"></div>');
       var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
       optionsrow.append(`
-      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col-4 '${isFasta||isNewick?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
         <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
       </div>
-      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col-4 '${isFasta||isNewick?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
         <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
       </div>
-      <div class='col-4 '${isFasta?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col-4 '${isFasta||isNewick?' style="display: none;"':''} data-file='${file.name}'>
         <label for="file-${file.name}-field-3">Distance</label>
         <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
       </div>
@@ -500,7 +504,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       f.field3 = selects.get(2).value;
     });
 
-    var hierarchy = ['distmat', 'link', 'node', 'fasta'];
+    var hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
 
     var anySequences = false;
     session.state.metrics = $('#distance-metrics').val();
@@ -685,7 +689,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           });
         }
 
-      } else { //Distance Matrix
+      } else if(file.format === 'matrix'){
 
         message(`Parsing ${filename} as Distance Matrix...`);
         var start = Date.now();
@@ -740,7 +744,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             complete: function(results){
               var nodeIDs = [];
               var nn = 0, nl = 0;
-              let check = session.files.length > 1;
+              var check = session.files.length > 1;
               results.data.forEach(function(row, i){
                 if(i === 0){
                   nodeIDs = row.map(filterXSS);
@@ -779,6 +783,38 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
           });
         }
+      } else { // Newick
+
+        var links = 0;
+        var newLinks = 0;
+        var newNodes = 0;
+        var defaultMetric = session.style.widgets['link-sort-variable'];
+        var tree = patristic.parseNewick(file.contents);
+        var m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
+        for(var i = 0; i < n; i++){
+          var source = labels[i];
+          newNodes += app.addNode({
+            id: source,
+            origin: [file.name]
+          });
+          for(var j = 0; j < i; j++){
+            var base = {
+              source: source,
+              target: labels[j],
+              origin: [file.name]
+            };
+            session.state.metrics.forEach(function(metric){
+              metric = metric.toLowerCase();
+              base[metric] = 0;
+            });
+            base[defaultMetric] = parseFloat(matrix[i][j]);
+            newLinks += app.addLink(base);
+            links++;
+          }
+        }
+        message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
+        message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
+        if(fileNum === session.files.length - 1) nextStuff();
       }
     });
 
@@ -914,7 +950,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
     $('.hideForHIVTrace').css('display', 'flex');
     setTimeout(function(){
-      let files = layout.contentItems.find(function(item){ return item.componentName === 'files'; });
+      var files = layout.contentItems.find(function(item){ return item.componentName === 'files'; });
       if(files) files.remove();
       $('#loading-information-modal').modal('hide');
     }, 1200);
