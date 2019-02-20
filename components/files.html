@@ -510,6 +510,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     session.state.metrics = $('#distance-metrics').val();
     session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
     var check = session.files.length > 1;
+    var defaultMetric = session.style.widgets['link-sort-variable'];
 
     session.files.sort(function(a, b){ return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
 
@@ -693,7 +694,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         message(`Parsing ${filename} as Distance Matrix...`);
         var start = Date.now();
-        var defaultMetric = session.style.widgets['link-sort-variable'];
 
         if(extension == 'xls' || extension == 'xlsx'){
 
@@ -783,12 +783,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
           });
         }
-      } else { // Newick
+      } else { // if(file.format == 'newick'){
 
+        if(!session.data.linkFields.includes('patristic')) session.data.linkFields.push('patristic');
         var links = 0;
         var newLinks = 0;
         var newNodes = 0;
-        var defaultMetric = session.style.widgets['link-sort-variable'];
         var tree = patristic.parseNewick(file.contents);
         var m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
         for(var i = 0; i < n; i++){
@@ -798,16 +798,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             origin: [file.name]
           });
           for(var j = 0; j < i; j++){
+            var val = parseFloat(matrix[i][j]);
             var base = {
               source: source,
               target: labels[j],
-              origin: [file.name]
+              origin: [file.name],
+              patristic: val
             };
             session.state.metrics.forEach(function(metric){
               metric = metric.toLowerCase();
               base[metric] = 0;
             });
-            base[defaultMetric] = parseFloat(matrix[i][j]);
+            base[defaultMetric] = val;
             newLinks += app.addLink(base);
             links++;
           }
