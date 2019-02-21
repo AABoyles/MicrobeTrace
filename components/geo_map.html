@@ -304,24 +304,15 @@
         <div class="modal-body">
           <form>
             <div class="form-group row">
-              <div class="col-12">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="map-export-nodes" checked>
-                  <label class="form-check-label" for="map-export-nodes">Nodes</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="map-export-links">
-                  <label class="form-check-label" for="map-export-links">Links</label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
               <div class="col-8">
                 <input type="text" id="map-export-file-name" class="form-control form-control-sm" placeholder="Filename" />
               </div>
               <div class="col-4">
                 <select id="map-export-file-format" class="form-control form-control-sm">
-                  <option selected>geojson</option>
+                  <option selected>png</option>
+                  <option>jpeg</option>
+                  <option>webp</option>
+                  <option>geojson</option>
                   <option>shapefile</option>
                 </select>
               </div>
@@ -821,15 +812,24 @@
     }
 
     $('#map-export').on('click', function(){
-      let geojson = makeGeoJSON();
-      let output;
       let format = $('#map-export-file-format').val();
-      if(format === 'shapefile'){
-        output = new Blob([shpwrite.zip(geojson)], {type: 'application/zip'});
-      } else {
-        output = new Blob([JSON.stringify(geojson)], {type: 'application/json;charset=utf-8'});
+      if(['png', 'jpeg', 'webp'].includes(format)){
+        leafletImage(map, function(err, canvas) {
+          canvas.toBlob(blob => {
+            saveAs(blob, $('#map-export-file-name').val() + '.' + format);
+          }, 'image/' + format);
+        });
+      } else if(format === 'shapefile'){
+        saveAs(
+          new Blob([shpwrite.zip(makeGeoJSON())], {type: 'application/zip'}),
+          $('#map-export-file-name').val() + '.zip'
+        );
+      } else if(format === 'geojson'){
+        saveAs(
+          new Blob([JSON.stringify(makeGeoJSON())], {type: 'application/json;charset=utf-8'}),
+          $('#map-export-file-name').val() + '.' + format
+        );
       }
-      saveAs(output, $('#map-export-file-name').val() + '.' + format);
     });
 
     $(window)
