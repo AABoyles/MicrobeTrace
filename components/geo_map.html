@@ -738,16 +738,16 @@
       resetStack();
     });
 
-    $('#map-node-transparency').on('change', function(e){
+    $('#map-node-transparency').on('input', function(e){
       session.style.widgets['map-node-transparency'] = parseFloat(e.target.value);
       drawNodes();
     });
 
-    $('#map-link-transparency').on('change', function(e){
     $('#map-node-tooltip-variable').on('change', function(e){
       session.style.widgets['map-node-tooltip-variable'] = e.target.value;
     });
 
+    $('#map-link-transparency').on('input', function(e){
       session.style.widgets['map-link-transparency'] = parseFloat(e.target.value);
       drawLinks();
     });
