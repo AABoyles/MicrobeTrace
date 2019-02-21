@@ -138,6 +138,19 @@
                 <input type="number" id="default-distance-threshold" class="custom-select custom-select-sm" min="0" value="0.015" step="0.001"></input>
               </div>
             </div>
+            <div class="form-group row">
+              <div class="col-3" title="Would you like to attempt to triangulate missing values in your distance matrices?">Triangulation</div>
+              <div class="col-9">
+                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <label class="btn btn-light active col" title="Do Not Triangulate missing cells in Distance Matrices.">
+                    <input type="radio" name="shouldTriangulate" id="doNotTriangulate" autocomplete="off" checked> Off
+                  </label>
+                  <label class="btn btn-light col" title="Attempt to Triangulate missing cells in Distance Matrices.">
+                    <input type="radio" name="shouldTriangulate" id="doTriangulate" autocomplete="off"> On
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
           <div id="system-configurations" class="tab-pane fade" role="tabpanel">
             <div class="form-group row" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
@@ -878,10 +891,23 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     if(!oldSession){
       app.computeDM(function(){
         $('.show-for-dm').css('display', 'flex');
-        app.computeNN(session.style.widgets['link-sort-variable'], function(){
-          $('.show-for-nn').css('display', 'flex');
-        });
-        session.state.metrics.forEach(function(m){ app.computeTree(m); });
+        if($('[name="shouldTriangulate"]:checked').attr('id') == 'doTriangulate'){
+          session.state.metrics.forEach(function(m){
+            app.computeTriangulation(m, function(){
+              if(m == session.style.widgets['link-sort-variable']){
+                app.computeNN(session.style.widgets['link-sort-variable'], function(){
+                  $('.show-for-nn').css('display', 'flex');
+                });
+              }
+              app.computeTree(m);
+            });
+          });
+        } else {
+          app.computeNN(session.style.widgets['link-sort-variable'], function(){
+            $('.show-for-nn').css('display', 'flex');
+          });
+          session.state.metrics.forEach(function(m){ app.computeTree(m); });
+        }
       });
     }
     clearTimeout(messageTimeout);

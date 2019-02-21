@@ -427,6 +427,27 @@ app.computeNN = function(metric, callback){
   });
 };
 
+app.computeTriangulation = function(metric, callback){
+  if(!session.data.distance_matrix[metric]){
+    console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
+    return;
+  }
+  var machine = new Worker('scripts/compute-triangulation.js');
+  machine.onmessage = function(response){
+    if(response.data === 'Error'){
+      console.error('Triangulation washed out');
+      return;
+    }
+    var matrix = JSON.parse(app.decoder.decode(new Uint8Array(response.data.matrix)));
+    session.data.distance_matrix[metric] = matrix;
+    console.log('Triangulation Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  machine.postMessage({
+    matrix: session.data.distance_matrix[metric]
+  });
+};
+
 app.capitalize = function(c){
   return c.toUpperCase();
 };
