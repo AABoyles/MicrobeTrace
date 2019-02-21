@@ -480,75 +480,24 @@
       app.geoDM();
     }
 
-    function makeNodeGeoJSON(){
-      let geojson = {
-        type: 'FeatureCollection',
-        features:	[]
-      };
-      let jitter = session.style.widgets['map-node-jitter'] > 0;
-      nodes.forEach(function(d){
-        if(d._lat && d._lon){
-          geojson.features.push({
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: jitter ? [d._lon + d._jlon, d._lat + d._jlat] : [d._lon, d._lat]
-            },
-            properties: d
-          });
-        }
-      });
-      return geojson;
-    }
-
-    function makeLinkGeoJSON(){
-      let features = [];
-      let jitter = session.style.widgets['map-node-jitter'] > 0;
-      app.getVisibleLinks().forEach(function(d){
-        if(!d.visible) return;
-        let source = nodes.find(node => node.id === d.source);
-        let target = nodes.find(node => node.id === d.target);
-        if(source && target){
-          if(source._lat && source._lon && target._lat && target._lon){
-            features.push({
-              type: 'Feature',
-              geometry: {
-                type: 'LineString',
-                coordinates: jitter ? [
-                  [source._lon + source._jlon, source._lat + source._jlat],
-                  [target._lon + target._jlon, target._lat + target._jlat]
-                ] : [
-                  [source._lon, source._lat],
-                  [target._lon, target._lat]
-                ]
-              },
-              properties: d
-            });
-          }
-        }
-      });
-      return {
-        type: 'FeatureCollection',
-        features:	features
-      };
-    }
-
     function drawNodes(){
       layers.nodes.remove();
       if(!session.style.widgets['map-node-show']) return;
-      let style = {
-        fillOpacity: 1 - session.style.widgets['map-node-transparency']
-      };
       let fillcolor = session.style.widgets['node-color'],
-          colorVariable = session.style.widgets['node-color-variable'];
-      layers.nodes = L.geoJSON(makeNodeGeoJSON(), {
-        pointToLayer: function(feature, latlng){
-          return L.circleMarker(latlng, Object.assign({}, style, {
-            color: feature.properties.selected ? session.style.widgets['selected-color'] : '#ffffff',
-            fillColor: colorVariable === 'None' ? fillcolor : temp.style.nodeColorMap(feature.properties[colorVariable])
-          }));
-        }
-      });
+          colorVariable = session.style.widgets['node-color-variable'],
+          selectedColor = session.style.widgets['selected-color'],
+          opacity = 1 - session.style.widgets['map-node-transparency'];
+      let jitter = session.style.widgets['map-node-jitter'] > 0;
+      layers.nodes = L.featureGroup(
+        nodes.filter(d => d._lat && d._lon).map(function(d){
+          return L.circleMarker(L.latLng(d._lat + (jitter ? d._jlat : 0), d._lon + (jitter ? d._jlon : 0)), {
+            color: d.selected ? selectedColor : '#ffffff',
+            fillColor: colorVariable === 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
+            fillOpacity: opacity,
+            data: d
+          });
+        })
+      );
       layers.nodes
         .on('mouseover', showNodeTooltip)
         .on('mouseout', hideTooltip)
@@ -561,20 +510,32 @@
       if(!session.style.widgets['map-link-show']) return;
       let lcv = session.style.widgets['link-color-variable'];
       let opacity = 1 - session.style.widgets['map-link-transparency'];
-      if(lcv === "None"){
-        let style = {
-          color: session.style.widgets['link-color'],
-          opacity: opacity
-        };
-        layers.links = L.geoJSON(makeLinkGeoJSON(), {style: style});
-      } else {
-        layers.links = L.geoJSON(makeLinkGeoJSON(), {style: function(l){
-          return {
-            color: temp.style.linkColorMap(l.properties[lcv]),
-            opacity: opacity
-          };
-        }});
-      }
+      let jitter = session.style.widgets['map-node-jitter'] > 0;
+      let links = app.getVisibleLinks();
+      layers.links = L.featureGroup();
+      links.forEach(function(d){
+        if(!d.visible) return;
+        let source = nodes.find(node => node.id === d.source);
+        let target = nodes.find(node => node.id === d.target);
+        if(source && target){
+          if(source._lat && source._lon && target._lat && target._lon){
+            layers.links.addLayer(L.polyline([jitter ? [
+                [source._lat + source._jlat, source._lon + source._jlon],
+                [target._lat + target._jlat, target._lon + target._jlon]
+              ] : [
+                [source._lat, source._lon],
+                [target._lat, target._lon]
+              ]
+            ], {
+              color: lcv === "None" ?
+                session.style.widgets['link-color'] :
+                temp.style.linkColorMap(d[lcv]),
+              opacity: opacity,
+              data: d
+            }));
+          }
+        }
+      });
       layers.links
         .on('mouseover', showLinkTooltip)
         .on('mouseout', hideTooltip)
