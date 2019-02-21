@@ -543,7 +543,7 @@
     }
 
     function showNodeTooltip(e){
-      let d = e.sourceTarget.feature.properties;
+      let d = e.layer.options.data;
       let v = session.style.widgets['map-node-tooltip-variable'];
       if(v !== 'None' && d[v]){
         d3.select('#tooltip')
@@ -557,7 +557,7 @@
     }
 
     function showLinkTooltip(e){
-      let d = e.sourceTarget.feature.properties;
+      let d = e.layer.options.data;
       let v = session.style.widgets['map-link-tooltip-variable'];
       if(v !== 'None' && d[v]){
         d3.select('#tooltip')
@@ -744,8 +744,16 @@
     });
 
     $('#map-link-transparency').on('change', function(e){
+    $('#map-node-tooltip-variable').on('change', function(e){
+      session.style.widgets['map-node-tooltip-variable'] = e.target.value;
+    });
+
       session.style.widgets['map-link-transparency'] = parseFloat(e.target.value);
       drawLinks();
+    });
+
+    $('#map-link-tooltip-variable').on('change', function(e){
+      session.style.widgets['map-link-tooltip-variable'] = e.target.value;
     });
 
     $('#map-node-jitter').on('input', function(e){
