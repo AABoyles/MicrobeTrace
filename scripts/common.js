@@ -60,7 +60,7 @@ app.defaultWidgets = {
   'map-field-county': 'None',
   'map-field-state': 'None',
   'map-field-country': 'None',
-  'map-link-show': false,
+  'map-link-show': true,
   'map-link-tooltip-variable': 'None',
   'map-link-transparency': 0,
   'map-node-jitter': 0,

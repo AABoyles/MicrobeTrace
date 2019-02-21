@@ -121,11 +121,11 @@
                   <div class="col-4">Links</div>
                   <div class="col-8">
                     <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                      <label class="btn btn-light col">
-                        <input type="radio" name="map-link-options" id="map-link-show" autocomplete="off"> Show
+                      <label class="btn btn-light col active">
+                        <input type="radio" name="map-link-options" id="map-link-show" autocomplete="off" checked> Show
                       </label>
-                      <label class="btn btn-light active col">
-                        <input type="radio" name="map-link-options" id="map-link-hide" autocomplete="off" checked> Hide
+                      <label class="btn btn-light col">
+                        <input type="radio" name="map-link-options" id="map-link-hide" autocomplete="off"> Hide
                       </label>
                     </div>
                   </div>
@@ -393,6 +393,7 @@
         session.style.widgets[name] = e.target.value;
         matchCoordinates(() => {
           drawNodes();
+          drawLinks();
           resetStack();
         });
       });
@@ -664,7 +665,7 @@
     $('#map-link-show').parent().on('click', function(){
       session.style.widgets['map-link-show'] = true;
       drawLinks();
-      if(layers.nodes && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
+      if(layers.nodes.bringToFront && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
     });
     $('#map-link-hide').parent().on('click', function(){
       session.style.widgets['map-link-show'] = false;
@@ -834,7 +835,10 @@
     $(window)
       .on('node-visibility node-selected', function(){
         nodes = app.getVisibleNodes();
-        matchCoordinates(drawNodes);
+        matchCoordinates(() => {
+          drawNodes();
+          drawLinks();
+        });
       })
       .on('node-color-change', drawNodes)
       .on('link-color-change link-threshold-change link_visibility', drawLinks);
@@ -846,7 +850,10 @@
     });
 
     setTimeout(function(){
-      matchCoordinates(drawNodes);
+      matchCoordinates(() => {
+        drawNodes();
+        drawLinks();
+      });
       if(layers.nodes.length) map.flyToBounds(layers.nodes.getBounds());
     }, 40);
 
