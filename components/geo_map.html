@@ -769,6 +769,50 @@
       drawNodes();
     });
 
+    function makeGeoJSON(){
+      let features = [];
+      let jitter = session.style.widgets['map-node-jitter'] > 0;
+      nodes.forEach(function(d){
+        if(d._lat && d._lon){
+          features.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: jitter ? [d._lon + d._jlon, d._lat + d._jlat] : [d._lon, d._lat]
+            },
+            properties: d
+          });
+        }
+      });
+      app.getVisibleLinks().forEach(function(d){
+        if(!d.visible) return;
+        let source = nodes.find(node => node.id === d.source);
+        let target = nodes.find(node => node.id === d.target);
+        if(source && target){
+          if(source._lat && source._lon && target._lat && target._lon){
+            features.push({
+              type: 'Feature',
+              geometry: {
+                type: 'LineString',
+                coordinates: jitter ? [
+                  [source._lon + source._jlon, source._lat + source._jlat],
+                  [target._lon + target._jlon, target._lat + target._jlat]
+                ] : [
+                  [source._lon, source._lat],
+                  [target._lon, target._lat]
+                ]
+              },
+              properties: d
+            });
+          }
+        }
+      });
+      return {
+        type: 'FeatureCollection',
+        features:	features
+      };
+    }
+
     $('#map-export').on('click', function(){
       let geojson = makeGeoJSON();
       let output;
