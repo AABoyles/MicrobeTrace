@@ -347,7 +347,9 @@
       	subdomains: 'abcd',
       	maxZoom: 19
       }),
-      satellite: L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYWFib3lsZXMiLCJhIjoiY2o4b3QxNmtjMDhwNjMzcno4dDd1NnVraSJ9.BkjEa6NM7o7KeTaTHOaIGg')
+      satellite: L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYWFib3lsZXMiLCJhIjoiY2o4b3QxNmtjMDhwNjMzcno4dDd1NnVraSJ9.BkjEa6NM7o7KeTaTHOaIGg'),
+      nodes: {remove: () => null},
+      links: {remove: () => null}
     };
 
     let nodes = app.getVisibleNodes();
@@ -376,8 +378,6 @@
       });
     }
 
-    layers.nodes = {remove: function(){}};
-    layers.links = {remove: function(){}};
     let map = L.map('map', {
       center: [30, 0],
       zoom: 3,
@@ -391,14 +391,15 @@
       let name = 'map-field-'+v, s = $('#'+name);
       s.on('change', function(e){
         session.style.widgets[name] = e.target.value;
-        matchCoordinates();
-        drawNodes();
-        resetStack();
+        matchCoordinates(() => {
+          drawNodes();
+          resetStack();
+        });
       });
       if(session.data.nodeFields.includes(v)) s.val(v);
     });
 
-    function matchCoordinates(){
+    function matchCoordinates(callback){
       if(session.style.widgets['map-field-country'] !== 'None'){
         let val = session.style.widgets['map-field-country'];
         nodes.forEach(n => {
@@ -422,10 +423,14 @@
         // but counties names are non-unique (e.g. there are 31 Washington Counties). Accordingly, if we have a state and a county,
         // We can use county. However, we cannot use county without state.
         if(session.style.widgets['map-field-county'] !== 'None'){
+          if(!app.mapData.counties){
+            getMapData('counties.json', () => matchCoordinates(callback));
+            return;
+          }
           let cval = session.style.widgets['map-field-county'];
           nodes.forEach(n => {
-            let state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
-            let county = app.mapData.counties.features.find(c => c.properties.NAME.includes(n[cval]) && c.properties.USPS == state.properties.usps);
+            let state = app.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
+            let county = app.mapData.counties.features.find(c => n[cval].toLowerCase().includes(c.properties.name) && c.properties.state == state.properties.usps);
             if(county){
               n._lat = county.properties._lat;
               n._lon = county.properties._lon;
@@ -435,7 +440,7 @@
       }
       if(session.style.widgets['map-field-zipcode'] !== 'None'){
         if(!app.mapData.zipcodes){
-          getMapData('zipcodes.csv', matchCoordinates);
+          getMapData('zipcodes.csv', () => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['map-field-zipcode'];
@@ -449,7 +454,7 @@
       }
       if(session.style.widgets['map-field-tract'] !== 'None'){
         if(!app.mapData.tracts){
-          getMapData('tracts.csv', matchCoordinates);
+          getMapData('tracts.csv', () => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['map-field-tract'];
@@ -478,6 +483,7 @@
         });
       }
       app.geoDM();
+      if(callback) callback();
     }
 
     function drawNodes(){
@@ -828,8 +834,7 @@
     $(window)
       .on('node-visibility node-selected', function(){
         nodes = app.getVisibleNodes();
-        matchCoordinates();
-        drawNodes();
+        matchCoordinates(drawNodes);
       })
       .on('node-color-change', drawNodes)
       .on('link-color-change link-threshold-change link_visibility', drawLinks);
@@ -841,8 +846,7 @@
     });
 
     setTimeout(function(){
-      matchCoordinates();
-      drawNodes();
+      matchCoordinates(drawNodes);
       if(layers.nodes.length) map.flyToBounds(layers.nodes.getBounds());
     }, 40);
 
