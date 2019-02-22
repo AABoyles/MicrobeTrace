@@ -243,10 +243,15 @@
                   </div>
                 </div>
                 <div class="form-group row" title="Import GeoJSON Map Data here">
-                  <div class="custom-file">
-                    <input type="file" id="map-file-input" class="custom-file-input" multiple />
-                    <label for="map-file-input" class="custom-file-label">Choose File</label>
+                  <div class="col-12">
+                    <div class="custom-file">
+                      <input type="file" id="map-file-input" class="custom-file-input" multiple />
+                      <label for="map-file-input" class="custom-file-label">Choose File</label>
+                    </div>
                   </div>
+                </div>
+                <div id="map-geojson-layers" class="form-group row" title="GeoJSON Layers">
+
                 </div>
               </div>
             </div>
@@ -617,18 +622,33 @@
     $('#map-file-input').on('change', event => {
       Array.from(event.target.files).forEach(file => {
         const { name } = file;
-        if (name.endsWith(".geojson")) {
-          const layerName = name.toLowerCase().replace(".geojson", "");
+        if(name.endsWith("json")){
+          const layerName = name.split('.').slice(0, -1).join('.').toLowerCase();
           const reader = new FileReader();
           reader.onload = function(event) {
             app.mapData[layerName] = JSON.parse(event.target.result);
             layers[layerName] = L.geoJSON(app.mapData[layerName], {
-              color: '#f00',
+              color: '#000',
               weight: .75,
               fillColor: '#fafaf8',
               fillOpacity: .5
             });
             layers[layerName].addTo(map);
+            let colorCell = $('<div class="col-3"></div>').append(
+              $('<input type="color" class="w-100" />').on('change', function(){
+                layers[layerName].setStyle(f => ({ color: this.value }));
+              })
+            );
+            let nameCell = $(`<div class="col-9">${layerName}</div>`).prepend(
+              $('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', function(){
+                nameCell.remove();
+                colorCell.remove();
+                layers[layerName].remove();
+              })
+            );
+            $('#map-geojson-layers')
+              .append(nameCell)
+              .append(colorCell);
           };
           reader.readAsText(file);
         } else {
@@ -646,6 +666,11 @@
       if(layers.countries && session.style.widgets['map-countries-show']) layers.countries.bringToFront();
       if(layers.states && session.style.widgets['map-states-show']) layers.states.bringToFront();
       if(layers.counties && session.style.widgets['map-counties-show']) layers.counties.bringToFront();
+
+      //User Layers:
+      Object.keys(layers)
+        .filter(l => !['countries', 'states', 'counties', 'satellite', 'basemap', 'links', 'nodes'].includes(l))
+        .forEach(l => layers[l].bringToFront());
 
       //Foreground Layers, in order:
       if(layers.links && session.style.widgets['map-link-show']) layers.links.bringToFront();
