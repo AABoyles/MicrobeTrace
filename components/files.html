@@ -109,10 +109,10 @@
           </div>
           <div id="distance-configurations" class="tab-pane fade" role="tabpanel">
             <div class="form-group row" title="Which genetic distance metrics should MicrobeTrace compute?">
-              <div class="col-4">
+              <div class="col-3">
                 <label for="distance-metrics">Distance Metric(s)</label>
               </div>
-              <div class="col-8">
+              <div class="col-9">
                 <select class="chosen-select custom-select-sm" id="distance-metrics" multiple>
                   <option value="tn93" selected>TN93</option>
                   <option value="snps" selected>SNPs</option>
@@ -120,10 +120,10 @@
               </div>
             </div>
             <div class="form-group row" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
-              <div class="col-4">
+              <div class="col-3">
                 <label for="default-distance-metric">Default Distance Metric</label>
               </div>
-              <div class="col-8">
+              <div class="col-9">
                 <select class="custom-select custom-select-sm" id="default-distance-metric">
                   <option value="tn93" selected>TN93</option>
                   <option value="snps">SNPs</option>
@@ -131,10 +131,10 @@
               </div>
             </div>
             <div class="form-group row" title="What distance threshold should Microbe use to first construct the network?">
-              <div class="col-4">
+              <div class="col-3">
                 <label for="default-distance-threshold">Default Link Threshold</label>
               </div>
-              <div class="col-8">
+              <div class="col-9">
                 <input type="number" id="default-distance-threshold" class="custom-select custom-select-sm" min="0" value="0.015" step="0.001"></input>
               </div>
             </div>
@@ -154,10 +154,10 @@
           </div>
           <div id="system-configurations" class="tab-pane fade" role="tabpanel">
             <div class="form-group row" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
-              <div class="col-2">
+              <div class="col-3">
                 <label for="default-View">Default View</label>
               </div>
-              <div class="col-10">
+              <div class="col-9">
                 <select class="custom-select" id="default-View">
                   <option value="2d_network" selected>2D Network</option>
                   <option value="3d_network">3D Network</option>
@@ -169,10 +169,10 @@
             </div>
             <div class="form-group row" title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
 Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
-              <div class="col-2">
+              <div class="col-3">
                 <label for="stash-auto">Autostash</label>
               </div>
-              <div class="col-10">
+              <div class="col-9">
                 <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                   <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
                     <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> Off
