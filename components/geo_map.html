@@ -422,7 +422,15 @@
           let cval = session.style.widgets['map-field-county'];
           nodes.forEach(n => {
             let state = app.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
-            let county = app.mapData.counties.features.find(c => n[cval].toLowerCase().includes(c.properties.name) && c.properties.state == state.properties.usps);
+            let county = app.mapData.counties.features.find(c => {
+              var small = n[cval].toLowerCase();
+              return c.properties.state == state.properties.usps && (
+                c.properties.name.includes(small) ||
+                small.includes(c.properties.name) ||
+                c.properties.fips === n[cval] ||
+                parseFloat(c.properties.fips) === parseFloat(n[cval])
+              );
+            });
             if(county){
               n._lat = county.properties._lat;
               n._lon = county.properties._lon;
