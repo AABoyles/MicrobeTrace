@@ -243,10 +243,13 @@
   </div>
 
   <div id="tree-context-menu" class="dropdown-menu">
-    <a href="#" id="tree-reroot" class="dropdown-item">Set As Root</a>
-    <a href="#" id="tree-remove" class="dropdown-item">Remove</a>
+    <a href="#" id="tree-rotate"  class="dropdown-item">Rotate</a>
+    <a href="#" id="tree-flip"    class="dropdown-item">Flip</a>
+    <a href="#" id="tree-reroot"  class="dropdown-item">Set As Root</a>
+    <hr />
+    <a href="#" id="tree-remove"  class="dropdown-item">Remove</a>
     <a href="#" id="tree-isolate" class="dropdown-item">Isolate</a>
-    <a href="#" id="tree-excise" class="dropdown-item">Excise</a>
+    <a href="#" id="tree-excise"  class="dropdown-item">Excise</a>
   </div>
 
   <div id="tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
@@ -343,6 +346,14 @@
     let menu = d3.select('#tree-context-menu');
     d3.select('#tree-reroot').on('click', c => {
       tree.setData(d[0].data.reroot());
+      menu.style('z-index', -1).style('display', 'none');
+    });
+    d3.select('#tree-rotate').on('click', c => {
+      tree.setData(d[0].data.rotate().getRoot());
+      menu.style('z-index', -1).style('display', 'none');
+    });
+    d3.select('#tree-flip').on('click', c => {
+      tree.setData(d[0].data.rotate(true).getRoot());
       menu.style('z-index', -1).style('display', 'none');
     });
     d3.select('#tree-remove').on('click', c => {
