@@ -16,6 +16,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="img/icon.ico" />
   <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/bootstrap4-toggle/css/bootstrap4-toggle.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-light-theme.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/chosen-js/chosen.css" />
@@ -322,14 +323,7 @@ performance of this software.</pre>
               <div class="form-group row" title="Should MicrobeTrace display the table of colors?">
                 <div class="col-4">Color Table</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
-                      <input type="radio" name="colorTableShowHide" id="color-table-show" autocomplete="off" checked> Show
-                    </label>
-                    <label class="btn btn-light col">
-                      <input type="radio" name="colorTableShowHide" id="color-table-hide" autocomplete="off"> Hide
-                    </label>
-                  </div>
+                  <input id="color-table" type="checkbox" checked data-toggle="toggle" data-size="sm">
                 </div>
               </div>
               <div class="form-group row" title="Load an existing MicrobeTrace style file">
@@ -478,6 +472,7 @@ performance of this software.</pre>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
   <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
   <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/bootstrap4-toggle/js/bootstrap4-toggle.js"></script>
   <script src="node_modules/alertifyjs/build/alertify.min.js"></script>
   <script src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
   <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
@@ -930,12 +925,12 @@ performance of this software.</pre>
       $(window).trigger('background-color-change');
     });
 
-    $('#color-table-show').parent().on('click', function(){
-      $('#group-key').fadeIn();
-    });
-
-    $('#color-table-hide').parent().on('click', function(){
-      $('#group-key').fadeOut();
+    $('#color-table').on('change', function(){
+      if($(this).is(':checked')){
+        $('#group-key').fadeIn();
+      } else {
+        $('#group-key').fadeOut();
+      }
     });
 
     $('#apply-style').on('change', function(){
@@ -1014,8 +1009,7 @@ performance of this software.</pre>
     });
 
     $('#group-key-hide').on('click', function(){
-      $(this).parent().hide();
-      $('#color-table-hide').parent().click();
+      $('#color-table').prop('checked', false).trigger('click');
     });
 
     $('#group-key-expand').on('click', function(){
