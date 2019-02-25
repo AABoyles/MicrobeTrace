@@ -902,12 +902,20 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               if(m == session.style.widgets['link-sort-variable']){
                 app.computeNN(session.style.widgets['link-sort-variable']);
               }
-              app.computeTree(m);
+              app.computeTree(m, () => {
+                if(m == session.style.widgets['link-sort-variable']){
+                  app.inferDirectionality();
+                }
+              });
             });
           });
         } else {
           app.computeNN(session.style.widgets['link-sort-variable']);
-          session.state.metrics.forEach(function(m){ app.computeTree(m); });
+          session.state.metrics.forEach(function(m){ app.computeTree(m, () => {
+            if(m == session.style.widgets['link-sort-variable']){
+              app.inferDirectionality();
+            }
+          })});
         }
       });
     }
