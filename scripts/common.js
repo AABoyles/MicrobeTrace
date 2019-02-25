@@ -704,7 +704,7 @@ app.applyStyle = function(style){
 };
 
 app.applySession = function(data, startTime){
-  $('#main-submit').prop('disabled', true);
+  $('#launch').prop('disabled', true);
   messages = [];
   session = data;
   if(!startTime) startTime = Date.now();

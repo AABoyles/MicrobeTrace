@@ -13,7 +13,7 @@
         <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Settings</button>
       </div>
       <div class="col text-right">
-        <button type="submit" id="main-submit" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Submit</button>
+        <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Launch</button>
       </div>
     </div>
   </div>
@@ -215,7 +215,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var files = e.target.files;
     $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) processFile(f);
-    $('#main-submit').prop('disabled', false).focus();
+    $('#launch').prop('disabled', false).focus();
   });
 
   $('#file-panel').on('dragover', function(evt){
@@ -229,7 +229,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var n = files.length;
     $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) processFile(f);
-    $('#main-submit').prop('disabled', false).focus();
+    $('#launch').prop('disabled', false).focus();
   });
 
   function processFile(rawfile){
@@ -494,9 +494,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
   var messageTimeout, messages = [];
 
-  $('#main-submit').click(function(e){
+  $('#launch').click(function(e){
     session.meta.startTime = Date.now();
-    $('#main-submit').prop('disabled', true);
+    $('#launch').prop('disabled', true);
     messages = [];
     $('#SettingsTab').attr('data-target', '#global-settings-modal');
     session.data = app.dataSkeleton();
