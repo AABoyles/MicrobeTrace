@@ -6,10 +6,16 @@
 
 <div id="file-footer">
   <div class="container" style="padding: 15px">
-    <input type="file" id="data-files" class="d-none" multiple="true" />
-    <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
-    <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Settings</button>
-    <button type="submit" id="main-submit" class="btn btn-success float-right" title="Please select a Network CSV or FASTA File">Submit</button>
+    <div class="row">
+      <div class="col">
+        <input type="file" id="data-files" class="d-none" multiple="true" />
+        <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
+        <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Settings</button>
+      </div>
+      <div class="col text-right">
+        <button type="submit" id="main-submit" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Submit</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -209,7 +215,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var files = e.target.files;
     $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) processFile(f);
-    $('#main-submit').css('display', 'inline').focus();
+    $('#main-submit').prop('disabled', false).focus();
   });
 
   $('#file-panel').on('dragover', function(evt){
@@ -223,7 +229,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var n = files.length;
     $('#file-prompt').remove();
     for(var i = 0, f; f = files[i]; i++) processFile(f);
-    $('#main-submit').css('display', 'inline').focus();
+    $('#main-submit').prop('disabled', false).focus();
   });
 
   function processFile(rawfile){
@@ -490,7 +496,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
   $('#main-submit').click(function(e){
     session.meta.startTime = Date.now();
-    $('#main-submit').fadeOut();
+    $('#main-submit').prop('disabled', true);
     messages = [];
     $('#SettingsTab').attr('data-target', '#global-settings-modal');
     session.data = app.dataSkeleton();
@@ -890,22 +896,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   app.finishUp = function(oldSession){
     if(!oldSession){
       app.computeDM(function(){
-        $('.show-for-dm').css('display', 'flex');
         if($('[name="shouldTriangulate"]:checked').attr('id') == 'doTriangulate'){
           session.state.metrics.forEach(function(m){
             app.computeTriangulation(m, function(){
               if(m == session.style.widgets['link-sort-variable']){
-                app.computeNN(session.style.widgets['link-sort-variable'], function(){
-                  $('.show-for-nn').css('display', 'flex');
-                });
+                app.computeNN(session.style.widgets['link-sort-variable']);
               }
               app.computeTree(m);
             });
           });
         } else {
-          app.computeNN(session.style.widgets['link-sort-variable'], function(){
-            $('.show-for-nn').css('display', 'flex');
-          });
+          app.computeNN(session.style.widgets['link-sort-variable']);
           session.state.metrics.forEach(function(m){ app.computeTree(m); });
         }
       });

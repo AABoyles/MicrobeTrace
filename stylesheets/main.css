@@ -340,7 +340,7 @@ label[for="apply-style"]{
 button.navbar-toggler{
   font-size:1rem;
 }
-.show-for-seq, .show-for-dm, .show-for-nn{
+.show-for-seq{
   display: none;
 }
 label[for="OpenTab"]{
@@ -401,8 +401,9 @@ td {
   border: 1px solid #ced4da;
   border-radius: .25rem;
 }
-#main-submit {
-  display: none;
+#default-View {
+  width: auto;
+  margin-right: 10px;
 }
 #loading-information {
   font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
