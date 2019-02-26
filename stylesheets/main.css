@@ -364,7 +364,7 @@ label[for="OpenTab"]{
 .file-table-row {
   border: 1px solid rgba(0,0,0,.1);
   border-radius: .25rem;
-  margin: 10px;
+  margin: 10px 0;
   background: #f8f9fa!important;
   padding: 15px;
 }
@@ -400,10 +400,6 @@ td {
 #distance-metrics_chosen .chosen-choices{
   border: 1px solid #ced4da;
   border-radius: .25rem;
-}
-#default-View {
-  width: auto;
-  margin-right: 10px;
 }
 #loading-information {
   font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
@@ -528,6 +524,10 @@ a.btn, button.btn, .btn-group{
 #file-footer{
   background: #f8f9fa;
   border-top: 1px solid rgba(0,0,0,.1);
+  position:absolute;
+  left: 0px;
+  bottom: 0px;
+  right: 15px;
   z-index: 1030;
 }
 #global-settings-modal{

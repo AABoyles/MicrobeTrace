@@ -10,7 +10,7 @@
       <div class="col">
         <input type="file" id="data-files" class="d-none" multiple="true" />
         <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
-        <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Settings</button>
+        <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Alignment Settings</button>
       </div>
       <div class="col text-right">
         <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Launch</button>
@@ -19,177 +19,176 @@
   </div>
 </div>
 
+<div class="view-controls">
+  <button type="button" id="file-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle File Settings">
+    <span class="oi oi-cog"></span>
+  </button>
+</div>
+
+<div id="file-settings-pane" class="left-pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="files-tab" data-toggle="tab" href="#file-settings" role="tab" aria-controls="file-settings" aria-selected="true">Files</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="experimental-tab" data-toggle="tab" href="#experimental-settings" role="tab" aria-controls="experimental-settings" aria-selected="false">Experimental</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div id="file-settings" class="tab-pane fade active show" role="tabpanel">
+      <div class="form-group row">
+        <div class="col-3">
+          <label for="default-distance-metric" class="mr-2" title="Which Genetic Distance Metric should Microbe use to first construct the network?">Distance Metric</label>
+        </div>
+        <div class="col-9">
+          <select id="default-distance-metric" class="form-control form-control-sm mr-5">
+            <option value="tn93" selected>TN93</option>
+            <option value="snps">SNPs</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3">
+          <label for="default-distance-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">Link Threshold</label>
+        </div>
+        <div class="col-9">
+          <input type="number" id="default-distance-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001"></input>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-3">
+          <label for="default-View">View to Launch</label>
+        </div>
+        <div class="col-9">
+          <select id="default-View" class="form-control form-control-sm" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
+            <option value="2d_network" selected>2D Network</option>
+            <option value="3d_network">3D Network</option>
+            <option value="bubbles">Bubbles</option>
+            <option value="table">Table</option>
+            <option value="phylogenetic_tree">Phylogenetic Tree</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="experimental-settings" class="tab-pane fade" role="tabpanel">
+      <div class="form-group row">
+        <div class="col-12">
+          <div class="alert alert-warning alert-dismissible" role="alert">
+            <p>The following settings are experimental! Use at your own risk!</p>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" title="Would you like to attempt to triangulate missing values in your distance matrices?">
+        <div class="col-3">Triangulation</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+            <label class="btn btn-light active col" title="Do Not Triangulate missing cells in Distance Matrices.">
+              <input type="radio" name="shouldTriangulate" id="doNotTriangulate" autocomplete="off" checked> Off
+            </label>
+            <label class="btn btn-light col" title="Attempt to Triangulate missing cells in Distance Matrices.">
+              <input type="radio" name="shouldTriangulate" id="doTriangulate" autocomplete="off"> On
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
+Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
+        <div class="col-3">Autostash</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+            <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
+              <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> Off
+            </label>
+            <label class="btn btn-light col" title="Automatically Stash Sessions">
+              <input type="radio" name="stash-auto" id="stash-auto-yes" autocomplete="off"> On
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="aligner-controls-title" class="modal-title">Load Settings</h5>
+        <h5 id="aligner-controls-title" class="modal-title">Alignment Settings</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <ul class="nav nav-tabs" role="tablist">
-          <li role="presentation" class="nav-item active">
-            <a href="#aligner-configurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Alignment</a>
-          </li>
-          <li role="presentation" class="nav-item">
-            <a href="#distance-configurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Distance</a>
-          </li>
-          <li role="presentation" class="nav-item">
-            <a href="#system-configurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">System</a>
-          </li>
-        </ul>
-        <!-- Tab panes -->
-        <div class="tab-content">
-          <div id="aligner-configurations" class="tab-pane fade show active" role="tabpanel">
-            <div class="form-group row">
-              <div class="col-12">
-                <div class="alert alert-warning alert-dismissible" role="alert">
-                  <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank">an external tool</a> before loading them into MicrobeTrace. <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank">Click here for additional information.</a></p>
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3" title="Should MicrobeTrace align your sequences?">Align</div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col" title="Do Not Align Sequences">
-                    <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
-                  </label>
-                  <label class="btn btn-light col" title="Align Sequences using Smith-Waterman aligner">
-                    <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row alignConfigRow">
-              <div class="col-3" title="Against what sequence should MicrobeTrace align your sequences?">Reference</div>
-              <div class="col-9">
-                <div class="custom-file">
-                  <input type="file" class="custom-file-input" id="refSeqFileLoad" />
-                  <label class="custom-file-label" for="refSeqFileLoad">HIV (HXB2.pol)</label>
-                </div>
-              </div>
-            </div>
-            <div class="form-group row alignConfigRow">
-              <div class="col-3" title="How should MicrobeTrace align your sequences?">Type</div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col">
-                    <input type="radio" name="alignScope" id="globalAlign" autocomplete="off" checked> Global
-                  </label>
-                  <label class="btn btn-light col">
-                    <input type="radio" name="alignScope" id="localAlign" autocomplete="off"> Local
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="row alignConfigRow">
-              <div class="form-group col offset-3" title="How much should MicrobeTrace reward matching bases?">
-                <label for="alignerMatch">Match Reward</label>
-                <input type="number" id="alignerMatch" class="form-control" value="1" min="0"></input>
-              </div>
-              <div class="form-group col" title="How much should MicrobeTrace penalize non-matching bases?">
-                <label for="alignerMismatch">Mismatch Cost</label>
-                <input type="number" id="alignerMismatch" class="form-control" value="1" min="0"></input>
-              </div>
-            </div>
-            <div class="row alignConfigRow">
-              <div class="form-group col offset-3" title="How much should MicrobeTrace Penalize opening a gap?">
-                <label for="alignerGapO">Gap Opening Cost</label>
-                <input type="number" id="alignerGapO" class="form-control" value="1" min="0"></input>
-              </div>
-              <div class="form-group col" title="How much should MicrobeTrace Penalize extending a gap?">
-                <label for="alignerGapE">Gap Extension Cost</label>
-                <input type="number" id="alignerGapE" class="form-control" value="1" min="0"></input>
-              </div>
-            </div>
-            <div class="row alignPreviewRow">
-              <div class="col-3"><button type="button" id="previewAlignment" class="btn btn-light w-100" title="Generate a preview of the alignment, using the current configurations.">Preview</button></div>
-              <div id="alignment-preview" class="col text-center"><canvas></canvas></div>
+        <div class="form-group row">
+          <div class="col-12">
+            <div class="alert alert-warning alert-dismissible" role="alert">
+              <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank">an external tool</a> before loading them into MicrobeTrace. <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank">Click here for additional information.</a></p>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
           </div>
-          <div id="distance-configurations" class="tab-pane fade" role="tabpanel">
-            <div class="form-group row" title="Which genetic distance metrics should MicrobeTrace compute?">
-              <div class="col-3">
-                <label for="distance-metrics">Distance Metric(s)</label>
-              </div>
-              <div class="col-9">
-                <select class="chosen-select custom-select-sm" id="distance-metrics" multiple>
-                  <option value="tn93" selected>TN93</option>
-                  <option value="snps" selected>SNPs</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group row" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
-              <div class="col-3">
-                <label for="default-distance-metric">Default Distance Metric</label>
-              </div>
-              <div class="col-9">
-                <select class="custom-select custom-select-sm" id="default-distance-metric">
-                  <option value="tn93" selected>TN93</option>
-                  <option value="snps">SNPs</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group row" title="What distance threshold should Microbe use to first construct the network?">
-              <div class="col-3">
-                <label for="default-distance-threshold">Default Link Threshold</label>
-              </div>
-              <div class="col-9">
-                <input type="number" id="default-distance-threshold" class="custom-select custom-select-sm" min="0" value="0.015" step="0.001"></input>
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="col-3" title="Would you like to attempt to triangulate missing values in your distance matrices?">Triangulation</div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col" title="Do Not Triangulate missing cells in Distance Matrices.">
-                    <input type="radio" name="shouldTriangulate" id="doNotTriangulate" autocomplete="off" checked> Off
-                  </label>
-                  <label class="btn btn-light col" title="Attempt to Triangulate missing cells in Distance Matrices.">
-                    <input type="radio" name="shouldTriangulate" id="doTriangulate" autocomplete="off"> On
-                  </label>
-                </div>
-              </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-3" title="Should MicrobeTrace align your sequences?">Align</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light active col" title="Do Not Align Sequences">
+                <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
+              </label>
+              <label class="btn btn-light col" title="Align Sequences using Smith-Waterman aligner">
+                <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
+              </label>
             </div>
           </div>
-          <div id="system-configurations" class="tab-pane fade" role="tabpanel">
-            <div class="form-group row" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
-              <div class="col-3">
-                <label for="default-View">Default View</label>
-              </div>
-              <div class="col-9">
-                <select class="custom-select" id="default-View">
-                  <option value="2d_network" selected>2D Network</option>
-                  <option value="3d_network">3D Network</option>
-                  <option value="bubbles">Bubbles</option>
-                  <option value="table">Table</option>
-                  <option value="phylogenetic_tree">Phylogenetic Tree</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group row" title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
-Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
-              <div class="col-3">
-                <label for="stash-auto">Autostash</label>
-              </div>
-              <div class="col-9">
-                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
-                    <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> Off
-                  </label>
-                  <label class="btn btn-light col" title="Automatically Stash Sessions">
-                    <input type="radio" name="stash-auto" id="stash-auto-yes" autocomplete="off"> On
-                  </label>
-                </div>
-              </div>
+        </div>
+        <div class="form-group row alignConfigRow">
+          <div class="col-3" title="Against what sequence should MicrobeTrace align your sequences?">Reference</div>
+          <div class="col-9">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="refSeqFileLoad" />
+              <label class="custom-file-label" for="refSeqFileLoad">HIV (HXB2.pol)</label>
             </div>
           </div>
+        </div>
+        <div class="form-group row alignConfigRow">
+          <div class="col-3" title="How should MicrobeTrace align your sequences?">Type</div>
+          <div class="col-9">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light active col">
+                <input type="radio" name="alignScope" id="globalAlign" autocomplete="off" checked> Global
+              </label>
+              <label class="btn btn-light col">
+                <input type="radio" name="alignScope" id="localAlign" autocomplete="off"> Local
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="row alignConfigRow">
+          <div class="form-group col offset-3" title="How much should MicrobeTrace reward matching bases?">
+            <label for="alignerMatch">Match Reward</label>
+            <input type="number" id="alignerMatch" class="form-control" value="1" min="0"></input>
+          </div>
+          <div class="form-group col" title="How much should MicrobeTrace penalize non-matching bases?">
+            <label for="alignerMismatch">Mismatch Cost</label>
+            <input type="number" id="alignerMismatch" class="form-control" value="1" min="0"></input>
+          </div>
+        </div>
+        <div class="row alignConfigRow">
+          <div class="form-group col offset-3" title="How much should MicrobeTrace Penalize opening a gap?">
+            <label for="alignerGapO">Gap Opening Cost</label>
+            <input type="number" id="alignerGapO" class="form-control" value="1" min="0"></input>
+          </div>
+          <div class="form-group col" title="How much should MicrobeTrace Penalize extending a gap?">
+            <label for="alignerGapE">Gap Extension Cost</label>
+            <input type="number" id="alignerGapE" class="form-control" value="1" min="0"></input>
+          </div>
+        </div>
+        <div class="row alignPreviewRow">
+          <div class="w-100 text-center" id="alignment-preview"></div>
         </div>
       </div>
       <div class="modal-footer clearfix">
@@ -205,6 +204,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('.ie-warning').show();
     throw new Error('MicrobeTrace does not work on Internet Explorer.');
   }
+
+  $('#file-settings-toggle').on('click', function(){
+    let pane = $('#file-settings-pane');
+    if($(this).hasClass('active')){
+      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    } else {
+      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    }
+  });
 
   if(session.files.length > 0){
     $('#file-prompt').remove();
@@ -441,14 +449,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     reader.readAsText(file);
   });
 
-  $('#alignerControlsButton, #previewAlignment').click(readFastas);
-
-  $('#distance-metrics').chosen({width: "100%"}).change(function(e){
-    $('#default-distance-metric, #link-sort-variable').html($(this).val().map(function(v, i){
-      return '<option value="' + v + '"' + (i == 0 ? ' selected': '') + '>' + app.titleize(v) + '</option>';
-    }).join('\n')).trigger('change');
-    session.state.metrics = $(this).val();
-  });
+  $('#alignerControlsButton, #alignment-preview').click(readFastas);
 
   $('#default-distance-metric, #link-sort-variable').change(function(e){
     var lsv = e.target.value;
@@ -526,7 +527,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
 
     var anySequences = false;
-    session.state.metrics = $('#distance-metrics').val();
+    session.state.metrics = ['tn93', 'snps'];
     session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
     var check = session.files.length > 1;
     var defaultMetric = session.style.widgets['link-sort-variable'];
