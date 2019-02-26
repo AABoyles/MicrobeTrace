@@ -707,8 +707,32 @@ a.btn, button.btn, .btn-group{
 }
 
 /* Waterfall View */
-#waterfall-view{
+#waterfall{
   padding: 30px;
+  height: 100%;
+}
+#waterfall h4{
+  padding: 0.75rem 1.25rem;
+  border: 1px solid lightgray;
+  border-radius: .25rem;
+  background: white;
+  margin-bottom: 0;
+}
+.hideIfNotActive{
+  display: none;
+}
+.active .hideIfNotActive{
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ellipsisToFit{
+  text-overflow: ellipsis;
+  display: inline;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 /* Bubbles View */

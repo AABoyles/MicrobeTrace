@@ -482,6 +482,7 @@ app.titleize = function(title){
   if(small === '2d network') return '2D Network';
   if(small === '3d network') return '3D Network';
   if(small === 'geo map') return 'Map';
+  if(small === 'nn') return 'Nearest Neighbor';
   return small.replace(/(?:^|\s|-)\S/g, app.capitalize);
 };
 
