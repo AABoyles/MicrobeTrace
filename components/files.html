@@ -905,7 +905,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               }
               app.computeTree(m, () => {
                 if(m == session.style.widgets['link-sort-variable']){
-                  app.inferDirectionality();
+                  app.computeDirectionality();
                 }
               });
             });
@@ -914,7 +914,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           app.computeNN(session.style.widgets['link-sort-variable']);
           session.state.metrics.forEach(function(m){ app.computeTree(m, () => {
             if(m == session.style.widgets['link-sort-variable']){
-              app.inferDirectionality();
+              app.computeDirectionality();
             }
           })});
         }

@@ -388,25 +388,28 @@ app.computeTree = function(type, callback){
   });
 };
 
-app.inferDirectionality = function(callback){
-  var lsv = session.style.widgets['link-sort-variable'];
-  var tree = temp.trees[lsv];
-  var links = session.data.links;
-  var n = links.length;
-  for(var i = 0; i < n; i++){
-    var link = links[i];
-    link.directed = false;
-    var source = tree.getDescendant(link.source);
-    var target = tree.getDescendant(link.target);
-    if(source instanceof patristic.Branch && target instanceof patristic.Branch){
-      link.directed = true;
-      if(target.sources(source)){
-        var a = link.source;
-        link.source = link.target;
-        link.target = a;
+app.computeDirectionality = function(callback){
+  var computer = new Worker('scripts/compute-directionality.js');
+  computer.onmessage = function(response){
+    var flips = JSON.parse(app.decoder.decode(new Uint8Array(response.data.output)));
+    console.log('Directionality Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    var start = Date.now();
+    var n = flips.length;
+    for(let i = 0; i < n; i++){
+      if(flips[i]){
+        var fliplink = session.data.links[i];
+        var fliptemp = fliplink.source;
+        fliplink.source = fliplink.target;
+        fliplink.target = fliptemp;
       }
     }
-  }
+    console.log('Directionality Integration time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    if(callback) callback();
+  };
+  computer.postMessage({
+    links: session.data.links,
+    tree: temp.trees[session.style.widgets['link-sort-variable']]
+  });
   if(callback) callback();
 };
 
