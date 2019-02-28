@@ -134,27 +134,6 @@
                     </div>
                   </div>
                 </div>
-                <!-- <div class="form-group row" title="Would you like to see labels of named branches (if any exist)?">
-                  <div class="col-3">Labels</div>
-                  <div class="col-9">
-                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-branch-labels" id="tree-branch-label-show" autocomplete="off"> Show
-                      </label>
-                      <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-branch-labels" id="tree-branch-label-hide" autocomplete="off" checked> Hide
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-3">
-                    <label for="tree-branch-label-size">Label Size</label>
-                  </div>
-                  <div class="col-9">
-                    <input id="tree-branch-label-size" type="range" min="1" max="32" value="6" step="1" />
-                  </div>
-                </div> -->
                 <div class="form-group row" title="Would you like to see branch distances written on the Branches?">
                   <div class="col-3">Length Labels</div>
                   <div class="col-9">
@@ -336,6 +315,8 @@
     });
   }
 
+  drawTree();
+
   function contextMenu(d){
     let e = d3.event;
     console.log(e);
@@ -490,28 +471,13 @@
     tree.setBranchNodes(false);
   });
 
-  $('#tree-branch-label-show').parent().on('click', e => {
-    session.style.widgets['tree-branch-label-hide'] = false;
-    tree.setBranchLabels(true);
-  });
-
-  $('#tree-branch-label-hide').parent().on('click', e => {
-    session.style.widgets['tree-branch-label-hide'] = true;
-    tree.setBranchLabels(false);
-  });
-
-  $('#tree-branch-label-size').parent().on('click', e => {
-    session.style.widgets['tree-branch-label-size'] = e.target.value;
-    tree.setBranchLabelSize(e.target.value);
-  });
-
   $('#tree-branch-distance-show').parent().on('click', e => {
     session.style.widgets['tree-branch-distance-show'] = true;
     tree.setBranchDistances(true);
   });
 
   $('#tree-branch-distance-hide').parent().on('click', e => {
-    session.style.widgets['tree-branch-label-show'] = false;
+    session.style.widgets['tree-branch-distance-show'] = false;
     tree.setBranchDistances(false);
   });
 
@@ -520,7 +486,9 @@
     tree.animation = 0;
     let size = parseFloat(e.target.value);
     session.style.widgets['tree-branch-distance-size'] = size;
-    tree.setBranchDistanceSize(size);
+    tree.eachBranchDistance((label, data) => {
+      d3.select(label).style('font-size', size+'px');
+    });
     tree.animation = speed;
   });
 
@@ -549,7 +517,9 @@
     tree.animation = 0;
     let size = parseFloat(e.target.value);
     session.style.widgets['tree-leaf-label-size'] = size;
-    tree.setLeafLabelSize(size);
+    tree.eachLeafLabel((label, data) => {
+      d3.select(label).style('font-size', size+'px');
+    });
     tree.animation = speed;
   });
 
