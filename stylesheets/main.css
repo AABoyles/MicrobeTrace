@@ -352,10 +352,11 @@ label[for="OpenTab"]{
   overflow-y: scroll;
   height: calc(100% - 68px);
   padding: 15px;
+  padding-top: 40px;
   background-color: #ffffff;
 }
 #file-table {
-  height: 100%;
+  height: calc(100% - 50px);
 }
 #file-prompt{
   text-align: center;

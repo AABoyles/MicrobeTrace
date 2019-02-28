@@ -255,7 +255,7 @@ Note that this may cause slow performance on larger networks.">
   <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
 </div>
 
-<div id="attributeModal" class="modal fade selectable" tabindex="-1" role="dialog">
+<div id="network-attribute-modal" class="modal fade selectable" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -653,13 +653,13 @@ Note that this may cause slow performance on larger networks.">
     $('#copySeq').attr('data-clipboard-text', d.seq);
     d3.select('#viewAttributes').on('click', e => {
       hideContextMenu();
-      let target = $('#attributeModal tbody').empty();
+      let target = $('#network-attribute-modal tbody').empty();
       let nd = session.data.nodes.find(nd => nd.id === d.id);
       for(let attribute in nd){
         if(attribute[0] === '_') continue;
         target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
       }
-      $('#attributeModal').modal('show');
+      $('#network-attribute-modal').modal('show');
     }).node().focus();
     if(d.fixed){
       $('#pinNode').text('Unpin Node').on('click', e => {
