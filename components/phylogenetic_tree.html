@@ -313,6 +313,23 @@
       showtooltip: tooltip,
       hidetooltip: hideTooltip
     });
+
+    let ncv = session.style.widgets['node-color-variable'];
+    let color = session.style.widgets['node-color'];
+    if(ncv === 'None'){
+      tree.eachLeafNode(d => d3.select(d).style('fill', color));
+    } else {
+      let ncm = temp.style.nodeColorMap;
+      tree.eachLeafNode(circle => d3.select(circle).style('fill', data => {
+        let id = data.data.id;
+        let match = session.data.nodes.find(node => node.id === id);
+        if(match){
+          return ncm(match[ncv]);
+        } else {
+          return color;
+        }
+      }));
+    }
   }
 
   drawTree();
