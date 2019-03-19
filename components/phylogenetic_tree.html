@@ -587,9 +587,12 @@
   $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
 
   layout.on('stateChanged', function(){
-    let wrapper = $('#tree').parent();
-    $('#tree-export-width' ).val(wrapper.width());
-    $('#tree-export-height').val(wrapper.height());
+    if($('#tree').length){
+      drawTree();
+      let wrapper = $('#tree').parent();
+      $('#tree-export-width' ).val(wrapper.width());
+      $('#tree-export-height').val(wrapper.height());
+    }
   });
 
   setTimeout(drawTree(), 1000);
