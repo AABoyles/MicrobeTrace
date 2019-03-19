@@ -281,7 +281,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     if(isXL){
       var workbook = XLSX.read(file.contents, {type: 'array'});
       var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-      var headers = Object.keys(data[0]).map(filterXSS);
+      var headers = [];
+      data.forEach(row => Object.keys(row).forEach(key => {
+        key = filterXSS(key);
+        if(!headers.includes(key)) headers.push(key);
+      }));
       addTableTile(headers);
     } else {
       Papa.parse(file.contents, {
@@ -596,11 +600,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
           data.map(forEachLink);
           message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-          Object.keys(data[0]).forEach(function(key){
-            key = filterXSS(key);
-            if(!session.data.linkFields.includes(key)){
-              session.data.linkFields.push(key);
-            }
+          data.forEach(row => {
+            Object.keys(row).forEach(function(key){
+              key = filterXSS(key);
+              if(!session.data.linkFields.includes(key)){
+                session.data.linkFields.push(key);
+              }
+            });
           });
           var n = 0;
           var nodeIDs = _.union(
@@ -665,14 +671,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           var workbook = XLSX.read(file.contents, {type: 'array'});
           var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-          Object.keys(data[0]).forEach(function(key){
-            key = filterXSS(key);
-            if(!session.data.nodeFields.includes(key)){
-              session.data.nodeFields.push(key);
-            }
-          });
           data.forEach(function(results){
-            node = JSON.parse(filterXSS(JSON.stringify(results)));
+            var node = JSON.parse(filterXSS(JSON.stringify(results)));
+            Object.keys(node).forEach(function(key){
+              if(!session.data.nodeFields.includes(key)){
+                session.data.nodeFields.push(key);
+              }
+            });
             node.id = '' + node[file.field1];
             if(file.field2 !== 'None') node.seq = node[file.field2];
             node['origin'] = [filename];
