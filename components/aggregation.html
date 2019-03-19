@@ -7,7 +7,7 @@
     </button>
   </div>
 
-  <div id="aggregation-wrapper" class="table-sm"></div>
+  <div id="aggregation" class="table-sm"></div>
 
   <div id="aggregation-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
@@ -98,7 +98,7 @@
 
     let data = [];
 
-    let aggregation = new Tabulator("#aggregation-wrapper", {
+    let aggregation = new Tabulator("#aggregation", {
      	height: "calc(100% - 60px) !important",
      	layout: "fitColumns"
     });
@@ -211,6 +211,8 @@
         saveAs(blob, name + '.' + format);
       }
     });
+
+    $('#aggregation').parent().css('z-index', 1000);
 
     $(window)
       .on('link-threshold-change', updateTable);

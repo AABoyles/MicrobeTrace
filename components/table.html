@@ -22,7 +22,7 @@
     <select id="table-columns" class="chosen-select" multiple title="What columns would you like to see?"></select>
   </div>
 
-  <div id="table-wrapper" class="table-sm"></div>
+  <div id="table" class="table-sm"></div>
 
   <div id="table-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
@@ -90,7 +90,7 @@
     function updateTable(){
       let data_type = $('input[name=nodelink]:checked').data('value');
       let columns = $('#table-columns').val();
-      table = new Tabulator("#table-wrapper", {
+      table = new Tabulator("#table", {
        	height: "calc(100% - 60px) !important",
        	layout: "fitColumns",
        	columns: columns.map(c => ({title: app.titleize(c), field: c})),
@@ -128,7 +128,7 @@
 
     function resetTextsize(){
       let s = $('#table-font-size').val();
-      $('#table-wrapper').css({
+      $('#table').css({
         'font-size': s + 'px',
         'line-height': s/10
       });
@@ -170,6 +170,8 @@
         saveAs(blob, name + '.' + format);
       }
     });
+
+    $('#table').parent().css('z-index', 1000);
 
     $(window)
       .on('link-threshold-change', updateTable)

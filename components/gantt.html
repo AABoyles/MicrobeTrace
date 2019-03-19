@@ -144,7 +144,7 @@
     });
 
   function refresh(){
-    let wrapper = $('#gantt').parent();
+    let wrapper = $('#gantt').parent().css('z-index', 1000);
     if(!wrapper.length) return;
     height = wrapper.height() - margin.top  - margin.bottom - 5;
     width  = wrapper.width()  - margin.left - margin.right  - 5;

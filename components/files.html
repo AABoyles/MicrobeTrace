@@ -112,7 +112,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   </div>
 </div>
 
-<div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true">
+<div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true" data-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -204,6 +204,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('.ie-warning').show();
     throw new Error('MicrobeTrace does not work on Internet Explorer.');
   }
+
+  $('#file-panel').parent().css('z-index', 1000);
 
   $('#file-settings-toggle').on('click', function(){
     let pane = $('#file-settings-pane');

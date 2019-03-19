@@ -65,8 +65,8 @@ a:hover, a:focus {
      z-index: 1000000;
    }
 }
-#export-dm-row{
-  display: none;
+.lm_header.lm_selectable {
+  z-index: 1001 !important;
 }
 .lm_controls .lm_popout {
   display: none;
@@ -672,7 +672,7 @@ a.btn, button.btn, .btn-group{
   background-image: none;
   background-color: #f8f9fa;
 }
-#table-wrapper{
+#table{
   height: calc(100% - 60px) !important;
   width: calc(100% - 20px);
   margin: 10px;

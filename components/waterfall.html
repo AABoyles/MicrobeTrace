@@ -102,7 +102,9 @@
     });
   }
 
-  $('#waterfall').parent().css('overflow-y', 'scroll');
+  $('#waterfall').parent()
+    .css('overflow-y', 'scroll')
+    .css('z-index', 1000);
 
   resetClusters();
 
