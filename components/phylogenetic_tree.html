@@ -181,11 +181,11 @@
                   <div class="col-3">Labels</div>
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-show" autocomplete="off"> Show
-                      </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-hide" autocomplete="off"> Hide
                       </label>
                     </div>
                   </div>
@@ -307,7 +307,9 @@
       mode:
         session.style.widgets['tree-mode-square'] ? 'square' :
         session.style.widgets['tree-mode-smooth'] ? 'smooth' :
-        'straight'
+        'straight',
+      leafLabels: session.style.widgets['tree-leaf-label-show'],
+      branchDistances: session.style.widgets['tree-branch-distance-show']
     }, {
       contextmenu: contextMenu,
       showtooltip: tooltip,
