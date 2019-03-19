@@ -652,6 +652,10 @@ a.btn, button.btn, .btn-group{
   display: none;
 }
 
+.tidytree-link path{
+  stroke: rgba(0,0,0,0.6);
+}
+
 /* Table */
 #table-type-panel{
   width: calc(100% - 100px);
