@@ -974,6 +974,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     app.updateStatistics();
     $('#network-statistics-wrapper').fadeIn();
     session.meta.loadTime = Date.now() - session.meta.startTime;
+    console.log('Total load time:', (session.meta.loadTime/1000).toLocaleString() + 's');
     if(oldSession){
       layout.root.contentItems[0].remove();
       setTimeout(function(){app.loadLayout(session.layout)}, 80);
