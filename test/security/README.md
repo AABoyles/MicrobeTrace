@@ -1,4 +1,4 @@
-# Adversarial Tests
+# Security Tests
 
 This directory contains a single script (pwn.js) which alerts the user that
 their box has been pwned.
