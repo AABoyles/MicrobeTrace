@@ -7,7 +7,7 @@
     </button>
   </div>
 
-  <div id="timeline-wrapper"></div>
+  <div id="timeline"></div>
 
   <div id="timeline-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
@@ -20,6 +20,19 @@
         <div class="form-group row" title="Which variable in your data contains the date?">
           <div class="col-4"><label for="timeline-date-field">Date Field</label></div>
           <div class="col-8"><select id="timeline-date-field" class="custom-select custom-select-sm w-100 nodeVariables"></select></div>
+        </div>
+        <div class="form-group row" title="Should the Epi Curve be cumulative, or not?">
+          <div class="col-4">Epi Curve</div>
+          <div class="col-8">
+            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+              <label class="btn btn-light btn-sm col active">
+                <input type="radio" name="timeline-cumulation" id="timeline-noncumulative" autocomplete="off" checked> Noncumulative
+              </label>
+              <label class="btn btn-light btn-sm col">
+                <input type="radio" name="timeline-cumulation" id="timeline-cumulative" autocomplete="off"> Cumulative
+              </label>
+            </div>
+          </div>
         </div>
         <div class="form-group row" title="Would you like to play a fixed time window forward, or see all the past up to a given point?">
           <div class="col-4">Timeline Mode</div>
@@ -44,11 +57,11 @@
 
   <script>
 (function(){
-  let width, height, middle, svg, timeDomainStart, timeDomainEnd, x, brush, brushG, timer, isPlaying = false,
-      margin = {top: 50, left: 80, right: 20, bottom: 30};
+  let width, height, middle, svg, timeDomainStart, timeDomainEnd, x, y, histogram, brush, brushG, timer, isPlaying = false,
+      margin = {top: 50, left: 20, right: 20, bottom: 30};
 
   function refresh(){
-    let wrapper = $('#timeline-wrapper').empty().parent();
+    let wrapper = $('#timeline').empty().parent();
     let tickFormat = d3.timeFormat('%Y-%m-%d');
     width  = wrapper.width() - margin.left - margin.right,
     height = wrapper.height() - margin.top - margin.bottom;
@@ -73,20 +86,42 @@
       .domain([timeDomainStart, timeDomainEnd])
       .rangeRound([0, width]);
 
-    svg = d3.select('#timeline-wrapper').append('svg')
+    y = d3.scaleLinear()
+        .range([height, 0]);
+
+    histogram = d3.histogram()
+        .value(d => d[field])
+        .domain(x.domain())
+        .thresholds(d3.thresholdFreedmanDiaconis);
+
+    svg = d3.select('#timeline').append('svg')
       .attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    svg.append('g')
-      .attr('class', 'axis axis--grid')
-      .attr('transform', 'translate(0,' + height + ')')
-      .call(d3.axisBottom(x)
-        .ticks(d3.timeYear)
-        .tickSize(-height)
-        .tickFormat(function(){ return null; })
-      );
+    let epiCurve = svg.append('g')
+      .classed('timeline-epi-curve', true)
+      .attr('transform', 'translate(' + margin.left + ',0)');
+
+    let bins = histogram(vnodes);
+
+    if(!session.style.widgets['timeline-noncumulative']){
+      let sum = 0;
+      bins.forEach(bin => {
+        sum += bin.length;
+        bin.length = sum;
+      });
+    }
+
+    // Scale the range of the data in the y domain
+    y.domain([0, d3.max(bins, d => d.length)]);
+
+    // append the bar rectangles to the svg element
+    epiCurve.selectAll("rect").data(bins)
+      .enter().append("rect")
+        .attr("transform", d => `translate(${x(d.x0)},${y(d.length)})`)
+        .attr("width", d => x(d.x1) - x(d.x0))
+        .attr("height", d => height - y(d.length))
+        .attr("fill", session.style.widgets['node-color']);
 
     svg.append('g')
       .attr('class', 'axis axis--x')
@@ -99,21 +134,6 @@
       .attr('text-anchor', null)
       .selectAll('text')
       .attr('x', 6);
-
-    svg.append('g')
-      .attr('class', 'nodes');
-
-    svg.select('.nodes')
-      .selectAll('circle')
-      .data(vnodes)
-      .enter().append('circle')
-        .attr('cx', d => x(d[field]))
-        .attr('cy', middle)
-        .attr('r', 10)
-        .attr('stroke-width', 2)
-        .attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff')
-        .attr('fill', d => temp.style.nodeColorMap(d[session.style.widgets['node-color-variable']]))
-      .exit().remove();
 
     brush = d3.brushX().extent([[0, 0], [width, height]]).on('end', function(){
       let selection = d3.brushSelection(brushG.node());
@@ -178,17 +198,18 @@
     setTimer();
   });
 
-  $('#timeline-speed').on('change', setTimer);
+  $('[name="timeline-cumulation"]').on('change', function(){
+    session.style.widgets['timeline-noncumulative'] = $('#timeline-noncumulative').is(':checked');
+    refresh();
+  });
 
   $(window)
-    .on('node-selected', function(){
-      svg.select('.nodes').selectAll('circle')
-        .attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff')
-    })
     .on('node-color-change', function(){
-      svg.select('.nodes').selectAll('circle')
-        .attr('fill', d => temp.style.nodeColorMap(d[session.style.widgets['node-color-variable']]))
+      svg.select('.timeline-epi-curve').selectAll('rect')
+        .attr('fill', session.style.widgets['node-color'])
     });
+
+  $('#timeline-speed').on('change', setTimer);
 
   layout.on('stateChanged', refresh);
 })();

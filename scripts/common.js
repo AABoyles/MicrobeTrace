@@ -88,6 +88,7 @@ app.defaultWidgets = {
   'scatterplot-showNodes': false,
   'selected-color': '#ff8300',
   'selected-color-contrast': '#000000',
+  'timeline-noncumulative': true,
   'tree-branch-distance-show': true,
   'tree-leaf-label-show': true,
   'tree-layout-vertical': false,
