@@ -38,7 +38,7 @@
     "open-iconic": "^1.1.1",
     "papaparse": "^4.6.3",
     "patristic": "^0.3.5",
-    "plotly.js": "^1.45.0",
+    "plotly.js-dist": "^1.45.0",
     "popper.js": "^1.14.7",
     "screenfull": "^3.3.2",
     "serve-static": "^1.13.2",

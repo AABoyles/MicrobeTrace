@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# 2019-02-04
+# 2019-03-25
 
 CACHE:
 index.html
@@ -25,16 +25,19 @@ scripts/align-sw.js
 scripts/common.js
 scripts/compute-consensus-distances.js
 scripts/compute-consensus.js
+scripts/compute-directionality.js
 scripts/compute-dm.js
 scripts/compute-links.js
 scripts/compute-nn.js
 scripts/compute-patristic-matrix.js
 scripts/compute-tree.js
+scripts/compute-triangulation.js
 scripts/polyfills.js
 node_modules/underscore/underscore-min.js
 node_modules/jquery/dist/jquery.min.js
 node_modules/popper.js/dist/umd/popper.min.js
 node_modules/bootstrap/dist/js/bootstrap.min.js
+node_modules/bootstrap4-toggle/js/bootstrap4-toggle.js
 node_modules/alertifyjs/build/alertify.min.js
 node_modules/golden-layout/dist/goldenlayout.min.js
 node_modules/chosen-js/chosen.jquery.min.js
@@ -51,23 +54,26 @@ node_modules/d3/dist/d3.min.js
 node_modules/d3-force-attract/dist/d3-force-attract.min.js
 node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js
 node_modules/html5sortable/dist/html5sortable.min.js
-node_modules/plotly.js/dist/plotly.min.js
+node_modules/plotly.js-dist/plotly.js
 node_modules/tabulator-tables/dist/js/tabulator.min.js
-node_modules/patristic/dist/patristic.min.js
 node_modules/tidytree/dist/tidytree.min.js
 node_modules/3d-force-graph/dist/3d-force-graph.min.js
 node_modules/leaflet/dist/leaflet.js
+node_modules/leaflet-image/leaflet-image.js
 node_modules/alignment-viewer/dist/alignment-viewer.min.js
 node_modules/marked/marked.min.js
 node_modules/localforage/dist/localforage.min.js
 node_modules/bioseq/dist/bioseq.min.js
+node_modules/patristic/dist/patristic.min.js
 node_modules/tn93/dist/tn93.min.js
 node_modules/patristic/dist/patristic.min.js
 node_modules/patristic/dist/patristic.min.js
 vendor/FileSaver.min.js
+vendor/saveSvgAsPng.js
 vendor/shpwrite.js
 stylesheets/main.css
 node_modules/bootstrap/dist/css/bootstrap.min.css
+node_modules/bootstrap4-toggle/css/bootstrap4-toggle.css
 node_modules/golden-layout/src/css/goldenlayout-base.css
 node_modules/golden-layout/src/css/goldenlayout-light-theme.css
 node_modules/chosen-js/chosen.css
@@ -91,6 +97,7 @@ img/image32.png
 img/image64.ico
 img/image64.png
 img/spinner.gif
+img/transimage128.png
 data/counties.json
 data/countries.json
 data/states.json
