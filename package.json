@@ -41,6 +41,7 @@
     "plotly.js": "^1.45.0",
     "popper.js": "^1.14.7",
     "screenfull": "^3.3.2",
+    "serve-static": "^1.13.2",
     "tabulator-tables": "^4.2.1",
     "tidytree": "^0.2.11",
     "tn93": "^0.2.2",
