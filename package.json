@@ -6,8 +6,8 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/CDCgov/MicrobeTrace.git",
   "scripts": {
-    "cache": "./appcache.sh && ./sw.sh",
     "demo": "node_modules/http-server/bin/http-server",
+    "cache": "./sw.sh",
     "start": "node index.js"
   },
   "dependencies": {
