@@ -2,10 +2,9 @@
 
 const express = require('express');
 const compression = require('compression');
-const serveStatic = require('serve-static');
 
 express()
-  .use(serveStatic(__dirname, {
+  .use(express.static(__dirname, {
     setHeaders: res => res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; img-src * data:; script-src 'self' googletagmanager.com 'unsafe-inline' 'unsafe-eval'")
   }))
   .use(compression())
