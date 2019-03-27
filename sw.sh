@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 ls components/ | sed -e 's/^/components\//' | sed "s/.*/        '&',/" >> temp
 
@@ -20,7 +20,7 @@ ls help/*.md | sed "s/.*/        '&',/" >> temp
 
 cat cache.extra | sed "s/.*/        '&',/" >> temp
 
-echo "var CACHE = 'MicrobeTraceD`date +%Y-%m-%d`';
+echo "var CACHE = 'MicrobeTraceD`date +%Y-%m-%d`R`shuf -i 1000-9999 -n 1`';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -35,44 +35,13 @@ echo """      ]);
   );
 });
 
-self.addEventListener('fetch', function(event) {
-  if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') return;
-  event.respondWith(fromCache(event.request));
-  event.waitUntil(update(event.request));
-});
-
-// Open the cache where the assets were stored and search for the requested
-// resource. Notice that in case of no matching, the promise still resolves
-// but it does with `undefined` as value.
-function fromCache(request){
-  return caches.open(CACHE).then(function(cache){
-    return cache.match(request).then(function(matching){
-      return matching || Promise.reject('No match for ' + request.url);
+self.addEventListener('fetch', function(evt){
+  evt.respondWith(fetch(evt.request).catch(function(){
+    return caches.open(CACHE).then(function(cache){
+      return cache.match(evt.request).then(function(matching){
+        return matching || Promise.reject('no-match');
+      });
     });
-  });
-}
-
-// Update consists in opening the cache, performing a network request and
-// storing the new response data.
-function update(request){
-  return caches.open(CACHE).then(function(cache){
-    return fetch(request).then(function(response){
-      return cache.put(request, response);
-    }).catch(function(error){
-      //console.error(error + ' ' + request.url);
-    });
-  });
-}
-
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(keyList) {
-      return Promise.all(keyList.map(function(key) {
-        if(key !== CACHE) {
-          return caches.delete(key);
-        }
-      }));
-    })
-  );
+  }));
 });
 """ >> sw.js

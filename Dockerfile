@@ -1,19 +1,7 @@
-FROM node:8
-
-# Copy dependency info
-COPY package*.json /usr/src/app/
-
-# Change working directory
+FROM node:11.12.0
 WORKDIR /usr/src/app/
-
-# Install dependencies
+COPY package*.json ./
 RUN npm install
-
-# Copy source code
-COPY . /usr/src/app/
-
-# Expose API port to the outside
+COPY . .
 EXPOSE 5000
-
-# Launch application
 CMD ["npm","start"]

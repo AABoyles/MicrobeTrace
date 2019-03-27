@@ -4,7 +4,7 @@
     <button type="button" id="toggle-sequences-settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#sequences-export_modal">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#sequences-export-modal">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
@@ -17,23 +17,16 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="sequencesConfigurations" role="tabpanel" aria-labelledby="sequences-tab">
-        <div class="form-group row">
-          <div class="col-3">
-            <label for="avwidth">Width</label>
-          </div>
-          <div class="col-9">
-            <input type="number" id="avwidth" class="form-control custom-select-sm" value="9"></input>
-          </div>
+        <div class="form-group row" title="How wide should each cell in the sequences viewer be?">
+          <div class="col-3"><label for="avwidth">Width</label></div>
+          <div class="col-9"><input type="number" id="avwidth" class="form-control custom-select-sm" value="9"></input></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3">
-            <label for="avheight">Height</label>
-          </div>
-          <div class="col-9">
-            <input type="number" id="avheight" class="form-control custom-select-sm" value="12"></input>
-          </div>
+        <div class="form-group row" title="How tall should each cell in the sequences viewer be?">
+          <div class="col-3"><label for="avheight">Height</label></div>
+          <div class="col-9"><input type="number" id="avheight" class="form-control custom-select-sm" value="12"></input></div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" title="Should the sequences viewer include the nucleotide character in each cell?
+For large sets of sequences, this can take a long time.">
           <div class="col-3">Characters</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -50,7 +43,7 @@
     </div>
   </div>
 
-  <div id="sequences-export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="sequences-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">

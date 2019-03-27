@@ -1,10 +1,10 @@
-  <svg id="flow"></svg>
+  <div id="flow"></div>
 
   <div class="view-controls">
     <button type="button" id="toggle-flow-settings" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export-flow-modal" title="Export Network">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#flow-export-modal" title="Export Network">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
@@ -17,23 +17,31 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="flow-configurations" role="tabpanel" aria-labelledby="flow-tab">
-        <div class="form-group row">
-          <div class="col-3">Left Side Variable</div>
+        <div class="form-group row" title="Should the Flow Diagram show Node or Link Variables?">
+          <div class="col-3">Dataset</div>
           <div class="col-9">
-            <select id="flow-source-variable" class="custom-select custom-select-sm"></select>
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light col active">
+                <input type="radio" name="flow-show" id="flow-showNodes" autocomplete="off" checked> Nodes
+              </label>
+              <label class="btn btn-light col">
+                <input type="radio" name="flow-show" id="flow-showLinks" autocomplete="off"> Links
+              </label>
+            </div>
           </div>
         </div>
-        <div class="form-group row">
-          <div class="col-3">Right Side Variable</div>
+        <div class="form-group row" title="Which variables, in what order, would you like to see in the Flow Diagram?">
+          <div class="col-3">Variables</div>
           <div class="col-9">
-            <select id="flow-target-variable" class="custom-select custom-select-sm"></select>
+            <ul id="flow-variables"></ul>
+            <button type="button" class="btn btn-primary btn-sm w-100" id="flow-add-variable">Add Variable</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="export-flow-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="flow-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -45,13 +53,52 @@
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-9">
-              <input type="text" id="export-flow-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              <input type="text" id="flow-export-filename" class="form-control form-control-sm" placeholder="Filename" />
             </div>
             <div class="col-3">
-              <select id="export-flow-file-type" class="form-control form-control-sm">
+              <select id="flow-export-filetype" class="form-control form-control-sm">
                 <option selected>png</option>
+                <option>jpeg</option>
+                <option>webp</option>
                 <option>svg</option>
               </select>
+            </div>
+          </div>
+          <div class="form-group row mb-0">
+            <div class="col-3 offset-9">
+              <button id="flow-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#flow-export-advanced" aria-expanded="false" aria-controls="flow-export-advanced">Advanced</button>
+            </div>
+          </div>
+          <div class="collapse" id="flow-export-advanced">
+            <div class="card card-body">
+              <div class="form-group row">
+                <div class="col-3">
+                  <label for="flow-export-scale">Scale</label>
+                </div>
+                <div class="col-9">
+                  <input type="number" id="flow-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Resolution</div>
+                <div id="flow-export-dimensions" class="col-9 text-right"></div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="flow-export-quality">Quality</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="flow-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="flow-export-opacity">Watermark Opacity</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="flow-export-opacity" min=".4" max="1.0" value="0.4" step="0.01"></input>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -66,101 +113,96 @@
   <script>
   (function(){
 
+    let plot;
+
     function drawFlowDiagram(){
-      if(!$('svg#flow').length) return;
-      let width = $('svg#flow').parent().width() - 40,
-          height = $('svg#flow').parent().height() - 60;
+      if(!$('#flow').length) return;
+      if(plot) Plotly.purge('flow');
+      let width = $('#flow').parent().width() - 40,
+          height = $('#flow').parent().height() - 60;
 
-      let nodes = app.getVisibleNodes(true);
+      let data;
+      if(session.style.widgets['flow-showNodes']){
+        data = app.getVisibleNodes();
+      } else {
+        data = app.getVisibleLinks();
+      }
 
-      svg = d3.select('svg#flow').html(null)
-          .attr('width', width)
-          .attr('height', height);
+      let order = [];
+      $($('#flow-variables').find('select')).each(function(i){ order.push($(this).val()); });
+      let variables = order.length;
 
-      let format = d3.format(',.0f'),
-          color = d3.scaleOrdinal(d3.schemeCategory10);
+      let values = [], source_values = [], target_values = [], all_values = [], labels = [];
+      for(let i = 0; i < variables; i++){
+        variable = order[i];
+        let n = data.length;
+        for(let j = 0; j < n; j++){
+          let value = data[j][variable]+'';
+          if(!values.includes(value)) values.push(value);
+        }
+        n = values.length;
+        for(let j = 0; j < n; j++){
+          labels.push(app.titleize(variable + ' ' + values[j]));
+          let value = variable + '-' + values[j] + '-' + i;
+          if(i < variables-1) source_values.push(value);
+          if(i > 0) target_values.push(value);
+          all_values.push(value);
+        }
+      }
 
-      let sankey = d3.sankey()
-          .nodeWidth(15)
-          .nodePadding(10)
-          .extent([[1, 1], [width - 1, height - 6]]);
-
-      let link = svg.append('g')
-          .attr('class', 'links')
-          .attr('fill', 'none')
-          .attr('stroke', '#000000')
-          .attr('stroke-opacity', 0.2)
-        .selectAll('path');
-
-      let node = svg.append('g')
-          .attr('class', 'nodes')
-          .attr('font-family', 'sans-serif')
-          .attr('font-size', 10)
-        .selectAll('g');
-
-      let onlyUnique = (value, index, self) => self.indexOf(value) === index;
-
-      wrapper = {links: []};
-      source_variable = $( '#flow-source-variable').val();
-      source_values  = nodes.map(n => n[source_variable]+'').filter(onlyUnique);
-      target_variable = $('#flow-target-variable').val();
-      target_values = nodes.map(n => n[target_variable]+'').filter(onlyUnique);
-      wrapper['nodes'] = source_values.concat(target_values).map(n => ({'name': n}));
-
-      target_list = {};
+      let link_matrix = {}, target_list = {};
       target_values.forEach(target => target_list[target] = 0);
-
-      link_matrix = {};
       source_values.forEach(source => link_matrix[source] = Object.assign({}, target_list));
 
-      nodes.forEach(n => link_matrix[n[source_variable]][n[target_variable]]++);
+      let m = order.length-1, n = data.length;
+      for(let i = 0; i < m; i++){
+        let source_variable = order[i];
+        let target_variable = order[i+1];
+        for(let j = 0; j < n; j++){
+          let point = data[j];
+          link_matrix[source_variable + '-' + point[source_variable] + '-' + i][target_variable + '-' + point[target_variable] + '-' + (i+1)]++;
+        }
+      }
 
-      source_values.forEach((source, i) => {
-        target_values.forEach((target, j) => {
-          if(link_matrix[source][target] > 0){
-            wrapper.links.push({
-              'source': i,
-              'target': source_values.length + j,
-              'value':  link_matrix[source][target]
-            });
+      let source = [], target = [], value = [];
+
+      m = source_values.length, n = target_values.length;
+      for(let i = 0; i < m; i++){
+        let s = source_values[i];
+        let index = all_values.indexOf(s);
+        for(let j = 0; j < n; j++){
+          let t = target_values[j];
+          if(link_matrix[s][t] > 0){
+            source.push(index);
+            target.push(all_values.indexOf(t));
+            value.push(link_matrix[s][t]);
           }
-        });
+        }
+      }
+
+      Plotly.react('flow', [{
+        type: 'sankey',
+        showLegend: false,
+        orientation: 'h',
+        arrangement: 'snap',
+        node: {
+          pad: 15,
+          thickness: 30,
+          line: {
+            color: 'black',
+            width: 0.5
+          },
+          label: labels.map(app.titleize),
+          color: session.style.widgets['flow-showNodes'] ? session.style.widgets['node-color'] : session.style.widgets['link-color']
+        },
+        link: { source, target, value }
+      }], {
+        width: width,
+        height: height
+      }, {
+        displaylogo: false,
+        displayModeBar: false
       });
-
-      sankey(wrapper);
-
-      link = link
-        .data(wrapper.links)
-        .enter().append('path')
-          .attr('d', d3.sankeyLinkHorizontal())
-          .attr('stroke-width', d => Math.max(1, d.width));
-
-      link.append('title')
-          .text(d => d.source.name + ' → ' + d.target.name + '\n' + format(d.value));
-
-      node = node
-        .data(wrapper.nodes)
-        .enter().append('g');
-
-      node.append('text')
-          .attr('x', d => d.x0 - 6)
-          .attr('y', d => (d.y1 + d.y0) / 2)
-          .attr('dy', '0.35em')
-          .attr('text-anchor', 'end')
-          .text(d => d.name)
-        .filter(d => d.x0 < width / 2)
-          .attr('x', d => d.x1 + 6)
-          .attr('text-anchor', 'start');
-
-      node.append('rect')
-          .attr('x', d => d.x0)
-          .attr('y', d => d.y0)
-          .attr('height', d => Math.abs(d.y1 - d.y0))
-          .attr('width', d => d.x1 - d.x0)
-          .attr('fill', d => color((d.name+'').replace(/ .*/, '')))
-          .attr('stroke', '#000000');
-
-      node.append('title').text(d => d.name + '\n' + format(d.value));
 
       if(session.style.widgets['background-color']) $('#flow').parent().css('background-color', session.style.widgets['background-color']);
     }
@@ -174,47 +216,86 @@
       }
     });
 
-    $('#flow-source-variable')
-      .html(session.data.nodeFields.map((field, i) => `<option${field==session.style.widgets['flow-source-variable']?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
-      .change(drawFlowDiagram);
+    $('#flow-showNodes').parent().on('click', function(){
+      session.style.widgets['flow-showNodes'] = true;
+      $('.flow-selector').html(session.data.nodeFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join(''));
+    });
 
-    $('#flow-target-variable')
-      .html(session.data.nodeFields.map((field, i) => `<option${field==session.style.widgets['flow-target-variable']?' selected ':''} value="${field}">${app.titleize(field)}</option>`))
-      .change(drawFlowDiagram);
+    $('#flow-showLinks').parent().on('click', function(){
+      session.style.widgets['flow-showNodes'] = false;
+      $('.flow-selector').html(session.data.linkFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join(''));
+    });
 
-    $('#flow-export').click(function(){
-      let network = $('#flow')[0];
-      let content = app.unparseSVG(network);
-      let filetype = $('#export-flow-file-type').val();
-      if(filetype === 'svg'){
-        let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
-        saveAs(blob, $('#export-flow-file-name').val() + '.' + filetype);
+    $('#flow-add-variable').on('click', function(){
+      let fields = session.style.widgets['flow-showNodes'] ? session.data.nodeFields : session.data.linkFields;
+      $('#flow-variables').append(`<li class='flow-items'>
+        <span class="oi oi-x flow-remove"></span>
+        <select class='custom-select custom-select-sm flow-selector'>
+          ${fields.map(v => `<option value="${v}" ${v === 'cluster' ? 'selected' : ''}>${app.titleize(v)}</option>`).join('\n')}
+        </select>
+        <span class="oi oi-elevator"></span>
+      </li>`);
+
+      sortable('#flow-variables')[0].addEventListener('sortupdate', drawFlowDiagram);
+
+      $('.flow-selector').on('change', drawFlowDiagram);
+
+      $('.flow-remove').on('click', function(){
+        $(this).parent().slideUp().remove();
+        drawFlowDiagram();
+      });
+    }).trigger('click').trigger('click');
+
+    $('#flow-export-filetype').on('change', function(e){
+      if(e.target.value === 'svg'){
+        $('#flow-export-advanced-button').slideUp();
       } else {
-        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, function(blob){
-          saveAs(blob, $('#export-flow-file-name').val() + '.' + filetype);
-        });
+        $('#flow-export-advanced-button').slideDown();
+      }
+    });
+
+    $('#flow-export-scale').on('input', function(e){
+      let scale = parseFloat(e.target.value);
+      let wrapper = $('#flow').parent();
+      $('#flow-export-dimensions').text(
+        Math.round(wrapper.width() *scale)+'x'+
+        Math.round(wrapper.height()*scale)+'px'
+      );
+    }).trigger('input');
+
+    $('#flow-export').on('click', function(){
+      let flow = $('#flow .main-svg').get(0);
+      let watermark = d3.select(flow).append('image')
+        .attr('xlink:href', app.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#flow-export-opacity').val());
+      let filename = $('#flow-export-filename').val(),
+          filetype = $('#flow-export-filetype').val();
+      if(filetype === 'svg'){
+        let content = app.unparseSVG(flow);
+        let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        saveAs(blob, filename + '.' + filetype);
+        watermark.remove();
+      } else {
+        saveSvgAsPng(flow, filename + '.' + filetype, {
+          scale: parseFloat($('#flow-export-scale').val()),
+          backgroundColor: session.style.widgets['background-color'],
+          encoderType: 'image/' + filetype,
+          encoderOptions: parseFloat($('#flow-export-quality').val())
+        }).then(() => watermark.remove());
       }
     });
 
     layout.on('stateChanged', drawFlowDiagram);
 
     $(window)
-      .on('node-selected', function(){
-        if($('#flow-source-variable').val() === 'selected' || $('#flow-target-variable').val() === 'selected'){
-          drawFlowDiagram();
-        }
-      })
-      .on('link-threshold-change', function(){
-        let affected = ['degree', 'cluster'];
-        if(affected.includes($('#flow-source-variable').val()) || affected.includes($('#flow-target-variable').val())){
-          drawFlowDiagram();
-        }
-      })
+      .on('node-selected', drawFlowDiagram)
+      .on('link-threshold-change', drawFlowDiagram)
       .on('node-visibility', drawFlowDiagram)
       .on('background-color-change', function(){
         $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);
       });
-
-    drawFlowDiagram();
   })();
   </script>

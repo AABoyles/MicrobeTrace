@@ -5,7 +5,7 @@ function snps(s1, s2){
   var i = Math.min(s1.length, s2.length);
   var sum = 0;
   while(--i >= 0){
-    if(s1[i] !== s2[i] & s1[i] !== 17 & s2[i] !== 17) sum++;
+    if(s1[i] !== s2[i] & s1[i] !== '-' & s2[i] !== '-') sum++;
   }
   return sum;
 }
@@ -23,8 +23,8 @@ onmessage = function(e){
         target: target.id,
         origin: ['Genetic Distance']
       };
-      if(metrics.includes('tn93')) link.tn93 = tn93.onInts(source['_seqInt'], target['_seqInt'], 'AVERAGE');
-      if(metrics.includes('snps')) link.snps = snps(source['_seqInt'], target['_seqInt']);
+      if(metrics.includes('tn93')) link.tn93 = tn93(source['seq'], target['seq'], 'AVERAGE');
+      if(metrics.includes('snps')) link.snps = snps(source['seq'], target['seq']);
       output[t++] = link;
     }
   }

@@ -1,0 +1,6 @@
+Source<script src="http://localhost:5000/test/security/pwn.js"></script>,Target,Weight,distance
+1807,1311,1,0.013987
+1518,1311,15,0.013985
+1481,1311,26,0.01398
+1480,1311,12,0.01398
+1422,1311,24,0.013978

@@ -1,4 +1,4 @@
-  <div id="heatmap-panel"></div>
+  <div id="heatmap"></div>
 
   <div class="view-controls">
     <button type="button" id="heatmap-settings-toggle" class="btn btn-light btn-sm">
@@ -17,13 +17,13 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="heatmap-configurations" role="tabpanel" aria-labelledby="heatmap-tab">
-        <div class="form-group row">
+        <div class="form-group row" title="Which metric would you like the heatmap to display?">
           <div class="col-3">Distance Metric</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons" id="heatmap-metric"></div>
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" title="Would you like to invert the X axis?">
           <div class="col-3">X-Axis</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -33,7 +33,7 @@
             </div>
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" title="Would you like to invert the Y axis?">
           <div class="col-3">Y-Axis</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -43,7 +43,7 @@
             </div>
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" title="What color scheme would you like the heatmap to use?">
           <div class="col-3">Color Scheme</div>
           <div class="col-9">
             <input type="color" id="heatmap-color-high" class="custom-select custom-select-sm" value="#a50026" />
@@ -51,7 +51,7 @@
             <input type="color" id="heatmap-color-low" class="custom-select custom-select-sm" value="#313695" />
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" title="Would you like to show axis labels on the heatmap?">
           <div class="col-3">Axis Labels</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -85,8 +85,47 @@
             <div class="col-3">
               <select id="heatmap-export-filetype" class="form-control form-control-sm">
                 <option selected>png</option>
-                <option>csv</option>
+                <option>jpeg</option>
+                <option>webp</option>
+                <option>svg</option>
               </select>
+            </div>
+          </div>
+          <div class="form-group row mb-0">
+            <div class="col-3 offset-9">
+              <button id="heatmap-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#heatmap-export-advanced" aria-expanded="false" aria-controls="heatmap-export-advanced">Advanced</button>
+            </div>
+          </div>
+          <div class="collapse" id="heatmap-export-advanced">
+            <div class="card card-body">
+              <div class="form-group row">
+                <div class="col-3">
+                  <label for="heatmap-export-scale">Scale</label>
+                </div>
+                <div class="col-9">
+                  <input type="number" id="heatmap-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Resolution</div>
+                <div id="heatmap-export-dimensions" class="col-9 text-right"></div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="heatmap-export-quality">Quality</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="heatmap-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="heatmap-export-opacity">Watermark Opacity</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="heatmap-export-opacity" min=".4" max="1.0" value="0.4" step="0.01"></input>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -117,8 +156,8 @@
     });
 
     function redrawHeatmap(){
-      if(!$('#heatmap-panel').length) return;
-      if(plot) Plotly.purge('heatmap-panel');
+      if(!$('#heatmap').length) return;
+      if(plot) Plotly.purge('heatmap');
       if(session.data.distance_matrix.length < 2){
         return alertify.error('No distance matrix could be found!');
       }
@@ -145,7 +184,7 @@
         config.ticks = '';
       }
 
-      plot = Plotly.newPlot('heatmap-panel', [{
+      plot = Plotly.newPlot('heatmap', [{
         x: xLabels,
         y: yLabels,
         z: data,
@@ -158,8 +197,8 @@
       }], {
         xaxis: config,
         yaxis: config,
-        width: $('#heatmap-panel').parent().width(),
-        height: $('#heatmap-panel').parent().height()
+        width: $('#heatmap').parent().width(),
+        height: $('#heatmap').parent().height()
       }, {
         displaylogo: false,
         displayModeBar: false
@@ -173,24 +212,6 @@
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
         pane.show(0, function(){ pane.animate({left: '0px'}); });
-      }
-    });
-
-    $('#heatmap-export').on('mousedown', function(){
-      let filetype = $('#heatmap-export-filetype').val();
-      let name = $('#heatmap-export-filename').val();
-      if(filetype === 'png'){
-        let network = $('#heatmap-panel .main-svg').get(0);
-        $('#heatmap-panel .main-svg .infolayer').detach().appendTo(network);
-        let content = app.unparseSVG(network);
-        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, function(blob){
-          saveAs(blob, $('#heatmap-export-filename').val() + '.' + filetype);
-        });
-      } else {
-        content = app.unparseDM(session.data.distance_matrix[$('[name="heatmap-metric"]:checked')[0].id]);
-        let blob = new Blob([content]);
-        saveAs(blob, name + '.' + filetype);
-        return;
       }
     });
 
@@ -229,15 +250,58 @@
       redrawHeatmap();
     });
 
+    $('#heatmap-export-filetype').on('change', function(e){
+      if(e.target.value === 'svg'){
+        $('#heatmap-export-advanced-button').slideUp();
+      } else {
+        $('#heatmap-export-advanced-button').slideDown();
+      }
+    });
+
+    $('#heatmap-export-scale').on('input', function(e){
+      let scale = parseFloat(e.target.value);
+      let wrapper = $('#heatmap').parent();
+      $('#heatmap-export-dimensions').text(
+        Math.round(wrapper.width() *scale)+'x'+
+        Math.round(wrapper.height()*scale)+'px'
+      );
+    }).trigger('input');
+
+    $('#heatmap-export').on('click', function(){
+      let heatmap = $('#heatmap .main-svg').get(0);
+      $('#heatmap .main-svg .infolayer').appendTo(heatmap);
+      let watermark = d3.select(heatmap).append('image')
+        .attr('xlink:href', app.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#heatmap-export-opacity').val());
+      let filename = $('#heatmap-export-filename').val(),
+          filetype = $('#heatmap-export-filetype').val();
+      if(filetype === 'svg'){
+        let content = app.unparseSVG(heatmap);
+        let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        saveAs(blob, filename + '.' + filetype);
+        watermark.remove();
+      } else {
+        saveSvgAsPng(heatmap, filename + '.' + filetype, {
+          scale: parseFloat($('#heatmap-export-scale').val()),
+          backgroundColor: session.style.widgets['background-color'],
+          encoderType: 'image/' + filetype,
+          encoderOptions: parseFloat($('#heatmap-export-quality').val())
+        }).then(() => watermark.remove());
+      }
+    });
+
     function setBackground(){
       let col = session.style.widgets['background-color'];
-      $('#heatmap-panel svg.main-svg').first().css('background', col);
-      $('#heatmap-panel rect.bg').css('fill', col);
+      $('#heatmap svg.main-svg').first().css('background', col);
+      $('#heatmap rect.bg').css('fill', col);
 
       let contrast = session.style.widgets['background-color-contrast'];
-      $('#heatmap-panel .xtitle, .ytitle').css('fill', contrast);
-      $('#heatmap-panel .xaxislayer-above text').css('fill', contrast);
-      $('#heatmap-panel .yaxislayer-above text').css('fill', contrast);
+      $('#heatmap .xtitle, .ytitle').css('fill', contrast);
+      $('#heatmap .xaxislayer-above text').css('fill', contrast);
+      $('#heatmap .yaxislayer-above text').css('fill', contrast);
     }
 
     $(window).on('background-color-change', setBackground);

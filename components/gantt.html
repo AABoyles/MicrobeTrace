@@ -20,7 +20,7 @@
     <div class="tab-content">
       <div class="tab-pane fade show active" id="ganttConfigurations" role="tabpanel" aria-labelledby="gantt-tab">
         <div class="form-group row">
-          <div class="col-12"><button id="addDate" type="button" class="btn btn-light w-100">Add Date</button></div>
+          <div class="col"><button id="addDate" type="button" class="btn btn-light w-100">Add Date</button></div>
         </div>
       </div>
     </div>
@@ -30,7 +30,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Export gantt Image</h5>
+          <h5 class="modal-title">Export Gantt Diagram</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -43,27 +43,45 @@
             <div class="col-3">
               <select id="gantt-export-filetype" class="form-control form-control-sm">
                 <option selected>png</option>
+                <option>jpeg</option>
+                <option>webp</option>
                 <option>svg</option>
               </select>
             </div>
           </div>
-          <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
+          <div class="form-group row mb-0">
+            <div class="col-3 offset-9">
+              <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
+            </div>
+          </div>
           <div class="collapse" id="gantt-export-advanced">
             <div class="card card-body">
               <div class="form-group row">
-                <div class="col">
-                  <label for="gantt-export-width">Width</label>
-                  <input type="number" id="gantt-export-width" class="form-control form-control-sm" />
+                <div class="col-3">
+                  <label for="gantt-export-scale">Scale</label>
                 </div>
-                <div class="col">
-                  <label for="gantt-export-height">Height</label>
-                  <input type="number" id="gantt-export-height" class="form-control form-control-sm" />
+                <div class="col-9">
+                  <input type="number" id="gantt-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
                 </div>
               </div>
               <div class="form-group row">
-                <div class="col text-right">
-                  <input type="checkbox" id="gantt-export-preserveaspect" checked />
-                  <label for="gantt-export-preserveaspect" class="form-check-label">Preserve Aspect Ratio?</label>
+                <div class="col-3">Resolution</div>
+                <div id="gantt-export-dimensions" class="col-9 text-right"></div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="gantt-export-quality">Quality</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="gantt-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="gantt-export-opacity">Watermark Opacity</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="gantt-export-opacity" min=".4" max="1.0" value="0.4" step="0.01"></input>
                 </div>
               </div>
             </div>
@@ -126,7 +144,7 @@
     });
 
   function refresh(){
-    let wrapper = $('#gantt').parent();
+    let wrapper = $('#gantt').parent().css('z-index', 1000);
     if(!wrapper.length) return;
     height = wrapper.height() - margin.top  - margin.bottom - 5;
     width  = wrapper.width()  - margin.left - margin.right  - 5;
@@ -281,48 +299,44 @@
   });
 
   $('#gantt-export-filetype').on('change', function(e){
-    if(e.target.value === 'png'){
-      $('#gantt-export-advanced-button').slideDown();
-    } else {
+    if(e.target.value === 'svg'){
       $('#gantt-export-advanced-button').slideUp();
+    } else {
+      $('#gantt-export-advanced-button').slideDown();
     }
   });
 
-  $('#gantt-export-width').on('input', function(e){
-    if(!$('#gantt-export-preserveaspect').is(':checked')) return;
+  $('#gantt-export-scale').on('input', function(e){
+    let scale = parseFloat(e.target.value);
     let wrapper = $('#gantt').parent();
-    let ratio = wrapper.height()/wrapper.width();
-    $('#gantt-export-height').val(Math.round(e.target.value*ratio));
-  });
-
-  $('#gantt-export-height').on('input', function(e){
-    if(!$('#gantt-export-preserveaspect').is(':checked')) return;
-    let wrapper = $('#gantt').parent();
-    let ratio = wrapper.width()/wrapper.height();
-    $('#gantt-export-width').val(Math.round(e.target.value*ratio));
-  });
-
-  $('#gantt-export-preserveaspect').on('click', function(e){
-    if(!$(this).is(':checked')) return;
-    let wrapper = $('#gantt').parent();
-    let height = wrapper.height();
-    let ratio = height/wrapper.width();
-    $('#gantt-export-height').val(Math.round($('#gantt-export-width').val()*ratio));
-  });
+    $('#gantt-export-dimensions').text(
+      Math.round(wrapper.width() *scale)+'x'+
+      Math.round(wrapper.height()*scale)+'px'
+    );
+  }).trigger('input');
 
   $('#gantt-export').on('click', function(){
-    let gantt = $('#gantt svg')[0];
-    let content = app.unparseSVG(gantt);
-    let filetype = $('#gantt-export-filetype').val();
-    let width  = parseFloat($('#gantt-export-width' ).val());
-    let height = parseFloat($('#gantt-export-height').val());
+    let gantt = $('#gantt svg').get(0);
+    let watermark = d3.select(gantt).append('image')
+      .attr('xlink:href', app.watermark)
+      .attr('height', 128)
+      .attr('width', 128)
+      .attr('x', 10)
+      .style('opacity', $('#gantt-export-opacity').val());
+    let filename = $('#gantt-export-filename').val(),
+        filetype = $('#gantt-export-filetype').val();
     if(filetype === 'svg'){
+      let content = app.unparseSVG(gantt);
       let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
-      saveAs(blob, $('#gantt-export-filename').val() + '.' + filetype);
+      saveAs(blob, filename + '.' + filetype);
+      watermark.remove();
     } else {
-      app.blobifySVG(content, width, height, function(blob){
-        saveAs(blob, $('#gantt-export-filename').val() + '.' + filetype);
-      });
+      saveSvgAsPng(gantt, filename + '.' + filetype, {
+        scale: parseFloat($('#gantt-export-scale').val()),
+        backgroundColor: session.style.widgets['background-color'],
+        encoderType: 'image/' + filetype,
+        encoderOptions: parseFloat($('#gantt-export-quality').val())
+      }).then(() => watermark.remove());
     }
   });
 

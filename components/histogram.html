@@ -1,10 +1,10 @@
-<div id="histogram-panel"></div>
+<div id="histogram"></div>
 
   <div class="view-controls">
     <button id="toggle-histogram-settings" type="button" class="btn btn-light btn-sm">
       <span class="oi oi-cog"></span>
     </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#export-histogram-modal" title="Export Histogram">
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#histogram-export-modal" title="Export Histogram">
       <span class="oi oi-data-transfer-download"></span>
     </button>
   </div>
@@ -17,31 +17,31 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="histogram-settings" role="tabpanel" aria-labelledby="histogram-tab">
-        <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which variable should the histogram be drawn from?">Variable</a></div>
+        <div class="form-group row" title="Which variable should the histogram be drawn from?">
+          <div class="col-3"><label for="histogram-variable">Variable</label></div>
           <div class="col-9"><select id="histogram-variable" class="custom-select custom-select-sm mixedVariables"><option selected>distance</option></select></div>
         </div>
-        <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Which axis should the histogram be drawn across?">Axis</a></div>
+        <div class="form-group row" title="Which axis should the histogram be drawn across?">
+          <div class="col-3">Axis</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light active col">
+              <label class="btn btn-light active col" title="Align the histogram along the X Axis">
                 <input type="radio" name="axis" id="histogram-axis-x" autocomplete="off" checked> X
               </label>
-              <label class="btn btn-light col">
+              <label class="btn btn-light col" title="Align the histogram along the Y Axis">
                 <input type="radio" name="axis" id="histogram-axis-y" autocomplete="off"> Y
               </label>
             </div>
           </div>
         </div>
-        <div class="form-group row">
-          <div class="col-3"><a href="#" data-toggle="tooltip" title="Should the y-axis show a linear or logarithmic scale?">Scale</a></div>
+        <div class="form-group row" title="Should the y-axis show a linear or logarithmic scale?">
+          <div class="col-3">Scale</div>
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light active col">
+              <label class="btn btn-light col active" title="Scale the Histogram linearly">
                 <input type="radio" name="scale" id="histogram-scale-linear" autocomplete="off" checked> Linear
               </label>
-              <label class="btn btn-light col">
+              <label class="btn btn-light col" title="Scale the Histogram logarithmically">
                 <input type="radio" name="scale" id="histogram-scale-log" autocomplete="off"> Log
               </label>
             </div>
@@ -51,11 +51,11 @@
     </div>
   </div>
 
-  <div id="export-histogram-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div id="histogram-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Export Histogram Image</h5>
+          <h5 class="modal-title">Export Flow Diagram</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -63,13 +63,52 @@
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-9">
-              <input type="text" id="export-histogram-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              <input type="text" id="histogram-export-filename" class="form-control form-control-sm" placeholder="Filename" />
             </div>
             <div class="col-3">
-              <select id="export-histogram-file-type" class="form-control form-control-sm">
+              <select id="histogram-export-filetype" class="form-control form-control-sm">
                 <option selected>png</option>
+                <option>jpeg</option>
+                <option>webp</option>
                 <option>svg</option>
               </select>
+            </div>
+          </div>
+          <div class="form-group row mb-0">
+            <div class="col-3 offset-9">
+              <button id="histogram-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#histogram-export-advanced" aria-expanded="false" aria-controls="histogram-export-advanced">Advanced</button>
+            </div>
+          </div>
+          <div class="collapse" id="histogram-export-advanced">
+            <div class="card card-body">
+              <div class="form-group row">
+                <div class="col-3">
+                  <label for="histogram-export-scale">Scale</label>
+                </div>
+                <div class="col-9">
+                  <input type="number" id="histogram-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Resolution</div>
+                <div id="histogram-export-dimensions" class="col-9 text-right"></div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="histogram-export-quality">Quality</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="histogram-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="histogram-export-opacity">Watermark Opacity</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="histogram-export-opacity" min=".4" max="1.0" value="0.4" step="0.01"></input>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -86,9 +125,9 @@
     let plot;
 
     function redrawHistogram(){
-      let panel = $('#histogram-panel');
+      let panel = $('#histogram');
       if(!panel.length) return;
-      if(plot) Plotly.purge('histogram-panel');
+      if(plot) Plotly.purge('histogram');
       let varSource, varName, axis = 'x', nonAxis = 'y';
       [varSource, ...varName] = session.style.widgets['histogram-variable'].split('-');
       varName = varName.join('-');
@@ -159,7 +198,7 @@
         title: 'Number of ' + app.titleize(varSource),
         type: session.style.widgets['histogram-scale-log'] ? 'log' : ''
       };
-      plot = Plotly.newPlot('histogram-panel', traces, layout, {
+      plot = Plotly.newPlot('histogram', traces, layout, {
         displaylogo: false,
         displayModeBar: false,
         scrollZoom: true
@@ -169,13 +208,13 @@
 
     function setBackground(){
       let col = session.style.widgets['background-color'];
-      $('#histogram-panel svg.main-svg').first().css('background', col);
-      $('#histogram-panel rect.bg').css('fill', col);
+      $('#histogram svg.main-svg').first().css('background', col);
+      $('#histogram rect.bg').css('fill', col);
 
       let contrast = session.style.widgets['background-color-contrast'];
-      $('#histogram-panel .xtitle, .ytitle').css('fill', contrast);
-      $('#histogram-panel .xaxislayer-above text').css('fill', contrast);
-      $('#histogram-panel .yaxislayer-above text').css('fill', contrast);
+      $('#histogram .xtitle, .ytitle').css('fill', contrast);
+      $('#histogram .xaxislayer-above text').css('fill', contrast);
+      $('#histogram .yaxislayer-above text').css('fill', contrast);
     }
 
     $('#toggle-histogram-settings').click(function(){
@@ -212,24 +251,52 @@
       redrawHistogram();
     });
 
+    $('#histogram-export-filetype').on('change', function(e){
+      if(e.target.value === 'svg'){
+        $('#histogram-export-advanced-button').slideUp();
+      } else {
+        $('#histogram-export-advanced-button').slideDown();
+      }
+    });
+
+    $('#histogram-export-scale').on('input', function(e){
+      let scale = parseFloat(e.target.value);
+      let wrapper = $('#histogram').parent();
+      $('#histogram-export-dimensions').text(
+        Math.round(wrapper.width() *scale)+'x'+
+        Math.round(wrapper.height()*scale)+'px'
+      );
+    }).trigger('input');
+
+    $('#histogram-export').on('click', function(){
+      let histogram = $('#histogram .main-svg').get(0);
+      $('#histogram .main-svg .infolayer').appendTo(histogram);
+      let watermark = d3.select(histogram).append('image')
+        .attr('xlink:href', app.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#histogram-export-opacity').val());
+      let filename = $('#histogram-export-filename').val(),
+          filetype = $('#histogram-export-filetype').val();
+      if(filetype === 'svg'){
+        let content = app.unparseSVG(histogram);
+        let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
+        saveAs(blob, filename + '.' + filetype);
+        watermark.remove();
+      } else {
+        saveSvgAsPng(histogram, filename + '.' + filetype, {
+          scale: parseFloat($('#histogram-export-scale').val()),
+          backgroundColor: session.style.widgets['background-color'],
+          encoderType: 'image/' + filetype,
+          encoderOptions: parseFloat($('#histogram-export-quality').val())
+        }).then(() => watermark.remove());
+      }
+    });
+
     $(window)
       .on('node-color-change link-color-change', redrawHistogram)
       .on('background-color-change', setBackground);
-
-    $('#histogram-export').click(function(){
-      let network = $('#histogram-panel .main-svg').get(0);
-      $('#histogram-panel .main-svg .infolayer').detach().appendTo(network);
-      let content = app.unparseSVG(network);
-      let filetype = $('#export-histogram-file-type').val();
-      if(filetype === 'svg'){
-        let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
-        saveAs(blob, $('#export-histogram-file-name').val() + '.' + filetype);
-      } else {
-        app.blobifySVG(content, network.width.baseVal.value, network.height.baseVal.value, function(blob){
-          saveAs(blob, $('#export-histogram-file-name').val() + '.' + filetype);
-        });
-      }
-    });
 
     layout.on('stateChanged', redrawHistogram);
     setTimeout(redrawHistogram, 80);

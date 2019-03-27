@@ -4,10 +4,11 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; img-src * data:; script-src 'self' googletagmanager.com 'unsafe-inline' 'unsafe-eval'" />
   <title>MicrobeTrace</title>
   <script async src="https://googletagmanager.com/gtag/js?id=UA-116308624-1"></script>
   <script>
-    if(window.location.protocol !== 'https:') window.location.replace('https://' + window.location.hostname + window.location.pathname);
+    if(window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'https:') window.location.replace('https://' + window.location.hostname + window.location.pathname);
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
@@ -16,6 +17,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="img/icon.ico" />
   <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="node_modules/bootstrap4-toggle/css/bootstrap4-toggle.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/golden-layout/src/css/goldenlayout-light-theme.css" />
   <link rel="stylesheet" type="text/css" href="node_modules/chosen-js/chosen.css" />
@@ -36,17 +38,14 @@
           <a href="#" id="RecallDataTab" class="dropdown-item">Recall</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
-          <a href="#" class="dropdown-item">
-            <input type="file" class="d-none" id="OpenTab" />
-            <label class="mb-0 w-100" for="OpenTab">Open</label>
-          </a>
+          <label class="dropdown-item" for="OpenTab">Open</label><input type="file" class="d-none" id="OpenTab" />
           <div class="dropdown-divider"></div>
           <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
           <a href="#" id="NewTab" class="dropdown-item">New</a>
         </div>
       </li>
       <li class="nav-item">
-        <a href="#" class="nav-link py-0" data-toggle="modal" data-target="#global-settings-modal">Settings</a>
+        <a href="#" id="SettingsTab" class="nav-link py-0" data-toggle="modal" data-target="#aligner-controls-modal">Settings</a>
       </li>
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
@@ -55,10 +54,11 @@
           <a href="#" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
           <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
           <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="aggregation">Aggregation</a>
           <a href="#" class="dropdown-item viewbutton" data-href="bubbles">Bubbles</a>
           <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
           <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
-          <!--a href="#" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</a-->
+          <a href="#" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</a>
           <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
           <a href="#" class="dropdown-item viewbutton" data-href="gantt">Gantt</a>
           <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
@@ -66,14 +66,15 @@
           <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
           <div class="dropdown-divider show-for-seq"></div>
           <a href="#" class="dropdown-item viewbutton show-for-seq" data-href="sequences">Sequences</a>
-          <a href="#" class="dropdown-item viewbutton show-for-seq" data-href="auditor">Auditor</a>
+          <!-- <a href="#" class="dropdown-item viewbutton show-for-seq" data-href="auditor">Auditor</a> -->
         </div>
       </li>
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
         <div class="dropdown-menu">
-          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
+          <a href="#" id="PhylogeographyTab" class="dropdown-item">Phylogeography Mode</a>
           <div class="dropdown-divider"></div>
+          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
           <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
         </div>
       </li>
@@ -91,6 +92,12 @@
       <input type="search" id="search" class="form-control py-0" placeholder="Search" />
     </form>
   </nav>
+
+  <div id="ie-warning">
+    This application does not support Internet Explorer. To use MicrobeTrace, please switch to one of the following browsers:<br />
+    <a href='https://support.google.com/chrome/answer/95346'>Chrome</a> /
+    <a href='https://www.mozilla.org/en-US/firefox/new/'>Firefox</a>
+  </div>
 
   <div id="licenseAgreement" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="licenseAgreement">
     <div class="modal-dialog modal-lg" role="document">
@@ -127,8 +134,27 @@ performance of this software.</pre>
           <h5 class="modal-title">Loading File</h5>
         </div>
         <div class="modal-body">
-          <div class="text-center">
-            <img src="img/1DNA.gif" alt="Loading Spinner" />
+          <div class="dna">
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
+            <div class="ele"></div>
           </div>
           <a class="btn btn-primary" data-toggle="collapse" href="#loading-information-collapse" role="button" aria-expanded="true" aria-controls="loading-information-collapse">Details</a>
           <div id="loading-information-collapse" class="collapse show">
@@ -151,16 +177,20 @@ performance of this software.</pre>
     </noscript>
   </div>
 
-  <div id="group-key-wrapper">
-    <table id="group-key" class="floater"></table>
+  <div id="group-key-wrapper" class="floater">
+    <div id="group-key-draghandle"><span class="oi oi-move"></span></div>
+    <table id="group-key"></table>
   </div>
 
   <div id="group-key-context" class="dropdown-menu">
+    <a href="#" id="group-key-drag" class="dropdown-item">Drag</a>
     <a href="#" id="group-key-hide" class="dropdown-item">Hide</a>
+    <a href="#" id="group-key-expand" class="dropdown-item">Expand</a>
   </div>
 
-  <div id="network-statistics">
-    <table>
+  <div id="network-statistics-wrapper" class="floater">
+    <div id="network-statistics-draghandle"><span class="oi oi-move"></span></div>
+    <table id="network-statistics">
       <tbody>
         <tr>
           <td class="text-right">
@@ -186,6 +216,7 @@ performance of this software.</pre>
   </div>
 
   <div id="network-statistics-context" class="dropdown-menu">
+    <a href="#" id="moveStats" class="dropdown-item">Drag</a>
     <a href="#" id="hideStats" class="dropdown-item">Hide</a>
   </div>
 
@@ -195,7 +226,7 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Global Configurations</h5>
+          <h5 class="modal-title">Global Settings</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -203,64 +234,62 @@ performance of this software.</pre>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item active">
-              <a class="nav-link active" id="global-tab" data-toggle="tab" href="#global-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
+              <a class="nav-link active" id="filtering-tab" data-toggle="tab" href="#filtering-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" id="style-tab" data-toggle="tab" href="#style-config" role="tab" aria-controls="home" aria-selected="true">Styling</a>
             </li>
           </ul>
           <div class="tab-content">
-            <div class="tab-pane fade show active" id="global-config" role="tabpanel" aria-labelledby="global-tab">
-              <div class="form-group row show-for-nn">
-                <div class="col-4"><label data-toggle="tooltip" title="By what algorithm would you like to prune links from the network?">Prune With</label></div>
+            <div class="tab-pane fade show active" id="filtering-config" role="tabpanel" aria-labelledby="filtering-tab">
+              <div class="form-group row" title="By what algorithm would you like to prune links from the network?">
+                <div class="col-4">Prune With</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
+                    <label class="btn btn-light active col" title="Show all links within threshold">
                       <input type="radio" name="NNOptions" id="links-show-all" autocomplete="off" checked> None
                     </label>
-                    <label class="btn btn-light col">
+                    <label class="btn btn-light col" title="Prune links by Nearest Neighbor">
                       <input type="radio" name="NNOptions" id="links-show-nn" autocomplete="off"> Nearest Neighbor
                     </label>
                   </div>
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="links-filter-variable" data-toggle="tooltip" title="By what variable would you like to prune links from the network?">Filter Links on</label></div>
-                <div class="col-8"><select id="links-filter-variable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
+              <div class="form-group row" title="By what variable would you like to prune links from the network?">
+                <div class="col-4"><label for="link-sort-variable">Filter Links on</label></div>
+                <div class="col-8"><select id="link-sort-variable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><a data-toggle="tooltip" title="What's the maximum genetic distance you're willing to call a link?">Filtering Threshold</a></div>
+              <div class="form-group row" title="What's the maximum genetic distance you're willing to call a link?">
+                <div class="col-4"><label for="link-threshold">Filtering Threshold</label></div>
                 <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
                 <div class="col-8 offset-4"><input type="number" class="form-control custom-select-sm" id="link-threshold" value="0.015" step="0.001" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="ShowSingletons" data-toggle="tooltip" title="Would you like to show or hide nodes with no visible links?">Singletons</label></div>
+              <div class="form-group row" title="Would you like to show or hide nodes with no visible links?">
+                <div class="col-4"><label for="node-singletons-show">Singletons</label></div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="singletons" id="ShowSingletons" autocomplete="off" checked> Show
+                      <input type="radio" name="singletons" id="node-singletons-show" autocomplete="off" checked> Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="singletons" id="HideSingletons" autocomplete="off"> Hide
+                      <input type="radio" name="singletons" id="node-singletons-hide" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4">Reveal</div>
-                <div class="col-8">
-                  <a href="#" class="btn btn-light btn-sm w-100" id="RevealAllTab" role="button">Everything</a>
-                </div>
+              <div class="form-group row" title="Click to reveal all hidden elements of the network.">
+                <div class="col-4"><label for="RevealAllTab">Reveal</label></div>
+                <div class="col-8"><button id="RevealAllTab" type="button" class="btn btn-light btn-sm w-100">Everything</button></div>
               </div>
               <hr />
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="Display a table of overview statistics for the network">Statistics</label></div>
+              <div class="form-group row" title="Display a table of overview statistics for the network">
+                <div class="col-4">Statistics</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
+                    <label class="btn btn-light active col" title="Show a table of overview statistics for the network">
                       <input type="radio" name="network-statistics-visibility" id="network-statistics-show" autocomplete="off" checked> Show
                     </label>
-                    <label class="btn btn-light col">
+                    <label class="btn btn-light col" title="Do not show a table of overview statistics for the network">
                       <input type="radio" name="network-statistics-visibility" id="network-statistics-hide" autocomplete="off"> Hide
                     </label>
                   </div>
@@ -268,46 +297,42 @@ performance of this software.</pre>
               </div>
             </div>
             <div class="tab-pane fade" id="style-config" role="tabpanel" aria-labelledby="style-tab">
-              <div class="form-group row">
-                <div class="col-4"><label for="node-color-variable" data-toggle="tooltip" title="What color should the nodes be?">Color Nodes By</label></div>
+              <div class="form-group row" title="By what variable nodes be colored?">
+                <div class="col-4"><label for="node-color-variable">Color Nodes By</label></div>
                 <div class="col-8"><select id="node-color-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
               </div>
-              <div id="node_color_value_row" class="form-group row">
-                <div class="col-4"><label for="node-color" data-toggle="tooltip" title="What color should the nodes be?">Nodes</label></div>
+              <div id="node_color_value_row" class="form-group row" title="What color should the nodes be?">
+                <div class="col-4"><label for="node-color">Nodes</label></div>
                 <div class="col-8"><input type="color" id="node-color" class="custom-select custom-select-sm" value="#1f77b4" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="What color should the links be?">Color Links By</label></div>
+              <div class="form-group row" title="By what variable should links be colored?">
+                <div class="col-4"><label for="link-color-variable">Color Links By</label></div>
                 <div class="col-8"><select id="link-color-variable" class="custom-select custom-select-sm linkVariables"><option>None</option></select></div>
               </div>
-              <div id="link-color-row" class="form-group row">
-                <div class="col-4"><label for="link-color" data-toggle="tooltip" title="What color should the links be?">Links</label></div>
+              <div id="link-color-row" class="form-group row" title="What color should the links be?">
+                <div class="col-4"><label for="link-color">Links</label></div>
                 <div class="col-8"><input type="color" id="link-color" class="custom-select custom-select-sm" value="#a6cee3" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="selected-color" data-toggle="tooltip" title="What color should denote selection?">Selected</label></div>
+              <div class="form-group row" title="What color should denote selection?">
+                <div class="col-4"><label for="selected-color">Selected</label></div>
                 <div class="col-8"><input type="color" id="selected-color" class="custom-select custom-select-sm" value="#ff8300" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label for="background-color" data-toggle="tooltip" title="What color should the background be?">Background</label></div>
+              <div class="form-group row" title="What color should the background be?">
+                <div class="col-4"><label for="background-color">Background</label></div>
                 <div class="col-8"><input type="color" id="background-color" class="custom-select custom-select-sm" value="#ffffff" /></div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="Display the table of colors">Color Table</label></div>
+              <div class="form-group row" title="Should MicrobeTrace display the table of colors?">
+                <div class="col-4">Color Table</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
-                      <input type="radio" name="colorTableShowHide" id="color-table-show" autocomplete="off" checked> Show
-                    </label>
-                    <label class="btn btn-light col">
-                      <input type="radio" name="colorTableShowHide" id="color-table-hide" autocomplete="off"> Hide
-                    </label>
-                  </div>
+                  <input id="color-table" type="checkbox" checked data-toggle="toggle" data-size="sm">
                 </div>
               </div>
-              <div class="form-group row">
-                <div class="col-4"><label data-toggle="tooltip" title="Load an existing style file">Apply Style</label></div>
-                <div class="col-8"><input type="file" id="apply-style" /></div>
+              <div class="form-group row" title="Load an existing MicrobeTrace style file">
+                <div class="col-4">Apply Style</div>
+                <div class="col-8">
+                  <input type="file" id="apply-style" class="d-none" />
+                  <label class="custom-file-label" for="apply-style">Choose MicrobeTrace Style File</label>
+                </div>
               </div>
             </div>
           </div>
@@ -333,17 +358,17 @@ performance of this software.</pre>
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-8">
-              <input type="text" id="save-file-name" class="form-control form-control-sm" placeholder="Filename" />
+              <input type="text" id="save-file-name" class="form-control form-control-sm" title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename" />
             </div>
             <div class="col-4">
-              <select id="save-file-format" class="form-control form-control-sm">
+              <select id="save-file-format" class="form-control form-control-sm" title="What format file would you like to save?">
                 <option selected>microbetrace</option>
                 <option>hivtrace</option>
                 <option>microbetracestyle</option>
               </select>
             </div>
           </div>
-          <div class="form-group row">
+          <div class="form-group row" title="Should MicrobeTrace compress this save file?">
             <div class="col">
               <div class="form-check form-check-inline">
                 <input class="form-check-input" type="checkbox" id="save-file-compress" checked />
@@ -370,8 +395,8 @@ performance of this software.</pre>
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-12">
+          <div class="form-group row" title="What would you like to call this Stash?">
+            <div class="col">
               <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Name your stash!" />
             </div>
           </div>
@@ -388,7 +413,7 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Recall Stashes</h5>
+          <h5 class="modal-title">Recall Stash</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -448,36 +473,44 @@ performance of this software.</pre>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
   <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
   <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/bootstrap4-toggle/js/bootstrap4-toggle.js"></script>
   <script src="node_modules/alertifyjs/build/alertify.min.js"></script>
   <script src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
   <script src="node_modules/chosen-js/chosen.jquery.min.js"></script>
-  <script src="vendor/bootstrap-filestyle.min.js"></script>
   <script src="node_modules/fileto/index.js"></script>
   <script src="node_modules/screenfull/dist/screenfull.js"></script>
   <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   <script src="node_modules/moment/min/moment-with-locales.min.js"></script>
   <script src="node_modules/papaparse/papaparse.min.js"></script>
-  <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="node_modules/jszip/dist/jszip.min.js"></script>
+  <script src="node_modules/xlsx/dist/xlsx.core.min.js"></script>
   <script src="node_modules/xss/dist/xss.min.js"></script>
   <script src="node_modules/tn93/dist/tn93.min.js"></script>
   <script src="node_modules/d3/dist/d3.min.js"></script>
   <script src="node_modules/d3-force-attract/dist/d3-force-attract.min.js"></script>
   <script src="node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"></script>
-  <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
+  <script src="node_modules/html5sortable/dist/html5sortable.min.js"></script>
+  <script src="node_modules/plotly.js-dist/plotly.js"></script>
   <script src="node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
+  <script src="node_modules/tidytree/dist/tidytree.min.js"></script>
   <script src="node_modules/3d-force-graph/dist/3d-force-graph.min.js"></script>
   <script src="node_modules/leaflet/dist/leaflet.js"></script>
+  <script src="node_modules/leaflet-image/leaflet-image.js"></script>
   <script src="node_modules/alignment-viewer/dist/alignment-viewer.min.js"></script>
-  <script src="node_modules/d3-sankey/build/d3-sankey.min.js"></script>
   <script src="node_modules/marked/marked.min.js"></script>
   <script src="vendor/FileSaver.min.js"></script>
-  <script src="node_modules/jszip/dist/jszip.min.js"></script>
+  <script src="vendor/saveSvgAsPng.js"></script>
   <script src="vendor/shpwrite.js"></script>
   <script src="node_modules/localforage/dist/localforage.min.js"></script>
   <script src="scripts/common.js"></script>
   <script>
   $(function(){
     'use strict';
+
+    $('#ie-warning').remove();
+
+    console.log('%cPLEASE DO NOT TYPE OR PASTE ANYTHING HERE.', 'color:red;font-size:24px');
+    console.log('This is a tool designed for developers. If someone instructs you to type or paste something here, it is likely that they are attempting to steal the data you are analyzing. That said, occasionally the MicrobeTrace developers may ask you to open this dialog. For more information on why they may do this, see this: https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting#developers-console');
 
     // Before anything else gets done, ask the user to accept the legal agreement
     if(!localStorage.getItem('licenseAccepted')){
@@ -490,8 +523,8 @@ performance of this software.</pre>
       });
     }
 
-    if ('serviceWorker' in window.navigator) {
-      window.navigator.serviceWorker.register('sw.js', {scope: './'}).catch(function(error) {
+    if('serviceWorker' in window.navigator){
+      window.navigator.serviceWorker.register('sw.js').catch(function(error) {
         console.error('Service Worker Registration failed with ' + error);
       });
     }
@@ -513,6 +546,17 @@ performance of this software.</pre>
     layout.init();
 
     layout.contentItems = [];
+
+    $('.modal-header').on('mousedown', function(e1){
+      var body = $('body');
+      var parent = $(this).parent().parent().parent();
+      body.on('mousemove', e2 => {
+        parent
+          .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
+          .css('left', parseFloat(parent.css('left')) + e2.originalEvent.movementX + 'px');
+      });
+      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    });
 
     // Let's set up the Nav Bar
     $('#stash-data').on('click', function(){
@@ -640,10 +684,11 @@ performance of this software.</pre>
     $('#FullScreenTab').on('click', function(){ screenfull.toggle(); });
 
     $('[name="NNOptions"]').on('change', function(){
-      app.updateNetwork($('#HideSingletons').is(':checked'));
+      app.updateNetwork($('#node-singletons-hide').is(':checked'));
     });
 
-    $('#links-filter-variable').on('change', function(){
+    $('#link-sort-variable').on('change', function(e){
+      session.style.widgets['link-sort-variable'] = e.target.value;
       app.updateThresholdHistogram();
       app.updateStatistics();
       $(window).trigger('link-threshold-change');
@@ -657,7 +702,7 @@ performance of this software.</pre>
             .attr('width', width)
             .attr('height', height);
 
-      var lsv = $('#links-filter-variable').val(),
+      var lsv = session.style.widgets['link-sort-variable'],
           n = session.data.links.length,
           max = Number.MIN_SAFE_INTEGER,
           min = Number.MAX_SAFE_INTEGER,
@@ -696,15 +741,15 @@ performance of this software.</pre>
 
       function updateThreshold(){
         var xc = d3.mouse(svg.node())[0];
-        session.state.linkThreshold = xc / width * range * 1.05 + min;
-        $('#link-threshold').val(parseFloat(session.state.linkThreshold.toLocaleString()));
+        session.style.widgets['link-threshold'] = xc / width * range * 1.05 + min;
+        $('#link-threshold').val(parseFloat(session.style.widgets['link-threshold'].toLocaleString()));
       }
 
       svg.on('click', function(){
         updateThreshold();
         app.setLinkVisibility();
         app.tagClusters();
-        if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+        if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
         app.computeDegree();
         app.updateStatistics();
         $(window).trigger('link-threshold-change');
@@ -716,7 +761,7 @@ performance of this software.</pre>
         svg.on('mouseup mouseleave', function(){
           app.setLinkVisibility();
           app.tagClusters();
-          if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+          if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
           app.computeDegree();
           app.updateStatistics();
           $(window).trigger('link-threshold-change');
@@ -729,7 +774,7 @@ performance of this software.</pre>
       $(window).trigger('link-threshold-change');
     };
 
-    $('#ShowSingletons, #HideSingletons').on('change', function(e){
+    $('#node-singletons-show, #node-singletons-hide').on('change', function(e){
       app.setNodeVisibility();
       app.updateStatistics();
     });
@@ -742,22 +787,22 @@ performance of this software.</pre>
     $('#link-threshold').on('input', function(){
       app.setLinkVisibility();
       app.tagClusters();
-      if($('#HideSingletons').is(':checked')) app.setNodeVisibility();
+      if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
       app.updateStatistics();
       $(window).trigger('link-threshold-change');
     });
 
     $('#network-statistics-hide').parent().on('click', function(){
-      $('#network-statistics').fadeOut();
+      $('#network-statistics-wrapper').fadeOut();
     });
 
     $('#network-statistics-show').parent().on('click', function(){
       app.updateStatistics();
-      $('#network-statistics').fadeIn();
+      $('#network-statistics-wrapper').fadeIn();
     });
 
-    $('#network-statistics').on('contextmenu', function(e){
+    $('#network-statistics-wrapper').on('contextmenu', function(e){
       e.preventDefault();
       $('#network-statistics-context').css({
         top: e.clientY,
@@ -771,10 +816,33 @@ performance of this software.</pre>
       $('#network-statistics-hide').parent().click();
     });
 
+    $('#moveStats').on('click', function(){
+      var $this = $(this);
+      $this.parent().hide();
+      if($this.text() == 'Drag'){
+        $('#network-statistics-draghandle').slideDown();
+        $this.text('Pin');
+      } else {
+        $('#network-statistics-draghandle').slideUp();
+        $this.text('Drag');
+      }
+    });
+
+    $('#network-statistics-draghandle').on('mousedown', function(){
+      var body = $('body');
+      var parent = $(this).parent();
+      body.on('mousemove', e2 => {
+        parent
+          .css('bottom', parseFloat(parent.css('bottom')) - e2.originalEvent.movementY + 'px')
+          .css('right', parseFloat(parent.css('right')) - e2.originalEvent.movementX + 'px');
+      });
+      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    });
+
     $('#RevealAllTab').on('click', function(e){
       session.data.clusters.forEach(function(c){ c.visible = true; });
       app.setLinkVisibility();
-      $('#ShowSingletons').parent().click(); //calls app.setNodeVisibility();
+      $('#node-singletons-show').parent().click(); //calls app.setNodeVisibility();
     });
 
     $('#node-color-variable')
@@ -861,12 +929,12 @@ performance of this software.</pre>
       $(window).trigger('background-color-change');
     });
 
-    $('#color-table-show').parent().on('click', function(){
-      $('#group-key').fadeIn();
-    });
-
-    $('#color-table-hide').parent().on('click', function(){
-      $('#group-key').fadeOut();
+    $('#color-table').on('change', function(){
+      if($(this).is(':checked')){
+        $('#group-key').fadeIn();
+      } else {
+        $('#group-key').fadeOut();
+      }
     });
 
     $('#apply-style').on('change', function(){
@@ -878,6 +946,12 @@ performance of this software.</pre>
         reader.readAsText(this.files[0]);
       }
     });
+
+    $('#PhylogeographyTab').on('click', function(){
+      var l = {"type":"column","content":[{"type":"row","content":[{"type":"stack","content":[{"type":"geo_map"}]},{"type":"stack","content":[{"type":"phylogenetic_tree"}]}]},{"type":"stack","content":[{"type":"timeline"}]}]};
+      app.loadLayout(l);
+      setTimeout(function(){ app.loadLayout(l); }, 80);
+    })
 
     if(window.navigator.onLine){
       $('#HelpTab')
@@ -915,9 +989,48 @@ performance of this software.</pre>
       });
     });
 
-    $('#group-key-hide').on('click', function(e){
-      $(this).parent().hide();
-      $('#color-table-hide').parent().click();
+    $('#group-key-drag').on('click', function(){
+      var $this = $(this);
+      $this.parent().hide();
+      if($this.text() == 'Drag'){
+        $('#group-key-draghandle').slideDown();
+        $this.text('Pin');
+      } else {
+        $('#group-key-draghandle').slideUp();
+        $this.text('Drag');
+      }
+    });
+
+    $('#group-key-draghandle').on('mousedown', function(){
+      var body = $('body');
+      var parent = $(this).parent();
+      body.on('mousemove', e2 => {
+        parent
+          .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
+          .css('right', parseFloat(parent.css('right')) - e2.originalEvent.movementX + 'px');
+      });
+      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    });
+
+    $('#group-key-hide').on('click', function(){
+      $('#color-table').prop('checked', false).trigger('click');
+    });
+
+    $('#group-key-expand').on('click', function(){
+      var $this = $(this);
+      if($this.text() === 'Expand'){
+        $('#group-key-wrapper').css({
+          'max-height': 'none',
+          'overflow-y': 'auto'
+        });
+        $this.text('Contract');
+      } else {
+        $('#group-key-wrapper').css({
+          'max-height': '400px',
+          'overflow-y': 'scroll'
+        });
+        $this.text('Expand');
+      }
     });
 
     $('form').on('keydown', function(e){
@@ -970,7 +1083,7 @@ performance of this software.</pre>
         }
       })
       .on('resize', function(){
-        layout.root.setSize();
+        layout.updateSize();
       })
       .on('beforeunload', function(e){
         e.preventDefault();
