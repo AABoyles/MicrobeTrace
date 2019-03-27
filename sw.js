@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-03-25';
+var CACHE = 'MicrobeTraceD2019-03-27R8246';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -140,6 +140,8 @@ self.addEventListener('install', function(event) {
         'help/z-Development.md',
         'help/z-Nomenclature.md',
         'help/z-Unwritten-Documentation-Requirements.md',
+        '/',
+        'index.html',
         'package.json',
         'manifest.json',
         'node_modules/chosen-js/chosen-sprite.png',
@@ -152,44 +154,13 @@ self.addEventListener('install', function(event) {
   );
 });
 
-self.addEventListener('fetch', function(event) {
-  if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') return;
-  event.respondWith(fromCache(event.request));
-  event.waitUntil(update(event.request));
-});
-
-// Open the cache where the assets were stored and search for the requested
-// resource. Notice that in case of no matching, the promise still resolves
-// but it does with `undefined` as value.
-function fromCache(request){
-  return caches.open(CACHE).then(function(cache){
-    return cache.match(request).then(function(matching){
-      return matching || Promise.reject('No match for ' + request.url);
+self.addEventListener('fetch', function(evt){
+  evt.respondWith(fetch(evt.request).catch(function(){
+    return caches.open(CACHE).then(function(cache){
+      return cache.match(evt.request).then(function(matching){
+        return matching || Promise.reject('no-match');
+      });
     });
-  });
-}
-
-// Update consists in opening the cache, performing a network request and
-// storing the new response data.
-function update(request){
-  return caches.open(CACHE).then(function(cache){
-    return fetch(request).then(function(response){
-      return cache.put(request, response);
-    }).catch(function(error){
-      //console.error(error + ' ' + request.url);
-    });
-  });
-}
-
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(keyList) {
-      return Promise.all(keyList.map(function(key) {
-        if(key !== CACHE) {
-          return caches.delete(key);
-        }
-      }));
-    })
-  );
+  }));
 });
 

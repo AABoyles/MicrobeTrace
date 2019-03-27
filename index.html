@@ -523,8 +523,8 @@ performance of this software.</pre>
       });
     }
 
-    if ('serviceWorker' in window.navigator) {
-      window.navigator.serviceWorker.register('sw.js', {scope: './'}).catch(function(error) {
+    if('serviceWorker' in window.navigator){
+      window.navigator.serviceWorker.register('sw.js').catch(function(error) {
         console.error('Service Worker Registration failed with ' + error);
       });
     }
