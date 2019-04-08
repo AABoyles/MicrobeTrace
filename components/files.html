@@ -358,7 +358,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           list.forEach(function(title){
             if(headers.includes(title)) $(these.get(i)).val(title);
           });
-          if($(these.get(i)).val() === 'None' && !(i === 1 && type === 'node')) $(these.get(i)).val(headers[i]);
+          if((i === 1 && type === 'node') || (i === 2 && type === 'link')){
+            $(these.get(i)).val('None');
+          } else if($(these.get(i)).val() === 'None'){
+            $(these.get(i)).val(headers[i]);
+          }
         });
       }
 
