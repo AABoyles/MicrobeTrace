@@ -537,10 +537,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
 
     var anySequences = false;
-    session.state.metrics = ['tn93', 'snps'];
-    session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
     var check = session.files.length > 1;
     var defaultMetric = session.style.widgets['link-sort-variable'];
+
+    session.state.metrics = [defaultMetric];
+    session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
 
     session.files.sort(function(a, b){ return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
 

@@ -123,7 +123,7 @@ app.sessionSkeleton = function(){
       nodes: []
     },
     state: {
-      metrics: ['tn93', 'snps'],
+      metrics: ['tn93'],
       timeStart: 0,
       timeEnd: Date.now()
     },

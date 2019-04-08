@@ -27,12 +27,6 @@
             </div>
             <div id="tree-controls-source" class="collapse show" data-parent="#tree-controls-accordion">
               <div class="card-body">
-                <div class="form-group row" title="Which distance metric would you like to use as a basis for computing the Tree?">
-                  <div class="col-3">Metric</div>
-                  <div class="col-9">
-                    <div id="tree-metric" class="btn-group btn-group-toggle w-100" data-toggle="buttons"></div>
-                  </div>
-                </div>
                 <div class="form-group row" title="Would you like to round disctances in the tree to integers?">
                   <div class="col-3">Round</div>
                   <div class="col-9">
@@ -291,7 +285,7 @@
     let panel = $('#tree').parent();
     if(!panel.length) return;
 
-    let metric = session.style.widgets['tree-metric'];
+    let metric = session.style.widgets['link-sort-variable'];
     if(!temp.trees[metric]){
       app.computeTree(metric, drawTree);
       return;
@@ -402,24 +396,6 @@
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
       pane.show(0, function(){ pane.animate({left: '0px'}); });
-    }
-  });
-
-  $('#tree-metric').html(
-    Object.keys(session.data.distance_matrix).filter(k => k !== 'labels').map((k, i) =>
-      `<label class="btn btn-light btn-sm col${(k===session.style.widgets['tree-metric'])? ' active':''}">
-        <input type="radio" name="tree-metric" value="${k}" autocomplete="off"${(k===session.style.widgets['tree-metric'])? ' checked':''}>${app.titleize(k)}</input>
-      </label>`
-    ).join('')
-  );
-
-  $('[name="tree-metric"]').on('change', function(e){
-    session.style.widgets['tree-metric'] = $('[name="tree-metric"]:checked').val();
-    let metric = session.style.widgets['tree-metric'];
-    if(temp.trees[metric]){
-      tree.setData(temp.trees[session.style.widgets['tree-metric']]);
-    } else {
-      app.computeTree(metric, e => tree.setData(temp.trees[session.style.widgets['tree-metric']]));
     }
   });
 
@@ -572,7 +548,7 @@
       let blob = new Blob([app.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.svg');
     } else if(type === 'nwk'){
-      let blob = new Blob([temp.trees[session.style.widgets['tree-metric']].toNewick()], {type: 'application/newick;charset=utf-8'});
+      let blob = new Blob([temp.trees[session.style.widgets['link-sort-variable']].toNewick()], {type: 'application/newick;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
     }
   });
