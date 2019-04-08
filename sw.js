@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-03-27R8246';
+var CACHE = 'MicrobeTraceD2019-04-08R9851';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -112,6 +112,7 @@ self.addEventListener('install', function(event) {
         'help/FASTA-Files.md',
         'help/Flow-Diagram.md',
         'help/_Footer.md',
+        'help/Geospatial-Data.md',
         'help/Heatmap.md',
         'help/Histogram.md',
         'help/Home.md',
@@ -123,7 +124,7 @@ self.addEventListener('install', function(event) {
         'help/MicrobeTrace-and-its-Alternatives.md',
         'help/Network-View.md',
         'help/Node-CSVs.md',
-        'help/Offline-Usage.md',
+        'help/Offline.md',
         'help/References.md',
         'help/Security.md',
         'help/Sequences.md',
@@ -135,11 +136,12 @@ self.addEventListener('install', function(event) {
         'help/Theory.md',
         'help/Tile-Maps.md',
         'help/Troubleshooting.md',
+        'help/z-Assimilating-MicrobeTrace.md',
         'help/z-Create-a-New-View.md',
         'help/z-Deployment.md',
         'help/z-Development.md',
         'help/z-Nomenclature.md',
-        'help/z-Unwritten-Documentation-Requirements.md',
+        'help/z-Security-Considerations.md',
         '/',
         'index.html',
         'package.json',
