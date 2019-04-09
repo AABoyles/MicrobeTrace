@@ -757,14 +757,21 @@ a.btn, button.btn, .btn-group{
 }
 
 /* Aggregation */
-#aggregation-wrapper{
-  height: calc(100% - 60px) !important;
+#aggregation{
   width: calc(100% - 20px);
   margin: 10px;
   margin-top: 50px;
-  border: 1px solid #ced4da;
-  border-radius: .25rem;
 }
-#aggregate-bins-row{
-  display: none;
+#aggregation-variables{
+  padding-left: 0;
+}
+.aggregation-items{
+  list-style-type: none;
+}
+.aggregation-variable{
+  width: calc(100% - 47px);
+  margin: 5px;
+}
+.aggregation-tables{
+  margin-bottom: 10px;
 }
