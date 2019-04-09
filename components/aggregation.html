@@ -65,10 +65,7 @@
     $('#aggregate').parent().css('overflow-y', 'scroll');
 
     function updateTable(i, variable){
-      let aggregation = new Tabulator("#aggregation-table-"+i, {
-        height: "calc(100% - 60px) !important",
-        layout: "fitColumns"
-      });
+      let aggregation = new Tabulator('#aggregation-table-'+i, { layout: 'fitColumns' });
       let values = [];
       let data = [];
       let dataset = variable.split(' ')[0];
@@ -89,8 +86,8 @@
       });
       data.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
       aggregation.setColumns([
-        {title: app.titleize(dataset + ' ' + column), field: column},
-        {title: 'Number of '  + app.titleize(dataset) + 's', field: 'n'},
+        {title: app.titleize(dataset) + ' ' + app.titleize(column), field: column},
+        {title: `Number of ${app.titleize(dataset)}s`, field: 'n'},
         {title: 'Percentage', field: 'percent', headerSort: false}
       ]);
       aggregation.setData(data);
@@ -102,10 +99,14 @@
 
     function updateTables(){
       let variables = $('#aggregation-variables li select');
-      variables.each(function(i){ updateTable(i, $(this).val()); });
+      variables.each(function(i){ updateTable(i+1, $(this).val()); });
       if(variables.length < $('.aggregation-tables').length){
         $('.aggregation-tables').each(function(i){
-          if(i > variables.length) $(this).remove();
+          if(i > variables.length){
+            $(this).slideUp(function(){
+              $(this).remove();
+            });
+          }
         });
       }
     }
@@ -138,14 +139,18 @@
       $('.aggregation-selector').on('change', updateTables);
 
       $('.aggregation-remove').on('click', function(){
-        $(this).parent().slideUp().remove();
-        updateTables();
+        $(this).parent().slideUp(function(){
+          $(this).remove();
+          updateTables();
+        });
       });
 
       $('.aggregation-variable').on('change', function(){
         let t = $(this);
         updateTable($(this).data('i'), $(this).val());
       });
+
+      updateTable(i, 'node cluster');
     }).trigger('click');
 
     $('#aggregation-export').click(function(){
@@ -168,6 +173,7 @@
     $('#aggregation').parent().css('z-index', 1000);
 
     $(window)
-      .on('link-threshold-change', updateTables);
+      .on('link-threshold-change', updateTables)
+      .on('node-visibility', updateTables);
   })();
   </script>
