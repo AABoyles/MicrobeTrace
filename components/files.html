@@ -242,6 +242,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#launch').prop('disabled', false).focus();
   });
 
+  app.addFile = function(rawfile){
+    processFile(rawfile);
+    $('#launch').prop('disabled', false).focus();
+  }
+
   function processFile(rawfile){
     var extension = rawfile.name.split('.').pop().toLowerCase();
     if(extension === 'zip'){
