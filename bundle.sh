@@ -17,6 +17,7 @@ npx postcss stylesheets/bundle.css > stylesheets/bundle.min.css
 cp node_modules/bioseq/dist/bioseq.min.js vendor/
 cp node_modules/patristic/dist/patristic.min.js vendor/
 cp node_modules/tn93/dist/tn93.min.js vendor/
+cp -r node_modules/open-iconic/font/* vendor/open-iconic/font/
 
 rm scripts/bundle.js && touch scripts/bundle.js
 cat node_modules/underscore/underscore-min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js

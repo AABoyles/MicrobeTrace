@@ -2,8 +2,7 @@
 index.html
 package.json
 manifest.json
-node_modules/chosen-js/chosen-sprite.png
-node_modules/open-iconic/font/fonts/open-iconic.woff
-node_modules/open-iconic/font/fonts/open-iconic.ttf
-node_modules/open-iconic/font/fonts/open-iconic.otf
-node_modules/papaparse/papaparse.min.js
+vendor/open-iconic/font/css/open-iconic-bootstrap.min.css
+vendor/open-iconic/font/fonts/open-iconic.woff
+vendor/open-iconic/font/fonts/open-iconic.ttf
+vendor/open-iconic/font/fonts/open-iconic.otf
