@@ -263,6 +263,19 @@
           <div class="col-4">Color</div>
           <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
         </div>
+        <div class="form-group row">
+          <div class="col-4">Clustering</div>
+          <div class="col-8">
+            <div class="btn-group btn-group-toggle btn-groupsm w-100" data-toggle="buttons">
+              <label class="btn btn-light active col">
+                <input type="radio" name="map-clustering" id="map-clustering-on" autocomplete="off" checked> On
+              </label>
+              <label class="btn btn-light col">
+                <input type="radio" name="map-clustering" id="map-clustering-off" autocomplete="off"> Off
+              </label>
+            </div>
+          </div>
+        </div>
         <div class="form-group row" title="How transparent would you like the nodes to be?">
           <div class="col-4"><label for="map-node-transparency">Transparency</label></div>
           <div class="col-8"><input type="range" id="map-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00" /></div>
@@ -375,6 +388,7 @@
       center: [30, 0],
       zoom: 3,
       zoomControl: false,
+      maxZoom: 20,
       preferCanvas: true
     });
 
@@ -496,16 +510,21 @@
           selectedColor = session.style.widgets['selected-color'],
           opacity = 1 - session.style.widgets['map-node-transparency'];
       let jitter = session.style.widgets['map-node-jitter'] > 0;
-      layers.nodes = L.featureGroup(
-        nodes.filter(d => d._lat && d._lon).map(function(d){
-          return L.circleMarker(L.latLng(d._lat + (jitter ? d._jlat : 0), d._lon + (jitter ? d._jlon : 0)), {
-            color: d.selected ? selectedColor : '#ffffff',
-            fillColor: colorVariable === 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
-            fillOpacity: opacity,
-            data: d
-          });
-        })
-      );
+      let features = nodes.filter(d => d._lat && d._lon).map(function(d){
+        return L.circleMarker(L.latLng(d._lat + (jitter ? d._jlat : 0), d._lon + (jitter ? d._jlon : 0)), {
+          color: d.selected ? selectedColor : '#ffffff',
+          fillColor: colorVariable === 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
+          fillOpacity: opacity,
+          data: d
+        });
+      });
+      if(session.style.widgets['map-clustering-on']){
+        layers.nodes = L.markerClusterGroup(features);
+        layers.nodes.addLayers(features);
+      } else {
+        layers.nodes = L.featureGroup(features);
+      }
+
       layers.nodes
         .on('mouseover', showNodeTooltip)
         .on('mouseout', hideTooltip)
@@ -764,6 +783,15 @@
       $('#map-countries-show').trigger('click');
       $('#map-states-show').trigger('click');
       resetStack();
+    });
+
+    $('#map-clustering-on').parent().on('click', function(){
+      session.style.widgets['map-clustering-on'] = true;
+      drawNodes();
+    });
+    $('#map-clustering-off').parent().on('click', function(){
+      session.style.widgets['map-clustering-on'] = false;
+      drawNodes();
     });
 
     $('#map-node-transparency').on('input', function(e){
