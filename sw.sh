@@ -3,10 +3,10 @@
 ls components/ | sed -e 's/^/components\//' | sed "s/.*/        '&',/" >> temp
 
 ls scripts/ | sed -e 's/^/scripts\//' | sed "s/.*/        '&',/" >> temp
-cat index.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
 cat components/*.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
 cat scripts/*.js | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
 ls vendor/ | sed -e 's/^/vendor\//' | sed "s/.*/        '&',/" >> temp
+ls patches/ | sed -e 's/^/patches\//' | sed "s/.*/        '&',/" >> temp
 
 ls stylesheets/ | sed -e 's/^/stylesheets\//' | sed "s/.*/        '&',/" >> temp
 cat index.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> temp

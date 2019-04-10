@@ -649,7 +649,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           Papa.parse(file.contents, {
             header: true,
-            worker: true,
             dynamicTyping: true,
             skipEmptyLines: true,
             complete: function(results){
@@ -712,7 +711,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           Papa.parse(file.contents, {
             header: true,
-            worker: true,
             dynamicTyping: true,
             skipEmptyLines: true,
             step: function(results){
@@ -787,7 +785,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         } else {
 
           Papa.parse(file.contents, {
-            worker: true,
             skipEmptyLines: true,
             complete: function(results){
               var nodeIDs = [];
