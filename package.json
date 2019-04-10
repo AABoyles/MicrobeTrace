@@ -6,6 +6,7 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/CDCgov/MicrobeTrace.git",
   "scripts": {
+    "build": "./bundle.sh",
     "cache": "./sw.sh",
     "demo": "npx http-server",
     "start": "node index.js"
@@ -50,6 +51,8 @@
     "xss": "^1.0.6"
   },
   "devDependencies": {
+    "cssnano": "^4.1.10",
+    "postcss-cli": "^6.1.2",
     "puppeteer": "^1.14.0"
   }
 }
