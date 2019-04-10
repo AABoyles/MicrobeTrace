@@ -9,6 +9,8 @@
     "build": "./bundle.sh",
     "cache": "./sw.sh",
     "demo": "npx http-server",
+    "excise": "./excise.sh",
+    "setup": "npm install && git submodule init && git submodule sync",
     "start": "node index.js"
   },
   "dependencies": {
