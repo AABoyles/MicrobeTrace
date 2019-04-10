@@ -38,6 +38,7 @@
     "open-iconic": "^1.1.1",
     "papaparse": "^4.6.3",
     "patristic": "^0.3.6",
+    "pdfmake": "^0.1.54",
     "plotly.js-dist": "^1.46.1",
     "popper.js": "^1.15.0",
     "screenfull": "^3.3.2",

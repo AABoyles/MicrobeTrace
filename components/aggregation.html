@@ -46,6 +46,7 @@
               <select id="export-aggregation-file-type" class="form-control form-control-sm">
                 <option selected>csv</option>
                 <option>xlsx</option>
+                <option>pdf</option>
                 <option>json</option>
               </select>
             </div>
@@ -61,13 +62,12 @@
 
   <script>
   (function(){
-
-    $('#aggregate').parent().css('overflow-y', 'scroll');
+    let data = [];
 
     function updateTable(i, variable){
       let aggregation = new Tabulator('#aggregation-table-'+i, { layout: 'fitColumns' });
       let values = [];
-      let data = [];
+      let tabledata = [];
       let dataset = variable.split(' ')[0];
       let column = variable.split(' ').slice(1).join(' ');
       let rawdata = app['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
@@ -75,26 +75,31 @@
       rawdata.forEach(row => {
         let val = row[column];
         if(values.includes(val)){
-          data[values.indexOf(val)].n++;
+          tabledata[values.indexOf(val)].n++;
         } else {
           values.push(val);
           let newRow = {};
           newRow[column] = val;
           newRow.n = 1;
-          data.push(newRow);
+          tabledata.push(newRow);
         }
       });
-      data.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
+      tabledata.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
       aggregation.setColumns([
         {title: app.titleize(dataset) + ' ' + app.titleize(column), field: column},
         {title: `Number of ${app.titleize(dataset)}s`, field: 'n'},
         {title: 'Percentage', field: 'percent', headerSort: false}
       ]);
-      aggregation.setData(data);
+      aggregation.setData(tabledata);
       aggregation.setSort([
         {column: 'n', dir: 'desc'},
         {column: column, dir: 'asc'}
       ]);
+      data[i-1] = {
+        dataset: dataset,
+        column: column,
+        data: tabledata
+      };
     }
 
     function updateTables(){
@@ -164,13 +169,51 @@
         let ws = XLSX.utils.json_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, name);
         XLSX.writeFile(wb, name + '.' + format);
+      } else if(format === 'pdf'){
+        pdfMake.createPdf({
+          content: [{
+              image: app.watermark
+            }, {
+              text: 'Cluster Aggregation Snapshot',
+              style: 'header',
+              alignment: 'center'
+            },
+            ...data.map(t => ({
+              style: 'paddedTable',
+              table: {
+                headerRows: 1,
+                widths: ['*', '*', '*'],
+                body: [
+                  [app.titleize(t.dataset) + ' ' + app.titleize(t.column), `Number of ${app.titleize(t.dataset)}s`, 'Percentage']
+                ].concat(t.data.map(Object.values))
+              }
+            }))
+          ],
+          footer: function(currentPage, pageCount){
+            return [{
+              text: `Page ${currentPage.toString()} of ${pageCount}`,
+              alignment: 'center'
+            }];
+          },
+          styles: {
+            header: {
+              fontSize: 22,
+              bold: true
+            },
+            paddedTable: {
+              margin: [10, 10, 10, 10]
+            }
+          }
+        }).download(name + '.pdf');
       } else {
         let blob = new Blob([JSON.stringify(data)], {type: 'application/json;charset=utf-8'});
         saveAs(blob, name + '.' + format);
       }
     });
 
-    $('#aggregation').parent().css('z-index', 1000);
+    $('#aggregation').parent()
+      .css('overflow-y', 'scroll')
+      .css('z-index', 1000);
 
     $(window)
       .on('link-threshold-change', updateTables)
