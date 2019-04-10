@@ -760,13 +760,13 @@ app.reset = function(){
 //adapted from from http://www.movable-type.co.uk/scripts/latlong.html
 app.haversine = function(a, b){
   var r = Math.PI / 180;
-  var φ1 = a._lat * r;
-  var φ2 = b._lat * r;
-  var Δλ = (b._lon - a._lon) * r;
-  var Δφ = (b._lat - a._lat) * r;
-  var a = Math.cos(φ1) * Math.cos(φ2) *
-          Math.sin(Δλ/2) * Math.sin(Δλ/2) +
-          Math.sin(Δφ/2)**2;
+  var phi1 = a._lat * r;
+  var phi2 = b._lat * r;
+  var deltalambda = (b._lon - a._lon) * r;
+  var deltaphi = (b._lat - a._lat) * r;
+  var a = Math.cos(phi1) * Math.cos(phi2) *
+          Math.sin(deltalambda/2) * Math.sin(deltalambda/2) +
+          Math.sin(deltaphi/2)**2;
   var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return(c * 6378.1); // kilometers
 };
