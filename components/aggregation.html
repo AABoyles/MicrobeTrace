@@ -44,7 +44,7 @@
             </div>
             <div class="col-3">
               <select id="export-aggregation-file-type" class="form-control form-control-sm">
-                <option selected>csv</option>
+                <option selected>csv.zip</option>
                 <option>xlsx</option>
                 <option>pdf</option>
                 <option>json</option>
@@ -108,9 +108,7 @@
       if(variables.length < $('.aggregation-tables').length){
         $('.aggregation-tables').each(function(i){
           if(i > variables.length){
-            $(this).slideUp(function(){
-              $(this).remove();
-            });
+            $(this).slideUp(() => $(this).remove());
           }
         });
       }
@@ -161,13 +159,18 @@
     $('#aggregation-export').click(function(){
       let format = $('#export-aggregation-file-type').val();
       let name = $('#export-aggregation-file-name').val();
-      if(format === 'csv'){
-        let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
-        saveAs(blob, name + '.' + format);
+      if(format === 'csv.zip'){
+        var zip = new JSZip();
+        data.forEach(t => {
+          zip.file(t.dataset + '_' + t.column + '.csv', Papa.unparse(t.data));
+        });
+        zip.generateAsync({type:'blob'}).then(content => saveAs(content, name+'.zip'));
       } else if(format === 'xlsx'){
         let wb = XLSX.utils.book_new();
-        let ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, name);
+        data.forEach(t => {
+          let ws = XLSX.utils.json_to_sheet(t.data);
+          XLSX.utils.book_append_sheet(wb, ws, app.titleize(t.dataset) + ' ' + app.titleize(t.column));
+        });
         XLSX.writeFile(wb, name + '.' + format);
       } else if(format === 'pdf'){
         pdfMake.createPdf({
