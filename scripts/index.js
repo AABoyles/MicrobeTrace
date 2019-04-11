@@ -84,7 +84,8 @@ $(function(){
     });
   }
 
-  $('#RecallDataTab').on('click', function(){
+  $('#RecallDataTab').on('click', function(e){
+    e.preventDefault();
     updateTable();
     $('#session-recall-modal').modal('show');
   });
@@ -157,12 +158,14 @@ $(function(){
     }
   });
 
-  $('#AddDataTab').on('click', function(){
+  $('#AddDataTab').on('click', function(e){
+    e.preventDefault();
     $('#network-statistics-hide').trigger('click');
     app.launchView('files');
   });
 
-  $('#NewTab').on('click', function(){
+  $('#NewTab').on('click', function(e){
+    e.preventDefault();
     $('#exit-modal').modal();
   });
 
@@ -170,12 +173,16 @@ $(function(){
 
   $('.viewbutton').on('click', function(){ app.launchView($(this).data('href')); });
 
-  $('#ReloadTab').on('click', function(){
+  $('#ReloadTab').on('click', function(e){
+    e.preventDefault();
     $('#exit-button').on('click', function(){ window.location.reload(); });
     $('#exit-modal').modal();
   });
 
-  $('#FullScreenTab').on('click', function(){ screenfull.toggle(); });
+  $('#FullScreenTab').on('click', function(e){
+    e.preventDefault();
+    screenfull.toggle();
+  });
 
   $('[name="NNOptions"]').on('change', function(){
     app.updateNetwork($('#node-singletons-hide').is(':checked'));
@@ -333,10 +340,10 @@ $(function(){
     body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
   });
 
-  $('#RevealAllTab').on('click', function(e){
+  $('#RevealAllTab').on('click', function(){
     session.data.clusters.forEach(function(c){ c.visible = true; });
     app.setLinkVisibility();
-    $('#node-singletons-show').parent().click(); //calls app.setNodeVisibility();
+    $('#node-singletons-show').parent().click();
   });
 
   $('#node-color-variable')
@@ -441,7 +448,8 @@ $(function(){
     }
   });
 
-  $('#PhylogeographyTab').on('click', function(){
+  $('#PhylogeographyTab').on('click', function(e){
+    e.preventDefault();
     var l = {"type":"column","content":[{"type":"row","content":[{"type":"stack","content":[{"type":"geo_map"}]},{"type":"stack","content":[{"type":"phylogenetic_tree"}]}]},{"type":"stack","content":[{"type":"timeline"}]}]};
     app.loadLayout(l);
     setTimeout(function(){ app.loadLayout(l); }, 80);
