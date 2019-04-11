@@ -267,10 +267,10 @@
           <div class="col-4">Clustering</div>
           <div class="col-8">
             <div class="btn-group btn-group-toggle btn-groupsm w-100" data-toggle="buttons">
-              <label class="btn btn-light active col">
+              <label class="btn btn-light btn-sm col active">
                 <input type="radio" name="map-clustering" id="map-clustering-on" autocomplete="off" checked> On
               </label>
-              <label class="btn btn-light col">
+              <label class="btn btn-light btn-sm col">
                 <input type="radio" name="map-clustering" id="map-clustering-off" autocomplete="off"> Off
               </label>
             </div>
@@ -519,7 +519,9 @@
         });
       });
       if(session.style.widgets['map-clustering-on']){
-        layers.nodes = L.markerClusterGroup(features);
+        layers.nodes = L.markerClusterGroup({
+          maxClusterRadius: 20
+        });
         layers.nodes.addLayers(features);
       } else {
         layers.nodes = L.featureGroup(features);
@@ -629,7 +631,6 @@
     $('#map-fit').on('click', function(){
       map.flyToBounds(layers.nodes.getBounds());
     });
-
 
     $('#map-layer-upload').on('click', function() {
       $('#map-file-input').click();
