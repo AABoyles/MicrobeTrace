@@ -1,4 +1,4 @@
-importScripts('../node_modules/bioseq/dist/bioseq.min.js');
+importScripts('../vendor/bioseq.min.js');
 onmessage = function(e){
   let start = Date.now();
   let subset = e.data.nodes;

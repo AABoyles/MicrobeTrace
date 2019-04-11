@@ -17,45 +17,11 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="aggregation-tab">
-        <div class="form-group row" title="What data would you like to aggregate?">
-          <div class="col-4">Data</div>
-          <div class="col-8">
-            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light col active">
-                <input type="radio" name="aggregate-dataset" data-value="node" autocomplete="off" checked> Nodes
-              </label>
-              <label class="btn btn-light col">
-                <input type="radio" name="aggregate-dataset" data-value="link" autocomplete="off"> Links
-              </label>
-              <label class="btn btn-light">
-                <input type="radio" name="aggregate-dataset" data-value="cluster" autocomplete="off"> Clusters
-              </label>
-            </div>
-          </div>
-        </div>
         <div class="form-group row" title="What data field would you like to aggregate on?">
-          <div class="col-4">Variable</div>
-          <div class="col-8">
-            <select id="aggregate-variable" class="custom-select custom-select-sm"></select>
-          </div>
-        </div>
-        <div class="form-group row" title="Would you like to group variables that are close together?">
-          <div class="col-4">Binning</div>
-          <div class="col-8">
-            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-              <label class="btn btn-light col active">
-                <input type="radio" name="aggregate-binning" data-value="off" autocomplete="off" checked> Unbinned
-              </label>
-              <label class="btn btn-light col">
-                <input type="radio" name="aggregate-binning" data-value="on" autocomplete="off"> Binned
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="form-group row" id="aggregate-bins-row" title="How many bins would you like to sort that data into?">
-          <div class="col-4">Number of Bins</div>
-          <div class="col-8">
-            <input id="aggregate-bins" class="custom-select custom-select-sm" type="number" min="1" value="10" step="1"></input>
+          <div class="col-3">Tables</div>
+          <div class="col-9">
+            <ul id="aggregation-variables"></ul>
+            <button type="button" class="btn btn-primary btn-sm w-100" id="aggregation-add-variable">Add Variable</button>
           </div>
         </div>
       </div>
@@ -78,8 +44,9 @@
             </div>
             <div class="col-3">
               <select id="export-aggregation-file-type" class="form-control form-control-sm">
-                <option selected>csv</option>
+                <option selected>csv.zip</option>
                 <option>xlsx</option>
+                <option>pdf</option>
                 <option>json</option>
               </select>
             </div>
@@ -95,75 +62,55 @@
 
   <script>
   (function(){
-
     let data = [];
 
-    let aggregation = new Tabulator("#aggregation", {
-     	height: "calc(100% - 60px) !important",
-     	layout: "fitColumns"
-    });
-
-    function updateColumns(){
-      let dataset = $('input[name=aggregate-dataset]:checked').data('value');
-      $('#aggregate-variable').html(
-        session.data[dataset + 'Fields']
-          .map(l => `<option value="${l}">${app.titleize(l)}</option>`)
-          .join('\n')
-      ).val(dataset === 'cluster' ? 'ID' : 'cluster');
-    }
-
-    function updateTable(){
-      let dataset = $('input[name=aggregate-dataset]:checked').data('value');
-      let column = $('#aggregate-variable').val();
-      let binned = $('[name="aggregate-binning"]:checked').data('value') === 'on';
+    function updateTable(i, variable){
+      let aggregation = new Tabulator('#aggregation-table-'+i, { layout: 'fitColumns' });
       let values = [];
-      data = [];
+      let tabledata = [];
+      let dataset = variable.split(' ')[0];
+      let column = variable.split(' ').slice(1).join(' ');
       let rawdata = app['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
       let n = rawdata.length;
-      if(binned){
-        let values = rawdata.map(r => r[column]).sort((a, b) => a - b);
-        let perBin = Math.ceil(n/$('#aggregate-bins').val());
-        values.forEach((row, i) => {
-          let bin = data[Math.floor(i/perBin)];
-          if(bin){
-            bin.n++;
-            bin.max = row;
-            bin[column] = bin.min + '-' + bin.max;
-          } else {
-            data.push({
-              n: 1,
-              min: row,
-              max: row
-            });
-          }
-        });
-        console.log(data);
-      } else {
-        rawdata.forEach(row => {
-          let val = row[column];
-          if(values.includes(val)){
-            data[values.indexOf(val)].n++;
-          } else {
-            values.push(val);
-            let newRow = {};
-            newRow[column] = val;
-            newRow.n = 1;
-            data.push(newRow);
-          }
-        });
-      }
-      data.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
+      rawdata.forEach(row => {
+        let val = row[column];
+        if(values.includes(val)){
+          tabledata[values.indexOf(val)].n++;
+        } else {
+          values.push(val);
+          let newRow = {};
+          newRow[column] = val;
+          newRow.n = 1;
+          tabledata.push(newRow);
+        }
+      });
+      tabledata.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
       aggregation.setColumns([
-        {title: app.titleize(dataset + ' ' + column), field: column},
-        {title: 'Number of '  + app.titleize(dataset) + 's', field: 'n'},
+        {title: app.titleize(dataset) + ' ' + app.titleize(column), field: column},
+        {title: `Number of ${app.titleize(dataset)}s`, field: 'n'},
         {title: 'Percentage', field: 'percent', headerSort: false}
       ]);
-      aggregation.setData(data);
-      if(!binned){
-        aggregation.setSort([
-          {column: 'n', dir: 'desc'},
-          {column: column, dir: 'asc'}
-        ]);
+      aggregation.setData(tabledata);
+      aggregation.setSort([
+        {column: 'n', dir: 'desc'},
+        {column: column, dir: 'asc'}
+      ]);
+      data[i-1] = {
+        dataset: dataset,
+        column: column,
+        data: tabledata
+      };
+    }
+
+    function updateTables(){
+      let variables = $('#aggregation-variables li select');
+      variables.each(function(i){ updateTable(i+1, $(this).val()); });
+      if(variables.length < $('.aggregation-tables').length){
+        $('.aggregation-tables').each(function(i){
+          if(i > variables.length){
+            $(this).slideUp(() => $(this).remove());
+          }
+        });
       }
     }
 
@@ -176,48 +123,103 @@
       }
     });
 
-    $('input[name="aggregate-dataset"]').on('change', e => {
-      updateColumns();
-      updateTable();
-    });
+    $('#aggregation-add-variable').on('click', function(){
+      let i = $('#aggregation-variables li').length + 1;
+      $('#aggregation-variables').append(`<li class='aggregation-items'>
+        <span class="oi oi-x aggregation-remove"></span>
+        <select class='custom-select custom-select-sm aggregation-variable' data-i="${i}">
+          ${session.data.nodeFields.map(v => `<option value="node ${v}" ${v === 'cluster' ? 'selected' : ''}>Node ${app.titleize(v)}</option>`).join('\n')}
+          ${session.data.linkFields.map(v => `<option value="link ${v}">Link ${app.titleize(v)}</option>`).join('\n')}
+          ${session.data.clusterFields.map(v => `<option value="cluster ${v}">Cluster ${app.titleize(v)}</option>`).join('\n')}
+        </select>
+        <span class="oi oi-elevator"></span>
+      </li>`);
 
-    $('#aggregate-variable').on('change', updateTable);
+      $('#aggregation').append(`<div class="aggregation-tables table-sm" id="aggregation-table-${i}"></div>`);
 
-    $('[name="aggregate-binning"]').on('change', function(){
-      let val = $(this).data('value');
-      if(val == 'on'){
-        $('#aggregate-bins-row').css('display', 'flex');
-      } else {
-        $('#aggregate-bins-row').slideUp();
-      }
-      updateTable();
-    });
+      sortable('#aggregation-variables')[0].addEventListener('sortupdate', updateTables);
 
-    $('#aggregate-bins').on('change', updateTable);
+      $('.aggregation-selector').on('change', updateTables);
+
+      $('.aggregation-remove').on('click', function(){
+        $(this).parent().slideUp(function(){
+          $(this).remove();
+          updateTables();
+        });
+      });
+
+      $('.aggregation-variable').on('change', function(){
+        let t = $(this);
+        updateTable($(this).data('i'), $(this).val());
+      });
+
+      updateTable(i, 'node cluster');
+    }).trigger('click');
 
     $('#aggregation-export').click(function(){
       let format = $('#export-aggregation-file-type').val();
       let name = $('#export-aggregation-file-name').val();
-      if(format === 'csv'){
-        let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
-        saveAs(blob, name + '.' + format);
+      if(format === 'csv.zip'){
+        var zip = new JSZip();
+        data.forEach(t => {
+          zip.file(t.dataset + '_' + t.column + '.csv', Papa.unparse(t.data));
+        });
+        zip.generateAsync({type:'blob'}).then(content => saveAs(content, name+'.zip'));
       } else if(format === 'xlsx'){
         let wb = XLSX.utils.book_new();
-        let ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, name);
+        data.forEach(t => {
+          let ws = XLSX.utils.json_to_sheet(t.data);
+          XLSX.utils.book_append_sheet(wb, ws, app.titleize(t.dataset) + ' ' + app.titleize(t.column));
+        });
         XLSX.writeFile(wb, name + '.' + format);
+      } else if(format === 'pdf'){
+        pdfMake.createPdf({
+          content: [{
+              image: app.watermark
+            }, {
+              text: 'Cluster Aggregation Snapshot',
+              style: 'header',
+              alignment: 'center'
+            },
+            ...data.map(t => ({
+              style: 'paddedTable',
+              table: {
+                headerRows: 1,
+                widths: ['*', '*', '*'],
+                body: [
+                  [app.titleize(t.dataset) + ' ' + app.titleize(t.column), `Number of ${app.titleize(t.dataset)}s`, 'Percentage']
+                ].concat(t.data.map(Object.values))
+              }
+            }))
+          ],
+          footer: function(currentPage, pageCount){
+            return [{
+              text: `Page ${currentPage.toString()} of ${pageCount}`,
+              alignment: 'center'
+            }];
+          },
+          styles: {
+            header: {
+              fontSize: 22,
+              bold: true
+            },
+            paddedTable: {
+              margin: [10, 10, 10, 10]
+            }
+          }
+        }).download(name + '.pdf');
       } else {
         let blob = new Blob([JSON.stringify(data)], {type: 'application/json;charset=utf-8'});
         saveAs(blob, name + '.' + format);
       }
     });
 
-    $('#aggregation').parent().css('z-index', 1000);
+    $('#aggregation').parent()
+      .css('overflow-y', 'scroll')
+      .css('z-index', 1000);
 
     $(window)
-      .on('link-threshold-change', updateTable);
-
-    updateColumns();
-    updateTable();
+      .on('link-threshold-change', updateTables)
+      .on('node-visibility', updateTables);
   })();
   </script>

@@ -466,9 +466,24 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
   $('#alignerControlsButton, #alignment-preview').click(readFastas);
 
+  let cachedLSV = localStorage.getItem('link-sort-variable');
+  if(cachedLSV){
+    $('#default-distance-metric, #link-sort-variable').val(cachedLSV);
+    if(cachedLSV === 'snps'){
+      $('#default-distance-threshold, #link-threshold')
+        .attr('step', 1)
+        .val(16);
+    } else {
+      $('#default-distance-threshold, #link-threshold')
+        .attr('step', 0.001)
+        .val(0.015);
+    }
+  }
+
   $('#default-distance-metric, #link-sort-variable').change(function(e){
     var lsv = e.target.value;
     session.style.widgets['link-sort-variable'] = lsv;
+    if(e.target.id == 'default-distance-metric') localStorage.setItem('link-sort-variable', lsv);
     $('#default-distance-metric, #link-sort-variable').val(lsv);
     if(lsv === 'snps'){
       $('#default-distance-threshold, #link-threshold')
@@ -479,6 +494,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         .attr('step', 0.001)
         .val(0.015);
     }
+  });
+
+  let cachedView = localStorage.getItem('default-View');
+  if(cachedView){
+    $('#default-View').val(cachedView);
+  }
+
+  $('#default-View').change(function(e){
+    localStorage.setItem('default-View', e.target.value);
+    session.layout.content[0].type = e.target.value;
   });
 
   $('#stash-auto-yes').parent().on('click', function(){
@@ -492,15 +517,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   $('#stash-auto-no').parent().on('click', function(){
     if(temp.autostash) clearInterval(temp.autostash.interval);
     localStorage.setItem('stash-auto', 'false');
-  });
-
-  if(localStorage.getItem('default-View')){
-    $('#default-View').val(localStorage.getItem('default-View'));
-  }
-
-  $('#default-View').change(function(e){
-    localStorage.setItem('default-View', e.target.value);
-    session.layout.content[0].type = e.target.value;
   });
 
   function message(msg){
@@ -542,10 +558,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
 
     var anySequences = false;
-    session.state.metrics = ['tn93', 'snps'];
-    session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
     var check = session.files.length > 1;
     var defaultMetric = session.style.widgets['link-sort-variable'];
+
+    session.state.metrics = [defaultMetric];
+    session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
 
     session.files.sort(function(a, b){ return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
 
@@ -637,7 +654,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           Papa.parse(file.contents, {
             header: true,
-            worker: true,
             dynamicTyping: true,
             skipEmptyLines: true,
             complete: function(results){
@@ -700,7 +716,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           Papa.parse(file.contents, {
             header: true,
-            worker: true,
             dynamicTyping: true,
             skipEmptyLines: true,
             step: function(results){
@@ -775,7 +790,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         } else {
 
           Papa.parse(file.contents, {
-            worker: true,
             skipEmptyLines: true,
             complete: function(results){
               var nodeIDs = [];

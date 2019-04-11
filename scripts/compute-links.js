@@ -1,4 +1,4 @@
-importScripts('../node_modules/tn93/dist/tn93.min.js');
+importScripts('../vendor/tn93.min.js');
 
 function snps(s1, s2){
   //If we aligned them, these will definitely be the same length. If not...
