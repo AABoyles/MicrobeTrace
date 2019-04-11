@@ -409,6 +409,10 @@
 
     function matchCoordinates(callback){
       if(session.style.widgets['map-field-country'] !== 'None'){
+        if(!app.mapData.countries){
+          getMapData('countries.json', () => matchCoordinates(callback));
+          return;
+        }
         let val = session.style.widgets['map-field-country'];
         nodes.forEach(n => {
           let country = app.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
@@ -419,6 +423,10 @@
         });
       }
       if(session.style.widgets['map-field-state'] !== 'None'){
+        if(!app.mapData.states){
+          getMapData('states.json', () => matchCoordinates(callback));
+          return;
+        }
         let sval = session.style.widgets['map-field-state'];
         nodes.forEach(n => {
           let state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
@@ -427,32 +435,38 @@
             n._lon = state.properties._lon;
           }
         });
-        // Counties is nested in states because Counties are typically reported by name (rather than a UID like FIPS code),
-        // but counties names are non-unique (e.g. there are 31 Washington Counties). Accordingly, if we have a state and a county,
-        // We can use county. However, we cannot use county without state.
-        if(session.style.widgets['map-field-county'] !== 'None'){
-          if(!app.mapData.counties){
-            getMapData('counties.json', () => matchCoordinates(callback));
+      }
+      if(session.style.widgets['map-field-county'] !== 'None'){
+        if(!app.mapData.counties){
+          getMapData('counties.json', () => matchCoordinates(callback));
+          return;
+        }
+        let sval = session.style.widgets['map-field-state'];
+        let cval = session.style.widgets['map-field-county'];
+        nodes.forEach(n => {
+          let county;
+          county = app.mapData.counties.features.find(c => {
+            return (c.properties.fips === n[cval] ||
+              parseFloat(c.properties.fips) === parseFloat(n[cval]));
+          });
+          if(county){
+            n._lat = county.properties._lat;
+            n._lon = county.properties._lon;
             return;
           }
-          let cval = session.style.widgets['map-field-county'];
-          nodes.forEach(n => {
-            let state = app.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
-            let county = app.mapData.counties.features.find(c => {
-              var small = n[cval].toLowerCase();
-              return c.properties.state == state.properties.usps && (
-                c.properties.name.includes(small) ||
-                small.includes(c.properties.name) ||
-                c.properties.fips === n[cval] ||
-                parseFloat(c.properties.fips) === parseFloat(n[cval])
-              );
-            });
-            if(county){
-              n._lat = county.properties._lat;
-              n._lon = county.properties._lon;
-            }
+          let state = app.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
+          county = app.mapData.counties.features.find(c => {
+            var small = n[cval].toLowerCase();
+            return c.properties.state == state.properties.usps && (
+              c.properties.name.includes(small) ||
+              small.includes(c.properties.name)
+            );
           });
-        }
+          if(county){
+            n._lat = county.properties._lat;
+            n._lon = county.properties._lon;
+          }
+        });
       }
       if(session.style.widgets['map-field-zipcode'] !== 'None'){
         if(!app.mapData.zipcodes){
