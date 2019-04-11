@@ -511,7 +511,7 @@
           opacity = 1 - session.style.widgets['map-node-transparency'];
       let jitter = session.style.widgets['map-node-jitter'] > 0;
       let features = nodes.filter(d => d._lat && d._lon).map(function(d){
-        return L.circleMarker(L.latLng(d._lat + (jitter ? d._jlat : 0), d._lon + (jitter ? d._jlon : 0)), {
+        return L.circleMarker(L.latLng(parseFloat(d._lat) + (jitter ? d._jlat : 0), parseFloat(d._lon) + (jitter ? d._jlon : 0)), {
           color: d.selected ? selectedColor : '#ffffff',
           fillColor: colorVariable === 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
           fillOpacity: opacity,
