@@ -271,6 +271,69 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
+app.generateSeqs = function(idPrefix, count=20000, snps=100, seed=session.data.reference){
+  // example: app.addFile(new File([app.unparseFASTA(app.generateSeqs("gen-", 50, 20))], "generated.fasta"))
+
+  // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
+
+  const sampleCodons = [
+    'GCA','GCC','GCG','GCT','AAC','AAT','GAC','GAT','TGC','TGT','GAC','GAT',
+    'GAA','GAG','TTC','TTT','GGA','GGC','GGG','GGT','CAC','CAT','ATA','ATC',
+    'ATT','AAA','AAG','CTA','CTC','CTG','CTT','TTA','TTG','ATG','AAC','AAT',
+    'CCA','CCC','CCG','CCT','CAA','CAG','AGA','AGG','CGA','CGC','CGG','CGT',
+    'AGC','AGT','TCA','TCC','TCG','TCT','ACA','ACC','ACG','ACT','GTA','GTC',
+    'GTG','GTT','TGG','TAC','TAT','CAA','CAG','GAA','GAG'];
+  const sampleSNPs = ["A", "C", "G", "T"];
+
+  function sample(vec, count){
+    const samples = [];
+    for(var x = 0; x < count; x ++){
+      const idx = Math.floor(Math.random() * vec.length);
+      samples.push(vec[idx]);
+    }
+    return samples;
+  }
+
+  const seqs = [];
+
+  seqs.push({id: idPrefix + '0', seq: seed});
+
+  while(seqs.length < count){
+    // number codons to vary
+    const nCodons = Math.floor(Math.random() * 10) + 1;
+
+    // randomly select this many to check for existence
+    const randomCodonSet = sample(sampleCodons, nCodons).join('');
+
+    // try again if not present
+    if(seqs[seqs.length - 1].seq.indexOf(randomCodonSet) == -1)
+      continue;
+
+    // sequence to mutate
+    const oldseed = seqs[Math.floor(Math.random() * seqs.length)].seq;
+
+    // select codons to replace randomCodonSet
+    const replacementCodonSet = sample(sampleCodons, nCodons).join('');
+
+    // replace codon set
+    var newseed = oldseed.replace(randomCodonSet, replacementCodonSet);
+
+    // add snp substitutions randomly across entire sequence
+    // - randomly sample addedSNP
+    // - randomly pick SNPS to replace
+    const addedSNPs = Math.floor(Math.random() * snps);
+    for(var j = 0; j < addedSNPs; j ++){
+      const randomSNP = sample(sampleSNPs, 1)[0];
+      const locOfSNP = Math.floor(Math.random() * seed.length);
+      newseed = newseed.substr(0, locOfSNP) + randomSNP + newseed.substr(locOfSNP + 1);
+    }
+
+    seqs.push({id: idPrefix + '' + seqs.length, seq: newseed});
+  }
+
+  return seqs;
+};
+
 app.decoder = new TextDecoder('utf-8');
 
 app.align = function(params, callback){
