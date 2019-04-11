@@ -54,9 +54,8 @@ $(function(){
 
   // Let's set up the Nav Bar
   $('#stash-data').on('click', function(){
-    localStorage.setItem('stash-'+Date.now()+'-'+$('#stash-name').val(), JSON.stringify(session)).then(function(){
-      alertify.success('Session Stashed Successfully!');
-    });
+    localStorage.setItem('stash-'+Date.now()+'-'+$('#stash-name').val(), JSON.stringify(session));
+    alertify.success('Session Stashed Successfully!');
   });
 
   var table = new Tabulator('#recall-stashes-available', {
@@ -70,18 +69,16 @@ $(function(){
   });
 
   function updateTable(){
-    localStorage.keys().then(function(keys){
-      var rows = [];
-      keys.forEach(function(k){
-        if(!k.substring(0, 5) === 'stash') return;
-        rows.push({
-          fullname: k,
-          name: k.substring(20),
-          date: (new Date(parseFloat(k.substring(6,19)))).toISOString()
-        });
+    var rows = [];
+    Object.keys(localStorage).forEach(function(k){
+      if(k.substring(0, 5) !== 'stash') return;
+      rows.push({
+        fullname: k,
+        name: k.substring(20),
+        date: (new Date(parseFloat(k.substring(6,19)))).toISOString()
       });
-      table.setData(rows);
     });
+    table.setData(rows);
   }
 
   $('#RecallDataTab').on('click', function(e){
@@ -92,18 +89,16 @@ $(function(){
 
   $('#recall-delete-stash').on('click', function(){
     var key = table.getSelectedData()[0].fullname;
-    localStorage.removeItem(key).then(function(){
-      updateTable();
-      alertify.success('That stash has been deleted.');
-    });
+    localStorage.removeItem(key);
+    updateTable();
+    alertify.success('That stash has been deleted.');
   });
 
   $('#recall-load-stash').on('click', function(){
     var key = table.getSelectedData()[0].fullname;
-    localStorage.getItem(key).then(function(json){
-      app.applySession(JSON.parse(json));
-      $('#session-recall-modal').modal('hide');
-    });
+    var json = localStorage.getItem(key);
+    app.applySession(JSON.parse(json));
+    $('#session-recall-modal').modal('hide');
   });
 
   $('#save-data').on('click', function(){
