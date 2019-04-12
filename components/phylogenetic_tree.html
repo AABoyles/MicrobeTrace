@@ -219,10 +219,6 @@
     <a href="#" id="tree-rotate"  class="dropdown-item">Rotate</a>
     <a href="#" id="tree-flip"    class="dropdown-item">Flip</a>
     <a href="#" id="tree-reroot"  class="dropdown-item">Set As Root</a>
-    <hr />
-    <a href="#" id="tree-remove"  class="dropdown-item">Remove</a>
-    <a href="#" id="tree-isolate" class="dropdown-item">Isolate</a>
-    <a href="#" id="tree-excise"  class="dropdown-item">Excise</a>
   </div>
 
   <div id="tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
@@ -305,6 +301,7 @@
       leafLabels: session.style.widgets['tree-leaf-label-show'],
       branchDistances: session.style.widgets['tree-branch-distance-show']
     }, {
+      select: select,
       contextmenu: contextMenu,
       showtooltip: tooltip,
       hidetooltip: hideTooltip
@@ -326,13 +323,29 @@
         }
       }));
     }
+    tagSelected();
   }
 
-  drawTree();
+  function select(d){
+    let e = d3.event;
+    let n = d[0].data;
+    e.preventDefault();
+    if(e.ctrlKey){
+      session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
+    } else {
+      session.data.nodes.forEach(node => {
+        if(node.id === n.id){
+          node.selected = !n.selected;
+        } else {
+          node.selected = false;
+        }
+      });
+    }
+    $(window).trigger('node-selected');
+  }
 
   function contextMenu(d){
     let e = d3.event;
-    console.log(e);
     e.preventDefault();
     d3.select('#tooltip')
       .style('z-index', -1)
@@ -348,18 +361,6 @@
     });
     d3.select('#tree-flip').on('click', c => {
       tree.setData(d[0].data.rotate(true).getRoot());
-      menu.style('z-index', -1).style('display', 'none');
-    });
-    d3.select('#tree-remove').on('click', c => {
-      tree.setData(d[0].data.remove());
-      menu.style('z-index', -1).style('display', 'none');
-    });
-    d3.select('#tree-isolate').on('click', c => {
-      tree.setData(d[0].data.isolate());
-      menu.style('z-index', -1).style('display', 'none');
-    });
-    d3.select('#tree-excise').on('click', c => {
-      tree.setData(d[0].data.excise().getRoot());
       menu.style('z-index', -1).style('display', 'none');
     });
     menu
@@ -555,7 +556,23 @@
 
   $('#tree-fitbutton').on('click', e => tree.recenter());
 
+  function tagSelected(){
+    tree.eachLeafNode(function(circle, data){
+      let node = session.data.nodes.find(d => d.id === data.data.id);
+      if(node.selected){
+        d3.select(circle)
+          .style('stroke', session.style.widgets['selected-color'])
+          .style('stroke-width', 2);
+      } else {
+        d3.select(circle)
+          .style('stroke', '#ffffff')
+          .style('stroke-width', 1);
+      }
+    });
+  }
+
   $(window)
+    .on('node-selected', tagSelected)
     .on('background-color-change', function(){
       $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
     });
@@ -571,6 +588,6 @@
     }
   });
 
-  setTimeout(drawTree(), 1000);
+  drawTree();
 })();
   </script>
