@@ -87,6 +87,8 @@
                 <option>jpeg</option>
                 <option>webp</option>
                 <option>svg</option>
+                <option>csv</option>
+                <option>xlsx</option>
               </select>
             </div>
           </div>
@@ -254,6 +256,25 @@
     }).trigger('input');
 
     $('#heatmap-export').on('click', function(){
+      let filename = $('#heatmap-export-filename').val(),
+          filetype = $('#heatmap-export-filetype').val();
+      if(filetype === 'csv' || filetype === 'xlsx'){
+        let data = [[''].concat(session.data.distance_matrix.labels)].concat(
+          session.data.distance_matrix[session.style.widgets['link-sort-variable']].map((l, i) => {
+            return [session.data.distance_matrix.labels[i]].concat(l);
+          })
+        );
+        if(filetype === 'csv'){
+          let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
+          saveAs(blob, filename + '.' + filetype);
+        } else if(filetype === 'xlsx'){
+          let wb = XLSX.utils.book_new();
+          let ws = XLSX.utils.aoa_to_sheet(data);
+          XLSX.utils.book_append_sheet(wb, ws, name);
+          XLSX.writeFile(wb, filename + '.' + filetype);
+        }
+        return;
+      }
       let heatmap = $('#heatmap .main-svg').get(0);
       $('#heatmap .main-svg .infolayer').appendTo(heatmap);
       let watermark = d3.select(heatmap).append('image')
@@ -262,8 +283,6 @@
         .attr('width', 128)
         .attr('x', 10)
         .style('opacity', $('#heatmap-export-opacity').val());
-      let filename = $('#heatmap-export-filename').val(),
-          filetype = $('#heatmap-export-filetype').val();
       if(filetype === 'svg'){
         let content = app.unparseSVG(heatmap);
         let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
