@@ -222,7 +222,11 @@ app.processJSON = function(json, extension){
   if(extension === 'microbetrace'){
     app.applySession(data);
   } else {
-    app.applyHIVTrace(data);
+    if(data.version){
+      app.applyGHOST(data);
+    } else {
+      app.applyHIVTrace(data);
+    }
   }
 };
 
@@ -249,6 +253,40 @@ app.applyHIVTrace = function(hivtrace){
       'visible': true
     }, false);
   }
+app.applyGHOST = function(ghost){
+  session = app.sessionSkeleton();
+  session.meta.startTime = Date.now();
+  ghost['samples'].forEach(function(node){
+    var newNode = JSON.parse(JSON.stringify(node));
+    newNode.origin = 'GHOST Import';
+    newNode.genotypes = JSON.stringify(newNode.genotypes);
+    newNode.id = '' + newNode.id;
+    app.addNode(newNode);
+  });
+  ['genotypes', 'group', 'id', 'name'].forEach(function(key){
+    if(!session.data.nodeFields.includes(key)) session.data.nodeFields.push(key);
+  });
+  var links = ghost['links'];
+  var n = links.length;
+  var metric = session.state.metrics[0];
+  for(var i = 0; i < n; i++){
+    var link = links[i];
+    var newLink = Object.assign({}, link, {
+      'source': '' + link.source,
+      'target': '' + link.target,
+      'dist': parseFloat(link.dist),
+      'origin': ['GHOST Import'],
+      'visible': true
+    });
+    newLink[metric] = newLink.dist;
+    if(isNaN(newLink[metric])){
+      newLink[metric] = metric == 'tn93' ? 1 : 100;
+    }
+    app.addLink(newLink, false);
+  }
+  [metric, 'density', 'dist', 'shared', 'src_genotype', 'src_haps', 'tgt_genotype', 'tgt_haps'].forEach(function(key){
+    if(!session.data.linkFields.includes(key)) session.data.linkFields.push(key);
+  });
   app.finishUp();
 };
 
