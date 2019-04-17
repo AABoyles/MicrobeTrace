@@ -243,16 +243,22 @@ app.applyHIVTrace = function(hivtrace){
     if(!session.data.nodeFields.includes(key)) session.data.nodeFields.push(key);
   });
   var n = hivtrace['trace_results']['Edges'].length;
+  var metric = session.state.metrics[0];
   for(var i = 0; i < n; i++){
     var link = hivtrace['trace_results']['Edges'][i];
-    app.addLink({
+    var newLink = {
       'source': '' + link.sequences[0],
       'target': '' + link.sequences[1],
-      'distance': parseFloat(link.length),
       'origin': ['HIVTRACE Import'],
       'visible': true
-    }, false);
+    };
+    newLink[metric] = parseFloat(link.length);
+    app.addLink(newLink, false);
   }
+  session.data.linkFields.push(metric);
+  app.finishUp();
+};
+
 app.applyGHOST = function(ghost){
   session = app.sessionSkeleton();
   session.meta.startTime = Date.now();
