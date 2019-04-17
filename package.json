@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/CDCgov/MicrobeTrace.git",
   "scripts": {
-    "build": "./bundle.sh",
+    "bundle": "./bundle.sh",
     "cache": "./sw.sh",
     "demo": "npx http-server",
     "excise": "./excise.sh",
