@@ -589,7 +589,7 @@ $(function(){
       e.returnValue = 'Are you certain? This session will be lost!';
     });
 });
-
+var messageTimeout = null;
 alertify.defaults.transition = 'slide';
 alertify.defaults.theme.ok = 'btn btn-primary';
 alertify.defaults.theme.cancel = 'btn btn-danger';

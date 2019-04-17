@@ -540,6 +540,108 @@ app.computeTriangulation = function(metric, callback){
   });
 };
 
+app.finishUp = function(oldSession){
+  if(!oldSession){
+    app.computeDM(function(){
+      if($('[name="shouldTriangulate"]:checked').attr('id') == 'doTriangulate'){
+        session.state.metrics.forEach(function(m){
+          app.computeTriangulation(m, function(){
+            if(m == session.style.widgets['link-sort-variable']){
+              app.computeNN(session.style.widgets['link-sort-variable']);
+            }
+            app.computeTree(m, () => {
+              if(m == session.style.widgets['link-sort-variable']){
+                app.computeDirectionality();
+              }
+            });
+          });
+        });
+      } else {
+        app.computeNN(session.style.widgets['link-sort-variable']);
+        session.state.metrics.forEach(function(m){ app.computeTree(m, () => {
+          if(m == session.style.widgets['link-sort-variable']){
+            app.computeDirectionality();
+          }
+        })});
+      }
+    });
+  }
+  clearTimeout(messageTimeout);
+  ['node', 'link'].forEach(function(v){
+    var n = session.data[v+'s'].length;
+    var fields = session.data[v+'Fields'];
+    for(var i = 0; i < n; i++){
+      var d = session.data[v+'s'][i];
+      fields.forEach(function(field){
+        if(!(field in d)) d[field] = null;
+      });
+    }
+  });
+  $('#link-sort-variable').html(
+    session.data.linkFields.map(function(field){
+      return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+    }).join('\n')
+  ).val(session.style.widgets['link-sort-variable']);
+  $('#node-color-variable').html(
+    '<option selected>None</option>' +
+    session.data.nodeFields.map(function(field){
+      return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+    }).join('\n')
+  );
+  $('#link-color-variable').html(
+    '<option>None</option>' +
+    session.data.linkFields.map(function(field){
+      return '<option value="' + field + '">' + app.titleize(field) + '</option>';
+    }).join('\n')
+  );
+  try {
+    app.updateThresholdHistogram();
+  } catch(error){
+    console.error(error);
+    $('#loading-information-modal').modal('hide');
+    alertify
+      .error('Something went wrong! Please start a new session and try again.')
+      .delay(0)
+      .ondismiss(function(){
+        window.location.reload();
+      });
+  }
+  app.setLinkVisibility();
+  app.setNodeVisibility();
+  app.tagClusters();
+  app.computeDegree();
+  app.updateStatistics();
+  $('#network-statistics-wrapper').fadeIn();
+  $('#SettingsTab').attr('data-target', '#global-settings-modal');
+  session.meta.loadTime = Date.now() - session.meta.startTime;
+  console.log('Total load time:', (session.meta.loadTime/1000).toLocaleString() + 's');
+  if(oldSession){
+    layout.root.contentItems[0].remove();
+    setTimeout(function(){app.loadLayout(session.layout)}, 80);
+  } else {
+    app.launchView($('#default-View').val());
+  }
+  if(localStorage.getItem('stash-auto') === 'true'){
+    temp.autostash = {
+      time: Date.now(),
+      interval: setInterval(function(){
+        var newTime = Date.now();
+        localforage.setItem('stash-' + newTime + '-autostash', JSON.stringify(session)).then(function(){
+          localforage.removeItem('stash-' + temp.autostash.time + '-autostash').then(function(){
+            temp.autostash.time = newTime;
+          });
+        });
+      }, 60000)
+    };
+  }
+  $('.hideForHIVTrace').css('display', 'flex');
+  setTimeout(function(){
+    var files = layout.contentItems.find(function(item){ return item.componentName === 'files'; });
+    if(files) files.remove();
+    $('#loading-information-modal').modal('hide');
+  }, 1200);
+};
+
 app.capitalize = function(c){
   return c.toUpperCase();
 };
@@ -805,7 +907,6 @@ app.applySession = function(data, startTime){
   session.meta.startTime = startTime;
   app.applyStyle(session.style);
   app.finishUp(true);
-  $('#SettingsTab').attr('data-target', '#global-settings-modal');
 };
 
 app.reset = function(){
