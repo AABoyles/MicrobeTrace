@@ -91,6 +91,7 @@ app.defaultWidgets = {
   'selected-color-contrast': '#000000',
   'timeline-noncumulative': true,
   'tree-branch-distance-show': true,
+  'tree-horizontal-stretch': 1,
   'tree-leaf-label-show': true,
   'tree-layout-vertical': false,
   'tree-layout-horizontal': true,
@@ -102,7 +103,8 @@ app.defaultWidgets = {
   'tree-mode-smooth': false,
   'tree-mode-straight': false,
   'tree-ruler-show': true,
-  'tree-type': 'weighted'
+  'tree-type': 'weighted',
+  'tree-vertical-stretch': 1
 };
 
 app.sessionSkeleton = function(){

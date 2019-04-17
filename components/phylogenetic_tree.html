@@ -23,31 +23,9 @@
         <div class="accordion" id="tree-controls-accordion">
           <div class="card">
             <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#tree-controls-source" aria-expanded="true" aria-controls="tree-controls-source" style="color:#495057">Data</button>
-            </div>
-            <div id="tree-controls-source" class="collapse show" data-parent="#tree-controls-accordion">
-              <div class="card-body">
-                <div class="form-group row" title="Would you like to round disctances in the tree to integers?">
-                  <div class="col-3">Round</div>
-                  <div class="col-9">
-                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm active col">
-                        <input type="radio" name="tree-round" id="tree-round-false" autocomplete="off" checked> Unrounded
-                      </label>
-                      <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-round" id="tree-round" autocomplete="off"> Rounded
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header p-0">
               <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#tree-controls-layout" aria-expanded="false" aria-controls="tree-controls-layout" style="color:#495057">Layout</button>
             </div>
-            <div id="tree-controls-layout" class="collapse" data-parent="#tree-controls-accordion">
+            <div id="tree-controls-layout" class="collapse show" data-parent="#tree-controls-accordion">
               <div class="card-body">
                 <div class="form-group row" title="What kind of layout would you like to use for this tree?">
                   <div class="col-3">
@@ -75,6 +53,22 @@
                         <input type="radio" name="tree-layout" id="tree-layout-circular" autocomplete="off"> Circular
                       </label>
                     </div>
+                  </div>
+                </div>
+                <div class="form-group row" title="Would you like to vertically stretch (or squish) the Tree?">
+                  <div class="col-3">
+                    <label for="tree-vertical-stretch">Vertical Stretch</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="tree-vertical-stretch" type="range" min="0.1" max="10" value="1" step="0.1" />
+                  </div>
+                </div>
+                <div class="form-group row" title="Would you like to horizontally stretch (or squish) the Tree?">
+                  <div class="col-3">
+                    <label for="tree-horizontal-stretch">Horizontal Stretch</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="tree-horizontal-stretch" type="range" min="0.1" max="10" value="1" step="0.1" />
                   </div>
                 </div>
                 <div class="form-group row" title="Would you like to see a ruler indicating patristic distances next to your tree?">
@@ -141,6 +135,19 @@
                     </div>
                   </div>
                 </div>
+                <div class="form-group row" title="Would you like to round distances in the tree to integers?">
+                  <div class="col-3">Rounding</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm active col">
+                        <input type="radio" name="tree-round" id="tree-round-false" autocomplete="off" checked> Unrounded
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="tree-round" id="tree-round-true" autocomplete="off"> Rounded
+                      </label>
+                    </div>
+                  </div>
+                </div>
                 <div class="form-group row" title="How big should the branch distance labels be?">
                   <div class="col-3">
                     <label for="tree-branch-distance-size">Label Size</label>
@@ -169,6 +176,14 @@
                         <input type="radio" name="tree-leaf-nodes" id="tree-leaf-node-hide" autocomplete="off"> Hide
                       </label>
                     </div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-3">
+                    <label for="tree-leaf-node-size">Node Size</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="tree-leaf-node-size" type="range" min="1" max="32" value="6" step="1" />
                   </div>
                 </div>
                 <div class="form-group row">
@@ -426,6 +441,24 @@
     tree.setLayout('circular').recenter();
   });
 
+  $('#tree-vertical-stretch').on('input', function(){
+    let val = parseFloat(this.value);
+    session.style.widgets['tree-vertical-stretch'] = val;
+    var cached = tree.animation;
+    tree.setAnimation(0);
+    tree.setVStretch(val);
+    tree.setAnimation(cached);
+  });
+
+  $('#tree-horizontal-stretch').on('input', function(){
+    let val = parseFloat(this.value);
+    session.style.widgets['tree-horizontal-stretch'] = val;
+    var cached = tree.animation;
+    tree.setAnimation(0);
+    tree.setHStretch(val);
+    tree.setAnimation(cached);
+  });
+
   $('#tree-ruler-show').parent().on('click', e => {
     session.style.widgets['tree-ruler-hide'] = false;
     tree.setRuler(true);
@@ -477,6 +510,20 @@
     tree.setBranchDistances(false);
   });
 
+  $('#tree-round-true').parent().on('click', e => {
+    session.style.widgets['tree-round-true'] = true;
+    tree.eachBranchDistance((label, data) => {
+      d3.select(label).text(Math.round(data.target.data.length));
+    });
+  });
+
+  $('#tree-round-false').parent().on('click', e => {
+    session.style.widgets['tree-round-false'] = false;
+    tree.eachBranchDistance((label, data) => {
+      d3.select(label).text(data.target.data.length);
+    });
+  });
+
   $('#tree-branch-distance-size').parent().on('input', e => {
     let speed = tree.animation;
     tree.animation = 0;
@@ -496,6 +543,17 @@
   $('#tree-leaf-node-hide').parent().on('click', e => {
     session.style.widgets['tree-leaf-node-show'] = false;
     tree.setLeafNodes(false);
+  });
+
+  $('#tree-leaf-label-size').parent().on('input', e => {
+    let speed = tree.animation;
+    tree.animation = 0;
+    let size = parseFloat(e.target.value);
+    session.style.widgets['tree-leaf-node-size'] = size;
+    tree.eachLeafNode((node, data) => {
+      d3.select(node).style('font-size', size+'px');
+    });
+    tree.animation = speed;
   });
 
   $('#tree-leaf-label-show').parent().on('click', e => {
@@ -573,6 +631,7 @@
 
   $(window)
     .on('node-selected', tagSelected)
+    .on('node-color-change', drawTree)
     .on('background-color-change', function(){
       $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
     });
