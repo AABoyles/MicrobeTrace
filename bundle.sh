@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo 'Assembling Stylesheets...'
+
 rm stylesheets/bundle.css && touch stylesheets/bundle.css
 cat node_modules/bootstrap/dist/css/bootstrap.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/bootstrap4-toggle/css/bootstrap4-toggle.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
@@ -14,12 +16,15 @@ cat node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css >> stylesh
 cat node_modules/tabulator-tables/dist/css/tabulator.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/tabulator-tables/dist/css/bootstrap/tabulator_bootstrap4.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat stylesheets/main.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
-npx postcss stylesheets/bundle.css > stylesheets/bundle.min.css
+
+echo 'Copying Unbundlable Dependencies...'
 
 cp node_modules/bioseq/dist/bioseq.min.js vendor/
 cp node_modules/patristic/dist/patristic.min.js vendor/
 cp node_modules/tn93/dist/tn93.min.js vendor/
 cp -r node_modules/open-iconic/font/* vendor/open-iconic/font/
+
+echo 'Assembling Javascript Bundle...'
 
 rm scripts/bundle.js && touch scripts/bundle.js
 cat node_modules/underscore/underscore-min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
@@ -58,4 +63,11 @@ cat patches/shpwrite.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat scripts/common.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/pdfmake.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/vfs_fonts.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
+
+echo 'Minifying Stylesheets...'
+
+npx postcss stylesheets/bundle.css > stylesheets/bundle.min.css
+
+echo 'Minifying Javascript...'
+
 terser scripts/bundle.js -c -o scripts/bundle.min.js
