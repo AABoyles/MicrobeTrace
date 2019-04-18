@@ -878,6 +878,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.data.nodeFields.push('seq');
       $('.show-for-seq').show();
       $('.show-for-seq.row').css('display', 'flex');
+      session.data.nodes.forEach(function(d){ if(!d.seq) d.seq = ''; });
       var allDashes = /^-*$/;
       var subset = session.data.nodes.filter(function(d){ return !allDashes.test(d.seq); });
       if($('#doNotAlign').is(':checked')){
