@@ -2164,3 +2164,8 @@ a.btn, button.btn, .btn-group{
   padding-top: 48px;
 }
 
+#help-footer {
+  background-color: #e9ecef;
+  text-align: center;
+}
+
