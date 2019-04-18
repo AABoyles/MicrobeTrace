@@ -1209,8 +1209,8 @@ app.blobifySVG = function(svgString, width, height, callback){
 	image.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
 };
 
-app.getHelp = function(filename, callback){
-  $.get('help/' + filename, function(response){
+app.getHelp = function(target, callback){
+  $.get('help/' + target + '.md', function(response){
     callback(marked(response));
   });
 };

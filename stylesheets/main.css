@@ -775,3 +775,23 @@ a.btn, button.btn, .btn-group{
 .aggregation-tables{
   margin-bottom: 10px;
 }
+
+#help-panel{
+  height: 100%;
+  overflow-y: scroll;
+}
+
+#help-panel nav{
+  position:absolute;
+  width: 100%;
+  padding-right: 15px;
+}
+
+#help-panel .container{
+  padding-top: 48px;
+}
+
+#help-footer {
+  background-color: #e9ecef;
+  text-align: center;
+}

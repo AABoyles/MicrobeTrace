@@ -450,13 +450,13 @@ $(function(){
     setTimeout(function(){ app.loadLayout(l); }, 80);
   })
 
-  if(window.navigator.onLine){
-    $('#HelpTab')
-      .removeClass('viewbutton')
-      .attr('href', 'https://github.com/CDCgov/MicrobeTrace/wiki')
-      .attr('target', '_blank');
-    $('.ifOnline').show();
-  }
+  $('#HelpTab').on('click', function(e){
+    if(window.navigator.onLine){
+      window.open('https://github.com/CDCgov/MicrobeTrace/wiki');
+    } else {
+      app.launchView('help');
+    }
+  });
 
   $.getJSON('package.json', function(r){
     app.manifest = r;
