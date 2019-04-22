@@ -9,7 +9,6 @@ cat node_modules/golden-layout/src/css/goldenlayout-base.css >> stylesheets/bund
 cat node_modules/golden-layout/src/css/goldenlayout-light-theme.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/chosen-js/chosen.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/alertifyjs/build/css/alertify.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
-#cat node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/leaflet/dist/leaflet.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/leaflet.markercluster/dist/MarkerCluster.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
@@ -60,7 +59,6 @@ cat node_modules/alignment-viewer/dist/alignment-viewer.min.js >> scripts/bundle
 cat patches/FileSaver.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat patches/saveSvgAsPng.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat patches/shpwrite.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
-cat scripts/common.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/pdfmake.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/vfs_fonts.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 
