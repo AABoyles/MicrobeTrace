@@ -217,7 +217,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   $('#file-panel').parent().css('z-index', 1000);
 
   $('#file-settings-toggle').on('click', function(){
-    let pane = $('#file-settings-pane');
+    var pane = $('#file-settings-pane');
     if($(this).hasClass('active')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
@@ -259,9 +259,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         .loadAsync(rawfile)
         .then(function(zip){
           zip.forEach(function(relativePath, zipEntry){
-            extension = zipEntry.name.split('.').pop();
             zipEntry.async("string").then(function(c){
-              app.processJSON(c, extension);
+              app.processJSON(c, zipEntry.name.split('.').pop());
             });
           });
         });
@@ -291,19 +290,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       var workbook = XLSX.read(file.contents, {type: 'array'});
       var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
       var headers = [];
-      data.forEach(row => Object.keys(row).forEach(key => {
-        key = filterXSS(key);
-        if(!headers.includes(key)) headers.push(key);
-      }));
+      data.forEach(function(row){
+        Object.keys(row).forEach(function(key){
+          key = filterXSS(key);
+          if(!headers.includes(key)) headers.push(key);
+        })
+      });
       addTableTile(headers);
     } else {
       Papa.parse(file.contents, {
-        dynamicTyping: true,
         header: true,
         preview: 1,
         complete: function(output){
-          var headers = output.meta.fields.map(filterXSS);
-          addTableTile(headers);
+          addTableTile(output.meta.fields.map(filterXSS));
         }
       });
     }
@@ -470,7 +469,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
   $('#alignerControlsButton, #alignment-preview').click(readFastas);
 
-  let cachedLSV = localStorage.getItem('link-sort-variable');
+  var cachedLSV = localStorage.getItem('link-sort-variable');
   if(cachedLSV){
     $('#default-distance-metric, #link-sort-variable').val(cachedLSV);
     if(cachedLSV === 'snps'){
@@ -500,7 +499,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
   });
 
-  let cachedView = localStorage.getItem('default-View');
+  var cachedView = localStorage.getItem('default-View');
   if(cachedView){
     $('#default-View').val(cachedView);
   }
@@ -635,7 +634,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
           data.map(forEachLink);
           message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-          data.forEach(row => {
+          data.forEach(function(row){
             Object.keys(row).forEach(function(key){
               key = filterXSS(key);
               if(!session.data.linkFields.includes(key)){
