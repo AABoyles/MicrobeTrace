@@ -81,6 +81,15 @@
           </div>
         </div>
       </div>
+      <div class="form-group row" title="Would you like to generate a network based on random data?">
+        <div class="col-3">Generate</div>
+        <div class="col">
+          <input id="generate-number" type="number" class="form-control form-control-sm" min="1" max="2000" step="1" value="100"></input>
+        </div>
+        <div class="col">
+          <button id="generate-sequences" class="btn btn-light btn-sm col">Sequences</button>
+        </div>
+      </div>
       <div class="form-group row" title="Would you like to attempt to triangulate missing values in your distance matrices?">
         <div class="col-3">Triangulation</div>
         <div class="col-9">
@@ -241,11 +250,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     for(var i = 0, f; f = files[i]; i++) processFile(f);
     $('#launch').prop('disabled', false).focus();
   });
-
-  app.addFile = function(rawfile){
-    processFile(rawfile);
-    $('#launch').prop('disabled', false).focus();
-  }
 
   function processFile(rawfile){
     var extension = rawfile.name.split('.').pop().toLowerCase();
@@ -517,6 +521,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   $('#stash-auto-no').parent().on('click', function(){
     if(temp.autostash) clearInterval(temp.autostash.interval);
     localStorage.setItem('stash-auto', 'false');
+  });
+
+  $('#generate-sequences').on('click', function(){
+    $('#file-prompt').remove();
+    $('#launch').prop('disabled', false).focus();
+    processFile(new File([app.unparseFASTA(app.generateSeqs('gen-' + Date.now() + '-', parseFloat($('#generate-number').val()), 20))], 'generated.fasta'));
   });
 
   function message(msg){
