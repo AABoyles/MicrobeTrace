@@ -273,6 +273,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       };
       reader.readAsText(rawfile, 'UTF-8');
     }
+    if(extension === 'svg'){
+      var reader = new FileReader();
+      reader.onloadend = function(out){
+        app.processSVG(out.target.result);
+      };
+      reader.readAsText(rawfile, 'UTF-8');
+    }
     var isXL = (extension === 'xlsx' || extension === 'xls');
     fileto.promise(rawfile, isXL ? 'ArrayBuffer' : 'Text').then(function(file){
       session.files.push(file);

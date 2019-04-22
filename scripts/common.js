@@ -212,6 +212,44 @@ app.addLink = function(newLink, check){
   return 1;
 };
 
+app.processSVG = function(svg){
+  var nodes = [];
+  var $xml = $(svg);
+  $xml.find('.nodes g').each(function(i, node){
+    nodes.push($(node).attr('transform').slice(10, -1).split(',').map(parseFloat));
+    app.addNode({
+      id: i+'',
+      origin: ['Scraped SVG']
+    });
+  });
+  $xml.find('line').each(function(i, link){
+    var $l = $(link);
+    var source = nodes.findIndex(function(d){
+      return (
+        Math.abs(d[0] - parseFloat($l.attr('x1'))) < 0.0001 &&
+        Math.abs(d[1] - parseFloat($l.attr('y1'))) < 0.0001
+      );
+    });
+    var target = nodes.findIndex(function(d){
+      return (
+        Math.abs(d[0] - parseFloat($l.attr('x2'))) < 0.0001 &&
+        Math.abs(d[1] - parseFloat($l.attr('y2'))) < 0.0001
+      );
+    });
+    if(source < 0 || target < 0) return;
+    var base = {
+      source: source+'',
+      target: target+'',
+      origin: ['Scraped SVG']
+    };
+    session.state.metrics.forEach(function(metric){
+      base[metric] = 0;
+    });
+    app.addLink(base, true);
+  });
+  app.finishUp();
+};
+
 app.processJSON = function(json, extension){
   var data;
   try {
