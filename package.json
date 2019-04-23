@@ -14,6 +14,10 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.16.3"
+  },
+  "devDependencies": {
     "3d-force-graph": "^1.45.6",
     "alertifyjs": "^1.11.1",
     "alignment-viewer": "^0.3.2",
@@ -22,21 +26,21 @@
     "bootstrap4-toggle": "^3.4.0",
     "chosen-js": "^1.8.5",
     "clipboard": "^2.0.4",
-    "compression": "^1.7.4",
+    "cssnano": "^4.1.10",
     "d3": "^5.9.2",
     "d3-force-attract": "^0.1.1",
     "d3-symbol-extra": "^0.1.0",
-    "express": "^4.16.3",
     "fileto": "0.0.1",
     "golden-layout": "^1.5.9",
     "html2canvas": "^1.0.0-rc.1",
     "html5sortable": "^0.9.10",
+    "http-server": "^0.11.1",
     "jquery": "^3.4.0",
     "jszip": "^3.2.1",
     "leaflet": "^1.4.0",
     "leaflet-image": "^0.4.0",
     "leaflet.markercluster": "^1.4.1",
-    "marked": "^0.5.1",
+    "marked": "^0.6.2",
     "moment": "^2.24.0",
     "open-iconic": "^1.1.1",
     "papaparse": "^4.6.3",
@@ -44,19 +48,15 @@
     "pdfmake": "^0.1.54",
     "plotly.js-dist": "^1.47.2",
     "popper.js": "^1.15.0",
+    "postcss-cli": "^6.1.2",
+    "puppeteer": "^1.14.0",
     "screenfull": "^3.3.2",
     "tabulator-tables": "^4.2.5",
+    "terser": "^3.17.0",
     "tidytree": "^0.3.3",
     "tn93": "^0.2.2",
     "underscore": "^1.9.0",
     "xlsx": "^0.14.2",
     "xss": "^1.0.6"
-  },
-  "devDependencies": {
-    "cssnano": "^4.1.10",
-    "http-server": "^0.11.1",
-    "postcss-cli": "^6.1.2",
-    "puppeteer": "^1.14.0",
-    "terser": "^3.17.0"
   }
 }
