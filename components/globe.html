@@ -1,90 +1,122 @@
-  <div id="globe">
-    <svg></svg>
-  </div>
-
-  <script>
-  const width = 960;
-  const height = 500;
-  const config = {
-    speed: 0.005,
-    verticalTilt: -30,
-    horizontalTilt: 0
-  }
-  let locations = [];
-  const svg = d3.select('#globe svg')
-      .attr('width', width)
-      .attr('height', height);
-  const markerGroup = svg.append('g');
-  const projection = d3.geoOrthographic();
-  const initialScale = projection.scale();
-  const path = d3.geoPath().projection(projection);
-  const center = [width/2, height/2];
-
-  function drawGlobe(){
-    if(!app.mapData.countries){
-      getMapData('countries.json', drawGlobe);
-      return;
+  <svg id="globe">
+    <defs>
+      <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#005C99;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#0099FF;stop-opacity:1" />
+      </linearGradient>
+      <filter id="glow">
+        <feColorMatrix type="matrix"
+            values=
+            "0 0 0 0   0
+             0 0 0 0.9 0
+             0 0 0 0.9 0
+             0 0 0 1   0"/>
+        <feGaussianBlur stdDeviation="5.5" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+  </svg>
+  <style>
+    .land path {
+      fill: #6CCC00;
     }
-    svg.selectAll('.segment')
-      .data(app.mapData.countries.features)
-      .enter().append('path')
-      .attr('class', 'segment')
-      .attr('d', path)
-      .style('stroke', '#888')
-      .style('stroke-width', '1px')
-      .style('fill', (d, i) => '#e5e5e5')
-      .style('opacity', '.6');
-  }
+    .star path {
+        fill: #fff;
+        stroke: rgba(255, 255, 255, .5);
+        stroke-width: .25px;
+    }
+  </style>
+  <script>
+    var parent = $('#globe').parent();
+    var height, width;
+    var svg = d3.select('#globe');
 
-  function getMapData(type, callback){
-    let parts = type.split('.');
-    let name = parts[0], format = parts[1];
-    $.get('data/' + type, response => {
-      if(format === 'csv'){
-        app.mapData[name] = Papa.parse(response, {header: true}).data;
+    var projection = d3.geoOrthographic();
+    var path = d3.geoPath().projection(projection);
+
+    var sphere = {type: 'Sphere'};
+
+    var land, water, sky;
+
+    function draw(callback){
+      if(!app.mapData.countries){
+        $.getJSON('data/countries.json', function(response){
+          app.mapData.countries = response;
+          draw(callback);
+        });
+        return;
       }
-      if(format === 'json'){
-        app.mapData[name] = response;
+
+      resize();
+
+      projection = projection
+        .fitExtent([[50, 50], [width - 50, height - 50]], sphere)
+        .translate([width / 2, height / 2])
+        .precision(0.1);
+
+      path = d3.geoPath().projection(projection);
+
+      water = svg.append('g')
+        .attr('class', 'water')
+        .append('path')
+        .datum(sphere)
+        .attr("d", path)
+        .attr("filter", "url(#glow)")
+        .attr("fill", "url(#gradBlue)");
+
+      land = svg.append('g').attr('class', 'land');
+      land.selectAll("path").data(app.mapData.countries.features)
+        .enter().append("path")
+        .attr("d", path);
+
+      svg
+        .call(d3.zoom().on("zoom", zoomed))
+        .call(drag(projection).on('drag.render', redraw))
+        .call(redraw);
+    }
+
+    function drag(projection) {
+      let v0, q0, r0;
+
+      function dragstarted() {
+        v0 = versor.cartesian(projection.invert(d3.mouse(this)));
+        q0 = versor(r0 = projection.rotate());
       }
-    });
-  }
 
-  function drawGraticule(){
-    svg.append('path')
-      .datum(d3.geoGraticule().step([10, 10]))
-      .attr('class', 'graticule')
-      .attr('d', path)
-      .style('fill', '#fff')
-      .style('stroke', '#ccc');
-  }
+      function dragged() {
+        const v1 = versor.cartesian(projection.rotate(r0).invert(d3.mouse(this)));
+        const q1 = versor.multiply(q0, versor.delta(v0, v1));
+        projection = projection.rotate(versor.rotation(q1));
+        path = d3.geoPath().projection(projection);
+      }
 
-  function enableRotation(){
-    d3.timer(function(elapsed){
-      projection.rotate([config.speed * elapsed - 120, config.verticalTilt, config.horizontalTilt]);
-      svg.selectAll('path').attr('d', path);
-      drawMarkers();
-    });
-  }
+      return d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged);
+    }
 
-  function drawMarkers(){
-    const markers = markerGroup.selectAll('circle').data(locations);
-    markers.enter().append('circle')
-      .merge(markers)
-      .attr('cx', d => projection([d.longitude, d.latitude])[0])
-      .attr('cy', d => projection([d.longitude, d.latitude])[1])
-      .attr('fill', d => {
-        const coordinate = [d.longitude, d.latitude];
-        gdistance = d3.geoDistance(coordinate, projection.invert(center));
-        return gdistance > 1.57 ? 'none' : 'steelblue';
-      })
-      .attr('r', 7);
+    function zoomed(){
+      let transform = d3.event.transform;
+      projection = projection
+        .center([transform.x * -1, transform.y])
+        .scale(transform.k);
+      path = d3.geoPath().projection(projection);
+      redraw();
+    }
 
-    markerGroup.each(function () {
-      this.parentNode.appendChild(this);
-    });
-  }
+    function resize(){
+      height = parent.height();
+      width = parent.width();
+      svg.attr('width', width).attr('height', height);
+    }
 
-  drawGlobe();
-  drawGraticule();
-  enableRotation();
+    function redraw(){
+      water.selectAll("path").attr('d', path);
+      land.selectAll("path").attr('d', path);
+    }
+
+    draw();
   </script>
