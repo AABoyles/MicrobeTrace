@@ -58,7 +58,6 @@ cat node_modules/marked/marked.min.js >> scripts/bundle.js && printf "\n" >> scr
 cat node_modules/alignment-viewer/dist/alignment-viewer.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat patches/FileSaver.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat patches/saveSvgAsPng.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
-cat patches/shpwrite.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/pdfmake.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/vfs_fonts.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 

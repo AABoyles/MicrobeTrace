@@ -331,7 +331,6 @@
                   <option>jpeg</option>
                   <option>webp</option>
                   <option>geojson</option>
-                  <option>shapefile</option>
                 </select>
               </div>
             </div>
@@ -892,11 +891,6 @@
             saveAs(blob, $('#map-export-file-name').val() + '.' + format);
           }, 'image/' + format);
         });
-      } else if(format === 'shapefile'){
-        saveAs(
-          new Blob([shpwrite.zip(makeGeoJSON())], {type: 'application/zip'}),
-          $('#map-export-file-name').val() + '.zip'
-        );
       } else if(format === 'geojson'){
         saveAs(
           new Blob([JSON.stringify(makeGeoJSON())], {type: 'application/json;charset=utf-8'}),
