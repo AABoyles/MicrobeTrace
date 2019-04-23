@@ -2,7 +2,6 @@ onmessage = function(e){
   var start = Date.now();
   var subset = e.data;
   var n = subset.length;
-  var k = subset[0].seq.length;
   var output = [];
   for(var i = 0; i < n; i++){
     var seq = subset[i].seq.toUpperCase();
@@ -13,13 +12,15 @@ onmessage = function(e){
   }
   var consensus = "";
   var m = output.length;
-  for(var i = 0; i < m; i++){
-    var entry = output[i];
-    var maxKey = 'A', maxVal = entry[maxKey];
+  var entry, maxKey, maxVal;
+  for(var j = 0; j < m; j++){
+    entry = output[j];
+    maxKey = 'A';
+    maxVal = entry[maxKey];
     Object.keys(entry).forEach(char => {
-      if(entry[maxKey] <= entry[char]){
-        maxKey = char;
+      if(maxVal <= entry[char]){
         maxVal = entry[char];
+        maxKey = char;
       }
     });
     consensus += maxKey;

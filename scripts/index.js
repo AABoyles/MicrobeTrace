@@ -202,12 +202,13 @@ $(function(){
         n = session.data.links.length,
         max = Number.MIN_SAFE_INTEGER,
         min = Number.MAX_SAFE_INTEGER,
-        data = Array(n);
+        data = Array(n),
+        dist = null;
     for(var i = 0; i < n; i++){
-      var x = parseFloat(session.data.links[i][lsv]);
-      data[i] = x;
-      if(x < min) min = x;
-      if(x > max) max = x;
+      dist = parseFloat(session.data.links[i][lsv]);
+      data[i] = dist;
+      if(dist < min) min = dist;
+      if(dist > max) max = dist;
     }
     var range = max - min;
     var ticks = 40;

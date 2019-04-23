@@ -1,4 +1,4 @@
-var app = {};
+self.app = {};
 
 app.componentCache = {};
 
@@ -151,6 +151,8 @@ app.tempSkeleton = function(){
   };
 };
 
+app.mapData = {};
+
 app.defaultNode = function(){
   return {
     index: session.data.nodes.length,
@@ -271,7 +273,7 @@ app.processJSON = function(json, extension){
 };
 
 app.applyHIVTrace = function(hivtrace){
-  session = app.sessionSkeleton();
+  self.session = app.sessionSkeleton();
   session.meta.startTime = Date.now();
   hivtrace['trace_results']['Nodes'].forEach(function(node){
     var newNode = JSON.parse(JSON.stringify(node.patient_attributes));
@@ -300,7 +302,7 @@ app.applyHIVTrace = function(hivtrace){
 };
 
 app.applyGHOST = function(ghost){
-  session = app.sessionSkeleton();
+  self.session = app.sessionSkeleton();
   session.meta.startTime = Date.now();
   ghost['samples'].forEach(function(node){
     var newNode = JSON.parse(JSON.stringify(node));
@@ -360,44 +362,44 @@ app.generateSeqs = function(idPrefix, count=20000, snps=100, seed=session.data.r
 
   // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
 
-  const sampleCodons = [
+  var sampleCodons = [
     'GCA','GCC','GCG','GCT','AAC','AAT','GAC','GAT','TGC','TGT','GAC','GAT',
     'GAA','GAG','TTC','TTT','GGA','GGC','GGG','GGT','CAC','CAT','ATA','ATC',
     'ATT','AAA','AAG','CTA','CTC','CTG','CTT','TTA','TTG','ATG','AAC','AAT',
     'CCA','CCC','CCG','CCT','CAA','CAG','AGA','AGG','CGA','CGC','CGG','CGT',
     'AGC','AGT','TCA','TCC','TCG','TCT','ACA','ACC','ACG','ACT','GTA','GTC',
     'GTG','GTT','TGG','TAC','TAT','CAA','CAG','GAA','GAG'];
-  const sampleSNPs = ["A", "C", "G", "T"];
+  var sampleSNPs = ["A", "C", "G", "T"];
 
   function sample(vec, count){
-    const samples = [];
+    var samples = [];
     for(var x = 0; x < count; x ++){
-      const idx = Math.floor(Math.random() * vec.length);
+      var idx = Math.floor(Math.random() * vec.length);
       samples.push(vec[idx]);
     }
     return samples;
   }
 
-  const seqs = [];
+  var seqs = [];
 
   seqs.push({id: idPrefix + '0', seq: seed});
 
   while(seqs.length < count){
     // number codons to vary
-    const nCodons = Math.floor(Math.random() * 10) + 1;
+    var nCodons = Math.floor(Math.random() * 10) + 1;
 
     // randomly select this many to check for existence
-    const randomCodonSet = sample(sampleCodons, nCodons).join('');
+    var randomCodonSet = sample(sampleCodons, nCodons).join('');
 
     // try again if not present
     if(seqs[seqs.length - 1].seq.indexOf(randomCodonSet) == -1)
       continue;
 
     // sequence to mutate
-    const oldseed = seqs[Math.floor(Math.random() * seqs.length)].seq;
+    var oldseed = seqs[Math.floor(Math.random() * seqs.length)].seq;
 
     // select codons to replace randomCodonSet
-    const replacementCodonSet = sample(sampleCodons, nCodons).join('');
+    var replacementCodonSet = sample(sampleCodons, nCodons).join('');
 
     // replace codon set
     var newseed = oldseed.replace(randomCodonSet, replacementCodonSet);
@@ -405,10 +407,10 @@ app.generateSeqs = function(idPrefix, count=20000, snps=100, seed=session.data.r
     // add snp substitutions randomly across entire sequence
     // - randomly sample addedSNP
     // - randomly pick SNPS to replace
-    const addedSNPs = Math.floor(Math.random() * snps);
+    var addedSNPs = Math.floor(Math.random() * snps);
     for(var j = 0; j < addedSNPs; j ++){
-      const randomSNP = sample(sampleSNPs, 1)[0];
-      const locOfSNP = Math.floor(Math.random() * seed.length);
+      var randomSNP = sample(sampleSNPs, 1)[0];
+      var locOfSNP = Math.floor(Math.random() * seed.length);
       newseed = newseed.substr(0, locOfSNP) + randomSNP + newseed.substr(locOfSNP + 1);
     }
 
@@ -425,28 +427,28 @@ app.align = function(params, callback){
     if(callback) callback(params.nodes);
     return;
   }
-  var start = Date.now();
   var n = params.nodes.length;
-  aligner = new Worker('scripts/align-'+params.aligner+'.js');
+  var aligner = new Worker('scripts/align-'+params.aligner+'.js');
   aligner.onmessage = function(response){
-    output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
+    var output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
     console.log('Alignment transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
-    start = Date.now();
+    var start = Date.now();
     var minPadding = Number.MAX_SAFE_INTEGER,
-        maxLength = 0;
-    for(var j = 0; j < n; j++){
-      var d = output[j];
+        maxLength = 0,
+        d = null;
+    for(var i = 0; i < n; i++){
+      d = output[i];
       if(!d.seq) d.seq = '';
       if(minPadding > d.padding) minPadding = d.padding;
     }
     for(var j = 0; j < n; j++){
-      var d = output[j];
+      d = output[j];
       d.seq = '-'.repeat(d.padding - minPadding) + d.seq;
       delete d.padding;
       if(maxLength < d.seq.length) maxLength = d.seq.length;
     }
-    for(var j = 0; j < n; j++){
-      var d = output[j];
+    for(var k = 0; k < n; k++){
+      d = output[k];
       d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
     }
     console.log('Alignment Padding time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
@@ -456,12 +458,12 @@ app.align = function(params, callback){
 };
 
 app.computeConsensus = function(callback){
+  if(!callback) return;
   var nodes = session.data.nodes.filter(function(d){ return d.seq; });
   var computer = new Worker('scripts/compute-consensus.js');
   computer.onmessage = function(response){
-    consensus = app.decoder.decode(new Uint8Array(response.data.consensus));
     console.log('Consensus Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
-    if(callback) callback(consensus);
+    callback(app.decoder.decode(new Uint8Array(response.data.consensus)));
   };
   computer.postMessage(nodes);
 };
@@ -546,7 +548,7 @@ app.computeDirectionality = function(callback){
     console.log('Directionality Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
     var start = Date.now();
     var n = flips.length;
-    for(let i = 0; i < n; i++){
+    for(var i = 0; i < n; i++){
       if(flips[i]){
         var fliplink = session.data.links[i];
         var fliptemp = fliplink.source;
@@ -633,7 +635,7 @@ app.finishUp = function(oldSession){
             if(m == session.style.widgets['link-sort-variable']){
               app.computeNN(session.style.widgets['link-sort-variable']);
             }
-            app.computeTree(m, () => {
+            app.computeTree(m, function(){
               if(m == session.style.widgets['link-sort-variable']){
                 app.computeDirectionality();
               }
@@ -642,7 +644,7 @@ app.finishUp = function(oldSession){
         });
       } else {
         app.computeNN(session.style.widgets['link-sort-variable']);
-        session.state.metrics.forEach(function(m){ app.computeTree(m, () => {
+        session.state.metrics.forEach(function(m){ app.computeTree(m, function(){
           if(m == session.style.widgets['link-sort-variable']){
             app.computeDirectionality();
           }
@@ -851,15 +853,15 @@ app.getVisibleNodes = function(copy){
 app.getVisibleLinks = function(copy){
   var links = session.data.links;
   var n = links.length;
-  var out = [];
+  var out = [], link = null;
   if(copy){
     for(var i = 0; i < n; i++){
-      var link = links[i];
+      link = links[i];
       if(link.visible) out.push(JSON.parse(JSON.stringify(link)));
     }
   } else {
-    for(var i = 0; i < n; i++){
-      var link = links[i];
+    for(var j = 0; j < n; j++){
+      link = links[j];
       if(link.visible) out.push(link);
     }
   }
@@ -869,15 +871,15 @@ app.getVisibleLinks = function(copy){
 app.getVisibleClusters = function(copy){
   var clusters = session.data.clusters;
   var n = clusters.length;
-  var out = [];
+  var out = [], cluster = null;
   if(copy){
     for(var i = 0; i < n; i++){
-      var cluster = clusters[i];
+      cluster = clusters[i];
       if(cluster.visible) out.push(JSON.parse(JSON.stringify(cluster)));
     }
   } else {
-    for(var i = 0; i < n; i++){
-      var cluster = clusters[i];
+    for(var j = 0; j < n; j++){
+      cluster = clusters[j];
       if(cluster.visible) out.push(cluster);
     }
   }
@@ -905,12 +907,12 @@ app.updateStatistics = function(){
 };
 
 app.createNodeColorMap = function(){
-  let variable = session.style.widgets['node-color-variable'];
+  var variable = session.style.widgets['node-color-variable'];
   if(variable === 'None'){
     temp.style.nodeColorMap = function(){ return session.style.widgets['node-color']; };
     return [];
   }
-  values = _.chain(session.data.nodes)
+  var values = _.chain(session.data.nodes)
             .filter(function(d){return d.visible;})
             .pluck(variable)
             .uniq()
@@ -923,7 +925,9 @@ app.createNodeColorMap = function(){
   if(values.length > session.style.nodeColors.length){
     var colors = [];
     var n = Math.ceil(values.length/session.style.nodeColors.length);
-    while(n --> 0) colors = colors.concat(session.style.nodeColors);
+    while(n-- > 0){
+      colors = colors.concat(session.style.nodeColors);
+    }
     session.style.nodeColors = colors;
   }
   temp.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
@@ -931,12 +935,12 @@ app.createNodeColorMap = function(){
 };
 
 app.createLinkColorMap = function(){
-  let variable = session.style.widgets['link-color-variable'];
+  var variable = session.style.widgets['link-color-variable'];
   if(variable === 'None'){
     temp.style.linkColorMap = function(){ return session.style.widgets['link-color']; };
     return [];
   }
-  let values = [];
+  var values = [];
   if(variable === 'origin'){
     session.data.links.forEach(function(l){
       l.origin.forEach(function(o){
@@ -970,6 +974,7 @@ app.applyStyle = function(style){
   session.style.widgets = Object.assign({}, app.defaultWidgets, session.style.widgets);
   app.createLinkColorMap();
   app.createNodeColorMap();
+  var $id = null;
   for(var id in session.style.widgets){
     $id = $('#' + id);
     if($id.length > 0){
@@ -1013,10 +1018,10 @@ app.haversine = function(a, b){
   var phi2 = b._lat * r;
   var deltalambda = (b._lon - a._lon) * r;
   var deltaphi = (b._lat - a._lat) * r;
-  var a = Math.cos(phi1) * Math.cos(phi2) *
+  var x = Math.cos(phi1) * Math.cos(phi2) *
           Math.sin(deltalambda/2) * Math.sin(deltalambda/2) +
           Math.sin(deltaphi/2)**2;
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  var c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
   return(c * 6378.1); // kilometers
 };
 
@@ -1104,12 +1109,14 @@ app.launchView = function(view, callback){
     contentItem.element.find('.modal-header').on('mousedown', function(e1){
       var body = $('body');
       var parent = $(this).parent().parent().parent();
-      body.on('mousemove', e2 => {
+      body.on('mousemove', function(e2){
         parent
           .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
           .css('left', parseFloat(parent.css('left')) + e2.originalEvent.movementX + 'px');
       });
-      body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+      body.on('mouseup', function(e3){
+        body.off('mousemove').off('mouseup');
+      });
     });
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
     for(var id in session.style.widgets){
@@ -1195,9 +1202,9 @@ app.unparseSVG = function(svgNode){
       selectorTextArr.push( '#'+id );
     }
     var classes = nodes[i].classList;
-    for(var c = 0; c < classes.length; c++){
-      if(!('.'+classes[c]).includes(selectorTextArr)){
-        selectorTextArr.push('.'+classes[c]);
+    for(var d = 0; d < classes.length; d++){
+      if(!('.'+classes[d]).includes(selectorTextArr)){
+        selectorTextArr.push('.'+classes[d]);
       }
     }
   }
@@ -1205,8 +1212,8 @@ app.unparseSVG = function(svgNode){
   // Extract CSS Rules
   var extractedCSSText = '';
   var nStylesheets = document.styleSheets.length;
-  for (var i = 0; i < nStylesheets; i++) {
-    var s = document.styleSheets[i];
+  for (var j = 0; j < nStylesheets; j++) {
+    var s = document.styleSheets[j];
     try {
       if(!s.cssRules) continue;
     } catch(e){
@@ -1260,29 +1267,10 @@ app.ab2str = function(buf){
 app.str2ab = function(str){
   var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
   var bufView = new Uint8Array(buf);
-  for (var i=0, strLen=str.length; i < strLen; i++) {
+  for(var i=0, strLen=str.length; i < strLen; i++){
     bufView[i] = str.charCodeAt(i);
   }
   return buf;
-};
-
-app.encrypt = async (plainText, password) => {
-  const ptUtf8 = new TextEncoder().encode(plainText);
-  const pwUtf8 = new TextEncoder().encode(password);
-  const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const alg = { name: 'AES-GCM', iv: iv };
-  const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['encrypt']);
-  return { iv, encBuffer: await crypto.subtle.encrypt(alg, key, ptUtf8) };
-};
-
-app.decrypt = async (ctBuffer, iv, password) => {
-  const pwUtf8 = new TextEncoder().encode(password);
-  const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
-  const alg = { name: 'AES-GCM', iv: iv };
-  const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['decrypt']);
-  const ptBuffer = await crypto.subtle.decrypt(alg, key, ctBuffer);
-  return new TextDecoder().decode(ptBuffer);
 };
 
 app.exportHIVTRACE = function(){

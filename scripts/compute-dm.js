@@ -10,8 +10,8 @@ onmessage = function(e){
       output[metric][i][i] = 0;
     });
   }
-  for(var i = 0; i < m; i++){
-    var link = links[i];
+  for(var j = 0; j < m; j++){
+    var link = links[j];
     var row = labels.findIndex(l => l === link.source);
     if(row === -1) continue;
     var col = labels.findIndex(l => l === link.target);

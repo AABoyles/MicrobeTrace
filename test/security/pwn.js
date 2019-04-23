@@ -3,6 +3,6 @@
   if(alertify){
     alertify.error(message);
   } else {
-    alert(message);
+    document.body.innerHTML = '<h1>' + message + '</h1>';
   };
 })();
