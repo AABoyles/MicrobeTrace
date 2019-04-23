@@ -2169,3 +2169,15 @@ a.btn, button.btn, .btn-group{
   text-align: center;
 }
 
+/* Globe View */
+#globe{
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+}
+.star {
+    fill: #fff;
+    stroke: rgba(255, 255, 255, .5);
+    stroke-width: .25px;
+}
+

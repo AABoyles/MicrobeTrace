@@ -1,0 +1,90 @@
+  <div id="globe">
+    <svg></svg>
+  </div>
+
+  <script>
+  const width = 960;
+  const height = 500;
+  const config = {
+    speed: 0.005,
+    verticalTilt: -30,
+    horizontalTilt: 0
+  }
+  let locations = [];
+  const svg = d3.select('#globe svg')
+      .attr('width', width)
+      .attr('height', height);
+  const markerGroup = svg.append('g');
+  const projection = d3.geoOrthographic();
+  const initialScale = projection.scale();
+  const path = d3.geoPath().projection(projection);
+  const center = [width/2, height/2];
+
+  function drawGlobe(){
+    if(!app.mapData.countries){
+      getMapData('countries.json', drawGlobe);
+      return;
+    }
+    svg.selectAll('.segment')
+      .data(app.mapData.countries.features)
+      .enter().append('path')
+      .attr('class', 'segment')
+      .attr('d', path)
+      .style('stroke', '#888')
+      .style('stroke-width', '1px')
+      .style('fill', (d, i) => '#e5e5e5')
+      .style('opacity', '.6');
+  }
+
+  function getMapData(type, callback){
+    let parts = type.split('.');
+    let name = parts[0], format = parts[1];
+    $.get('data/' + type, response => {
+      if(format === 'csv'){
+        app.mapData[name] = Papa.parse(response, {header: true}).data;
+      }
+      if(format === 'json'){
+        app.mapData[name] = response;
+      }
+    });
+  }
+
+  function drawGraticule(){
+    svg.append('path')
+      .datum(d3.geoGraticule().step([10, 10]))
+      .attr('class', 'graticule')
+      .attr('d', path)
+      .style('fill', '#fff')
+      .style('stroke', '#ccc');
+  }
+
+  function enableRotation(){
+    d3.timer(function(elapsed){
+      projection.rotate([config.speed * elapsed - 120, config.verticalTilt, config.horizontalTilt]);
+      svg.selectAll('path').attr('d', path);
+      drawMarkers();
+    });
+  }
+
+  function drawMarkers(){
+    const markers = markerGroup.selectAll('circle').data(locations);
+    markers.enter().append('circle')
+      .merge(markers)
+      .attr('cx', d => projection([d.longitude, d.latitude])[0])
+      .attr('cy', d => projection([d.longitude, d.latitude])[1])
+      .attr('fill', d => {
+        const coordinate = [d.longitude, d.latitude];
+        gdistance = d3.geoDistance(coordinate, projection.invert(center));
+        return gdistance > 1.57 ? 'none' : 'steelblue';
+      })
+      .attr('r', 7);
+
+    markerGroup.each(function () {
+      this.parentNode.appendChild(this);
+    });
+  }
+
+  drawGlobe();
+  drawGraticule();
+  enableRotation();
+  </script>
