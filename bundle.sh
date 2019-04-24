@@ -47,7 +47,7 @@ cat node_modules/d3/dist/d3.min.js >> scripts/bundle.js && printf "\n" >> script
 cat node_modules/d3-force-attract/dist/d3-force-attract.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/html5sortable/dist/html5sortable.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
-cat node_modules/plotly.js-dist/plotly.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
+cat node_modules/plotly.js/dist/plotly.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/tabulator-tables/dist/js/tabulator.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/tidytree/dist/tidytree.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/3d-force-graph/dist/3d-force-graph.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
@@ -64,7 +64,3 @@ cat node_modules/pdfmake/build/vfs_fonts.js >> scripts/bundle.js && printf "\n" 
 echo 'Minifying Stylesheets...'
 
 npx postcss stylesheets/bundle.css > stylesheets/bundle.min.css
-
-echo 'Minifying Javascript...'
-
-terser scripts/bundle.js -c -o scripts/bundle.min.js
