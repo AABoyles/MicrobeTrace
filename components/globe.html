@@ -162,32 +162,6 @@
                   </div>
                 </div>
               </div>
-              <div class="form-group row" title="Would you like to see (US) States on the globe?">
-                <div class="col-4">States</div>
-                <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
-                      <input type="radio" name="globe-state-options" id="globe-states-show" autocomplete="off" checked> Show
-                    </label>
-                    <label class="btn btn-light col">
-                      <input type="radio" name="globe-state-options" id="globe-states-hide" autocomplete="off"> Hide
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group row" title="Would you like to see (US) Counties on the globe?">
-                <div class="col-4">Counties</div>
-                <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light col">
-                      <input type="radio" name="globe-county-options" id="globe-counties-show" autocomplete="off"> Show
-                    </label>
-                    <label class="btn btn-light active col">
-                      <input type="radio" name="globe-county-options" id="globe-counties-hide" autocomplete="off" checked> Hide
-                    </label>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -350,7 +324,7 @@
       context.fill();
 
       context.beginPath();
-      path(app.mapData.land);
+      path(app.mapData[session.style.widgets['globe-countries-show'] ? 'countries' : 'land']);
       context.fillStyle = "#6CCC00";
       context.fill();
 
@@ -364,7 +338,8 @@
           type: 'FeatureCollection',
           features:	makeNodeFeatures()
         });
-        context.fillStyle = "#000";
+        context.fillStyle = session.style.widgets['node-color'];
+        context.lineWidth = 4;
         context.fill();
       }
     }
@@ -546,6 +521,17 @@
     });
     $('#globe-stars-hide').parent().on('click', function(){
       session.style.widgets['globe-stars-show'] = false;
+      redraw();
+    });
+
+    $('#globe-node-jitter').on('input', function(e){
+      let v = parseFloat(e.target.value),
+          n = nodes.length, rand = d3.randomNormal(0, 20);
+      for(let i = 0; i < n; i++){
+        nodes[i]._jlon = (rand() * v) / 5;
+        nodes[i]._jlat = (rand() * v) / 9;
+      }
+      session.style.widgets['globe-node-jitter'] = v;
       redraw();
     });
 
