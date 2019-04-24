@@ -28,6 +28,14 @@ app.defaultWidgets = {
   'bubble-y': 'None',
   'bubble-size': 5,
   'flow-showNodes': 'selected',
+  'globe-field-lat': 'None',
+  'globe-field-lon': 'None',
+  'globe-field-tract': 'None',
+  'globe-field-zipcode': 'None',
+  'globe-field-county': 'None',
+  'globe-field-state': 'None',
+  'globe-field-country': 'None',
+  'globe-stars-show': true,
   'heatmap-metric': 'tn93',
   'heatmap-invertX': false,
   'heatmap-invertY': false,
@@ -1009,6 +1017,24 @@ app.reset = function(){
   });
   layout.contentItems = [];
   app.launchView('files');
+};
+
+app.getMapData = function(type, callback){
+  var parts = type.split('.');
+  var name = parts[0], format = parts[1];
+  if(app.mapData[name]){
+    callback();
+    return;
+  }
+  $.get('data/' + type, response => {
+    if(format === 'csv'){
+      app.mapData[name] = Papa.parse(response, {header: true}).data;
+    }
+    if(format === 'json'){
+      app.mapData[name] = response;
+    }
+    callback();
+  });
 };
 
 //adapted from from http://www.movable-type.co.uk/scripts/latlong.html

@@ -1,96 +1,388 @@
-  <svg id="globe">
-    <defs>
-      <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" style="stop-color:#005C99;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#0099FF;stop-opacity:1" />
-      </linearGradient>
-      <filter id="glow">
-        <feColorMatrix type="matrix"
-            values=
-            "0 0 0 0   0
-             0 0 0 0.9 0
-             0 0 0 0.9 0
-             0 0 0 1   0"/>
-        <feGaussianBlur stdDeviation="5.5" result="coloredBlur"/>
-        <feMerge>
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-  </svg>
-  <style>
-    .land path {
-      fill: #6CCC00;
-    }
-    .star path {
-        fill: #fff;
-        stroke: rgba(255, 255, 255, .5);
-        stroke-width: .25px;
-    }
-  </style>
+<canvas id="globe"></canvas>
+
+<div class="view-controls">
+  <button type="button" id="toggle-globe-settings" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
+    <span class="oi oi-cog"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#globe-export-modal" title="Export Map Data">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+</div>
+
+<div id="globe-settings-pane" class="left-pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="nav-item">
+      <a href="#globe-data-configurations" class="nav-link active" aria-controls="globe-data-configurations" role="tab" data-toggle="tab">Data</a>
+    </li>
+    <li role="presentation" class="nav-item">
+      <a href="#globe-layer-configurations" class="nav-link" aria-controls="globe-layer-configurations" role="tab" data-toggle="tab">Components</a>
+    </li>
+    <li role="presentation" class="nav-item">
+      <a href="#globe-node-configurations" class="nav-link" aria-controls="globe-node-configurations" role="tab" data-toggle="tab">Nodes</a>
+    </li>
+    <li role="presentation" class="nav-item">
+      <a href="#globe-link-configurations" class="nav-link" aria-controls="globe-link-configurations" role="tab" data-toggle="tab">Links</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade show active" id="globe-data-configurations">
+      <div class="row">
+        <div class="col-12">
+          <div class="alert alert-info alert-dismissible" role="alert">
+            Please select the most precise geographic data your inputs have.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" title="If your data have a latitude variable, select that here.">
+        <div class="col-4"><label for="globe-field-lat">Latitude</label></div>
+        <div class="col-8">
+          <select id="globe-field-lat" class="nodeVariables custom-select custom-select-sm">
+            <option selected>None</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="If your data have a longitude variable, select that here.">
+        <div class="col-4"><label for="globe-field-lon">Longitude</label></div>
+        <div class="col-8">
+          <select id="globe-field-lon" class="nodeVariables custom-select custom-select-sm">
+            <option selected>None</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="If your data have a Census Tract variable, select that here.">
+        <div class="col-4"><label for="globe-field-tract">Census Tract</label></div>
+        <div class="col-8">
+          <select id="globe-field-tract" class="nodeVariables custom-select custom-select-sm">
+            <option selected>None</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="If your data have a zipcode variable, select that here.">
+        <div class="col-4"><label for="globe-field-zipcode">Zipcode</label></div>
+        <div class="col-8">
+          <select id="globe-field-zipcode" class="nodeVariables custom-select custom-select-sm">
+            <option selected>None</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="If your data have a County variable, select that here.">
+        <div class="col-4"><label for="globe-field-county">County</label></div>
+        <div class="col-8">
+          <select id="globe-field-county" class="nodeVariables custom-select custom-select-sm">
+            <option selected>None</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="If your data have a (US) State variable, select that here.">
+        <div class="col-4"><label for="globe-field-state">State</label></div>
+        <div class="col-8">
+          <select id="globe-field-state" class="nodeVariables custom-select custom-select-sm">
+            <option selected>None</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="If your data have a Country variable, select that here.">
+        <div class="col-4"><label for="globe-field-country">Country</label></div>
+        <div class="col-8">
+          <select id="globe-field-country" class="nodeVariables custom-select custom-select-sm">
+            <option selected>None</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div role="tabpanel" class="tab-pane fade" id="globe-layer-configurations">
+      <div class="accordion" id="globe-layers-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-network" aria-expanded="false" aria-controls="globe-layers-network" style="color:#495057">Network</button>
+          </div>
+          <div id="globe-layers-network" class="collapse" data-parent="#globe-layers-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="Would you like to see Nodes on the globe?">
+                <div class="col-4">Nodes</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="globe-node-options" id="globe-node-show" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="globe-node-options" id="globe-node-hide" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="Would you like to see links on the globe?">
+                <div class="col-4">Links</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col active">
+                      <input type="radio" name="globe-link-options" id="globe-link-show" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="globe-link-options" id="globe-link-hide" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-vectors" aria-expanded="true" aria-controls="globe-layers-vectors" style="color:#495057">Offline</button>
+          </div>
+          <div id="globe-layers-vectors" class="collapse show" data-parent="#globe-layers-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="Would you like to see links on the globe?">
+                <div class="col-4">Stars</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col active">
+                      <input type="radio" name="globe-stars-options" id="globe-stars-show" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="globe-stars-options" id="globe-stars-hide" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="Would you like to see Countries on the globe?">
+                <div class="col-4">Countries</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="globe-country-options" id="globe-countries-show" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="globe-country-options" id="globe-countries-hide" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="Would you like to see (US) States on the globe?">
+                <div class="col-4">States</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="globe-state-options" id="globe-states-show" autocomplete="off" checked> Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="globe-state-options" id="globe-states-hide" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="Would you like to see (US) Counties on the globe?">
+                <div class="col-4">Counties</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col">
+                      <input type="radio" name="globe-county-options" id="globe-counties-show" autocomplete="off"> Show
+                    </label>
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="globe-county-options" id="globe-counties-hide" autocomplete="off" checked> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-user" aria-expanded="true" aria-controls="globe-layers-user" style="color:#495057">User-Provided</button>
+          </div>
+          <div id="globe-layers-user" class="collapse" data-parent="#globe-layers-accordion">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12">
+                  <div class="alert alert-info alert-dismissible" role="alert">
+                    Load a GeoJSON file below to add it to the globe.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="Import GeoJSON Map Data here">
+                <div class="col-12">
+                  <div class="custom-file">
+                    <input type="file" id="globe-file-input" class="custom-file-input" multiple />
+                    <label for="globe-file-input" class="custom-file-label">Choose File</label>
+                  </div>
+                </div>
+              </div>
+              <div id="globe-geojson-layers" class="form-group row" title="GeoJSON Layers">
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div role="tabpanel" class="tab-pane fade" id="globe-node-configurations">
+      <div class="form-group row">
+        <div class="col-4">Color</div>
+        <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
+      </div>
+      <div class="form-group row" title="How transparent would you like the nodes to be?">
+        <div class="col-4"><label for="globe-node-transparency">Transparency</label></div>
+        <div class="col-8"><input type="range" id="globe-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00" /></div>
+      </div>
+      <div class="form-group row" title="How much randomness do you want to add to node locations?">
+        <div class="col-4"><label for="globe-node-jitter">Jitter</label></div>
+        <div class="col-8"><input type="range" id="globe-node-jitter" min="0.00" max="5" step="0.05" value="0.00" /></div>
+      </div>
+    </div>
+    <div role="tabpanel" class="tab-pane fade" id="globe-link-configurations">
+      <div class="form-group row">
+        <div class="col-4">Color</div>
+        <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
+      </div>
+      <div class="form-group row" title="How transparent would you like links to be?">
+        <div class="col-4"><label for="globe-link-transparency">Transparency</label></div>
+        <div class="col-8"><input type="range" id="globe-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00" /></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="globe-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export Geospatial Data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group row">
+            <div class="col-8">
+              <input type="text" id="globe-export-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            </div>
+            <div class="col-4">
+              <select id="globe-export-file-format" class="form-control form-control-sm">
+                <option selected>png</option>
+                <option>jpeg</option>
+                <option>webp</option>
+                <option>geojson</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+        <button type="button" id="globe-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
   <script>
     var parent = $('#globe').parent();
     var height, width;
-    var svg = d3.select('#globe');
+    var canvg = d3.select('#globe');
+    var context = canvg.node().getContext('2d');
+
+    var gradient;
 
     var projection = d3.geoOrthographic();
-    var path = d3.geoPath().projection(projection);
+    var path = d3.geoPath(projection, context);
+
+    var starProjection = d3.geoAzimuthalEquidistant();
+    var starPath = d3.geoPath(starProjection, context).pointRadius(1);
 
     var sphere = {type: 'Sphere'};
 
-    var land, water, sky;
+    var nodes = app.getVisibleNodes();
 
-    function draw(callback){
-      if(!app.mapData.countries){
-        $.getJSON('data/countries.json', function(response){
-          app.mapData.countries = response;
-          draw(callback);
-        });
+    function init(){
+      if(!app.mapData.land){
+        app.getMapData('land.json', init);
         return;
       }
-
+      if(!app.mapData.stars){
+        app.getMapData('stars.json', init);
+        return;
+      }
       resize();
+      canvg
+        .call(drag(projection).on('drag.render', redraw))
+        .call(d3.zoom().on("zoom", zoomed))
+        .call(redraw);
+    }
 
+    function resize(){
+      height = parent.height();
+      width = parent.width();
+      canvg.attr('width', width).attr('height', height);
       projection = projection
         .fitExtent([[50, 50], [width - 50, height - 50]], sphere)
         .translate([width / 2, height / 2])
         .precision(0.1);
-
-      path = d3.geoPath().projection(projection);
-
-      water = svg.append('g')
-        .attr('class', 'water')
-        .append('path')
-        .datum(sphere)
-        .attr("d", path)
-        .attr("filter", "url(#glow)")
-        .attr("fill", "url(#gradBlue)");
-
-      land = svg.append('g').attr('class', 'land');
-      land.selectAll("path").data(app.mapData.countries.features)
-        .enter().append("path")
-        .attr("d", path);
-
-      svg
-        .call(d3.zoom().on("zoom", zoomed))
-        .call(drag(projection).on('drag.render', redraw))
-        .call(redraw);
+      starProjection = starProjection
+        .fitExtent([[0, 0], [3*width, 3*height]], app.mapData.stars)
+        .translate([width / 2, height / 2]);
+      gradient = context.createLinearGradient(50,0,width-50,0);
+      gradient.addColorStop(0, '#005C99');
+      gradient.addColorStop(1, '#0099FF');
     }
 
-    function drag(projection) {
+    function redraw(){
+      context.clearRect(0, 0, width, height);
+
+      if(session.style.widgets['globe-stars-show']){
+        context.beginPath();
+        starPath(app.mapData.stars);
+        context.fillStyle = "#fff";
+        context.fill();
+      }
+
+      context.beginPath();
+      path(sphere);
+      context.fillStyle = gradient;
+      context.fill();
+
+      context.beginPath();
+      path(app.mapData.land);
+      context.fillStyle = "#6CCC00";
+      context.fill();
+
+      if(session.style.widgets['globe-link-show']){
+
+      }
+
+      if(session.style.widgets['globe-node-show']){
+        context.beginPath();
+        path({
+          type: 'FeatureCollection',
+          features:	makeNodeFeatures()
+        });
+        context.fillStyle = "#000";
+        context.fill();
+      }
+    }
+
+    function drag(projection){
       let v0, q0, r0;
 
-      function dragstarted() {
+      function dragstarted(){
         v0 = versor.cartesian(projection.invert(d3.mouse(this)));
         q0 = versor(r0 = projection.rotate());
       }
 
-      function dragged() {
+      function dragged(){
         const v1 = versor.cartesian(projection.rotate(r0).invert(d3.mouse(this)));
         const q1 = versor.multiply(q0, versor.delta(v0, v1));
-        projection = projection.rotate(versor.rotation(q1));
-        path = d3.geoPath().projection(projection);
+        let rotation = versor.rotation(q1);
+        projection = projection.rotate(rotation);
+        starProjection = starProjection.rotate([rotation[0] * -1, rotation[1] * -1, rotation[2]]);
       }
 
       return d3.drag()
@@ -100,23 +392,230 @@
 
     function zoomed(){
       let transform = d3.event.transform;
-      projection = projection
-        .center([transform.x * -1, transform.y])
-        .scale(transform.k);
-      path = d3.geoPath().projection(projection);
+      projection = projection.scale(transform.k * 400);
       redraw();
     }
 
-    function resize(){
-      height = parent.height();
-      width = parent.width();
-      svg.attr('width', width).attr('height', height);
+    ['lat', 'lon', 'tract', 'zipcode', 'county', 'state', 'country'].forEach(v => {
+      let name = 'globe-field-'+v, s = $('#'+name);
+      s.on('change', function(e){
+        session.style.widgets[name] = e.target.value;
+        matchCoordinates(redraw);
+      });
+      if(session.data.nodeFields.includes(v)) s.val(v);
+    });
+
+    function matchCoordinates(callback){
+      if(session.style.widgets['globe-field-country'] !== 'None'){
+        if(!app.mapData.countries){
+          app.getMapData('countries.json', () => matchCoordinates(callback));
+          return;
+        }
+        let val = session.style.widgets['globe-field-country'];
+        nodes.forEach(n => {
+          let country = app.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
+          if(country){
+            n._lat = country.properties._lat,
+            n._lon = country.properties._lon
+          }
+        });
+      }
+      if(session.style.widgets['globe-field-state'] !== 'None'){
+        if(!app.mapData.states){
+          app.getMapData('states.json', () => matchCoordinates(callback));
+          return;
+        }
+        let sval = session.style.widgets['globe-field-state'];
+        nodes.forEach(n => {
+          let state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
+          if(state){
+            n._lat = state.properties._lat;
+            n._lon = state.properties._lon;
+          }
+        });
+      }
+      if(session.style.widgets['globe-field-county'] !== 'None'){
+        if(!app.mapData.counties){
+          app.getMapData('counties.json', () => matchCoordinates(callback));
+          return;
+        }
+        let sval = session.style.widgets['globe-field-state'];
+        let cval = session.style.widgets['globe-field-county'];
+        nodes.forEach(n => {
+          let county;
+          county = app.mapData.counties.features.find(c => {
+            return (c.properties.fips === n[cval] ||
+              parseFloat(c.properties.fips) === parseFloat(n[cval]));
+          });
+          if(county){
+            n._lat = county.properties._lat;
+            n._lon = county.properties._lon;
+            return;
+          }
+          let state = app.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
+          county = app.mapData.counties.features.find(c => {
+            var small = n[cval].toLowerCase();
+            return c.properties.state == state.properties.usps && (
+              c.properties.name.includes(small) ||
+              small.includes(c.properties.name)
+            );
+          });
+          if(county){
+            n._lat = county.properties._lat;
+            n._lon = county.properties._lon;
+          }
+        });
+      }
+      if(session.style.widgets['globe-field-zipcode'] !== 'None'){
+        if(!app.mapData.zipcodes){
+          app.getMapData('zipcodes.csv', () => matchCoordinates(callback));
+          return;
+        }
+        let val = session.style.widgets['globe-field-zipcode'];
+        nodes.forEach(n => {
+          let zo = app.mapData.zipcodes.find(z => z.zipcode == n[val]);
+          if(zo){
+            n._lat = zo._lat;
+            n._lon = zo._lon;
+          }
+        });
+      }
+      if(session.style.widgets['globe-field-tract'] !== 'None'){
+        if(!app.mapData.tracts){
+          app.getMapData('tracts.csv', () => matchCoordinates(callback));
+          return;
+        }
+        let val = session.style.widgets['globe-field-tract'];
+        nodes.forEach(n => {
+          let tract = app.mapData.tracts.find(t => t.tract == n[val]);
+          if(tract){
+            n._lat = tract._lat;
+            n._lon = tract._lon;
+          }
+        });
+      }
+      if(session.style.widgets['globe-field-lat'] !== 'None' && session.style.widgets['globe-field-lon'] !== 'None'){
+        let lat = session.style.widgets['globe-field-lat'],
+            lon = session.style.widgets['globe-field-lon'];
+        nodes.forEach(n => {
+          if(typeof n[lat] == 'string'){
+            n._lat = (n[lat].includes('S') ? -1 : 1) * parseFloat(n[lat]);
+          } else {
+            n._lat = n[lat];
+          }
+          if(typeof n[lon] == 'string'){
+            n._lon = (n[lon].includes('W') ? -1 : 1) * parseFloat(n[lon]);
+          } else {
+            n._lon = n[lon];
+          }
+        });
+      }
+      if(callback) callback();
     }
 
-    function redraw(){
-      water.selectAll("path").attr('d', path);
-      land.selectAll("path").attr('d', path);
+    $('#toggle-globe-settings').on('click', function(){
+      let pane = $('#globe-settings-pane');
+      if(pane.is(':visible')){
+        pane.animate({left: '-400px'}, function(){ pane.hide(); });
+      } else {
+        pane.show(0, function(){ pane.animate({left: '0px'}); });
+      }
+    });
+
+    $('#globe-node-show').parent().on('click', function(){
+      session.style.widgets['globe-node-show'] = true;
+      redraw();
+    });
+    $('#globe-node-hide').parent().on('click', function(){
+      session.style.widgets['globe-node-show'] = false;
+      redraw();
+    });
+
+    $('#globe-link-show').parent().on('click', function(){
+      session.style.widgets['globe-link-show'] = true;
+      redraw();
+    });
+    $('#globe-link-hide').parent().on('click', function(){
+      session.style.widgets['globe-link-show'] = false;
+      redraw();
+    });
+
+    $('#globe-stars-show').parent().on('click', function(){
+      session.style.widgets['globe-stars-show'] = true;
+      redraw();
+    });
+    $('#globe-stars-hide').parent().on('click', function(){
+      session.style.widgets['globe-stars-show'] = false;
+      redraw();
+    });
+
+    function makeNodeFeatures(){
+      let features = [];
+      let jitter = session.style.widgets['globe-node-jitter'] > 0;
+      nodes.forEach(function(d){
+        if(d._lat && d._lon){
+          features.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: jitter ? [d._lon + d._jlon, d._lat + d._jlat] : [d._lon, d._lat]
+            },
+            properties: d
+          });
+        }
+      });
+      return features;
     }
 
-    draw();
+    function makeGeoJSON(){
+      let features = makeNodeFeatures();
+      app.getVisibleLinks().forEach(function(d){
+        if(!d.visible) return;
+        let source = nodes.find(node => node.id === d.source);
+        let target = nodes.find(node => node.id === d.target);
+        if(source && target){
+          if(source._lat && source._lon && target._lat && target._lon){
+            features.push({
+              type: 'Feature',
+              geometry: {
+                type: 'LineString',
+                coordinates: jitter ? [
+                  [source._lon + source._jlon, source._lat + source._jlat],
+                  [target._lon + target._jlon, target._lat + target._jlat]
+                ] : [
+                  [source._lon, source._lat],
+                  [target._lon, target._lat]
+                ]
+              },
+              properties: d
+            });
+          }
+        }
+      });
+      return {
+        type: 'FeatureCollection',
+        features:	features
+      };
+    }
+
+    $('#globe-export').on('click', function(){
+      let format = $('#globe-export-file-format').val();
+      if(['png', 'jpeg', 'webp'].includes(format)){
+          canvg.node().toBlob(blob => {
+            saveAs(blob, $('#globe-export-file-name').val() + '.' + format);
+          }, 'image/' + format);
+      } else if(format === 'geojson'){
+        saveAs(
+          new Blob([JSON.stringify(makeGeoJSON())], {type: 'application/json;charset=utf-8'}),
+          $('#globe-export-file-name').val() + '.' + format
+        );
+      }
+    });
+
+    layout.on('stateChanged', function(){
+      resize();
+      redraw();
+    });
+
+    init();
   </script>
