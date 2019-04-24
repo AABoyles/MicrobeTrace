@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-04-10R6225';
+var CACHE = 'MicrobeTraceD2019-04-24R2815';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -14,10 +14,10 @@ self.addEventListener('install', function(event) {
         'vendor/open-iconic/font/fonts/open-iconic.otf',
         'vendor/bioseq.min.js',
         'vendor/patristic.min.js',
+        'vendor/README.md',
         'vendor/tn93.min.js',
         'scripts/align-sw.js',
         'scripts/bundle.js',
-        'scripts/bundle.min.js',
         'scripts/common.js',
         'scripts/compute-consensus-distances.js',
         'scripts/compute-consensus.js',
@@ -50,7 +50,6 @@ self.addEventListener('install', function(event) {
         'components/waterfall.html',
         'patches/FileSaver.min.js',
         'patches/saveSvgAsPng.js',
-        'patches/shpwrite.js',
         'stylesheets/bundle.css',
         'stylesheets/bundle.min.css',
         'stylesheets/main.css',
