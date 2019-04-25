@@ -287,8 +287,8 @@
     var starPath = d3.geoPath(starProjection, context).pointRadius(1);
 
     var sphere = {type: 'Sphere'};
+    var nodes = app.getVisibleNodes(true);
 
-    var nodes = app.getVisibleNodes();
     var autorotate = null, now, lastTime = d3.now();
 
     function init(){
