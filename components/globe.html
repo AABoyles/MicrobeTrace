@@ -287,6 +287,8 @@
     var starPath = d3.geoPath(starProjection, context).pointRadius(1);
 
     var sphere = {type: 'Sphere'};
+    var graticule = d3.geoGraticule10();
+
     var nodes = app.getVisibleNodes(true);
 
     var autorotate = null, now, lastTime = d3.now();
@@ -339,6 +341,14 @@
       path(app.mapData[session.style.widgets['globe-countries-show'] ? 'countries' : 'land']);
       context.fillStyle = "#6CCC00";
       context.fill();
+
+      if(session.style.widgets['globe-graticule-show']){
+        context.beginPath();
+        path(graticule);
+        context.strokeStyle = "#444";
+        context.lineWidth = '1px';
+        context.stroke();
+      }
 
       if(session.style.widgets['globe-link-show']){
 
@@ -548,6 +558,16 @@
     });
     $('#globe-stars-hide').parent().on('click', function(){
       session.style.widgets['globe-stars-show'] = false;
+      redraw();
+    });
+
+
+    $('#globe-graticule-show').parent().on('click', function(){
+      session.style.widgets['globe-graticule-show'] = true;
+      redraw();
+    });
+    $('#globe-graticule-hide').parent().on('click', function(){
+      session.style.widgets['globe-graticule-show'] = false;
       redraw();
     });
 
