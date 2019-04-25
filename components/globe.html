@@ -280,8 +280,6 @@
     var canvg = d3.select('#globe');
     var context = canvg.node().getContext('2d');
 
-    var gradient;
-
     var projection = d3.geoOrthographic();
     var path = d3.geoPath(projection, context);
 
@@ -320,9 +318,6 @@
       starProjection = starProjection
         .fitExtent([[0, 0], [3*width, 3*height]], app.mapData.stars)
         .translate([width / 2, height / 2]);
-      gradient = context.createLinearGradient(50,0,width-50,0);
-      gradient.addColorStop(0, '#005C99');
-      gradient.addColorStop(1, '#0099FF');
     }
 
     function redraw(){
@@ -337,7 +332,7 @@
 
       context.beginPath();
       path(sphere);
-      context.fillStyle = gradient;
+      context.fillStyle = '#005C99';
       context.fill();
 
       context.beginPath();
