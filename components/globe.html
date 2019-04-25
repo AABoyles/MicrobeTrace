@@ -18,7 +18,7 @@
       <a href="#globe-data-configurations" class="nav-link active" aria-controls="globe-data-configurations" role="tab" data-toggle="tab">Data</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#globe-layer-configurations" class="nav-link" aria-controls="globe-layer-configurations" role="tab" data-toggle="tab">Components</a>
+      <a href="#globe-layer-configurations" class="nav-link" aria-controls="globe-layer-configurations" role="tab" data-toggle="tab">Layers</a>
     </li>
     <li role="presentation" class="nav-item">
       <a href="#globe-node-configurations" class="nav-link" aria-controls="globe-node-configurations" role="tab" data-toggle="tab">Nodes</a>
@@ -117,7 +117,7 @@
                   </div>
                 </div>
               </div>
-              <div class="form-group row" title="Would you like to see links on the globe?">
+              <!--div class="form-group row" title="Would you like to see links on the globe?">
                 <div class="col-4">Links</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -129,13 +129,13 @@
                     </label>
                   </div>
                 </div>
-              </div>
+              </div-->
             </div>
           </div>
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-vectors" aria-expanded="true" aria-controls="globe-layers-vectors" style="color:#495057">Offline</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-vectors" aria-expanded="true" aria-controls="globe-layers-vectors" style="color:#495057">Geospatial</button>
           </div>
           <div id="globe-layers-vectors" class="collapse show" data-parent="#globe-layers-accordion">
             <div class="card-body">
@@ -156,11 +156,24 @@
                 <div class="col-4">Countries</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
-                      <input type="radio" name="globe-country-options" id="globe-countries-show" autocomplete="off" checked> Show
-                    </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="globe-country-options" id="globe-countries-hide" autocomplete="off"> Hide
+                      <input type="radio" name="globe-country-options" id="globe-countries-show" autocomplete="off"> Show
+                    </label>
+                    <label class="btn btn-light col active">
+                      <input type="radio" name="globe-country-options" id="globe-countries-hide" autocomplete="off" checked> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="Would you like to see Countries on the globe?">
+                <div class="col-4">Graticule</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col">
+                      <input type="radio" name="globe-graticule-options" id="globe-graticule-show" autocomplete="off"> Show
+                    </label>
+                    <label class="btn btn-light col active">
+                      <input type="radio" name="globe-graticule-options" id="globe-graticule-hide" autocomplete="off" checked> Hide
                     </label>
                   </div>
                 </div>
@@ -168,7 +181,7 @@
             </div>
           </div>
         </div>
-        <div class="card">
+        <!--div class="card">
           <div class="card-header p-0">
             <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-user" aria-expanded="true" aria-controls="globe-layers-user" style="color:#495057">User-Provided</button>
           </div>
@@ -197,7 +210,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div-->
       </div>
     </div>
     <div role="tabpanel" class="tab-pane fade" id="globe-node-configurations">
@@ -377,17 +390,17 @@
       redraw();
     }
 
-    function rotate(elapsed) {
-      now = d3.now()
+    function rotate(elapsed){
+      now = d3.now();
       diff = now - lastTime
-      if (diff < elapsed) {
-        rotation = projection.rotate()
-        rotation[0] += diff * 6/1000
+      if(diff < elapsed){
+        rotation = projection.rotate();
+        rotation[0] -= diff * 6/1000;
         projection.rotate(rotation);
         starProjection.rotate([-rotation[0],-rotation[1]]);
-        redraw()
+        redraw();
       }
-      lastTime = now
+      lastTime = now;
     }
 
     ['lat', 'lon', 'tract', 'zipcode', 'county', 'state', 'country'].forEach(v => {
