@@ -672,6 +672,13 @@
       }
     });
 
+    $(window)
+      .on('node-color-change', redraw)
+      .on('node-visibilitiy-change', function(){
+        nodes = app.getVisibleNodes(true);
+        redraw();
+      })
+
     layout.on('stateChanged', function(){
       resize();
       redraw();
