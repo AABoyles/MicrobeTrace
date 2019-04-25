@@ -44,8 +44,10 @@ cat node_modules/xlsx/dist/xlsx.core.min.js >> scripts/bundle.js && printf "\n" 
 cat node_modules/xss/dist/xss.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/tn93/dist/tn93.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/d3/dist/d3.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
+cat node_modules/d3-queue/build/d3-queue.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/d3-force-attract/dist/d3-force-attract.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
+cat node_modules/versor/build/versor.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/html5sortable/dist/html5sortable.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/plotly.js/dist/plotly.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/tabulator-tables/dist/js/tabulator.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
