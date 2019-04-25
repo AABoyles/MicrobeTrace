@@ -302,6 +302,10 @@
         app.getMapData('stars.json', init);
         return;
       }
+      if(!app.mapData.countries){
+        app.getMapData('countries.json', init);
+        return;
+      }
       resize();
       canvg
         .call(drag(projection).on('drag.render', redraw))
@@ -338,7 +342,11 @@
       context.fill();
 
       context.beginPath();
-      path(app.mapData[session.style.widgets['globe-countries-show'] ? 'countries' : 'land']);
+      if(session.style.widgets['globe-countries-show']){
+        path(app.mapData.countries);
+      } else {
+        path(app.mapData.land);
+      }
       context.fillStyle = "#6CCC00";
       context.fill();
 
@@ -561,6 +569,14 @@
       redraw();
     });
 
+    $('#globe-countries-show').parent().on('click', function(){
+      session.style.widgets['globe-countries-show'] = true;
+      redraw();
+    });
+    $('#globe-countries-hide').parent().on('click', function(){
+      session.style.widgets['globe-countries-show'] = false;
+      redraw();
+    });
 
     $('#globe-graticule-show').parent().on('click', function(){
       session.style.widgets['globe-graticule-show'] = true;
