@@ -1,11 +1,14 @@
 <canvas id="globe"></canvas>
 
 <div class="view-controls">
-  <button type="button" id="toggle-globe-settings" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
+  <button type="button" id="toggle-globe-settings" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#globe-export-modal" title="Export Map Data">
     <span class="oi oi-data-transfer-download"></span>
+  </button>
+  <button type="button" id="toggle-globe-autorotate" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Autorotation">
+    <span class="oi oi-loop-circular"></span>
   </button>
 </div>
 
@@ -275,6 +278,7 @@
     var sphere = {type: 'Sphere'};
 
     var nodes = app.getVisibleNodes();
+    var autorotate = null, now, lastTime = d3.now();
 
     function init(){
       if(!app.mapData.land){
@@ -371,6 +375,19 @@
       let transform = d3.event.transform;
       projection = projection.scale(transform.k * 400);
       redraw();
+    }
+
+    function rotate(elapsed) {
+      now = d3.now()
+      diff = now - lastTime
+      if (diff < elapsed) {
+        rotation = projection.rotate()
+        rotation[0] += diff * 6/1000
+        projection.rotate(rotation);
+        starProjection.rotate([-rotation[0],-rotation[1]]);
+        redraw()
+      }
+      lastTime = now
     }
 
     ['lat', 'lon', 'tract', 'zipcode', 'county', 'state', 'country'].forEach(v => {
@@ -597,6 +614,17 @@
           new Blob([JSON.stringify(makeGeoJSON())], {type: 'application/json;charset=utf-8'}),
           $('#globe-export-file-name').val() + '.' + format
         );
+      }
+    });
+
+    $('#toggle-globe-autorotate').on('click', function(){
+      if(autorotate){
+        $(this).addClass('active');
+        autorotate.stop();
+        autorotate = null;
+      } else {
+        $(this).removeClass('active');
+        autorotate = d3.timer(rotate);
       }
     });
 
