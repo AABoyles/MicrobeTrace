@@ -117,7 +117,7 @@
                   </div>
                 </div>
               </div>
-              <!--div class="form-group row" title="Would you like to see links on the globe?">
+              <div class="form-group row" title="Would you like to see links on the globe?">
                 <div class="col-4">Links</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -129,7 +129,7 @@
                     </label>
                   </div>
                 </div>
-              </div-->
+              </div>
             </div>
           </div>
         </div>
@@ -283,6 +283,11 @@
     var projection = d3.geoOrthographic();
     var path = d3.geoPath(projection, context);
 
+    var swoosh = d3.line()
+        .curve(d3.curveNatural)
+        .defined(function(d) { return projection.invert(d); })
+        .context(context);
+
     var starProjection = d3.geoAzimuthalEquidistant();
     var starPath = d3.geoPath(starProjection, context).pointRadius(1);
 
@@ -290,6 +295,7 @@
     var graticule = d3.geoGraticule10();
 
     var nodes = app.getVisibleNodes(true);
+    var links = app.getVisibleLinks(true);
 
     var autorotate = null, now, lastTime = d3.now();
 
@@ -316,14 +322,15 @@
     function resize(){
       height = parent.height();
       width = parent.width();
+      let t = [width / 2, height / 2];
       canvg.attr('width', width).attr('height', height);
       projection = projection
         .fitExtent([[50, 50], [width - 50, height - 50]], sphere)
-        .translate([width / 2, height / 2])
+        .translate(t)
         .precision(0.1);
       starProjection = starProjection
         .fitExtent([[0, 0], [3*width, 3*height]], app.mapData.stars)
-        .translate([width / 2, height / 2]);
+        .translate(t);
     }
 
     function redraw(){
@@ -354,12 +361,16 @@
         context.beginPath();
         path(graticule);
         context.strokeStyle = "#444";
-        context.lineWidth = '1px';
+        context.lineWidth = 1;
         context.stroke();
       }
 
       if(session.style.widgets['globe-link-show']){
-
+        context.beginPath();
+        makeLinkArcs().forEach(swoosh);
+        context.lineWidth = 2;
+        context.strokeStyle = session.style.widgets['link-color'];
+        context.stroke();
       }
 
       if(session.style.widgets['globe-node-show']){
@@ -616,9 +627,48 @@
       return features;
     }
 
-    function makeGeoJSON(){
-      let features = makeNodeFeatures();
-      app.getVisibleLinks().forEach(function(d){
+    function makeLinkArcs(){
+      let arcs = [];
+      let jitter = session.style.widgets['globe-node-jitter'] > 0;
+      let origin = [-projection.rotate()[0], -projection.rotate()[1]];
+      let n = links.length;
+      let maxDist = Math.PI/2;
+      while(n --> 0){
+        let d = links[n];
+        if(!d.visible) continue;
+        let source = nodes.find(node => node.id === d.source);
+        let target = nodes.find(node => node.id === d.target);
+        if(source && target){
+          if(source._lat && source._lon && target._lat && target._lon){
+            let s, t;
+            if(jitter){
+              s = [source._lon + source._jlon, source._lat + source._jlat],
+              t = [target._lon + target._jlon, target._lat + target._jlat];
+            } else {
+              s = [source._lon, source._lat],
+              t = [target._lon, target._lat];
+            }
+            if(d3.geoDistance(s, origin) > maxDist) continue;
+            if(d3.geoDistance(t, origin) > maxDist) continue;
+            arcs.push([
+              projection(s),
+              projection(middle(s, t)),
+              projection(t)
+            ]);
+          }
+        }
+      }
+      return arcs;
+    }
+
+    function middle(start, end){
+      return d3.geoInterpolate(start, end)(0.5);
+    }
+
+    function makeLinkFeatures(){
+      let features = [];
+      let jitter = session.style.widgets['globe-node-jitter'] > 0;
+      links.forEach(function(d){
         if(!d.visible) return;
         let source = nodes.find(node => node.id === d.source);
         let target = nodes.find(node => node.id === d.target);
@@ -641,9 +691,13 @@
           }
         }
       });
+      return features;
+    }
+
+    function makeGeoJSON(){
       return {
         type: 'FeatureCollection',
-        features:	features
+        features:	makeNodeFeatures().concat(makeLinkFeatures())
       };
     }
 
@@ -673,11 +727,11 @@
     });
 
     $(window)
-      .on('node-color-change', redraw)
+      .on('node-color-change link-color-change', redraw)
       .on('node-visibilitiy-change', function(){
         nodes = app.getVisibleNodes(true);
         redraw();
-      })
+      });
 
     layout.on('stateChanged', function(){
       resize();
