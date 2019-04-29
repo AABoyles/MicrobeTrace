@@ -56,8 +56,8 @@ cat node_modules/leaflet.markercluster/dist/leaflet.markercluster.js >> scripts/
 cat node_modules/leaflet-image/leaflet-image.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/marked/marked.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/alignment-viewer/dist/alignment-viewer.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
-cat patches/FileSaver.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
-cat patches/saveSvgAsPng.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
+cat node_modules/file-saver/dist/FileSaver.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
+cat node_modules/save-svg-as-png/lib/saveSvgAsPng.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/pdfmake.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/pdfmake/build/vfs_fonts.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 

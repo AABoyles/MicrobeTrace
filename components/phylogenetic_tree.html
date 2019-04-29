@@ -253,6 +253,8 @@
             <div class="col-3">
               <select id="tree-export-file-type" class="form-control form-control-sm">
                 <option selected>png</option>
+                <option>jpeg</option>
+                <option>webp</option>
                 <option>svg</option>
                 <option>nwk</option>
               </select>
@@ -262,19 +264,23 @@
           <div class="collapse" id="tree-export-advanced">
             <div class="card card-body">
               <div class="form-group row">
-                <div class="col">
-                  <label for="tree-export-width">Width</label>
-                  <input type="number" id="tree-export-width" class="form-control form-control-sm" />
+                <div class="col-3">
+                  <label for="tree-export-scale">Scale</label>
                 </div>
-                <div class="col">
-                  <label for="tree-export-height">Height</label>
-                  <input type="number" id="tree-export-height" class="form-control form-control-sm" />
+                <div class="col-9">
+                  <input type="number" id="tree-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
                 </div>
               </div>
               <div class="form-group row">
-                <div class="col text-right">
-                  <input type="checkbox" id="tree-export-preserveaspect" checked />
-                  <label for="tree-export-preserveaspect" class="form-check-label">Preserve Aspect Ratio?</label>
+                <div class="col-3">Resolution</div>
+                <div id="tree-export-dimensions" class="col-9 text-right"></div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="tree-export-quality">Quality</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="tree-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
                 </div>
               </div>
             </div>
@@ -586,29 +592,45 @@
   });
 
   $('#tree-export-filetype').on('change', function(e){
-    if(e.target.value === 'svg'){
+    if(e.target.value === 'svg' || e.target.value === 'nwk'){
       $('#tree-export-advanced-button').slideUp();
     } else {
       $('#tree-export-advanced-button').slideDown();
     }
   });
 
+  $('#tree-export-scale').on('input', function(e){
+    let scale = parseFloat(e.target.value);
+    let wrapper = $('#tree').parent();
+    $('#tree-export-dimensions').text(
+      Math.round(wrapper.width() *scale)+'x'+
+      Math.round(wrapper.height()*scale)+'px'
+    );
+  }).trigger('input');
+
   $('#tree-export').on('click', e => {
-    let type = $('#tree-export-file-type').val();
-    if(type === 'png'){
-      let root = $('#tree svg')[0];
-      let content = app.unparseSVG(root);
-      let width  = parseFloat($('#tree-export-width' ).val());
-      let height = parseFloat($('#tree-export-height').val());
-      app.blobifySVG(content, width, height, function(blob){
-        saveAs(blob, $('#tree-export-file-name').val() + '.png');
-      });
-    } else if(type === 'svg'){
-      let blob = new Blob([app.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
-      saveAs(blob, $('#tree-export-file-name').val() + '.svg');
-    } else if(type === 'nwk'){
+    let filetype = $('#tree-export-file-type').val();
+    let filename = $('#tree-export-file-name').val();
+    if(filetype === 'nwk'){
       let blob = new Blob([temp.trees[session.style.widgets['link-sort-variable']].toNewick()], {type: 'application/newick;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
+    } else if(filetype === 'svg'){
+      let blob = new Blob([app.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
+      saveAs(blob, $('#tree-export-file-name').val() + '.svg');
+    } else {
+      let $root = $('#tree svg');
+      let root = $root[0];
+      let watermark = d3.select(root).append('text')
+        .text('MicrobeTrace')
+        .attr('x', $root.width()  - 150)
+        .attr('y', $root.height() - 20)
+        .attr('class', 'watermark');
+      saveSvgAsPng(root, filename + '.' + filetype, {
+        scale: parseFloat($('#tree-export-scale').val()),
+        backgroundColor: session.style.widgets['background-color'],
+        encoderType: 'image/' + filetype,
+        encoderOptions: parseFloat($('#tree-export-quality').val())
+      }).then(() => watermark.remove());
     }
   });
 

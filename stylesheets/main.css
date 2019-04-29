@@ -578,6 +578,9 @@ a.btn, button.btn, .btn-group{
 #link-reciprocalthickness-row{
   display: none;
 }
+.watermark{
+  font: bold 20px sans-serif;
+}
 
 /* 3D Network */
 .graph-nav-info{

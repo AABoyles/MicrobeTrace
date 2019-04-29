@@ -109,14 +109,6 @@
                   <input type="range" id="scatterplot-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
                 </div>
               </div>
-              <div class="row">
-                <div class="col-3">
-                  <label for="scatterplot-export-opacity">Watermark Opacity</label>
-                </div>
-                <div class="col-9">
-                  <input type="range" id="scatterplot-export-opacity" min=".4" max="1.0" value="0.4" step="0.01"></input>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -221,15 +213,32 @@
       $('#scatterplot .zl.crisp, .xgrid.crisp, .ygrid.crisp').css('stroke', contrast);
     }
 
+    $('#scatterplot-export-filetype').on('change', function(e){
+      if(e.target.value === 'svg'){
+        $('#scatterplot-export-advanced-button').parent().parent().slideUp();
+      } else {
+        $('#scatterplot-export-advanced-button').parent().parent().slideDown();
+      }
+    });
+
+    $('#scatterplot-export-scale').on('input', function(e){
+      let scale = parseFloat(e.target.value);
+      let wrapper = $('#scatterplot').parent();
+      $('#scatterplot-export-dimensions').text(
+        Math.round(wrapper.width() *scale)+'x'+
+        Math.round(wrapper.height()*scale)+'px'
+      );
+    }).trigger('input');
+
     $('#scatterplot-export').on('click', function(){
-      let scatterplot = $('#scatterplot .main-svg').get(0);
-      $('#scatterplot .main-svg .infolayer').appendTo(scatterplot);
-      let watermark = d3.select(scatterplot).append('image')
-        .attr('xlink:href', app.watermark)
-        .attr('height', 128)
-        .attr('width', 128)
-        .attr('x', 10)
-        .style('opacity', $('#scatterplot-export-opacity').val());
+      let $scatterplot = $('#scatterplot .main-svg');
+      let scatterplot = $scatterplot[0];
+      $scatterplot.find('.infolayer').appendTo(scatterplot);
+      let watermark = d3.select(scatterplot).append('text')
+        .text('MicrobeTrace')
+        .attr('x', $scatterplot.width()  - 150)
+        .attr('y', $scatterplot.height() - 20)
+        .attr('class', 'watermark');
       let filename = $('#scatterplot-export-filename').val(),
           filetype = $('#scatterplot-export-filetype').val();
       if(filetype === 'svg'){
