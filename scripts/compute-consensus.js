@@ -13,8 +13,8 @@ onmessage = function(e){
   var consensus = "";
   var m = output.length;
   var entry, maxKey, maxVal;
-  for(var j = 0; j < m; j++){
-    entry = output[j];
+  for(var k = 0; k < m; k++){
+    entry = output[k];
     maxKey = 'A';
     maxVal = entry[maxKey];
     Object.keys(entry).forEach(char => {

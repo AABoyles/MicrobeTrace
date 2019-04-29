@@ -465,7 +465,7 @@ app.align = function(params, callback){
       d = output[k];
       d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
     }
-    console.log('Alignment Padding time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('Alignment Padding time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
     callback(output);
   };
   aligner.postMessage(params);
@@ -781,7 +781,7 @@ app.tagClusters = function(){
 app.DFS = function(node){
   if(typeof node === 'string') node = session.data.nodes.find(function(d){ return d.id === node; });
   if(typeof node === 'undefined') console.error('That\'s weird: An undefined node was referenced.');
-  if(typeof node.cluster !== 'undefined') return;
+  if('cluster' in node) return;
   var lsv = session.style.widgets['link-sort-variable'];
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
@@ -1152,7 +1152,7 @@ app.launchView = function(view, callback){
     });
     if(navigator.onLine) contentItem.element.find('.ifOnline').show();
     for(var id in session.style.widgets){
-      $id = $('#' + id);
+      var $id = $('#' + id);
       if($id.length > 0){
         if(['radio', 'checkbox'].includes($id[0].type)){
           if(session.style.widgets[id]) $id.click();
