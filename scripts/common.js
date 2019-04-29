@@ -97,7 +97,7 @@ app.defaultWidgets = {
   'node-symbol': 'symbolCircle',
   'node-symbol-variable': 'None',
   'node-tooltip-variable': 'id',
-  'scatterplot-xVar': 'snps',
+  'scatterplot-xVar': 'index',
   'scatterplot-yVar': 'tn93',
   'scatterplot-logScale': false,
   'scatterplot-showNodes': false,
