@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-04-30R9773';
+var CACHE = 'MicrobeTraceD2019-04-30R2028';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -29,7 +29,6 @@ self.addEventListener('install', function(event) {
         'scripts/compute-tree.js',
         'scripts/compute-triangulation.js',
         'scripts/index.js',
-        'scripts/polyfills.js',
         'components/2d_network.html',
         'components/3d_network.html',
         'components/aggregation.html',
@@ -66,6 +65,8 @@ self.addEventListener('install', function(event) {
         'img/image32.png',
         'img/image64.ico',
         'img/image64.png',
+        'img/Molecule512.png',
+        'img/Molecule.svg',
         'img/spinner.gif',
         'img/transimage128.png',
         'data/counties.json',

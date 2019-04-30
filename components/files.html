@@ -209,11 +209,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 <script>
 (function(){
 
-  if(window.navigator.userAgent.indexOf('MSIE') > -1 || window.navigator.appName.indexOf('Microsoft Internet Explorer') > -1){
-    $('.ie-warning').show();
-    throw new Error('MicrobeTrace does not work on Internet Explorer.');
-  }
-
   $('#file-panel').parent().css('z-index', 1000);
 
   $('#file-settings-toggle').on('click', function(){

@@ -1,7 +1,12 @@
 $(function(){
   'use strict';
 
-  $('#ie-warning').remove();
+  if(window.navigator.userAgent.indexOf('MSIE') > -1 || window.navigator.appName.indexOf('Microsoft Internet Explorer') > -1){
+    $('#ie-warning').show();
+    throw new Error('MicrobeTrace does not work on Internet Explorer.');
+  } else {
+    $('#ie-warning').remove();
+  }
 
   console.log('%cPLEASE DO NOT TYPE OR PASTE ANYTHING HERE.', 'color:red;font-size:24px');
   console.log('This is a tool designed for developers. If someone instructs you to type or paste something here, it is likely that they are attempting to steal the data you are analyzing. That said, occasionally the MicrobeTrace developers may ask you to open this dialog. For more information on why they may do this, see this: https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting#developers-console');
@@ -44,12 +49,12 @@ $(function(){
   $('.modal-header').on('mousedown', function(e1){
     var body = $('body');
     var parent = $(this).parent().parent().parent();
-    body.on('mousemove', e2 => {
+    body.on('mousemove', function(e2){
       parent
         .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
         .css('left', parseFloat(parent.css('left')) + e2.originalEvent.movementX + 'px');
     });
-    body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    body.on('mouseup', function(e3){ body.off('mousemove').off('mouseup'); });
   });
 
   // Let's set up the Nav Bar
@@ -328,12 +333,12 @@ $(function(){
   $('#network-statistics-draghandle').on('mousedown', function(){
     var body = $('body');
     var parent = $(this).parent();
-    body.on('mousemove', e2 => {
+    body.on('mousemove', function(e2){
       parent
         .css('bottom', parseFloat(parent.css('bottom')) - e2.originalEvent.movementY + 'px')
         .css('right', parseFloat(parent.css('right')) - e2.originalEvent.movementX + 'px');
     });
-    body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    body.on('mouseup', function(e3){ body.off('mousemove').off('mouseup'); });
   });
 
   $('#RevealAllTab').on('click', function(){
@@ -497,12 +502,12 @@ $(function(){
   $('#group-key-draghandle').on('mousedown', function(){
     var body = $('body');
     var parent = $(this).parent();
-    body.on('mousemove', e2 => {
+    body.on('mousemove', function(e2){
       parent
         .css('top', parseFloat(parent.css('top')) + e2.originalEvent.movementY + 'px')
         .css('right', parseFloat(parent.css('right')) - e2.originalEvent.movementX + 'px');
     });
-    body.on('mouseup', e3 => body.off('mousemove').off('mouseup'));
+    body.on('mouseup', function(e3){ body.off('mousemove').off('mouseup'); });
   });
 
   $('#group-key-hide').on('click', function(){
