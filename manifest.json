@@ -3,9 +3,9 @@
   "name": "MicrobeTrace",
   "icons": [
     {
-      "src": "/img/image256.png",
+      "src": "/img/Molecule512.png",
       "type": "image/png",
-      "sizes": "256x256"
+      "sizes": "512x512"
     }
   ],
   "start_url": "/",
