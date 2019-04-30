@@ -444,13 +444,6 @@ $(function(){
     }
   });
 
-  $('#PhylogeographyTab').on('click', function(e){
-    e.preventDefault();
-    var l = {"type":"column","content":[{"type":"row","content":[{"type":"stack","content":[{"type":"geo_map"}]},{"type":"stack","content":[{"type":"phylogenetic_tree"}]}]},{"type":"stack","content":[{"type":"timeline"}]}]};
-    app.loadLayout(l);
-    setTimeout(function(){ app.loadLayout(l); }, 80);
-  })
-
   $('#HelpTab').on('click', function(e){
     if(window.navigator.onLine){
       window.open('https://github.com/CDCgov/MicrobeTrace/wiki');
