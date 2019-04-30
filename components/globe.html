@@ -181,7 +181,7 @@
             </div>
           </div>
         </div>
-        <!--div class="card">
+        <div class="card">
           <div class="card-header p-0">
             <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-user" aria-expanded="true" aria-controls="globe-layers-user" style="color:#495057">User-Provided</button>
           </div>
@@ -205,12 +205,10 @@
                   </div>
                 </div>
               </div>
-              <div id="globe-geojson-layers" class="form-group row" title="GeoJSON Layers">
-
-              </div>
+              <div id="globe-geojson-layers" class="form-group row" title="GeoJSON Layers"></div>
             </div>
           </div>
-        </div-->
+        </div>
       </div>
     </div>
     <div role="tabpanel" class="tab-pane fade" id="globe-node-configurations">
@@ -298,6 +296,7 @@
     var links = app.getVisibleLinks(true);
 
     var autorotate = null, now, lastTime = d3.now();
+    var userLayers = [];
 
     function init(){
       if(!app.mapData.land){
@@ -356,6 +355,14 @@
       }
       context.fillStyle = "#6CCC00";
       context.fill();
+
+      userLayers.forEach(layer => {
+        context.beginPath();
+        path(layer.data);
+        context.strokeStyle = layer.color;
+        context.lineWidth = 1;
+        context.stroke();
+      });
 
       if(session.style.widgets['globe-graticule-show']){
         context.beginPath();
@@ -607,6 +614,42 @@
       }
       session.style.widgets['globe-node-jitter'] = v;
       redraw();
+    });
+
+    $('#globe-file-input').on('change', event => {
+      Array.from(event.target.files).forEach(file => {
+        var name = file.name;
+        if(name.endsWith("json")){
+          var reader = new FileReader();
+          reader.onload = function(event) {
+            var layerName = name.split('.').slice(0, -1).join('.').toLowerCase();
+            let i = userLayers.length;
+            userLayers.push({
+              data: JSON.parse(event.target.result),
+              color: '#990000'
+            });
+            let colorCell = $('<div class="col-3"></div>').append(
+              $('<input type="color" class="w-100" value="#990000" />').on('change', function(){
+                userLayers[i].color = this.value;
+                redraw();
+              })
+            );
+            let nameCell = $(`<div class="col-9">${layerName}</div>`).prepend(
+              $('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', function(){
+                nameCell.remove();
+                colorCell.remove();
+                delete app.mapData[layerName];
+              })
+            );
+            $('#globe-geojson-layers')
+              .append(nameCell)
+              .append(colorCell);
+          };
+          reader.readAsText(file);
+        } else {
+          alert("Only GeoJSON Files are currently Supported.");
+        }
+      });
     });
 
     function makeNodeFeatures(){
