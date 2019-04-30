@@ -531,7 +531,8 @@
       });
       if(session.style.widgets['map-clustering-on']){
         layers.nodes = L.markerClusterGroup({
-          maxClusterRadius: 20
+          maxClusterRadius: 20,
+          spiderLegPolylineOptions: { opacity: 0 }
         });
         layers.nodes.addLayers(features);
       } else {
