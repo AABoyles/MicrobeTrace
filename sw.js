@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-04-24R2815';
+var CACHE = 'MicrobeTraceD2019-04-30R9773';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -39,6 +39,7 @@ self.addEventListener('install', function(event) {
         'components/flow_diagram.html',
         'components/gantt.html',
         'components/geo_map.html',
+        'components/globe.html',
         'components/heatmap.html',
         'components/help.html',
         'components/histogram.html',
@@ -48,8 +49,6 @@ self.addEventListener('install', function(event) {
         'components/table.html',
         'components/timeline.html',
         'components/waterfall.html',
-        'patches/FileSaver.min.js',
-        'patches/saveSvgAsPng.js',
         'stylesheets/bundle.css',
         'stylesheets/bundle.min.css',
         'stylesheets/main.css',
@@ -71,6 +70,8 @@ self.addEventListener('install', function(event) {
         'img/transimage128.png',
         'data/counties.json',
         'data/countries.json',
+        'data/land.json',
+        'data/stars.json',
         'data/states.json',
         'data/tracts.csv',
         'data/zipcodes.csv',
