@@ -65,7 +65,7 @@ app.defaultWidgets = {
   'link-width-variable': 'None',
   'link-width-reciprocal': true,
   'map-basemap-show': false,
-  'map-clustering-on': true,
+  'map-collapsing-on': true,
   'map-counties-show': false,
   'map-countries-show': true,
   'map-field-lat': 'None',

@@ -268,10 +268,10 @@
           <div class="col-8">
             <div class="btn-group btn-group-toggle btn-groupsm w-100" data-toggle="buttons">
               <label class="btn btn-light btn-sm col active">
-                <input type="radio" name="map-clustering" id="map-clustering-on" autocomplete="off" checked> On
+                <input type="radio" name="map-collapsing" id="map-collapsing-on" autocomplete="off" checked> On
               </label>
               <label class="btn btn-light btn-sm col">
-                <input type="radio" name="map-clustering" id="map-clustering-off" autocomplete="off"> Off
+                <input type="radio" name="map-collapsing" id="map-collapsing-off" autocomplete="off"> Off
               </label>
             </div>
           </div>
@@ -529,7 +529,7 @@
           data: d
         });
       });
-      if(session.style.widgets['map-clustering-on']){
+      if(session.style.widgets['map-collapsing-on']){
         layers.nodes = L.markerClusterGroup({
           maxClusterRadius: 20,
           spiderLegPolylineOptions: { opacity: 0 }
@@ -798,12 +798,12 @@
       resetStack();
     });
 
-    $('#map-clustering-on').parent().on('click', function(){
-      session.style.widgets['map-clustering-on'] = true;
+    $('#map-collapsing-on').parent().on('click', function(){
+      session.style.widgets['map-collapsing-on'] = true;
       drawNodes();
     });
-    $('#map-clustering-off').parent().on('click', function(){
-      session.style.widgets['map-clustering-on'] = false;
+    $('#map-collapsing-off').parent().on('click', function(){
+      session.style.widgets['map-collapsing-on'] = false;
       drawNodes();
     });
 
