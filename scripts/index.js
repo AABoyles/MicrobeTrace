@@ -464,19 +464,21 @@ $(function(){
     $('#version').html(r.version);
   });
 
-  $.get('.git/HEAD', function(ref){
-    var branch = ref.split('/').pop();
-    $('#branch')
-      .attr('href', 'https://github.com/CDCgov/MicrobeTRACE/tree/' + branch)
-      .text(branch);
-    $.get('.git/' + ref.split(' ').pop(), function(r){
-      $('#commit')
-        .attr('href', 'https://github.com/CDCgov/MicrobeTrace/commit/' + r)
-        .text(r.slice(0,7));
+  try {
+    $.get('.git/HEAD', function(ref){
+      var branch = ref.split('/').pop();
+      $('#branch')
+        .attr('href', 'https://github.com/CDCgov/MicrobeTRACE/tree/' + branch)
+        .text(branch);
+      $.get('.git/' + ref.split(' ').pop(), function(r){
+        $('#commit')
+          .attr('href', 'https://github.com/CDCgov/MicrobeTrace/commit/' + r)
+          .text(r.slice(0,7));
+      });
     });
-  }).fail(function(){
+  } catch(error) {
     $('#branch').parent().remove();
-  });
+  }
 
   $('#group-key-wrapper').on('contextmenu', function(e){
     e.preventDefault();
