@@ -131,6 +131,7 @@ app.sessionSkeleton = function(){
       }],
       type: 'stack'
     },
+    messages: [],
     meta: {
       loadTime: 0,
       startTime: 0
@@ -1005,8 +1006,7 @@ app.applyStyle = function(style){
 
 app.applySession = function(data, startTime){
   $('#launch').prop('disabled', true);
-  messages = [];
-  session = data;
+  self.session = data;
   if(!startTime) startTime = Date.now();
   if(!session.meta) session.meta = {};
   session.meta.startTime = startTime;

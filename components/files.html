@@ -531,16 +531,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   });
 
   function message(msg){
-    messages.push(msg);
-    $('#loading-information').html(messages.join('<br />'));
+    session.messages.push(msg);
+    $('#loading-information').html(session.messages.join('<br />'));
   }
-
-  var messages = [];
 
   $('#launch').click(function(e){
     session.meta.startTime = Date.now();
     $('#launch').prop('disabled', true);
-    messages = [];
+    session.messages = [];
     session.data = app.dataSkeleton();
     $('#loading-information').html('');
 
