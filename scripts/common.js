@@ -763,9 +763,13 @@ app.titleize = function(title){
 };
 
 app.tagClusters = function(){
+  var start = Date.now();
   session.data.clusters = [];
-  session.data.nodes.forEach(function(node){ delete node.cluster; });
-  session.data.nodes.forEach(function(node){
+  var nodes = session.data.nodes;
+  var n = nodes.length;
+  for(var i = 0; i < n; i++) delete nodes[i].cluster;
+  for(var i = 0; i < n; i++){
+    var node = nodes[i];
     if(typeof node.cluster === 'undefined'){
       session.data.clusters.push({
         id: session.data.clusters.length,
@@ -778,18 +782,31 @@ app.tagClusters = function(){
       });
       app.DFS(node.id);
     }
-  });
+  }
   session.data.clusters = session.data.clusters.filter(function(c){ return c.nodes > 1; });
+  console.log('Cluster Tagging time:', ((Date.now()-start)/1000).toLocaleString(), 's');
 };
 
 app.DFS = function(id){
-  var node = session.data.nodes.find(function(d){ return d.id === id; });
+  var node = {};
+  var nodes = session.data.nodes;
+  var n = nodes.length;
+  for(var i = 0; i < n; i++){
+    var d = nodes[i];
+    if(d.id === id){
+      node = d;
+      break;
+    }
+  }
   if('cluster' in node) return;
   var lsv = session.style.widgets['link-sort-variable'];
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
-  session.data.links.forEach(function(l){
-    if(l.visible && (l.source === node.id || l.target === node.id)){
+  var links = session.data.links;
+  var m = links.length;
+  for(var j = 0; j < m; j++){
+    var l = links[j];
+    if(l.visible && (l.source === id || l.target === id)){
       l.cluster = session.data.clusters.length - 1;
       var cluster = session.data.clusters[session.data.clusters.length - 1];
       cluster.links++;
@@ -797,10 +814,11 @@ app.DFS = function(id){
       app.DFS(l.source);
       app.DFS(l.target);
     }
-  });
+  }
 };
 
 app.computeDegree = function(){
+  var start = Date.now();
   session.data.nodes.forEach(function(d){ d.degree = 0; });
   var numLinks = session.data.links.length;
   for(var i = 0; i < numLinks; i++){
@@ -814,9 +832,11 @@ app.computeDegree = function(){
     c.links_per_node = c.links/c.nodes;
     c.mean_genetic_distance = c.sum_distances/2/c.links;
   });
+  console.log('Degree Computation time:', ((Date.now()-start)/1000).toLocaleString(), 's');
 };
 
 app.setNodeVisibility = function(){
+  var start = Date.now();
   var showSingletons = $('#node-singletons-show').is(':checked');
   var field = $('#date-column').val();
   session.data.nodes.forEach(function(n){
@@ -827,14 +847,19 @@ app.setNodeVisibility = function(){
     }
   });
   $window.trigger('node-visibility');
+  console.log('Node Visibility Setting time:', ((Date.now()-start)/1000).toLocaleString(), 's');
 };
 
 app.setLinkVisibility = function(){
+  var start = Date.now();
   var metric  = session.style.widgets['link-sort-variable'],
       threshold = parseFloat($('#link-threshold').val()),
       showNN = $('#links-show-nn').is(':checked');
   session.style.widgets['link-threshold'] = threshold;
-  session.data.links.forEach(function(link){
+  var links = session.data.links;
+  var n = links.length;
+  for(var i = 0; i < n; i++){
+    link = links[i];
     link.visible = true;
     if(showNN){
       link.visible &= link.nn;
@@ -847,7 +872,8 @@ app.setLinkVisibility = function(){
       var cluster = session.data.clusters.find(function(c){ return c.id === link.cluster; });
       if(cluster) link.visible &= cluster.visible;
     }
-  });
+  }
+  console.log('Link Visibility Setting time:', ((Date.now()-start)/1000).toLocaleString(), 's');
 };
 
 app.getVisibleNodes = function(copy){
