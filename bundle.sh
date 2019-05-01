@@ -26,6 +26,7 @@ cp -r node_modules/open-iconic/font/* vendor/open-iconic/font/
 echo 'Assembling Javascript Bundle...'
 
 rm scripts/bundle.js && touch scripts/bundle.js
+cat node_modules/fast-text-encoding/text.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/underscore/underscore-min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/jquery/dist/jquery.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/popper.js/dist/umd/popper.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
