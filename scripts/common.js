@@ -162,7 +162,8 @@ app.tempSkeleton = function(){
       nodeColorMap: function(){ return session.style.widgets['node-color']; },
       nodeSymbolMap: function(){ return session.style.widgets['node-symbol']; }
     },
-    trees: {}
+    trees: {},
+    messageTimeout: null
   };
 };
 
@@ -669,7 +670,7 @@ app.finishUp = function(oldSession){
       }
     });
   }
-  clearTimeout(messageTimeout);
+  clearTimeout(temp.messageTimeout);
   ['node', 'link'].forEach(function(v){
     var n = session.data[v+'s'].length;
     var fields = session.data[v+'Fields'];
