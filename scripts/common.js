@@ -1055,7 +1055,7 @@ app.haversine = function(a, b){
   var deltaphi = (b._lat - a._lat) * r;
   var x = Math.cos(phi1) * Math.cos(phi2) *
           Math.sin(deltalambda/2) * Math.sin(deltalambda/2) +
-          Math.sin(deltaphi/2)**2;
+          Math.pow(Math.sin(deltaphi/2), 2);
   var c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
   return(c * 6378.1); // kilometers
 };
