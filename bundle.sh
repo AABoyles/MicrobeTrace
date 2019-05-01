@@ -35,7 +35,7 @@ cat node_modules/bootstrap4-toggle/js/bootstrap4-toggle.js >> scripts/bundle.js 
 cat node_modules/alertifyjs/build/alertify.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/golden-layout/dist/goldenlayout.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/chosen-js/chosen.jquery.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
-cat node_modules/fileto/fileto.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
+cat node_modules/fileto/fileto.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/screenfull/dist/screenfull.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/clipboard/dist/clipboard.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/moment/min/moment-with-locales.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
