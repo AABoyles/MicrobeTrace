@@ -531,13 +531,6 @@ $(function(){
     }
   });
 
-  $('form').on('keydown', function(e){
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-
   $('#search').on('input', function(e){
     if(e.target.value === ''){
       session.data.nodes.forEach(function(n){ n.selected = false; });
