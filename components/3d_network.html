@@ -194,7 +194,7 @@
     //   let model = session.data.nodes.find(d => node.id = d.id);
     //   if(!model) return;
     //   model.selected = !model.selected;
-    //   $(window).trigger('node-selected');
+    //   $window.trigger('node-selected');
     // });
 
     $('#toggle-3DNet-settings').on('click', function(){
@@ -262,7 +262,7 @@
       updateLinkWidth();
     });
 
-    $(window)
+    $window
       .on('link-threshold-change node-visibility', updateData)
       .on('node-color-change selected-color-change', updateNodeColors)
       .on('link-color-change', updateLinkColors)

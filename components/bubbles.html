@@ -147,7 +147,7 @@
       .on('click', function(d){
         let c = session.data.nodes.find(node => d.id === node.id);
         c.selected = !c.selected;
-        $(window).trigger('node-selected');
+        $window.trigger('node-selected');
       });
 
     updateNodeColors();
@@ -327,7 +327,7 @@
     reset();
   });
 
-  $(window)
+  $window
     .on('node-color-change selected-color-change', updateNodeColors)
     .on('link-threshold-change node-visibility node-selected background-color-change', reset);
 })();

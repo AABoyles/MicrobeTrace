@@ -771,7 +771,7 @@
       }
     });
 
-    $(window)
+    $window
       .on('node-color-change link-color-change', redraw)
       .on('node-visibilitiy-change', function(){
         nodes = app.getVisibleNodes(true);

@@ -46,6 +46,8 @@ $(function(){
 
   layout.contentItems = [];
 
+  self.$window = $(window);
+
   $('.modal-header').on('mousedown', function(e1){
     var body = $('body');
     var parent = $(this).parent().parent().parent();
@@ -192,7 +194,7 @@ $(function(){
     session.style.widgets['link-sort-variable'] = e.target.value;
     app.updateThresholdHistogram();
     app.updateStatistics();
-    $(window).trigger('link-threshold-change');
+    $window.trigger('link-threshold-change');
   });
 
   app.updateThresholdHistogram = function(){
@@ -254,7 +256,7 @@ $(function(){
       if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
       app.computeDegree();
       app.updateStatistics();
-      $(window).trigger('link-threshold-change');
+      $window.trigger('link-threshold-change');
     });
 
     svg.on('mousedown', function(){
@@ -266,14 +268,14 @@ $(function(){
         if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
         app.computeDegree();
         app.updateStatistics();
-        $(window).trigger('link-threshold-change');
+        $window.trigger('link-threshold-change');
         svg
           .on('mousemove', null)
           .on('mouseup', null)
           .on('mouseleave', null);
       });
     });
-    $(window).trigger('link-threshold-change');
+    $window.trigger('link-threshold-change');
   };
 
   $('#node-singletons-show, #node-singletons-hide').on('change', function(e){
@@ -283,7 +285,7 @@ $(function(){
 
   $('#links-show-nn, #links-show-all').on('change', function(e){
     app.updateStatistics();
-    $(window).trigger('link-threshold-change');
+    $window.trigger('link-threshold-change');
   });
 
   $('#link-threshold').on('input', function(){
@@ -292,7 +294,7 @@ $(function(){
     if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
     app.computeDegree();
     app.updateStatistics();
-    $(window).trigger('link-threshold-change');
+    $window.trigger('link-threshold-change');
   });
 
   $('#network-statistics-hide').parent().on('click', function(){
@@ -355,7 +357,7 @@ $(function(){
       if(variable === 'None'){
         $('#node_color_value_row').slideDown();
         $('#nodeColors').remove();
-        $(window).trigger('node-color-change');
+        $window.trigger('node-color-change');
         return;
       }
       $('#node_color_value_row').slideUp();
@@ -368,19 +370,19 @@ $(function(){
           .on('change', function(evt){
             session.style.nodeColors.splice(i, 1, evt.target.value);
             temp.style.nodeColorMap = d3.scaleOrdinal(session.style.nodeColors).domain(values);
-            $(window).trigger('node-color-change');
+            $window.trigger('node-color-change');
           });
         var cell = $('<td></td>').append(input);
         var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
-      $(window).trigger('node-color-change');
+      $window.trigger('node-color-change');
     });
 
   $('#node-color')
     .on('change', function(e){
       session.style.widgets['node-color'] = e.target.value;
-      $(window).trigger('node-color-change');
+      $window.trigger('node-color-change');
     })
     .val(session.style.widgets['node-color']);
 
@@ -392,7 +394,7 @@ $(function(){
       if(variable === 'None'){
         $('#link-color-row').slideDown();
         $('#link-colors').remove();
-        $(window).trigger('link-color-change');
+        $window.trigger('link-color-change');
         return;
       }
       $('#link-color-row').slideUp();
@@ -405,30 +407,30 @@ $(function(){
           .on('change', function(evt){
             session.style.linkColors.splice(i, 1, evt.target.value);
             temp.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
-            $(window).trigger('link-color-change');
+            $window.trigger('link-color-change');
           });
         var cell = $('<td></td>').append(input);
         var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
-      $(window).trigger('link-color-change');
+      $window.trigger('link-color-change');
     });
 
   $('#link-color').on('change', function(e){
     session.style.widgets['link-color'] = e.target.value;
-    $(window).trigger('link-color-change');
+    $window.trigger('link-color-change');
   });
 
   $('#selected-color').on('change', function(e){
     session.style.widgets['selected-color'] = e.target.value;
     session.style.widgets['selected-color-contrast'] = app.contrastColor(e.target.value);
-    $(window).trigger('selected-color-change');
+    $window.trigger('selected-color-change');
   });
 
   $('#background-color').on('change', function(e){
     session.style.widgets['background-color'] = e.target.value;
     session.style.widgets['background-color-contrast'] = app.contrastColor(e.target.value);
-    $(window).trigger('background-color-change');
+    $window.trigger('background-color-change');
   });
 
   $('#color-table').on('change', function(){
@@ -545,7 +547,7 @@ $(function(){
       session.data.nodes.forEach(function(n){ n.selected = (n.id.indexOf(e.target.value)>-1); });
       if(!session.data.nodes.some(function(n){ return n.selected; })) alertify.warning('No matches!');
     }
-    $(window).trigger('node-selected');
+    $window.trigger('node-selected');
   });
 
   app.launchView('files');
@@ -563,7 +565,7 @@ $(function(){
 
   layout.on('stateChanged', function(){ session.layout = app.cacheLayout(layout.root.contentItems[0]); });
 
-  $(window)
+  $window
     .on('node-selected', function(){
       $('#numberOfSelectedNodes').text(session.data.nodes.filter(function(d){ return d.selected; }).length.toLocaleString());
     })

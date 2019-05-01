@@ -100,7 +100,7 @@
           if(entity.selected){
             $(row.getElement()).css("background", session.style.widgets['selected-color']);
           }
-          $(window).trigger('node-selected');
+          $window.trigger('node-selected');
        	},
         rowFormatter: function(row){
           if(row.getData().selected){
@@ -173,7 +173,7 @@
 
     $('#table').parent().css('z-index', 1000);
 
-    $(window)
+    $window
       .on('link-threshold-change', updateTable)
       .on('node-selected', updateData)
       .on('selected-color-change', updateTable);

@@ -362,7 +362,7 @@
         }
       });
     }
-    $(window).trigger('node-selected');
+    $window.trigger('node-selected');
   }
 
   function contextMenu(d){
@@ -651,7 +651,7 @@
     });
   }
 
-  $(window)
+  $window
     .on('node-selected', tagSelected)
     .on('node-color-change', drawTree)
     .on('background-color-change', function(){

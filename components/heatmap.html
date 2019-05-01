@@ -301,7 +301,7 @@
       $('#heatmap .yaxislayer-above text').css('fill', contrast);
     }
 
-    $(window).on('background-color-change', setBackground);
+    $window.on('background-color-change', setBackground);
 
     layout.on('stateChanged', redrawHeatmap);
   })();

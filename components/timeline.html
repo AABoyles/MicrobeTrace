@@ -203,7 +203,7 @@
     refresh();
   });
 
-  $(window)
+  $window
     .on('node-color-change', function(){
       svg.select('.timeline-epi-curve').selectAll('rect')
         .attr('fill', session.style.widgets['node-color'])

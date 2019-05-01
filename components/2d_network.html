@@ -381,7 +381,7 @@ Note that this may cause slow performance on larger networks.">
       let match = session.network.nodes.find(node => node.id === d.id);
       if(match) d.selected = match.selected;
     });
-    $(window).trigger('node-selected');
+    $window.trigger('node-selected');
   }
 
   d3.select('svg#network')
@@ -631,7 +631,7 @@ Note that this may cause slow performance on larger networks.">
         }
       });
     }
-    $(window).trigger('node-selected');
+    $window.trigger('node-selected');
   }
 
   let clipboard = new ClipboardJS('#copyID, #copySeq');
@@ -1155,7 +1155,7 @@ Note that this may cause slow performance on larger networks.">
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
   });
 
-  $(window)
+  $window
     .on('node-color-change', updateNodeColors)
     .on('link-color-change', updateLinkColor)
     .on('background-color-change', function(){
