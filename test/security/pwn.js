@@ -4,5 +4,5 @@
     alertify.error(message);
   } else {
     document.body.innerHTML = '<h1>' + message + '</h1>';
-  };
+  }
 })();
