@@ -1,7 +1,7 @@
 $(function(){
   'use strict';
 
-  if(window.navigator.userAgent.indexOf('MSIE') > -1 || window.navigator.appName.indexOf('Microsoft Internet Explorer') > -1){
+  if(navigator.userAgent.indexOf('MSIE') >= 0 || navigator.appName.indexOf('Microsoft Internet Explorer') >= 0){
     $('#ie-warning').show();
     throw new Error('MicrobeTrace does not work on Internet Explorer.');
   } else {
@@ -22,16 +22,16 @@ $(function(){
     });
   }
 
-  if('serviceWorker' in window.navigator){
-    window.navigator.serviceWorker.register('sw.js').catch(function(error) {
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(function(error) {
       console.error('Service Worker Registration failed with ' + error);
     });
   }
 
-  window.session = app.sessionSkeleton();
-  window.temp = app.tempSkeleton();
+  self.session = app.sessionSkeleton();
+  self.temp = app.tempSkeleton();
 
-  window.layout = new window.GoldenLayout({
+  self.layout = new GoldenLayout({
     settings: {
       selectionEnabled: true,
       showPopoutIcon: false
@@ -67,11 +67,11 @@ $(function(){
 
   var table = new Tabulator('#recall-stashes-available', {
     height: '100%',
-    layout: "fitColumns",
+    layout: 'fitColumns',
     selectable: 1,
     columns: [
-      {title:"Name", field:"name"},
-      {title:"Date", field:"date", align:"right", sorter:"date"}
+      {title:'Name', field:'name'},
+      {title:'Date', field:'date', align:'right', sorter:'date'}
     ]
   });
 
@@ -123,8 +123,8 @@ $(function(){
       var zip = new JSZip();
       zip.file(name + '.' + format, data);
       zip.generateAsync({
-        type:"blob",
-        compression: "DEFLATE",
+        type:'blob',
+        compression: 'DEFLATE',
         compressionOptions: {
         level: 9
       }}).then(function(content) {
@@ -145,7 +145,7 @@ $(function(){
           .then(function(zip) {
             zip.forEach(function(relativePath, zipEntry){
               extension = zipEntry.name.split('.').pop();
-              zipEntry.async("string").then(function(c){
+              zipEntry.async('string').then(function(c){
                 app.processJSON(c, extension);
               });
             });
@@ -452,7 +452,7 @@ $(function(){
   });
 
   $('#HelpTab').on('click', function(e){
-    if(window.navigator.onLine){
+    if(navigator.onLine){
       window.open('https://github.com/CDCgov/MicrobeTrace/wiki');
     } else {
       app.launchView('help');
@@ -592,7 +592,7 @@ $(function(){
       e.returnValue = 'Are you certain? This session will be lost!';
     });
 });
-var messageTimeout = null;
+
 alertify.defaults.transition = 'slide';
 alertify.defaults.theme.ok = 'btn btn-primary';
 alertify.defaults.theme.cancel = 'btn btn-danger';
