@@ -776,15 +776,14 @@ app.tagClusters = function(){
         mean_genetic_distance: undefined,
         visible: true
       });
-      app.DFS(node);
+      app.DFS(node.id);
     }
   });
   session.data.clusters = session.data.clusters.filter(function(c){ return c.nodes > 1; });
 };
 
-app.DFS = function(node){
-  if(typeof node === 'string') node = session.data.nodes.find(function(d){ return d.id === node; });
-  if(typeof node === 'undefined') console.error('That\'s weird: An undefined node was referenced.');
+app.DFS = function(id){
+  var node = session.data.nodes.find(function(d){ return d.id === id; });
   if('cluster' in node) return;
   var lsv = session.style.widgets['link-sort-variable'];
   node.cluster = session.data.clusters.length - 1;
@@ -795,8 +794,8 @@ app.DFS = function(node){
       var cluster = session.data.clusters[session.data.clusters.length - 1];
       cluster.links++;
       cluster.sum_distances += parseFloat(l[lsv]);
-      if(!l.source.cluster) app.DFS(l.source);
-      if(!l.target.cluster) app.DFS(l.target);
+      app.DFS(l.source);
+      app.DFS(l.target);
     }
   });
 };
