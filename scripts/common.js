@@ -371,10 +371,12 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
-app.generateSeqs = function(idPrefix, count=20000, snps=100, seed=session.data.reference){
-  // example: app.addFile(new File([app.unparseFASTA(app.generateSeqs("gen-", 50, 20))], "generated.fasta"))
-
-  // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
+// ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
+// example: app.addFile(new File([app.unparseFASTA(app.generateSeqs("gen-", 50, 20))], "generated.fasta"))
+app.generateSeqs = function(idPrefix, count, snps, seed){
+  if(!count) count = 1000;
+  if(!snps) snps = 100;
+  if(!seed) seed = session.data.reference
 
   var sampleCodons = [
     'GCA','GCC','GCG','GCT','AAC','AAT','GAC','GAT','TGC','TGT','GAC','GAT',
