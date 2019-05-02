@@ -768,8 +768,9 @@ app.tagClusters = function(){
   var nodes = session.data.nodes;
   var n = nodes.length;
   for(var i = 0; i < n; i++) delete nodes[i].cluster;
-  for(var i = 0; i < n; i++){
-    var node = nodes[i];
+  temp.nodes = [];
+  for(var j = 0; j < n; j++){
+    var node = nodes[j];
     if(typeof node.cluster === 'undefined'){
       session.data.clusters.push({
         id: session.data.clusters.length,
@@ -859,7 +860,7 @@ app.setLinkVisibility = function(){
   var links = session.data.links;
   var n = links.length;
   for(var i = 0; i < n; i++){
-    link = links[i];
+    var link = links[i];
     link.visible = true;
     if(showNN){
       link.visible &= link.nn;
