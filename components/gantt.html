@@ -153,8 +153,17 @@
       let endField = $el.find(`#date-${dateid}-end`).val();
       if(endField === 'None') endField = startField;
       session.data.nodes.filter(d => d.visible).forEach(d => {
-        let startDate = moment(d[startField]);
-        let endDate = moment(d[endField]);
+        let startDate, endDate;
+        if(typeof d[startField] === 'number'){
+          startDate = moment((d[startField] - 25567)*24*60*60*1000);
+        } else {
+          startDate = moment(d[startField]);
+        }
+        if(typeof d[endField] === 'number'){
+          endDate = moment((d[endField] - 25567)*24*60*60*1000);
+        } else {
+          endDate = moment(d[endField]);
+        }
         if(startDate.isValid() || endDate.isValid()){
           bars.push({
             "startDate" : startDate.isValid() ? startDate.toDate() : endDate.toDate(),
