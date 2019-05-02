@@ -767,7 +767,6 @@ app.tagClusters = function(){
   session.data.clusters = [];
   var nodes = session.data.nodes;
   var n = nodes.length;
-  for(var i = 0; i < n; i++) delete nodes[i].cluster;
   temp.nodes = [];
   for(var j = 0; j < n; j++){
     var node = nodes[j];
@@ -789,6 +788,8 @@ app.tagClusters = function(){
 };
 
 app.DFS = function(id){
+  if(temp.nodes.indexOf(id) >= 0) return;
+  temp.nodes.push(id);
   var node = {};
   var nodes = session.data.nodes;
   var n = nodes.length;
@@ -799,7 +800,6 @@ app.DFS = function(id){
       break;
     }
   }
-  if('cluster' in node) return;
   var lsv = session.style.widgets['link-sort-variable'];
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
@@ -820,13 +820,26 @@ app.DFS = function(id){
 
 app.computeDegree = function(){
   var start = Date.now();
-  session.data.nodes.forEach(function(d){ d.degree = 0; });
-  var numLinks = session.data.links.length;
+  var nodes = session.data.nodes, links = session.data.links;
+  var numNodes = nodes.length;
+  for(var h = 0; h < numNodes; h++){ nodes[h].degree = 0; }
+  var numLinks = links.length;
   for(var i = 0; i < numLinks; i++){
-    var l = session.data.links[i];
+    var l = links[i];
     if(!l.visible) continue;
-    session.data.nodes.find(function(d){ return d.id === l.source; }).degree++;
-    session.data.nodes.find(function(d){ return d.id === l.target; }).degree++;
+    var s, t;
+    for(var j = 0; j < numNodes; j++){
+      var node = nodes[j];
+      if(node.id === l.source){
+        s = true;
+        node.degree++;
+      }
+      if(node.id === l.target){
+        t = true;
+        node.degree++;
+      }
+      if(s && t) break;
+    }
   }
   session.data.clusters.forEach(function(c){
     c.links = c.links/2;
