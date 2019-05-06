@@ -373,6 +373,8 @@ app.parseFASTA = function(text){
   return seqs;
 };
 
+app.r01 = Math.random;
+
 // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
 // example: app.addFile(new File([app.unparseFASTA(app.generateSeqs("gen-", 50, 20))], "generated.fasta"))
 app.generateSeqs = function(idPrefix, count, snps, seed){
@@ -392,7 +394,7 @@ app.generateSeqs = function(idPrefix, count, snps, seed){
   function sample(vec, count){
     var samples = [];
     for(var x = 0; x < count; x ++){
-      var idx = Math.floor(Math.random() * vec.length);
+      var idx = Math.floor(app.r01() * vec.length);
       samples.push(vec[idx]);
     }
     return samples;
@@ -404,7 +406,7 @@ app.generateSeqs = function(idPrefix, count, snps, seed){
 
   while(seqs.length < count){
     // number codons to vary
-    var nCodons = Math.floor(Math.random() * 10) + 1;
+    var nCodons = Math.floor(app.r01() * 10) + 1;
 
     // randomly select this many to check for existence
     var randomCodonSet = sample(sampleCodons, nCodons).join('');
@@ -414,7 +416,7 @@ app.generateSeqs = function(idPrefix, count, snps, seed){
       continue;
 
     // sequence to mutate
-    var oldseed = seqs[Math.floor(Math.random() * seqs.length)].seq;
+    var oldseed = seqs[Math.floor(app.r01() * seqs.length)].seq;
 
     // select codons to replace randomCodonSet
     var replacementCodonSet = sample(sampleCodons, nCodons).join('');
@@ -425,10 +427,10 @@ app.generateSeqs = function(idPrefix, count, snps, seed){
     // add snp substitutions randomly across entire sequence
     // - randomly sample addedSNP
     // - randomly pick SNPS to replace
-    var addedSNPs = Math.floor(Math.random() * snps);
+    var addedSNPs = Math.floor(app.r01() * snps);
     for(var j = 0; j < addedSNPs; j ++){
       var randomSNP = sample(sampleSNPs, 1)[0];
-      var locOfSNP = Math.floor(Math.random() * seed.length);
+      var locOfSNP = Math.floor(app.r01() * seed.length);
       newseed = newseed.substr(0, locOfSNP) + randomSNP + newseed.substr(locOfSNP + 1);
     }
 
