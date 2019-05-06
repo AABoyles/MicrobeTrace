@@ -773,7 +773,7 @@ app.tagClusters = function(){
   temp.nodes = [];
   for(var j = 0; j < n; j++){
     var node = nodes[j];
-    if(typeof node.cluster === 'undefined'){
+    if(temp.nodes.indexOf(node.id) === -1){
       session.data.clusters.push({
         id: session.data.clusters.length,
         nodes: 0,
@@ -825,12 +825,14 @@ app.computeDegree = function(){
   var start = Date.now();
   var nodes = session.data.nodes, links = session.data.links;
   var numNodes = nodes.length;
-  for(var h = 0; h < numNodes; h++){ nodes[h].degree = 0; }
+  for(var h = 0; h < numNodes; h++){
+    nodes[h].degree = 0;
+  }
   var numLinks = links.length;
   for(var i = 0; i < numLinks; i++){
     var l = links[i];
     if(!l.visible) continue;
-    var s, t;
+    var s = false, t = false;
     for(var j = 0; j < numNodes; j++){
       var node = nodes[j];
       if(node.id === l.source){
@@ -841,7 +843,7 @@ app.computeDegree = function(){
         t = true;
         node.degree++;
       }
-      if(s && t) break;
+      if(s & t) break;
     }
   }
   session.data.clusters.forEach(function(c){
