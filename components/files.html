@@ -122,7 +122,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 </div>
 
 <div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true" data-backdrop="false">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 id="aligner-controls-title" class="modal-title">Alignment Settings</h5>
@@ -410,14 +410,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var fastas = session.files.filter(function(f){ return f.name.split('.').pop().includes('fas'); });
     if(fastas.length === 0) return;
     fastas.forEach(function(fasta){
-      app
-        .parseFASTA(fasta.contents)
-        .forEach(function(node){
-          node.id = filterXSS(node.id);
-          node.seq = filterXSS(node.seq);
-          data.push(node);
-        });
-      if(++read === fastas.length) updatePreview(data);
+      app.parseFASTA(fasta.contents, function(nodes){
+        data = data.concat(nodes);
+        if(++read === fastas.length) updatePreview(data);
+      });
     });
   }
 
@@ -460,10 +456,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     var reader = new FileReader();
     reader.onloadend = function(e){
       if (e.target.readyState == FileReader.DONE){
-        var node = app.parseFASTA(e.target.result)[0];
-        session.data.reference = filterXSS(node.seq);
-        $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
-        readFastas();
+        var node = app.parseFASTA(e.target.result, function(nodes){
+          var node = nodes[0];
+          session.data.reference = filterXSS(node);
+          $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
+          readFastas();
+        });
       }
     };
     reader.readAsText(file);
@@ -585,19 +583,20 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         var start = Date.now();
         anySequences = true;
         var newNodes = 0;
-        var seqs = app.parseFASTA(file.contents);
-        var n = seqs.length;
-        for(var i = 0; i < n; i++){
-          var node = seqs[i];
-          if(!node) continue;
-          node.id = filterXSS(node.id);
-          node.seq = filterXSS(node.seq);
-          node.origin = [filename];
-          newNodes += app.addNode(node);
-        }
-        console.log('FASTA Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-        message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
-        if(fileNum === session.files.length - 1) processSequences();
+        app.parseFASTA(file.contents, function(seqs){
+          var n = seqs.length;
+          for(var i = 0; i < n; i++){
+            var node = seqs[i];
+            if(!node) continue;
+            node.id = filterXSS(node.id);
+            node.seq = filterXSS(node.seq);
+            node.origin = [filename];
+            newNodes += app.addNode(node);
+          }
+          console.log('FASTA Merge time:', (Date.now()-start).toLocaleString(), 'ms');
+          message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
+          if(fileNum === session.files.length - 1) processSequences();
+        });
 
       } else if(file.format === 'link'){
 

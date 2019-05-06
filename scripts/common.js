@@ -354,23 +354,14 @@ app.applyGHOST = function(ghost){
   app.finishUp();
 };
 
-app.parseFASTA = function(text){
-  if(!text || text.length === 0) return []
-  var seqs = [], currentSeq = {};
-  text.split(/[\r\n]+/g).forEach(function(line, i){
-    if(/^\s*$/.test(line)) return;
-    if(line[0] === '>' || line[0] === ';'){
-      if(i > 0) seqs.push(currentSeq);
-      currentSeq = {
-        id: line.slice(1),
-        seq: ''
-      };
-    } else {
-      currentSeq.seq += line;
-    }
-  });
-  seqs.push(currentSeq);
-  return seqs;
+app.parseFASTA = function(text, callback){
+  var computer = new Worker('scripts/parse-fasta.js');
+  computer.onmessage = function(response){
+    var nodes = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
+    console.log('FASTA Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
+    if(callback) callback(nodes);
+  };
+  computer.postMessage(text);
 };
 
 app.r01 = Math.random;
