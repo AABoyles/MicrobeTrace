@@ -47,6 +47,19 @@
           </select>
         </div>
       </div>
+      <div id="ambiguities-row" class="form-group row">
+        <div class="col-3">
+          <label for="ambiguity-resolution-strategy" class="mr-2" title="What Strategy should MicrobeTrace use to handle ambiguities?">Ambiguities</label>
+        </div>
+        <div class="col-9">
+          <select id="ambiguity-resolution-strategy" class="form-control form-control-sm mr-5">
+            <option value="AVERAGE">Average</option>
+            <option value="RESOLVE">Resolve</option>
+            <option value="SKIP">Skip</option>
+            <option value="GAPMM">GapMM</option>
+          </select>
+        </div>
+      </div>
       <div class="form-group row">
         <div class="col-3">
           <label for="default-distance-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">Link Threshold</label>
@@ -473,15 +486,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   if(cachedLSV){
     $('#default-distance-metric, #link-sort-variable').val(cachedLSV);
     if(cachedLSV === 'snps'){
+      $('#ambiguities-row').hide();
       $('#default-distance-threshold, #link-threshold')
         .attr('step', 1)
         .val(16);
     } else {
+      $('#ambiguities-row').show();
       $('#default-distance-threshold, #link-threshold')
         .attr('step', 0.001)
         .val(0.015);
     }
   }
+
+  $('#ambiguity-resolution-strategy').change(function(e){
+    session.style.widgets['ambiguity-resolution-strategy'] = e.target.value;
+  });
 
   $('#default-distance-metric, #link-sort-variable').change(function(e){
     var lsv = e.target.value;
@@ -489,10 +508,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     if(e.target.id == 'default-distance-metric') localStorage.setItem('link-sort-variable', lsv);
     $('#default-distance-metric, #link-sort-variable').val(lsv);
     if(lsv === 'snps'){
+      $('#ambiguities-row').slideUp();
       $('#default-distance-threshold, #link-threshold')
         .attr('step', 1)
         .val(16);
     } else {
+      $('#ambiguities-row').slideDown();
       $('#default-distance-threshold, #link-threshold')
         .attr('step', 0.001)
         .val(0.015);

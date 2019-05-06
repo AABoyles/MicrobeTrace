@@ -22,6 +22,7 @@ app.defaultWidgets = {
   '3DNet-node-tooltip-variable': 'id',
   '3DNet-node-radius': 4,
   '3DNet-node-radius-variable': 'None',
+  'ambiguity-resolution-strategy': 'AVERAGE',
   'background-color': '#ffffff',
   'background-color-contrast': '#000000',
   'bubble-x': 'None',
@@ -519,7 +520,8 @@ app.computeLinks = function(subset, callback){
   };
   computer.postMessage({
     nodes: subset,
-    metrics: session.state.metrics
+    metrics: session.state.metrics,
+    strategy: session.style.widgets['ambiguity-resolution-strategy']
   });
 };
 
