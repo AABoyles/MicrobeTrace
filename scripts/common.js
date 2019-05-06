@@ -519,11 +519,11 @@ app.computeLinks = function(subset, callback){
     console.log('Links Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     var start = Date.now();
     var check = session.files.length > 1;
-    links.forEach(function(link, j){
-      k += app.addLink(link, check);
-    });
-    computer.terminate();
-    console.log('Links Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    var n = links.length;
+    for(var i = 0; i < n; i++){
+      k += app.addLink(links[i], check);
+    }
+    console.log('Links Merge time: ', (Date.now()-start).toLocaleString(), 'ms');
     callback(k);
   };
   computer.postMessage({
@@ -877,18 +877,15 @@ app.setLinkVisibility = function(){
   var n = links.length;
   for(var i = 0; i < n; i++){
     var link = links[i];
-    link.visible = true;
-    if(showNN){
-      link.visible &= link.nn;
-    }
-    if(metric !== 'none'){
-      link.visible &= (link[metric] <= threshold);
-    }
-    if(session.data.clusters.length > 0){
-      //The above condition is a dumb hack to initial load the network
-      var cluster = session.data.clusters.find(function(c){ return c.id === link.cluster; });
-      if(cluster) link.visible &= cluster.visible;
-    }
+    var v = true;
+    if(metric !== 'none') v &= (link[metric] <= threshold);
+    if(showNN) v &= link.nn;
+    link.visible = v;
+    // if(session.data.clusters.length > 0){
+    //   //The above condition is a dumb hack to initial load the network
+    //   var cluster = session.data.clusters.find(function(c){ return c.id === link.cluster; });
+    //   if(cluster) link.visible &= cluster.visible;
+    // }
   }
   console.log('Link Visibility Setting time:', (Date.now()-start).toLocaleString(), 'ms');
 };
