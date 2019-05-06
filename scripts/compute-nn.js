@@ -27,7 +27,7 @@ onmessage = function(e){
       }
     }
   }
-  console.log('NN Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('NN Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
   var encoder = new TextEncoder();
   links = encoder.encode(JSON.stringify(links)).buffer;

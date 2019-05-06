@@ -595,7 +595,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           node.origin = [filename];
           newNodes += app.addNode(node);
         }
-        console.log('FASTA Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+        console.log('FASTA Parse time:', (Date.now()-start).toLocaleString(), 'ms');
         message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
         if(fileNum === session.files.length - 1) processSequences();
 
@@ -654,7 +654,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               origin: [filename]
             });
           });
-          console.log('Link Excel Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+          console.log('Link Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
           message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
           if(fileNum === session.files.length - 1) processSequences();
 
@@ -686,7 +686,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   origin: [filename]
                 });
               });
-              console.log('Link CSV Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+              console.log('Link CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
               message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
               if(fileNum === session.files.length - 1) processSequences();
             }
@@ -716,7 +716,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             node['origin'] = [filename];
             m += app.addNode(node);
           });
-          console.log('Node Excel Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+          console.log('Node Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
           message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
           if(fileNum === session.files.length - 1) processSequences();
 
@@ -742,7 +742,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               m += app.addNode(node);
             },
             complete: function(){
-              console.log('Node CSV Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+              console.log('Node CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
               message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
               if(fileNum === session.files.length - 1) processSequences();
             }
@@ -790,7 +790,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               });
             }
           });
-          console.log('Distance Matrix Excel Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+          console.log('Distance Matrix Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
           message(` - Parsed ${nn} New, ${data.length-1} Total Nodes from Excel Distance Matrix.`);
           message(` - Parsed ${nl} New, ${((data.length-1)**2-(data.length-1))/2} Total Links from Excel Distance Matrix.`);
           if(fileNum === session.files.length - 1) processSequences();
@@ -834,7 +834,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   });
                 }
               });
-              console.log('Distance Matrix CSV Parse time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+              console.log('Distance Matrix CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
               message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${nl} New, ${((results.data.length-1)**2 - (results.data.length-1))/2} Total Links from Distance Matrix.`);
               if(fileNum === session.files.length - 1) processSequences();

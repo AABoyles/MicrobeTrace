@@ -24,7 +24,7 @@ onmessage = function(e){
     });
   }
   output.labels = labels;
-  console.log('DM Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('DM Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
   var encoder = new TextEncoder();
   output = encoder.encode(JSON.stringify(output)).buffer;

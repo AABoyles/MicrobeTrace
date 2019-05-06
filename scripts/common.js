@@ -449,7 +449,7 @@ app.align = function(params, callback){
   var aligner = new Worker('scripts/align-'+params.aligner+'.js');
   aligner.onmessage = function(response){
     var output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
-    console.log('Alignment transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('Alignment transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     var start = Date.now();
     var minPadding = Number.MAX_SAFE_INTEGER,
         maxLength = 0,
@@ -469,7 +469,7 @@ app.align = function(params, callback){
       d = output[k];
       d.seq = d.seq + '-'.repeat(maxLength - d.seq.length);
     }
-    console.log('Alignment Padding time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('Alignment Padding time: ', (Date.now()-start).toLocaleString(), 'ms');
     callback(output);
   };
   aligner.postMessage(params);
@@ -480,7 +480,7 @@ app.computeConsensus = function(callback){
   var nodes = session.data.nodes.filter(function(d){ return d.seq; });
   var computer = new Worker('scripts/compute-consensus.js');
   computer.onmessage = function(response){
-    console.log('Consensus Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('Consensus Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     callback(app.decoder.decode(new Uint8Array(response.data.consensus)));
   };
   computer.postMessage(nodes);
@@ -491,7 +491,7 @@ app.computeConsensusDistances = function(callback){
   var computer = new Worker('scripts/compute-consensus-distances.js');
   computer.onmessage = function(response){
     var nodes = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
-    console.log('Consensus Difference Transit time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('Consensus Difference Transit time: ', (Date.now()-start).toLocaleString(), 'ms');
     if(callback) callback(nodes);
   };
   var subset = [];
@@ -513,7 +513,8 @@ app.computeLinks = function(subset, callback){
   var k = 0, computer = new Worker('scripts/compute-links.js');
   computer.onmessage = function(response){
     var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
-    console.log('Links Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    computer.terminate();
+    console.log('Links Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     var start = Date.now();
     var check = session.files.length > 1;
     links.forEach(function(link, j){
@@ -533,7 +534,7 @@ app.computeDM = function(callback){
   var computer = new Worker('scripts/compute-dm.js');
   computer.onmessage = function(response){
     session.data.distance_matrix = JSON.parse(app.decoder.decode(new Uint8Array(response.data.matrices)));
-    console.log('DM Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('DM Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     if(callback) callback();
   };
   computer.postMessage({
@@ -549,7 +550,7 @@ app.computeTree = function(type, callback){
   var computer = new Worker('scripts/compute-tree.js');
   computer.onmessage = function(response){
     temp.trees[type] = patristic.parseJSON(app.decoder.decode(new Uint8Array(response.data.tree)));
-    console.log('Tree (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('Tree (' +  type + ') Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     if(callback) callback();
   };
   computer.postMessage({
@@ -563,7 +564,7 @@ app.computeDirectionality = function(callback){
   var computer = new Worker('scripts/compute-directionality.js');
   computer.onmessage = function(response){
     var flips = JSON.parse(app.decoder.decode(new Uint8Array(response.data.output)));
-    console.log('Directionality Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('Directionality Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     var start = Date.now();
     var n = flips.length;
     for(var i = 0; i < n; i++){
@@ -574,7 +575,7 @@ app.computeDirectionality = function(callback){
         fliplink.target = fliptemp;
       }
     }
-    console.log('Directionality Integration time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('Directionality Integration time: ', (Date.now()-start).toLocaleString(), 'ms');
     if(callback) callback();
   };
   computer.postMessage({
@@ -590,7 +591,7 @@ app.computePatristicMatrix = function(type, callback){
     var output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.output)));
     session.data.distance_matrix['patristic-'+type] = output.matrix;
     session.data.distance_matrix['patristic-'+type].labels = output.labels;
-    console.log('Patristic Matrix (' +  type + ') Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('Patristic Matrix (' +  type + ') Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     if(callback) callback();
   };
   computer.postMessage({
@@ -610,10 +611,10 @@ app.computeNN = function(metric, callback){
       return;
     }
     var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
-    console.log('NN Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('NN Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     var start = Date.now();
     links.forEach(function(l){ session.data.links[l.index].nn = l.nn });
-    console.log('NN Merge time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+    console.log('NN Merge time: ', (Date.now()-start).toLocaleString(), 'ms');
     if(callback) callback();
   };
   nnMachine.postMessage({
@@ -636,7 +637,7 @@ app.computeTriangulation = function(metric, callback){
     }
     var matrix = JSON.parse(app.decoder.decode(new Uint8Array(response.data.matrix)));
     session.data.distance_matrix[metric] = matrix;
-    console.log('Triangulation Transit time: ', ((Date.now()-response.data.start)/1000).toLocaleString(), 's');
+    console.log('Triangulation Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     if(callback) callback();
   };
   machine.postMessage({
@@ -784,7 +785,7 @@ app.tagClusters = function(){
     }
   }
   session.data.clusters = session.data.clusters.filter(function(c){ return c.nodes > 1; });
-  console.log('Cluster Tagging time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Cluster Tagging time:', (Date.now()-start).toLocaleString(), 'ms');
 };
 
 app.DFS = function(id){
@@ -846,7 +847,7 @@ app.computeDegree = function(){
     c.links_per_node = c.links/c.nodes;
     c.mean_genetic_distance = c.sum_distances/2/c.links;
   });
-  console.log('Degree Computation time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Degree Computation time:', (Date.now()-start).toLocaleString(), 'ms');
 };
 
 app.setNodeVisibility = function(){
@@ -861,7 +862,7 @@ app.setNodeVisibility = function(){
     }
   });
   $window.trigger('node-visibility');
-  console.log('Node Visibility Setting time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Node Visibility Setting time:', (Date.now()-start).toLocaleString(), 'ms');
 };
 
 app.setLinkVisibility = function(){
@@ -887,7 +888,7 @@ app.setLinkVisibility = function(){
       if(cluster) link.visible &= cluster.visible;
     }
   }
-  console.log('Link Visibility Setting time:', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Link Visibility Setting time:', (Date.now()-start).toLocaleString(), 'ms');
 };
 
 app.getVisibleNodes = function(copy){

@@ -12,7 +12,7 @@ onmessage = function(e){
     node.padding = rst.position;
     node.seq = fmt[1];
   }
-  console.log('Alignment time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Alignment time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
   let encoder = new TextEncoder();
   let output = encoder.encode(JSON.stringify(subset)).buffer;

@@ -25,7 +25,7 @@ onmessage = function(e){
     });
     consensus += maxKey;
   }
-  console.log('Consensus Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Consensus Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
   var encoder = new TextEncoder();
   consensus = encoder.encode(consensus).buffer;

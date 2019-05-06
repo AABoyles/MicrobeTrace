@@ -30,7 +30,7 @@ onmessage = function(e){
       }
     }
   }
-  console.log('Triangulation Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Triangulation Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
   var encoder = new TextEncoder();
   var output = encoder.encode(JSON.stringify(m)).buffer;

@@ -12,7 +12,7 @@ onmessage = function(e){
     }
     subset[i]._diff = sum;
   }
-  console.log('Consensus Difference Compute time: ', ((Date.now()-start)/1000).toLocaleString(), 's');
+  console.log('Consensus Difference Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
   var encoder = new TextEncoder();
   var output = encoder.encode(JSON.stringify(e.data.nodes)).buffer;
