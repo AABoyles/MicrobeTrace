@@ -721,7 +721,7 @@ app.finishUp = function(oldSession){
   $('#network-statistics-wrapper').fadeIn();
   $('#SettingsTab').attr('data-target', '#global-settings-modal');
   session.meta.loadTime = Date.now() - session.meta.startTime;
-  console.log('Total load time:', (session.meta.loadTime/1000).toLocaleString() + 's');
+  console.log('Total load time:', session.meta.loadTime.toLocaleString(), 'ms');
   if(oldSession){
     layout.root.contentItems[0].remove();
     setTimeout(function(){app.loadLayout(session.layout)}, 80);
