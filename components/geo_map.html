@@ -652,8 +652,8 @@
         if(name.endsWith("json")){
           const layerName = name.split('.').slice(0, -1).join('.').toLowerCase();
           const reader = new FileReader();
-          reader.onload = function(event) {
-            app.mapData[layerName] = JSON.parse(event.target.result);
+          reader.onload = function(event2){
+            app.mapData[layerName] = JSON.parse(event2.target.result);
             layers[layerName] = L.geoJSON(app.mapData[layerName], {
               color: '#000',
               weight: .75,
@@ -662,8 +662,8 @@
             });
             layers[layerName].addTo(map);
             let colorCell = $('<div class="col-3"></div>').append(
-              $('<input type="color" class="w-100" />').on('change', function(){
-                layers[layerName].setStyle(f => ({ color: this.value }));
+              $('<input type="color" class="w-100" />').on('change', function(e){
+                layers[layerName].setStyle(f => ({ color: e.target.value }));
               })
             );
             let nameCell = $(`<div class="col-9">${layerName}</div>`).prepend(

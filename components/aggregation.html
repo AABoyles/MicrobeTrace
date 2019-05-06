@@ -104,7 +104,7 @@
 
     function updateTables(){
       let variables = $('#aggregation-variables li select');
-      variables.each(function(i){ updateTable(i+1, $(this).val()); });
+      variables.each(function(i){ updateTable(i+1, this.value); });
       if(variables.length < $('.aggregation-tables').length){
         $('.aggregation-tables').each(function(i){
           if(i > variables.length){
@@ -149,8 +149,7 @@
       });
 
       $('.aggregation-variable').on('change', function(){
-        let t = $(this);
-        updateTable($(this).data('i'), $(this).val());
+        updateTable($(this).data('i'), this.value);
       });
 
       updateTable(i, 'node cluster');

@@ -121,7 +121,7 @@
       }
 
       let order = [];
-      $($('#flow-variables').find('select')).each(function(i){ order.push($(this).val()); });
+      $($('#flow-variables').find('select')).each(function(i){ order.push(this.value); });
       let variables = order.length;
 
       let values = [], source_values = [], target_values = [], all_values = [], labels = [];

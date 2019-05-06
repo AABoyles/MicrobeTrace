@@ -447,8 +447,8 @@
     tree.setLayout('circular').recenter();
   });
 
-  $('#tree-vertical-stretch').on('input', function(){
-    let val = parseFloat(this.value);
+  $('#tree-vertical-stretch').on('input', e => {
+    let val = parseFloat(e.target.value);
     session.style.widgets['tree-vertical-stretch'] = val;
     var cached = tree.animation;
     tree.setAnimation(0);
@@ -456,8 +456,8 @@
     tree.setAnimation(cached);
   });
 
-  $('#tree-horizontal-stretch').on('input', function(){
-    let val = parseFloat(this.value);
+  $('#tree-horizontal-stretch').on('input', e => {
+    let val = parseFloat(e.target.value);
     session.style.widgets['tree-horizontal-stretch'] = val;
     var cached = tree.animation;
     tree.setAnimation(0);

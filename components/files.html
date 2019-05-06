@@ -526,8 +526,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   }
 
   $('#default-View').change(function(e){
-    localStorage.setItem('default-View', e.target.value);
-    session.layout.content[0].type = e.target.value;
+    var v = e.target.value;
+    localStorage.setItem('default-View', v);
+    session.layout.content[0].type = v;
   });
 
   $('#stash-auto-yes').parent().on('click', function(){

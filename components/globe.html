@@ -632,8 +632,8 @@
               color: '#990000'
             });
             let colorCell = $('<div class="col-3"></div>').append(
-              $('<input type="color" class="w-100" value="#990000" />').on('change', function(){
-                userLayers[i].color = this.value;
+              $('<input type="color" class="w-100" value="#990000" />').on('change', e => {
+                userLayers[i].color = e.target.value;
                 redraw();
               })
             );
