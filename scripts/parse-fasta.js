@@ -8,8 +8,8 @@ onmessage = function(e){
   var isblank = /^\s*$/;
   for(var i = 0; i < n; i++){
     var line = lines[i];
-    if(isblank.test(line)) return;
-    if(line[0] === '>' || line[0] === ';'){
+    if(isblank.test(line) || line[0] === ';') continue;
+    if(line[0] === '>'){
       if(i > 0) seqs.push(currentSeq);
       currentSeq = {
         id: line.slice(1),
