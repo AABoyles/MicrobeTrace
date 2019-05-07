@@ -188,6 +188,25 @@ $(function(){
 
   $('[name="NNOptions"]').on('change', function(){
     app.updateNetwork($('#node-singletons-hide').is(':checked'));
+    app.updateStatistics();
+    $window.trigger('link-threshold-change');
+  });
+
+  $('#links-show-all').parent().on('click', function(){
+    $('#filtering-epsilon-row').slideUp();
+  });
+
+  $('#links-show-nn').parent().on('click', function(){
+    $('#filtering-epsilon-row').css('display', 'flex');
+  });
+
+  $('#filtering-epsilon').on('change', function(){
+    session.style.widgets['filtering-epsilon'] = parseFloat(this.value);
+    app.computeNN(session.style.widgets['link-sort-variable'], function(){
+      app.updateNetwork($('#node-singletons-hide').is(':checked'));
+      app.updateStatistics();
+      $window.trigger('link-threshold-change');
+    });
   });
 
   $('#link-sort-variable').on('change', function(e){
@@ -278,16 +297,6 @@ $(function(){
     $window.trigger('link-threshold-change');
   };
 
-  $('#node-singletons-show, #node-singletons-hide').on('change', function(e){
-    app.setNodeVisibility();
-    app.updateStatistics();
-  });
-
-  $('#links-show-nn, #links-show-all').on('change', function(e){
-    app.updateStatistics();
-    $window.trigger('link-threshold-change');
-  });
-
   $('#link-threshold').on('input', function(){
     app.setLinkVisibility();
     app.tagClusters();
@@ -297,13 +306,18 @@ $(function(){
     $window.trigger('link-threshold-change');
   });
 
-  $('#network-statistics-hide').parent().on('click', function(){
-    $('#network-statistics-wrapper').fadeOut();
+  $('#node-singletons-show, #node-singletons-hide').on('change', function(){
+    app.setNodeVisibility();
+    app.updateStatistics();
   });
 
   $('#network-statistics-show').parent().on('click', function(){
     app.updateStatistics();
     $('#network-statistics-wrapper').fadeIn();
+  });
+
+  $('#network-statistics-hide').parent().on('click', function(){
+    $('#network-statistics-wrapper').fadeOut();
   });
 
   $('#network-statistics-wrapper').on('contextmenu', function(e){

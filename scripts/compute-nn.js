@@ -1,8 +1,9 @@
-let epsilon = 1E-9;
-
 onmessage = function(e){
   let start = Date.now();
-  let nodes = e.data.nodes, links = e.data.links, dm = e.data.matrix;
+  let nodes = e.data.nodes,
+      links = e.data.links,
+      dm = e.data.matrix,
+      epsilon = Math.pow(10, e.data.epsilon);
   let n = nodes.length, m = links.length;
   for(let j = 0; j < m; j++){
     links[j].nn = false;

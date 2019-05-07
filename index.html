@@ -239,6 +239,10 @@ performance of this software.</pre>
                   </div>
                 </div>
               </div>
+              <div id="filtering-epsilon-row" class="form-group row" title="By what variable would you like to prune links from the network?">
+                <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
+                <div class="col-8"><input type="range" id="filtering-epsilon" class="form-control form-control-sm" min="-9" max="2" step=".1" value="-8"></input></div>
+              </div>
               <div class="form-group row" title="By what variable would you like to prune links from the network?">
                 <div class="col-4"><label for="link-sort-variable">Filter Links on</label></div>
                 <div class="col-8"><select id="link-sort-variable" class="custom-select custom-select-sm linkVariables"><option value="distance" selected>Distance</option></select></div>
@@ -460,8 +464,8 @@ performance of this software.</pre>
     gtag('js', new Date());
     gtag('config', 'UA-116308624-1');
   </script>
-  <script src="scripts/bundle.js"></script>
-  <script src="scripts/common.js"></script>
-  <script src="scripts/index.js"></script>
+  <script src="scripts/bundle.js" charset="utf-8"></script>
+  <script src="scripts/common.js" charset="utf-8"></script>
+  <script src="scripts/index.js" charset="utf-8"></script>
 </body>
 </html>

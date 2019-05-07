@@ -1719,6 +1719,9 @@ button.navbar-toggler{
 label[for="OpenTab"]{
   cursor:pointer;
 }
+#filtering-epsilon-row{
+  display: none;
+}
 
 /* File Panel */
 #file-panel {

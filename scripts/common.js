@@ -615,7 +615,8 @@ app.computeNN = function(metric, callback){
   nnMachine.postMessage({
     links: session.data.links,
     nodes: session.data.nodes,
-    matrix: session.data.distance_matrix[metric]
+    matrix: session.data.distance_matrix[metric],
+    epsilon: session.style.widgets['filtering-epsilon']
   });
 };
 
