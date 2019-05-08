@@ -356,7 +356,7 @@ app.applyGHOST = function(ghost){
 };
 
 app.parseFASTA = function(text, callback){
-  var computer = new Worker('scripts/parse-fasta.js');
+  var computer = new Worker('workers/parse-fasta.js');
   computer.onmessage = function(response){
     var nodes = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
     console.log('FASTA Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
@@ -440,7 +440,7 @@ app.align = function(params, callback){
     return;
   }
   var n = params.nodes.length;
-  var aligner = new Worker('scripts/align-'+params.aligner+'.js');
+  var aligner = new Worker('workers/align-'+params.aligner+'.js');
   aligner.onmessage = function(response){
     var output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
     console.log('Alignment transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
@@ -472,7 +472,7 @@ app.align = function(params, callback){
 app.computeConsensus = function(callback){
   if(!callback) return;
   var nodes = session.data.nodes.filter(function(d){ return d.seq; });
-  var computer = new Worker('scripts/compute-consensus.js');
+  var computer = new Worker('workers/compute-consensus.js');
   computer.onmessage = function(response){
     console.log('Consensus Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     callback(app.decoder.decode(new Uint8Array(response.data.consensus)));
@@ -482,7 +482,7 @@ app.computeConsensus = function(callback){
 
 app.computeConsensusDistances = function(callback){
   var start = Date.now();
-  var computer = new Worker('scripts/compute-consensus-distances.js');
+  var computer = new Worker('workers/compute-consensus-distances.js');
   computer.onmessage = function(response){
     var nodes = JSON.parse(app.decoder.decode(new Uint8Array(response.data.nodes)));
     console.log('Consensus Difference Transit time: ', (Date.now()-start).toLocaleString(), 'ms');
@@ -504,7 +504,7 @@ app.computeConsensusDistances = function(callback){
 };
 
 app.computeLinks = function(subset, callback){
-  var k = 0, computer = new Worker('scripts/compute-links.js');
+  var k = 0, computer = new Worker('workers/compute-links.js');
   computer.onmessage = function(response){
     var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
     computer.terminate();
@@ -526,7 +526,7 @@ app.computeLinks = function(subset, callback){
 };
 
 app.computeDM = function(callback){
-  var computer = new Worker('scripts/compute-dm.js');
+  var computer = new Worker('workers/compute-dm.js');
   computer.onmessage = function(response){
     session.data.distance_matrix = JSON.parse(app.decoder.decode(new Uint8Array(response.data.matrices)));
     console.log('DM Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
@@ -542,7 +542,7 @@ app.computeDM = function(callback){
 };
 
 app.computeTree = function(type, callback){
-  var computer = new Worker('scripts/compute-tree.js');
+  var computer = new Worker('workers/compute-tree.js');
   computer.onmessage = function(response){
     temp.trees[type] = patristic.parseJSON(app.decoder.decode(new Uint8Array(response.data.tree)));
     console.log('Tree (' +  type + ') Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
@@ -556,7 +556,7 @@ app.computeTree = function(type, callback){
 };
 
 app.computeDirectionality = function(callback){
-  var computer = new Worker('scripts/compute-directionality.js');
+  var computer = new Worker('workers/compute-directionality.js');
   computer.onmessage = function(response){
     var flips = JSON.parse(app.decoder.decode(new Uint8Array(response.data.output)));
     console.log('Directionality Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
@@ -581,7 +581,7 @@ app.computeDirectionality = function(callback){
 };
 
 app.computePatristicMatrix = function(type, callback){
-  var computer = new Worker('scripts/compute-patristic-matrix.js');
+  var computer = new Worker('workers/compute-patristic-matrix.js');
   computer.onmessage = function(response){
     var output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.output)));
     session.data.distance_matrix['patristic-'+type] = output.matrix;
@@ -599,7 +599,7 @@ app.computeNN = function(metric, callback){
     console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
     return;
   }
-  var nnMachine = new Worker('scripts/compute-nn.js');
+  var nnMachine = new Worker('workers/compute-nn.js');
   nnMachine.onmessage = function(response){
     if(response.data === 'Error'){
       console.error('Nearest Neighbor washed out');
@@ -625,7 +625,7 @@ app.computeTriangulation = function(metric, callback){
     console.error('Couldn\'t find Distance Matrix ' + metric + ' to compute Nearest Neighbors.');
     return;
   }
-  var machine = new Worker('scripts/compute-triangulation.js');
+  var machine = new Worker('workers/compute-triangulation.js');
   machine.onmessage = function(response){
     if(response.data === 'Error'){
       console.error('Triangulation washed out');
