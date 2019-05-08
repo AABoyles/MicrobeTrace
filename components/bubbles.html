@@ -188,7 +188,7 @@
     vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
-    if(_.isNumber(values[0])){
+    if(app.isNumber(values[0])){
       values.sort((a, b) => a - b);
     } else {
       values.sort();
@@ -229,7 +229,7 @@
     vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
-    if(_.isNumber(values[0])){
+    if(app.isNumber(values[0])){
       values.sort((a, b) => b - a);
     } else {
       values.sort();

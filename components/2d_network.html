@@ -794,7 +794,7 @@ Note that this may cause slow performance on larger networks.">
       if(symbolVariable !== 'None') type = d3[temp.style.nodeSymbolMap(d[symbolVariable])];
       if(sizeVariable !== 'None'){
         size = d[sizeVariable];
-        if(!_.isNumber(size)) size = med;
+        if(app.isNumber(size)) size = med;
         size = (size - min) / oldrng;
         size = size * size * defaultSize + 100;
       }
@@ -1022,7 +1022,7 @@ Note that this may cause slow performance on larger networks.">
       .range([1, scalar]);
     links.attr('stroke-width', d => {
       let v = d[variable];
-      if(!_.isNumber(v)) v = mid;
+      if(!app.isNumber(v)) v = mid;
       return scale(v);
     });
   }

@@ -182,8 +182,10 @@ app.defaultNode = function(){
   }
 };
 
+app.isNumber = function(a){ return typeof a === 'number'; };
+
 app.addNode = function(newNode){
-  if(typeof newNode.id === 'number') newNode.id = '' + newNode.id;
+  if(app.isNumber(newNode.id)) newNode.id = '' + newNode.id;
   var oldNode = session.data.nodes.find(function(d){ return d.id === newNode.id; });
   if(oldNode){
     if(newNode.origin) newNode.origin = newNode.origin.concat(oldNode.origin);
@@ -535,7 +537,7 @@ app.computeDM = function(callback){
   computer.postMessage({
     nodes: session.data.nodes,
     links: session.data.links.filter(function(l){
-      return _.any(session.state.metrics.map(function(m){ return _.isNumber(l[m]); }));
+      return session.state.metrics.some(function(m){ return app.isNumber(l[m]); });
     }),
     metrics: session.state.metrics
   });
@@ -743,9 +745,7 @@ app.finishUp = function(oldSession){
   }, 1200);
 };
 
-app.capitalize = function(c){
-  return c.toUpperCase();
-};
+app.capitalize = function(c){ return c.toUpperCase(); };
 
 app.titleize = function(title){
   var small = title.toLowerCase().replace(/_/g, ' ');
@@ -970,7 +970,7 @@ app.createNodeColorMap = function(){
             .pluck(variable)
             .uniq()
             .value();
-  if(_.isNumber(session.data.nodes[0][variable])){
+  if(app.isNumber(nodes[0][variable])){
     values.sort(function(a, b){ return a - b; });
   } else {
     values.sort();
@@ -1007,7 +1007,7 @@ app.createLinkColorMap = function(){
               .uniq()
               .value();
   }
-  if(_.isNumber(session.data.links[0][variable])){
+  if(app.isNumber(session.data.links[0][variable])){
     values.sort(function(a, b){ return a - b; });
   } else {
     values.sort();

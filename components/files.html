@@ -642,7 +642,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             base[metric] = null;
           });
           var num = parseFloat(link[file.field3]);
-          if(_.isNumber(num) && !_.isNaN(num)){
+          if(app.isNumber(num) && !Number.isNaN(num)){
             base[session.style.widgets['link-sort-variable']] = num;
           } else {
             base[session.style.widgets['link-sort-variable']] = 0;
