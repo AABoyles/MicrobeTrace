@@ -4,7 +4,6 @@ echo 'Assembling Stylesheets...'
 
 rm stylesheets/bundle.css && touch stylesheets/bundle.css
 cat node_modules/bootstrap/dist/css/bootstrap.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
-cat node_modules/bootstrap4-toggle/css/bootstrap4-toggle.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/golden-layout/src/css/goldenlayout-base.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/golden-layout/src/css/goldenlayout-light-theme.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/chosen-js/chosen.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
@@ -30,7 +29,6 @@ cat node_modules/fast-text-encoding/text.min.js >> scripts/bundle.js && printf "
 cat node_modules/jquery/dist/jquery.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/popper.js/dist/umd/popper.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/bootstrap/dist/js/bootstrap.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
-cat node_modules/bootstrap4-toggle/js/bootstrap4-toggle.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/alertifyjs/build/alertify.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/golden-layout/dist/goldenlayout.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js
 cat node_modules/chosen-js/chosen.jquery.min.js >> scripts/bundle.js && printf "\n" >> scripts/bundle.js

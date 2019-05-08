@@ -447,12 +447,12 @@ $(function(){
     $window.trigger('background-color-change');
   });
 
-  $('#color-table').on('change', function(){
-    if($(this).is(':checked')){
-      $('#group-key').fadeIn();
-    } else {
-      $('#group-key').fadeOut();
-    }
+  $('#color-table-show').parent().on('click', function(){
+    $('#group-key').fadeIn();
+  });
+
+  $('#color-table-hide').parent().on('click', function(){
+    $('#group-key').fadeOut();
   });
 
   $('#apply-style').on('change', function(){
@@ -527,7 +527,7 @@ $(function(){
   });
 
   $('#group-key-hide').on('click', function(){
-    $('#color-table').prop('checked', false).trigger('click');
+    $('#color-table-hide').parent().click();
   });
 
   $('#group-key-expand').on('click', function(){
