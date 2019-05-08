@@ -723,8 +723,8 @@ Note that this may cause slow performance on larger networks.">
       .attr('opacity', l => lindices.includes(l.index) ? .1 : 1);
   }
 
-  $('#link-tooltip-variable').on('change', function(e){
-    session.style.widgets['link-tooltip-variable'] = e.target.value;
+  $('#link-tooltip-variable').on('change', function(){
+    session.style.widgets['link-tooltip-variable'] = this.value;
   });
 
   function showLinkToolTip(d){
@@ -856,9 +856,9 @@ Note that this may cause slow performance on larger networks.">
     }
   });
 
-  $('#node-label-variable').on('change', e => {
-    session.style.widgets['node-label-variable'] = e.target.value;
-    if(e.target.value === 'None'){
+  $('#node-label-variable').on('change', function(){
+    session.style.widgets['node-label-variable'] = this.value;
+    if(this.value === 'None'){
       $('.node-label-row').slideUp();
     } else {
       $('.node-label-row').css('display', 'flex');
@@ -866,30 +866,31 @@ Note that this may cause slow performance on larger networks.">
     redrawLabels();
   });
 
-  $('#node-label-size').on('input', e => {
-    session.style.widgets['node-label-size'] = parseFloat(e.target.value);
+  $('#node-label-size').on('input', function(){
+    session.style.widgets['node-label-size'] = parseFloat(this.value);
     redrawLabels();
   });
 
-  $('#node-label-orientation').on('change', e => {
-    session.style.widgets['node-label-orientation'] = e.target.value;
+  $('#node-label-orientation').on('change', function(){
+    session.style.widgets['node-label-orientation'] = this.value;
     redrawLabels();
   });
 
-  $('#node-tooltip-variable').on('change', e => {
-    session.style.widgets['node-tooltip-variable'] = e.target.value;
+  $('#node-tooltip-variable').on('change', function(){
+    session.style.widgets['node-tooltip-variable'] = this.value;
   });
 
-  $('#node-symbol').on('input', e => {
-    session.style.widgets['node-symbol'] = e.target.value;
+  $('#node-symbol').on('input', function(){
+    session.style.widgets['node-symbol'] = this.value;
     redrawNodes();
   });
 
-  $('#node-symbol-variable').on('change', e => {
-    session.style.widgets['node-symbol-variable'] = e.target.value;
+  $('#node-symbol-variable').on('change', function(){
+    let variable = this.value;
+    session.style.widgets['node-symbol-variable'] = variable;
     $('#node-symbols').fadeOut(function(){$(this).remove()});
     let table = $('<tbody id="node-symbols"></tbody>').appendTo('#group-key');
-    if(e.target.value === 'None'){
+    if(variable === 'None'){
       redrawNodes();
       $('#node-symbol-row').slideDown();
       return table.fadeOut(e => table.remove());
@@ -914,7 +915,7 @@ Note that this may cause slow performance on larger networks.">
     let options = $('#node-symbol').html();
     values.forEach((v, i) => {
       let selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function(e){
-        session.style.nodeSymbols.splice(i, 1, e.target.value);
+        session.style.nodeSymbols.splice(i, 1, variable);
         temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
         redrawNodes();
       });
@@ -926,13 +927,13 @@ Note that this may cause slow performance on larger networks.">
     table.fadeIn();
   });
 
-  $('#node-radius').on('input', function(e){
-    session.style.widgets['node-radius'] = parseFloat(e.target.value);
+  $('#node-radius').on('input', function(){
+    session.style.widgets['node-radius'] = parseFloat(this.value);
     redrawNodes();
   });
 
-  $('#node-radius-variable').on('change', function(e){
-    session.style.widgets['node-radius-variable'] = e.target.value;
+  $('#node-radius-variable').on('change', function(){
+    session.style.widgets['node-radius-variable'] = this.value;
     redrawNodes();
   });
 
@@ -947,8 +948,8 @@ Note that this may cause slow performance on larger networks.">
     }
   }
 
-  $('#node-charge').on('input', e => {
-    let v = parseFloat(e.target.value);
+  $('#node-charge').on('input', function(){
+    let v = parseFloat(this.value);
     force.force('charge').strength(-v);
     force.alpha(0.3).alphaTarget(0).restart();
     session.style.widgets['node-charge'] = v;
@@ -959,13 +960,13 @@ Note that this may cause slow performance on larger networks.">
     session.style.widgets['link-directed'] = true;
   });
 
-  $('#link-undirected').parent().on('click', e => {
+  $('#link-undirected').parent().on('click', function(){
     svg.select('g.links').selectAll('line').attr('marker-end', null);
     session.style.widgets['link-directed'] = false;
   });
 
-  $('#link-label-variable').on('change', e => {
-    let label = e.target.value;
+  $('#link-label-variable').on('change', function(){
+    let label = this.value;
     session.style.widgets['link-label-variable'] = label;
     if(label === 'None'){
       svg.select('g.links').selectAll('text').text('');
@@ -975,9 +976,9 @@ Note that this may cause slow performance on larger networks.">
     }
   });
 
-  $('#link-length').on('input', e => {
-    let v = parseFloat(e.target.value);
-    force.force('link').distance(e.target.value);
+  $('#link-length').on('input', function(){
+    let v = parseFloat(this.value);
+    force.force('link').distance(this.value);
     force.alpha(0.3).alphaTarget(0).restart();
     session.style.widgets['link-length'] = v;
   });
@@ -1009,9 +1010,9 @@ Note that this may cause slow performance on larger networks.">
     }
   }
 
-  $('#link-opacity').on('input', e => {
-    session.style.widgets['link-opacity'] = parseFloat(e.target.value);
-    let opacity = 1 - parseFloat(e.target.value);
+  $('#link-opacity').on('input', function(){
+    session.style.widgets['link-opacity'] = parseFloat(this.value);
+    let opacity = 1 - parseFloat(this.value);
     svg.select('g.links').selectAll('line').attr('opacity', opacity);
   });
 
@@ -1041,18 +1042,18 @@ Note that this may cause slow performance on larger networks.">
     });
   }
 
-  $('#link-width').on('input', e => {
-    session.style.widgets['link-width'] = parseFloat(e.target.value);
+  $('#link-width').on('input', function(){
+    session.style.widgets['link-width'] = parseFloat(this.value);
     scaleLinkWidth();
   });
 
-  $('#link-width-variable').on('change', e => {
-    if(e.target.value === 'None'){
+  $('#link-width-variable').on('change', function(){
+    if(this.value === 'None'){
       $('#link-reciprocalthickness-row').slideUp();
     } else {
       $('#link-reciprocalthickness-row').css('display', 'flex');
     }
-    session.style.widgets['link-width-variable'] = e.target.value;
+    session.style.widgets['link-width-variable'] = this.value;
     scaleLinkWidth();
   });
 
@@ -1066,30 +1067,30 @@ Note that this may cause slow performance on larger networks.">
     scaleLinkWidth();
   });
 
-  $('#network-friction').on('input', e => {
-    let v = parseFloat(e.target.value);
+  $('#network-friction').on('input', function(){
+    let v = parseFloat(this.value);
     force.velocityDecay(v);
     force.alpha(0.3).alphaTarget(0).restart();
     session.style.widgets['network-friction'] = v;
   });
 
-  $('#network-gravity').on('input', e => {
-    let v = parseFloat(e.target.value);
+  $('#network-gravity').on('input', function(){
+    let v = parseFloat(this.value);
     force.force('gravity').strength(v);
     force.alpha(0.3).alphaTarget(0).restart();
     session.style.widgets['network-gravity'] = v;
   });
 
-  $('#network-export-filetype').on('change', function(e){
-    if(e.target.value === 'svg'){
+  $('#network-export-filetype').on('change', function(){
+    if(this.value === 'svg'){
       $('#network-export-advanced-button').parent().parent().slideUp();
     } else {
       $('#network-export-advanced-button').parent().parent().slideDown();
     }
   });
 
-  $('#network-export-scale').on('input', function(e){
-    let scale = parseFloat(e.target.value);
+  $('#network-export-scale').on('input', function(){
+    let scale = parseFloat(this.value);
     let wrapper = $('#network').parent();
     $('#network-export-dimensions').text(
       Math.round(wrapper.width() *scale)+'x'+
