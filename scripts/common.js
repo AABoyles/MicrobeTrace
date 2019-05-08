@@ -640,10 +640,12 @@ app.computeNN = function(metric, callback){
       console.error('Nearest Neighbor washed out');
       return;
     }
-    var links = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
+    var output = JSON.parse(app.decoder.decode(new Uint8Array(response.data.links)));
     console.log('NN Transit time: ', (Date.now()-response.data.start).toLocaleString(), 'ms');
     var start = Date.now();
-    links.forEach(function(l){ session.data.links[l.index].nn = l.nn });
+    var links = session.data.links;
+    var n = links.length;
+    for(var i = 0; i < n; i++){ links[i].nn = output[i]; }
     console.log('NN Merge time: ', (Date.now()-start).toLocaleString(), 'ms');
     if(callback) callback();
   };
