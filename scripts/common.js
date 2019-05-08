@@ -236,38 +236,71 @@ app.addLink = function(newLink, check){
 app.processSVG = function(svg){
   var nodes = [];
   var $xml = $(svg);
-  $xml.find('.nodes g').each(function(i, node){
-    nodes.push($(node).attr('transform').slice(10, -1).split(',').map(parseFloat));
-    app.addNode({
-      id: i+'',
-      origin: ['Scraped SVG']
+  if($xml.find('#edges').length){
+    $xml.find('#nodes circle').each(function(i, node){
+      var $node = $(node);
+      var gephid = $node.attr('class');
+      nodes.push(gephid);
+      app.addNode({
+        id: gephid+'',
+        color: $node.attr('fill'),
+        size: parseFloat($node.attr('r')),
+        origin: ['Scraped Gephi SVG']
+      });
     });
-  });
-  $xml.find('line').each(function(i, link){
-    var $l = $(link);
-    var source = nodes.findIndex(function(d){
-      return (
-        Math.abs(d[0] - parseFloat($l.attr('x1'))) < 0.0001 &&
-        Math.abs(d[1] - parseFloat($l.attr('y1'))) < 0.0001
-      );
+    session.data.nodeFields.push('color');
+    session.data.nodeFields.push('size');
+    $xml.find('#edges path').each(function(i, link){
+      var $link = $(link);
+      var coords = $link.attr('class').split(' ');
+      var source = coords[0];
+      var target = coords[1];
+      var base = {
+        source: source+'',
+        target: target+'',
+        color: $link.attr('stroke'),
+        origin: ['Scraped MicrobeTrace SVG']
+      };
+      session.state.metrics.forEach(function(metric){
+        base[metric] = 0;
+      });
+      app.addLink(base, true);
     });
-    var target = nodes.findIndex(function(d){
-      return (
-        Math.abs(d[0] - parseFloat($l.attr('x2'))) < 0.0001 &&
-        Math.abs(d[1] - parseFloat($l.attr('y2'))) < 0.0001
-      );
+    session.data.linkFields.push('color');
+  } else {
+    $xml.find('.nodes g').each(function(i, node){
+      nodes.push($(node).attr('transform').slice(10, -1).split(',').map(parseFloat));
+      app.addNode({
+        id: i+'',
+        origin: ['Scraped SVG']
+      });
     });
-    if(source < 0 || target < 0) return;
-    var base = {
-      source: source+'',
-      target: target+'',
-      origin: ['Scraped SVG']
-    };
-    session.state.metrics.forEach(function(metric){
-      base[metric] = 0;
+    $xml.find('line').each(function(i, link){
+      var $l = $(link);
+      var source = nodes.findIndex(function(d){
+        return (
+          Math.abs(d[0] - parseFloat($l.attr('x1'))) < 0.0001 &&
+          Math.abs(d[1] - parseFloat($l.attr('y1'))) < 0.0001
+        );
+      });
+      var target = nodes.findIndex(function(d){
+        return (
+          Math.abs(d[0] - parseFloat($l.attr('x2'))) < 0.0001 &&
+          Math.abs(d[1] - parseFloat($l.attr('y2'))) < 0.0001
+        );
+      });
+      if(source < 0 || target < 0) return;
+      var base = {
+        source: source+'',
+        target: target+'',
+        origin: ['Scraped SVG']
+      };
+      session.state.metrics.forEach(function(metric){
+        base[metric] = 0;
+      });
+      app.addLink(base, true);
     });
-    app.addLink(base, true);
-  });
+  }
   app.finishUp();
 };
 
