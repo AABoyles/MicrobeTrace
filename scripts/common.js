@@ -965,11 +965,15 @@ app.createNodeColorMap = function(){
     temp.style.nodeColorMap = function(){ return session.style.widgets['node-color']; };
     return [];
   }
-  var values = _.chain(session.data.nodes)
-            .filter(function(d){return d.visible;})
-            .pluck(variable)
-            .uniq()
-            .value();
+  var values = [];
+  var nodes = session.data.nodes;
+  var n = nodes.length;
+  for(var i = 0; i < n; i++){
+    var d = nodes[i];
+    if(!d.visible) continue;
+    var dv = d[variable];
+    if(values.indexOf(dv) === -1) values.push(dv);
+  }
   if(app.isNumber(nodes[0][variable])){
     values.sort(function(a, b){ return a - b; });
   } else {
@@ -977,8 +981,8 @@ app.createNodeColorMap = function(){
   }
   if(values.length > session.style.nodeColors.length){
     var colors = [];
-    var n = Math.ceil(values.length/session.style.nodeColors.length);
-    while(n-- > 0){
+    var m = Math.ceil(values.length/session.style.nodeColors.length);
+    while(m-- > 0){
       colors = colors.concat(session.style.nodeColors);
     }
     session.style.nodeColors = colors;
@@ -1001,11 +1005,14 @@ app.createLinkColorMap = function(){
       });
     });
   } else {
-    values = _.chain(session.data.links)
-              .filter(function(l){ return l.visible; })
-              .pluck(variable)
-              .uniq()
-              .value();
+    var links = session.data.links;
+    var n = links.length;
+    for(var i = 0; i < n; i++){
+      var l = links[i];
+      if(!l.visible) continue;
+      var lv = l[variable];
+      if(values.indexOf(lv) === -1) values.push(lv);
+    }
   }
   if(app.isNumber(session.data.links[0][variable])){
     values.sort(function(a, b){ return a - b; });
@@ -1120,6 +1127,8 @@ app.contrastColor = function(hexcolor){
 	return (yiq >= 128000) ? '#000000' : '#ffffff';
 };
 
+app.peek = function(ra){ return ra[ra.length-1]; };
+
 app.launchView = function(view, callback){
   if(!app.componentCache[view]){
     $.get('components/' + view + '.html', function(response){
@@ -1140,7 +1149,7 @@ app.launchView = function(view, callback){
     if(contentItem){
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
-      var lastStack = _.last(layout.root.contentItems[0].getItemsByType('stack'));
+      var lastStack = app.peek(layout.root.contentItems[0].getItemsByType('stack'));
       if(!lastStack) lastStack = layout.root.contentItems[0];
       lastStack.addChild({
         componentName: view,
@@ -1148,7 +1157,7 @@ app.launchView = function(view, callback){
         title: app.titleize(view),
         type: 'component'
       });
-      contentItem = _.last(lastStack.contentItems);
+      contentItem = app.peek(lastStack.contentItems);
       contentItem.on('itemDestroyed', function(){
         var i = layout.contentItems.findIndex(function(item){
           return item === contentItem;
@@ -1224,7 +1233,7 @@ app.loadLayout = function(component, parent){
   }
   if(['stack', 'row', 'column'].includes(component.type)){
     parent.addChild({type: component.type});
-    component.content.forEach(function(c){ app.loadLayout(c, _.last(parent.contentItems)); });
+    component.content.forEach(function(c){ app.loadLayout(c, app.peek(parent.contentItems)); });
   } else {
     app.launchView(component.type);
   }
@@ -1346,10 +1355,10 @@ app.str2ab = function(str){
 app.exportHIVTRACE = function(){
   var links = session.data.links.filter(function(l){ return l.visible });
   var geneticLinks = links.filter(function(l){ return l.origin.includes('Genetic Distance'); });
-  var sequences = _.union(
-    geneticLinks.map(function(l){ return l.source; }),
-    geneticLinks.map(function(l){ return l.target; })
-  );
+  var sequences = (new Set(
+    geneticLinks.map(function(l){ return l.source; }).concat(
+    geneticLinks.map(function(l){ return l.target; }))
+  )).size;
   var pas = {};
   session.data.nodes.forEach(function(d){
     Object.keys(d).forEach(function(key){
@@ -1404,7 +1413,7 @@ app.exportHIVTRACE = function(){
         'Clusters': session.data.clusters.length,
         'Edges': links.length,
         'Nodes': session.data.nodes.length,
-        'Sequences used to make links': sequences.length
+        'Sequences used to make links': sequences
       },
       'Nodes': session.data.nodes.map(function(d){ return {
         'attributes': [],

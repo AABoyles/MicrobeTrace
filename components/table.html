@@ -156,7 +156,7 @@
           Object.keys(thing).forEach(field => {
             if(!headers.includes(field)){
               delete thing[field];
-            } else if(_.isArray(thing[field])){
+            } else if(Array.isArray(thing[field])){
               thing[field] = thing[field].join('; ');
             }
           });

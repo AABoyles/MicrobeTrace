@@ -895,13 +895,21 @@ Note that this may cause slow performance on larger networks.">
       return table.fadeOut(e => table.remove());
     }
     $('#node-symbol-row').slideUp();
-    table.append('<tr><th contenteditable>Node '+app.titleize(e.target.value)+'</th><th>Shape</th><tr>');
-    let values = _.uniq(session.network.nodes.map(d => {
-      if(_.isArray(d[e.target.value])){
-        return d[e.target.value].join(',');
-      }
-      return d[e.target.value];
-    })).sort();
+    table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Shape</th><tr>');
+    let values = []
+    let nodes = session.network.nodes;
+    let n = nodes.length;
+    for(var i = 0; i < n; i++){
+      var d = nodes[i];
+      if(!d.visible) continue;
+      var dv = d[variable];
+      if(values.indexOf(dv) === -1) values.push(dv);
+    }
+    if(app.isNumber(nodes[0][variable])){
+      values.sort(function(a, b){ return a - b; });
+    } else {
+      values.sort();
+    }
     temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
     let options = $('#node-symbol').html();
     values.forEach((v, i) => {
@@ -1013,9 +1021,15 @@ Note that this may cause slow performance on larger networks.">
     let vlinks = getVLinks();
     let links = svg.select('g.links').selectAll('line').data(vlinks);
     if(variable === 'None') return links.attr('stroke-width', scalar);
-    let values = vlinks.map(l => l[variable]).filter(_.isNumber);
-    let max = Math.max(...values);
-    let min = Math.min(...values);
+    var n = vlinks.length;
+    let max = -Infinity;
+    let min = Infinity;
+    for(var i = 0; i < n; i++){
+      var l = vlinks[i][variable];
+      if(!app.isNumber(l)) return;
+      if(l > max) max = l;
+      if(l < min) min = l;
+    }
     let mid = (max-min) / 2 + min;
     let scale = d3.scaleLinear()
       .domain(session.style.widgets['link-width-reciprocal'] ? [max, min] : [min, max])

@@ -96,7 +96,9 @@
 
     if(session.warnings.length > 0){
       av.empty();
-      var render = _.template($('#auditor-alter-template').text());
+      var render = function(){
+        var template = $('#auditor-alter-template').text();
+      }
       session.warnings.forEach(warning => {
         av.append(render(warning));
       });

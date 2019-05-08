@@ -666,8 +666,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           });
           var n = 0;
           var nodeIDs = _.union(
-            _.map(data, function(l){ return l[file.field1]; }),
-            _.map(data, function(l){ return l[file.field2]; })
+            data.map(function(l){ return l[file.field1]; }),
+            data.map(function(l){ return l[file.field2]; })
           );
           var t = nodeIDs.length;
           nodeIDs.forEach(function(d){
@@ -698,8 +698,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               });
               var n = 0;
               var nodeIDs = _.union(
-                _.map(data, function(l){ return l[file.field1]; }),
-                _.map(data, function(l){ return l[file.field2]; })
+                data.map(function(l){ return l[file.field1]; }),
+                data.map(function(l){ return l[file.field2]; })
               );
               var t = nodeIDs.length;
               nodeIDs.forEach(function(d){
