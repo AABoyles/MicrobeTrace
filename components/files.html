@@ -664,18 +664,31 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               }
             });
           });
-          var n = 0;
-          var nodeIDs = _.union(
-            data.map(function(l){ return l[file.field1]; }),
-            data.map(function(l){ return l[file.field2]; })
-          );
-          var t = nodeIDs.length;
-          nodeIDs.forEach(function(d){
-            n += app.addNode({
-              id: '' + d,
-              origin: [filename]
-            });
-          });
+          var n = 0, t = 0;
+          var nodeIDs = [];
+          var k = data.length;
+          var o = [filename];
+          for(var i = 0; i < k; i++){
+            var l = data[i];
+            var f1 = l[file.field1];
+            if(nodeIDs.indexOf(f1) === -1){
+              t++;
+              nodeIDs.push(f1);
+              n += app.addNode({
+                id: '' + f1,
+                origin: o
+              });
+            }
+            var f2 = l[file.field2];
+            if(nodeIDs.indexOf(f2) === -1){
+              t++;
+              nodeIDs.push(f2);
+              n += app.addNode({
+                id: '' + f2,
+                origin: o
+              });
+            }
+          }
           console.log('Link Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
           message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
           if(fileNum === session.files.length - 1) processSequences();
@@ -696,20 +709,31 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   session.data.linkFields.push(key);
                 }
               });
-              var n = 0;
-              var nodeIDs = _.union(
-                data.map(function(l){ return l[file.field1]; }),
-                data.map(function(l){ return l[file.field2]; })
-              );
-              var t = nodeIDs.length;
-              nodeIDs.forEach(function(d){
-                n += app.addNode({
-                  id: '' + d,
-                  origin: [filename]
-                });
-              });
+              var newNodes = 0, totalNodes = 0;
+              var n = data.length;
+              var nodeIDs = [];
+              var o = [filename];
+              for(var i = 0; i < n; i++){
+                var l = data[i];
+                var f1 = l[file.field1];
+                if(nodeIDs.indexOf(f1) === -1){
+                  totalNodes++;
+                  newNodes += app.addNode({
+                    id: '' + f1,
+                    origin: o
+                  });
+                }
+                var f2 = l[file.field2];
+                if(nodeIDs.indexOf(f2) === -1){
+                  totalNodes++;
+                  newNodes += app.addNode({
+                    id: '' + f2,
+                    origin: o
+                  });
+                }
+              }
               console.log('Link CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-              message(` - Parsed ${n} New, ${t} Total Nodes from Link CSV.`);
+              message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
               if(fileNum === session.files.length - 1) processSequences();
             }
           });
