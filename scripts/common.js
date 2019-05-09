@@ -1056,8 +1056,8 @@ app.createLinkColorMap = function(){
   }
   if(values.length > session.style.linkColors.length){
     var colors = [];
-    var n = Math.ceil(values.length/session.style.linkColors.length);
-    while(n-- > 0) colors = colors.concat(session.style.linkColors);
+    var cycles = Math.ceil(values.length/session.style.linkColors.length);
+    while(cycles-- > 0) colors = colors.concat(session.style.linkColors);
     session.style.linkColors = colors;
   }
   temp.style.linkColorMap = d3.scaleOrdinal(session.style.linkColors).domain(values);
