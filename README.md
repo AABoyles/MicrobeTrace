@@ -1,4 +1,4 @@
-[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
+[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/android-chrome-192x192.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
 
 Developed By [Tony Boyles](http://github.com/aaboyles)
 
