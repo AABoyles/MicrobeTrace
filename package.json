@@ -4,11 +4,14 @@
   "author": "Tony Boyles <nsp3@cdc.gov>",
   "license": "Apache-2.0",
   "repository": "https://github.com/CDCgov/MicrobeTrace.git",
+  "engines": {
+    "node": "12.2.0"
+  },
   "scripts": {
     "bundle": "./bundle.sh",
     "cache": "./sw.sh",
     "excise": "./excise.sh",
-    "postinstall": "git submodule init && git submodule sync && ./compress.sh"
+    "postinstall": "./compress.sh"
   },
   "dependencies": {
     "express": "^4.16.3",
