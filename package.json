@@ -8,8 +8,7 @@
     "bundle": "./bundle.sh",
     "cache": "./sw.sh",
     "excise": "./excise.sh",
-    "setup": "npm install && git submodule init && git submodule sync",
-    "start": "node serve.js"
+    "setup": "npm install && git submodule init && git submodule sync"
   },
   "dependencies": {
     "express": "^4.16.3",
