@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-05-09R8623';
+var CACHE = 'MicrobeTraceD2019-05-09R8143';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -17,7 +17,6 @@ self.addEventListener('install', function(event) {
         'vendor/README.md',
         'vendor/tn93.min.js',
         'scripts/bundle.js',
-        'scripts/bundle.js.br',
         'scripts/common.js',
         'scripts/index.js',
         'workers/align-sw.js',
@@ -53,7 +52,6 @@ self.addEventListener('install', function(event) {
         'components/waterfall.html',
         'stylesheets/bundle.css',
         'stylesheets/bundle.min.css',
-        'stylesheets/bundle.min.css.br',
         'stylesheets/main.css',
         'img/android-chrome-192x192.png',
         'img/android-chrome-512x512.png',
@@ -131,3 +129,4 @@ self.addEventListener('fetch', function(evt){
     });
   }));
 });
+
