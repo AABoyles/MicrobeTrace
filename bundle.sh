@@ -13,6 +13,7 @@ cat node_modules/leaflet.markercluster/dist/MarkerCluster.css >> stylesheets/bun
 cat node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/tabulator-tables/dist/css/tabulator.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat node_modules/tabulator-tables/dist/css/bootstrap/tabulator_bootstrap4.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
+cat node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 cat stylesheets/main.css >> stylesheets/bundle.css && printf "\n" >> stylesheets/bundle.css
 
 echo 'Copying Unbundlable Dependencies...'
@@ -20,7 +21,7 @@ echo 'Copying Unbundlable Dependencies...'
 cp node_modules/bioseq/dist/bioseq.min.js vendor/
 cp node_modules/patristic/dist/patristic.min.js vendor/
 cp node_modules/tn93/dist/tn93.min.js vendor/
-cp -r node_modules/open-iconic/font/* vendor/open-iconic/font/
+cp -r node_modules/open-iconic/font/fonts/ .
 
 echo 'Assembling Javascript Bundle...'
 

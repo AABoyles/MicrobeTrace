@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-05-09R8143';
+var CACHE = 'MicrobeTraceD2019-05-09R7685';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -12,6 +12,7 @@ self.addEventListener('install', function(event) {
         'vendor/open-iconic/font/fonts/open-iconic.woff',
         'vendor/open-iconic/font/fonts/open-iconic.ttf',
         'vendor/open-iconic/font/fonts/open-iconic.otf',
+        'favicon.ico',
         'vendor/bioseq.min.js',
         'vendor/patristic.min.js',
         'vendor/README.md',
@@ -53,13 +54,18 @@ self.addEventListener('install', function(event) {
         'stylesheets/bundle.css',
         'stylesheets/bundle.min.css',
         'stylesheets/main.css',
+        'fonts/open-iconic.eot',
+        'fonts/open-iconic.otf',
+        'fonts/open-iconic.svg',
+        'fonts/open-iconic.ttf',
+        'fonts/open-iconic.woff',
         'img/android-chrome-192x192.png',
         'img/android-chrome-512x512.png',
         'img/apple-touch-icon.png',
         'img/browserconfig.xml',
         'img/favicon-16x16.png',
         'img/favicon-32x32.png',
-        'img/favicon.ico',
+        'img/favicon-48x48.png',
         'img/Molecule.svg',
         'img/mstile-144x144.png',
         'img/mstile-150x150.png',

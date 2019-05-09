@@ -1,15 +1,25 @@
 #!/bin/sh
 
+echo "var CACHE = 'MicrobeTraceD`date +%Y-%m-%d`R`shuf -i 1000-9999 -n 1`';
+
+self.addEventListener('install', function(event) {
+  event.waitUntil(
+    caches.open(CACHE).then(function(cache) {
+      return cache.addAll([" > sw.js
+
 cat cache.extra | sed "s/.*/        '&',/" >> temp
 ls -p vendor | grep -v / | sed -e 's/^/vendor\//' | sed "s/.*/        '&',/" >> temp
 
 ls scripts/ | sed -e 's/^/scripts\//' | sed "s/.*/        '&',/" >> temp
-
+ls workers/ | sed -e 's/^/workers\//' | sed "s/.*/        '&',/" >> temp
 ls components/ | sed -e 's/^/components\//' | sed "s/.*/        '&',/" >> temp
-cat components/*.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
+
 cat scripts/*.js | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
+cat workers/*.js | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
+cat components/*.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
 
 ls stylesheets/ | sed -e 's/^/stylesheets\//' | sed "s/.*/        '&',/" >> temp
+ls fonts/ | sed -e 's/^/fonts\//' | sed "s/.*/        '&',/" >> temp
 cat index.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> temp
 cat components/*.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> temp
 
@@ -18,13 +28,6 @@ ls img/ | sed -e 's/^/img\//' | sed "s/.*/        '&',/" >> temp
 ls data/ | sed -e 's/^/data\//' | sed "s/.*/        '&',/" >> temp
 
 ls help/*.md | sed "s/.*/        '&',/" >> temp
-
-echo "var CACHE = 'MicrobeTraceD`date +%Y-%m-%d`R`shuf -i 1000-9999 -n 1`';
-
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE).then(function(cache) {
-      return cache.addAll([" > sw.js
 
 awk '!seen[$0]++' temp >> sw.js
 rm temp
