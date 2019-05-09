@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 const express = require('express');
-const compression = require('compression');
+const expressStaticGzip = require("express-static-gzip");
 
 express()
-  .use(express.static(__dirname, {
+  .use(expressStaticGzip(__dirname, {
+    enableBrotli: true,
+    orderPreference: ['br', 'gz'],
     setHeaders: res => {
       res.setHeader('Strict-Transport-Security', 'max-age=1209600; includeSubDomains');
     }
   }))
-  .use(compression())
   .listen(process.env.PORT || 5000);
