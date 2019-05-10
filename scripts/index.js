@@ -28,8 +28,8 @@ $(function(){
     });
   }
 
-  self.session = app.sessionSkeleton();
-  self.temp = app.tempSkeleton();
+  self.session = MT.sessionSkeleton();
+  self.temp = MT.tempSkeleton();
 
   self.layout = new GoldenLayout({
     settings: {
@@ -104,7 +104,7 @@ $(function(){
   $('#recall-load-stash').on('click', function(){
     var key = table.getSelectedData()[0].fullname;
     var json = localStorage.getItem(key);
-    app.applySession(JSON.parse(json));
+    MT.applySession(JSON.parse(json));
     $('#session-recall-modal').modal('hide');
   });
 
@@ -115,7 +115,7 @@ $(function(){
     if(format === 'microbetracestyle'){
       data = JSON.stringify(session.style);
     } else if(format === 'hivtrace'){
-      data = app.exportHIVTRACE();
+      data = MT.exportHIVTRACE();
     } else {
       data = JSON.stringify(session);
     }
@@ -146,14 +146,14 @@ $(function(){
             zip.forEach(function(relativePath, zipEntry){
               extension = zipEntry.name.split('.').pop();
               zipEntry.async('string').then(function(c){
-                app.processJSON(c, extension);
+                MT.processJSON(c, extension);
               });
             });
           });
       } else {
         var reader = new FileReader();
         reader.onloadend = function(out){
-          app.processJSON(out.target.result, extension);
+          MT.processJSON(out.target.result, extension);
         };
         reader.readAsText(e.target.files[0], 'UTF-8');
       }
@@ -163,7 +163,7 @@ $(function(){
   $('#AddDataTab').on('click', function(e){
     e.preventDefault();
     $('#network-statistics-hide').trigger('click');
-    app.launchView('files');
+    MT.launchView('files');
   });
 
   $('#NewTab').on('click', function(e){
@@ -171,9 +171,9 @@ $(function(){
     $('#exit-modal').modal();
   });
 
-  $('#exit-button').on('click', app.reset);
+  $('#exit-button').on('click', MT.reset);
 
-  $('.viewbutton').on('click', function(){ app.launchView($(this).data('href')); });
+  $('.viewbutton').on('click', function(){ MT.launchView($(this).data('href')); });
 
   $('#ReloadTab').on('click', function(e){
     e.preventDefault();
@@ -187,8 +187,8 @@ $(function(){
   });
 
   $('[name="NNOptions"]').on('change', function(){
-    app.updateNetwork($('#node-singletons-hide').is(':checked'));
-    app.updateStatistics();
+    MT.updateNetwork($('#node-singletons-hide').is(':checked'));
+    MT.updateStatistics();
     $window.trigger('link-threshold-change');
   });
 
@@ -202,21 +202,21 @@ $(function(){
 
   $('#filtering-epsilon').on('change', function(){
     session.style.widgets['filtering-epsilon'] = parseFloat(this.value);
-    app.computeNN(session.style.widgets['link-sort-variable'], function(){
-      app.updateNetwork($('#node-singletons-hide').is(':checked'));
-      app.updateStatistics();
+    MT.computeNN(session.style.widgets['link-sort-variable'], function(){
+      MT.updateNetwork($('#node-singletons-hide').is(':checked'));
+      MT.updateStatistics();
       $window.trigger('link-threshold-change');
     });
   });
 
   $('#link-sort-variable').on('change', function(e){
     session.style.widgets['link-sort-variable'] = e.target.value;
-    app.updateThresholdHistogram();
-    app.updateStatistics();
+    MT.updateThresholdHistogram();
+    MT.updateStatistics();
     $window.trigger('link-threshold-change');
   });
 
-  app.updateThresholdHistogram = function(){
+  MT.updateThresholdHistogram = function(){
     var width = 280,
         height = 48,
         svg = d3.select('svg#link-threshold-sparkline')
@@ -270,11 +270,11 @@ $(function(){
 
     svg.on('click', function(){
       updateThreshold();
-      app.setLinkVisibility();
-      app.tagClusters();
-      if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
-      app.computeDegree();
-      app.updateStatistics();
+      MT.setLinkVisibility();
+      MT.tagClusters();
+      if($('#node-singletons-hide').is(':checked')) MT.setNodeVisibility();
+      MT.computeDegree();
+      MT.updateStatistics();
       $window.trigger('link-threshold-change');
     });
 
@@ -282,11 +282,11 @@ $(function(){
       d3.event.preventDefault();
       svg.on('mousemove', updateThreshold);
       svg.on('mouseup mouseleave', function(){
-        app.setLinkVisibility();
-        app.tagClusters();
-        if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
-        app.computeDegree();
-        app.updateStatistics();
+        MT.setLinkVisibility();
+        MT.tagClusters();
+        if($('#node-singletons-hide').is(':checked')) MT.setNodeVisibility();
+        MT.computeDegree();
+        MT.updateStatistics();
         $window.trigger('link-threshold-change');
         svg
           .on('mousemove', null)
@@ -298,21 +298,21 @@ $(function(){
   };
 
   $('#link-threshold').on('input', function(){
-    app.setLinkVisibility();
-    app.tagClusters();
-    if($('#node-singletons-hide').is(':checked')) app.setNodeVisibility();
-    app.computeDegree();
-    app.updateStatistics();
+    MT.setLinkVisibility();
+    MT.tagClusters();
+    if($('#node-singletons-hide').is(':checked')) MT.setNodeVisibility();
+    MT.computeDegree();
+    MT.updateStatistics();
     $window.trigger('link-threshold-change');
   });
 
   $('#node-singletons-show, #node-singletons-hide').on('change', function(){
-    app.setNodeVisibility();
-    app.updateStatistics();
+    MT.setNodeVisibility();
+    MT.updateStatistics();
   });
 
   $('#network-statistics-show').parent().on('click', function(){
-    app.updateStatistics();
+    MT.updateStatistics();
     $('#network-statistics-wrapper').fadeIn();
   });
 
@@ -359,7 +359,7 @@ $(function(){
 
   $('#RevealAllTab').on('click', function(){
     session.data.clusters.forEach(function(c){ c.visible = true; });
-    app.setLinkVisibility();
+    MT.setLinkVisibility();
     $('#node-singletons-show').parent().click();
   });
 
@@ -377,8 +377,8 @@ $(function(){
       $('#node_color_value_row').slideUp();
       $('#nodeColors').remove();
       var table = $('<tbody id="nodeColors"></tbody>').appendTo('#group-key');
-      table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Color</th><tr>');
-      var values = app.createNodeColorMap();
+      table.append('<tr><th contenteditable>Node '+MT.titleize(variable)+'</th><th>Color</th><tr>');
+      var values = MT.createNodeColorMap();
       values.forEach(function(value, i){
         var input = $('<input type="color" value="'+temp.style.nodeColorMap(value)+'" />')
           .on('change', function(evt){
@@ -387,7 +387,7 @@ $(function(){
             $window.trigger('node-color-change');
           });
         var cell = $('<td></td>').append(input);
-        var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
+        var row = $('<tr><td contenteditable>'+MT.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
       $window.trigger('node-color-change');
@@ -413,9 +413,9 @@ $(function(){
       }
       $('#link-color-row').slideUp();
       $('#link-colors').remove();
-      var values = app.createLinkColorMap();
+      var values = MT.createLinkColorMap();
       var table = $('<tbody id="link-colors"></tbody>').appendTo('#group-key');
-      table.append('<tr><th contenteditable>Link '+app.titleize(variable)+'</th><th>Color</th><tr>');
+      table.append('<tr><th contenteditable>Link '+MT.titleize(variable)+'</th><th>Color</th><tr>');
       values.forEach(function(value, i){
         var input = $('<input type="color" value="'+temp.style.linkColorMap(value)+'" />')
           .on('change', function(evt){
@@ -424,7 +424,7 @@ $(function(){
             $window.trigger('link-color-change');
           });
         var cell = $('<td></td>').append(input);
-        var row = $('<tr><td contenteditable>'+app.titleize(''+value)+'</td></tr>').append(cell);
+        var row = $('<tr><td contenteditable>'+MT.titleize(''+value)+'</td></tr>').append(cell);
         table.append(row);
       });
       $window.trigger('link-color-change');
@@ -437,13 +437,13 @@ $(function(){
 
   $('#selected-color').on('change', function(e){
     session.style.widgets['selected-color'] = e.target.value;
-    session.style.widgets['selected-color-contrast'] = app.contrastColor(e.target.value);
+    session.style.widgets['selected-color-contrast'] = MT.contrastColor(e.target.value);
     $window.trigger('selected-color-change');
   });
 
   $('#background-color').on('change', function(e){
     session.style.widgets['background-color'] = e.target.value;
-    session.style.widgets['background-color-contrast'] = app.contrastColor(e.target.value);
+    session.style.widgets['background-color-contrast'] = MT.contrastColor(e.target.value);
     $window.trigger('background-color-change');
   });
 
@@ -459,7 +459,7 @@ $(function(){
     if(this.files.length > 0){
       var reader = new FileReader();
       reader.onload = function(e){
-        app.applyStyle(JSON.parse(e.target.result));
+        MT.applyStyle(JSON.parse(e.target.result));
       };
       reader.readAsText(this.files[0]);
     }
@@ -469,12 +469,12 @@ $(function(){
     if(navigator.onLine){
       window.open('https://github.com/CDCgov/MicrobeTrace/wiki');
     } else {
-      app.launchView('help');
+      MT.launchView('help');
     }
   });
 
   $.getJSON('package.json', function(r){
-    app.manifest = r;
+    MT.manifest = r;
     $('#version').html(r.version);
   });
 
@@ -557,7 +557,7 @@ $(function(){
     $window.trigger('node-selected');
   });
 
-  app.launchView('files');
+  MT.launchView('files');
 
   $(document).on('keydown', function(e){
     if(e.ctrlKey && e.key === 'f'){
@@ -570,7 +570,7 @@ $(function(){
     }
   });
 
-  layout.on('stateChanged', function(){ session.layout = app.cacheLayout(layout.root.contentItems[0]); });
+  layout.on('stateChanged', function(){ session.layout = MT.cacheLayout(layout.root.contentItems[0]); });
 
   $window
     .on('node-selected', function(){

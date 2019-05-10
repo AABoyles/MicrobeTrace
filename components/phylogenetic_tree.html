@@ -304,7 +304,7 @@
 
     let metric = session.style.widgets['link-sort-variable'];
     if(!temp.trees[metric]){
-      app.computeTree(metric, drawTree);
+      MT.computeTree(metric, drawTree);
       return;
     }
 
@@ -615,7 +615,7 @@
       let blob = new Blob([temp.trees[session.style.widgets['link-sort-variable']].toNewick()], {type: 'application/newick;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
     } else if(filetype === 'svg'){
-      let blob = new Blob([app.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
+      let blob = new Blob([MT.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.svg');
     } else {
       let $root = $('#tree svg');

@@ -276,7 +276,7 @@
         .attr('y', 40)
         .attr('class', 'watermark');
       if(filetype === 'svg'){
-        let content = app.unparseSVG(heatmap);
+        let content = MT.unparseSVG(heatmap);
         let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, filename + '.' + filetype);
         watermark.remove();

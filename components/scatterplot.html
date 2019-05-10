@@ -141,11 +141,11 @@
         }
       }], {
         yaxis: {
-          title: app.titleize(yVar),
+          title: MT.titleize(yVar),
           type: session.style.widgets['scatterplot-logScale']
         },
         xaxis: {
-          title: app.titleize(xVar)
+          title: MT.titleize(xVar)
         },
         width: $('#scatterplot').parent().width(),
         height: $('#scatterplot').parent().height()
@@ -168,7 +168,7 @@
     $('#scatterplot-showNodes').parent().on('click', function(e){
       session.style.widgets['scatterplot-showNodes'] = true;
       $('#scatterplot').parent().find('#scatterplot-xVar, #scatterplot-yVar').html(
-        session.data.nodeFields.map(function(field){ return '<option value="'+field+'">'+app.titleize(field)+'</option>'; }).join('\n')
+        session.data.nodeFields.map(function(field){ return '<option value="'+field+'">'+MT.titleize(field)+'</option>'; }).join('\n')
       );
       //redrawScatterplot();
     });
@@ -176,7 +176,7 @@
     $('#scatterplot-showLinks').parent().on('click', function(e){
       session.style.widgets['scatterplot-showNodes'] = false;
       $('#scatterplot').parent().find('#scatterplot-xVar, #scatterplot-yVar').html(
-        session.data.linkFields.map(function(field){ return '<option value="'+field+'">'+app.titleize(field)+'</option>'; }).join('\n')
+        session.data.linkFields.map(function(field){ return '<option value="'+field+'">'+MT.titleize(field)+'</option>'; }).join('\n')
       );
       //redrawScatterplot();
     });
@@ -242,7 +242,7 @@
       let filename = $('#scatterplot-export-filename').val(),
           filetype = $('#scatterplot-export-filetype').val();
       if(filetype === 'svg'){
-        let content = app.unparseSVG(scatterplot);
+        let content = MT.unparseSVG(scatterplot);
         let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, filename + '.' + filetype);
         watermark.remove();

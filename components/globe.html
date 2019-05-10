@@ -290,8 +290,8 @@
     var sphere = {type: 'Sphere'};
     var graticule = d3.geoGraticule10();
 
-    var nodes = app.getVisibleNodes(true);
-    var links = app.getVisibleLinks(true);
+    var nodes = MT.getVisibleNodes(true);
+    var links = MT.getVisibleLinks(true);
 
     var autorotate = null, now, lastTime = d3.now();
     var userLayers = [];
@@ -299,16 +299,16 @@
     var k = 1;
 
     function init(){
-      if(!app.mapData.land){
-        app.getMapData('land.json', init);
+      if(!MT.mapData.land){
+        MT.getMapData('land.json', init);
         return;
       }
-      if(!app.mapData.stars){
-        app.getMapData('stars.json', init);
+      if(!MT.mapData.stars){
+        MT.getMapData('stars.json', init);
         return;
       }
-      if(!app.mapData.countries){
-        app.getMapData('countries.json', init);
+      if(!MT.mapData.countries){
+        MT.getMapData('countries.json', init);
         return;
       }
       resize();
@@ -328,7 +328,7 @@
         .translate(t)
         .precision(0.1);
       starProjection = starProjection
-        .fitExtent([[0, 0], [3*width, 3*height]], app.mapData.stars)
+        .fitExtent([[0, 0], [3*width, 3*height]], MT.mapData.stars)
         .translate(t);
     }
 
@@ -337,7 +337,7 @@
 
       if(session.style.widgets['globe-stars-show']){
         context.beginPath();
-        starPath(app.mapData.stars);
+        starPath(MT.mapData.stars);
         context.fillStyle = "#fff";
         context.fill();
       }
@@ -349,9 +349,9 @@
 
       context.beginPath();
       if(session.style.widgets['globe-countries-show']){
-        path(app.mapData.countries);
+        path(MT.mapData.countries);
       } else {
-        path(app.mapData.land);
+        path(MT.mapData.land);
       }
       context.fillStyle = "#6CCC00";
       context.fill();
@@ -448,13 +448,13 @@
 
     function matchCoordinates(callback){
       if(session.style.widgets['globe-field-country'] !== 'None'){
-        if(!app.mapData.countries){
-          app.getMapData('countries.json', () => matchCoordinates(callback));
+        if(!MT.mapData.countries){
+          MT.getMapData('countries.json', () => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-country'];
         nodes.forEach(n => {
-          let country = app.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
+          let country = MT.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
           if(country){
             n._lat = country.properties._lat,
             n._lon = country.properties._lon
@@ -462,13 +462,13 @@
         });
       }
       if(session.style.widgets['globe-field-state'] !== 'None'){
-        if(!app.mapData.states){
-          app.getMapData('states.json', () => matchCoordinates(callback));
+        if(!MT.mapData.states){
+          MT.getMapData('states.json', () => matchCoordinates(callback));
           return;
         }
         let sval = session.style.widgets['globe-field-state'];
         nodes.forEach(n => {
-          let state = app.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
+          let state = MT.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
           if(state){
             n._lat = state.properties._lat;
             n._lon = state.properties._lon;
@@ -476,15 +476,15 @@
         });
       }
       if(session.style.widgets['globe-field-county'] !== 'None'){
-        if(!app.mapData.counties){
-          app.getMapData('counties.json', () => matchCoordinates(callback));
+        if(!MT.mapData.counties){
+          MT.getMapData('counties.json', () => matchCoordinates(callback));
           return;
         }
         let sval = session.style.widgets['globe-field-state'];
         let cval = session.style.widgets['globe-field-county'];
         nodes.forEach(n => {
           let county;
-          county = app.mapData.counties.features.find(c => {
+          county = MT.mapData.counties.features.find(c => {
             return (c.properties.fips === n[cval] ||
               parseFloat(c.properties.fips) === parseFloat(n[cval]));
           });
@@ -493,8 +493,8 @@
             n._lon = county.properties._lon;
             return;
           }
-          let state = app.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
-          county = app.mapData.counties.features.find(c => {
+          let state = MT.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
+          county = MT.mapData.counties.features.find(c => {
             var small = n[cval].toLowerCase();
             return c.properties.state == state.properties.usps && (
               c.properties.name.includes(small) ||
@@ -508,13 +508,13 @@
         });
       }
       if(session.style.widgets['globe-field-zipcode'] !== 'None'){
-        if(!app.mapData.zipcodes){
-          app.getMapData('zipcodes.csv', () => matchCoordinates(callback));
+        if(!MT.mapData.zipcodes){
+          MT.getMapData('zipcodes.csv', () => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-zipcode'];
         nodes.forEach(n => {
-          let zo = app.mapData.zipcodes.find(z => z.zipcode == n[val]);
+          let zo = MT.mapData.zipcodes.find(z => z.zipcode == n[val]);
           if(zo){
             n._lat = zo._lat;
             n._lon = zo._lon;
@@ -522,13 +522,13 @@
         });
       }
       if(session.style.widgets['globe-field-tract'] !== 'None'){
-        if(!app.mapData.tracts){
-          app.getMapData('tracts.csv', () => matchCoordinates(callback));
+        if(!MT.mapData.tracts){
+          MT.getMapData('tracts.csv', () => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-tract'];
         nodes.forEach(n => {
-          let tract = app.mapData.tracts.find(t => t.tract == n[val]);
+          let tract = MT.mapData.tracts.find(t => t.tract == n[val]);
           if(tract){
             n._lat = tract._lat;
             n._lon = tract._lon;
@@ -641,7 +641,7 @@
               $('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', function(){
                 nameCell.remove();
                 colorCell.remove();
-                delete app.mapData[layerName];
+                delete MT.mapData[layerName];
               })
             );
             $('#globe-geojson-layers')
@@ -775,7 +775,7 @@
     $window
       .on('node-color-change link-color-change', redraw)
       .on('node-visibilitiy-change', function(){
-        nodes = app.getVisibleNodes(true);
+        nodes = MT.getVisibleNodes(true);
         redraw();
       });
 

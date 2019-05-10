@@ -68,7 +68,7 @@
     middle = height / 2;
 
     let field = $('#timeline-date-field').val();
-    let times = [], vnodes = app.getVisibleNodes(true);
+    let times = [], vnodes = MT.getVisibleNodes(true);
     vnodes.forEach(d => {
       let time = moment(d[field]);
       if(time.isValid()){

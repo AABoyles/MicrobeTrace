@@ -137,7 +137,7 @@
         session.data.nodes.forEach(d => {
           if(!values.includes(d[field])) values.push(d[field]);
         });
-        let vnodes = app.getVisibleNodes();
+        let vnodes = MT.getVisibleNodes();
         values.forEach((v, i) => {
           let trace = {
             type: 'histogram',
@@ -157,7 +157,7 @@
         session.data.links.forEach(d => {
           if(!(d[field] in values)) values.push(d[field]);
         });
-        let vlinks = app.getVisibleLinks();
+        let vlinks = MT.getVisibleLinks();
         values.forEach((v, i) => {
           let trace = {
             type: 'histogram',
@@ -180,14 +180,14 @@
           showlegend: false,
           hoverinfo: 'skip'
         };
-        trace[axis] = (varSource === 'nodes' ? app.getVisibleNodes() : app.getVisibleLinks()).map(l => l[varName]);
+        trace[axis] = (varSource === 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks()).map(l => l[varName]);
         traces = [trace];
       }
       layout[axis + 'axis'] = {
-        title: app.titleize(varName)
+        title: MT.titleize(varName)
       }
       layout[nonAxis + 'axis'] = {
-        title: 'Number of ' + app.titleize(varSource),
+        title: 'Number of ' + MT.titleize(varSource),
         type: session.style.widgets['histogram-scale-log'] ? 'log' : ''
       };
       plot = Plotly.newPlot('histogram', traces, layout, {
@@ -272,7 +272,7 @@
       let filename = $('#histogram-export-filename').val(),
           filetype = $('#histogram-export-filetype').val();
       if(filetype === 'svg'){
-        let content = app.unparseSVG(histogram);
+        let content = MT.unparseSVG(histogram);
         let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, filename + '.' + filetype);
         watermark.remove();

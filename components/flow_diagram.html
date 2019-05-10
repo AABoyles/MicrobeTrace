@@ -115,9 +115,9 @@
 
       let data;
       if(session.style.widgets['flow-showNodes']){
-        data = app.getVisibleNodes();
+        data = MT.getVisibleNodes();
       } else {
-        data = app.getVisibleLinks();
+        data = MT.getVisibleLinks();
       }
 
       let order = [];
@@ -134,7 +134,7 @@
         }
         n = values.length;
         for(let j = 0; j < n; j++){
-          labels.push(app.titleize(variable + ' ' + values[j]));
+          labels.push(MT.titleize(variable + ' ' + values[j]));
           let value = variable + '-' + values[j] + '-' + i;
           if(i < variables-1) source_values.push(value);
           if(i > 0) target_values.push(value);
@@ -184,7 +184,7 @@
             color: 'black',
             width: 0.5
           },
-          label: labels.map(app.titleize),
+          label: labels.map(MT.titleize),
           color: session.style.widgets['flow-showNodes'] ? session.style.widgets['node-color'] : session.style.widgets['link-color']
         },
         link: { source, target, value }
@@ -210,12 +210,12 @@
 
     $('#flow-showNodes').parent().on('click', function(){
       session.style.widgets['flow-showNodes'] = true;
-      $('.flow-selector').html(session.data.nodeFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join(''));
+      $('.flow-selector').html(session.data.nodeFields.map(v => '<option value="' + v + '">' + MT.titleize(v) + '</option>').join(''));
     });
 
     $('#flow-showLinks').parent().on('click', function(){
       session.style.widgets['flow-showNodes'] = false;
-      $('.flow-selector').html(session.data.linkFields.map(v => '<option value="' + v + '">' + app.titleize(v) + '</option>').join(''));
+      $('.flow-selector').html(session.data.linkFields.map(v => '<option value="' + v + '">' + MT.titleize(v) + '</option>').join(''));
     });
 
     $('#flow-add-variable').on('click', function(){
@@ -223,7 +223,7 @@
       $('#flow-variables').append(`<li class='flow-items'>
         <span class="oi oi-x flow-remove"></span>
         <select class='custom-select custom-select-sm flow-selector'>
-          ${fields.map(v => `<option value="${v}" ${v === 'cluster' ? 'selected' : ''}>${app.titleize(v)}</option>`).join('\n')}
+          ${fields.map(v => `<option value="${v}" ${v === 'cluster' ? 'selected' : ''}>${MT.titleize(v)}</option>`).join('\n')}
         </select>
         <span class="oi oi-elevator"></span>
       </li>`);
@@ -266,7 +266,7 @@
       let filename = $('#flow-export-filename').val(),
           filetype = $('#flow-export-filetype').val();
       if(filetype === 'svg'){
-        let content = app.unparseSVG(flow);
+        let content = MT.unparseSVG(flow);
         let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
         saveAs(blob, filename + '.' + filetype);
         watermark.remove();

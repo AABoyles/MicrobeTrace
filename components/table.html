@@ -82,7 +82,7 @@
         .html(
           session.data[type+'Fields'].map((d, i) => {
             if(meta.includes(d)) return;
-            return `<option value="${d}"${(i < 7) ? " selected" : ""}>${app.titleize(d)}</option>`
+            return `<option value="${d}"${(i < 7) ? " selected" : ""}>${MT.titleize(d)}</option>`
           }).join('\n')
         ).chosen({width: "100%"}).change(updateTable);
     }
@@ -93,7 +93,7 @@
       table = new Tabulator("#table", {
        	height: "calc(100% - 60px) !important",
        	layout: "fitColumns",
-       	columns: columns.map(c => ({title: app.titleize(c), field: c})),
+       	columns: columns.map(c => ({title: MT.titleize(c), field: c})),
        	rowClick: function(e, row){
        		let entity = row.getData();
           entity.selected = !entity.selected;

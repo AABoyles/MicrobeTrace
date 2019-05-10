@@ -61,7 +61,7 @@
           <small>${node.degree}</small>
         </div>
         <div class="hideIfNotActive">
-          ${Object.keys(node).filter(k => !meta.includes(k)).map(k => app.titleize(k) + ': ' + node[k]).join('<br />')}
+          ${Object.keys(node).filter(k => !meta.includes(k)).map(k => MT.titleize(k) + ': ' + node[k]).join('<br />')}
         </div>
       </a>`).click(function(){
         let wasActive = false;
@@ -91,7 +91,7 @@
           <small>${link[lsv].toLocaleString()}</small>
         </div>
         <div class="hideIfNotActive">
-          ${Object.keys(link).filter(k => !meta.includes(k)).map(k => app.titleize(k) + ': ' + (typeof link[k] === 'number' ? link[k].toLocaleString() : link[k])).join('\n<br />')}
+          ${Object.keys(link).filter(k => !meta.includes(k)).map(k => MT.titleize(k) + ': ' + (typeof link[k] === 'number' ? link[k].toLocaleString() : link[k])).join('\n<br />')}
         </div>
       </a>`).click(function(){
         let wasActive = false;

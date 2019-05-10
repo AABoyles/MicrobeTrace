@@ -107,7 +107,7 @@
     svg = d3.select('#bubbles');
 
   function updateVNodes(){
-    let newnodes = app.getVisibleNodes(true);
+    let newnodes = MT.getVisibleNodes(true);
     if(!vnodes) vnodes = newnodes;
     newnodes.forEach(newNode => {
       let old = vnodes.find(oldNode => oldNode.id === newNode.id);
@@ -183,12 +183,12 @@
       simulation.alpha(1).restart();
       return;
     }
-    svg.select('#bubble-xAxisLabel').text(app.titleize(field));
+    svg.select('#bubble-xAxisLabel').text(MT.titleize(field));
     let values = [];
     vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
-    if(app.isNumber(values[0])){
+    if(MT.isNumber(values[0])){
       values.sort((a, b) => a - b);
     } else {
       values.sort();
@@ -224,12 +224,12 @@
       simulation.alpha(1).restart();
       return;
     }
-    svg.select('#bubble-yAxisLabel').text(app.titleize(field));
+    svg.select('#bubble-yAxisLabel').text(MT.titleize(field));
     let values = [];
     vnodes.forEach(function(d){
       if(values.indexOf(d[field]) == -1) values.push(d[field]);
     });
-    if(app.isNumber(values[0])){
+    if(MT.isNumber(values[0])){
       values.sort((a, b) => b - a);
     } else {
       values.sort();
@@ -306,7 +306,7 @@
     let filename = $('#bubbles-export-filename').val(),
         filetype = $('#bubbles-export-filetype').val();
     if(filetype === 'svg'){
-      let content = app.unparseSVG(bubbles);
+      let content = MT.unparseSVG(bubbles);
       let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
       saveAs(blob, filename + '.' + filetype);
       watermark.remove();

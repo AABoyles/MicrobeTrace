@@ -433,7 +433,7 @@ Note that this may cause slow performance on larger networks.">
   if(session.style.widgets['network-friction']) force.velocityDecay(session.style.widgets['network-friction']);
 
   function render(){
-    let newNodes = app.getVisibleNodes(true);
+    let newNodes = MT.getVisibleNodes(true);
 
     newNodes.forEach((d, i) => {
       let match = session.network.nodes.find(d2 => d2.id === d.id);
@@ -521,7 +521,7 @@ Note that this may cause slow performance on larger networks.">
   }
 
   function getVLinks(){
-    let vlinks = app.getVisibleLinks(true);
+    let vlinks = MT.getVisibleLinks(true);
     let output = [];
     let n = vlinks.length;
     for(let i = 0; i < n; i++){
@@ -558,7 +558,7 @@ Note that this may cause slow performance on larger networks.">
   }
 
   function getLLinks(){
-    let vlinks = app.getVisibleLinks(true);
+    let vlinks = MT.getVisibleLinks(true);
     let n = vlinks.length;
     for(let i = 0; i < n; i++){
       vlinks[i].source = session.network.nodes.find(d => d.id === vlinks[i].source);
@@ -649,7 +649,7 @@ Note that this may cause slow performance on larger networks.">
       let nd = session.data.nodes.find(nd => nd.id === d.id);
       for(let attribute in nd){
         if(attribute[0] === '_') continue;
-        target.append(`<tr><td><strong>${app.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
+        target.append(`<tr><td><strong>${MT.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
       }
       $('#network-attribute-modal').modal('show');
     }).node().focus();
@@ -794,7 +794,7 @@ Note that this may cause slow performance on larger networks.">
       if(symbolVariable !== 'None') type = d3[temp.style.nodeSymbolMap(d[symbolVariable])];
       if(sizeVariable !== 'None'){
         size = d[sizeVariable];
-        if(!app.isNumber(size)) size = med;
+        if(!MT.isNumber(size)) size = med;
         size = (size - min) / oldrng;
         size = size * size * defaultSize + 100;
       }
@@ -896,7 +896,7 @@ Note that this may cause slow performance on larger networks.">
       return table.fadeOut(e => table.remove());
     }
     $('#node-symbol-row').slideUp();
-    table.append('<tr><th contenteditable>Node '+app.titleize(variable)+'</th><th>Shape</th><tr>');
+    table.append('<tr><th contenteditable>Node '+MT.titleize(variable)+'</th><th>Shape</th><tr>');
     let values = []
     let nodes = session.network.nodes;
     let n = nodes.length;
@@ -906,7 +906,7 @@ Note that this may cause slow performance on larger networks.">
       var dv = d[variable];
       if(values.indexOf(dv) === -1) values.push(dv);
     }
-    if(app.isNumber(nodes[0][variable])){
+    if(MT.isNumber(nodes[0][variable])){
       values.sort(function(a, b){ return a - b; });
     } else {
       values.sort();
@@ -920,7 +920,7 @@ Note that this may cause slow performance on larger networks.">
         redrawNodes();
       });
       let cell = $('<td></td>').append(selector);
-      let row = $('<tr><td contenteditable>' + app.titleize(''+v) + '</td></tr>').append(cell);
+      let row = $('<tr><td contenteditable>' + MT.titleize(''+v) + '</td></tr>').append(cell);
       table.append(row);
     });
     redrawNodes();
@@ -1027,7 +1027,7 @@ Note that this may cause slow performance on larger networks.">
     let min = Infinity;
     for(var i = 0; i < n; i++){
       var l = vlinks[i][variable];
-      if(!app.isNumber(l)) return;
+      if(!MT.isNumber(l)) return;
       if(l > max) max = l;
       if(l < min) min = l;
     }
@@ -1037,7 +1037,7 @@ Note that this may cause slow performance on larger networks.">
       .range([1, scalar]);
     links.attr('stroke-width', d => {
       let v = d[variable];
-      if(!app.isNumber(v)) v = mid;
+      if(!MT.isNumber(v)) v = mid;
       return scale(v);
     });
   }
@@ -1109,7 +1109,7 @@ Note that this may cause slow performance on larger networks.">
     let filetype = $('#network-export-filetype').val(),
         filename = $('#network-export-filename').val();
     if(filetype === 'svg'){
-      let content = app.unparseSVG(network);
+      let content = MT.unparseSVG(network);
       let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
       saveAs(blob, filename + '.' + filetype);
       watermark.remove();

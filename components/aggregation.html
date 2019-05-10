@@ -86,8 +86,8 @@
       });
       tabledata.forEach(row => row.percent = (row.n/n*100).toLocaleString() + '%');
       aggregation.setColumns([
-        {title: app.titleize(dataset) + ' ' + app.titleize(column), field: column},
-        {title: `Number of ${app.titleize(dataset)}s`, field: 'n'},
+        {title: MT.titleize(dataset) + ' ' + MT.titleize(column), field: column},
+        {title: `Number of ${MT.titleize(dataset)}s`, field: 'n'},
         {title: 'Percentage', field: 'percent', headerSort: false}
       ]);
       aggregation.setData(tabledata);
@@ -128,9 +128,9 @@
       $('#aggregation-variables').append(`<li class='aggregation-items'>
         <span class="oi oi-x aggregation-remove"></span>
         <select class='custom-select custom-select-sm aggregation-variable' data-i="${i}">
-          ${session.data.nodeFields.map(v => `<option value="node ${v}" ${v === 'cluster' ? 'selected' : ''}>Node ${app.titleize(v)}</option>`).join('\n')}
-          ${session.data.linkFields.map(v => `<option value="link ${v}">Link ${app.titleize(v)}</option>`).join('\n')}
-          ${session.data.clusterFields.map(v => `<option value="cluster ${v}">Cluster ${app.titleize(v)}</option>`).join('\n')}
+          ${session.data.nodeFields.map(v => `<option value="node ${v}" ${v === 'cluster' ? 'selected' : ''}>Node ${MT.titleize(v)}</option>`).join('\n')}
+          ${session.data.linkFields.map(v => `<option value="link ${v}">Link ${MT.titleize(v)}</option>`).join('\n')}
+          ${session.data.clusterFields.map(v => `<option value="cluster ${v}">Cluster ${MT.titleize(v)}</option>`).join('\n')}
         </select>
         <span class="oi oi-elevator"></span>
       </li>`);
@@ -168,13 +168,13 @@
         let wb = XLSX.utils.book_new();
         data.forEach(t => {
           let ws = XLSX.utils.json_to_sheet(t.data);
-          XLSX.utils.book_append_sheet(wb, ws, app.titleize(t.dataset) + ' ' + app.titleize(t.column));
+          XLSX.utils.book_append_sheet(wb, ws, MT.titleize(t.dataset) + ' ' + MT.titleize(t.column));
         });
         XLSX.writeFile(wb, name + '.' + format);
       } else if(format === 'pdf'){
         pdfMake.createPdf({
           content: [{
-              image: app.watermark
+              image: MT.watermark
             }, {
               text: 'Cluster Aggregation Snapshot',
               style: 'header',
@@ -186,7 +186,7 @@
                 headerRows: 1,
                 widths: ['*', '*', '*'],
                 body: [
-                  [app.titleize(t.dataset) + ' ' + app.titleize(t.column), `Number of ${app.titleize(t.dataset)}s`, 'Percentage']
+                  [MT.titleize(t.dataset) + ' ' + MT.titleize(t.column), `Number of ${MT.titleize(t.dataset)}s`, 'Percentage']
                 ].concat(t.data.map(Object.values))
               }
             }))

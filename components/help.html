@@ -17,8 +17,8 @@
     let breadcrumbs = ['Home'];
 
     function renderPage(target){
-      $('#help-title').text(app.titleize(target));
-      app.getHelp(target, function(content){
+      $('#help-title').text(MT.titleize(target));
+      MT.getHelp(target, function(content){
         $('#help-content').html(content);
         $('#help-panel a').on('click', clickedLink);
       });
@@ -38,7 +38,7 @@
       });
     }
 
-    app.getHelp('_Footer', function(html){
+    MT.getHelp('_Footer', function(html){
       $('#help-footer').html(html).find('a').click(clickedLink);
     });
 
