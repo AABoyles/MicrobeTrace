@@ -1,18 +1,16 @@
-var CACHE = 'MicrobeTraceD2019-05-09R7685';
+var CACHE = 'MicrobeTraceD2019-05-14R3020';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE).then(function(cache) {
       return cache.addAll([
-        '/',
+        './',
         'index.html',
         'package.json',
         'manifest.json',
-        'vendor/open-iconic/font/css/open-iconic-bootstrap.min.css',
-        'vendor/open-iconic/font/fonts/open-iconic.woff',
-        'vendor/open-iconic/font/fonts/open-iconic.ttf',
-        'vendor/open-iconic/font/fonts/open-iconic.otf',
         'favicon.ico',
+        'humans.txt',
+        'LICENSE',
         'vendor/bioseq.min.js',
         'vendor/patristic.min.js',
         'vendor/README.md',
@@ -66,6 +64,7 @@ self.addEventListener('install', function(event) {
         'img/favicon-16x16.png',
         'img/favicon-32x32.png',
         'img/favicon-48x48.png',
+        'img/humanstxt-isolated-blank.gif',
         'img/Molecule.svg',
         'img/mstile-144x144.png',
         'img/mstile-150x150.png',
