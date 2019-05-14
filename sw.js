@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-05-14R3020';
+var CACHE = 'MicrobeTraceD2019-05-14R3250';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -129,7 +129,7 @@ self.addEventListener('fetch', function(evt){
   evt.respondWith(fetch(evt.request).catch(function(){
     return caches.open(CACHE).then(function(cache){
       return cache.match(evt.request).then(function(matching){
-        return matching || Promise.reject('no-match');
+        return matching || Promise.reject('No Match for ', evt.request, 'in Service Worker Cache!');
       });
     });
   }));
