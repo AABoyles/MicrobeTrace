@@ -7,3 +7,4 @@ nohup.out
 yarn.lock
 *.gz
 *.br
+.cache

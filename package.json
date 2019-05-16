@@ -1,9 +1,18 @@
 {
   "name": "MicrobeTrace",
   "version": "0.5.5",
+  "description": "The Visualization Multitool for Molecular Epidemiology and Bioinformatics",
+  "homepage": "https://github.com/CDCgov/MicrobeTrace#readme",
+  "keywords": [ "bioinformatics", "epidemiology", "network-visualization", "hiv", "CDC", "pathogens", "phylogenetics", "phylogenetic-trees", "phylogeny", "phylogenomics", "genomics", "genomics-visualization", "data-visualization", "genomic-data-analysis", "sequence-analysis" ],
   "author": "Tony Boyles <nsp3@cdc.gov>",
   "license": "Apache-2.0",
-  "repository": "https://github.com/CDCgov/MicrobeTrace.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CDCgov/MicrobeTrace.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CDCgov/MicrobeTrace/issues"
+  },
   "engines": {
     "node": "12.2.0"
   },
@@ -12,6 +21,10 @@
     "cache": "scripts/sw.sh",
     "clean": "scripts/cleanup.sh",
     "compress": "scripts/compress.sh"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "test"
   },
   "dependencies": {
     "express": "^4.16.3",
