@@ -8,10 +8,10 @@
     "node": "12.2.0"
   },
   "scripts": {
-    "bundle": "./bundle.sh",
-    "cache": "./sw.sh",
-    "excise": "./excise.sh",
-    "postinstall": "./compress.sh"
+    "build": "scripts/bundle.sh",
+    "cache": "scripts/sw.sh",
+    "clean": "scripts/cleanup.sh",
+    "compress": "scripts/compress.sh"
   },
   "dependencies": {
     "express": "^4.16.3",
