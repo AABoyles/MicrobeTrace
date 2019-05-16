@@ -113,11 +113,11 @@
                   <div class="col-3">Nodes</div>
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-branch-nodes" id="tree-branch-node-show" autocomplete="off"> Show
-                      </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-branch-nodes" id="tree-branch-node-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-branch-nodes" id="tree-branch-nodes-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="tree-branch-nodes" id="tree-branch-nodes-hide" autocomplete="off"> Hide
                       </label>
                     </div>
                   </div>
@@ -127,16 +127,16 @@
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                       <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-branch-distances" id="tree-branch-distance-show" autocomplete="off"> Show
+                        <input type="radio" name="tree-branch-distances" id="tree-branch-distances-show" autocomplete="off"> Show
                       </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-branch-distances" id="tree-branch-distance-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-branch-distances" id="tree-branch-distances-hide" autocomplete="off" checked> Hide
                       </label>
                     </div>
                   </div>
                 </div>
                 <div class="form-group row" title="Would you like to round distances in the tree to integers?">
-                  <div class="col-3">Rounding</div>
+                  <div class="col-3">Round Labels</div>
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                       <label class="btn btn-light btn-sm active col">
@@ -183,18 +183,18 @@
                     <label for="tree-leaf-node-size">Node Size</label>
                   </div>
                   <div class="col-9">
-                    <input id="tree-leaf-node-size" type="range" min="1" max="32" value="6" step="1" />
+                    <input id="tree-leaf-node-size" type="range" min="1" max="32" value="9" step="1" />
                   </div>
                 </div>
                 <div class="form-group row">
                   <div class="col-3">Labels</div>
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-show" autocomplete="off" checked> Show
-                      </label>
                       <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-hide" autocomplete="off"> Hide
+                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-show" autocomplete="off"> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-hide" autocomplete="off" checked> Hide
                       </label>
                     </div>
                   </div>
@@ -213,11 +213,11 @@
                   </div>
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-tooltips" id="tree-tooltip-show" autocomplete="off"> Show
-                      </label>
                       <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-tooltips" id="tree-tooltip-hide" autocomplete="off" checked> Hide
+                        <input type="radio" name="tree-tooltips" id="tree-tooltip-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="tree-tooltips" id="tree-tooltip-hide" autocomplete="off"> Hide
                       </label>
                     </div>
                   </div>
@@ -295,8 +295,8 @@
   </div><!-- /.modal -->
 
   <script>
+    let tree;
 (function(){
-  let tree;
 
   function drawTree(){
     let panel = $('#tree').parent();
@@ -319,8 +319,11 @@
         session.style.widgets['tree-mode-square'] ? 'square' :
         session.style.widgets['tree-mode-smooth'] ? 'smooth' :
         'straight',
-      leafLabels: session.style.widgets['tree-leaf-label-show'],
-      branchDistances: session.style.widgets['tree-branch-distance-show']
+      animation: 0,
+      branchNodes: session.style.widgets['tree-branch-nodes-show'],
+      branchDistances: !session.style.widgets['tree-branch-distance-hide'],
+      leafNodes: true,
+      leafLabels: session.style.widgets['tree-leaf-label-show']
     }, {
       select: select,
       contextmenu: contextMenu,
@@ -328,13 +331,19 @@
       hidetooltip: hideTooltip
     });
 
-    let ncv = session.style.widgets['node-color-variable'];
-    let color = session.style.widgets['node-color'];
+    redrawTree();
+  }
+
+  function redrawTree(){
+    let size = session.style.widgets['tree-leaf-node-size'],
+        ncv  = session.style.widgets['node-color-variable'];
+
     if(ncv === 'None'){
-      tree.eachLeafNode(d => d3.select(d).style('fill', color));
+      let color = session.style.widgets['node-color'];
+      tree.eachLeafNode(d => d3.select(d).attr('r', size).style('fill', color));
     } else {
       let ncm = temp.style.nodeColorMap;
-      tree.eachLeafNode(circle => d3.select(circle).style('fill', data => {
+      tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
         let id = data.data.id;
         let match = session.data.nodes.find(node => node.id === id);
         if(match){
@@ -344,6 +353,7 @@
         }
       }));
     }
+
     tagSelected();
   }
 
@@ -372,15 +382,15 @@
       .style('z-index', -1)
       .style('display', 'none');
     let menu = d3.select('#tree-context-menu');
-    d3.select('#tree-reroot').on('click', c => {
+    d3.select('#tree-reroot').on('click', function(){
       tree.setData(d[0].data.reroot());
       menu.style('z-index', -1).style('display', 'none');
     });
-    d3.select('#tree-rotate').on('click', c => {
+    d3.select('#tree-rotate').on('click', function(){
       tree.setData(d[0].data.rotate().getRoot());
       menu.style('z-index', -1).style('display', 'none');
     });
-    d3.select('#tree-flip').on('click', c => {
+    d3.select('#tree-flip').on('click', function(){
       tree.setData(d[0].data.rotate(true).getRoot());
       menu.style('z-index', -1).style('display', 'none');
     });
@@ -421,8 +431,8 @@
     }
   });
 
-  $('#tree-type').on('change', function(e){
-    session.style.widgets['tree-type'] = e.target.value;
+  $('#tree-type').on('change', function(){
+    session.style.widgets['tree-type'] = this.value;
     tree.setType(session.style.widgets['tree-type']);
   });
 
@@ -450,8 +460,8 @@
     $('.hideForCircular').slideUp();
   });
 
-  $('#tree-vertical-stretch').on('input', e => {
-    let val = parseFloat(e.target.value);
+  $('#tree-vertical-stretch').on('input', function(){
+    let val = parseFloat(this.value);
     session.style.widgets['tree-vertical-stretch'] = val;
     var cached = tree.animation;
     tree.setAnimation(0);
@@ -459,8 +469,8 @@
     tree.setAnimation(cached);
   });
 
-  $('#tree-horizontal-stretch').on('input', e => {
-    let val = parseFloat(e.target.value);
+  $('#tree-horizontal-stretch').on('input', function(){
+    let val = parseFloat(this.value);
     session.style.widgets['tree-horizontal-stretch'] = val;
     var cached = tree.animation;
     tree.setAnimation(0);
@@ -468,142 +478,140 @@
     tree.setAnimation(cached);
   });
 
-  $('#tree-ruler-show').parent().on('click', e => {
+  $('#tree-ruler-show').parent().on('click', function(){
     session.style.widgets['tree-ruler-hide'] = false;
     tree.setRuler(true);
   });
 
-  $('#tree-ruler-hide').parent().on('click', e => {
+  $('#tree-ruler-hide').parent().on('click', function(){
     session.style.widgets['tree-ruler-hide'] = true;
     tree.setRuler(false);
   });
 
-  $('#tree-mode-square').parent().on('click', e => {
+  $('#tree-mode-square').parent().on('click', function(){
     session.style.widgets['tree-mode-square'] = true;
     session.style.widgets['tree-mode-smooth'] = false;
     session.style.widgets['tree-mode-straight'] = false;
     tree.setMode('square');
   });
 
-  $('#tree-mode-smooth').parent().on('click', e => {
+  $('#tree-mode-smooth').parent().on('click', function(){
     session.style.widgets['tree-mode-square'] = false;
     session.style.widgets['tree-mode-smooth'] = true;
     session.style.widgets['tree-mode-straight'] = false;
     tree.setMode('smooth');
   });
 
-  $('#tree-mode-straight').parent().on('click', e => {
+  $('#tree-mode-straight').parent().on('click', function(){
     session.style.widgets['tree-mode-square'] = false;
     session.style.widgets['tree-mode-smooth'] = false;
     session.style.widgets['tree-mode-straight'] = true;
     tree.setMode('straight');
   });
 
-  $('#tree-branch-node-show').parent().on('click', e => {
-    session.style.widgets['tree-branch-node-hide'] = false;
+  $('#tree-branch-nodes-show').parent().on('click', function(){
+    session.style.widgets['tree-branch-nodes-hide'] = false;
     tree.setBranchNodes(true);
   });
 
-  $('#tree-branch-node-hide').parent().on('click', e => {
-    session.style.widgets['tree-branch-node-hide'] = true;
+  $('#tree-branch-nodes-hide').parent().on('click', function(){
+    session.style.widgets['tree-branch-nodes-hide'] = true;
     tree.setBranchNodes(false);
   });
 
-  $('#tree-branch-distance-show').parent().on('click', e => {
-    session.style.widgets['tree-branch-distance-show'] = true;
+  $('#tree-branch-distances-show').parent().on('click', function(){
+    session.style.widgets['tree-branch-distances-hide'] = false;
     tree.setBranchDistances(true);
   });
 
-  $('#tree-branch-distance-hide').parent().on('click', e => {
-    session.style.widgets['tree-branch-distance-show'] = false;
+  $('#tree-branch-distances-hide').parent().on('click', function(){
+    session.style.widgets['tree-branch-distances-hide'] = true;
     tree.setBranchDistances(false);
   });
 
-  $('#tree-round-true').parent().on('click', e => {
+  $('#tree-round-true').parent().on('click', function(){
     session.style.widgets['tree-round-true'] = true;
-    tree.eachBranchDistance((label, data) => {
+    tree.eachBranchDistance(function(label, data){
       d3.select(label).text(Math.round(data.target.data.length));
     });
   });
 
-  $('#tree-round-false').parent().on('click', e => {
-    session.style.widgets['tree-round-false'] = false;
-    tree.eachBranchDistance((label, data) => {
-      d3.select(label).text(data.target.data.length);
-    });
+  $('#tree-round-false').parent().on('click', function(){
+    session.style.widgets['tree-round-true'] = false;
+    tree.redraw();
   });
 
-  $('#tree-branch-distance-size').parent().on('input', e => {
+  $('#tree-branch-distance-size').on('input', function(){
     let speed = tree.animation;
     tree.animation = 0;
-    let size = parseFloat(e.target.value);
+    let size = parseFloat(this.value);
     session.style.widgets['tree-branch-distance-size'] = size;
-    tree.eachBranchDistance((label, data) => {
+    tree.eachBranchDistance(function(label, data){
       d3.select(label).style('font-size', size+'px');
     });
     tree.animation = speed;
   });
 
-  $('#tree-leaf-node-show').parent().on('click', e => {
+  $('#tree-leaf-node-show').parent().on('click', function(){
     session.style.widgets['tree-leaf-node-show'] = true;
     tree.setLeafNodes(true);
   });
 
-  $('#tree-leaf-node-hide').parent().on('click', e => {
+  $('#tree-leaf-node-hide').parent().on('click', function(){
     session.style.widgets['tree-leaf-node-show'] = false;
     tree.setLeafNodes(false);
   });
 
-  $('#tree-leaf-label-size').parent().on('input', e => {
+  $('#tree-leaf-node-size').on('input', function(){
     let speed = tree.animation;
     tree.animation = 0;
-    let size = parseFloat(e.target.value);
+    let size = parseFloat(this.value);
     session.style.widgets['tree-leaf-node-size'] = size;
-    tree.eachLeafNode((node, data) => {
-      d3.select(node).style('font-size', size+'px');
+    tree.eachLeafNode(function(node, data){
+      d3.select(node).attr('r', size);
     });
     tree.animation = speed;
   });
 
-  $('#tree-leaf-label-show').parent().on('click', e => {
+  $('#tree-leaf-label-show').parent().on('click', function(){
     session.style.widgets['tree-leaf-label-show'] = true;
     tree.setLeafLabels(true);
   });
 
-  $('#tree-leaf-label-hide').parent().on('click', e => {
+  $('#tree-leaf-label-hide').parent().on('click', function(){
     session.style.widgets['tree-leaf-label-show'] = false;
     tree.setLeafLabels(false);
   });
 
-  $('#tree-leaf-label-size').parent().on('input', e => {
+  $('#tree-leaf-label-size').on('input', function(){
     let speed = tree.animation;
     tree.animation = 0;
-    let size = parseFloat(e.target.value);
+    let size = parseFloat(this.value);
     session.style.widgets['tree-leaf-label-size'] = size;
-    tree.eachLeafLabel((label, data) => {
+    tree.eachLeafLabel(function(label, data){
       d3.select(label).style('font-size', size+'px');
     });
     tree.animation = speed;
   });
 
-  $('#tree-tooltip-show').parent().on('click', e => {
+  $('#tree-tooltip-show').parent().on('click', function(){
     session.style.widgets['tree-tooltip-show'] = true;
   });
 
-  $('#tree-tooltip-hide').parent().on('click', e => {
+  $('#tree-tooltip-hide').parent().on('click', function(){
     session.style.widgets['tree-tooltip-show'] = false;
   });
 
-  $('#tree-export-filetype').on('change', function(e){
-    if(e.target.value === 'svg' || e.target.value === 'nwk'){
+  $('#tree-export-filetype').on('change', function(){
+    if(this.value === 'svg' || this.value === 'nwk'){
       $('#tree-export-advanced-button').slideUp();
     } else {
       $('#tree-export-advanced-button').slideDown();
     }
   });
 
-  $('#tree-export-scale').on('input', function(e){
-    let scale = parseFloat(e.target.value);
+  $('#tree-export-scale').on('input', function(){
+    let scale = parseFloat(this.value);
     let wrapper = $('#tree').parent();
     $('#tree-export-dimensions').text(
       Math.round(wrapper.width() *scale)+'x'+
@@ -611,7 +619,7 @@
     );
   }).trigger('input');
 
-  $('#tree-export').on('click', e => {
+  $('#tree-export').on('click', function(){
     let filetype = $('#tree-export-file-type').val();
     let filename = $('#tree-export-file-name').val();
     if(filetype === 'nwk'){
@@ -637,7 +645,7 @@
     }
   });
 
-  $('#tree-fitbutton').on('click', e => tree.recenter());
+  $('#tree-fitbutton').on('click', function(){ tree.recenter(); });
 
   function tagSelected(){
     tree.eachLeafNode(function(circle, data){
@@ -656,7 +664,7 @@
 
   $window
     .on('node-selected', tagSelected)
-    .on('node-color-change', drawTree)
+    .on('node-color-change', redrawTree)
     .on('background-color-change', function(){
       $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
     });
@@ -665,7 +673,7 @@
 
   layout.on('stateChanged', function(){
     if($('#tree').length){
-      drawTree();
+      redrawTree();
       let wrapper = $('#tree').parent();
       $('#tree-export-width' ).val(wrapper.width());
       $('#tree-export-height').val(wrapper.height());
