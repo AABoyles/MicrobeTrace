@@ -197,10 +197,13 @@ $(function(){
   });
 
   $('#links-show-nn').parent().on('click', function(){
+    $('#filtering-epsilon-copy').val(Math.pow(10, parseFloat($('#filtering-epsilon').val())).toLocaleString());
     $('#filtering-epsilon-row').css('display', 'flex');
   });
 
-  $('#filtering-epsilon').on('change', function(){
+  $('#filtering-epsilon').on('input', function(){
+    $('#filtering-epsilon-copy').val(Math.pow(10, parseFloat(this.value)).toLocaleString());
+  }).on('change', function(){
     session.style.widgets['filtering-epsilon'] = parseFloat(this.value);
     MT.computeNN(session.style.widgets['link-sort-variable'], function(){
       MT.updateNetwork($('#node-singletons-hide').is(':checked'));
