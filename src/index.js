@@ -544,6 +544,8 @@ $(function(){
     $window.trigger('node-selected');
   });
 
+  if(navigator.onLine) $('.ifOnline').show();
+
   MT.launchView('files');
 
   $(document).on('keydown', function(e){
@@ -557,7 +559,9 @@ $(function(){
     }
   });
 
-  layout.on('stateChanged', function(){ session.layout = MT.cacheLayout(layout.root.contentItems[0]); });
+  layout.on('stateChanged', function(){
+    session.layout = MT.cacheLayout(layout.root.contentItems[0]);
+  });
 
   $window
     .on('node-selected', function(){
