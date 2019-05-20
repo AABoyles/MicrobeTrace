@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-05-14R3250';
+var CACHE = 'MicrobeTraceD2019-05-20R5206';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -15,9 +15,11 @@ self.addEventListener('install', function(event) {
         'vendor/patristic.min.js',
         'vendor/README.md',
         'vendor/tn93.min.js',
-        'scripts/bundle.js',
-        'scripts/common.js',
-        'scripts/index.js',
+        'dist/bundle.js',
+        'dist/bundle.min.css',
+        'dist/common.js',
+        'dist/index.js',
+        'dist/main.css',
         'workers/align-sw.js',
         'workers/compute-consensus-distances.js',
         'workers/compute-consensus.js',
@@ -49,9 +51,6 @@ self.addEventListener('install', function(event) {
         'components/table.html',
         'components/timeline.html',
         'components/waterfall.html',
-        'stylesheets/bundle.css',
-        'stylesheets/bundle.min.css',
-        'stylesheets/main.css',
         'fonts/open-iconic.eot',
         'fonts/open-iconic.otf',
         'fonts/open-iconic.svg',

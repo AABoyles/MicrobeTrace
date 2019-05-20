@@ -7,30 +7,15 @@ self.addEventListener('install', function(event) {
     caches.open(CACHE).then(function(cache) {
       return cache.addAll([" > sw.js
 
-cat cache.extra | sed "s/.*/        '&',/" >> temp
-ls -p vendor | grep -v / | sed -e 's/^/vendor\//' | sed "s/.*/        '&',/" >> temp
-
-ls scripts/ | sed -e 's/^/scripts\//' | sed "s/.*/        '&',/" >> temp
-ls workers/ | sed -e 's/^/workers\//' | sed "s/.*/        '&',/" >> temp
-ls components/ | sed -e 's/^/components\//' | sed "s/.*/        '&',/" >> temp
-
-cat scripts/*.js | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
-cat workers/*.js | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
-cat components/*.html | grep -o "node_modules/.*\.js" | sed "s/.*/        '&',/" >> temp
-
-ls stylesheets/ | sed -e 's/^/stylesheets\//' | sed "s/.*/        '&',/" >> temp
-ls fonts/ | sed -e 's/^/fonts\//' | sed "s/.*/        '&',/" >> temp
-cat index.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> temp
-cat components/*.html | grep -o "node_modules/.*\.css" | sed "s/.*/        '&',/" >> temp
-
-ls img/ | sed -e 's/^/img\//' | sed "s/.*/        '&',/" >> temp
-
-ls data/ | sed -e 's/^/data\//' | sed "s/.*/        '&',/" >> temp
-
-ls help/*.md | sed "s/.*/        '&',/" >> temp
-
-awk '!seen[$0]++' temp >> sw.js
-rm temp
+cat cache.extra | sed "s/.*/        '&',/" >> sw.js
+ls vendor/*     | sed "s/.*/        '&',/" >> sw.js
+ls dist/*       | sed "s/.*/        '&',/" >> sw.js
+ls workers/*    | sed "s/.*/        '&',/" >> sw.js
+ls components/* | sed "s/.*/        '&',/" >> sw.js
+ls fonts/*      | sed "s/.*/        '&',/" >> sw.js
+ls img/*        | sed "s/.*/        '&',/" >> sw.js
+ls data/*       | sed "s/.*/        '&',/" >> sw.js
+ls help/*.md    | sed "s/.*/        '&',/" >> sw.js
 
 echo """      ]);
     })
