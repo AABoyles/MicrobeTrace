@@ -15,6 +15,10 @@ cat node_modules/tabulator-tables/dist/css/tabulator.min.css >> temp.css && prin
 cat node_modules/tabulator-tables/dist/css/bootstrap/tabulator_bootstrap4.min.css >> temp.css && printf "\n" >> temp.css
 cat node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css >> temp.css && printf "\n" >> temp.css
 
+echo 'Minifying Stylesheets...'
+
+npx postcss temp.css > dist/bundle.min.css
+
 echo 'Copying Unbundlable Dependencies...'
 
 cp node_modules/bioseq/dist/bioseq.min.js vendor/
@@ -58,10 +62,6 @@ cat node_modules/file-saver/dist/FileSaver.min.js >> dist/bundle.js && printf "\
 cat node_modules/save-svg-as-png/lib/saveSvgAsPng.js >> dist/bundle.js && printf "\n" >> dist/bundle.js
 cat node_modules/pdfmake/build/pdfmake.min.js >> dist/bundle.js && printf "\n" >> dist/bundle.js
 cat node_modules/pdfmake/build/vfs_fonts.js >> dist/bundle.js && printf "\n" >> dist/bundle.js
-
-echo 'Minifying Stylesheets...'
-
-npx postcss temp.css > dist/bundle.min.css
 
 echo "Cleaning up..."
 
