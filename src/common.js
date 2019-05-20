@@ -732,13 +732,13 @@ MT.finishUp = function(oldSession){
     session.data.nodeFields.map(function(field){
       return '<option value="' + field + '">' + MT.titleize(field) + '</option>';
     }).join('\n')
-  );
+  ).val(session.style.widgets['node-color-variable']);
   $('#link-color-variable').html(
     '<option>None</option>' +
     session.data.linkFields.map(function(field){
       return '<option value="' + field + '">' + MT.titleize(field) + '</option>';
     }).join('\n')
-  );
+  ).val(session.style.widgets['link-color-variable']);
   try {
     MT.updateThresholdHistogram();
   } catch(error){
