@@ -248,6 +248,11 @@ Note that this may cause slow performance on larger networks.">
   </div>
 </div>
 
+<div id="node-symbols" class="floater">
+  <div id="node-symbols-draghandle"><span class="oi oi-move"></span></div>
+  <table></table>
+</div>
+
 <div id="context-menu" class="dropdown-menu">
   <a href="#" id="pinNode" class="dropdown-item">Pin Node</a>
   <a href="#" id="copyID" class="dropdown-item">Copy ID</a>
@@ -886,20 +891,21 @@ Note that this may cause slow performance on larger networks.">
   });
 
   $('#node-symbol-variable').on('change', function(){
-    let variable = this.value;
+    var variable = this.value;
     session.style.widgets['node-symbol-variable'] = variable;
-    $('#node-symbols').fadeOut(function(){$(this).remove()});
-    let table = $('<tbody id="node-symbols"></tbody>').appendTo('#group-key');
+    var wrapper = $('#node-symbols');
+    var table = wrapper.find('table');
     if(variable === 'None'){
-      redrawNodes();
+      temp.style.nodeSymbolMap = function(){ return session.style.widgets['node-symbol']; };
       $('#node-symbol-row').slideDown();
-      return table.fadeOut(e => table.remove());
+      wrapper.fadeOut(function(){ table.empty(); });
+      redrawNodes();
+      return;
     }
     $('#node-symbol-row').slideUp();
-    table.append('<tr><th contenteditable>Node '+MT.titleize(variable)+'</th><th>Shape</th><tr>');
-    let values = []
-    let nodes = session.network.nodes;
-    let n = nodes.length;
+    var values = [];
+    var nodes = session.data.nodes;
+    var n = nodes.length;
     for(var i = 0; i < n; i++){
       var d = nodes[i];
       if(!d.visible) continue;
@@ -911,20 +917,34 @@ Note that this may cause slow performance on larger networks.">
     } else {
       values.sort();
     }
+    if(values.length > session.style.nodeSymbols.length){
+      var symbols = [];
+      var m = Math.ceil(values.length/session.style.nodeSymbols.length);
+      while(m-- > 0){
+        symbols = symbols.concat(session.style.nodeSymbols);
+      }
+      session.style.nodeSymbols = symbols;
+    }
     temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
-    let options = $('#node-symbol').html();
+    table.empty().append('<tr><th contenteditable>Node '+MT.titleize(variable)+'</th><th>Shape</th><tr>');
+    if(MT.isNumber(nodes[0][variable])){
+      values.sort(function(a, b){ return a - b; });
+    } else {
+      values.sort();
+    }
+    var options = $('#node-symbol').html();
     values.forEach((v, i) => {
-      let selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function(e){
-        session.style.nodeSymbols.splice(i, 1, variable);
+      var selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function(e){
+        session.style.nodeSymbols.splice(i, 1, this.value);
         temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
         redrawNodes();
       });
-      let cell = $('<td></td>').append(selector);
-      let row = $('<tr><td contenteditable>' + MT.titleize(''+v) + '</td></tr>').append(cell);
+      var cell = $('<td></td>').append(selector);
+      var row = $('<tr><td contenteditable>' + MT.titleize(''+v) + '</td></tr>').append(cell);
       table.append(row);
     });
+    wrapper.fadeIn();
     redrawNodes();
-    table.fadeIn();
   });
 
   $('#node-radius').on('input', function(){
