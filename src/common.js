@@ -712,17 +712,33 @@ MT.computeConsensusDistances = function(callback) {
       (Date.now() - start).toLocaleString(),
       "ms"
     );
-    if (callback) callback(nodes);
+    start = Date.now();
+    var n = nodes.length;
+    for (var i = 0; i < n; i++) {
+      session.data.nodes[node.index]._diff = nodes[i];
+    }
+    console.log(
+      "Consensus Difference Merge time: ",
+      (Date.now() - start).toLocaleString(),
+      "ms"
+    );
+    if (callback) callback();
   };
   var subset = [];
   var n = session.data.nodes.length;
   for (var i = 0; i < n; i++) {
     var node = session.data.nodes[i];
-    if (node.seq)
+    if (node.seq) {
       subset.push({
         index: i,
         seq: node.seq
       });
+    } else {
+      subset.push({
+        index: i,
+        seq: ""
+      });
+    }
   }
   computer.postMessage({
     consensus: session.data.consensus,

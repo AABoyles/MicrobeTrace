@@ -930,12 +930,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       message('Computing Links based on Genomic Proximity...');
       MT.computeConsensus(function(consensus){
         session.data.consensus = consensus;
-        MT.computeConsensusDistances(function(nodes){
-          var n = nodes.length;
-          for(var i = 0; i < n; i++){
-            var node = nodes[i];
-            session.data.nodes[node.index]._diff = node._diff;
-          }
+        MT.computeConsensusDistances(function(){
           MT.computeLinks(subset, function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
             MT.finishUp();
