@@ -258,7 +258,7 @@ MT.addNode = function(newNode, check) {
         if (newNode.origin) {
           newNode.origin = newNode.origin.concat(node.origin);
         }
-        Object.assign(oldNode, newNode);
+        Object.assign(node, newNode);
         return 0;
       }
     }

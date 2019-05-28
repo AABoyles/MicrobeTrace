@@ -604,7 +604,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             node.id = filterXSS(node.id);
             node.seq = filterXSS(node.seq);
             node.origin = origin;
-            newNodes += MT.addNode(node);
+            newNodes += MT.addNode(node, check);
           }
           console.log('FASTA Merge time:', (Date.now()-start).toLocaleString(), 'ms');
           message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
@@ -659,7 +659,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               n += MT.addNode({
                 id: '' + f1,
                 origin: origin
-              });
+              }, check);
             }
             var f2 = l[file.field2];
             if(nodeIDs.indexOf(f2) === -1){
@@ -668,7 +668,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               n += MT.addNode({
                 id: '' + f2,
                 origin: origin
-              });
+              }, check);
             }
           }
           console.log('Link Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
@@ -702,7 +702,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   newNodes += MT.addNode({
                     id: '' + f1,
                     origin: origin
-                  });
+                  }, check);
                 }
                 var f2 = l[file.field2];
                 if(nodeIDs.indexOf(f2) === -1){
@@ -710,7 +710,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   newNodes += MT.addNode({
                     id: '' + f2,
                     origin: origin
-                  });
+                  }, check);
                 }
               }
               console.log('Link CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
@@ -741,7 +741,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             node.id = '' + node[file.field1];
             if(file.field2 !== 'None') node.seq = node[file.field2];
             node['origin'] = origin;
-            m += MT.addNode(node);
+            m += MT.addNode(node, check);
           });
           console.log('Node Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
           message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
@@ -766,7 +766,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               node.id = '' + node[file.field1];
               if(file.field2 !== 'None') node.seq = node[file.field2];
               node['origin'] = origin;
-              m += MT.addNode(node);
+              m += MT.addNode(node, check);
             },
             complete: function(){
               console.log('Node CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
@@ -794,7 +794,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   nn += MT.addNode({
                     id: '' + cell,
                     origin: origin
-                  });
+                  }, check);
                 }
               });
             } else {
@@ -809,7 +809,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   origin: origin,
                   distance: parseFloat(cell)
                 };
-                nl += MT.addLink(base, true);
+                nl += MT.addLink(base, check);
               });
             }
           });
@@ -834,7 +834,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                       nn += MT.addNode({
                         id: '' + cell,
                         origin: origin
-                      });
+                      }, check);
                     }
                   });
                 } else {
@@ -872,7 +872,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           newNodes += MT.addNode({
             id: source,
             origin: origin
-          });
+          }, check);
           for(var j = 0; j < i; j++){
             var base = {
               source: source,
@@ -880,7 +880,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               origin: origin,
               distance: parseFloat(matrix[i][j])
             };
-            newLinks += MT.addLink(base);
+            newLinks += MT.addLink(base, check);
             links++;
           }
         }
