@@ -482,42 +482,34 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
   $('#alignerControlsButton, #alignment-preview').click(readFastas);
 
-  var cachedLSV = localStorage.getItem('link-sort-variable');
-  if(cachedLSV){
-    $('#default-distance-metric, #link-sort-variable').val(cachedLSV);
-    if(cachedLSV === 'snps'){
-      $('#ambiguities-row').hide();
-      $('#default-distance-threshold, #link-threshold')
-        .attr('step', 1)
-        .val(16);
-    } else {
-      $('#ambiguities-row').show();
-      $('#default-distance-threshold, #link-threshold')
-        .attr('step', 0.001)
-        .val(0.015);
-    }
-  }
-
-  $('#ambiguity-resolution-strategy').change(function(e){
-    session.style.widgets['ambiguity-resolution-strategy'] = e.target.value;
-  });
-
-  $('#default-distance-metric, #link-sort-variable').change(function(e){
+  $('#default-distance-metric').change(function(e){
     var lsv = e.target.value;
-    session.style.widgets['link-sort-variable'] = lsv;
-    if(e.target.id == 'default-distance-metric') localStorage.setItem('link-sort-variable', lsv);
-    $('#default-distance-metric, #link-sort-variable').val(lsv);
+    localStorage.setItem('default-distance-metric', lsv);
+    $('#default-distance-metric').val(lsv);
     if(lsv === 'snps'){
       $('#ambiguities-row').slideUp();
       $('#default-distance-threshold, #link-threshold')
         .attr('step', 1)
         .val(16);
+      session.style.widgets["link-threshold"] = 16;
     } else {
       $('#ambiguities-row').slideDown();
       $('#default-distance-threshold, #link-threshold')
         .attr('step', 0.001)
         .val(0.015);
+      session.style.widgets["link-threshold"] = 0.015;
     }
+    session.style.widgets['default-distance-metric'] = lsv;
+  });
+
+  var cachedLSV = localStorage.getItem('default-distance-metric');
+  if(cachedLSV){
+    $('#default-distance-metric').val(cachedLSV).trigger('change');
+    console.log(cachedLSV, $('#link-threshold').val());
+  }
+
+  $('#ambiguity-resolution-strategy').change(function(e){
+    session.style.widgets['ambiguity-resolution-strategy'] = e.target.value;
   });
 
   var cachedView = localStorage.getItem('default-View');
@@ -587,10 +579,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     var anySequences = false;
     var check = session.files.length > 1;
-    var defaultMetric = session.style.widgets['link-sort-variable'];
+    var defaultMetric = session.style.widgets['default-distance-metric'];
 
     session.state.metrics = [defaultMetric];
-    session.data.linkFields = session.data.linkFields.concat(session.state.metrics);
 
     session.files.sort(function(a, b){ return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
 

@@ -941,8 +941,8 @@ MT.finishUp = function(oldSession) {
       ) {
         session.state.metrics.forEach(function(m) {
           MT.computeTriangulation(m, function() {
-            if (m == session.style.widgets["link-sort-variable"]) {
-              MT.computeNN(session.style.widgets["link-sort-variable"]);
+            if (m == session.style.widgets["default-distance-metric"]) {
+              MT.computeNN(session.style.widgets["default-distance-metric"]);
             }
             MT.computeTree(m, function() {
               if (m == session.style.widgets["link-sort-variable"]) {
@@ -952,7 +952,7 @@ MT.finishUp = function(oldSession) {
           });
         });
       } else {
-        MT.computeNN(session.style.widgets["link-sort-variable"]);
+        MT.computeNN(session.style.widgets["default-distance-metric"]);
         session.state.metrics.forEach(function(m) {
           MT.computeTree(m, function() {
             if (m == session.style.widgets["link-sort-variable"]) {
