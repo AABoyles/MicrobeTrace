@@ -247,23 +247,24 @@ MT.isNumber = function(a) {
   return typeof a === "number";
 };
 
-MT.addNode = function(newNode) {
+MT.addNode = function(newNode, check) {
   if (MT.isNumber(newNode.id)) newNode.id = "" + newNode.id;
-  var oldNode = session.data.nodes.find(function(d) {
-    return d.id === newNode.id;
-  });
-  if (oldNode) {
-    if (newNode.origin) newNode.origin = newNode.origin.concat(oldNode.origin);
-    Object.assign(oldNode, newNode);
-    return 0;
-  } else {
-    if ("seq" in newNode)
-      newNode._seqInt = newNode.seq.split("").map(function(c) {
-        return tn93.mapChar[c.charCodeAt(0)];
-      });
-    session.data.nodes.push(Object.assign(MT.defaultNode(), newNode));
-    return 1;
+  if (check) {
+    var nodes = session.data.nodes;
+    var n = nodes.length;
+    for (var i = 0; i < n; i++) {
+      var node = nodes[i];
+      if (node.id === newNode.id) {
+        if (newNode.origin) {
+          newNode.origin = newNode.origin.concat(node.origin);
+        }
+        Object.assign(oldNode, newNode);
+        return 0;
+      }
+    }
   }
+  session.data.nodes.push(Object.assign(MT.defaultNode(), newNode));
+  return 1;
 };
 
 MT.defaultLink = function() {
@@ -311,12 +312,15 @@ MT.processSVG = function(svg) {
       var $node = $(node);
       var gephid = $node.attr("class");
       nodes.push(gephid);
-      MT.addNode({
-        id: gephid + "",
-        color: $node.attr("fill"),
-        size: parseFloat($node.attr("r")),
-        origin: ["Scraped Gephi SVG"]
-      });
+      MT.addNode(
+        {
+          id: gephid + "",
+          color: $node.attr("fill"),
+          size: parseFloat($node.attr("r")),
+          origin: ["Scraped Gephi SVG"]
+        },
+        false
+      );
     });
     session.data.nodeFields.push("color");
     session.data.nodeFields.push("size");
@@ -346,10 +350,13 @@ MT.processSVG = function(svg) {
           .split(",")
           .map(parseFloat)
       );
-      MT.addNode({
-        id: i + "",
-        origin: ["Scraped SVG"]
-      });
+      MT.addNode(
+        {
+          id: i + "",
+          origin: ["Scraped SVG"]
+        },
+        false
+      );
     });
     $xml.find("line").each(function(i, link) {
       var $l = $(link);
@@ -409,7 +416,7 @@ MT.applyHIVTrace = function(hivtrace) {
     var newNode = JSON.parse(JSON.stringify(node.patient_attributes));
     newNode.id = node.id;
     newNode.origin = "HIVTRACE Import";
-    MT.addNode(newNode);
+    MT.addNode(newNode, false);
   });
   Object.keys(
     hivtrace["trace_results"]["Nodes"][0]["patient_attributes"]
@@ -442,7 +449,7 @@ MT.applyGHOST = function(ghost) {
     newNode.origin = "GHOST Import";
     newNode.genotypes = JSON.stringify(newNode.genotypes);
     newNode.id = "" + newNode.id;
-    MT.addNode(newNode);
+    MT.addNode(newNode, false);
   });
   ["genotypes", "group", "id", "name"].forEach(function(key) {
     if (!session.data.nodeFields.includes(key))
