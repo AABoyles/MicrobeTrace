@@ -589,6 +589,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     session.files.forEach(function(file, fileNum){
       var filename = file.name;
       var extension = filename.split('.').pop().toLowerCase();
+      var origin = [filterXSS(filename)];
 
       if(file.format === 'fasta'){
 
@@ -596,7 +597,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         var start = Date.now();
         anySequences = true;
         var newNodes = 0;
-        var o = [filterXSS(filename)];
         MT.parseFASTA(file.contents, function(seqs){
           var n = seqs.length;
           for(var i = 0; i < n; i++){
@@ -604,7 +604,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             if(!node) continue;
             node.id = filterXSS(node.id);
             node.seq = filterXSS(node.seq);
-            node.origin = o;
+            node.origin = origin;
             newNodes += MT.addNode(node);
           }
           console.log('FASTA Merge time:', (Date.now()-start).toLocaleString(), 'ms');
@@ -619,26 +619,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         var l = 0;
 
         function forEachLink(link){
-          Object.keys(link).forEach(function(key){
+          var keys = Object.keys(link);
+          var n = keys.length;
+          for(var i = 0; i < n; i++){
+            var key = keys[i];
             link[key] = filterXSS(link[key]);
-          });
-          var base = {
+          }
+          l += MT.addLink(Object.assign({
             source: '' + link[file.field1],
             target: '' + link[file.field2],
-            origin: [filename],
-            visible: true
-          };
-          session.state.metrics.forEach(function(metric){
-            metric = metric.toLowerCase();
-            base[metric] = null;
-          });
-          var num = parseFloat(link[file.field3]);
-          if(MT.isNumber(num) && !Number.isNaN(num)){
-            base[session.style.widgets['link-sort-variable']] = num;
-          } else {
-            base[session.style.widgets['link-sort-variable']] = 0;
-          }
-          l += MT.addLink(Object.assign(base, link), check);
+            origin: origin,
+            visible: true,
+            distance: parseFloat(link[file.field3])
+          }, link), check);
         }
 
         if(extension == 'xls' || extension == 'xlsx'){
@@ -658,7 +651,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           var n = 0, t = 0;
           var nodeIDs = [];
           var k = data.length;
-          var o = [filename];
           for(var i = 0; i < k; i++){
             var l = data[i];
             var f1 = l[file.field1];
@@ -667,7 +659,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               nodeIDs.push(f1);
               n += MT.addNode({
                 id: '' + f1,
-                origin: o
+                origin: origin
               });
             }
             var f2 = l[file.field2];
@@ -676,7 +668,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               nodeIDs.push(f2);
               n += MT.addNode({
                 id: '' + f2,
-                origin: o
+                origin: origin
               });
             }
           }
@@ -703,7 +695,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               var newNodes = 0, totalNodes = 0;
               var n = data.length;
               var nodeIDs = [];
-              var o = [filename];
               for(var i = 0; i < n; i++){
                 var l = data[i];
                 var f1 = l[file.field1];
@@ -711,7 +702,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   totalNodes++;
                   newNodes += MT.addNode({
                     id: '' + f1,
-                    origin: o
+                    origin: origin
                   });
                 }
                 var f2 = l[file.field2];
@@ -719,7 +710,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   totalNodes++;
                   newNodes += MT.addNode({
                     id: '' + f2,
-                    origin: o
+                    origin: origin
                   });
                 }
               }
@@ -750,7 +741,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             });
             node.id = '' + node[file.field1];
             if(file.field2 !== 'None') node.seq = node[file.field2];
-            node['origin'] = [filename];
+            node['origin'] = origin;
             m += MT.addNode(node);
           });
           console.log('Node Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
@@ -775,7 +766,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
               node.id = '' + node[file.field1];
               if(file.field2 !== 'None') node.seq = node[file.field2];
-              node['origin'] = [filename];
+              node['origin'] = origin;
               m += MT.addNode(node);
             },
             complete: function(){
@@ -803,7 +794,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 if(k > 0){
                   nn += MT.addNode({
                     id: '' + cell,
-                    origin: [filename]
+                    origin: origin
                   });
                 }
               });
@@ -816,13 +807,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 var base = {
                   source: source,
                   target: target,
-                  origin: [filename]
+                  origin: origin,
+                  distance: parseFloat(cell)
                 };
-                session.state.metrics.forEach(function(metric){
-                  metric = metric.toLowerCase();
-                  base[metric] = 0;
-                });
-                base[defaultMetric] = parseFloat(cell),
                 nl += MT.addLink(base, true);
               });
             }
@@ -847,7 +834,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     if(k > 0){
                       nn += MT.addNode({
                         id: '' + cell,
-                        origin: [filename]
+                        origin: origin
                       });
                     }
                   });
@@ -860,13 +847,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     var base = {
                       source: source,
                       target: target,
-                      origin: [filename]
+                      origin: origin,
+                      distance: parseFloat(cell)
                     };
-                    session.state.metrics.forEach(function(metric){
-                      metric = metric.toLowerCase();
-                      base[metric] = 0;
-                    });
-                    base[defaultMetric] = parseFloat(cell),
                     nl += MT.addLink(base, true);
                   });
                 }
@@ -880,7 +863,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
       } else { // if(file.format == 'newick'){
 
-        if(!session.data.linkFields.includes('patristic')) session.data.linkFields.push('patristic');
         var links = 0;
         var newLinks = 0;
         var newNodes = 0;
@@ -890,21 +872,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           var source = labels[i];
           newNodes += MT.addNode({
             id: source,
-            origin: [file.name]
+            origin: origin
           });
           for(var j = 0; j < i; j++){
-            var val = parseFloat(matrix[i][j]);
             var base = {
               source: source,
               target: labels[j],
-              origin: [file.name],
-              patristic: val
+              origin: origin,
+              distance: parseFloat(matrix[i][j])
             };
-            session.state.metrics.forEach(function(metric){
-              metric = metric.toLowerCase();
-              base[metric] = 0;
-            });
-            base[defaultMetric] = val;
             newLinks += MT.addLink(base);
             links++;
           }
