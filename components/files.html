@@ -505,7 +505,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   var cachedLSV = localStorage.getItem('default-distance-metric');
   if(cachedLSV){
     $('#default-distance-metric').val(cachedLSV).trigger('change');
-    console.log(cachedLSV, $('#link-threshold').val());
   }
 
   $('#ambiguity-resolution-strategy').change(function(e){
