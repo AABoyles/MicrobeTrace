@@ -659,7 +659,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               n += MT.addNode({
                 id: '' + f1,
                 origin: origin
-              }, check);
+              }, true);
             }
             var f2 = l[file.field2];
             if(nodeIDs.indexOf(f2) === -1){
@@ -668,7 +668,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               n += MT.addNode({
                 id: '' + f2,
                 origin: origin
-              }, check);
+              }, true);
             }
           }
           console.log('Link Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
@@ -702,7 +702,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   newNodes += MT.addNode({
                     id: '' + f1,
                     origin: origin
-                  }, check);
+                  }, true);
                 }
                 var f2 = l[file.field2];
                 if(nodeIDs.indexOf(f2) === -1){
@@ -710,7 +710,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   newNodes += MT.addNode({
                     id: '' + f2,
                     origin: origin
-                  }, check);
+                  }, true);
                 }
               }
               console.log('Link CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
