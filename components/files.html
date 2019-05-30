@@ -586,9 +586,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     //First Pass: Read all files, identify all distinct nodes.
     session.files.forEach(function(file, fileNum){
-      var filename = file.name;
+      var filename = filterXSS(file.name);
       var extension = filename.split('.').pop().toLowerCase();
-      var origin = [filterXSS(filename)];
+      var origin = [filename];
 
       if(file.format === 'fasta'){
 
