@@ -820,44 +820,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         } else {
 
-          Papa.parse(file.contents, {
-            skipEmptyLines: true,
-            complete: function(results){
-              var nodeIDs = [];
-              var nn = 0, nl = 0;
-              var check = session.files.length > 1;
-              results.data.forEach(function(row, i){
-                if(i === 0){
-                  nodeIDs = row.map(filterXSS);
-                  nodeIDs.forEach(function(cell, k){
-                    if(k > 0){
-                      nn += MT.addNode({
-                        id: '' + cell,
-                        origin: origin
-                      }, check);
-                    }
-                  });
-                } else {
-                  var source = '' + row[0];
-                  row.forEach(function(cell, j){
-                    if(j === 0) return;
-                    var target = '' + nodeIDs[j];
-                    if(source === target) return;
-                    var base = {
-                      source: source,
-                      target: target,
-                      origin: origin,
-                      distance: parseFloat(cell)
-                    };
-                    nl += MT.addLink(base, true);
-                  });
-                }
-              });
-              console.log('Distance Matrix CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-              message(` - Parsed ${nn} New, ${results.data.length - 1} Total Nodes from Distance Matrix.`);
-              message(` - Parsed ${nl} New, ${((results.data.length-1)**2 - (results.data.length-1))/2} Total Links from Distance Matrix.`);
-              if(fileNum === session.files.length - 1) processSequences();
-            }
+          MT.parseCSVMatrix(file, function(o){
+            message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
+            message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
+            if(fileNum === session.files.length - 1) processSequences();
           });
         }
       } else { // if(file.format == 'newick'){

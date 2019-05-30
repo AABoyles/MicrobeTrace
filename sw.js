@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-05-20R5206';
+var CACHE = 'MicrobeTraceD2019-05-30R8076';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -30,6 +30,7 @@ self.addEventListener('install', function(event) {
         'workers/compute-patristic-matrix.js',
         'workers/compute-tree.js',
         'workers/compute-triangulation.js',
+        'workers/parse-csv-matrix.js',
         'workers/parse-fasta.js',
         'workers/README.md',
         'components/2d_network.html',

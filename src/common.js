@@ -505,6 +505,53 @@ MT.parseFASTA = function(text, callback) {
   computer.postMessage(text);
 };
 
+MT.parseCSVMatrix = function(file, callback) {
+  var check = session.files.length > 1;
+  var origin = [file.name];
+  var nn = 0,
+    nl = 0,
+    tn = 0,
+    tl = 0;
+  var computer = new Worker("workers/parse-csv-matrix.js");
+  computer.onmessage = function(response) {
+    var data = JSON.parse(
+      MT.decoder.decode(new Uint8Array(response.data.data))
+    );
+    console.log(
+      "CSV Matrix Transit time: ",
+      (Date.now() - response.data.start).toLocaleString(),
+      "ms"
+    );
+    start = Date.now();
+    var nodes = data.nodes;
+    tn = nodes.length;
+    for (var i = 0; i < tn; i++) {
+      nn += MT.addNode({
+        id: nodes[i],
+        origin: origin
+      });
+    }
+    var links = data.links;
+    tl = links.length;
+    for (var j = 0; j < tl; j++) {
+      nl += MT.addLink(Object.assign(links[j], { origin: origin }));
+    }
+    console.log(
+      "CSV Matrix Merge time: ",
+      (Date.now() - response.data.start).toLocaleString(),
+      "ms"
+    );
+    if (callback)
+      callback({
+        nn: nn,
+        nl: nl,
+        tn: tn,
+        tl: tl
+      });
+  };
+  computer.postMessage(file.contents);
+};
+
 MT.r01 = Math.random;
 
 // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
