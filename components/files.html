@@ -431,7 +431,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   }
 
   function updatePreview(data){
-    $('#alignment-preview').empty().append('<img src="img/spinner.gif" class="mx-auto" />');
+    $('#alignment-preview').empty().append('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
     MT.align({
       nodes: data,
       reference: session.data.reference,
@@ -899,9 +899,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.data.nodeFields.push('seq');
       $('.show-for-seq').show();
       $('.show-for-seq.row').css('display', 'flex');
-      session.data.nodes.forEach(function(d){ if(!d.seq) d.seq = ''; });
-      var allDashes = /^-*$/;
-      var subset = session.data.nodes.filter(function(d){ return !allDashes.test(d.seq); });
+      var nodes = session.data.nodes, subset = [];
+      var n = nodes.length;
+      for(var i = 0; i < n; i++){
+        var d = nodes[i];
+        if(!d.seq){
+          d.seq = '';
+        } else {
+          subset.push(d);
+        }
+      }
       if($('#doNotAlign').is(':checked')){
         computeLinks(subset);
       } else {
@@ -913,24 +920,32 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
           gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
           nodes: subset
-        }, function(response){
-          subset.forEach(function(node){
-            var match = response.find(function(possible){
-              return possible.id === node.id;
-            });
-            if(match) Object.assign(node, match);
-          });
+        }, function(){
+          var start = Date.now();
+          var m = subset.length;
+          for (var j = 0; j < m; j++) {
+            var node = subset[j];
+            Object.assign(node, nodes[node.index]);
+          }
+          console.log(
+            "Alignment Merge time: ",
+            (Date.now() - start).toLocaleString(),
+            "ms"
+          );
           computeLinks(subset);
         });
       }
     };
 
-    function computeLinks(subset){
+    function computeLinks(nodes){
       message('Computing Links based on Genomic Proximity...');
       MT.computeConsensus(function(consensus){
         session.data.consensus = consensus;
         MT.computeConsensusDistances(function(){
-          MT.computeLinks(subset, function(k){
+          nodes.sort(function(a, b){
+            return a['_diff'] - b['_diff'];
+          });
+          MT.computeLinks(nodes, function(k){
             message(` - Found ${k} New Links from Genomic Proximity`);
             MT.finishUp();
           });

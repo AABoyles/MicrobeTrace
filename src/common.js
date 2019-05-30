@@ -638,7 +638,7 @@ MT.generateSeqs = function(idPrefix, count, snps, seed) {
 
 MT.decoder = new TextDecoder("utf-8");
 
-MT.align = function(params, callback) {
+MT.align = function(params, callback, merge) {
   if (params.aligner === "none") {
     if (callback) callback(params.nodes);
     return;
@@ -646,7 +646,7 @@ MT.align = function(params, callback) {
   var n = params.nodes.length;
   var aligner = new Worker("workers/align-" + params.aligner + ".js");
   aligner.onmessage = function(response) {
-    var output = JSON.parse(
+    var subset = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.nodes))
     );
     console.log(
@@ -659,18 +659,17 @@ MT.align = function(params, callback) {
       maxLength = 0,
       d = null;
     for (var i = 0; i < n; i++) {
-      d = output[i];
+      d = subset[i];
       if (!d.seq) d.seq = "";
       if (minPadding > d.padding) minPadding = d.padding;
     }
     for (var j = 0; j < n; j++) {
-      d = output[j];
+      d = subset[j];
       d.seq = "-".repeat(d.padding - minPadding) + d.seq;
-      delete d.padding;
       if (maxLength < d.seq.length) maxLength = d.seq.length;
     }
     for (var k = 0; k < n; k++) {
-      d = output[k];
+      d = subset[k];
       d.seq = d.seq + "-".repeat(maxLength - d.seq.length);
     }
     console.log(
@@ -678,7 +677,7 @@ MT.align = function(params, callback) {
       (Date.now() - start).toLocaleString(),
       "ms"
     );
-    callback(output);
+    callback(subset);
   };
   aligner.postMessage(params);
 };
@@ -715,7 +714,7 @@ MT.computeConsensusDistances = function(callback) {
     start = Date.now();
     var n = nodes.length;
     for (var i = 0; i < n; i++) {
-      session.data.nodes[node.index]._diff = nodes[i];
+      session.data.nodes[i]._diff = nodes[i];
     }
     console.log(
       "Consensus Difference Merge time: ",
@@ -747,8 +746,8 @@ MT.computeConsensusDistances = function(callback) {
 };
 
 MT.computeLinks = function(subset, callback) {
-  var k = 0,
-    computer = new Worker("workers/compute-links.js");
+  var k = 0;
+  var computer = new Worker("workers/compute-links.js");
   computer.onmessage = function(response) {
     var links = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.links))
@@ -782,8 +781,11 @@ MT.computeLinks = function(subset, callback) {
 MT.computeDM = function(callback) {
   var computer = new Worker("workers/compute-dm.js");
   computer.onmessage = function(response) {
-    session.data.distance_matrix = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.matrices))
+    session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
+      MT.decoder.decode(new Uint8Array(response.data.matrix))
+    );
+    session.data.distance_matrix.labels = JSON.parse(
+      MT.decoder.decode(new Uint8Array(response.data.labels))
     );
     console.log(
       "DM Transit time: ",
@@ -794,11 +796,7 @@ MT.computeDM = function(callback) {
   };
   computer.postMessage({
     nodes: session.data.nodes,
-    links: session.data.links.filter(function(l) {
-      return session.state.metrics.some(function(m) {
-        return MT.isNumber(l[m]);
-      });
-    }),
+    links: session.data.links,
     metrics: session.state.metrics
   });
 };
