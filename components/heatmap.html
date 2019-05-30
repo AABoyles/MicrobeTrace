@@ -143,7 +143,7 @@
       }
       let xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
       let yLabels = xLabels.slice();
-      let data = session.data.distance_matrix[session.style.widgets['link-sort-variable']].map(l => l.slice());
+      let data = session.data.distance_matrix[session.style.widgets['default-distance-metric']].map(l => l.slice());
 
       if(session.style.widgets['heatmap-invertX']){
         data.forEach(l => l.reverse());
