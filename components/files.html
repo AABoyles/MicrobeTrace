@@ -586,6 +586,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     //First Pass: Read all files, identify all distinct nodes.
     session.files.forEach(function(file, fileNum){
+      var start = Date.now();
       var filename = filterXSS(file.name);
       var extension = filename.split('.').pop().toLowerCase();
       var origin = [filename];
@@ -593,7 +594,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       if(file.format === 'fasta'){
 
         message(`Parsing ${filename} as FASTA...`);
-        var start = Date.now();
         anySequences = true;
         var newNodes = 0;
         MT.parseFASTA(file.contents, function(seqs){
@@ -614,7 +614,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       } else if(file.format === 'link'){
 
         message(`Parsing ${filename} as Link List...`);
-        var start = Date.now();
         var l = 0;
 
         function forEachLink(link){
@@ -722,7 +721,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       } else if(file.format === 'node'){
 
         message(`Parsing ${filename} as Node List...`);
-        var start = Date.now();
         if(file.field2 !== 'None') anySequences = true;
 
         var m = 0, n = 0;
@@ -779,7 +777,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       } else if(file.format === 'matrix'){
 
         message(`Parsing ${filename} as Distance Matrix...`);
-        var start = Date.now();
 
         if(extension == 'xls' || extension == 'xlsx'){
 
@@ -850,6 +847,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             links++;
           }
         }
+        console.log('Newick Tree Parse time:', (Date.now()-start).toLocaleString(), 'ms');
         message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
         message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
         if(fileNum === session.files.length - 1) processSequences();
