@@ -10,17 +10,20 @@
       <div class="col">
         <input type="file" id="data-files" class="d-none" multiple="true" />
         <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
-        <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Alignment Settings</button>
+        <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal"
+          data-target="#aligner-controls-modal">Alignment Settings</button>
       </div>
       <div class="col text-right">
-        <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Launch</button>
+        <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File"
+          disabled>Launch</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="view-controls">
-  <button type="button" id="file-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle File Settings">
+  <button type="button" id="file-settings-toggle" class="btn btn-light btn-sm" data-toggle="button"
+    title="Toggle File Settings">
     <span class="oi oi-cog"></span>
   </button>
 </div>
@@ -28,17 +31,21 @@
 <div id="file-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a class="nav-link active" id="files-tab" data-toggle="tab" href="#file-settings" role="tab" aria-controls="file-settings" aria-selected="true">Files</a>
+      <a class="nav-link active" id="files-tab" data-toggle="tab" href="#file-settings" role="tab"
+        aria-controls="file-settings" aria-selected="true">Files</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="experimental-tab" data-toggle="tab" href="#experimental-settings" role="tab" aria-controls="experimental-settings" aria-selected="false">Experimental</a>
+      <a class="nav-link" id="experimental-tab" data-toggle="tab" href="#experimental-settings" role="tab"
+        aria-controls="experimental-settings" aria-selected="false">Experimental</a>
     </li>
   </ul>
   <div class="tab-content">
     <div id="file-settings" class="tab-pane fade active show" role="tabpanel">
       <div class="form-group row">
         <div class="col-3">
-          <label for="default-distance-metric" class="mr-2" title="Which Genetic Distance Metric should Microbe use to first construct the network?">Distance Metric</label>
+          <label for="default-distance-metric" class="mr-2"
+            title="Which Genetic Distance Metric should Microbe use to first construct the network?">Distance
+            Metric</label>
         </div>
         <div class="col-9">
           <select id="default-distance-metric" class="form-control form-control-sm mr-5">
@@ -49,7 +56,8 @@
       </div>
       <div id="ambiguities-row" class="form-group row">
         <div class="col-3">
-          <label for="ambiguity-resolution-strategy" class="mr-2" title="What Strategy should MicrobeTrace use to handle ambiguities?">Ambiguities</label>
+          <label for="ambiguity-resolution-strategy" class="mr-2"
+            title="What Strategy should MicrobeTrace use to handle ambiguities?">Ambiguities</label>
         </div>
         <div class="col-9">
           <select id="ambiguity-resolution-strategy" class="form-control form-control-sm mr-5">
@@ -62,10 +70,13 @@
       </div>
       <div class="form-group row">
         <div class="col-3">
-          <label for="default-distance-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">Link Threshold</label>
+          <label for="default-distance-threshold" class="mr-2"
+            title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">Link
+            Threshold</label>
         </div>
         <div class="col-9">
-          <input type="number" id="default-distance-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001"></input>
+          <input type="number" id="default-distance-threshold" class="form-control form-control-sm" min="0"
+            value="0.015" step="0.001"></input>
         </div>
       </div>
       <div class="form-group row">
@@ -73,7 +84,8 @@
           <label for="default-View">View to Launch</label>
         </div>
         <div class="col-9">
-          <select id="default-View" class="form-control form-control-sm" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
+          <select id="default-View" class="form-control form-control-sm"
+            title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
             <option value="2d_network" selected>2D Network</option>
             <option value="3d_network">3D Network</option>
             <option value="bubbles">Bubbles</option>
@@ -97,13 +109,15 @@
       <div class="form-group row" title="Would you like to generate a network based on random data?">
         <div class="col-3">Generate</div>
         <div class="col">
-          <input id="generate-number" type="number" class="form-control form-control-sm" min="1" max="2000" step="1" value="100"></input>
+          <input id="generate-number" type="number" class="form-control form-control-sm" min="1" max="2000" step="1"
+            value="100"></input>
         </div>
         <div class="col">
           <button id="generate-sequences" class="btn btn-light btn-sm col">Sequences</button>
         </div>
       </div>
-      <div class="form-group row" title="Would you like to attempt to triangulate missing values in your distance matrices?">
+      <div class="form-group row"
+        title="Would you like to attempt to triangulate missing values in your distance matrices?">
         <div class="col-3">Triangulation</div>
         <div class="col-9">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -116,7 +130,8 @@
           </div>
         </div>
       </div>
-      <div class="form-group row" title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
+      <div class="form-group row"
+        title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
 Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
         <div class="col-3">Autostash</div>
         <div class="col-9">
@@ -134,7 +149,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   </div>
 </div>
 
-<div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true" data-backdrop="false">
+<div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog"
+  aria-labelledby="#aligner-controls-title" aria-hidden="true" data-backdrop="false">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -147,7 +163,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         <div class="form-group row">
           <div class="col-12">
             <div class="alert alert-warning alert-dismissible" role="alert">
-              <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best results, please align your sequences using <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank" rel="noreferrer noopener">an external tool</a> before loading them into MicrobeTrace. <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank" rel="noreferrer noopener">Click here for additional information.</a></p>
+              <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For best
+                results, please align your sequences using <a
+                  href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank"
+                  rel="noreferrer noopener">an external tool</a> before loading them into MicrobeTrace. <a
+                  href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank"
+                  rel="noreferrer noopener">Click here for additional information.</a></p>
               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -159,7 +180,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           <div class="col-9">
             <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
               <label class="btn btn-light active col" title="Do Not Align Sequences">
-                <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked> None
+                <input type="radio" name="shouldAlign" id="doNotAlign" data-aligner="none" autocomplete="off" checked>
+                None
               </label>
               <label class="btn btn-light col" title="Align Sequences using Smith-Waterman aligner">
                 <input type="radio" name="shouldAlign" id="swAlign" data-aligner="sw" autocomplete="off"> Smith-Waterman
@@ -214,709 +236,710 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         </div>
       </div>
       <div class="modal-footer clearfix">
-        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal" title="Confirm Load Settings are All Properly Set">Confirm</button>
+        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal"
+          title="Confirm Load Settings are All Properly Set">Confirm</button>
       </div>
     </div>
   </div>
 </div>
 <script>
-(function(){
+  (function () {
 
-  $('#file-panel').parent().css('z-index', 1000);
+    $('#file-panel').parent().css('z-index', 1000);
 
-  $('#file-settings-toggle').on('click', function(){
-    var pane = $('#file-settings-pane');
-    if($(this).hasClass('active')){
-      pane.animate({left: '-400px'}, function(){ pane.hide(); });
-    } else {
-      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    $('#file-settings-toggle').on('click', function () {
+      var pane = $('#file-settings-pane');
+      if ($(this).hasClass('active')) {
+        pane.animate({ left: '-400px' }, function () { pane.hide(); });
+      } else {
+        pane.show(0, function () { pane.animate({ left: '0px' }); });
+      }
+    });
+
+    if (session.files.length > 0) {
+      $('#file-prompt').remove();
+      session.files.forEach(addToTable);
     }
-  });
 
-  if(session.files.length > 0){
-    $('#file-prompt').remove();
-    session.files.forEach(addToTable);
-  }
+    $('#data-files').on('change', function (e) {
+      var files = e.target.files;
+      $('#file-prompt').remove();
+      for (var i = 0, f; f = files[i]; i++) processFile(f);
+      $('#launch').prop('disabled', false).focus();
+    });
 
-  $('#data-files').on('change', function(e){
-    var files = e.target.files;
-    $('#file-prompt').remove();
-    for(var i = 0, f; f = files[i]; i++) processFile(f);
-    $('#launch').prop('disabled', false).focus();
-  });
+    $('#file-panel').on('dragover', function (evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      evt.originalEvent.dataTransfer.dropEffect = 'copy';
+    }).on('drop', function (evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      var files = evt.originalEvent.dataTransfer.files;
+      var n = files.length;
+      $('#file-prompt').remove();
+      for (var i = 0, f; f = files[i]; i++) processFile(f);
+      $('#launch').prop('disabled', false).focus();
+    });
 
-  $('#file-panel').on('dragover', function(evt){
-    evt.stopPropagation();
-    evt.preventDefault();
-    evt.originalEvent.dataTransfer.dropEffect = 'copy';
-  }).on('drop', function(evt){
-    evt.stopPropagation();
-    evt.preventDefault();
-    var files = evt.originalEvent.dataTransfer.files;
-    var n = files.length;
-    $('#file-prompt').remove();
-    for(var i = 0, f; f = files[i]; i++) processFile(f);
-    $('#launch').prop('disabled', false).focus();
-  });
-
-  function processFile(rawfile){
-    var extension = rawfile.name.split('.').pop().toLowerCase();
-    if(extension === 'zip'){
-      var new_zip = new JSZip();
-      new_zip
-        .loadAsync(rawfile)
-        .then(function(zip){
-          zip.forEach(function(relativePath, zipEntry){
-            zipEntry.async("string").then(function(c){
-              MT.processJSON(c, zipEntry.name.split('.').pop());
+    function processFile(rawfile) {
+      var extension = rawfile.name.split('.').pop().toLowerCase();
+      if (extension === 'zip') {
+        var new_zip = new JSZip();
+        new_zip
+          .loadAsync(rawfile)
+          .then(function (zip) {
+            zip.forEach(function (relativePath, zipEntry) {
+              zipEntry.async("string").then(function (c) {
+                MT.processJSON(c, zipEntry.name.split('.').pop());
+              });
             });
           });
-        });
-      return;
+        return;
+      }
+      if (extension === 'microbetrace' || extension === 'hivtrace') {
+        var reader = new FileReader();
+        reader.onloadend = function (out) {
+          MT.processJSON(out.target.result, extension);
+        };
+        reader.readAsText(rawfile, 'UTF-8');
+      }
+      if (extension === 'svg') {
+        var reader = new FileReader();
+        reader.onloadend = function (out) {
+          MT.processSVG(out.target.result);
+        };
+        reader.readAsText(rawfile, 'UTF-8');
+      }
+      var isXL = (extension === 'xlsx' || extension === 'xls');
+      fileto.promise(rawfile, isXL ? 'ArrayBuffer' : 'Text').then(function (file) {
+        session.files.push(file);
+        addToTable(file);
+      });
     }
-    if(extension === 'microbetrace' || extension === 'hivtrace'){
-      var reader = new FileReader();
-      reader.onloadend = function(out){
-        MT.processJSON(out.target.result, extension);
-      };
-      reader.readAsText(rawfile, 'UTF-8');
-    }
-    if(extension === 'svg'){
-      var reader = new FileReader();
-      reader.onloadend = function(out){
-        MT.processSVG(out.target.result);
-      };
-      reader.readAsText(rawfile, 'UTF-8');
-    }
-    var isXL = (extension === 'xlsx' || extension === 'xls');
-    fileto.promise(rawfile, isXL ? 'ArrayBuffer' : 'Text').then(function(file){
-      session.files.push(file);
-      addToTable(file);
-    });
-  }
 
-  function addToTable(file){
-    var extension = file.name.split('.').pop().toLowerCase();
-    var isFasta = extension.indexOf('fas') > -1;
-    var isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
-    var isXL = (extension === 'xlsx' || extension === 'xls');
-    var isNode = file.name.toLowerCase().includes('node');
-    if(isXL){
-      var workbook = XLSX.read(file.contents, {type: 'array'});
-      var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-      var headers = [];
-      data.forEach(function(row){
-        Object.keys(row).forEach(function(key){
-          key = filterXSS(key);
-          if(!headers.includes(key)) headers.push(key);
-        })
-      });
-      addTableTile(headers);
-    } else {
-      Papa.parse(file.contents, {
-        header: true,
-        preview: 1,
-        complete: function(output){
-          addTableTile(output.meta.fields.map(filterXSS));
-        }
-      });
-    }
-    function addTableTile(headers){
-      var root = $('<div class="file-table-row"></div>').data('filename', file.name);
-      var fnamerow = $('<div class="row w-100"></div>');
-      $('<div class="file-name col"></div>')
-        .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').click(function(e){
-          session.files.splice(session.files.indexOf(file.name), 1);
-          root.slideUp(function(){ root.remove(); });
-        }))
-        .append($('<a href="#" class="oi oi-data-transfer-download align-middle p-1" title="Resave this file"></a>').on('click', function(){
-          saveAs(new Blob([file.contents], {type: file.type | 'text'}), file.name);
-        }))
-        .append('<span class="p-1">' + file.name + '</span>')
-        .append(`
+    function addToTable(file) {
+      var extension = file.name.split('.').pop().toLowerCase();
+      var isFasta = extension.indexOf('fas') > -1;
+      var isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
+      var isXL = (extension === 'xlsx' || extension === 'xls');
+      var isNode = file.name.toLowerCase().includes('node');
+      if (isXL) {
+        var workbook = XLSX.read(file.contents, { type: 'array' });
+        var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        var headers = [];
+        data.forEach(function (row) {
+          Object.keys(row).forEach(function (key) {
+            key = filterXSS(key);
+            if (!headers.includes(key)) headers.push(key);
+          })
+        });
+        addTableTile(headers);
+      } else {
+        Papa.parse(file.contents, {
+          header: true,
+          preview: 1,
+          complete: function (output) {
+            addTableTile(output.meta.fields.map(filterXSS));
+          }
+        });
+      }
+      function addTableTile(headers) {
+        var root = $('<div class="file-table-row"></div>').data('filename', file.name);
+        var fnamerow = $('<div class="row w-100"></div>');
+        $('<div class="file-name col"></div>')
+          .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').click(function (e) {
+            session.files.splice(session.files.indexOf(file.name), 1);
+            root.slideUp(function () { root.remove(); });
+          }))
+          .append($('<a href="#" class="oi oi-data-transfer-download align-middle p-1" title="Resave this file"></a>').on('click', function () {
+            saveAs(new Blob([file.contents], { type: file.type | 'text' }), file.name);
+          }))
+          .append('<span class="p-1">' + file.name + '</span>')
+          .append(`
         <div class="btn-group btn-group-toggle btn-group-sm float-right" data-toggle="buttons">
-          <label class="btn btn-light${!isFasta&!isNewick&!isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta&!isNewick&!isNode?' checked':''}>Link</input>
+          <label class="btn btn-light${!isFasta & !isNewick & !isNode ? ' active' : ''}">
+            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta & !isNewick & !isNode ? ' checked' : ''}>Link</input>
           </label>
-          <label class="btn btn-light${!isFasta&!isNewick&isNode?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta&!isNewick&isNode?' checked':''}>Node</input>
+          <label class="btn btn-light${!isFasta & !isNewick & isNode ? ' active' : ''}">
+            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta & !isNewick & isNode ? ' checked' : ''}>Node</input>
           </label>
           <label class="btn btn-light">
             <input type="radio" name="options-${file.name}" data-type="matrix" autocomplete="off">Matrix</input>
           </label>
-          <label class="btn btn-light${isFasta?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta?' checked':''}>FASTA</input>
+          <label class="btn btn-light${isFasta ? ' active' : ''}">
+            <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta ? ' checked' : ''}>FASTA</input>
           </label>
-          <label class="btn btn-light${isNewick?' active':''}">
-            <input type="radio" name="options-${file.name}" data-type="newick" autocomplete="off"${isNewick?' checked':''}>Newick</input>
+          <label class="btn btn-light${isNewick ? ' active' : ''}">
+            <input type="radio" name="options-${file.name}" data-type="newick" autocomplete="off"${isNewick ? ' checked' : ''}>Newick</input>
           </label>
         </div>
         `)
-        .appendTo(fnamerow);
-      fnamerow.appendTo(root);
-      var optionsrow = $('<div class="row w-100"></div>');
-      var options = '<option>None</option>' + headers.map(function(h){ return '<option value="'+h+'">'+MT.titleize(h)+'</option>'; }).join('\n');
-      optionsrow.append(`
-      <div class='col-4 '${isFasta||isNewick?' style="display: none;"':''} data-file='${file.name}'>
-        <label for="file-${file.name}-field-1">${isNode?'ID':'Source'}</label>
+          .appendTo(fnamerow);
+        fnamerow.appendTo(root);
+        var optionsrow = $('<div class="row w-100"></div>');
+        var options = '<option>None</option>' + headers.map(function (h) { return '<option value="' + h + '">' + MT.titleize(h) + '</option>'; }).join('\n');
+        optionsrow.append(`
+      <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
+        <label for="file-${file.name}-field-1">${isNode ? 'ID' : 'Source'}</label>
         <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
       </div>
-      <div class='col-4 '${isFasta||isNewick?' style="display: none;"':''} data-file='${file.name}'>
-        <label for="file-${file.name}-field-2">${isNode?'Sequence':'Target'}</label>
+      <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
+        <label for="file-${file.name}-field-2">${isNode ? 'Sequence' : 'Target'}</label>
         <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
       </div>
-      <div class='col-4 '${isFasta||isNewick?' style="display: none;"':''} data-file='${file.name}'>
+      <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-3">Distance</label>
         <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
       </div>
       `);
-      optionsrow.appendTo(root);
+        optionsrow.appendTo(root);
 
-      function matchHeaders(type){
-        var these = $(`[data-file='${file.name}'] select`);
-        var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+        function matchHeaders(type) {
+          var these = $(`[data-file='${file.name}'] select`);
+          var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
             b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
             c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
-        [a, b, c].forEach(function(list, i){
-          list.forEach(function(title){
-            if(headers.includes(title)) $(these.get(i)).val(title);
-          });
-          if((i === 1 && type === 'node') || (i === 2 && type === 'link')){
-            $(these.get(i)).val('None');
-          } else if($(these.get(i)).val() === 'None'){
-            $(these.get(i)).val(headers[i]);
-          }
-        });
-      }
-
-      root.appendTo('#file-table');
-      matchHeaders($(`[name="options-${file.name}"]:checked`).data('type'));
-
-      function refit(e){
-        var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
-        these = $(`[data-file='${file.name}']`),
-        first = $(these.get(0)),
-        second = $(these.get(1));
-        third = $(these.get(2));
-        if(type === 'node'){
-          first.slideDown().find('label').text('ID');
-          second.slideDown().find('label').text('Sequence');
-          third.slideUp();
-          matchHeaders(type);
-        } else if(type === 'link'){
-          first.slideDown().find('label').text('Source');
-          second.slideDown().find('label').text('Target');
-          third.slideDown();
-          matchHeaders(type);
-        } else {
-          these.slideUp();
-        }
-      }
-
-      $(`[name="options-${file.name}"]`).change(refit);
-      refit();
-    }
-  }
-
-  function readFastas(){
-    var read = 0, data = [];
-    var fastas = session.files.filter(function(f){ return f.name.split('.').pop().includes('fas'); });
-    if(fastas.length === 0) return;
-    fastas.forEach(function(fasta){
-      MT.parseFASTA(fasta.contents, function(nodes){
-        data = data.concat(nodes);
-        if(++read === fastas.length) updatePreview(data);
-      });
-    });
-  }
-
-  function updatePreview(data){
-    $('#alignment-preview').empty().append('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
-    MT.align({
-      nodes: data,
-      reference: session.data.reference,
-      aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
-      isLocal: $('#localAlign').is(':checked'),
-      match: [parseFloat($('#alignerMatch').val()), -parseFloat($('#alignerMismatch').val())],
-      gap: [-parseFloat($('#alignerGapO').val()), -parseFloat($('#alignerGapE').val())]
-    }, function(output){
-      alignmentViewer(output, {
-        showID: false
-      }).then(function(canvas){
-        $('#alignment-preview').empty().append(canvas);
-      });
-    });
-  }
-
-  $('.alignConfigRow').hide();
-
-  $('#swAlign').parent().click(function(){
-    $('.alignConfigRow').slideDown();
-    $('#alignment-preview').slideUp(function(){
-      $(this).empty().show();
-    });
-  });
-
-  $('#doNotAlign, #nbeamAlign').parent().click(function(){
-    $('.alignConfigRow').slideUp();
-    $('#alignment-preview').slideUp(function(){
-      $(this).empty().show();
-    });
-  });
-
-  $('#refSeqFileLoad').on('change', function(e){
-    var file = e.target.files[0];
-    var reader = new FileReader();
-    reader.onloadend = function(e){
-      if (e.target.readyState == FileReader.DONE){
-        var node = MT.parseFASTA(e.target.result, function(nodes){
-          var node = nodes[0];
-          session.data.reference = filterXSS(node);
-          $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
-          readFastas();
-        });
-      }
-    };
-    reader.readAsText(file);
-  });
-
-  $('#alignerControlsButton, #alignment-preview').click(readFastas);
-
-  $('#default-distance-metric').change(function(e){
-    var lsv = e.target.value;
-    localStorage.setItem('default-distance-metric', lsv);
-    $('#default-distance-metric').val(lsv);
-    if(lsv === 'snps'){
-      $('#ambiguities-row').slideUp();
-      $('#default-distance-threshold, #link-threshold')
-        .attr('step', 1)
-        .val(16);
-      session.style.widgets["link-threshold"] = 16;
-    } else {
-      $('#ambiguities-row').slideDown();
-      $('#default-distance-threshold, #link-threshold')
-        .attr('step', 0.001)
-        .val(0.015);
-      session.style.widgets["link-threshold"] = 0.015;
-    }
-    session.style.widgets['default-distance-metric'] = lsv;
-  });
-
-  var cachedLSV = localStorage.getItem('default-distance-metric');
-  if(cachedLSV){
-    $('#default-distance-metric').val(cachedLSV).trigger('change');
-  }
-
-  $('#ambiguity-resolution-strategy').change(function(e){
-    session.style.widgets['ambiguity-resolution-strategy'] = e.target.value;
-  });
-
-  var cachedView = localStorage.getItem('default-View');
-  if(cachedView){
-    $('#default-View').val(cachedView);
-  }
-
-  $('#default-View').change(function(e){
-    var v = e.target.value;
-    localStorage.setItem('default-View', v);
-    session.layout.content[0].type = v;
-  });
-
-  $('#stash-auto-yes').parent().on('click', function(){
-    localStorage.setItem('stash-auto', 'true');
-  });
-
-  if(localStorage.getItem('stash-auto') === 'true'){
-    $('#stash-auto-yes').parent().trigger('click');
-  }
-
-  $('#stash-auto-no').parent().on('click', function(){
-    if(temp.autostash) clearInterval(temp.autostash.interval);
-    localStorage.setItem('stash-auto', 'false');
-  });
-
-  $('#generate-sequences').on('click', function(){
-    $('#file-prompt').remove();
-    $('#launch').prop('disabled', false).focus();
-    processFile(new File([MT.unparseFASTA(MT.generateSeqs('gen-' + Date.now() + '-', parseFloat($('#generate-number').val()), 20))], 'generated.fasta'));
-  });
-
-  function message(msg){
-    session.messages.push(msg);
-    $('#loading-information').html(session.messages.join('<br />'));
-  }
-
-  $('#launch').click(function(e){
-    session.meta.startTime = Date.now();
-    $('#launch').prop('disabled', true);
-    session.messages = [];
-    session.data = MT.dataSkeleton();
-    $('#loading-information').html('');
-
-    $('#loading-information-modal').modal({
-      backdrop: false,
-      keyboard: false
-    });
-
-    temp.messageTimeout = setTimeout(function(){
-      $('#loadCancelButton').slideDown();
-      alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
-    }, 20000);
-
-    $('#file-panel .file-table-row').each(function(i, el){
-      var $el = $(el);
-      var fname = $el.data('filename');
-      var selects = $el.find('select');
-      var f = session.files.find(function(file){ return file.name === fname; });
-      f.format = $el.find('input[type="radio"]:checked').data('type');
-      f.field1 = selects.get(0).value;
-      f.field2 = selects.get(1).value;
-      f.field3 = selects.get(2).value;
-    });
-
-    var hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
-
-    var anySequences = false;
-    var check = session.files.length > 1;
-    var defaultMetric = session.style.widgets['default-distance-metric'];
-
-    session.state.metrics = [defaultMetric];
-
-    session.files.sort(function(a, b){ return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
-
-    //First Pass: Read all files, identify all distinct nodes.
-    session.files.forEach(function(file, fileNum){
-      var start = Date.now();
-      var filename = filterXSS(file.name);
-      var extension = filename.split('.').pop().toLowerCase();
-      var origin = [filename];
-
-      if(file.format === 'fasta'){
-
-        message(`Parsing ${filename} as FASTA...`);
-        anySequences = true;
-        var newNodes = 0;
-        MT.parseFASTA(file.contents, function(seqs){
-          var n = seqs.length;
-          for(var i = 0; i < n; i++){
-            var node = seqs[i];
-            if(!node) continue;
-            node.id = filterXSS(node.id);
-            node.seq = filterXSS(node.seq);
-            node.origin = origin;
-            newNodes += MT.addNode(node, check);
-          }
-          console.log('FASTA Merge time:', (Date.now()-start).toLocaleString(), 'ms');
-          message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
-          if(fileNum === session.files.length - 1) processSequences();
-        });
-
-      } else if(file.format === 'link'){
-
-        message(`Parsing ${filename} as Link List...`);
-        var l = 0;
-
-        function forEachLink(link){
-          var keys = Object.keys(link);
-          var n = keys.length;
-          for(var i = 0; i < n; i++){
-            var key = keys[i];
-            link[key] = filterXSS(link[key]);
-          }
-          l += MT.addLink(Object.assign({
-            source: '' + link[file.field1],
-            target: '' + link[file.field2],
-            origin: origin,
-            visible: true,
-            distance: parseFloat(link[file.field3])
-          }, link), check);
-        }
-
-        if(extension == 'xls' || extension == 'xlsx'){
-
-          var workbook = XLSX.read(file.contents, {type: 'array'});
-          var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-          data.map(forEachLink);
-          message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-          data.forEach(function(row){
-            Object.keys(row).forEach(function(key){
-              key = filterXSS(key);
-              if(!session.data.linkFields.includes(key)){
-                session.data.linkFields.push(key);
-              }
+          [a, b, c].forEach(function (list, i) {
+            list.forEach(function (title) {
+              if (headers.includes(title)) $(these.get(i)).val(title);
             });
+            if ((i === 1 && type === 'node') || (i === 2 && type === 'link')) {
+              $(these.get(i)).val('None');
+            } else if ($(these.get(i)).val() === 'None') {
+              $(these.get(i)).val(headers[i]);
+            }
           });
-          var n = 0, t = 0;
-          var nodeIDs = [];
-          var k = data.length;
-          for(var i = 0; i < k; i++){
-            var l = data[i];
-            var f1 = l[file.field1];
-            if(nodeIDs.indexOf(f1) === -1){
-              t++;
-              nodeIDs.push(f1);
-              n += MT.addNode({
-                id: '' + f1,
-                origin: origin
-              }, true);
-            }
-            var f2 = l[file.field2];
-            if(nodeIDs.indexOf(f2) === -1){
-              t++;
-              nodeIDs.push(f2);
-              n += MT.addNode({
-                id: '' + f2,
-                origin: origin
-              }, true);
-            }
+        }
+
+        root.appendTo('#file-table');
+        matchHeaders($(`[name="options-${file.name}"]:checked`).data('type'));
+
+        function refit(e) {
+          var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
+            these = $(`[data-file='${file.name}']`),
+            first = $(these.get(0)),
+            second = $(these.get(1));
+          third = $(these.get(2));
+          if (type === 'node') {
+            first.slideDown().find('label').text('ID');
+            second.slideDown().find('label').text('Sequence');
+            third.slideUp();
+            matchHeaders(type);
+          } else if (type === 'link') {
+            first.slideDown().find('label').text('Source');
+            second.slideDown().find('label').text('Target');
+            third.slideDown();
+            matchHeaders(type);
+          } else {
+            these.slideUp();
           }
-          console.log('Link Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-          message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
-          if(fileNum === session.files.length - 1) processSequences();
+        }
 
-        } else {
+        $(`[name="options-${file.name}"]`).change(refit);
+        refit();
+      }
+    }
 
-          Papa.parse(file.contents, {
-            header: true,
-            dynamicTyping: true,
-            skipEmptyLines: true,
-            complete: function(results){
-              var data = results.data;
-              data.map(forEachLink);
-              message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
-              results.meta.fields.forEach(function(key){
+    function readFastas() {
+      var read = 0, data = [];
+      var fastas = session.files.filter(function (f) { return f.name.split('.').pop().includes('fas'); });
+      if (fastas.length === 0) return;
+      fastas.forEach(function (fasta) {
+        MT.parseFASTA(fasta.contents, function (nodes) {
+          data = data.concat(nodes);
+          if (++read === fastas.length) updatePreview(data);
+        });
+      });
+    }
+
+    function updatePreview(data) {
+      $('#alignment-preview').empty().append('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+      MT.align({
+        nodes: data,
+        reference: session.data.reference,
+        aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
+        isLocal: $('#localAlign').is(':checked'),
+        match: [parseFloat($('#alignerMatch').val()), -parseFloat($('#alignerMismatch').val())],
+        gap: [-parseFloat($('#alignerGapO').val()), -parseFloat($('#alignerGapE').val())]
+      }, function (output) {
+        alignmentViewer(output, {
+          showID: false
+        }).then(function (canvas) {
+          $('#alignment-preview').empty().append(canvas);
+        });
+      });
+    }
+
+    $('.alignConfigRow').hide();
+
+    $('#swAlign').parent().click(function () {
+      $('.alignConfigRow').slideDown();
+      $('#alignment-preview').slideUp(function () {
+        $(this).empty().show();
+      });
+    });
+
+    $('#doNotAlign, #nbeamAlign').parent().click(function () {
+      $('.alignConfigRow').slideUp();
+      $('#alignment-preview').slideUp(function () {
+        $(this).empty().show();
+      });
+    });
+
+    $('#refSeqFileLoad').on('change', function (e) {
+      var file = e.target.files[0];
+      var reader = new FileReader();
+      reader.onloadend = function (e) {
+        if (e.target.readyState == FileReader.DONE) {
+          var node = MT.parseFASTA(e.target.result, function (nodes) {
+            var node = nodes[0];
+            session.data.reference = filterXSS(node);
+            $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
+            readFastas();
+          });
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    $('#alignerControlsButton, #alignment-preview').click(readFastas);
+
+    $('#default-distance-metric').change(function (e) {
+      var lsv = e.target.value;
+      localStorage.setItem('default-distance-metric', lsv);
+      $('#default-distance-metric').val(lsv);
+      if (lsv === 'snps') {
+        $('#ambiguities-row').slideUp();
+        $('#default-distance-threshold, #link-threshold')
+          .attr('step', 1)
+          .val(16);
+        session.style.widgets["link-threshold"] = 16;
+      } else {
+        $('#ambiguities-row').slideDown();
+        $('#default-distance-threshold, #link-threshold')
+          .attr('step', 0.001)
+          .val(0.015);
+        session.style.widgets["link-threshold"] = 0.015;
+      }
+      session.style.widgets['default-distance-metric'] = lsv;
+    });
+
+    var cachedLSV = localStorage.getItem('default-distance-metric');
+    if (cachedLSV) {
+      $('#default-distance-metric').val(cachedLSV).trigger('change');
+    }
+
+    $('#ambiguity-resolution-strategy').change(function (e) {
+      session.style.widgets['ambiguity-resolution-strategy'] = e.target.value;
+    });
+
+    var cachedView = localStorage.getItem('default-View');
+    if (cachedView) {
+      $('#default-View').val(cachedView);
+    }
+
+    $('#default-View').change(function (e) {
+      var v = e.target.value;
+      localStorage.setItem('default-View', v);
+      session.layout.content[0].type = v;
+    });
+
+    $('#stash-auto-yes').parent().on('click', function () {
+      localStorage.setItem('stash-auto', 'true');
+    });
+
+    if (localStorage.getItem('stash-auto') === 'true') {
+      $('#stash-auto-yes').parent().trigger('click');
+    }
+
+    $('#stash-auto-no').parent().on('click', function () {
+      if (temp.autostash) clearInterval(temp.autostash.interval);
+      localStorage.setItem('stash-auto', 'false');
+    });
+
+    $('#generate-sequences').on('click', function () {
+      $('#file-prompt').remove();
+      $('#launch').prop('disabled', false).focus();
+      processFile(new File([MT.unparseFASTA(MT.generateSeqs('gen-' + Date.now() + '-', parseFloat($('#generate-number').val()), 20))], 'generated.fasta'));
+    });
+
+    function message(msg) {
+      session.messages.push(msg);
+      $('#loading-information').html(session.messages.join('<br />'));
+    }
+
+    $('#launch').click(function (e) {
+      session.meta.startTime = Date.now();
+      $('#launch').prop('disabled', true);
+      session.messages = [];
+      session.data = MT.dataSkeleton();
+      $('#loading-information').html('');
+
+      $('#loading-information-modal').modal({
+        backdrop: false,
+        keyboard: false
+      });
+
+      temp.messageTimeout = setTimeout(function () {
+        $('#loadCancelButton').slideDown();
+        alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
+      }, 20000);
+
+      $('#file-panel .file-table-row').each(function (i, el) {
+        var $el = $(el);
+        var fname = $el.data('filename');
+        var selects = $el.find('select');
+        var f = session.files.find(function (file) { return file.name === fname; });
+        f.format = $el.find('input[type="radio"]:checked').data('type');
+        f.field1 = selects.get(0).value;
+        f.field2 = selects.get(1).value;
+        f.field3 = selects.get(2).value;
+      });
+
+      var hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
+
+      var anySequences = false;
+      var check = session.files.length > 1;
+      var defaultMetric = session.style.widgets['default-distance-metric'];
+
+      session.state.metrics = [defaultMetric];
+
+      session.files.sort(function (a, b) { return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
+
+      //First Pass: Read all files, identify all distinct nodes.
+      session.files.forEach(function (file, fileNum) {
+        var start = Date.now();
+        var filename = filterXSS(file.name);
+        var extension = filename.split('.').pop().toLowerCase();
+        var origin = [filename];
+
+        if (file.format === 'fasta') {
+
+          message(`Parsing ${filename} as FASTA...`);
+          anySequences = true;
+          var newNodes = 0;
+          MT.parseFASTA(file.contents, function (seqs) {
+            var n = seqs.length;
+            for (var i = 0; i < n; i++) {
+              var node = seqs[i];
+              if (!node) continue;
+              node.id = filterXSS(node.id);
+              node.seq = filterXSS(node.seq);
+              node.origin = origin;
+              newNodes += MT.addNode(node, check);
+            }
+            console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
+            message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
+            if (fileNum === session.files.length - 1) processSequences();
+          });
+
+        } else if (file.format === 'link') {
+
+          message(`Parsing ${filename} as Link List...`);
+          var l = 0;
+
+          function forEachLink(link) {
+            var keys = Object.keys(link);
+            var n = keys.length;
+            for (var i = 0; i < n; i++) {
+              var key = keys[i];
+              link[key] = filterXSS(link[key]);
+            }
+            l += MT.addLink(Object.assign({
+              source: '' + link[file.field1],
+              target: '' + link[file.field2],
+              origin: origin,
+              visible: true,
+              distance: file.field3 === 'None' ? 0 : parseFloat(link[file.field3])
+            }, link), check);
+          }
+
+          if (extension == 'xls' || extension == 'xlsx') {
+
+            var workbook = XLSX.read(file.contents, { type: 'array' });
+            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            data.map(forEachLink);
+            message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
+            data.forEach(function (row) {
+              Object.keys(row).forEach(function (key) {
                 key = filterXSS(key);
-                if(!session.data.linkFields.includes(key)){
+                if (!session.data.linkFields.includes(key)) {
                   session.data.linkFields.push(key);
                 }
               });
-              var newNodes = 0, totalNodes = 0;
-              var n = data.length;
-              var nodeIDs = [];
-              for(var i = 0; i < n; i++){
-                var l = data[i];
-                var f1 = l[file.field1];
-                if(nodeIDs.indexOf(f1) === -1){
-                  totalNodes++;
-                  newNodes += MT.addNode({
-                    id: '' + f1,
-                    origin: origin
-                  }, true);
-                }
-                var f2 = l[file.field2];
-                if(nodeIDs.indexOf(f2) === -1){
-                  totalNodes++;
-                  newNodes += MT.addNode({
-                    id: '' + f2,
-                    origin: origin
-                  }, true);
-                }
-              }
-              console.log('Link CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-              message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
-              if(fileNum === session.files.length - 1) processSequences();
-            }
-          });
-        }
-      } else if(file.format === 'node'){
-
-        message(`Parsing ${filename} as Node List...`);
-        if(file.field2 !== 'None') anySequences = true;
-
-        var m = 0, n = 0;
-
-        if(extension == 'xls' || extension == 'xlsx'){
-
-          var workbook = XLSX.read(file.contents, {type: 'array'});
-          var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-          data.forEach(function(results){
-            var node = JSON.parse(filterXSS(JSON.stringify(results)));
-            Object.keys(node).forEach(function(key){
-              if(!session.data.nodeFields.includes(key)){
-                session.data.nodeFields.push(key);
-              }
             });
-            node.id = '' + node[file.field1];
-            if(file.field2 !== 'None') node.seq = node[file.field2];
-            node['origin'] = origin;
-            m += MT.addNode(node, check);
-          });
-          console.log('Node Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-          message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
-          if(fileNum === session.files.length - 1) processSequences();
+            var n = 0, t = 0;
+            var nodeIDs = [];
+            var k = data.length;
+            for (var i = 0; i < k; i++) {
+              var l = data[i];
+              var f1 = l[file.field1];
+              if (nodeIDs.indexOf(f1) === -1) {
+                t++;
+                nodeIDs.push(f1);
+                n += MT.addNode({
+                  id: '' + f1,
+                  origin: origin
+                }, true);
+              }
+              var f2 = l[file.field2];
+              if (nodeIDs.indexOf(f2) === -1) {
+                t++;
+                nodeIDs.push(f2);
+                n += MT.addNode({
+                  id: '' + f2,
+                  origin: origin
+                }, true);
+              }
+            }
+            console.log('Link Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+            message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
+            if (fileNum === session.files.length - 1) processSequences();
 
-        } else {
+          } else {
 
-          Papa.parse(file.contents, {
-            header: true,
-            dynamicTyping: true,
-            skipEmptyLines: true,
-            step: function(results){
-              if(0 === n++){
-                results.meta.fields.forEach(function(key){
+            Papa.parse(file.contents, {
+              header: true,
+              dynamicTyping: true,
+              skipEmptyLines: true,
+              complete: function (results) {
+                var data = results.data;
+                data.map(forEachLink);
+                message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+                results.meta.fields.forEach(function (key) {
                   key = filterXSS(key);
-                  if(!session.data.nodeFields.includes(key)){
-                    session.data.nodeFields.push(key);
+                  if (!session.data.linkFields.includes(key)) {
+                    session.data.linkFields.push(key);
                   }
                 });
+                var newNodes = 0, totalNodes = 0;
+                var n = data.length;
+                var nodeIDs = [];
+                for (var i = 0; i < n; i++) {
+                  var l = data[i];
+                  var f1 = l[file.field1];
+                  if (nodeIDs.indexOf(f1) === -1) {
+                    totalNodes++;
+                    newNodes += MT.addNode({
+                      id: '' + f1,
+                      origin: origin
+                    }, true);
+                  }
+                  var f2 = l[file.field2];
+                  if (nodeIDs.indexOf(f2) === -1) {
+                    totalNodes++;
+                    newNodes += MT.addNode({
+                      id: '' + f2,
+                      origin: origin
+                    }, true);
+                  }
+                }
+                console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+                message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
+                if (fileNum === session.files.length - 1) processSequences();
               }
-              node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
-              node.id = '' + node[file.field1];
-              if(file.field2 !== 'None') node.seq = node[file.field2];
-              node['origin'] = origin;
-              m += MT.addNode(node, check);
-            },
-            complete: function(){
-              console.log('Node CSV Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-              message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
-              if(fileNum === session.files.length - 1) processSequences();
-            }
-          });
-        }
+            });
+          }
+        } else if (file.format === 'node') {
 
-      } else if(file.format === 'matrix'){
+          message(`Parsing ${filename} as Node List...`);
+          if (file.field2 !== 'None') anySequences = true;
 
-        message(`Parsing ${filename} as Distance Matrix...`);
+          var m = 0, n = 0;
 
-        if(extension == 'xls' || extension == 'xlsx'){
+          if (extension == 'xls' || extension == 'xlsx') {
 
-          var workbook = XLSX.read(file.contents, {type: 'array'});
-          var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
-          var nodeIDs = [], nn = 0, nl = 0;
-          data.forEach(function(row, i){
-            if(i == 0){
-              nodeIDs = row.map(filterXSS);
-              nodeIDs.forEach(function(cell, k){
-                if(k > 0){
-                  nn += MT.addNode({
-                    id: '' + cell,
-                    origin: origin
-                  }, check);
+            var workbook = XLSX.read(file.contents, { type: 'array' });
+            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            data.forEach(function (results) {
+              var node = JSON.parse(filterXSS(JSON.stringify(results)));
+              Object.keys(node).forEach(function (key) {
+                if (!session.data.nodeFields.includes(key)) {
+                  session.data.nodeFields.push(key);
                 }
               });
-            } else {
-              var source = '' + row[0];
-              row.forEach(function(cell, j){
-                if(j === 0) return;
-                var target = '' + nodeIDs[j];
-                if(source === target) return;
-                var base = {
-                  source: source,
-                  target: target,
-                  origin: origin,
-                  distance: parseFloat(cell)
-                };
-                nl += MT.addLink(base, check);
-              });
+              node.id = '' + node[file.field1];
+              if (file.field2 !== 'None') node.seq = node[file.field2];
+              node['origin'] = origin;
+              m += MT.addNode(node, check);
+            });
+            console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+            message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
+            if (fileNum === session.files.length - 1) processSequences();
+
+          } else {
+
+            Papa.parse(file.contents, {
+              header: true,
+              dynamicTyping: true,
+              skipEmptyLines: true,
+              step: function (results) {
+                if (0 === n++) {
+                  results.meta.fields.forEach(function (key) {
+                    key = filterXSS(key);
+                    if (!session.data.nodeFields.includes(key)) {
+                      session.data.nodeFields.push(key);
+                    }
+                  });
+                }
+                node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
+                node.id = '' + node[file.field1];
+                if (file.field2 !== 'None') node.seq = node[file.field2];
+                node['origin'] = origin;
+                m += MT.addNode(node, check);
+              },
+              complete: function () {
+                console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+                message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
+                if (fileNum === session.files.length - 1) processSequences();
+              }
+            });
+          }
+
+        } else if (file.format === 'matrix') {
+
+          message(`Parsing ${filename} as Distance Matrix...`);
+
+          if (extension == 'xls' || extension == 'xlsx') {
+
+            var workbook = XLSX.read(file.contents, { type: 'array' });
+            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            var nodeIDs = [], nn = 0, nl = 0;
+            data.forEach(function (row, i) {
+              if (i == 0) {
+                nodeIDs = row.map(filterXSS);
+                nodeIDs.forEach(function (cell, k) {
+                  if (k > 0) {
+                    nn += MT.addNode({
+                      id: '' + cell,
+                      origin: origin
+                    }, check);
+                  }
+                });
+              } else {
+                var source = '' + row[0];
+                row.forEach(function (cell, j) {
+                  if (j === 0) return;
+                  var target = '' + nodeIDs[j];
+                  if (source === target) return;
+                  var base = {
+                    source: source,
+                    target: target,
+                    origin: origin,
+                    distance: parseFloat(cell)
+                  };
+                  nl += MT.addLink(base, check);
+                });
+              }
+            });
+            console.log('Distance Matrix Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+            message(` - Parsed ${nn} New, ${data.length - 1} Total Nodes from Excel Distance Matrix.`);
+            message(` - Parsed ${nl} New, ${((data.length - 1) ** 2 - (data.length - 1)) / 2} Total Links from Excel Distance Matrix.`);
+            if (fileNum === session.files.length - 1) processSequences();
+
+          } else {
+
+            MT.parseCSVMatrix(file, function (o) {
+              message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
+              message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
+              if (fileNum === session.files.length - 1) processSequences();
+            });
+          }
+        } else { // if(file.format == 'newick'){
+
+          var links = 0;
+          var newLinks = 0;
+          var newNodes = 0;
+          var tree = patristic.parseNewick(file.contents);
+          var m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
+          for (var i = 0; i < n; i++) {
+            var source = labels[i];
+            newNodes += MT.addNode({
+              id: source,
+              origin: origin
+            }, check);
+            for (var j = 0; j < i; j++) {
+              var base = {
+                source: source,
+                target: labels[j],
+                origin: origin,
+                distance: parseFloat(matrix[i][j])
+              };
+              newLinks += MT.addLink(base, check);
+              links++;
             }
-          });
-          console.log('Distance Matrix Excel Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-          message(` - Parsed ${nn} New, ${data.length-1} Total Nodes from Excel Distance Matrix.`);
-          message(` - Parsed ${nl} New, ${((data.length-1)**2-(data.length-1))/2} Total Links from Excel Distance Matrix.`);
-          if(fileNum === session.files.length - 1) processSequences();
-
-        } else {
-
-          MT.parseCSVMatrix(file, function(o){
-            message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
-            message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
-            if(fileNum === session.files.length - 1) processSequences();
-          });
-        }
-      } else { // if(file.format == 'newick'){
-
-        var links = 0;
-        var newLinks = 0;
-        var newNodes = 0;
-        var tree = patristic.parseNewick(file.contents);
-        var m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
-        for(var i = 0; i < n; i++){
-          var source = labels[i];
-          newNodes += MT.addNode({
-            id: source,
-            origin: origin
-          }, check);
-          for(var j = 0; j < i; j++){
-            var base = {
-              source: source,
-              target: labels[j],
-              origin: origin,
-              distance: parseFloat(matrix[i][j])
-            };
-            newLinks += MT.addLink(base, check);
-            links++;
           }
+          console.log('Newick Tree Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+          message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
+          message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
+          if (fileNum === session.files.length - 1) processSequences();
         }
-        console.log('Newick Tree Parse time:', (Date.now()-start).toLocaleString(), 'ms');
-        message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
-        message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
-        if(fileNum === session.files.length - 1) processSequences();
-      }
-    });
-
-    function processSequences(){
-      if(!anySequences){
-        $('.show-for-seq').hide();
-        MT.finishUp();
-        return;
-      }
-      session.data.nodeFields.push('seq');
-      $('.show-for-seq').show();
-      $('.show-for-seq.row').css('display', 'flex');
-      var nodes = session.data.nodes, subset = [];
-      var n = nodes.length;
-      for(var i = 0; i < n; i++){
-        var d = nodes[i];
-        if(!d.seq){
-          d.seq = '';
-        } else {
-          subset.push(d);
-        }
-      }
-      if($('#doNotAlign').is(':checked')){
-        computeLinks(subset);
-      } else {
-        message('Aligning Sequences...');
-        MT.align({
-          reference: session.data.reference,
-          aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
-          isLocal: $('#localAlign').is(':checked'),
-          match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
-          gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
-          nodes: subset
-        }, function(){
-          var start = Date.now();
-          var m = subset.length;
-          for (var j = 0; j < m; j++) {
-            var node = subset[j];
-            Object.assign(node, nodes[node.index]);
-          }
-          console.log(
-            "Alignment Merge time: ",
-            (Date.now() - start).toLocaleString(),
-            "ms"
-          );
-          computeLinks(subset);
-        });
-      }
-    };
-
-    function computeLinks(nodes){
-      message('Computing Links based on Genomic Proximity...');
-      MT.computeConsensus(function(consensus){
-        session.data.consensus = consensus;
-        MT.computeConsensusDistances(function(){
-          nodes.sort(function(a, b){
-            return a['_diff'] - b['_diff'];
-          });
-          MT.computeLinks(nodes, function(k){
-            message(` - Found ${k} New Links from Genomic Proximity`);
-            MT.finishUp();
-          });
-        });
       });
-      session.data.nodeFields.push('_diff');
-    };
-  });
-})();
+
+      function processSequences() {
+        if (!anySequences) {
+          $('.show-for-seq').hide();
+          MT.finishUp();
+          return;
+        }
+        session.data.nodeFields.push('seq');
+        $('.show-for-seq').show();
+        $('.show-for-seq.row').css('display', 'flex');
+        var nodes = session.data.nodes, subset = [];
+        var n = nodes.length;
+        for (var i = 0; i < n; i++) {
+          var d = nodes[i];
+          if (!d.seq) {
+            d.seq = '';
+          } else {
+            subset.push(d);
+          }
+        }
+        if ($('#doNotAlign').is(':checked')) {
+          computeLinks(subset);
+        } else {
+          message('Aligning Sequences...');
+          MT.align({
+            reference: session.data.reference,
+            aligner: $('input[name="shouldAlign"]:checked').data('aligner'),
+            isLocal: $('#localAlign').is(':checked'),
+            match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
+            gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
+            nodes: subset
+          }, function () {
+            var start = Date.now();
+            var m = subset.length;
+            for (var j = 0; j < m; j++) {
+              var node = subset[j];
+              Object.assign(node, nodes[node.index]);
+            }
+            console.log(
+              "Alignment Merge time: ",
+              (Date.now() - start).toLocaleString(),
+              "ms"
+            );
+            computeLinks(subset);
+          });
+        }
+      };
+
+      function computeLinks(nodes) {
+        message('Computing Links based on Genomic Proximity...');
+        MT.computeConsensus(function (consensus) {
+          session.data.consensus = consensus;
+          MT.computeConsensusDistances(function () {
+            nodes.sort(function (a, b) {
+              return a['_diff'] - b['_diff'];
+            });
+            MT.computeLinks(nodes, function (k) {
+              message(` - Found ${k} New Links from Genomic Proximity`);
+              MT.finishUp();
+            });
+          });
+        });
+        session.data.nodeFields.push('_diff');
+      };
+    });
+  })();
 </script>
