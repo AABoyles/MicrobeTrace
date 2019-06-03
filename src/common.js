@@ -67,7 +67,7 @@ MT.defaultWidgets = {
   "globe-field-country": "None",
   "globe-link-show": true,
   "globe-link-transparency": 0,
-  "globe-node-jitter": 0,
+  "globe-node-jitter": -2,
   "globe-node-show": true,
   "globe-node-transparency": 0,
   "globe-stars-show": true,
