@@ -304,7 +304,7 @@
           <label for="map-node-jitter">Jitter</label>
           <button id="map-node-jitter-reroll" class="btn btn-light btn-sm">Reroll</button>
         </div>
-        <div class="col-8"><input type="range" id="map-node-jitter" min="0.00" max="5" step="0.05" value="0.00" /></div>
+        <div class="col-8"><input type="range" id="map-node-jitter" min="-2" max="4" step="0.01" value="-2" /></div>
       </div>
       <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
         <div class="col-4"><label for="map-node-tooltip-variable">Tooltip</label></div>
@@ -857,7 +857,7 @@
     });
 
     function jitter() {
-      var v = session.style.widgets['map-node-jitter'];
+      var v = session.style.widgets['map-node-jitter'] == -2 ? 0 : Math.pow(2, session.style.widgets['map-node-jitter']);
       var n = nodes.length;
       for (var i = 0; i < n; i++) {
         var node = nodes[i];
