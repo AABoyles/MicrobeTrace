@@ -2,10 +2,8 @@
 
 echo 'Compressing Large Files...'
 
-npx gzipper --brotli scripts/
-npx gzipper scripts/
-npx gzipper --brotli stylesheets/
-npx gzipper stylesheets/
+npx gzipper --brotli dist/
+npx gzipper dist/
 npx gzipper --brotli workers/
 npx gzipper workers/
 npx gzipper --brotli data/

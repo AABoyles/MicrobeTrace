@@ -33,7 +33,8 @@
     "node": "12.2.0"
   },
   "scripts": {
-    "build": "scripts/bundle.sh",
+    "build": "npm run compress",
+    "bundle": "scripts/bundle.sh",
     "cache": "scripts/sw.sh",
     "clean": "scripts/cleanup.sh",
     "compress": "scripts/compress.sh"
@@ -44,7 +45,8 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "express-static-gzip": "^1.1.3"
+    "express-static-gzip": "^1.1.3",
+    "gzipper": "^2.7.0"
   },
   "devDependencies": {
     "3d-force-graph": "^1.49.1",
@@ -62,7 +64,6 @@
     "file-saver": "^2.0.2",
     "fileto": "0.1.0",
     "golden-layout": "^1.5.9",
-    "gzipper": "^2.7.0",
     "html2canvas": "^1.0.0-rc.3",
     "html5sortable": "^0.9.16",
     "jquery": "^3.4.1",
