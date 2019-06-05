@@ -691,7 +691,7 @@ MT.align = function(params, callback, merge) {
     return;
   }
   var n = params.nodes.length;
-  var aligner = new Worker("workers/align-" + params.aligner + ".js");
+  var aligner = new Worker("workers/align-sw.js");
   aligner.onmessage = function(response) {
     var subset = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.nodes))
@@ -702,7 +702,7 @@ MT.align = function(params, callback, merge) {
       "ms"
     );
     var start = Date.now();
-    var minPadding = Number.MAX_SAFE_INTEGER,
+    var minPadding = Infinity,
       maxLength = 0,
       d = null;
     for (var i = 0; i < n; i++) {

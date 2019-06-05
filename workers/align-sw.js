@@ -13,7 +13,13 @@ onmessage = function(e) {
       e.data.match,
       e.data.gap
     );
-    let fmt = bioseq.cigar2gaps(reference, node.seq, rst.position, rst.CIGAR);
+    let fmt = bioseq.cigar2gaps(
+      reference,
+      node.seq,
+      rst.position,
+      rst.CIGAR,
+      true
+    );
     node.score = rst.score;
     node.padding = rst.position;
     node.cigar = rst.CIGAR;
