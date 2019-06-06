@@ -200,6 +200,12 @@ label[for="apply-style"] {
   border: 1px solid #ced4da;
   background-image: none !important;
 }
+.btn-primary {
+  background-color: #0037ff;
+}
+.lm_tab {
+  color: #575858 !important;
+}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after {
