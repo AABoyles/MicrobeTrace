@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-05-30R8076';
+var CACHE = 'MicrobeTraceD2019-06-06R8510';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -12,6 +12,7 @@ self.addEventListener('install', function(event) {
         'humans.txt',
         'LICENSE',
         'vendor/bioseq.min.js',
+        'vendor/papaparse.min.js',
         'vendor/patristic.min.js',
         'vendor/README.md',
         'vendor/tn93.min.js',

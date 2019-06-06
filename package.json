@@ -78,7 +78,6 @@
     "patristic": "^0.3.7",
     "pdfmake": "^0.1.56",
     "plotly.js": "^1.48.1",
-    "popper.js": "^1.15.0",
     "postcss-cli": "^6.1.2",
     "puppeteer": "^1.17.0",
     "save-svg-as-png": "^1.4.14",
