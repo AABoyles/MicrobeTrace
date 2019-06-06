@@ -1,17 +1,12 @@
 #!/usr/bin/env node
 
 const express = require("express");
+const redirectToHTTPS = require("express-http-to-https").redirectToHTTPS;
 const expressStaticGzip = require("express-static-gzip");
 
 var app = express();
 
-app.use(function(req, res, next) {
-  if (req.secure || req.headers.host.split(":")[0] == "localhost") {
-    next();
-  } else {
-    res.redirect("https://" + req.headers.host + req.url);
-  }
-});
+app.use(redirectToHTTPS([/localhost:(\d{4})/], [], 301));
 
 app.use(
   expressStaticGzip(__dirname, {
