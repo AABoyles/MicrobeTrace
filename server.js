@@ -6,7 +6,7 @@ const expressStaticGzip = require("express-static-gzip");
 
 var app = express();
 
-app.use(redirectToHTTPS([/localhost:(\d{4})/], [], 301));
+app.use(redirectToHTTPS([/^localhost:?\d*$/, /^127.0.0.1:?\d*$/], [], 301));
 
 app.use(
   expressStaticGzip(__dirname, {
