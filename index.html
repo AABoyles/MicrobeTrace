@@ -19,14 +19,15 @@
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48x48.png" />
   <link rel="mask-icon" href="img/safari-pinned-tab.svg" color="#5bbad5" />
-  <link rel="preload" href="fonts/open-iconic.woff" as="font" crossorigin="anonymous" />
-  <link rel="stylesheet" type="text/css" href="dist/bundle.min.css" />
+  <link rel="stylesheet" type="text/css" href="dist/bundle.primary.css" />
   <link rel="stylesheet" type="text/css" href="dist/main.css" />
+  <link rel="preload" as="script" href="dist/bundle.primary.js" />
+  <link rel="preload" as="font" href="fonts/open-iconic.woff" crossorigin="anonymous" />
 </head>
 <body>
   <div class="d-none">
     <h1>Sorry!</h1>
-    <h4>MicrobeTrace requires CSS to run, but it looks like the appropriate CSS files weren't loaded for some reason. Please try <a href="/">Refreshing the Page</a></h4>
+    <h4>MicrobeTrace requires CSS to run, but it looks like the appropriate CSS files weren't loaded for some reason. Please try <a href="#" onclick="location.reload();">Refreshing the Page</a></h4>
   </div>
 
   <nav class="navbar fixed-top navbar-expand-xl navbar-light bg-light">
@@ -489,8 +490,10 @@ performance of this software.</pre>
     gtag('js', new Date());
     gtag('config', 'UA-116308624-1');
   </script>
-  <script src="dist/bundle.js" charset="utf-8"></script>
-  <script src="dist/common.js" charset="utf-8"></script>
-  <script src="dist/index.js" charset="utf-8"></script>
+  <script src="dist/bundle.primary.js" charset="utf-8"></script>
+  <script src="dist/common.js" async charset="utf-8"></script>
+  <script src="dist/index.js" async charset="utf-8"></script>
+  <script src="dist/bundle.secondary.js" defer charset="utf-8"></script>
+  <link rel="stylesheet" type="text/css" href="dist/bundle.secondary.css" />
 </body>
 </html>
