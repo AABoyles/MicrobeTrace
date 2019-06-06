@@ -8,14 +8,14 @@ self.addEventListener('install', function(event) {
       return cache.addAll([" > sw.js
 
 cat cache.extra | sed "s/.*/        '&',/" >> sw.js
-ls vendor/*     | sed "s/.*/        '&',/" >> sw.js
-ls dist/*       | sed "s/.*/        '&',/" >> sw.js
-ls workers/*    | sed "s/.*/        '&',/" >> sw.js
-ls components/* | sed "s/.*/        '&',/" >> sw.js
-ls fonts/*      | sed "s/.*/        '&',/" >> sw.js
-ls img/*        | sed "s/.*/        '&',/" >> sw.js
-ls data/*       | sed "s/.*/        '&',/" >> sw.js
-ls help/*.md    | sed "s/.*/        '&',/" >> sw.js
+ls vendor/*     | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
+ls dist/*       | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
+ls workers/*    | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
+ls components/* | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
+ls fonts/*      | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
+ls img/*        | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
+ls data/*       | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
+ls help/*.md    | grep -vE "*\.(br|gz)" | sed "s/.*/        '&',/" >> sw.js
 
 echo """      ]);
     })
