@@ -461,7 +461,6 @@ button.btn,
   background-color: #f8f9fa !important;
 }
 #node-symbols-draghandle {
-  display: none;
   width: 100%;
   text-align: center;
 }

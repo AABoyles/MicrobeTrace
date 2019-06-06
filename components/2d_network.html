@@ -253,6 +253,11 @@ Note that this may cause slow performance on larger networks.">
   <table></table>
 </div>
 
+<div id="node-symbols-context" class="dropdown-menu">
+    <a href="#" id="node-symbols-move" class="dropdown-item">Pin</a>
+  </div>
+</div>
+
 <div id="context-menu" class="dropdown-menu">
   <a href="#" id="pinNode" class="dropdown-item">Pin Node</a>
   <a href="#" id="copyID" class="dropdown-item">Copy ID</a>
@@ -1182,6 +1187,46 @@ Note that this may cause slow performance on larger networks.">
       });
     }
     session.network.allPinned = !session.network.allPinned;
+  });
+
+  $("#node-symbols").on("contextmenu", function(e) {
+    e.preventDefault();
+    $("#node-symbols-context").css({
+      top: e.clientY-55,
+      left: e.clientX,
+      display: "block"
+    });
+  });
+
+  $("#node-symbols-move").on("click", function() {
+    var $this = $(this);
+    $this.parent().hide();
+    if ($this.text() == "Drag") {
+      $("#node-symbols-draghandle").slideDown();
+      $this.text("Pin");
+    } else {
+      $("#node-symbols-draghandle").slideUp();
+      $this.text("Drag");
+    }
+  });
+
+  $("#node-symbols-draghandle").on("mousedown", function() {
+    var body = $("body");
+    var parent = $(this).parent();
+    body.on("mousemove", function(e2) {
+      parent
+        .css(
+          "top",
+          (parseFloat(parent.css("top")) + e2.originalEvent.movementY) + "px"
+        )
+        .css(
+          "left",
+          (parseFloat(parent.css("left")) + e2.originalEvent.movementX) + "px"
+        );
+    });
+    body.on("mouseup", function(e3) {
+      body.off("mousemove").off("mouseup");
+    });
   });
 
   d3.select(window).on('keydown keyup', function(){
