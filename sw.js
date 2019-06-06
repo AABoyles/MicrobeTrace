@@ -4,7 +4,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE).then(function(cache) {
       return cache.addAll([
-        './',
+        '/',
         'index.html',
         'package.json',
         'manifest.json',
