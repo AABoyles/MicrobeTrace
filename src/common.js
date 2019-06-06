@@ -1280,14 +1280,15 @@ MT.setLinkVisibility = function() {
   for (var i = 0; i < n; i++) {
     var link = links[i];
     var v = true;
-    if (metric !== "none") v &= link[metric] <= threshold;
+    if (metric !== "none") {
+      if (link[metric] === null) {
+        v = false;
+      } else {
+        v &= link[metric] <= threshold;
+      }
+    }
     if (showNN) v &= link.nn;
     link.visible = v;
-    // if(session.data.clusters.length > 0){
-    //   //The above condition is a dumb hack to initial load the network
-    //   var cluster = session.data.clusters.find(function(c){ return c.id === link.cluster; });
-    //   if(cluster) link.visible &= cluster.visible;
-    // }
   }
   console.log(
     "Link Visibility Setting time:",
