@@ -680,7 +680,11 @@ $(function() {
 
   if (navigator.onLine) $(".ifOnline").show();
 
-  MT.launchView("files");
+  if (location.hash === "#demo") {
+    $.getJSON("demo/Demo_outbreak_session.microbetrace", MT.applySession);
+  } else {
+    MT.launchView("files");
+  }
 
   $(document).on("keydown", function(e) {
     if (e.ctrlKey && e.key === "f") {
