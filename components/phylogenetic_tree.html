@@ -295,14 +295,15 @@
   </div><!-- /.modal -->
 
   <script>
-    let tree;
+    var tree;
 (function(){
 
+
   function drawTree(){
-    let panel = $('#tree').parent();
+    var panel = $('#tree').parent();
     if(!panel.length) return;
 
-    let metric = session.style.widgets['link-sort-variable'];
+    var metric = session.style.widgets['default-distance-metric'];
     if(!temp.trees[metric]){
       MT.computeTree(metric, drawTree);
       return;
@@ -323,7 +324,8 @@
       branchNodes: session.style.widgets['tree-branch-nodes-show'],
       branchDistances: !session.style.widgets['tree-branch-distance-hide'],
       leafNodes: true,
-      leafLabels: session.style.widgets['tree-leaf-label-show']
+      leafLabels: session.style.widgets['tree-leaf-label-show'],
+      margin: [60, 100, 20, 20]
     }, {
       select: select,
       contextmenu: contextMenu,
@@ -335,17 +337,17 @@
   }
 
   function redrawTree(){
-    let size = session.style.widgets['tree-leaf-node-size'],
+    var size = session.style.widgets['tree-leaf-node-size'],
         ncv  = session.style.widgets['node-color-variable'];
 
     if(ncv === 'None'){
-      let color = session.style.widgets['node-color'];
+      var color = session.style.widgets['node-color'];
       tree.eachLeafNode(d => d3.select(d).attr('r', size).style('fill', color));
     } else {
-      let ncm = temp.style.nodeColorMap;
+      var ncm = temp.style.nodeColorMap;
       tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
-        let id = data.data.id;
-        let match = session.data.nodes.find(node => node.id === id);
+        var id = data.data.id;
+        var match = session.data.nodes.find(node => node.id === id);
         if(match){
           return ncm(match[ncv]);
         } else {
@@ -358,8 +360,8 @@
   }
 
   function select(d){
-    let e = d3.event;
-    let n = d[0].data;
+    var e = d3.event;
+    var n = d[0].data;
     e.preventDefault();
     if(e.ctrlKey){
       session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
@@ -376,12 +378,11 @@
   }
 
   function contextMenu(d){
-    let e = d3.event;
+    var e = d3.event;
     e.preventDefault();
-    d3.select('#tooltip')
-      .style('z-index', -1)
-      .style('display', 'none');
-    let menu = d3.select('#tree-context-menu');
+    hideTooltip();
+    if(d[0].data.isLeaf()) return;
+    var menu = d3.select('#tree-context-menu');
     d3.select('#tree-reroot').on('click', function(){
       tree.setData(d[0].data.reroot());
       menu.style('z-index', -1).style('display', 'none');
@@ -401,9 +402,17 @@
       .style('display', 'block');
   }
 
+  function hideContext(){
+    var menu = d3.select('#tree-context-menu');
+    menu
+      .transition().duration(100)
+      .style('opacity', 0)
+      .on('end', () => menu.style('z-index', -1));
+  }
+
   function tooltip(d){
     if(session.style.widgets['tree-tooltip-show']){
-      let e = d3.event;
+      var e = d3.event;
       e.preventDefault();
       d3.select('#tooltip')
         .text(d[0].data.id)
@@ -415,7 +424,7 @@
   }
 
   function hideTooltip(){
-    let tooltip = d3.select('#tooltip');
+    var tooltip = d3.select('#tooltip');
     tooltip
       .transition().duration(100)
       .style('opacity', 0)
@@ -423,7 +432,7 @@
   }
 
   $('#toggle-tree-settings').on('click', function(){
-    let pane = $('#tree-settings-pane');
+    var pane = $('#tree-settings-pane');
     if(pane.is(':visible')){
       pane.animate({left: '-400px'}, function(){ pane.hide(); });
     } else {
@@ -461,7 +470,7 @@
   });
 
   $('#tree-vertical-stretch').on('input', function(){
-    let val = parseFloat(this.value);
+    var val = parseFloat(this.value);
     session.style.widgets['tree-vertical-stretch'] = val;
     var cached = tree.animation;
     tree.setAnimation(0);
@@ -470,7 +479,7 @@
   });
 
   $('#tree-horizontal-stretch').on('input', function(){
-    let val = parseFloat(this.value);
+    var val = parseFloat(this.value);
     session.style.widgets['tree-horizontal-stretch'] = val;
     var cached = tree.animation;
     tree.setAnimation(0);
@@ -542,9 +551,9 @@
   });
 
   $('#tree-branch-distance-size').on('input', function(){
-    let speed = tree.animation;
+    var speed = tree.animation;
     tree.animation = 0;
-    let size = parseFloat(this.value);
+    var size = parseFloat(this.value);
     session.style.widgets['tree-branch-distance-size'] = size;
     tree.eachBranchDistance(function(label, data){
       d3.select(label).style('font-size', size+'px');
@@ -563,9 +572,9 @@
   });
 
   $('#tree-leaf-node-size').on('input', function(){
-    let speed = tree.animation;
+    var speed = tree.animation;
     tree.animation = 0;
-    let size = parseFloat(this.value);
+    var size = parseFloat(this.value);
     session.style.widgets['tree-leaf-node-size'] = size;
     tree.eachLeafNode(function(node, data){
       d3.select(node).attr('r', size);
@@ -584,9 +593,9 @@
   });
 
   $('#tree-leaf-label-size').on('input', function(){
-    let speed = tree.animation;
+    var speed = tree.animation;
     tree.animation = 0;
-    let size = parseFloat(this.value);
+    var size = parseFloat(this.value);
     session.style.widgets['tree-leaf-label-size'] = size;
     tree.eachLeafLabel(function(label, data){
       d3.select(label).style('font-size', size+'px');
@@ -611,8 +620,8 @@
   });
 
   $('#tree-export-scale').on('input', function(){
-    let scale = parseFloat(this.value);
-    let wrapper = $('#tree').parent();
+    var scale = parseFloat(this.value);
+    var wrapper = $('#tree').parent();
     $('#tree-export-dimensions').text(
       Math.round(wrapper.width() *scale)+'x'+
       Math.round(wrapper.height()*scale)+'px'
@@ -620,18 +629,18 @@
   }).trigger('input');
 
   $('#tree-export').on('click', function(){
-    let filetype = $('#tree-export-file-type').val();
-    let filename = $('#tree-export-file-name').val();
+    var filetype = $('#tree-export-file-type').val();
+    var filename = $('#tree-export-file-name').val();
     if(filetype === 'nwk'){
-      let blob = new Blob([temp.trees[session.style.widgets['link-sort-variable']].toNewick()], {type: 'application/newick;charset=utf-8'});
+      var blob = new Blob([temp.trees[session.style.widgets['link-sort-variable']].toNewick()], {type: 'application/newick;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
     } else if(filetype === 'svg'){
-      let blob = new Blob([MT.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
+      var blob = new Blob([MT.unparseSVG($('#tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
       saveAs(blob, $('#tree-export-file-name').val() + '.svg');
     } else {
-      let $root = $('#tree svg');
-      let root = $root[0];
-      let watermark = d3.select(root).append('text')
+      var $root = $('#tree svg');
+      var root = $root[0];
+      var watermark = d3.select(root).append('text')
         .text('MicrobeTrace')
         .attr('x', $root.width()  - 150)
         .attr('y', $root.height() - 20)
@@ -649,7 +658,7 @@
 
   function tagSelected(){
     tree.eachLeafNode(function(circle, data){
-      let node = session.data.nodes.find(d => d.id === data.data.id);
+      var node = session.data.nodes.find(d => d.id === data.data.id);
       if(node.selected){
         d3.select(circle)
           .style('stroke', session.style.widgets['selected-color'])
@@ -674,7 +683,7 @@
   layout.on('stateChanged', function(){
     if($('#tree').length){
       redrawTree();
-      let wrapper = $('#tree').parent();
+      var wrapper = $('#tree').parent();
       $('#tree-export-width' ).val(wrapper.width());
       $('#tree-export-height').val(wrapper.height());
     }
