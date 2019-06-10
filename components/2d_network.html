@@ -1242,7 +1242,7 @@ Note that this may cause slow performance on larger networks.">
     .on('background-color-change', function(){
       $('#network').css('background-color', session.style.widgets['background-color']);
     })
-    .on('link-threshold-change node-visibility node-selected', render);
+    .on('link-visibility node-visibility node-selected', render);
 
   layout.on('stateChanged', function(){
     var wrapper = $('#network').parent();

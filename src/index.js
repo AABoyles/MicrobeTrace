@@ -225,7 +225,7 @@ $(function() {
   $('[name="NNOptions"]').on("change", function() {
     MT.updateNetwork($("#node-singletons-hide").is(":checked"));
     MT.updateStatistics();
-    $window.trigger("link-threshold-change");
+    $window.trigger("link-visibility");
   });
 
   $("#links-show-all")
@@ -254,7 +254,7 @@ $(function() {
       MT.computeNN(session.style.widgets["link-sort-variable"], function() {
         MT.updateNetwork($("#node-singletons-hide").is(":checked"));
         MT.updateStatistics();
-        $window.trigger("link-threshold-change");
+        $window.trigger("link-visibility");
       });
     });
 
@@ -262,7 +262,7 @@ $(function() {
     session.style.widgets["link-sort-variable"] = e.target.value;
     MT.updateThresholdHistogram();
     MT.updateStatistics();
-    $window.trigger("link-threshold-change");
+    $window.trigger("link-visibility");
   });
 
   MT.updateThresholdHistogram = function() {
@@ -343,7 +343,7 @@ $(function() {
       if ($("#node-singletons-hide").is(":checked")) MT.setNodeVisibility();
       MT.computeDegree();
       MT.updateStatistics();
-      $window.trigger("link-threshold-change");
+      $window.trigger("link-visibility");
     });
 
     svg.on("mousedown", function() {
@@ -355,14 +355,14 @@ $(function() {
         if ($("#node-singletons-hide").is(":checked")) MT.setNodeVisibility();
         MT.computeDegree();
         MT.updateStatistics();
-        $window.trigger("link-threshold-change");
+        $window.trigger("link-visibility");
         svg
           .on("mousemove", null)
           .on("mouseup", null)
           .on("mouseleave", null);
       });
     });
-    $window.trigger("link-threshold-change");
+    $window.trigger("link-visibility");
   };
 
   $("#link-threshold").on("input", function() {
@@ -371,7 +371,8 @@ $(function() {
     if ($("#node-singletons-hide").is(":checked")) MT.setNodeVisibility();
     MT.computeDegree();
     MT.updateStatistics();
-    $window.trigger("link-threshold-change");
+    $window.trigger("link-visibility");
+  });
   });
 
   $("#node-singletons-show, #node-singletons-hide").on("change", function() {
@@ -714,7 +715,7 @@ $(function() {
     .on("click", function() {
       $("#network-statistics-context, #group-key-context").hide();
     })
-    .on("link-threshold-change", function() {
+    .on("link-visibility", function() {
       if (session.style.widgets["link-color-variable"] !== "None") {
         $("#link-color-variable").trigger("change");
       }

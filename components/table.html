@@ -174,7 +174,7 @@
     $('#table').parent().css('z-index', 1000);
 
     $window
-      .on('link-threshold-change', updateTable)
+      .on('link-visibility', updateTable)
       .on('node-selected', updateData)
       .on('selected-color-change', updateTable);
 

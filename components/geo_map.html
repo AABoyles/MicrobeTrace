@@ -949,7 +949,7 @@
         });
       })
       .on('node-color-change', drawNodes)
-      .on('link-color-change link-threshold-change link_visibility', drawLinks);
+      .on('link-color-change link-visibility', drawLinks);
 
     layout.on('stateChanged', function () {
       setTimeout(function () {

@@ -284,7 +284,7 @@
 
     $window
       .on('node-selected', drawFlowDiagram)
-      .on('link-threshold-change', drawFlowDiagram)
+      .on('link-visibility', drawFlowDiagram)
       .on('node-visibility', drawFlowDiagram)
       .on('background-color-change', function(){
         $('#flow-diagram').parent().css('background-color', session.style.widgets['background-color']);

@@ -112,7 +112,7 @@
     .on('background-color-change', function(){
       $('#waterfall').css('background-color', session.style.widgets['background-color']);
     })
-    .on('link-threshold-change node-visibility node-selected', resetClusters);
+    .on('link-visibility node-visibility node-selected', resetClusters);
 })();
 </script>
 </body>
