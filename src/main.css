@@ -203,9 +203,6 @@ label[for="apply-style"] {
 .btn-primary {
   background-color: #0037ff;
 }
-.lm_tab {
-  color: #575858 !important;
-}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after {
@@ -221,6 +218,7 @@ label[for="apply-style"] {
   background: #f8f9fa !important;
 }
 .lm_tab {
+  color: #575858 !important;
   background-color: #888888;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
