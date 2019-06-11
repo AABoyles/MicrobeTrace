@@ -1,8 +1,7 @@
 onmessage = function(e) {
   var start = Date.now();
   var links = e.data.links,
-    nodes = e.data.nodes,
-    metric = e.data.metrics[0];
+    nodes = e.data.nodes;
   var n = nodes.length,
     m = links.length,
     labels = nodes.map(s => s.id);
