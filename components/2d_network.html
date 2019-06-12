@@ -449,14 +449,14 @@ Note that this may cause slow performance on larger networks.">
       var match = session.network.nodes.find(d2 => d2.id === d.id);
       if(match){
         ['x','y','fx','fy','vx','vy','fixed'].forEach(v => {
-          if(match[v]) d[v] = match[v];
+          if(typeof match[v] != "undefined") d[v] = match[v];
         });
       }
     });
 
     session.network.nodes = newNodes;
 
-    var nodes = svg.select('g.nodes').selectAll('g').data(newNodes)
+    var nodes = svg.select('g.nodes').selectAll('g').data(newNodes, function(d){ return d.id; })
       .join(
         enter => {
           var g = enter.append('g')
@@ -1242,7 +1242,7 @@ Note that this may cause slow performance on larger networks.">
     .on('background-color-change', function(){
       $('#network').css('background-color', session.style.widgets['background-color']);
     })
-    .on('link-visibility node-visibility node-selected', render);
+    .on('node-visibility link-visibility cluster-visibility node-selected', render);
 
   layout.on('stateChanged', function(){
     var wrapper = $('#network').parent();

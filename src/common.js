@@ -55,6 +55,7 @@ MT.defaultWidgets = {
   "bubble-x": "None",
   "bubble-y": "None",
   "bubble-size": 5,
+  "cluster-minimum-size": 1,
   "filtering-epsilon": -8,
   "flow-showNodes": "selected",
   "globe-countries-show": false,
@@ -132,6 +133,7 @@ MT.defaultWidgets = {
   "scatterplot-showNodes": false,
   "selected-color": "#ff8300",
   "selected-color-contrast": "#000000",
+  "timeline-date-field": "None",
   "timeline-noncumulative": true,
   "tree-branch-distances-hide": true,
   "tree-branch-distance-size": 12,
@@ -526,15 +528,18 @@ MT.parseCSVMatrix = function(file, callback) {
     var nodes = data.nodes;
     tn = nodes.length;
     for (var i = 0; i < tn; i++) {
-      nn += MT.addNode({
-        id: nodes[i],
-        origin: origin
-      });
+      nn += MT.addNode(
+        {
+          id: nodes[i],
+          origin: origin
+        },
+        check
+      );
     }
     var links = data.links;
     tl = links.length;
     for (var j = 0; j < tl; j++) {
-      nl += MT.addLink(Object.assign(links[j], { origin: origin }));
+      nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
     }
     console.log(
       "CSV Matrix Merge time: ",
@@ -1093,7 +1098,6 @@ MT.finishUp = function(oldSession) {
   MT.setLinkVisibility();
   MT.setNodeVisibility();
   MT.tagClusters();
-  MT.computeDegree();
   MT.updateStatistics();
   $("#network-statistics-wrapper").fadeIn();
   $("#SettingsTab").attr("data-target", "#global-settings-modal");
@@ -1150,8 +1154,10 @@ MT.titleize = function(title) {
 MT.tagClusters = function() {
   var start = Date.now();
   session.data.clusters = [];
-  var nodes = session.data.nodes;
-  var n = nodes.length;
+  var nodes = session.data.nodes,
+    links = session.data.links;
+  var n = nodes.length,
+    numLinks = links.length;
   temp.nodes = [];
   for (var j = 0; j < n; j++) {
     var node = nodes[j];
@@ -1168,11 +1174,40 @@ MT.tagClusters = function() {
       MT.DFS(node.id);
     }
   }
-  session.data.clusters = session.data.clusters.filter(function(c) {
-    return c.nodes > 1;
-  });
   console.log(
     "Cluster Tagging time:",
+    (Date.now() - start).toLocaleString(),
+    "ms"
+  );
+  start = Date.now();
+  for (var h = 0; h < n; h++) {
+    nodes[h].degree = 0;
+  }
+  for (var i = 0; i < numLinks; i++) {
+    var l = links[i];
+    if (!l.visible) continue;
+    var s = false,
+      t = false;
+    for (var j = 0; j < n; j++) {
+      var node = nodes[j];
+      if (l.source == node.id) {
+        s = true;
+        node.degree++;
+      }
+      if (l.target == node.id) {
+        t = true;
+        node.degree++;
+      }
+      if (s & t) break;
+    }
+  }
+  session.data.clusters.forEach(function(c) {
+    c.links = c.links / 2;
+    c.links_per_node = c.links / c.nodes;
+    c.mean_genetic_distance = c.sum_distances / 2 / c.links;
+  });
+  console.log(
+    "Degree Computation time:",
     (Date.now() - start).toLocaleString(),
     "ms"
   );
@@ -1209,59 +1244,32 @@ MT.DFS = function(id) {
   }
 };
 
-MT.computeDegree = function() {
+MT.setNodeVisibility = function(silent) {
   var start = Date.now();
+  var dateField = session.style.widgets["timeline-date-field"];
+  var cms = session.style.widgets["cluster-minimum-size"];
   var nodes = session.data.nodes,
-    links = session.data.links;
-  var numNodes = nodes.length;
-  for (var h = 0; h < numNodes; h++) {
-    nodes[h].degree = 0;
-  }
-  var numLinks = links.length;
-  for (var i = 0; i < numLinks; i++) {
-    var l = links[i];
-    if (!l.visible) continue;
-    var s = false,
-      t = false;
-    for (var j = 0; j < numNodes; j++) {
-      var node = nodes[j];
-      if (node.id === l.source) {
-        s = true;
-        node.degree++;
+    clusters = session.data.clusters;
+  var n = nodes.length;
+  for (var i = 0; i < n; i++) {
+    var node = nodes[i];
+    node.visible = true;
+    var cluster = clusters[node.cluster];
+    if (cluster) {
+      node.visible = node.visible && cluster.visible;
+    }
+    if (dateField != "None") {
+      if (session.state.timeEnd) {
+        node.visible =
+          node.visible &&
+          session.state.timeEnd > moment(node[dateField]).toDate();
       }
-      if (node.id === l.target) {
-        t = true;
-        node.degree++;
-      }
-      if (s & t) break;
+      // if (session.state.timeStart) {
+      //   node.visible = node.visible && session.state.timeStart > moment(n[dateField]).toDate();
+      // }
     }
   }
-  session.data.clusters.forEach(function(c) {
-    c.links = c.links / 2;
-    c.links_per_node = c.links / c.nodes;
-    c.mean_genetic_distance = c.sum_distances / 2 / c.links;
-  });
-  console.log(
-    "Degree Computation time:",
-    (Date.now() - start).toLocaleString(),
-    "ms"
-  );
-};
-
-MT.setNodeVisibility = function() {
-  var start = Date.now();
-  var showSingletons = $("#node-singletons-show").is(":checked");
-  var field = $("#date-column").val();
-  session.data.nodes.forEach(function(n) {
-    var cluster = session.data.clusters.find(function(c) {
-      return c.id === n.cluster;
-    });
-    n.visible = cluster ? cluster.visible : showSingletons;
-    if (session.state.time && field) {
-      n.visible = n.visible && session.state.time.isAfter(n[field]);
-    }
-  });
-  $window.trigger("node-visibility");
+  if (!silent) $window.trigger("node-visibility");
   console.log(
     "Node Visibility Setting time:",
     (Date.now() - start).toLocaleString(),
@@ -1269,29 +1277,66 @@ MT.setNodeVisibility = function() {
   );
 };
 
-MT.setLinkVisibility = function() {
+MT.setLinkVisibility = function(silent) {
   var start = Date.now();
   var metric = session.style.widgets["link-sort-variable"],
-    threshold = parseFloat($("#link-threshold").val()),
+    threshold = session.style.widgets["link-threshold"],
+    cms = session.style.widgets["cluster-minimum-size"],
     showNN = $("#links-show-nn").is(":checked");
-  session.style.widgets["link-threshold"] = threshold;
   var links = session.data.links;
-  var n = links.length;
+  var nodes = session.data.nodes;
+  var clusters = session.data.clusters;
+  var n = links.length,
+    o = nodes.length;
   for (var i = 0; i < n; i++) {
     var link = links[i];
-    var v = true;
-    if (metric !== "none") {
-      if (link[metric] === null) {
-        v = false;
-      } else {
-        v &= link[metric] <= threshold;
-      }
+    link.visible = true;
+    if (link[metric] === null) {
+      link.visible = false;
+      continue;
+    } else {
+      link.visible = link.visible && link[metric] <= threshold;
     }
-    if (showNN) v &= link.nn;
-    link.visible = v;
+    if (showNN) link.visible = link.visible && link.nn;
+    // var s = false,
+    //   t = false;
+    // for (var k = 0; k < o; k++) {
+    //   var node = nodes[k];
+    //   if (link.source == node.id) {
+    //     link.visible = link.visible && node.visible;
+    //     s = true;
+    //   }
+    //   if (link.target == node.id) {
+    //     link.visible = link.visible && node.visible;
+    //     t = true;
+    //   }
+    //   if (s && t) break;
+    // }
+    var cluster = clusters[link.cluster];
+    if (cluster) {
+      link.visible = link.visible && cluster.visible;
+    }
   }
+  if (!silent) $window.trigger("link-visibility");
   console.log(
     "Link Visibility Setting time:",
+    (Date.now() - start).toLocaleString(),
+    "ms"
+  );
+};
+
+MT.setClusterVisibility = function(silent) {
+  var start = Date.now();
+  var min = session.style.widgets["cluster-minimum-size"];
+  var clusters = session.data.clusters;
+  var n = clusters.length;
+  for (var i = 0; i < n; i++) {
+    var cluster = clusters[i];
+    cluster.visible = cluster.nodes >= min;
+  }
+  if (!silent) $window.trigger("cluster-visibility");
+  console.log(
+    "Cluster Visibility Setting time:",
     (Date.now() - start).toLocaleString(),
     "ms"
   );
@@ -1352,12 +1397,16 @@ MT.getVisibleClusters = function(copy) {
   return out;
 };
 
-// TODO: hideSingletons should be inferred from session.state, not passed.
-MT.updateNetwork = function(hideSingletons) {
-  MT.setLinkVisibility();
+MT.updateNetwork = function() {
+  MT.setLinkVisibility(true);
   MT.tagClusters();
-  if (hideSingletons) MT.setNodeVisibility();
-  MT.computeDegree();
+  MT.setClusterVisibility(true);
+  MT.setLinkVisibility(true);
+  MT.setNodeVisibility(true);
+  ["cluster", "link", "node"].forEach(function(thing) {
+    $window.trigger(thing + "-visibility");
+  });
+  MT.updateStatistics();
 };
 
 MT.updateStatistics = function() {

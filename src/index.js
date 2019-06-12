@@ -223,9 +223,7 @@ $(function() {
   });
 
   $('[name="NNOptions"]').on("change", function() {
-    MT.updateNetwork($("#node-singletons-hide").is(":checked"));
-    MT.updateStatistics();
-    $window.trigger("link-visibility");
+    MT.updateNetwork();
   });
 
   $("#links-show-all")
@@ -252,17 +250,25 @@ $(function() {
     .on("change", function() {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
       MT.computeNN(session.style.widgets["link-sort-variable"], function() {
-        MT.updateNetwork($("#node-singletons-hide").is(":checked"));
-        MT.updateStatistics();
-        $window.trigger("link-visibility");
+        MT.updateNetwork();
       });
     });
 
-  $("#link-sort-variable").on("change", function(e) {
-    session.style.widgets["link-sort-variable"] = e.target.value;
-    MT.updateThresholdHistogram();
+  $("#cluster-minimum-size").on("change", function() {
+    var val = parseInt(this.value);
+    session.style.widgets["cluster-minimum-size"] = val;
+    MT.setClusterVisibility(true);
+    MT.setLinkVisibility(true);
+    MT.setNodeVisibility(true);
+    ["cluster", "link", "node"].forEach(function(thing) {
+      $window.trigger(thing + "-visibility");
+    });
     MT.updateStatistics();
-    $window.trigger("link-visibility");
+    if (val > 1) {
+      $("#filtering-wrapper").slideUp();
+    } else {
+      $("#filtering-wrapper").slideDown();
+    }
   });
 
   MT.updateThresholdHistogram = function() {
@@ -338,45 +344,42 @@ $(function() {
 
     svg.on("click", function() {
       updateThreshold();
-      MT.setLinkVisibility();
-      MT.tagClusters();
-      if ($("#node-singletons-hide").is(":checked")) MT.setNodeVisibility();
-      MT.computeDegree();
-      MT.updateStatistics();
-      $window.trigger("link-visibility");
+      MT.updateNetwork();
     });
 
     svg.on("mousedown", function() {
       d3.event.preventDefault();
       svg.on("mousemove", updateThreshold);
       svg.on("mouseup mouseleave", function() {
-        MT.setLinkVisibility();
-        MT.tagClusters();
-        if ($("#node-singletons-hide").is(":checked")) MT.setNodeVisibility();
-        MT.computeDegree();
-        MT.updateStatistics();
-        $window.trigger("link-visibility");
+        MT.updateNetwork();
         svg
           .on("mousemove", null)
           .on("mouseup", null)
           .on("mouseleave", null);
       });
     });
-    $window.trigger("link-visibility");
   };
 
-  $("#link-threshold").on("input", function() {
-    MT.setLinkVisibility();
-    MT.tagClusters();
-    if ($("#node-singletons-hide").is(":checked")) MT.setNodeVisibility();
-    MT.computeDegree();
-    MT.updateStatistics();
-    $window.trigger("link-visibility");
-  });
+  $("#link-sort-variable").on("change", function(e) {
+    session.style.widgets["link-sort-variable"] = e.target.value;
+    MT.updateThresholdHistogram();
+    MT.updateNetwork();
   });
 
-  $("#node-singletons-show, #node-singletons-hide").on("change", function() {
-    MT.setNodeVisibility();
+  $("#link-threshold").on("change", function() {
+    session.style.widgets["link-threshold"] = parseFloat(this.value);
+    MT.setLinkVisibility(true);
+    MT.tagClusters();
+    MT.setClusterVisibility(true);
+    //To catch links that should be filtered out based on cluster size:
+    MT.setLinkVisibility(true);
+    MT.setNodeVisibility(true);
+    //Because the network isn't robust to the order in which these operations
+    //take place, we just do them all silently and then react as though we did
+    //them each after all of them are already done.
+    ["cluster", "link", "node"].forEach(function(thing) {
+      $window.trigger(thing + "-visibility");
+    });
     MT.updateStatistics();
   });
 
@@ -443,13 +446,13 @@ $(function() {
   });
 
   $("#RevealAllTab").on("click", function() {
-    session.data.clusters.forEach(function(c) {
-      c.visible = true;
-    });
+    $("#cluster-minimum-size").val(1);
+    session.style.widgets["cluster-minimum-size"] = 1;
+    $("#filtering-wrapper").slideDown();
+    MT.setClusterVisibility();
+    MT.setNodeVisibility();
     MT.setLinkVisibility();
-    $("#node-singletons-show")
-      .parent()
-      .click();
+    MT.updateStatistics();
   });
 
   $("#node-color-variable")
