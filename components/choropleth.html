@@ -256,12 +256,29 @@
           color: '#dadde0',
           fillOpacity: a.properties.density > 0 ? 0.7 : 0
         }
+      },
+      onEachFeature: function (feature, layer) {
+        layer
+          .on('mouseover', function (e) {
+            $('#tooltip')
+              .html('<b>' + e.target.feature.properties.name + '</b>&nbsp;' + e.target.feature.properties.density)
+              .css({
+                'opacity': 1,
+                'z-index': 10000,
+                top: e.containerPoint.y,
+                left: e.containerPoint.x
+              });
+          })
+          .on('mouseout', function () {
+            $('#tooltip')
+              .css({
+                opacity: 0,
+                'z-index': -1
+              });
+          })
       }
     });
     layers.aggregates.addTo(choropleth).bringToFront();
-    //   .on('mouseover', showNodeTooltip)
-    //   .on('mouseout', hideTooltip)
-    //   .on('click', clickHandler)
     legend.remove();
     legend = L.control({ position: 'bottomleft' });
     legend.onAdd = function () {
