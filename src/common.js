@@ -1163,9 +1163,11 @@ MT.tagClusters = function () {
   var n = nodes.length,
     numLinks = links.length;
   temp.nodes = [];
-  for (var j = 0; j < n; j++) {
-    var node = nodes[j];
-    if (temp.nodes.indexOf(node.id) === -1) {
+  for (var k = 0; k < n; k++) {
+    var d = nodes[k];
+    d.degree = 0;
+    var id = d.id;
+    if (temp.nodes.indexOf(id) === -1) {
       session.data.clusters.push({
         id: session.data.clusters.length,
         nodes: 0,
@@ -1175,7 +1177,7 @@ MT.tagClusters = function () {
         mean_genetic_distance: undefined,
         visible: true
       });
-      MT.DFS(node.id);
+      MT.DFS(id);
     }
   }
   console.log(
@@ -1184,9 +1186,6 @@ MT.tagClusters = function () {
     "ms"
   );
   start = Date.now();
-  for (var h = 0; h < n; h++) {
-    nodes[h].degree = 0;
-  }
   for (var i = 0; i < numLinks; i++) {
     var l = links[i];
     if (!l.visible) continue;
@@ -1202,7 +1201,7 @@ MT.tagClusters = function () {
         t = true;
         node.degree++;
       }
-      if (s & t) break;
+      if (s && t) break;
     }
   }
   session.data.clusters.forEach(function (c) {
@@ -1251,7 +1250,6 @@ MT.DFS = function (id) {
 MT.setNodeVisibility = function (silent) {
   var start = Date.now();
   var dateField = session.style.widgets["timeline-date-field"];
-  var cms = session.style.widgets["cluster-minimum-size"];
   var nodes = session.data.nodes,
     clusters = session.data.clusters;
   var n = nodes.length;
@@ -1285,13 +1283,11 @@ MT.setLinkVisibility = function (silent) {
   var start = Date.now();
   var metric = session.style.widgets["link-sort-variable"],
     threshold = session.style.widgets["link-threshold"],
-    cms = session.style.widgets["cluster-minimum-size"],
     showNN = $("#links-show-nn").is(":checked");
   var links = session.data.links;
   var nodes = session.data.nodes;
   var clusters = session.data.clusters;
-  var n = links.length,
-    o = nodes.length;
+  var n = links.length;
   for (var i = 0; i < n; i++) {
     var link = links[i];
     link.visible = true;
