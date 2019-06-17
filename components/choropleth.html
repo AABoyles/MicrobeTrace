@@ -427,7 +427,7 @@
   });
 
   $('#choropleth-fit').on('click', function () {
-
+    choropleth.flyToBounds(layers.aggregates.getBounds());
   });
 
   $window
