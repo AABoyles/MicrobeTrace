@@ -157,7 +157,7 @@
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
-              <!-- <option>geojson</option> -->
+              <option>geojson</option>
             </select>
           </div>
         </div>
@@ -416,6 +416,13 @@
           saveAs(blob, $('#choropleth-export-file-name').val() + '.' + format);
         }, 'image/' + format);
       });
+    } else { //geojson
+      saveAs(
+        new Blob(
+          [JSON.stringify(MT.mapData[session.style.widgets['choropleth-aggregate-as']])],
+          { type: 'application/json;charset=utf-8' }),
+        $('#choropleth-export-file-name').val() + '.' + format
+      );
     }
   });
 
