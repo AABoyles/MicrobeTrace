@@ -733,10 +733,17 @@ td {
   background-color: #000;
 }
 
-.leaflet-bottom{
-  z-index: 1;
-}
+/* Choropleth */
 
 .legend canvas {
   opacity: 0.7;
+}
+
+/* Crosstab */
+#crosstab {
+  height: calc(100% - 50px) !important;
+  width: calc(100% - 20px);
+  margin: 50px 10px 0 10px;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
 }
