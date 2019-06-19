@@ -1,0 +1,789 @@
+  <svg id="physics-tree"></svg>
+
+  <div class="view-controls">
+    <button id="toggle-physics-tree-settings" type="button" class="btn btn-light btn-sm" title="Toggle physics-tree Settings">
+      <span class="oi oi-cog"></span>
+    </button>
+    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#physics-tree-export-modal" title="Export physics-tree">
+      <span class="oi oi-data-transfer-download"></span>
+    </button>
+    <button id="physics-tree-fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Phylogenetic physics-tree">
+      <span class="oi oi-target"></span>
+    </button>
+  </div>
+
+  <div id="physics-tree-settings-pane" class="left-pane">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item active">
+        <a href="#physics-tree-configurations" id="physics-tree-tab" class="nav-link active" aria-controls="physics-tree" role="tab" data-toggle="tab">Phylogenetic physics-tree</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="physics-tree-configurations" role="tabpanel" aria-labelledby="physics-tree-tab">
+        <div class="accordion" id="physics-tree-controls-accordion">
+          <div class="card">
+            <div class="card-header p-0">
+              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-layout" aria-expanded="false" aria-controls="physics-tree-controls-layout" style="color:#495057">Layout</button>
+            </div>
+            <div id="physics-tree-controls-layout" class="collapse show" data-parent="#physics-tree-controls-accordion">
+              <div class="card-body">
+                <div class="form-group row" title="What kind of layout would you like to use for this physics-tree?">
+                  <div class="col-3">
+                    <label for="physics-tree-type">Type</label>
+                  </div>
+                  <div class="col-9">
+                    <select id="physics-tree-type" class="form-control form-control-sm">
+                      <option value="physics-tree">physics-tree</option>
+                      <option value="weighted" selected>Weighted Dendrogram</option>
+                      <option value="dendrogram">Unweighted Dendrogram</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group row" title="What kind of layout would you like to use for this physics-tree?">
+                  <div class="col-3">Layout</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm active col">
+                        <input type="radio" name="physics-tree-layout" id="physics-tree-layout-vertical" autocomplete="off" checked> Vertical
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-layout" id="physics-tree-layout-horizontal" autocomplete="off"> Horizontal
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-layout" id="physics-tree-layout-circular" autocomplete="off"> Circular
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row" title="Would you like to vertically stretch (or squish) the physics-tree?">
+                  <div class="col-3">
+                    <label for="physics-tree-vertical-stretch">Vertical Stretch</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="physics-tree-vertical-stretch" type="range" min="0.1" max="10" value="1" step="0.1" />
+                  </div>
+                </div>
+                <div class="form-group row" title="Would you like to horizontally stretch (or squish) the physics-tree?">
+                  <div class="col-3">
+                    <label for="physics-tree-horizontal-stretch">Horizontal Stretch</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="physics-tree-horizontal-stretch" type="range" min="0.1" max="10" value="1" step="0.1" />
+                  </div>
+                </div>
+                <div class="form-group row hideForCircular" title="Would you like to see a ruler indicating patristic distances next to your physics-tree?">
+                  <div class="col-3">Ruler</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="physics-tree-ruler" id="physics-tree-ruler-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-ruler" id="physics-tree-ruler-hide" autocomplete="off"> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header p-0">
+              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-branches" aria-expanded="true" aria-controls="physics-tree-controls-source" style="color:#495057">Branches</button>
+            </div>
+            <div id="physics-tree-controls-branches" class="collapse" data-parent="#physics-tree-controls-accordion">
+              <div class="card-body">
+                <div class="form-group row" title="What would you like the branches to be shaped like?">
+                  <div class="col-3">Type</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="physics-tree-mode" id="physics-tree-mode-square" autocomplete="off" checked> Square
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-mode" id="physics-tree-mode-smooth" autocomplete="off"> Smooth
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-mode" id="physics-tree-mode-straight" autocomplete="off"> Straight
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row" title="Would you like to render nodes at the physics-tree's branchpoints?">
+                  <div class="col-3">Nodes</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="physics-tree-branch-nodes" id="physics-tree-branch-nodes-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-branch-nodes" id="physics-tree-branch-nodes-hide" autocomplete="off"> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row" title="Would you like to see branch distances written on the Branches?">
+                  <div class="col-3">Length Labels</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-branch-distances" id="physics-tree-branch-distances-show" autocomplete="off"> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="physics-tree-branch-distances" id="physics-tree-branch-distances-hide" autocomplete="off" checked> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row physics-tree-branch-distance-row" title="Would you like to round distances in the physics-tree to integers?">
+                  <div class="col-3">Round Labels</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm active col">
+                        <input type="radio" name="physics-tree-round" id="physics-tree-round-false" autocomplete="off" checked> Unrounded
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-round" id="physics-tree-round-true" autocomplete="off"> Rounded
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row physics-tree-branch-distance-row" title="How big should the branch distance labels be?">
+                  <div class="col-3">
+                    <label for="physics-tree-branch-distance-size">Label Size</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="physics-tree-branch-distance-size" type="range" min="1" max="32" value="6" step="1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header p-0">
+              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-leaves" aria-expanded="true" aria-controls="physics-tree-controls-source" style="color:#495057">Leaves</button>
+            </div>
+            <div id="physics-tree-controls-leaves" class="collapse" data-parent="#physics-tree-controls-accordion">
+              <div class="card-body">
+                <div class="form-group row">
+                  <div class="col-3">Nodes</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="physics-tree-leaf-nodes" id="physics-tree-leaf-node-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-leaf-nodes" id="physics-tree-leaf-node-hide" autocomplete="off"> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row physics-tree-leaf-node-row">
+                  <div class="col-3">
+                    <label for="physics-tree-leaf-node-size">Node Size</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="physics-tree-leaf-node-size" type="range" min="1" max="32" value="9" step="1" />
+                  </div>
+                </div>
+                <div class="form-group row physics-tree-leaf-node-row">
+                  <div class="col-3">
+                    <label class="form-switch">Tooltip</label>
+                  </div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="physics-tree-tooltips" id="physics-tree-tooltip-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-tooltips" id="physics-tree-tooltip-hide" autocomplete="off"> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-3">Labels</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="physics-tree-leaf-labels" id="physics-tree-leaf-label-show" autocomplete="off"> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="physics-tree-leaf-labels" id="physics-tree-leaf-label-hide" autocomplete="off" checked> Hide
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div id="physics-tree-leaf-label-size-row" class="form-group row">
+                  <div class="col-3">
+                    <label for="physics-tree-leaf-label-size">Label Size</label>
+                  </div>
+                  <div class="col-9">
+                    <input id="physics-tree-leaf-label-size" type="range" min="1" max="32" value="6" step="1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="physics-tree-context-menu" class="dropdown-menu">
+    <a href="#" id="physics-tree-rotate"  class="dropdown-item">Rotate</a>
+    <a href="#" id="physics-tree-flip"    class="dropdown-item">Flip</a>
+    <a href="#" id="physics-tree-reroot"  class="dropdown-item">Set As Root</a>
+  </div>
+
+  <div id="physics-tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Export Phylogenetic physics-tree</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group row">
+            <div class="col-9">
+              <input type="text" id="physics-tree-export-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            </div>
+            <div class="col-3">
+              <select id="physics-tree-export-file-type" class="form-control form-control-sm">
+                <option selected>png</option>
+                <option>jpeg</option>
+                <option>webp</option>
+                <option>svg</option>
+                <option>nwk</option>
+              </select>
+            </div>
+          </div>
+          <button id="physics-tree-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#physics-tree-export-advanced" aria-expanded="false" aria-controls="physics-tree-export-advanced">Advanced</button>
+          <div class="collapse" id="physics-tree-export-advanced">
+            <div class="card card-body">
+              <div class="form-group row">
+                <div class="col-3">
+                  <label for="physics-tree-export-scale">Scale</label>
+                </div>
+                <div class="col-9">
+                  <input type="number" id="physics-tree-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-3">Resolution</div>
+                <div id="physics-tree-export-dimensions" class="col-9 text-right"></div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="physics-tree-export-quality">Quality</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" id="physics-tree-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+          <button type="button" id="physics-tree-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <script>
+// (function(){
+  var halfWidth  = $('#physics-tree').parent().width()/2,
+      halfHeight = $('#physics-tree').parent().parent().parent().height()/2;
+      // transform  = {},
+      // zoom = d3.zoom().on('zoom', function(){
+      //   transform = d3.event.transform;
+      //   svg.attr('transform', transform);
+      // }),
+      // brush = d3.brush()
+      //   .on('start', brushstarted)
+      //   .on('brush', brushed)
+      //   .on('end', brushended);
+
+  // function brushstarted(){
+  //   session.network.nodes.forEach(d => {
+  //     if(d.visible) d._previouslySelected = d.selected;
+  //   });
+  // }
+  //
+  // function brushed(){
+  //   if(d3.event.sourceEvent.type === 'end') return;
+  //   var selection = [
+  //     transform.invert(d3.event.selection[0]),
+  //     transform.invert(d3.event.selection[1])
+  //   ];
+  //   if(selection.includes(null)) return;
+  //   session.network.nodes.forEach(function(d){
+  //     d.selected = (d._previouslySelected ^ (
+  //       selection[0][0] <= d.x && d.x <= selection[1][0] &&
+  //       selection[0][1] <= d.y && d.y <= selection[1][1]
+  //     )) === 1;
+  //   });
+  // }
+  //
+  // function brushended(){
+  //   if(d3.event.selection == null) return;
+  //   d3.select(this).call(d3.event.target.move, null);
+  //   session.network.nodes.forEach(d => delete d._previouslySelected);
+  //   session.data.nodes.forEach(d => {
+  //     var match = session.network.nodes.find(node => node.id === d.id);
+  //     if(match) d.selected = match.selected;
+  //   });
+  //   $window.trigger('node-selected');
+  // }
+
+  d3.select('svg#network')
+      .html(null) //Let's make sure the canvas is blank.
+      .attr('height', halfHeight*2)
+      .attr('width', halfWidth*2)
+      .on('click', hideContext)
+      //.call(zoom);
+
+  // d3.select('svg#physics-tree')
+  //     .append('g')
+  //     .attr('class', 'brush')
+  //     .call(brush)
+  //     .attr('pointer-events', 'none')
+  //   .select('rect.overlay')
+  //     .attr('pointer-events', 'none');
+
+  var g = d3.select('svg#physics-tree').append('g');
+
+  g.append('g').attr('class', 'links');
+  g.append('g').attr('class', 'nodes');
+
+  var force = d3.forceSimulation()
+    .force('link', d3.forceLink()
+      .id(d => d.id)
+      //.distance(l => l.origin.length * session.style.widgets['physics-tree-link-length'])
+      .strength(0.125)
+    )
+    .force('charge', d3.forceManyBody()
+      //.strength(-session.style.widgets['physics-tree-node-charge'])
+    )
+    .force('gravity', d3.forceAttract()
+      .target([halfWidth, halfHeight*2])
+      //.strength(session.style.widgets['physics-tree-gravity'])
+    )
+    .force('center', d3.forceCenter(halfWidth, halfHeight));
+
+  function drawTree(){
+    var panel = $('#physics-tree').parent();
+    if(!panel.length) return;
+
+    var metric = session.style.widgets['default-distance-metric'];
+    if(!temp.trees[metric]){
+      MT.computeTree(metric, drawTree);
+      return;
+    }
+
+    var tree = temp.trees[metric];
+    var range = [Infinity, 0];
+    var hierarchy = d3.hierarchy(tree, d => d.children)
+      .eachBefore(d => {
+        d.value =
+          (d.parent ? d.parent.value : 0) + (d.data.length ? d.data.length : 0);
+        if (d.value < range[0]) range[0] = d.value;
+        if (d.value > range[1]) range[1] = d.value;
+      })
+      .each(d => (d.value /= range[1]));
+    var source = d3.tree()(hierarchy);
+    console.log(source);
+    var links = source.links();
+    var link = g
+      .select("g.links")
+      .selectAll("path")
+      .data(links);
+    var nodes = hierarchy.descendants();
+    var node = g
+      .select("g.nodes")
+      .selectAll("g")
+      .data(nodes, d => d.data._guid);
+
+    force.on("tick", function() {
+      var k = 6;
+      link
+          .each(function(d) { d.source.y -= k, d.target.y += k; })
+          .attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return d.source.y; })
+          .attr("x2", function(d) { return d.target.x; })
+          .attr("y2", function(d) { return d.target.y; });
+      node
+          .attr("cx", function(d) { return d.x; })
+          .attr("cy", function(d) { return d.y; });
+    });
+    force.nodes(nodes);
+    force.force('link').links(links);
+    force.alpha(0.3).alphaTarget(0).restart();
+    redrawTree();
+  }
+
+  function redrawTree(){
+    // var size = session.style.widgets['physics-tree-leaf-node-size'],
+    //     ncv  = session.style.widgets['node-color-variable'];
+    //
+    // if(ncv === 'None'){
+    //   var color = session.style.widgets['node-color'];
+    //   tree.eachLeafNode(d => d3.select(d).attr('r', size).style('fill', color));
+    // } else {
+    //   var ncm = temp.style.nodeColorMap;
+    //   tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
+    //     var id = data.data.id;
+    //     var match = session.data.nodes.find(node => node.id === id);
+    //     if(match){
+    //       return ncm(match[ncv]);
+    //     } else {
+    //       return color;
+    //     }
+    //   }));
+    // }
+    //
+    // tagSelected();
+  }
+
+  function select(d){
+    var e = d3.event;
+    var n = d[0].data;
+    e.preventDefault();
+    if(e.ctrlKey){
+      session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
+    } else {
+      session.data.nodes.forEach(node => {
+        if(node.id === n.id){
+          node.selected = !n.selected;
+        } else {
+          node.selected = false;
+        }
+      });
+    }
+    $window.trigger('node-selected');
+  }
+
+  function contextMenu(d){
+    var e = d3.event;
+    e.preventDefault();
+    hideTooltip();
+    var menu = d3.select('#physics-tree-context-menu');
+    d3.select('#physics-tree-reroot').on('click', function(){
+      tree.setData(d[0].data.reroot());
+      menu.style('z-index', -1).style('display', 'none');
+    });
+    d3.select('#physics-tree-rotate').on('click', function(){
+      tree.setData(d[0].data.rotate().getRoot());
+      menu.style('z-index', -1).style('display', 'none');
+    });
+    d3.select('#physics-tree-flip').on('click', function(){
+      tree.setData(d[0].data.rotate(true).getRoot());
+      menu.style('z-index', -1).style('display', 'none');
+    });
+    menu
+      .style('top', e.offsetY + 'px')
+      .style('left', e.offsetX + 'px')
+      .style('z-index', 1000)
+      .style('display', 'block');
+  }
+
+  function hideContext(){
+    var menu = d3.select('#physics-tree-context-menu');
+    menu
+      .transition().duration(100)
+      .style('opacity', 0)
+      .on('end', () => menu.style('z-index', -1));
+  }
+
+  function tooltip(d){
+    if(session.style.widgets['physics-tree-tooltip-show']){
+      var e = d3.event;
+      e.preventDefault();
+      d3.select('#tooltip')
+        .text(d[0].data.id)
+        .style('top', e.pageY + 'px')
+        .style('left', (e.pageX+5) + 'px')
+        .style('z-index', 1000)
+        .style('opacity', 1);
+    }
+  }
+
+  function hideTooltip(){
+    var tooltip = d3.select('#tooltip');
+    tooltip
+      .transition().duration(100)
+      .style('opacity', 0)
+      .on('end', () => tooltip.style('z-index', -1));
+  }
+
+  $('#toggle-physics-tree-settings').on('click', function(){
+    var pane = $('#physics-tree-settings-pane');
+    if(pane.is(':visible')){
+      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    } else {
+      pane.show(0, function(){ pane.animate({left: '0px'}); });
+    }
+  });
+
+  $('#physics-tree-type').on('change', function(){
+    session.style.widgets['physics-tree-type'] = this.value;
+    tree.setType(session.style.widgets['physics-tree-type']);
+  });
+
+  $('#physics-tree-layout-vertical').parent().on('click', function(){
+    session.style.widgets['physics-tree-layout-vertical'] = true;
+    session.style.widgets['physics-tree-layout-horizontal'] = false;
+    session.style.widgets['physics-tree-layout-circular'] = false;
+    tree.setLayout('vertical').recenter();
+    $('.hideForCircular').slideDown();
+  });
+
+  $('#physics-tree-layout-horizontal').parent().on('click', function(){
+    session.style.widgets['physics-tree-layout-vertical'] = false;
+    session.style.widgets['physics-tree-layout-horizontal'] = true;
+    session.style.widgets['physics-tree-layout-circular'] = false;
+    tree.setLayout('horizontal').recenter();
+    $('.hideForCircular').slideDown();
+  });
+
+  $('#physics-tree-layout-circular').parent().on('click', function(){
+    session.style.widgets['physics-tree-layout-vertical'] = false;
+    session.style.widgets['physics-tree-layout-horizontal'] = false;
+    session.style.widgets['physics-tree-layout-circular'] = true;
+    tree.setLayout('circular').recenter();
+    $('.hideForCircular').slideUp();
+  });
+
+  $('#physics-tree-vertical-stretch').on('input', function(){
+    var val = parseFloat(this.value);
+    session.style.widgets['physics-tree-vertical-stretch'] = val;
+    var cached = tree.animation;
+    tree.setAnimation(0);
+    tree.setVStretch(val);
+    tree.setAnimation(cached);
+  });
+
+  $('#physics-tree-horizontal-stretch').on('input', function(){
+    var val = parseFloat(this.value);
+    session.style.widgets['physics-tree-horizontal-stretch'] = val;
+    var cached = tree.animation;
+    tree.setAnimation(0);
+    tree.setHStretch(val);
+    tree.setAnimation(cached);
+  });
+
+  $('#physics-tree-ruler-show').parent().on('click', function(){
+    session.style.widgets['physics-tree-ruler-hide'] = false;
+    tree.setRuler(true);
+  });
+
+  $('#physics-tree-ruler-hide').parent().on('click', function(){
+    session.style.widgets['physics-tree-ruler-hide'] = true;
+    tree.setRuler(false);
+  });
+
+  $('#physics-tree-mode-square').parent().on('click', function(){
+    session.style.widgets['physics-tree-mode-square'] = true;
+    session.style.widgets['physics-tree-mode-smooth'] = false;
+    session.style.widgets['physics-tree-mode-straight'] = false;
+    tree.setMode('square');
+  });
+
+  $('#physics-tree-mode-smooth').parent().on('click', function(){
+    session.style.widgets['physics-tree-mode-square'] = false;
+    session.style.widgets['physics-tree-mode-smooth'] = true;
+    session.style.widgets['physics-tree-mode-straight'] = false;
+    tree.setMode('smooth');
+  });
+
+  $('#physics-tree-mode-straight').parent().on('click', function(){
+    session.style.widgets['physics-tree-mode-square'] = false;
+    session.style.widgets['physics-tree-mode-smooth'] = false;
+    session.style.widgets['physics-tree-mode-straight'] = true;
+    tree.setMode('straight');
+  });
+
+  $('#physics-tree-branch-nodes-show').parent().on('click', function(){
+    session.style.widgets['physics-tree-branch-nodes-hide'] = false;
+    tree.setBranchNodes(true);
+  });
+
+  $('#physics-tree-branch-nodes-hide').parent().on('click', function(){
+    session.style.widgets['physics-tree-branch-nodes-hide'] = true;
+    tree.setBranchNodes(false);
+  });
+
+  $('#physics-tree-branch-distances-show').parent().on('click', function(){
+    session.style.widgets['physics-tree-branch-distances-hide'] = false;
+    $('.physics-tree-branch-distance-row').slideDown();
+    tree.setBranchDistances(true);
+  });
+
+  $('#physics-tree-branch-distances-hide').parent().on('click', function(){
+    session.style.widgets['physics-tree-branch-distances-hide'] = true;
+    $('.physics-tree-branch-distance-row').slideUp();
+    tree.setBranchDistances(false);
+  });
+
+  $('#physics-tree-round-true').parent().on('click', function(){
+    session.style.widgets['physics-tree-round-true'] = true;
+    tree.eachBranchDistance(function(label, data){
+      d3.select(label).text(Math.round(data.target.data.length));
+    });
+  });
+
+  $('#physics-tree-round-false').parent().on('click', function(){
+    session.style.widgets['physics-tree-round-true'] = false;
+    tree.redraw();
+  });
+
+  $('#physics-tree-branch-distance-size').on('input', function(){
+    var speed = tree.animation;
+    tree.animation = 0;
+    var size = parseFloat(this.value);
+    session.style.widgets['physics-tree-branch-distance-size'] = size;
+    tree.eachBranchDistance(function(label, data){
+      d3.select(label).style('font-size', size+'px');
+    });
+    tree.animation = speed;
+  });
+
+  $('#physics-tree-leaf-node-show').parent().on('click', function(){
+    session.style.widgets['physics-tree-leaf-node-show'] = true;
+    $('.physics-tree-leaf-node-row').slideDown();
+    tree.setLeafNodes(true);
+  });
+
+  $('#physics-tree-leaf-node-hide').parent().on('click', function(){
+    session.style.widgets['physics-tree-leaf-node-show'] = false;
+    $('.physics-tree-leaf-node-row').slideUp();
+    tree.setLeafNodes(false);
+  });
+
+  $('#physics-tree-leaf-node-size').on('input', function(){
+    var speed = tree.animation;
+    tree.animation = 0;
+    var size = parseFloat(this.value);
+    session.style.widgets['physics-tree-leaf-node-size'] = size;
+    tree.eachLeafNode(function(node, data){
+      d3.select(node).attr('r', size);
+    });
+    tree.animation = speed;
+  });
+
+  $('#physics-tree-tooltip-show').parent().on('click', function(){
+    session.style.widgets['physics-tree-tooltip-show'] = true;
+  });
+
+  $('#physics-tree-tooltip-hide').parent().on('click', function(){
+    session.style.widgets['physics-tree-tooltip-show'] = false;
+  });
+
+  $('#physics-tree-leaf-label-show').parent().on('click', function(){
+    session.style.widgets['physics-tree-leaf-label-show'] = true;
+    $('#physics-tree-leaf-label-size-row').slideDown();
+    tree.setLeafLabels(true);
+  });
+
+  $('#physics-tree-leaf-label-hide').parent().on('click', function(){
+    session.style.widgets['physics-tree-leaf-label-show'] = false;
+    $('#physics-tree-leaf-label-size-row').slideUp();
+    tree.setLeafLabels(false);
+  });
+
+  $('#physics-tree-leaf-label-size').on('input', function(){
+    var speed = tree.animation;
+    tree.animation = 0;
+    var size = parseFloat(this.value);
+    session.style.widgets['physics-tree-leaf-label-size'] = size;
+    tree.eachLeafLabel(function(label, data){
+      d3.select(label).style('font-size', size+'px');
+    });
+    tree.animation = speed;
+  });
+
+  $('#physics-tree-export-filetype').on('change', function(){
+    if(this.value === 'svg' || this.value === 'nwk'){
+      $('#physics-tree-export-advanced-button').slideUp();
+    } else {
+      $('#physics-tree-export-advanced-button').slideDown();
+    }
+  });
+
+  $('#physics-tree-export-scale').on('input', function(){
+    var scale = parseFloat(this.value);
+    var wrapper = $('#physics-tree').parent();
+    $('#physics-tree-export-dimensions').text(
+      Math.round(wrapper.width() *scale)+'x'+
+      Math.round(wrapper.height()*scale)+'px'
+    );
+  }).trigger('input');
+
+  $('#physics-tree-export').on('click', function(){
+    var filetype = $('#physics-tree-export-file-type').val();
+    var filename = $('#physics-tree-export-file-name').val();
+    if(filetype === 'nwk'){
+      var blob = new Blob([temp.trees[session.style.widgets['default-distance-metric']].toNewick()], {type: 'application/newick;charset=utf-8'});
+      saveAs(blob, $('#physics-tree-export-file-name').val() + '.nwk');
+    } else if(filetype === 'svg'){
+      var blob = new Blob([MT.unparseSVG($('#physics-tree svg')[0])], {type: 'image/svg+xml;charset=utf-8'});
+      saveAs(blob, $('#physics-tree-export-file-name').val() + '.svg');
+    } else {
+      var $root = $('#physics-tree svg');
+      var root = $root[0];
+      var watermark = d3.select(root).append('text')
+        .text('MicrobeTrace')
+        .attr('x', $root.width()  - 150)
+        .attr('y', $root.height() - 20)
+        .attr('class', 'watermark');
+      saveSvgAsPng(root, filename + '.' + filetype, {
+        scale: parseFloat($('#physics-tree-export-scale').val()),
+        backgroundColor: session.style.widgets['background-color'],
+        encoderType: 'image/' + filetype,
+        encoderOptions: parseFloat($('#physics-tree-export-quality').val())
+      }).then(() => watermark.remove());
+    }
+  });
+
+  $('#physics-tree-fitbutton').on('click', function(){ tree.recenter(); });
+
+  function tagSelected(){
+    tree.eachLeafNode(function(circle, data){
+      var node = session.data.nodes.find(d => d.id === data.data.id);
+      if(node.selected){
+        d3.select(circle)
+          .style('stroke', session.style.widgets['selected-color'])
+          .style('stroke-width', 2);
+      } else {
+        d3.select(circle)
+          .style('stroke', '#ffffff')
+          .style('stroke-width', 1);
+      }
+    });
+  }
+
+  $window
+    .on('node-selected', tagSelected)
+    .on('node-color-change', redrawTree)
+    .on('background-color-change', function(){
+      $('#physics-tree svg').parent().css('background-color', session.style.widgets['background-color']);
+    });
+
+  $('#physics-tree svg').parent().css('background-color', session.style.widgets['background-color']);
+
+  layout.on('stateChanged', function(){
+    if($('#physics-tree').length){
+      redrawTree();
+      var wrapper = $('#physics-tree').parent();
+      $('#physics-tree-export-width' ).val(wrapper.width());
+      $('#physics-tree-export-height').val(wrapper.height());
+    }
+  });
+
+  drawTree();
+// })();
+  </script>

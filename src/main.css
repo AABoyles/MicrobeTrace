@@ -747,3 +747,9 @@ td {
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
 }
+
+/* Physics Tree */
+#physics-tree {
+  width: 100%;
+  height: 100%;
+}
