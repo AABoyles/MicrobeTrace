@@ -76,7 +76,7 @@
     "moment": "^2.24.0",
     "open-iconic": "^1.1.1",
     "papaparse": "^4.6.3",
-    "patristic": "^0.3.8",
+    "patristic": "^0.3.9",
     "pdfmake": "^0.1.57",
     "plotly.js": "^1.48.3",
     "postcss-cli": "^6.1.2",
@@ -84,7 +84,7 @@
     "save-svg-as-png": "^1.4.14",
     "screenfull": "^3.3.2",
     "tabulator-tables": "^4.2.7",
-    "tidytree": "^0.3.5",
+    "tidytree": "^0.3.6",
     "tn93": "^0.2.2",
     "xlsx": "^0.14.3",
     "xss": "^1.0.6"
