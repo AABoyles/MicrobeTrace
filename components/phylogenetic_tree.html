@@ -32,7 +32,7 @@
                     <label for="tree-type">Type</label>
                   </div>
                   <div class="col-9">
-                    <select id="tree-type" class="form-control">
+                    <select id="tree-type" class="form-control form-control-sm">
                       <option value="tree">Tree</option>
                       <option value="weighted" selected>Weighted Dendrogram</option>
                       <option value="dendrogram">Unweighted Dendrogram</option>
@@ -55,19 +55,6 @@
                     </div>
                   </div>
                 </div>
-                <div class="form-group row hideForCircular" title="Would you like to see a ruler indicating patristic distances next to your tree?">
-                  <div class="col-3">Ruler</div>
-                  <div class="col-9">
-                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-ruler" id="tree-ruler-show" autocomplete="off" checked> Show
-                      </label>
-                      <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-ruler" id="tree-ruler-hide" autocomplete="off"> Hide
-                      </label>
-                    </div>
-                  </div>
-                </div>
                 <div class="form-group row" title="Would you like to vertically stretch (or squish) the Tree?">
                   <div class="col-3">
                     <label for="tree-vertical-stretch">Vertical Stretch</label>
@@ -82,6 +69,19 @@
                   </div>
                   <div class="col-9">
                     <input id="tree-horizontal-stretch" type="range" min="0.1" max="10" value="1" step="0.1" />
+                  </div>
+                </div>
+                <div class="form-group row hideForCircular" title="Would you like to see a ruler indicating patristic distances next to your tree?">
+                  <div class="col-3">Ruler</div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="tree-ruler" id="tree-ruler-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="tree-ruler" id="tree-ruler-hide" autocomplete="off"> Hide
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -135,7 +135,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="form-group row" title="Would you like to round distances in the tree to integers?">
+                <div class="form-group row tree-branch-distance-row" title="Would you like to round distances in the tree to integers?">
                   <div class="col-3">Round Labels</div>
                   <div class="col-9">
                     <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
@@ -148,7 +148,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="form-group row" title="How big should the branch distance labels be?">
+                <div class="form-group row tree-branch-distance-row" title="How big should the branch distance labels be?">
                   <div class="col-3">
                     <label for="tree-branch-distance-size">Label Size</label>
                   </div>
@@ -178,12 +178,27 @@
                     </div>
                   </div>
                 </div>
-                <div class="form-group row">
+                <div class="form-group row tree-leaf-node-row">
                   <div class="col-3">
                     <label for="tree-leaf-node-size">Node Size</label>
                   </div>
                   <div class="col-9">
                     <input id="tree-leaf-node-size" type="range" min="1" max="32" value="9" step="1" />
+                  </div>
+                </div>
+                <div class="form-group row tree-leaf-node-row">
+                  <div class="col-3">
+                    <label class="form-switch">Tooltip</label>
+                  </div>
+                  <div class="col-9">
+                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                      <label class="btn btn-light btn-sm col active">
+                        <input type="radio" name="tree-tooltips" id="tree-tooltip-show" autocomplete="off" checked> Show
+                      </label>
+                      <label class="btn btn-light btn-sm col">
+                        <input type="radio" name="tree-tooltips" id="tree-tooltip-hide" autocomplete="off"> Hide
+                      </label>
+                    </div>
                   </div>
                 </div>
                 <div class="form-group row">
@@ -199,27 +214,12 @@
                     </div>
                   </div>
                 </div>
-                <div class="form-group row">
+                <div id="tree-leaf-label-size-row" class="form-group row">
                   <div class="col-3">
                     <label for="tree-leaf-label-size">Label Size</label>
                   </div>
                   <div class="col-9">
                     <input id="tree-leaf-label-size" type="range" min="1" max="32" value="6" step="1" />
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="col-3">
-                    <label class="form-switch">Tooltip</label>
-                  </div>
-                  <div class="col-9">
-                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                      <label class="btn btn-light btn-sm col active">
-                        <input type="radio" name="tree-tooltips" id="tree-tooltip-show" autocomplete="off" checked> Show
-                      </label>
-                      <label class="btn btn-light btn-sm col">
-                        <input type="radio" name="tree-tooltips" id="tree-tooltip-hide" autocomplete="off"> Hide
-                      </label>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -297,7 +297,6 @@
   <script>
     var tree;
 (function(){
-
 
   function drawTree(){
     var panel = $('#tree').parent();
@@ -381,7 +380,6 @@
     var e = d3.event;
     e.preventDefault();
     hideTooltip();
-    if(d[0].data.isLeaf()) return;
     var menu = d3.select('#tree-context-menu');
     d3.select('#tree-reroot').on('click', function(){
       tree.setData(d[0].data.reroot());
@@ -530,11 +528,13 @@
 
   $('#tree-branch-distances-show').parent().on('click', function(){
     session.style.widgets['tree-branch-distances-hide'] = false;
+    $('.tree-branch-distance-row').slideDown();
     tree.setBranchDistances(true);
   });
 
   $('#tree-branch-distances-hide').parent().on('click', function(){
     session.style.widgets['tree-branch-distances-hide'] = true;
+    $('.tree-branch-distance-row').slideUp();
     tree.setBranchDistances(false);
   });
 
@@ -563,11 +563,13 @@
 
   $('#tree-leaf-node-show').parent().on('click', function(){
     session.style.widgets['tree-leaf-node-show'] = true;
+    $('.tree-leaf-node-row').slideDown();
     tree.setLeafNodes(true);
   });
 
   $('#tree-leaf-node-hide').parent().on('click', function(){
     session.style.widgets['tree-leaf-node-show'] = false;
+    $('.tree-leaf-node-row').slideUp();
     tree.setLeafNodes(false);
   });
 
@@ -582,13 +584,23 @@
     tree.animation = speed;
   });
 
+  $('#tree-tooltip-show').parent().on('click', function(){
+    session.style.widgets['tree-tooltip-show'] = true;
+  });
+
+  $('#tree-tooltip-hide').parent().on('click', function(){
+    session.style.widgets['tree-tooltip-show'] = false;
+  });
+
   $('#tree-leaf-label-show').parent().on('click', function(){
     session.style.widgets['tree-leaf-label-show'] = true;
+    $('#tree-leaf-label-size-row').slideDown();
     tree.setLeafLabels(true);
   });
 
   $('#tree-leaf-label-hide').parent().on('click', function(){
     session.style.widgets['tree-leaf-label-show'] = false;
+    $('#tree-leaf-label-size-row').slideUp();
     tree.setLeafLabels(false);
   });
 
@@ -601,14 +613,6 @@
       d3.select(label).style('font-size', size+'px');
     });
     tree.animation = speed;
-  });
-
-  $('#tree-tooltip-show').parent().on('click', function(){
-    session.style.widgets['tree-tooltip-show'] = true;
-  });
-
-  $('#tree-tooltip-hide').parent().on('click', function(){
-    session.style.widgets['tree-tooltip-show'] = false;
   });
 
   $('#tree-export-filetype').on('change', function(){
