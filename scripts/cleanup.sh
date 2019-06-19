@@ -2,8 +2,8 @@
 
 echo 'Removing Compressed Files...'
 
-rm scripts/*.br scripts/*.gz
-rm stylesheets/*.br stylesheets/*.gz
-rm workers/*.br workers/*.gz
-rm data/*.br data/*.gz
 rm components/*.br components/*.gz
+rm data/*.br data/*.gz
+rm dist/*.br dist/*.gz
+rm vendor/*.br vendor/*.gz
+rm workers/*.br workers/*.gz
