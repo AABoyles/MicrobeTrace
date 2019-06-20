@@ -131,6 +131,7 @@ MT.defaultWidgets = {
   "node-symbol": "symbolCircle",
   "node-symbol-variable": "None",
   "node-tooltip-variable": "id",
+  "physics-tree-gravity": 0.05,
   "scatterplot-xVar": "index",
   "scatterplot-yVar": "distance",
   "scatterplot-logScale": false,
