@@ -15,64 +15,44 @@
   <div id="physics-tree-settings-pane" class="left-pane">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item">
-        <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#physics-tree-node-settings" role="tab" aria-controls="physics-tree-node-settings" aria-selected="true">Nodes</a>
+        <a class="nav-link active" id="physics-tree-nodes-tab" data-toggle="tab" href="#physics-tree-node-settings" role="tab" aria-controls="physics-tree-node-settings" aria-selected="true">Nodes</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" id="branches-tab" data-toggle="tab" href="#physics-tree-branch-settings" role="tab" aria-controls="physics-tree-branch-settings" aria-selected="false">branches</a>
+        <a class="nav-link" id="physics-tree-branches-tab" data-toggle="tab" href="#physics-tree-branch-settings" role="tab" aria-controls="physics-tree-branch-settings" aria-selected="false">Branches</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" id="physics-tree-tab" data-toggle="tab" href="#physics-tree-settings" role="tab" aria-controls="physics-tree-settings" aria-selected="false">Tree</a>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane fade show active" id="physics-tree-node-settings" role="tabpanel" aria-labelledby="nodes-tab">
-        <div class="accordion" id="node-controls-accordion">
+      <div class="tab-pane fade show active" id="physics-tree-node-settings" role="tabpanel" aria-labelledby="physics-tree-nodes-tab">
+        <div class="accordion" id="physics-tree-node-controls-accordion">
           <div class="card">
             <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#node-controls-labels" aria-expanded="true" aria-controls="node-controls-labels" style="color:#495057">Labels and Tooltips</button>
+              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-node-controls-labels" aria-expanded="true" aria-controls="physics-tree-node-controls-labels" style="color:#495057">Labels and Tooltips</button>
             </div>
-            <div id="node-controls-labels" class="collapse show" data-parent="#node-controls-accordion">
+            <div id="physics-tree-node-controls-labels" class="collapse show" data-parent="#physics-tree-node-controls-accordion">
               <div class="card-body">
-                <div class="form-group row" title="What field should be displayed as a label for the node?">
-                  <div class="col-4"><label for="node-label-variable">Label</label></div>
-                  <div class="col-8"><select id="node-label-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
-                </div>
-                <div class="form-group row node-label-row" title="How big should node labels be?">
-                  <div class="col-4"><label for="node-label-size">Label Size</label></div>
-                  <div class="col-8"><input type="range" id="node-label-size" min="6" value="16" max="72"></input></div>
-                </div>
-                <div class="form-group row node-label-row" title="How should the labels be oriented relative to their nodes?">
-                  <div class="col-4"><label for="node-label-orientation">Orientation</label></div>
-                  <div class="col-8">
-                    <select id="node-label-orientation" class="custom-select custom-select-sm">
-                      <option selected>Right</option>
-                      <option>Left</option>
-                      <option>Top</option>
-                      <option>Bottom</option>
-                      <option>Middle</option>
-                    </select>
-                  </div>
-                </div>
                 <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
-                  <div class="col-4"><label for="node-tooltip-variable">Tooltip</label></div>
-                  <div class="col-8"><select id="node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+                  <div class="col-4"><label for="physics-tree-node-tooltip-variable">Tooltip</label></div>
+                  <div class="col-8"><select id="physics-tree-node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
                 </div>
               </div>
             </div>
           </div>
           <div class="card">
             <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#node-controls-shapes" aria-expanded="false" aria-controls="node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+              <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#physics-tree-node-controls-shapes" aria-expanded="false" aria-controls="physics-tree-node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
             </div>
-            <div id="node-controls-shapes" class="collapse" data-parent="#node-controls-accordion">
+            <div id="physics-tree-node-controls-shapes" class="collapse" data-parent="#physics-tree-node-controls-accordion">
               <div class="card-body">
                 <div class="form-group row" title="Which variable should determine the shape of the node?">
-                  <div class="col-4"><label for="node-symbol-variable">Shape By</label></div>
-                  <div class="col-8"><select id="node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+                  <div class="col-4"><label for="physics-tree-node-symbol-variable">Shape By</label></div>
+                  <div class="col-8"><select id="physics-tree-node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
                 </div>
-                <div id="node-symbol-row" class="form-group row" title="What shape should the nodes be?">
-                  <div class="col-4"><label for="node-symbol">Shape</label></div>
-                  <div class="col-8"><select id="node-symbol" class="custom-select custom-select-sm">
+                <div id="physics-tree-node-symbol-row" class="form-group row" title="What shape should the nodes be?">
+                  <div class="col-4"><label for="physics-tree-node-symbol">Shape</label></div>
+                  <div class="col-8"><select id="physics-tree-node-symbol" class="custom-select custom-select-sm">
                     <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
                     <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
                     <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
@@ -94,12 +74,12 @@
                   </select></div>
                 </div>
                 <div class="form-group row" title="Which variable should determine the size of the node?">
-                  <div class="col-4"><label for="node-radius-variable">Size By</label></div>
-                  <div class="col-8"><select id="node-radius-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+                  <div class="col-4"><label for="physics-tree-node-radius-variable">Size By</label></div>
+                  <div class="col-8"><select id="physics-tree-node-radius-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
                 </div>
                 <div class="form-group row" title="How big should the nodes be?">
-                  <div class="col-4"><label for="node-radius">Size</label></div>
-                  <div class="col-8"><input type="range" id="node-radius" min="100" value="250" step="1" max="5000" /></div>
+                  <div class="col-4"><label for="physics-tree-node-radius">Size</label></div>
+                  <div class="col-8"><input type="range" id="physics-tree-node-radius" min="100" value="250" step="1" max="5000" /></div>
                 </div>
               </div>
             </div>
@@ -111,72 +91,34 @@
           </div>
         </div>
       </div>
-      <div class="tab-pane fade" id="physics-tree-branch-settings" role="tabpanel" aria-labelledby="branches-tab">
-        <div class="accordion" id="branch-controls-accordion">
+      <div class="tab-pane fade" id="physics-tree-branch-settings" role="tabpanel" aria-labelledby="physics-tree-branches-tab">
+        <div class="accordion" id="physics-tree-branch-controls-accordion">
           <div class="card">
             <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#branch-controls-labels" aria-expanded="true" aria-controls="branch-controls-labels" style="color:#495057">Labels and Tooltips</button>
+              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-branch-controls-shapes" aria-expanded="false" aria-controls="physics-tree-branch-controls-shapes" style="color:#495057">Shapes and Sizes</button>
             </div>
-            <div id="branch-controls-labels" class="collapse show" data-parent="#branch-controls-accordion">
+            <div id="physics-tree-branch-controls-shapes" class="collapse show" data-parent="#physics-tree-branch-controls-accordion">
               <div class="card-body">
-                <div class="form-group row" title="What data should be displayed when you hover over a branch?">
-                  <div class="col-4"><label for="branch-tooltip-variable">Tooltip</label></div>
-                  <div class="col-8"><select id="branch-tooltip-variable" class="custom-select custom-select-sm branchVariables"><option>None</option></select></div>
-                </div>
-                <div class="form-group row" title="What data should be displayed when you hover over a branch?">
-                  <div class="col-4"><label for="branch-label-variable">Label</label></div>
-                  <div class="col-8"><select id="branch-label-variable" class="custom-select custom-select-sm branchVariables"><option>None</option></select></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#branch-controls-shapes" aria-expanded="false" aria-controls="branch-controls-shapes" style="color:#495057">Shapes and Sizes</button>
-            </div>
-            <div id="branch-controls-shapes" class="collapse" data-parent="#branch-controls-accordion">
-              <div class="card-body">
-                <div id="branch-transparency-row" class="form-group row" title="How transparent should the branches be?">
-                  <div class="col-4"><label for="branch-opacity">Transparency</label></div>
-                  <div class="col-8"><input type="range" id="branch-opacity" min="0" max="1" value="0" step="0.01" /></div>
-                </div>
-                <div class="form-group row" title="Which variable should determine the width of a branch?">
-                  <div class="col-4"><label for="branch-width-variable">Width By</label></div>
-                  <div class="col-8"><select id="branch-width-variable" class="custom-select custom-select-sm branchVariables"><option>None</option></select></div>
-                </div>
-                <div id="branch-reciprocalthickness-row" class="form-group row" title="Should branch widths be proportioned to the reciprocal of this variable?">
-                  <div class="col-4">Reciprocal</div>
+                <div class="form-group row" title="What type of branch weights do you wish to apply?">
+                  <div class="col-4"><label for="physics-tree-type">Tree Type</label></div>
                   <div class="col-8">
-                    <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                      <label class="btn btn-light active">
-                        <input type="radio" name="branch-reciprocal-options" id="branch-width-reciprocal" autocomplete="off" checked> Reciprocal
-                      </label>
-                      <label class="btn btn-light">
-                        <input type="radio" name="branch-reciprocal-options" id="branch-width-nonreciprocal" autocomplete="off"> Non-reciprocal
-                      </label>
-                    </div>
+                    <select id="physics-tree-type" class="form-control form-control-sm">
+                      <option value="tree" selected>Tree</option>
+                      <option value="weighted">Weighted Dendrogram</option>
+                    </select>
                   </div>
-                </div>
-                <div class="form-group row" title="How thick should the branches be?">
-                  <div class="col-4"><label for="branch-width">Width</label></div>
-                  <div class="col-8"><input type="range" id="branch-width" min="0.3" max="30" step=".3" value="3" /></div>
                 </div>
                 <div class="form-group row" title="How long should branches be?">
-                  <div class="col-4"><label for="branch-length">Length</label></div>
-                  <div class="col-8"><input type="range" id="branch-length" min = "0" max="200" value="50" /></div>
+                  <div class="col-4"><label for="physics-tree-branch-length">Length</label></div>
+                  <div class="col-8"><input type="range" id="physics-tree-branch-length" min = "0" max="200" value="50" /></div>
                 </div>
-                <div class="form-group row hideForHIVTrace" title="Shoul arrowheads pointing to the">
-                  <div class="col-4">Arrowheads</div>
-                  <div class="col-8">
-                    <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                      <label class="btn btn-light active col">
-                        <input type="radio" name="physics-tree-directionality" id="branch-undirected" autocomplete="off" checked> Hide
-                      </label>
-                      <label class="btn btn-light col">
-                        <input type="radio" name="physics-tree-directionality" id="branch-directed" autocomplete="off"> Show
-                      </label>
-                    </div>
-                  </div>
+                <div class="form-group row" title="How thick should the branches be?">
+                  <div class="col-4"><label for="physics-tree-branch-width">Width</label></div>
+                  <div class="col-8"><input type="range" id="physics-tree-branch-width" min="0.3" max="30" step=".3" value="3" /></div>
+                </div>
+                <div id="physics-tree-branch-transparency-row" class="form-group row" title="How transparent should the branches be?">
+                  <div class="col-4"><label for="physics-tree-branch-opacity">Transparency</label></div>
+                  <div class="col-8"><input type="range" id="physics-tree-branch-opacity" min="0" max="1" value="0" step="0.01" /></div>
                 </div>
               </div>
             </div>
@@ -192,41 +134,13 @@
         <div class="accordion" id="physics-tree-controls-accordion">
           <div class="card">
             <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-labels" aria-expanded="true" aria-controls="physics-tree-controls-labels" style="color:#495057">Display</button>
-            </div>
-            <div id="physics-tree-controls-labels" class="collapse show" data-parent="#physics-tree-controls-accordion">
-              <div class="card-body">
-                <div class="form-group row" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
-                  <div class="col-4">Neighbors</div>
-                  <div class="col-8">
-                    <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                      <label class="btn btn-light active col" title="Do not highlight anything.
-  Recommended for performance reasons.">
-                        <input type="radio" name="physics-tree-highlight" id="dont-highlight-neighbors" autocomplete="off" checked> Normal
-                      </label>
-                      <label class="btn btn-light col" title="Highlight adjacent branches and neighboring nodes when you hover over a node.
-  Note that this may cause slow performance on larger physics-trees.">
-                        <input type="radio" name="physics-tree-highlight" id="highlight-neighbors" autocomplete="off"> Highlighted
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header p-0">
               <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-physics" aria-expanded="false" aria-controls="physics-tree-controls-physics" style="color:#495057">Physics</button>
             </div>
-            <div id="physics-tree-controls-physics" class="collapse" data-parent="#physics-tree-controls-accordion">
+            <div id="physics-tree-controls-physics" class="collapse show" data-parent="#physics-tree-controls-accordion">
               <div class="card-body">
                 <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
-                  <div class="col-4"><label for="node-charge">Charge</label></div>
-                  <div class="col-8"><input type="range" id="node-charge" min="0" max="400" value="200" /></div>
-                </div>
-                <div class="form-group row" title="How attractive is the mass of the graph?">
-                  <div class="col-4"><label for="physics-tree-gravity">Gravity</label></div>
-                  <div class="col-8"><input type="range" id="physics-tree-gravity" min="0.025" max="1" value="0.05" step="0.025" /></div>
+                  <div class="col-4"><label for="physics-tree-charge">Charge</label></div>
+                  <div class="col-8"><input type="range" id="physics-tree-charge" min="0" max="400" value="200" /></div>
                 </div>
                 <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
                   <div class="col-4"><label for="physics-tree-friction">Friction</label></div>
@@ -322,21 +236,21 @@
 
   var g = d3.select('svg#physics-tree').append('g');
 
-  g.append('g').attr('class', 'links');
+  g.append('g').attr('class', 'branches');
   g.append('g').attr('class', 'nodes');
 
   var force = d3.forceSimulation()
-    .force('link', d3.forceLink().strength(1)
-      //.distance(l => l.origin.length * session.style.widgets['physics-tree-link-length'])
-    )
+    .force('branch', d3.forceLink().strength(1))
     .force('charge', d3.forceManyBody()
-      //.strength(-session.style.widgets['physics-tree-node-charge'])
+      .strength(-session.style.widgets['physics-tree-charge'])
     )
-    .force('gravity', d3.forceAttract()
-      .target([halfWidth, halfHeight*2])
-      .strength(session.style.widgets['physics-tree-gravity'])
-    )
-    .force('center', d3.forceCenter(halfWidth, halfHeight));
+    .force('x', d3.forceX(function(){
+      return halfWidth;
+    }).strength(0.05))
+    .force('y', d3.forceY(function(d){
+      return (halfHeight-50)*2*d.data.depth/(d.data.depth+d.data.height+1)+50;
+    }))
+    .velocityDecay(session.style.widgets['physics-tree-friction']);
 
   function drawTree(){
     var panel = $('svg#physics-tree').parent();
@@ -359,11 +273,11 @@
       })
       .each(d => (d.value /= range[1]));
     var source = d3.tree()(hierarchy);
-    var links = source.links();
-    var link = g
-      .select("g.links")
+    var branches = source.links();
+    var branch = g
+      .select("g.branches")
       .selectAll("path")
-      .data(links)
+      .data(branches)
       .enter().append('line')
       .attr('stroke', 'lightgray');
     var nodes = hierarchy.descendants();
@@ -382,9 +296,9 @@
       .attr('r', 3);
 
     force.nodes(nodes);
-    force.force('link').links(links);
+    force.force('branch').links(branches);
     force.on("tick", function() {
-      link
+      branch
           .attr("x1", function(d) { return d.source.x; })
           .attr("y1", function(d) { return d.source.y; })
           .attr("x2", function(d) { return d.target.x; })
@@ -441,11 +355,41 @@
     }
   });
 
-  $('#physics-tree-gravity').on('input', function(){
-    var v = parseFloat(this.value);
-    force.force('gravity').strength(v);
+  function updateBranchLengths(){
+    var type = session.style.widgets['physics-tree-type'];
+    var length = session.style.widgets['physics-tree-branch-length'];
+    if(type == 'tree'){
+      force.force('branch').distance(length);
+    } else {
+      force.force('branch').distance(function(l){
+        return length * l.source.data.length + 1;
+      });
+    }
     force.alpha(0.3).alphaTarget(0).restart();
-    session.style.widgets['physics-tree-gravity'] = v;
+  }
+
+  $('#physics-tree-type').on('change', function(){
+    session.style.widgets['physics-tree-type'] = this.value;
+    updateBranchLengths();
+  });
+
+  $('#physics-tree-branch-length').on('input', function(){
+    session.style.widgets['physics-tree-branch-length'] = parseFloat(this.value);
+    updateBranchLengths();
+  });
+
+  $('#physics-tree-charge').on('input', function(){
+    var v = parseFloat(this.value);
+    force.force('charge').strength(-v);
+    force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['physics-tree-charge'] = v;
+  });
+
+  $('#physics-tree-friction').on('input', function(){
+    var v = parseFloat(this.value);
+    force.velocityDecay(v);
+    force.alpha(0.3).alphaTarget(0).restart();
+    session.style.widgets['physics-tree-friction'] = v;
   });
 
   function updateNodeColors(){
