@@ -332,6 +332,8 @@
       hidetooltip: hideTooltip
     });
 
+    $('#tree').on('click', hideContext);
+
     redrawTree();
   }
 
@@ -394,10 +396,11 @@
       menu.style('z-index', -1).style('display', 'none');
     });
     menu
+      .style('display', 'block')
+      .style('opacity', 1)
       .style('top', e.offsetY + 'px')
       .style('left', e.offsetX + 'px')
-      .style('z-index', 1000)
-      .style('display', 'block');
+      .style('z-index', 1000);
   }
 
   function hideContext(){
