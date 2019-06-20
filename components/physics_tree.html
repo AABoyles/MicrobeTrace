@@ -371,7 +371,11 @@
       .select("g.nodes")
       .selectAll("g")
       .data(nodes, d => d.data._guid)
-      .enter().append('g');
+      .enter().append('g')
+      .call(d3.drag() //A bunch of mouse handlers.
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended))
     node.append('circle')
       .attr('fill', session.style.widgets['node-color'])
       .attr('stroke', '#ffffff')
@@ -390,6 +394,34 @@
       });
     });
     force.alpha(0.3).alphaTarget(0).restart();
+  }
+
+  function dragstarted(n){
+    if (!d3.event.active) force.alphaTarget(0.3).restart();
+    function setNode(d){
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+    setNode(n);
+  }
+
+  function dragged(n){
+    function updateNode(d){
+      d.fx += d3.event.dx;
+      d.fy += d3.event.dy;
+    }
+    updateNode(n);
+  }
+
+  function dragended(n){
+    if (!d3.event.active) force.alphaTarget(0);
+    function unsetNode(d){
+      if(!d.fixed){
+        d.fx = null;
+        d.fy = null;
+      }
+    }
+    unsetNode(n);
   }
 
   function hideContext(){
