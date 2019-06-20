@@ -385,6 +385,7 @@
     var menu = d3.select('#tree-context-menu');
     d3.select('#tree-reroot').on('click', function(){
       tree.setData(d[0].data.reroot());
+      $('#tree-branch-distance-size').trigger('input');
       menu.style('z-index', -1).style('display', 'none');
     });
     d3.select('#tree-rotate').on('click', function(){
