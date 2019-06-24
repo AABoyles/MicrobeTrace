@@ -53,6 +53,39 @@
         <div class="card">
           <div class="card-header p-0">
             <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
+              data-target="#choropleth-layers-choropleth" aria-expanded="true"
+              aria-controls="choropleth-layers-choropleth" style="color:#495057">Choropleth</button>
+          </div>
+          <div id="choropleth-layers-choropleth" class="collapse" data-parent="#choropleth-layers-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="What color scheme would you like the heatmap to use?">
+                <div class="col-4">Color Scheme</div>
+                <div class="col">
+                  <input type="color" id="choropleth-color-low" class="form-control form-control-sm" value="#ffffcc" />
+                </div>
+                <div class="col">
+                  <input type="color" id="choropleth-color-medium" class="form-control form-control-sm"
+                    value="#fd8d3c" />
+                </div>
+                <div class="col">
+                  <input type="color" id="choropleth-color-high" class="form-control form-control-sm" value="#800026" />
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4">
+                  <label for="choropleth-transparency">Transparency</label>
+                </div>
+                <div class="col-8">
+                  <input type="range" class="form-control-range" id="choropleth-transparency" min="0" value="0.3"
+                    max="1" step="0.01" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
               data-target="#choropleth-layers-tiles" aria-expanded="true" aria-controls="choropleth-layers-tiles"
               style="color:#495057">Online</button>
           </div>
@@ -62,7 +95,7 @@
                 <div class="col-12">
                   <div class="alert alert-warning alert-dismissible" role="alert">
                     Enabling any of the layers below will download tiles from the Internet. <a
-                      href="https://github.com/CDCgov/MicrobeTrace/wiki/Tile-choropleths">Read More.</a>
+                      href="https://github.com/CDCgov/MicrobeTrace/wiki/Tile-maps">Read More.</a>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -182,7 +215,7 @@
     aggregates: { remove: function () { }, bringToFront: function () { } }
   };
 
-  var nodes = [];
+  var nodes = MT.getVisibleNodes();
 
   var choropleth = L.map('choropleth', {
     center: [39.8, -98.5],
@@ -192,16 +225,16 @@
     preferCanvas: true
   });
 
+  var legend = L.control({ position: 'bottomleft' });
+
   var zoomer = L.control.zoom({ position: 'bottomleft' }).addTo(choropleth);
 
-  var legend = L.control({ position: 'bottomright' });
-
-  function aggregateAndRender(norefresh) {
-    if (!norefresh) nodes = MT.getVisibleNodes();
+  function aggregate(refresh, callback) {
+    if (refresh) nodes = MT.getVisibleNodes();
     var unit = session.style.widgets['choropleth-aggregate-as'];
     if (unit == 'countries') {
       if (!MT.mapData.countries) {
-        MT.getMapData('countries.json', () => aggregateAndRender(true));
+        MT.getMapData('countries.json', () => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
@@ -212,7 +245,7 @@
       });
     } else if (unit == 'states') {
       if (!MT.mapData.states) {
-        MT.getMapData('states.json', () => aggregateAndRender(true));
+        MT.getMapData('states.json', () => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
@@ -223,7 +256,7 @@
       });
     } else { //unit == 'counties'
       if (!MT.mapData.counties) {
-        MT.getMapData('counties.json', () => aggregateAndRender(true));
+        MT.getMapData('counties.json', () => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
@@ -236,6 +269,16 @@
         if (county) return county.properties.density++;
       });
     }
+    if (callback) callback();
+  }
+
+  var ramp = d3.scaleLinear().domain([0, 0.5, 1]).range([
+    session.style.widgets['choropleth-color-low'],
+    session.style.widgets['choropleth-color-medium'],
+    session.style.widgets['choropleth-color-high']
+  ]);
+
+  function render() {
     layers.aggregates.remove();
     var maxD = 0, minD = Infinity;
     var data = MT.mapData[session.style.widgets['choropleth-aggregate-as']];
@@ -246,7 +289,7 @@
       if (thing.properties.density > maxD) maxD = thing.properties.density;
     }
     var range = maxD - minD;
-    var ramp = d3.interpolateYlOrRd;
+    var opacity = 1 - session.style.widgets['choropleth-transparency'];
     layers.aggregates = L.geoJson(data, {
       style: function (a) {
         return {
@@ -254,7 +297,7 @@
           weight: 2,
           opacity: 1,
           color: '#dadde0',
-          fillOpacity: a.properties.density > 0 ? 0.7 : 0
+          fillOpacity: opacity
         }
       },
       onEachFeature: function (feature, layer) {
@@ -288,9 +331,8 @@
       canvas.height = 25;
       var context = canvas.getContext("2d");
       context.color = '#dadde0';
-      var interpolate = d3[`interpolateYlOrRd`];
       for (var i = 0; i < 256; ++i) {
-        context.fillStyle = d3.rgb(interpolate(i / 255)).hex();
+        context.fillStyle = d3.rgb(ramp(i / 255)).hex();
         context.fillRect(i, 0, 1, 25);
       }
       context.font = "bold 20px sans";
@@ -352,12 +394,45 @@
 
   $('#choropleth-aggregate-as').on('change', function () {
     session.style.widgets['choropleth-aggregate-as'] = this.value;
-    aggregateAndRender();
+    aggregate(false, render);
   });
 
   $('#choropleth-aggregate-on').on('change', function () {
     session.style.widgets['choropleth-aggregate-on'] = this.value;
-    aggregateAndRender();
+    aggregate(false, render);
+  });
+
+  function updateRamp() {
+    ramp = d3.scaleLinear().domain([0, 0.5, 1]).range([
+      session.style.widgets['choropleth-color-low'],
+      session.style.widgets['choropleth-color-medium'],
+      session.style.widgets['choropleth-color-high']
+    ]);
+  }
+
+  $("#choropleth-color-low").on('change', function () {
+    session.style.widgets["choropleth-color-low"] = this.value;
+    updateRamp();
+    render();
+  });
+
+  $("#choropleth-color-medium").on('change', function () {
+    session.style.widgets["choropleth-color-medium"] = this.value;
+    updateRamp();
+    render();
+  });
+
+  $("#choropleth-color-high").on('change', function () {
+    session.style.widgets["choropleth-color-high"] = this.value;
+    updateRamp();
+    render();
+  });
+
+  $('#choropleth-transparency').on('input', function () {
+    var v = parseFloat(this.value);
+    session.style.widgets['choropleth-transparency'] = v;
+    $('.legend canvas').css('opacity', 1 - v);
+    layers.aggregates.setStyle({ 'fillOpacity': 1 - v });
   });
 
   $('#choropleth-basemap-show').parent().on('click', function () {
@@ -427,7 +502,7 @@
     if (['png', 'jpeg', 'webp'].includes(format)) {
       leafletImage(choropleth, function (err, canvas) {
         var ctx = canvas.getContext('2d');
-        ctx.globalAlpha = 0.7;
+        ctx.globalAlpha = 1 - session.style.widgets['choropleth-transparency'];
         ctx.drawImage($('.legend canvas')[0], 10, canvas.height - 40);
         canvas.toBlob(blob => {
           saveAs(blob, $('#choropleth-export-file-name').val() + '.' + format);
@@ -449,7 +524,7 @@
 
   $window
     .on('node-visibility', function () {
-      aggregateAndRender();
+      aggregate(true, render);
     });
 
   layout.on('stateChanged', function () {
