@@ -47,7 +47,7 @@
       <div class="form-group row" title="If your data have a latitude variable, select that here.">
         <div class="col-4"><label for="map-field-lat">Latitude</label></div>
         <div class="col-8">
-          <select id="map-field-lat" class="nodeVariables custom-select custom-select-sm">
+          <select id="map-field-lat" class="nodeVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -55,7 +55,7 @@
       <div class="form-group row" title="If your data have a longitude variable, select that here.">
         <div class="col-4"><label for="map-field-lon">Longitude</label></div>
         <div class="col-8">
-          <select id="map-field-lon" class="nodeVariables custom-select custom-select-sm">
+          <select id="map-field-lon" class="nodeVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -63,7 +63,7 @@
       <div class="form-group row" title="If your data have a Census Tract variable, select that here.">
         <div class="col-4"><label for="map-field-tract">Census Tract</label></div>
         <div class="col-8">
-          <select id="map-field-tract" class="nodeVariables custom-select custom-select-sm">
+          <select id="map-field-tract" class="nodeVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -71,7 +71,7 @@
       <div class="form-group row" title="If your data have a zipcode variable, select that here.">
         <div class="col-4"><label for="map-field-zipcode">Zipcode</label></div>
         <div class="col-8">
-          <select id="map-field-zipcode" class="nodeVariables custom-select custom-select-sm">
+          <select id="map-field-zipcode" class="nodeVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -79,7 +79,7 @@
       <div class="form-group row" title="If your data have a County variable, select that here.">
         <div class="col-4"><label for="map-field-county">County</label></div>
         <div class="col-8">
-          <select id="map-field-county" class="nodeVariables custom-select custom-select-sm">
+          <select id="map-field-county" class="nodeVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -87,7 +87,7 @@
       <div class="form-group row" title="If your data have a (US) State variable, select that here.">
         <div class="col-4"><label for="map-field-state">State</label></div>
         <div class="col-8">
-          <select id="map-field-state" class="nodeVariables custom-select custom-select-sm">
+          <select id="map-field-state" class="nodeVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -95,7 +95,7 @@
       <div class="form-group row" title="If your data have a Country variable, select that here.">
         <div class="col-4"><label for="map-field-country">Country</label></div>
         <div class="col-8">
-          <select id="map-field-country" class="nodeVariables custom-select custom-select-sm">
+          <select id="map-field-country" class="nodeVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -308,7 +308,7 @@
       </div>
       <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
         <div class="col-4"><label for="map-node-tooltip-variable">Tooltip</label></div>
-        <div class="col-8"><select id="map-node-tooltip-variable" class="custom-select custom-select-sm nodeVariables">
+        <div class="col-8"><select id="map-node-tooltip-variable" class="form-control form-control-sm nodeVariables">
             <option selected>None</option>
           </select></div>
       </div>
@@ -326,7 +326,7 @@
       <div class="form-group row" title="What link data would you like displayed as a tooltip for the link?">
         <div class="col-4"><label for="map-link-tooltip-variable">Tooltip</label></div>
         <div class="col-8">
-          <select id="map-link-tooltip-variable" class="linkVariables custom-select custom-select-sm">
+          <select id="map-link-tooltip-variable" class="linkVariables form-control form-control-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -383,15 +383,8 @@
     var nodes = [];
 
     function getMapData(type, callback) {
-      var parts = type.split('.');
-      var name = parts[0], format = parts[1];
-      $.get('data/' + type, response => {
-        if (format === 'csv') {
-          MT.mapData[name] = Papa.parse(response, { header: true }).data;
-        }
-        if (format === 'json') {
-          MT.mapData[name] = response;
-        }
+      var name = type.split('.')[0];
+      MT.getMapData(type, function () {
         if (['countries', 'states', 'counties'].includes(name)) {
           layers[name] = L.geoJSON(MT.mapData[name], {
             color: '#dadde0',
@@ -400,8 +393,8 @@
             fillOpacity: name === 'countries' ? 1 : 0
           });
         }
-        callback();
-      });
+        if (callback) callback();
+      })
     }
 
     var map = L.map('map', {

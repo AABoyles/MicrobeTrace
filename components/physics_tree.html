@@ -1,58 +1,77 @@
-  <svg id="physics-tree"></svg>
+<svg id="physics-tree"></svg>
 
-  <div class="view-controls">
-    <button id="toggle-physics-tree-settings" type="button" class="btn btn-light btn-sm" data-toggle="button" title="Toggle physics-tree Settings">
-      <span class="oi oi-cog"></span>
-    </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#physics-tree-export-modal" title="Export physics-tree">
-      <span class="oi oi-data-transfer-download"></span>
-    </button>
-    <button id="physics-tree-fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Phylogenetic physics-tree">
-      <span class="oi oi-target"></span>
-    </button>
-  </div>
+<div class="view-controls">
+  <button id="toggle-physics-tree-settings" type="button" class="btn btn-light btn-sm" data-toggle="button"
+    title="Toggle physics-tree Settings">
+    <span class="oi oi-cog"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#physics-tree-export-modal"
+    title="Export physics-tree">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+  <button id="physics-tree-fitbutton" type="button" class="btn btn-light btn-sm"
+    title="Center and Scale Phylogenetic physics-tree">
+    <span class="oi oi-target"></span>
+  </button>
+</div>
 
-  <div id="physics-tree-settings-pane" class="left-pane">
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="nav-item">
-        <a class="nav-link active" id="physics-tree-nodes-tab" data-toggle="tab" href="#physics-tree-node-settings" role="tab" aria-controls="physics-tree-node-settings" aria-selected="true">Nodes</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="physics-tree-branches-tab" data-toggle="tab" href="#physics-tree-branch-settings" role="tab" aria-controls="physics-tree-branch-settings" aria-selected="false">Branches</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="physics-tree-tab" data-toggle="tab" href="#physics-tree-settings" role="tab" aria-controls="physics-tree-settings" aria-selected="false">Tree</a>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane fade show active" id="physics-tree-node-settings" role="tabpanel" aria-labelledby="physics-tree-nodes-tab">
-        <div class="accordion" id="physics-tree-node-controls-accordion">
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-node-controls-labels" aria-expanded="true" aria-controls="physics-tree-node-controls-labels" style="color:#495057">Labels and Tooltips</button>
-            </div>
-            <div id="physics-tree-node-controls-labels" class="collapse show" data-parent="#physics-tree-node-controls-accordion">
-              <div class="card-body">
-                <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
-                  <div class="col-4"><label for="physics-tree-node-tooltip-variable">Tooltip</label></div>
-                  <div class="col-8"><select id="physics-tree-node-tooltip-variable" class="custom-select custom-select-sm branch-variables"><option>None</option></select></div>
-                </div>
-                <div class="form-group row" title="What node data should be displayed as a label for the node?">
-                  <div class="col-4"><label for="physics-tree-node-label-variable">Label</label></div>
-                  <div class="col-8"><select id="physics-tree-node-label-variable" class="custom-select custom-select-sm branch-variables"><option>None</option></select></div>
-                </div>
+<div id="physics-tree-settings-pane" class="left-pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="physics-tree-nodes-tab" data-toggle="tab" href="#physics-tree-node-settings"
+        role="tab" aria-controls="physics-tree-node-settings" aria-selected="true">Nodes</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="physics-tree-branches-tab" data-toggle="tab" href="#physics-tree-branch-settings"
+        role="tab" aria-controls="physics-tree-branch-settings" aria-selected="false">Branches</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="physics-tree-tab" data-toggle="tab" href="#physics-tree-settings" role="tab"
+        aria-controls="physics-tree-settings" aria-selected="false">Tree</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="physics-tree-node-settings" role="tabpanel"
+      aria-labelledby="physics-tree-nodes-tab">
+      <div class="accordion" id="physics-tree-node-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
+              data-target="#physics-tree-node-controls-labels" aria-expanded="true"
+              aria-controls="physics-tree-node-controls-labels" style="color:#495057">Labels and Tooltips</button>
+          </div>
+          <div id="physics-tree-node-controls-labels" class="collapse show"
+            data-parent="#physics-tree-node-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
+                <div class="col-4"><label for="physics-tree-node-tooltip-variable">Tooltip</label></div>
+                <div class="col-8"><select id="physics-tree-node-tooltip-variable"
+                    class="form-control form-control-sm branch-variables">
+                    <option>None</option>
+                  </select></div>
+              </div>
+              <div class="form-group row" title="What node data should be displayed as a label for the node?">
+                <div class="col-4"><label for="physics-tree-node-label-variable">Label</label></div>
+                <div class="col-8"><select id="physics-tree-node-label-variable"
+                    class="form-control form-control-sm branch-variables">
+                    <option>None</option>
+                  </select></div>
               </div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#physics-tree-node-controls-shapes" aria-expanded="false" aria-controls="physics-tree-node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
-            </div>
-            <div id="physics-tree-node-controls-shapes" class="collapse" data-parent="#physics-tree-node-controls-accordion">
-              <div class="card-body">
-                <div id="physics-tree-node-symbol-row" class="form-group row" title="What shape should the nodes be?">
-                  <div class="col-4"><label for="physics-tree-node-symbol">Shape</label></div>
-                  <div class="col-8"><select id="physics-tree-node-symbol" class="custom-select custom-select-sm">
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse"
+              data-target="#physics-tree-node-controls-shapes" aria-expanded="false"
+              aria-controls="physics-tree-node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+          </div>
+          <div id="physics-tree-node-controls-shapes" class="collapse"
+            data-parent="#physics-tree-node-controls-accordion">
+            <div class="card-body">
+              <div id="physics-tree-node-symbol-row" class="form-group row" title="What shape should the nodes be?">
+                <div class="col-4"><label for="physics-tree-node-symbol">Shape</label></div>
+                <div class="col-8"><select id="physics-tree-node-symbol" class="form-control form-control-sm">
                     <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
                     <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
                     <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
@@ -72,163 +91,182 @@
                     <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
                     <option value="symbolStar">&nbsp;&#9733; (Star)</option>
                   </select></div>
-                </div>
-                <div class="form-group row" title="How big should the nodes be?">
-                  <div class="col-4"><label for="physics-tree-node-radius">Size</label></div>
-                  <div class="col-8"><input type="range" id="physics-tree-node-radius" min="100" value="250" step="1" max="5000" /></div>
-                </div>
               </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+              <div class="form-group row" title="How big should the nodes be?">
+                <div class="col-4"><label for="physics-tree-node-radius">Size</label></div>
+                <div class="col-8"><input type="range" id="physics-tree-node-radius" min="100" value="250" step="1"
+                    max="5000" /></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="tab-pane fade" id="physics-tree-branch-settings" role="tabpanel" aria-labelledby="physics-tree-branches-tab">
-        <div class="accordion" id="physics-tree-branch-controls-accordion">
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-branch-controls-shapes" aria-expanded="false" aria-controls="physics-tree-branch-controls-shapes" style="color:#495057">Shapes and Sizes</button>
-            </div>
-            <div id="physics-tree-branch-controls-shapes" class="collapse show" data-parent="#physics-tree-branch-controls-accordion">
-              <div class="card-body">
-                <div class="form-group row" title="What type of branch weights do you wish to apply?">
-                  <div class="col-4"><label for="physics-tree-type">Tree Type</label></div>
-                  <div class="col-8">
-                    <select id="physics-tree-type" class="form-control form-control-sm">
-                      <option value="tree" selected>Tree</option>
-                      <option value="weighted">Weighted Dendrogram</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group row" title="How long should branches be?">
-                  <div class="col-4"><label for="physics-tree-branch-length">Length</label></div>
-                  <div class="col-8"><input type="range" id="physics-tree-branch-length" min = "0" max="200" value="50" /></div>
-                </div>
-                <div class="form-group row" title="How thick should the branches be?">
-                  <div class="col-4"><label for="physics-tree-branch-width">Width</label></div>
-                  <div class="col-8"><input type="range" id="physics-tree-branch-width" min="0.3" max="30" step=".3" value="3" /></div>
-                </div>
-                <div id="physics-tree-branch-transparency-row" class="form-group row" title="How transparent should the branches be?">
-                  <div class="col-4"><label for="physics-tree-branch-opacity">Transparency</label></div>
-                  <div class="col-8"><input type="range" id="physics-tree-branch-opacity" min="0" max="1" value="0" step="0.01" /></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100 launch-color-options" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
-            </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button"
+              data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
-      <div class="tab-pane fade" id="physics-tree-settings" role="tabpanel" aria-labelledby="physics-tree-tab">
-        <div class="accordion" id="physics-tree-controls-accordion">
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-physics" aria-expanded="false" aria-controls="physics-tree-controls-physics" style="color:#495057">Physics</button>
-            </div>
-            <div id="physics-tree-controls-physics" class="collapse show" data-parent="#physics-tree-controls-accordion">
-              <div class="card-body">
-                <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
-                  <div class="col-4"><label for="physics-tree-charge">Charge</label></div>
-                  <div class="col-8"><input type="range" id="physics-tree-charge" min="0" max="400" value="200" /></div>
+    </div>
+    <div class="tab-pane fade" id="physics-tree-branch-settings" role="tabpanel"
+      aria-labelledby="physics-tree-branches-tab">
+      <div class="accordion" id="physics-tree-branch-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
+              data-target="#physics-tree-branch-controls-shapes" aria-expanded="false"
+              aria-controls="physics-tree-branch-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+          </div>
+          <div id="physics-tree-branch-controls-shapes" class="collapse show"
+            data-parent="#physics-tree-branch-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="What type of branch weights do you wish to apply?">
+                <div class="col-4"><label for="physics-tree-type">Tree Type</label></div>
+                <div class="col-8">
+                  <select id="physics-tree-type" class="form-control form-control-sm">
+                    <option value="tree" selected>Tree</option>
+                    <option value="weighted">Weighted Dendrogram</option>
+                  </select>
                 </div>
-                <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
-                  <div class="col-4"><label for="physics-tree-friction">Friction</label></div>
-                  <div class="col-8"><input type="range" id="physics-tree-friction" min="0" max="1" value="0.4" step="0.025" /></div>
+              </div>
+              <div class="form-group row" title="How long should branches be?">
+                <div class="col-4"><label for="physics-tree-branch-length">Length</label></div>
+                <div class="col-8"><input type="range" id="physics-tree-branch-length" min="0" max="200" value="50" />
                 </div>
+              </div>
+              <div class="form-group row" title="How thick should the branches be?">
+                <div class="col-4"><label for="physics-tree-branch-width">Width</label></div>
+                <div class="col-8"><input type="range" id="physics-tree-branch-width" min="0.3" max="30" step=".3"
+                    value="3" /></div>
+              </div>
+              <div id="physics-tree-branch-transparency-row" class="form-group row"
+                title="How transparent should the branches be?">
+                <div class="col-4"><label for="physics-tree-branch-opacity">Transparency</label></div>
+                <div class="col-8"><input type="range" id="physics-tree-branch-opacity" min="0" max="1" value="0"
+                    step="0.01" /></div>
               </div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header p-0">
-              <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" data-toggle="collapse"
+              aria-expanded="false" style="color:#495057">Colors</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="physics-tree-settings" role="tabpanel" aria-labelledby="physics-tree-tab">
+      <div class="accordion" id="physics-tree-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
+              data-target="#physics-tree-controls-physics" aria-expanded="false"
+              aria-controls="physics-tree-controls-physics" style="color:#495057">Physics</button>
+          </div>
+          <div id="physics-tree-controls-physics" class="collapse show" data-parent="#physics-tree-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
+                <div class="col-4"><label for="physics-tree-charge">Charge</label></div>
+                <div class="col-8"><input type="range" id="physics-tree-charge" min="0" max="400" value="200" /></div>
+              </div>
+              <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
+                <div class="col-4"><label for="physics-tree-friction">Friction</label></div>
+                <div class="col-8"><input type="range" id="physics-tree-friction" min="0" max="1" value="0.4"
+                    step="0.025" /></div>
+              </div>
             </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button"
+              data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <div id="physics-tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Export Physics Tree</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-9">
-              <input type="text" id="physics-tree-export-file-name" class="form-control form-control-sm" placeholder="Filename" />
-            </div>
-            <div class="col-3">
-              <select id="physics-tree-export-file-type" class="form-control form-control-sm">
-                <option selected>png</option>
-                <option>jpeg</option>
-                <option>webp</option>
-                <option>svg</option>
-                <option>nwk</option>
-              </select>
-            </div>
+<div id="physics-tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export Physics Tree</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-9">
+            <input type="text" id="physics-tree-export-file-name" class="form-control form-control-sm"
+              placeholder="Filename" />
           </div>
-          <button id="physics-tree-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#physics-tree-export-advanced" aria-expanded="false" aria-controls="physics-tree-export-advanced">Advanced</button>
-          <div class="collapse" id="physics-tree-export-advanced">
-            <div class="card card-body">
-              <div class="form-group row">
-                <div class="col-3">
-                  <label for="physics-tree-export-scale">Scale</label>
-                </div>
-                <div class="col-9">
-                  <input type="number" id="physics-tree-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1" />
-                </div>
-              </div>
-              <div class="form-group row">
-                <div class="col-3">Resolution</div>
-                <div id="physics-tree-export-dimensions" class="col-9 text-right"></div>
-              </div>
-              <div class="row">
-                <div class="col-3">
-                  <label for="physics-tree-export-quality">Quality</label>
-                </div>
-                <div class="col-9">
-                  <input type="range" id="physics-tree-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
-                </div>
-              </div>
-            </div>
+          <div class="col-3">
+            <select id="physics-tree-export-file-type" class="form-control form-control-sm">
+              <option selected>png</option>
+              <option>jpeg</option>
+              <option>webp</option>
+              <option>svg</option>
+              <option>nwk</option>
+            </select>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="physics-tree-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        <button id="physics-tree-export-advanced-button" class="btn btn-primary btn-sm" type="button"
+          data-toggle="collapse" data-target="#physics-tree-export-advanced" aria-expanded="false"
+          aria-controls="physics-tree-export-advanced">Advanced</button>
+        <div class="collapse" id="physics-tree-export-advanced">
+          <div class="card card-body">
+            <div class="form-group row">
+              <div class="col-3">
+                <label for="physics-tree-export-scale">Scale</label>
+              </div>
+              <div class="col-9">
+                <input type="number" id="physics-tree-export-scale" class="form-control form-control-sm" min="0"
+                  step="0.1" value="1" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-3">Resolution</div>
+              <div id="physics-tree-export-dimensions" class="col-9 text-right"></div>
+            </div>
+            <div class="row">
+              <div class="col-3">
+                <label for="physics-tree-export-quality">Quality</label>
+              </div>
+              <div class="col-9">
+                <input type="range" id="physics-tree-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+              </div>
+            </div>
+          </div>
         </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+        <button type="button" id="physics-tree-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
-  <script>
-// (function(){
-  var halfWidth  = $('#physics-tree').parent().width()/2,
-      halfHeight = $('#physics-tree').parent().parent().parent().height()/2,
-      transform  = {},
-      zoom = d3.zoom().on('zoom', function(){
-        transform = d3.event.transform;
-        g.attr('transform', transform);
-      })
+<script>
+  // (function(){
+  var halfWidth = $('#physics-tree').parent().width() / 2,
+    halfHeight = $('#physics-tree').parent().parent().parent().height() / 2,
+    transform = {},
+    zoom = d3.zoom().on('zoom', function () {
+      transform = d3.event.transform;
+      g.attr('transform', transform);
+    })
 
   d3.select('svg#physics-tree')
-      .html(null) //Let's make sure the canvas is blank.
-      .attr('height', halfHeight*2)
-      .attr('width', halfWidth*2)
-      .on('click', hideContext)
-      .call(zoom);
+    .html(null) //Let's make sure the canvas is blank.
+    .attr('height', halfHeight * 2)
+    .attr('width', halfWidth * 2)
+    .on('click', hideContext)
+    .call(zoom);
 
   var g = d3.select('svg#physics-tree').append('g');
 
@@ -240,20 +278,20 @@
     .force('charge', d3.forceManyBody()
       .strength(-session.style.widgets['physics-tree-charge'])
     )
-    .force('x', d3.forceX(function(){
+    .force('x', d3.forceX(function () {
       return halfWidth;
     }).strength(0.05))
-    .force('y', d3.forceY(function(d){
-      return (halfHeight-50)*2*d.data.depth/(d.data.depth+d.data.height+1)+50;
+    .force('y', d3.forceY(function (d) {
+      return (halfHeight - 50) * 2 * d.data.depth / (d.data.depth + d.data.height + 1) + 50;
     }))
     .velocityDecay(session.style.widgets['physics-tree-friction']);
 
-  function drawTree(){
+  function drawTree() {
     var panel = $('svg#physics-tree').parent();
-    if(!panel.length) return;
+    if (!panel.length) return;
 
     var metric = session.style.widgets['default-distance-metric'];
-    if(!temp.trees[metric]){
+    if (!temp.trees[metric]) {
       MT.computeTree(metric, drawTree);
       return;
     }
@@ -299,40 +337,40 @@
 
     force.nodes(nodes);
     force.force('branch').links(branches);
-    force.on("tick", function() {
+    force.on("tick", function () {
       branch
-          .attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-      node.attr("transform", function(d) {
-        return 'translate('+d.x+','+d.y+')';
+        .attr("x1", function (d) { return d.source.x; })
+        .attr("y1", function (d) { return d.source.y; })
+        .attr("x2", function (d) { return d.target.x; })
+        .attr("y2", function (d) { return d.target.y; });
+      node.attr("transform", function (d) {
+        return 'translate(' + d.x + ',' + d.y + ')';
       });
     });
     force.alpha(0.3).alphaTarget(0).restart();
   }
 
-  function dragstarted(n){
+  function dragstarted(n) {
     if (!d3.event.active) force.alphaTarget(0.3).restart();
-    function setNode(d){
+    function setNode(d) {
       d.fx = d.x;
       d.fy = d.y;
     }
     setNode(n);
   }
 
-  function dragged(n){
-    function updateNode(d){
+  function dragged(n) {
+    function updateNode(d) {
       d.fx += d3.event.dx;
       d.fy += d3.event.dy;
     }
     updateNode(n);
   }
 
-  function dragended(n){
+  function dragended(n) {
     if (!d3.event.active) force.alphaTarget(0);
-    function unsetNode(d){
-      if(!d.fixed){
+    function unsetNode(d) {
+      if (!d.fixed) {
         d.fx = null;
         d.fy = null;
       }
@@ -340,9 +378,9 @@
     unsetNode(n);
   }
 
-  function showTooltip(d){
+  function showTooltip(d) {
     var field = session.style.widgets['physics-tree-tooltip'];
-    if(field == 'None') return;
+    if (field == 'None') return;
     d3.select('#tooltip')
       .html(d.data[field])
       .style('left', (d3.event.pageX + 8) + 'px')
@@ -352,7 +390,7 @@
       .style('opacity', 1);
   }
 
-  function hideTooltip(){
+  function hideTooltip() {
     var tooltip = d3.select('#tooltip');
     tooltip
       .transition().duration(100)
@@ -360,7 +398,7 @@
       .on('end', () => tooltip.style('z-index', -1).html(null));
   }
 
-  function hideContext(){
+  function hideContext() {
     var menu = d3.select('#physics-tree-context-menu');
     menu
       .transition().duration(100)
@@ -368,16 +406,16 @@
       .on('end', () => menu.style('z-index', -1));
   }
 
-  $('#toggle-physics-tree-settings').on('click', function(){
+  $('#toggle-physics-tree-settings').on('click', function () {
     var pane = $('#physics-tree-settings-pane');
-    if($(this).hasClass('active')){
-      pane.animate({left: '-400px'}, function(){ pane.hide(); });
+    if ($(this).hasClass('active')) {
+      pane.animate({ left: '-400px' }, function () { pane.hide(); });
     } else {
-      pane.show(0, function(){ pane.animate({left: '0px'}); });
+      pane.show(0, function () { pane.animate({ left: '0px' }); });
     }
   });
 
-  $('#physics-tree-node-label-variable').on('change', function(){
+  $('#physics-tree-node-label-variable').on('change', function () {
     var v = this.value;
     session.style.widgets['physics-tree-node-label-variable'] = v;
     var node = g
@@ -387,47 +425,47 @@
       .text(d => d.data[v] ? d.data[v] : '');
   });
 
-  function updateBranchLengths(){
+  function updateBranchLengths() {
     var type = session.style.widgets['physics-tree-type'];
     var length = session.style.widgets['physics-tree-branch-length'];
-    if(type == 'tree'){
+    if (type == 'tree') {
       force.force('branch').distance(length);
     } else {
-      force.force('branch').distance(function(l){
+      force.force('branch').distance(function (l) {
         return length * l.source.data.length + 1;
       });
     }
     force.alpha(0.3).alphaTarget(0).restart();
   }
 
-  $('#physics-tree-type').on('change', function(){
+  $('#physics-tree-type').on('change', function () {
     session.style.widgets['physics-tree-type'] = this.value;
     updateBranchLengths();
   });
 
-  $('#physics-tree-branch-length').on('input', function(){
+  $('#physics-tree-branch-length').on('input', function () {
     session.style.widgets['physics-tree-branch-length'] = parseFloat(this.value);
     updateBranchLengths();
   });
 
-  $('#physics-tree-charge').on('input', function(){
+  $('#physics-tree-charge').on('input', function () {
     var v = parseFloat(this.value);
     force.force('charge').strength(-v);
     force.alpha(0.3).alphaTarget(0).restart();
     session.style.widgets['physics-tree-charge'] = v;
   });
 
-  $('#physics-tree-friction').on('input', function(){
+  $('#physics-tree-friction').on('input', function () {
     var v = parseFloat(this.value);
     force.velocityDecay(v);
     force.alpha(0.3).alphaTarget(0).restart();
     session.style.widgets['physics-tree-friction'] = v;
   });
 
-  function updateNodeColors(){
+  function updateNodeColors() {
     var variable = session.style.widgets['node-color-variable'];
     var nodes = g.select('g.nodes').selectAll('g').select('circle').classed('selected', d => d.selected);
-    if(variable === 'None'){
+    if (variable === 'None') {
       var col = session.style.widgets['node-color'];
       nodes.attr('fill', col);
     } else {
@@ -437,7 +475,7 @@
 
   $window
     .on('node-color-change', updateNodeColors)
-    .on('background-color-change', function(){
+    .on('background-color-change', function () {
       $('svg#physics-tree').parent().css('background-color', session.style.widgets['background-color']);
     });
 
@@ -445,4 +483,4 @@
 
   drawTree();
 // })();
-  </script>
+</script>

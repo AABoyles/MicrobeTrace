@@ -289,15 +289,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         optionsrow.append(`
       <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-1">${isNode ? 'ID' : 'Source'}</label>
-        <select id="file-${file.name}-field-1" class="custom-select custom-select-sm">${options}</select>
+        <select id="file-${file.name}-field-1" class="form-control form-control-sm">${options}</select>
       </div>
       <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-2">${isNode ? 'Sequence' : 'Target'}</label>
-        <select id="file-${file.name}-field-2" class="custom-select custom-select-sm">${options}</select>
+        <select id="file-${file.name}-field-2" class="form-control form-control-sm">${options}</select>
       </div>
       <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-3">Distance</label>
-        <select id="file-${file.name}-field-3" class="custom-select custom-select-sm">${options}</select>
+        <select id="file-${file.name}-field-3" class="form-control form-control-sm">${options}</select>
       </div>
       `);
         optionsrow.appendTo(root);
@@ -362,7 +362,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function updatePreview(data) {
       $('#alignment-preview').empty().append('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
-      if($('#swAlign').is(':checked')){
+      if ($('#swAlign').is(':checked')) {
         MT.align({
           nodes: data,
           reference: session.data.reference,

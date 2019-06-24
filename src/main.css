@@ -120,10 +120,6 @@ svg#link-threshold-sparkline {
 .ifOnline {
   display: none;
 }
-input[type="number"].custom-select {
-  padding-left: 0.375rem;
-  background: #ffffff;
-}
 #tooltip {
   position: fixed;
   color: #333333;
