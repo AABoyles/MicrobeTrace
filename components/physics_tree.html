@@ -35,7 +35,11 @@
               <div class="card-body">
                 <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
                   <div class="col-4"><label for="physics-tree-node-tooltip-variable">Tooltip</label></div>
-                  <div class="col-8"><select id="physics-tree-node-tooltip-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
+                  <div class="col-8"><select id="physics-tree-node-tooltip-variable" class="custom-select custom-select-sm branch-variables"><option>None</option></select></div>
+                </div>
+                <div class="form-group row" title="What node data should be displayed as a label for the node?">
+                  <div class="col-4"><label for="physics-tree-node-label-variable">Label</label></div>
+                  <div class="col-8"><select id="physics-tree-node-label-variable" class="custom-select custom-select-sm branch-variables"><option>None</option></select></div>
                 </div>
               </div>
             </div>
@@ -46,10 +50,6 @@
             </div>
             <div id="physics-tree-node-controls-shapes" class="collapse" data-parent="#physics-tree-node-controls-accordion">
               <div class="card-body">
-                <div class="form-group row" title="Which variable should determine the shape of the node?">
-                  <div class="col-4"><label for="physics-tree-node-symbol-variable">Shape By</label></div>
-                  <div class="col-8"><select id="physics-tree-node-symbol-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
-                </div>
                 <div id="physics-tree-node-symbol-row" class="form-group row" title="What shape should the nodes be?">
                   <div class="col-4"><label for="physics-tree-node-symbol">Shape</label></div>
                   <div class="col-8"><select id="physics-tree-node-symbol" class="custom-select custom-select-sm">
@@ -72,10 +72,6 @@
                     <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
                     <option value="symbolStar">&nbsp;&#9733; (Star)</option>
                   </select></div>
-                </div>
-                <div class="form-group row" title="Which variable should determine the size of the node?">
-                  <div class="col-4"><label for="physics-tree-node-radius-variable">Size By</label></div>
-                  <div class="col-8"><select id="physics-tree-node-radius-variable" class="custom-select custom-select-sm nodeVariables"><option>None</option></select></div>
                 </div>
                 <div class="form-group row" title="How big should the nodes be?">
                   <div class="col-4"><label for="physics-tree-node-radius">Size</label></div>
@@ -163,7 +159,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Export Phylogenetic physics-tree</h5>
+          <h5 class="modal-title">Export Physics Tree</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -289,11 +285,17 @@
       .call(d3.drag() //A bunch of mouse handlers.
         .on('start', dragstarted)
         .on('drag', dragged)
-        .on('end', dragended))
+        .on('end', dragended));
     node.append('circle')
       .attr('fill', session.style.widgets['node-color'])
       .attr('stroke', '#ffffff')
-      .attr('r', 3);
+      .attr('r', 3)
+      .on('mouseenter focusin', showTooltip)
+      .on('mouseout focusout', hideTooltip);
+    var labelField = session.style.widgets['physics-tree-node-label-variable'];
+    node.append('text')
+      .attr('stroke', '#000')
+      .text(d => d.data[labelField] ? d.data[labelField] : '');
 
     force.nodes(nodes);
     force.force('branch').links(branches);
@@ -338,6 +340,26 @@
     unsetNode(n);
   }
 
+  function showTooltip(d){
+    var field = session.style.widgets['physics-tree-tooltip'];
+    if(field == 'None') return;
+    d3.select('#tooltip')
+      .html(d.data[field])
+      .style('left', (d3.event.pageX + 8) + 'px')
+      .style('top', (d3.event.pageY - 28) + 'px')
+      .style('z-index', 1000)
+      .transition().duration(100)
+      .style('opacity', 1);
+  }
+
+  function hideTooltip(){
+    var tooltip = d3.select('#tooltip');
+    tooltip
+      .transition().duration(100)
+      .style('opacity', 0)
+      .on('end', () => tooltip.style('z-index', -1).html(null));
+  }
+
   function hideContext(){
     var menu = d3.select('#physics-tree-context-menu');
     menu
@@ -353,6 +375,16 @@
     } else {
       pane.show(0, function(){ pane.animate({left: '0px'}); });
     }
+  });
+
+  $('#physics-tree-node-label-variable').on('change', function(){
+    var v = this.value;
+    session.style.widgets['physics-tree-node-label-variable'] = v;
+    var node = g
+      .select("g.nodes")
+      .selectAll("g")
+      .select('text')
+      .text(d => d.data[v] ? d.data[v] : '');
   });
 
   function updateBranchLengths(){
