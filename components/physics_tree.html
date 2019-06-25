@@ -92,9 +92,9 @@
                   </select></div>
               </div>
               <div class="form-group row" title="How big should the nodes be?">
-                <div class="col-4"><label for="physics-tree-node-radius">Size</label></div>
-                <div class="col-8"><input type="range" id="physics-tree-node-radius" min="100" value="250" step="1"
-                    max="5000" /></div>
+                <div class="col-4"><label for="physics-tree-node-size">Size</label></div>
+                <div class="col-8"><input type="range" id="physics-tree-node-size" min="1" value="3" step="1"
+                    max="50" /></div>
               </div>
             </div>
           </div>
@@ -450,6 +450,16 @@
       .selectAll("g")
       .select('text')
       .text(d => d.data[v] ? d.data[v] : '');
+  });
+
+  $('#physics-tree-node-size').on('input', function () {
+    var v = parseFloat(this.value);
+    session.style.widgets['physics-tree-node-size'] = v;
+    g
+      .select("g.nodes")
+      .selectAll("g")
+      .select('circle')
+      .attr('r', d => d.data.isLeaf() ? v : 3);
   });
 
   function updateBranchLengths() {
