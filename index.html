@@ -195,15 +195,26 @@ performance of this software.</pre>
     </noscript>
   </div>
 
-  <div id="group-key-wrapper" class="floater">
-    <div id="group-key-draghandle"><span class="oi oi-move"></span></div>
-    <table id="group-key"></table>
+  <div id="link-color-table-wrapper" class="floater">
+    <div id="link-color-table-draghandle"><span class="oi oi-move"></span></div>
+    <table id="link-colors"></table>
   </div>
 
-  <div id="group-key-context" class="dropdown-menu">
-    <a href="#" id="group-key-drag" class="dropdown-item">Drag</a>
-    <a href="#" id="group-key-hide" class="dropdown-item">Hide</a>
-    <a href="#" id="group-key-expand" class="dropdown-item">Expand</a>
+  <div id="link-color-table-context" class="dropdown-menu">
+    <a href="#" id="link-color-table-drag" class="dropdown-item">Drag</a>
+    <a href="#" id="link-color-table-context-hide" class="dropdown-item">Hide</a>
+    <a href="#" id="link-color-table-expand" class="dropdown-item">Expand</a>
+  </div>
+
+  <div id="node-color-table-wrapper" class="floater">
+    <div id="node-color-table-draghandle"><span class="oi oi-move"></span></div>
+    <table id="node-colors"></table>
+  </div>
+
+  <div id="node-color-table-context" class="dropdown-menu">
+    <a href="#" id="node-color-table-drag" class="dropdown-item">Drag</a>
+    <a href="#" id="node-color-table-context-hide" class="dropdown-item">Hide</a>
+    <a href="#" id="node-color-table-expand" class="dropdown-item">Expand</a>
   </div>
 
   <div id="network-statistics-wrapper" class="floater">
@@ -341,7 +352,24 @@ performance of this software.</pre>
                     <option>None</option>
                   </select></div>
               </div>
-              <div id="node_color_value_row" class="form-group row" title="What color should the nodes be?">
+              <div id="node-color-table-row" class="form-group row"
+                title="Should MicrobeTrace display the table of colors?">
+                <div class="col-4">Node Color Table</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="nodeColorTableShowHide" id="node-color-table-show" autocomplete="off"
+                        checked>
+                      Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="nodeColorTableShowHide" id="node-color-table-hide" autocomplete="off">
+                      Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div id="node-color-value-row" class="form-group row" title="What color should the nodes be?">
                 <div class="col-4"><label for="node-color">Nodes</label></div>
                 <div class="col-8"><input type="color" id="node-color" class="form-control form-control-sm"
                     value="#1f77b4" /></div>
@@ -352,7 +380,24 @@ performance of this software.</pre>
                     <option>None</option>
                   </select></div>
               </div>
-              <div id="link-color-row" class="form-group row" title="What color should the links be?">
+              <div id="link-color-table-row" class="form-group row"
+                title="Should MicrobeTrace display the table of colors?">
+                <div class="col-4">Link Color Table</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="linkColorTableShowHide" id="link-color-table-show" autocomplete="off"
+                        checked>
+                      Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="linkColorTableShowHide" id="link-color-table-hide" autocomplete="off">
+                      Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div id="link-color-value-row" class="form-group row" title="What color should the links be?">
                 <div class="col-4"><label for="link-color">Links</label></div>
                 <div class="col-8"><input type="color" id="link-color" class="form-control form-control-sm"
                     value="#a6cee3" /></div>
@@ -366,20 +411,6 @@ performance of this software.</pre>
                 <div class="col-4"><label for="background-color">Background</label></div>
                 <div class="col-8"><input type="color" id="background-color" class="form-control form-control-sm"
                     value="#ffffff" /></div>
-              </div>
-              <div class="form-group row" title="Should MicrobeTrace display the table of colors?">
-                <div class="col-4">Color Table</div>
-                <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
-                      <input type="radio" name="colorTableShowHide" id="color-table-show" autocomplete="off" checked>
-                      Show
-                    </label>
-                    <label class="btn btn-light col">
-                      <input type="radio" name="colorTableShowHide" id="color-table-hide" autocomplete="off"> Hide
-                    </label>
-                  </div>
-                </div>
               </div>
               <div class="form-group row" title="Load an existing MicrobeTrace style file">
                 <div class="col-4">Apply Style</div>

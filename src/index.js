@@ -457,30 +457,29 @@ $(function() {
 
   $("#node-color-variable")
     .val(session.style.widgets["node-color-variable"])
-    .on("change", function(e) {
+    .on("change", function (e) {
       var variable = e.target.value;
       session.style.widgets["node-color-variable"] = variable;
       if (variable === "None") {
-        $("#node_color_value_row").slideDown();
-        $("#nodeColors").remove();
+        $("#node-color-value-row").slideDown();
+        $('#node-color-table-row').slideUp();
+        $("#node-colors").empty();
         $window.trigger("node-color-change");
         return;
       }
-      $("#node_color_value_row").slideUp();
-      $("#nodeColors").remove();
-      var table = $('<tbody id="nodeColors"></tbody>').appendTo("#group-key");
-      table.append(
-        "<tr><th contenteditable>Node " +
+      $("#node-color-value-row").slideUp();
+      $('#node-color-table-row').slideDown();
+      var table = $("#node-colors").empty().append(
+        "<tr><th class='p-1' contenteditable>Node " +
           MT.titleize(variable) +
           "</th><th>Color</th><tr>"
       );
-      var values = MT.createNodeColorMap();
-      values.forEach(function(value, i) {
+      MT.createNodeColorMap().forEach(function (value, i) {
         var input = $(
           '<input type="color" value="' +
             temp.style.nodeColorMap(value) +
             '" />'
-        ).on("change", function(evt) {
+        ).on("change", function (evt) {
           session.style.nodeColors.splice(i, 1, evt.target.value);
           temp.style.nodeColorMap = d3
             .scaleOrdinal(session.style.nodeColors)
@@ -489,15 +488,16 @@ $(function() {
         });
         var cell = $("<td></td>").append(input);
         var row = $(
-          "<tr><td contenteditable>" + MT.titleize("" + value) + "</td></tr>"
+          "<tr><td>" + MT.titleize("" + value) + "</td></tr>"
         ).append(cell);
         table.append(row);
       });
+      sortable('#node-colors', { items: 'tr' });
       $window.trigger("node-color-change");
-    });
+    }).trigger('change');
 
   $("#node-color")
-    .on("change", function(e) {
+    .on("change", function (e) {
       session.style.widgets["node-color"] = e.target.value;
       $window.trigger("node-color-change");
     })
@@ -505,30 +505,29 @@ $(function() {
 
   $("#link-color-variable")
     .val(session.style.widgets["link-color-variable"])
-    .on("change", function(e) {
+    .on("change", function (e) {
       var variable = e.target.value;
       session.style.widgets["link-color-variable"] = variable;
       if (variable === "None") {
-        $("#link-color-row").slideDown();
-        $("#link-colors").remove();
+        $("#link-color-value-row").slideDown();
+        $('#link-color-table-row').slideUp();
+        $("#link-colors").empty();
         $window.trigger("link-color-change");
         return;
       }
-      $("#link-color-row").slideUp();
-      $("#link-colors").remove();
-      var values = MT.createLinkColorMap();
-      var table = $('<tbody id="link-colors"></tbody>').appendTo("#group-key");
-      table.append(
-        "<tr><th contenteditable>Link " +
+      $("#link-color-value-row").slideUp();
+      $('#link-color-table-row').slideDown();
+      var table = $("#link-colors").empty().append(
+        "<tr><th class='p-1' contenteditable>Link " +
           MT.titleize(variable) +
           "</th><th>Color</th><tr>"
       );
-      values.forEach(function(value, i) {
+      MT.createLinkColorMap().forEach(function (value, i) {
         var input = $(
           '<input type="color" value="' +
             temp.style.linkColorMap(value) +
             '" />'
-        ).on("change", function(evt) {
+        ).on("change", function (evt) {
           session.style.linkColors.splice(i, 1, evt.target.value);
           temp.style.linkColorMap = d3
             .scaleOrdinal(session.style.linkColors)
@@ -537,14 +536,20 @@ $(function() {
         });
         var cell = $("<td></td>").append(input);
         var row = $(
-          "<tr><td contenteditable>" + MT.titleize("" + value) + "</td></tr>"
+          "<tr><td>" + MT.titleize("" + value) + "</td></tr>"
         ).append(cell);
         table.append(row);
       });
+      table.find('td').on('dblclick', function () {
+        $(this).attr('contenteditable', true).focus();
+      }).on('focusout', function () {
+        $(this).attr('contenteditable', false);
+      })
+      sortable('#link-colors', { items: 'tr' });
       $window.trigger("link-color-change");
-    });
+    }).trigger('change');
 
-  $("#link-color").on("change", function(e) {
+  $("#link-color").on("change", function (e) {
     session.style.widgets["link-color"] = e.target.value;
     $window.trigger("link-color-change");
   });
@@ -565,16 +570,28 @@ $(function() {
     $window.trigger("background-color-change");
   });
 
-  $("#color-table-show")
+  $("#link-color-table-show")
     .parent()
-    .on("click", function() {
-      $("#group-key").fadeIn();
+    .on("click", function () {
+      $("#link-color-table-wrapper").fadeIn();
     });
 
-  $("#color-table-hide")
+  $("#link-color-table-hide")
     .parent()
-    .on("click", function() {
-      $("#group-key").fadeOut();
+    .on("click", function () {
+      $("#link-color-table-wrapper").fadeOut();
+    });
+
+  $("#node-color-table-show")
+    .parent()
+    .on("click", function () {
+      $("#node-color-table-wrapper").fadeIn();
+    });
+
+  $("#node-color-table-hide")
+    .parent()
+    .on("click", function () {
+      $("#node-color-table-wrapper").fadeOut();
     });
 
   $("#apply-style").on("change", function() {
@@ -600,31 +617,31 @@ $(function() {
     $("#version").html(r.version);
   });
 
-  $("#group-key-wrapper").on("contextmenu", function(e) {
+  $("#link-color-table-wrapper").on("contextmenu", function (e) {
     e.preventDefault();
-    $("#group-key-context").css({
+    $("#link-color-table-context").css({
       top: e.clientY,
       left: e.clientX,
       display: "block"
     });
   });
 
-  $("#group-key-drag").on("click", function() {
+  $("#link-color-table-drag").on("click", function () {
     var $this = $(this);
     $this.parent().hide();
     if ($this.text() == "Drag") {
-      $("#group-key-draghandle").slideDown();
+      $("#link-color-table-draghandle").slideDown();
       $this.text("Pin");
     } else {
-      $("#group-key-draghandle").slideUp();
+      $("#link-color-table-draghandle").slideUp();
       $this.text("Drag");
     }
   });
 
-  $("#group-key-draghandle").on("mousedown", function() {
+  $("#link-color-table-draghandle").on("mousedown", function () {
     var body = $("body");
     var parent = $(this).parent();
-    body.on("mousemove", function(e2) {
+    body.on("mousemove", function (e2) {
       parent
         .css(
           "top",
@@ -635,27 +652,90 @@ $(function() {
           parseFloat(parent.css("right")) - e2.originalEvent.movementX + "px"
         );
     });
-    body.on("mouseup", function(e3) {
+    body.on("mouseup", function (e3) {
       body.off("mousemove").off("mouseup");
     });
   });
 
-  $("#group-key-hide").on("click", function() {
-    $("#color-table-hide")
+  $("#link-color-table-context-hide").on("click", function () {
+    $("#link-color-table-hide")
       .parent()
       .click();
   });
 
-  $("#group-key-expand").on("click", function() {
+  $("#link-color-table-expand").on("click", function () {
     var $this = $(this);
     if ($this.text() === "Expand") {
-      $("#group-key-wrapper").css({
+      $("#link-color-table-wrapper").css({
         "max-height": "none",
         "overflow-y": "auto"
       });
       $this.text("Contract");
     } else {
-      $("#group-key-wrapper").css({
+      $("#link-color-table-wrapper").css({
+        "max-height": "400px",
+        "overflow-y": "scroll"
+      });
+      $this.text("Expand");
+    }
+  });
+
+  $("#node-color-table-wrapper").on("contextmenu", function (e) {
+    e.preventDefault();
+    $("#node-color-table-context").css({
+      top: e.clientY,
+      left: e.clientX,
+      display: "block"
+    });
+  });
+
+  $("#node-color-table-drag").on("click", function () {
+    var $this = $(this);
+    $this.parent().hide();
+    if ($this.text() == "Drag") {
+      $("#node-color-table-draghandle").slideDown();
+      $this.text("Pin");
+    } else {
+      $("#node-color-table-draghandle").slideUp();
+      $this.text("Drag");
+    }
+  });
+
+  $("#node-color-table-draghandle").on("mousedown", function () {
+    var body = $("body");
+    var parent = $(this).parent();
+    body.on("mousemove", function (e2) {
+      parent
+        .css(
+          "top",
+          parseFloat(parent.css("top")) + e2.originalEvent.movementY + "px"
+        )
+        .css(
+          "right",
+          parseFloat(parent.css("right")) - e2.originalEvent.movementX + "px"
+        );
+    });
+    body.on("mouseup", function (e3) {
+      body.off("mousemove").off("mouseup");
+    });
+  });
+
+  $("#node-color-table-context-hide").on("click", function () {
+    $("#node-color-table-hide")
+      .parent()
+      .click();
+  });
+
+  $("#node-color-table-expand").on("click", function () {
+    var $this = $(this);
+    if ($this.text() === "Expand") {
+      $("#node-color-table-wrapper").css({
+        "max-height": "none",
+        "overflow-y": "auto"
+      });
+      $this.text("Contract");
+    } else {
+      $("#node-color-table-wrapper").css({
         "max-height": "400px",
         "overflow-y": "scroll"
       });
@@ -715,8 +795,8 @@ $(function() {
           .length.toLocaleString()
       );
     })
-    .on("click", function() {
-      $("#network-statistics-context, #group-key-context").hide();
+    .on("click", function () {
+      $("#network-statistics-context, #link-color-table-context, #node-color-table-context").hide();
     })
     .on("link-visibility", function() {
       if (session.style.widgets["link-color-variable"] !== "None") {

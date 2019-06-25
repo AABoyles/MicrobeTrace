@@ -136,29 +136,69 @@ svg#link-threshold-sparkline {
   overflow-y: auto;
   z-index: 10000;
 }
-#group-key-wrapper {
+#link-color-table-wrapper {
   position: absolute;
   top: 73px;
   right: 10px;
   z-index: 999;
   max-height: 400px;
   overflow-y: scroll;
+  overflow-x: hidden;
   border-radius: 0.25rem;
   color: #303030;
   background-color: #f8f9fa !important;
 }
-#group-key-draghandle {
+#link-color-table-draghandle {
   display: none;
   width: 100%;
   text-align: center;
 }
-#group-key th {
+#link-color-table th {
   text-align: center;
 }
-#group-key th,
-td {
+#link-color-table th, td {
   border: 1px solid lightgray;
   padding: 4px;
+}
+#link-color-table select {
+  background: none;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: "";
+}
+#node-color-table-wrapper {
+  position: absolute;
+  top: 483px;
+  right: 10px;
+  z-index: 999;
+  max-height: 400px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border-radius: 0.25rem;
+  color: #303030;
+  background-color: #f8f9fa !important;
+}
+#node-color-table-draghandle {
+  display: none;
+  width: 100%;
+  text-align: center;
+}
+#node-color-table th {
+  text-align: center;
+}
+#node-color-table th, td {
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#node-color-table select {
+  background: none;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: "";
 }
 #network-statistics-wrapper {
   display: none;
@@ -179,14 +219,7 @@ td {
 #network-statistics-wrapper td {
   border: none;
 }
-#group-key select {
-  background: none;
-  border: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  text-indent: 1px;
-  text-overflow: "";
-}
+
 label[for="apply-style"] {
   width: calc(100% - 30px);
   margin: 0 15px;
