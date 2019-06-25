@@ -202,6 +202,7 @@ MT.sessionSkeleton = function () {
     },
     style: {
       linkColors: d3.schemePaired,
+      linkValueNames: {},
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
       nodeSymbols: [
         "symbolCircle",
@@ -223,6 +224,7 @@ MT.sessionSkeleton = function () {
         "symbolOctagonAlt",
         "symbolX"
       ],
+      nodeValueNames: {},
       widgets: MT.defaultWidgets
     },
     warnings: []

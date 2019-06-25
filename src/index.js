@@ -474,6 +474,7 @@ $(function() {
           MT.titleize(variable) +
           "</th><th>Color</th><tr>"
       );
+      if (!session.style.nodeValueNames) session.style.nodeValueNames = {};
       MT.createNodeColorMap().forEach(function (value, i) {
         var input = $(
           '<input type="color" value="' +
@@ -488,10 +489,17 @@ $(function() {
         });
         var cell = $("<td></td>").append(input);
         var row = $(
-          "<tr><td>" + MT.titleize("" + value) + "</td></tr>"
+          "<tr><td data-value='" + value + "'>" + (session.style.nodeValueNames[value] ? session.style.nodeValueNames[value] : MT.titleize("" + value)) + "</td></tr>"
         ).append(cell);
         table.append(row);
       });
+      table.find('td').on('dblclick', function () {
+        $(this).attr('contenteditable', true).focus();
+      }).on('focusout', function () {
+        var $this = $(this);
+        $this.attr('contenteditable', false);
+        session.style.nodeValueNames[$this.data('value')] = $this.text();
+      })
       sortable('#node-colors', { items: 'tr' });
       $window.trigger("node-color-change");
     }).trigger('change');
@@ -522,6 +530,7 @@ $(function() {
           MT.titleize(variable) +
           "</th><th>Color</th><tr>"
       );
+      if (!session.style.linkValueNames) session.style.linkValueNames = {};
       MT.createLinkColorMap().forEach(function (value, i) {
         var input = $(
           '<input type="color" value="' +
@@ -536,15 +545,17 @@ $(function() {
         });
         var cell = $("<td></td>").append(input);
         var row = $(
-          "<tr><td>" + MT.titleize("" + value) + "</td></tr>"
+          "<tr><td data-value='" + value + "'>" + (session.style.linkValueNames[value] ? session.style.linkValueNames[value] : MT.titleize("" + value)) + "</td></tr>"
         ).append(cell);
         table.append(row);
       });
       table.find('td').on('dblclick', function () {
         $(this).attr('contenteditable', true).focus();
       }).on('focusout', function () {
-        $(this).attr('contenteditable', false);
-      })
+        var $this = $(this);
+        $this.attr('contenteditable', false);
+        session.style.linkValueNames[$this.data('value')] = $this.text();
+      });
       sortable('#link-colors', { items: 'tr' });
       $window.trigger("link-color-change");
     }).trigger('change');
