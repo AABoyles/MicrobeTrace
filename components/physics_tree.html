@@ -350,9 +350,9 @@
       .call(d3.drag() //A bunch of mouse handlers.
         .on('start', dragstarted)
         .on('drag', dragged)
-        .on('end', dragended));
+        .on('end', dragended))
     node.append('circle')
-      .attr('fill', session.style.widgets['node-color'])
+      .attr('fill', d => d.data.isLeaf() ? session.style.widgets['node-color'] : '#000')
       .attr('stroke', '#ffffff')
       .attr('r', 3)
       .on('mouseenter focusin', showTooltip)
@@ -542,12 +542,17 @@
 
   function updateNodeColors() {
     var variable = session.style.widgets['node-color-variable'];
+    var vnodes = MT.getVisibleNodes();
     var nodes = g.select('g.nodes').selectAll('g').select('circle').classed('selected', d => d.selected);
+    var col = session.style.widgets['node-color'];
     if (variable === 'None') {
-      var col = session.style.widgets['node-color'];
       nodes.attr('fill', col);
     } else {
-      nodes.attr('fill', d => temp.style.nodeColorMap(d[variable]));
+      nodes.attr('fill', d => {
+        var vnode = vnodes.find(vn => vn.id == d.data.id);
+        if (vnode) return temp.style.nodeColorMap(vnode[variable]);
+        return col;
+      });
     }
   }
 
