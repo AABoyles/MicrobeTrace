@@ -138,6 +138,8 @@ MT.defaultWidgets = {
   "physics-tree-charge": 20,
   "physics-tree-friction": 0.05,
   "physics-tree-gravity": 0.05,
+  "physics-tree-lateral-strength": 0.1,
+  "physics-tree-layout": "Horizontal",
   "physics-tree-node-label-variable": "None",
   "physics-tree-tooltip": "id",
   "physics-tree-type": "tree",
@@ -1723,6 +1725,20 @@ MT.launchView = function (view, callback) {
             );
           })
         )
+        .join("\n")
+    );
+    contentItem.element.find("select.branch-variables").html(
+      "<option>None</option>" +
+      ["id", "depth", "height", "length", "value"]
+        .map(function (field) {
+          return (
+            '<option value="' +
+            field +
+            '">' +
+            MT.titleize(field) +
+            "</option>"
+          );
+        })
         .join("\n")
     );
     contentItem.element.find(".launch-color-options").click(function () {

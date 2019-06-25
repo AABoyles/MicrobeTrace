@@ -749,3 +749,6 @@ td {
   width: 100%;
   height: 100%;
 }
+#physics-tree g.nodes g circle{
+  cursor: grab;
+}

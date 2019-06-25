@@ -161,6 +161,33 @@
         <div class="card">
           <div class="card-header p-0">
             <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
+              data-target="#physics-tree-controls-layout" aria-expanded="true"
+              aria-controls="physics-tree-controls-layout" style="color:#495057">Layout</button>
+          </div>
+          <div id="physics-tree-controls-layout" class="collapse show" data-parent="#physics-tree-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="What is the layout of the tree?">
+                <div class="col-4">Layout</div>
+                <div class="col-8">
+                  <select id="physics-tree-layout" class="form-control form-control-sm">
+                    <option>Horizontal</option>
+                    <option>Vertical</option>
+                    <option>Radial</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
+                <div class="col-4">Lateral Strength</div>
+                <div class="col-8">
+                  <input id="physics-tree-lateral-strength" type="range" min="0.01" max="0.5" step="0.01" value="0.1" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
               data-target="#physics-tree-controls-physics" aria-expanded="false"
               aria-controls="physics-tree-controls-physics" style="color:#495057">Physics</button>
           </div>
@@ -280,10 +307,11 @@
     )
     .force('x', d3.forceX(function () {
       return halfWidth;
-    }).strength(0.05))
-    .force('y', d3.forceY(function (d) {
-      return (halfHeight - 50) * 2 * d.data.depth / (d.data.depth + d.data.height + 1) + 50;
     }))
+    .force('y', d3.forceY(function () {
+      return halfHeight;
+    }))
+    .force('radial', d3.forceRadial(function () { return 0; }, halfWidth, halfHeight).strength(0))
     .velocityDecay(session.style.widgets['physics-tree-friction']);
 
   function drawTree() {
@@ -446,6 +474,57 @@
   $('#physics-tree-branch-length').on('input', function () {
     session.style.widgets['physics-tree-branch-length'] = parseFloat(this.value);
     updateBranchLengths();
+  });
+
+  function updateForces() {
+    var v = session.style.widgets['physics-tree-layout'];
+    var strength = session.style.widgets['physics-tree-lateral-strength'];
+    if (v == 'Horizontal') {
+      force
+        .force('x', d3.forceX(function (d) {
+          return halfWidth * 2 * d.data.depth / (d.data.depth + d.data.height + 1);
+        }).strength(1))
+        .force('y', d3.forceY(function () {
+          return halfHeight;
+        }).strength(strength))
+        .force('radial', d3.forceRadial(function () {
+          return 0;
+        }).strength(0))
+    } else if (v == 'Vertical') {
+      force
+        .force('x', d3.forceX(function () {
+          return halfWidth;
+        }).strength(strength))
+        .force('y', d3.forceY(function (d) {
+          return halfHeight * 2 * d.data.depth / (d.data.depth + d.data.height + 1);
+        }).strength(1))
+        .force('radial', d3.forceRadial(function () {
+          return 0;
+        }).strength(0))
+    } else {
+      var bound = Math.min(halfHeight, halfWidth);
+      force
+        .force('x', d3.forceX(function () {
+          return 0;
+        }).strength(0))
+        .force('y', d3.forceY(function () {
+          return 0
+        }).strength(0))
+        .force('radial', d3.forceRadial(function (d) {
+          return bound * 2 * d.data.depth / (d.data.depth + d.data.height + 1);
+        }, halfWidth, halfHeight).strength(strength))
+    }
+    force.alpha(0.3).alphaTarget(0).restart();
+  }
+
+  $('#physics-tree-layout').on('change', function () {
+    session.style.widgets['physics-tree-layout'] = this.value;
+    updateForces();
+  }).trigger('change');
+
+  $('#physics-tree-lateral-strength').on('input', function () {
+    session.style.widgets['physics-tree-lateral-strength'] = parseFloat(this.value);
+    updateForces();
   });
 
   $('#physics-tree-charge').on('input', function () {
