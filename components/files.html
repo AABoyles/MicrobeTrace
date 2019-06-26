@@ -81,10 +81,10 @@
       </div>
       <div class="form-group row">
         <div class="col-3">
-          <label for="default-View">View to Launch</label>
+          <label for="default-view">View to Launch</label>
         </div>
         <div class="col-9">
-          <select id="default-View" class="form-control form-control-sm"
+          <select id="default-view" class="form-control form-control-sm"
             title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
             <option value="2d_network" selected>2D Network</option>
             <option value="3d_network">3D Network</option>
@@ -447,14 +447,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['ambiguity-resolution-strategy'] = e.target.value;
     });
 
-    var cachedView = localStorage.getItem('default-View');
+    var cachedView = localStorage.getItem('default-view');
     if (cachedView) {
-      $('#default-View').val(cachedView);
+      $('#default-view').val(cachedView);
     }
 
-    $('#default-View').change(function (e) {
+    $('#default-view').change(function (e) {
       var v = e.target.value;
-      localStorage.setItem('default-View', v);
+      localStorage.setItem('default-view', v);
       session.layout.content[0].type = v;
     });
 

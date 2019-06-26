@@ -754,23 +754,29 @@ $(function() {
     }
   });
 
-  $("#search").on("input", function(e) {
+  $("#search").on("input", function (e) {
     if (e.target.value === "") {
-      session.data.nodes.forEach(function(n) {
+      session.data.nodes.forEach(function (n) {
         n.selected = false;
       });
     } else {
-      session.data.nodes.forEach(function(n) {
-        n.selected = n.id.indexOf(e.target.value) > -1;
+      var v = session.style.widgets['search-field'];
+      session.data.nodes.forEach(function (n) {
+        n.selected = n[v].indexOf(e.target.value) > -1;
       });
       if (
-        !session.data.nodes.some(function(n) {
+        !session.data.nodes.some(function (n) {
           return n.selected;
         })
       )
         alertify.warning("No matches!");
     }
     $window.trigger("node-selected");
+  });
+
+  $('#search-field').on('change', function () {
+    session.style.widgets['search-field'] = this.value;
+    $("#search").trigger('input');
   });
 
   if (navigator.onLine) $(".ifOnline").show();

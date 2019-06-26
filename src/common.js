@@ -147,6 +147,7 @@ MT.defaultWidgets = {
   "scatterplot-yVar": "distance",
   "scatterplot-logScale": false,
   "scatterplot-showNodes": false,
+  "search-field": "id",
   "selected-color": "#ff8300",
   "selected-color-contrast": "#000000",
   "timeline-date-field": "None",
@@ -1058,6 +1059,22 @@ MT.finishUp = function (oldSession) {
       });
     }
   });
+  $("#search-field")
+    .html(
+      session.data.nodeFields
+        .map(function (field) {
+          return (
+            '<option value="' +
+            field +
+            '">' +
+            MT.titleize(field) +
+            "</option>"
+          );
+        })
+        .join("\n")
+    )
+    .val(session.style.widgets['search-field']);
+  $('#search-form').css('display', 'flex');
   $("#link-sort-variable")
     .html(
       session.data.linkFields
@@ -1127,7 +1144,7 @@ MT.finishUp = function (oldSession) {
       MT.loadLayout(session.layout);
     }, 80);
   } else {
-    MT.launchView($("#default-View").val());
+    MT.launchView($("#default-view").val());
   }
   if (localStorage.getItem("stash-auto") === "true") {
     temp.autostash = {
