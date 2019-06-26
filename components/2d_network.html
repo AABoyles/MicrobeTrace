@@ -257,6 +257,23 @@ Note that this may cause slow performance on larger networks.">
                   </div>
                 </div>
               </div>
+              <div class="form-group row"
+                title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
+                <div class="col-4">Gridlines</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col" title="Show gridlines under the network.">
+                      <input type="radio" name="network-gridlines" id="network-gridlines-show" autocomplete="off">
+                      Show
+                    </label>
+                    <label class="btn btn-light col active" title="Do Not show gridlines under the network.">
+                      <input type="radio" name="network-gridlines" id="network-gridlines-hide" autocomplete="off"
+                        checked>
+                      Hide
+                    </label>
+            </div>
+          </div>
+        </div>
             </div>
           </div>
         </div>
@@ -452,6 +469,14 @@ Note that this may cause slow performance on larger networks.">
       .attr('width', halfWidth * 2)
       .on('click', hideContextMenu)
       .call(zoom);
+
+    d3.select('svg#network')
+      .append('g')
+      .attr('class', 'horizontal-gridlines');
+
+    d3.select('svg#network')
+      .append('g')
+      .attr('class', 'vertical-gridlines');
 
     d3.select('svg#network')
       .append('g')
@@ -1143,6 +1168,30 @@ Note that this may cause slow performance on larger networks.">
     $('#link-width-nonreciprocal').parent().on('click', function () {
       session.style.widgets['link-width-reciprocal'] = false;
       scaleLinkWidth();
+    });
+
+    $('#network-gridlines-show').parent().on('click', function () {
+      session.style.widgets['network-gridlines-show'] = true;
+      var range = Math.ceil(Math.max(halfWidth, halfHeight) / 50);
+      var ords = Object.keys(new Array(range).fill(null)).map(parseFloat);
+      d3.select('#network g.horizontal-gridlines').selectAll('line').data(ords).enter().append('line')
+        .attr('x1', 0)
+        .attr('x2', halfWidth * 2)
+        .attr('y1', function (d) { return d * 100; })
+        .attr('y2', function (d) { return d * 100; })
+        .attr('stroke', 'lightgray');
+      d3.select('#network g.vertical-gridlines').selectAll('line').data(ords).enter().append('line')
+        .attr('x1', function (d) { return d * 100; })
+        .attr('x2', function (d) { return d * 100; })
+        .attr('y1', 0)
+        .attr('y2', halfHeight * 2)
+        .attr('stroke', 'lightgray');
+    });
+
+    $('#network-gridlines-hide').parent().on('click', function () {
+      session.style.widgets['network-gridlines-show'] = false;
+      d3.select('#network g.horizontal-gridlines').html(null);
+      d3.select('#network g.vertical-gridlines').html(null);
     });
 
     $('#network-friction').on('input', function () {
