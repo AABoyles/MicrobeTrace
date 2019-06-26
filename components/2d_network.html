@@ -906,31 +906,31 @@ Note that this may cause slow performance on larger networks.">
             nodes
               .attr('text-anchor', 'end')
               .attr('dx', -8)
-              .attr('dy', size / 2);
+              .attr('dy', (size - 4) / 2);
             break;
           case 'Top':
             nodes
               .attr('text-anchor', 'middle')
               .attr('dx', 0)
-              .attr('dy', -size);
+              .attr('dy', 4 - size);
             break;
           case 'Bottom':
             nodes
               .attr('text-anchor', 'middle')
               .attr('dx', 0)
-              .attr('dy', size);
+              .attr('dy', size + 4);
             break;
           case 'Middle':
             nodes
               .attr('text-anchor', 'middle')
               .attr('dx', 0)
-              .attr('dy', size / 2);
+              .attr('dy', (size - 4) / 2);
             break;
           default: //'right'
             nodes
               .attr('text-anchor', 'start')
               .attr('dx', 8)
-              .attr('dy', size / 2);
+              .attr('dy', (size - 4) / 2);
         }
       }
     }
