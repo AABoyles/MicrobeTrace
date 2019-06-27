@@ -512,6 +512,10 @@ button.btn,
   border: 1px solid lightgray;
   padding: 4px;
 }
+#node-symbol-table select{
+  border: none;
+  background: transparent;
+}
 .nodes path {
   cursor: -webkit-grab;
 }
