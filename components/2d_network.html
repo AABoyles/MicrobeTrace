@@ -91,6 +91,22 @@
                     <option>None</option>
                   </select></div>
               </div>
+              <div id="node-symbol-table-row" class="form-group row" title="What shape should the nodes be?">
+                <div class="col-4">Table</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light btn-sm col active" title="Show a table of symbols">
+                      <input type="radio" name="network-symbol-table-visibility" id="node-symbol-table-show"
+                        autocomplete="off" checked>
+                      Show
+                    </label>
+                    <label class="btn btn-light btn-sm col" title="Do not show a table of symbols">
+                      <input type="radio" name="network-symbol-table-visibility" id="node-symbol-table-hide"
+                        autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
               <div id="node-symbol-row" class="form-group row" title="What shape should the nodes be?">
                 <div class="col-4"><label for="node-symbol">Shape</label></div>
                 <div class="col-8"><select id="node-symbol" class="form-control form-control-sm">
@@ -313,14 +329,18 @@ Note that this may cause slow performance on larger networks.">
   </div>
 </div>
 
-<div id="node-symbols" class="floater">
-  <div id="node-symbols-draghandle"><span class="oi oi-move"></span></div>
-  <table></table>
+<div id="node-symbol-table-wrapper" class="floater">
+  <div id="node-symbol-table-draghandle"><span class="oi oi-move"></span></div>
+  <table id="node-symbol-table"></table>
 </div>
 
-<div id="node-symbols-context" class="dropdown-menu">
-  <a href="#" id="node-symbols-move" class="dropdown-item">Pin</a>
-</div>
+<div id="node-symbol-table-context" class="dropdown-menu">
+  <a href="#" id="node-symbol-table-move" class="dropdown-item">Pin</a>
+  <a href="#" id="node-symbol-table-context-hide" class="dropdown-item">Hide</a>
+  <a href="#" id="node-symbol-table-expand" class="dropdown-item">Expand</a>
+  <a href="#" id="node-symbol-table-counts" class="dropdown-item">Toggle Counts</a>
+  <a href="#" id="node-symbol-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
+
 </div>
 
 <div id="context-menu" class="dropdown-menu">
@@ -976,29 +996,34 @@ Note that this may cause slow performance on larger networks.">
     $('#node-symbol-variable').on('change', function () {
       var variable = this.value;
       session.style.widgets['node-symbol-variable'] = variable;
-      var wrapper = $('#node-symbols');
+      var wrapper = $('#node-symbol-table-wrapper');
       var table = wrapper.find('table');
       if (variable === 'None') {
         temp.style.nodeSymbolMap = function () { return session.style.widgets['node-symbol']; };
+        $('#node-symbol-table-row').slideUp();
         $('#node-symbol-row').slideDown();
         wrapper.fadeOut(function () { table.empty(); });
         redrawNodes();
         return;
       }
       $('#node-symbol-row').slideUp();
+      $('#node-symbol-table-row').slideDown();
       var values = [];
+      var aggregates = {};
       var nodes = session.data.nodes;
       var n = nodes.length;
+      var vnodes = 0;
       for (var i = 0; i < n; i++) {
         var d = nodes[i];
         if (!d.visible) continue;
+        vnodes++;
         var dv = d[variable];
         if (values.indexOf(dv) === -1) values.push(dv);
-      }
-      if (MT.isNumber(nodes[0][variable])) {
-        values.sort(function (a, b) { return a - b; });
+        if (dv in aggregates) {
+          aggregates[dv]++;
       } else {
-        values.sort();
+          aggregates[dv] = 1;
+      }
       }
       if (values.length > session.style.nodeSymbols.length) {
         var symbols = [];
@@ -1009,25 +1034,43 @@ Note that this may cause slow performance on larger networks.">
         session.style.nodeSymbols = symbols;
       }
       temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
-      table.empty().append('<tr><th contenteditable>Node ' + MT.titleize(variable) + '</th><th>Shape</th><tr>');
-      if (MT.isNumber(nodes[0][variable])) {
-        values.sort(function (a, b) { return a - b; });
-      } else {
-        values.sort();
-      }
+      table.empty().append(
+        '<tr>' +
+        '<th contenteditable>Node ' + MT.titleize(variable) + '</th>' +
+        (session.style.widgets['node-symbol-table-counts'] ? '<th>Count</th>' : '') +
+        (session.style.widgets['node-symbol-table-frequencies'] ? '<th>Frequency</th>' : '') +
+        '<th>Shape</th>' +
+        '</tr>');
       var options = $('#node-symbol').html();
-      values.forEach((v, i) => {
+      values.sort(function (a, b) {
+        return aggregates[b] - aggregates[a];
+      }).forEach(function (v, i) {
         var selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function (e) {
           session.style.nodeSymbols.splice(i, 1, this.value);
           temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
           redrawNodes();
         });
         var cell = $('<td></td>').append(selector);
-        var row = $('<tr><td contenteditable>' + MT.titleize('' + v) + '</td></tr>').append(cell);
+        var row = $(
+          '<tr>' +
+          '<td contenteditable>' + MT.titleize('' + v) + '</td>' +
+          (session.style.widgets['node-symbol-table-counts'] ? ('<td>' + aggregates[v] + '</td>') : '') +
+          (session.style.widgets['node-symbol-table-frequencies'] ? ('<td>' + (aggregates[v] / vnodes).toLocaleString() + '</td>') : '') +
+          '</tr>'
+        ).append(cell);
         table.append(row);
       });
+      sortable('#node-symbol-table', { items: 'tr' });
       wrapper.fadeIn();
       redrawNodes();
+    });
+
+    $('#node-symbol-table-show').parent().on('click', function () {
+      $('#node-symbol-table-wrapper').fadeIn();
+    });
+
+    $('#node-symbol-table-hide').parent().on('click', function () {
+      $('#node-symbol-table-wrapper').fadeOut();
     });
 
     $('#node-radius').on('input', function () {
@@ -1290,28 +1333,28 @@ Note that this may cause slow performance on larger networks.">
       session.network.allPinned = !session.network.allPinned;
     });
 
-    $("#node-symbols").on("contextmenu", function (e) {
+    $("#node-symbol-table-wrapper").on("contextmenu", function (e) {
       e.preventDefault();
-      $("#node-symbols-context").css({
+      $("#node-symbol-table-context").css({
         top: e.clientY - 55,
         left: e.clientX,
         display: "block"
       });
     });
 
-    $("#node-symbols-move").on("click", function () {
+    $("#node-symbol-table-move").on("click", function () {
       var $this = $(this);
       $this.parent().hide();
       if ($this.text() == "Drag") {
-        $("#node-symbols-draghandle").slideDown();
+        $("#node-symbol-table-draghandle").slideDown();
         $this.text("Pin");
       } else {
-        $("#node-symbols-draghandle").slideUp();
+        $("#node-symbol-table-draghandle").slideUp();
         $this.text("Drag");
       }
     });
 
-    $("#node-symbols-draghandle").on("mousedown", function () {
+    $("#node-symbol-table-draghandle").on("mousedown", function () {
       var body = $("body");
       var parent = $(this).parent();
       body.on("mousemove", function (e2) {
@@ -1328,6 +1371,57 @@ Note that this may cause slow performance on larger networks.">
       body.on("mouseup", function (e3) {
         body.off("mousemove").off("mouseup");
       });
+    });
+
+    $("#node-symbol-table-context-hide").on("click", function () {
+      $("#node-symbol-table-hide")
+        .parent()
+        .click();
+      $(this).parent().hide();
+    });
+
+    $("#node-symbol-table-expand").on("click", function () {
+      var $this = $(this);
+      if ($this.text() === "Expand") {
+        $("#node-symbol-table-wrapper").css({
+          "max-height": "none",
+          "overflow-y": "auto"
+        });
+        $this.text("Contract");
+      } else {
+        $("#node-symbol-table-wrapper").css({
+          "max-height": "400px",
+          "overflow-y": "scroll"
+        });
+        $this.text("Expand");
+      }
+      $this.parent().hide();
+    });
+
+    $('#node-symbol-table-counts').on('click', function () {
+      var $this = $(this);
+      if (session.style.widgets['node-symbol-table-counts']) {
+        session.style.widgets['node-symbol-table-counts'] = false;
+        $this.text("Show Counts");
+      } else {
+        session.style.widgets['node-symbol-table-counts'] = true;
+        $this.text("Hide Counts");
+      }
+      $("#node-symbol-variable").trigger('change');
+      $this.parent().hide();
+    });
+
+    $('#node-symbol-table-frequencies').on('click', function () {
+      var $this = $(this);
+      if (session.style.widgets['node-symbol-table-frequencies']) {
+        session.style.widgets['node-symbol-table-frequencies'] = false;
+        $this.text("Show Frequencies");
+      } else {
+        session.style.widgets['node-symbol-table-frequencies'] = true;
+        $this.text("Hide Frequencies");
+      }
+      $("#node-symbol-variable").change();
+      $this.parent().hide();
     });
 
     d3.select(window).on('keydown keyup', function () {
@@ -1359,7 +1453,7 @@ Note that this may cause slow performance on larger networks.">
     //For some mysterious reason, this really needed a delay...
     setTimeout(function () {
       if (session.style.widgets['node-symbol-variable'] !== 'None') {
-        $('#node-symbol-variable').change();
+        $('#node-symbol-variable').trigger('change');
       }
     }, 1);
 

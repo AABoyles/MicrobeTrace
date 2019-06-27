@@ -137,6 +137,8 @@ MT.defaultWidgets = {
   "node-radius": 250,
   "node-radius-variable": "None",
   "node-symbol": "symbolCircle",
+  "node-symbol-table-counts": true,
+  "node-symbol-table-frequencies": false,
   "node-symbol-variable": "None",
   "node-tooltip-variable": "id",
   "physics-tree-charge": 20,
