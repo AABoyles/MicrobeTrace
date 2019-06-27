@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
   "use strict";
 
   if (
@@ -21,7 +21,7 @@ $(function() {
 
   // Before anything else gets done, ask the user to accept the legal agreement
   if (!localStorage.getItem("licenseAccepted")) {
-    $("#acceptAgreement").on("click", function() {
+    $("#acceptAgreement").on("click", function () {
       localStorage.setItem("licenseAccepted", new Date());
     });
     $("#licenseAgreement").modal({
@@ -31,7 +31,7 @@ $(function() {
   }
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(function(error) {
+    navigator.serviceWorker.register("sw.js").catch(function (error) {
       console.error("Service Worker Registration failed with " + error);
     });
   }
@@ -61,13 +61,13 @@ $(function() {
 
   self.$window = $(window);
 
-  $(".modal-header").on("mousedown", function(e1) {
+  $(".modal-header").on("mousedown", function (e1) {
     var body = $("body");
     var parent = $(this)
       .parent()
       .parent()
       .parent();
-    body.on("mousemove", function(e2) {
+    body.on("mousemove", function (e2) {
       parent
         .css(
           "top",
@@ -78,13 +78,13 @@ $(function() {
           parseFloat(parent.css("left")) + e2.originalEvent.movementX + "px"
         );
     });
-    body.on("mouseup", function(e3) {
+    body.on("mouseup", function (e3) {
       body.off("mousemove").off("mouseup");
     });
   });
 
   // Let's set up the Nav Bar
-  $("#stash-data").on("click", function() {
+  $("#stash-data").on("click", function () {
     localStorage.setItem(
       "stash-" + Date.now() + "-" + $("#stash-name").val(),
       JSON.stringify(session)
@@ -104,7 +104,7 @@ $(function() {
 
   function updateTable() {
     var rows = [];
-    Object.keys(localStorage).forEach(function(k) {
+    Object.keys(localStorage).forEach(function (k) {
       if (k.substring(0, 5) !== "stash") return;
       rows.push({
         fullname: k,
@@ -115,27 +115,27 @@ $(function() {
     table.setData(rows);
   }
 
-  $("#RecallDataTab").on("click", function(e) {
+  $("#RecallDataTab").on("click", function (e) {
     e.preventDefault();
     updateTable();
     $("#session-recall-modal").modal("show");
   });
 
-  $("#recall-delete-stash").on("click", function() {
+  $("#recall-delete-stash").on("click", function () {
     var key = table.getSelectedData()[0].fullname;
     localStorage.removeItem(key);
     updateTable();
     alertify.success("That stash has been deleted.");
   });
 
-  $("#recall-load-stash").on("click", function() {
+  $("#recall-load-stash").on("click", function () {
     var key = table.getSelectedData()[0].fullname;
     var json = localStorage.getItem(key);
     MT.applySession(JSON.parse(json));
     $("#session-recall-modal").modal("hide");
   });
 
-  $("#save-data").on("click", function() {
+  $("#save-data").on("click", function () {
     var name = $("#save-file-name").val();
     var format = $("#save-file-format").val();
     var data;
@@ -157,7 +157,7 @@ $(function() {
             level: 9
           }
         })
-        .then(function(content) {
+        .then(function (content) {
           saveAs(content, name + ".zip");
         });
     } else {
@@ -166,7 +166,7 @@ $(function() {
     }
   });
 
-  $("#OpenTab").on("change", function(e) {
+  $("#OpenTab").on("change", function (e) {
     if (e.target.files.length > 0) {
       var extension = e.target.files[0].name
         .split(".")
@@ -174,17 +174,17 @@ $(function() {
         .toLowerCase();
       if (extension === "zip") {
         var new_zip = new JSZip();
-        new_zip.loadAsync(e.target.files[0]).then(function(zip) {
-          zip.forEach(function(relativePath, zipEntry) {
+        new_zip.loadAsync(e.target.files[0]).then(function (zip) {
+          zip.forEach(function (relativePath, zipEntry) {
             extension = zipEntry.name.split(".").pop();
-            zipEntry.async("string").then(function(c) {
+            zipEntry.async("string").then(function (c) {
               MT.processJSON(c, extension);
             });
           });
         });
       } else {
         var reader = new FileReader();
-        reader.onloadend = function(out) {
+        reader.onloadend = function (out) {
           MT.processJSON(out.target.result, extension);
         };
         reader.readAsText(e.target.files[0], "UTF-8");
@@ -192,49 +192,49 @@ $(function() {
     }
   });
 
-  $("#AddDataTab").on("click", function(e) {
+  $("#AddDataTab").on("click", function (e) {
     e.preventDefault();
     $("#network-statistics-hide").trigger("click");
     MT.launchView("files");
   });
 
-  $("#NewTab").on("click", function(e) {
+  $("#NewTab").on("click", function (e) {
     e.preventDefault();
     $("#exit-modal").modal();
   });
 
   $("#exit-button").on("click", MT.reset);
 
-  $(".viewbutton").on("click", function() {
+  $(".viewbutton").on("click", function () {
     MT.launchView($(this).data("href"));
   });
 
-  $("#ReloadTab").on("click", function(e) {
+  $("#ReloadTab").on("click", function (e) {
     e.preventDefault();
-    $("#exit-button").on("click", function() {
+    $("#exit-button").on("click", function () {
       window.location.reload();
     });
     $("#exit-modal").modal();
   });
 
-  $("#FullScreenTab").on("click", function(e) {
+  $("#FullScreenTab").on("click", function (e) {
     e.preventDefault();
     screenfull.toggle();
   });
 
-  $('[name="NNOptions"]').on("change", function() {
+  $('[name="NNOptions"]').on("change", function () {
     MT.updateNetwork();
   });
 
   $("#links-show-all")
     .parent()
-    .on("click", function() {
+    .on("click", function () {
       $("#filtering-epsilon-row").slideUp();
     });
 
   $("#links-show-nn")
     .parent()
-    .on("click", function() {
+    .on("click", function () {
       $("#filtering-epsilon-copy").val(
         Math.pow(10, parseFloat($("#filtering-epsilon").val())).toLocaleString()
       );
@@ -242,25 +242,25 @@ $(function() {
     });
 
   $("#filtering-epsilon")
-    .on("input", function() {
+    .on("input", function () {
       $("#filtering-epsilon-copy").val(
         Math.pow(10, parseFloat(this.value)).toLocaleString()
       );
     })
-    .on("change", function() {
+    .on("change", function () {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
-      MT.computeNN(session.style.widgets["link-sort-variable"], function() {
+      MT.computeNN(session.style.widgets["link-sort-variable"], function () {
         MT.updateNetwork();
       });
     });
 
-  $("#cluster-minimum-size").on("change", function() {
+  $("#cluster-minimum-size").on("change", function () {
     var val = parseInt(this.value);
     session.style.widgets["cluster-minimum-size"] = val;
     MT.setClusterVisibility(true);
     MT.setLinkVisibility(true);
     MT.setNodeVisibility(true);
-    ["cluster", "link", "node"].forEach(function(thing) {
+    ["cluster", "link", "node"].forEach(function (thing) {
       $window.trigger(thing + "-visibility");
     });
     MT.updateStatistics();
@@ -271,7 +271,7 @@ $(function() {
     }
   });
 
-  MT.updateThresholdHistogram = function() {
+  MT.updateThresholdHistogram = function () {
     var width = 280,
       height = 48,
       svg = d3
@@ -309,7 +309,7 @@ $(function() {
       .scaleLinear()
       .domain([
         0,
-        d3.max(bins, function(d) {
+        d3.max(bins, function (d) {
           return d.length;
         })
       ])
@@ -321,7 +321,7 @@ $(function() {
       .enter()
       .append("g")
       .attr("class", "bar")
-      .attr("transform", function(d) {
+      .attr("transform", function (d) {
         return "translate(" + x(d.x0) + "," + y(d.length) + ")";
       });
 
@@ -329,7 +329,7 @@ $(function() {
       .append("rect")
       .attr("x", 1)
       .attr("width", 6)
-      .attr("height", function(d) {
+      .attr("height", function (d) {
         return height - y(d.length);
       });
 
@@ -342,15 +342,15 @@ $(function() {
       );
     }
 
-    svg.on("click", function() {
+    svg.on("click", function () {
       updateThreshold();
       MT.updateNetwork();
     });
 
-    svg.on("mousedown", function() {
+    svg.on("mousedown", function () {
       d3.event.preventDefault();
       svg.on("mousemove", updateThreshold);
-      svg.on("mouseup mouseleave", function() {
+      svg.on("mouseup mouseleave", function () {
         MT.updateNetwork();
         svg
           .on("mousemove", null)
@@ -360,13 +360,13 @@ $(function() {
     });
   };
 
-  $("#link-sort-variable").on("change", function(e) {
+  $("#link-sort-variable").on("change", function (e) {
     session.style.widgets["link-sort-variable"] = e.target.value;
     MT.updateThresholdHistogram();
     MT.updateNetwork();
   });
 
-  $("#link-threshold").on("change", function() {
+  $("#link-threshold").on("change", function () {
     session.style.widgets["link-threshold"] = parseFloat(this.value);
     MT.setLinkVisibility(true);
     MT.tagClusters();
@@ -377,7 +377,7 @@ $(function() {
     //Because the network isn't robust to the order in which these operations
     //take place, we just do them all silently and then react as though we did
     //them each after all of them are already done.
-    ["cluster", "link", "node"].forEach(function(thing) {
+    ["cluster", "link", "node"].forEach(function (thing) {
       $window.trigger(thing + "-visibility");
     });
     MT.updateStatistics();
@@ -385,18 +385,18 @@ $(function() {
 
   $("#network-statistics-show")
     .parent()
-    .on("click", function() {
+    .on("click", function () {
       MT.updateStatistics();
       $("#network-statistics-wrapper").fadeIn();
     });
 
   $("#network-statistics-hide")
     .parent()
-    .on("click", function() {
+    .on("click", function () {
       $("#network-statistics-wrapper").fadeOut();
     });
 
-  $("#network-statistics-wrapper").on("contextmenu", function(e) {
+  $("#network-statistics-wrapper").on("contextmenu", function (e) {
     e.preventDefault();
     $("#network-statistics-context").css({
       top: e.clientY,
@@ -405,7 +405,7 @@ $(function() {
     });
   });
 
-  $("#hideStats").on("click", function(e) {
+  $("#hideStats").on("click", function (e) {
     $(this)
       .parent()
       .hide();
@@ -414,7 +414,7 @@ $(function() {
       .click();
   });
 
-  $("#moveStats").on("click", function() {
+  $("#moveStats").on("click", function () {
     var $this = $(this);
     $this.parent().hide();
     if ($this.text() == "Drag") {
@@ -426,10 +426,10 @@ $(function() {
     }
   });
 
-  $("#network-statistics-draghandle").on("mousedown", function() {
+  $("#network-statistics-draghandle").on("mousedown", function () {
     var body = $("body");
     var parent = $(this).parent();
-    body.on("mousemove", function(e2) {
+    body.on("mousemove", function (e2) {
       parent
         .css(
           "bottom",
@@ -440,12 +440,12 @@ $(function() {
           parseFloat(parent.css("right")) - e2.originalEvent.movementX + "px"
         );
     });
-    body.on("mouseup", function(e3) {
+    body.on("mouseup", function (e3) {
       body.off("mousemove").off("mouseup");
     });
   });
 
-  $("#RevealAllTab").on("click", function() {
+  $("#RevealAllTab").on("click", function () {
     $("#cluster-minimum-size").val(1);
     session.style.widgets["cluster-minimum-size"] = 1;
     $("#filtering-wrapper").slideDown();
@@ -470,17 +470,20 @@ $(function() {
       $("#node-color-value-row").slideUp();
       $('#node-color-table-row').slideDown();
       var table = $("#node-colors").empty().append(
-        "<tr><th class='p-1' contenteditable>Node " +
-          MT.titleize(variable) +
-          "</th><th>Color</th><tr>"
+        "<tr>" +
+        "<th class='p-1' contenteditable>Node " + MT.titleize(variable) + "</th>" +
+        (session.style.widgets['node-color-table-counts'] ? "<th>Count</th>" : "") +
+        (session.style.widgets['node-color-table-frequencies'] ? "<th>Frequency</th>" : "") +
+        "<th>Color</th>" +
+        "<tr>"
       );
       if (!session.style.nodeValueNames) session.style.nodeValueNames = {};
-      MT.createNodeColorMap().forEach(function (value, i) {
-        var input = $(
-          '<input type="color" value="' +
-            temp.style.nodeColorMap(value) +
-            '" />'
-        ).on("change", function (evt) {
+      var aggregates = MT.createNodeColorMap();
+      var vnodes = MT.getVisibleNodes();
+      Object.keys(aggregates).sort(function (a, b) {
+        return aggregates[b] - aggregates[a];
+      }).forEach(function (value, i) {
+        var input = $('<input type="color" value="' + temp.style.nodeColorMap(value) + '" />').on("change", function (evt) {
           session.style.nodeColors.splice(i, 1, evt.target.value);
           temp.style.nodeColorMap = d3
             .scaleOrdinal(session.style.nodeColors)
@@ -489,7 +492,11 @@ $(function() {
         });
         var cell = $("<td></td>").append(input);
         var row = $(
-          "<tr><td data-value='" + value + "'>" + (session.style.nodeValueNames[value] ? session.style.nodeValueNames[value] : MT.titleize("" + value)) + "</td></tr>"
+          "<tr>" +
+          "<td data-value='" + value + "'>" + (session.style.nodeValueNames[value] ? session.style.nodeValueNames[value] : MT.titleize("" + value)) + "</td>" +
+          (session.style.widgets['node-color-table-counts'] ? ('<td>' + aggregates[value] + '</td>') : "") +
+          (session.style.widgets['node-color-table-frequencies'] ? ('<td>' + (aggregates[value] / vnodes.length).toLocaleString() + '</td>') : "") +
+          "</tr>"
         ).append(cell);
         table.append(row);
       });
@@ -526,17 +533,20 @@ $(function() {
       $("#link-color-value-row").slideUp();
       $('#link-color-table-row').slideDown();
       var table = $("#link-colors").empty().append(
-        "<tr><th class='p-1' contenteditable>Link " +
-          MT.titleize(variable) +
-          "</th><th>Color</th><tr>"
+        "<tr>" +
+        ("<th class='p-1' contenteditable>Link " + MT.titleize(variable) + "</th>") +
+        (session.style.widgets['link-color-table-counts'] ? "<th>Count</th>" : "") +
+        (session.style.widgets['link-color-table-frequencies'] ? "<th>Frequency</th>" : "") +
+        "<th>Color</th>" +
+        "</tr>"
       );
       if (!session.style.linkValueNames) session.style.linkValueNames = {};
-      MT.createLinkColorMap().forEach(function (value, i) {
-        var input = $(
-          '<input type="color" value="' +
-            temp.style.linkColorMap(value) +
-            '" />'
-        ).on("change", function (evt) {
+      var aggregates = MT.createLinkColorMap();
+      var vlinks = MT.getVisibleLinks();
+      Object.keys(aggregates).sort(function (a, b) {
+        return aggregates[b] - aggregates[a];
+      }).forEach(function (value, i) {
+        var input = $('<input type="color" value="' + temp.style.linkColorMap(value) + '" />').on("change", function (evt) {
           session.style.linkColors.splice(i, 1, evt.target.value);
           temp.style.linkColorMap = d3
             .scaleOrdinal(session.style.linkColors)
@@ -545,8 +555,13 @@ $(function() {
         });
         var cell = $("<td></td>").append(input);
         var row = $(
-          "<tr><td data-value='" + value + "'>" + (session.style.linkValueNames[value] ? session.style.linkValueNames[value] : MT.titleize("" + value)) + "</td></tr>"
-        ).append(cell);
+          "<tr>" +
+          "<td data-value='" + value + "'>" + (session.style.linkValueNames[value] ? session.style.linkValueNames[value] : MT.titleize("" + value)) + "</td>" +
+          (session.style.widgets['link-color-table-counts'] ? ('<td>' + aggregates[value] + '</td>') : "") +
+          (session.style.widgets['link-color-table-frequencies'] ? ('<td>' + (aggregates[value] / vlinks.length).toLocaleString() + '</td>') : "") +
+          "</tr>"
+        );
+        row.append(cell);
         table.append(row);
       });
       table.find('td').on('dblclick', function () {
@@ -565,7 +580,7 @@ $(function() {
     $window.trigger("link-color-change");
   });
 
-  $("#selected-color").on("change", function(e) {
+  $("#selected-color").on("change", function (e) {
     session.style.widgets["selected-color"] = e.target.value;
     session.style.widgets["selected-color-contrast"] = MT.contrastColor(
       e.target.value
@@ -573,7 +588,7 @@ $(function() {
     $window.trigger("selected-color-change");
   });
 
-  $("#background-color").on("change", function(e) {
+  $("#background-color").on("change", function (e) {
     session.style.widgets["background-color"] = e.target.value;
     session.style.widgets["background-color-contrast"] = MT.contrastColor(
       e.target.value
@@ -605,17 +620,17 @@ $(function() {
       $("#node-color-table-wrapper").fadeOut();
     });
 
-  $("#apply-style").on("change", function() {
+  $("#apply-style").on("change", function () {
     if (this.files.length > 0) {
       var reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         MT.applyStyle(JSON.parse(e.target.result));
       };
       reader.readAsText(this.files[0]);
     }
   });
 
-  $("#HelpTab").on("click", function(e) {
+  $("#HelpTab").on("click", function (e) {
     if (navigator.onLine) {
       window.open("https://github.com/CDCgov/MicrobeTrace/wiki");
     } else {
@@ -623,7 +638,7 @@ $(function() {
     }
   });
 
-  $.getJSON("package.json", function(r) {
+  $.getJSON("package.json", function (r) {
     MT.manifest = r;
     $("#version").html(r.version);
   });
@@ -803,14 +818,23 @@ $(function() {
   });
 
   $("#search").on("input", function (e) {
-    if (e.target.value === "") {
+    if (e.target.value == "") {
       session.data.nodes.forEach(function (n) {
         n.selected = false;
       });
     } else {
-      var v = session.style.widgets['search-field'];
+      var field = session.style.widgets['search-field'];
+      var v = e.target.value.toLowerCase();
       session.data.nodes.forEach(function (n) {
-        n.selected = n[v].indexOf(e.target.value) > -1;
+        if (!n[field]) {
+          n.selected = false;
+        }
+        if (typeof n[field] == 'string') {
+          n.selected = (n[field].toLowerCase().indexOf(v) > -1);
+        }
+        if (typeof n[field] == 'number') {
+          n.selected = (n[field] + '' == v);
+        }
       });
       if (
         !session.data.nodes.some(function (n) {
@@ -835,7 +859,7 @@ $(function() {
     MT.launchView("files");
   }
 
-  $(document).on("keydown", function(e) {
+  $(document).on("keydown", function (e) {
     if (e.ctrlKey && e.key === "f") {
       e.preventDefault();
       $("#search").focus();
@@ -846,15 +870,15 @@ $(function() {
     }
   });
 
-  layout.on("stateChanged", function() {
+  layout.on("stateChanged", function () {
     session.layout = MT.cacheLayout(layout.root.contentItems[0]);
   });
 
   $window
-    .on("node-selected", function() {
+    .on("node-selected", function () {
       $("#numberOfSelectedNodes").text(
         session.data.nodes
-          .filter(function(d) {
+          .filter(function (d) {
             return d.selected;
           })
           .length.toLocaleString()
@@ -863,7 +887,7 @@ $(function() {
     .on("click", function () {
       $("#network-statistics-context, #link-color-table-context, #node-color-table-context").hide();
     })
-    .on("link-visibility", function() {
+    .on("link-visibility", function () {
       if (session.style.widgets["link-color-variable"] !== "None") {
         $("#link-color-variable").trigger("change");
       }
@@ -875,17 +899,17 @@ $(function() {
         $("#node-color-variable").trigger("change");
       }
     })
-    .on("node-visibility", function() {
+    .on("node-visibility", function () {
       if (session.style.widgets["node-color-variable"] !== "None") {
         $("#node-color-variable").trigger("change");
       }
     })
-    .on("resize", function() {
+    .on("resize", function () {
       layout.updateSize();
     })
-    .on("beforeunload", function(e) {
+    .on("beforeunload", function (e) {
       e.preventDefault();
-      $("#exit-button").on("click", function() {
+      $("#exit-button").on("click", function () {
         window.location.reload();
       });
       $("#exit-modal").modal();

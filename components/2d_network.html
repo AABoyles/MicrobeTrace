@@ -287,9 +287,9 @@ Note that this may cause slow performance on larger networks.">
                         checked>
                       Hide
                     </label>
-            </div>
-          </div>
-        </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -751,7 +751,7 @@ Note that this may cause slow performance on larger networks.">
       hideTooltip();
       $('#copyID').attr('data-clipboard-text', d.id);
       $('#copySeq').attr('data-clipboard-text', d.seq);
-      d3.select('#viewAttributes').on('click', e => {
+      d3.select('#viewAttributes').on('click', function () {
         hideContextMenu();
         var target = $('#network-attribute-modal tbody').empty();
         var nd = session.data.nodes.find(nd => nd.id === d.id);
@@ -762,7 +762,7 @@ Note that this may cause slow performance on larger networks.">
         $('#network-attribute-modal').modal('show');
       }).node().focus();
       if (d.fixed) {
-        $('#pinNode').text('Unpin Node').on('click', e => {
+        $('#pinNode').text('Unpin Node').on('click', function () {
           d.fx = null;
           d.fy = null;
           d.fixed = false;
@@ -770,7 +770,7 @@ Note that this may cause slow performance on larger networks.">
           hideContextMenu();
         });
       } else {
-        $('#pinNode').text('Pin Node').on('click', e => {
+        $('#pinNode').text('Pin Node').on('click', function () {
           d.fx = d.x;
           d.fy = d.y;
           d.fixed = true;
@@ -1021,9 +1021,9 @@ Note that this may cause slow performance on larger networks.">
         if (values.indexOf(dv) === -1) values.push(dv);
         if (dv in aggregates) {
           aggregates[dv]++;
-      } else {
+        } else {
           aggregates[dv] = 1;
-      }
+        }
       }
       if (values.length > session.style.nodeSymbols.length) {
         var symbols = [];
@@ -1101,7 +1101,7 @@ Note that this may cause slow performance on larger networks.">
       session.style.widgets['node-charge'] = v;
     });
 
-    $('#link-directed').parent().on('click', e => {
+    $('#link-directed').parent().on('click', function () {
       svg.select('g.links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
       session.style.widgets['link-directed'] = true;
     });
@@ -1129,7 +1129,7 @@ Note that this may cause slow performance on larger networks.">
       session.style.widgets['link-length'] = v;
     });
 
-    function updateLinkColor(e) {
+    function updateLinkColor() {
       var variable = session.style.widgets['link-color-variable'];
       var links = svg.select('g.links').selectAll('line');
       if (variable === 'None') {
