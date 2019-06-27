@@ -817,20 +817,21 @@ $(function () {
     $("#node-color-variable").change();
   });
 
-  $("#search").on("input", function (e) {
-    if (e.target.value == "") {
+  $("#search").on("input", function () {
+    if (this.value == "") {
       session.data.nodes.forEach(function (n) {
         n.selected = false;
       });
     } else {
       var field = session.style.widgets['search-field'];
-      var v = e.target.value.toLowerCase();
+      var v = this.value;
+      var vre = new RegExp(v);
       session.data.nodes.forEach(function (n) {
         if (!n[field]) {
           n.selected = false;
         }
         if (typeof n[field] == 'string') {
-          n.selected = (n[field].toLowerCase().indexOf(v) > -1);
+          n.selected = vre.test(n[field]);
         }
         if (typeof n[field] == 'number') {
           n.selected = (n[field] + '' == v);
