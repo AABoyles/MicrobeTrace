@@ -1182,13 +1182,14 @@ MT.capitalize = function (c) {
 
 MT.titleize = function (title) {
   var small = title.toLowerCase().replace(/_/g, " ");
-  if (small === "id") return "ID";
-  if (small === "tn93") return "TN93";
-  if (small === "snps") return "SNPs";
-  if (small === "2d network") return "2D Network";
-  if (small === "3d network") return "3D Network";
-  if (small === "geo map") return "Map";
-  if (small === "nn") return "Nearest Neighbor";
+  if (small == 'null') return "(Empty)";
+  if (small == "id") return "ID";
+  if (small == "tn93") return "TN93";
+  if (small == "snps") return "SNPs";
+  if (small == "2d network") return "2D Network";
+  if (small == "3d network") return "3D Network";
+  if (small == "geo map") return "Map";
+  if (small == "nn") return "Nearest Neighbor";
   return small.replace(/(?:^|\s|-)\S/g, MT.capitalize);
 };
 
@@ -1487,7 +1488,7 @@ MT.createNodeColorMap = function () {
       aggregates[dv]++
     } else {
       aggregates[dv] = 1;
-  }
+    }
   }
   if (values.length > session.style.nodeColors.length) {
     var colors = [];
@@ -1526,7 +1527,7 @@ MT.createLinkColorMap = function () {
         } else {
           aggregates[o] = 1;
         }
-    });
+      });
     }
   } else {
     for (var i = 0; i < n; i++) {
@@ -1538,8 +1539,8 @@ MT.createLinkColorMap = function () {
         aggregates[lv]++;
       } else {
         aggregates[lv] = 1;
+      }
     }
-  }
   }
   if (values.length > session.style.linkColors.length) {
     var colors = [];
