@@ -91,6 +91,8 @@ MT.defaultWidgets = {
   "histogram-scale-log": false,
   "histogram-variable": "links-distance",
   "link-color": "#a6cee3",
+  "link-color-table-counts": true,
+  "link-color-table-frequencies": false,
   "link-color-variable": "None",
   "link-directed": false,
   "link-label-variable": "None",
@@ -126,6 +128,8 @@ MT.defaultWidgets = {
   "network-gravity": 0.05,
   "node-charge": 200,
   "node-color": "#1f77b4",
+  "node-color-table-counts": true,
+  "node-color-table-frequencies": false,
   "node-color-variable": "None",
   "node-highlight": false,
   "node-label-size": 16,
@@ -1468,6 +1472,7 @@ MT.createNodeColorMap = function () {
     };
     return [];
   }
+  var aggregates = {};
   var values = [];
   var nodes = session.data.nodes;
   var n = nodes.length;
@@ -1476,13 +1481,11 @@ MT.createNodeColorMap = function () {
     if (!d.visible) continue;
     var dv = d[variable];
     if (values.indexOf(dv) === -1) values.push(dv);
+    if (dv in aggregates) {
+      aggregates[dv]++
+    } else {
+      aggregates[dv] = 1;
   }
-  if (MT.isNumber(nodes[0][variable])) {
-    values.sort(function (a, b) {
-      return a - b;
-    });
-  } else {
-    values.sort();
   }
   if (values.length > session.style.nodeColors.length) {
     var colors = [];
@@ -1495,7 +1498,7 @@ MT.createNodeColorMap = function () {
   temp.style.nodeColorMap = d3
     .scaleOrdinal(session.style.nodeColors)
     .domain(values);
-  return values;
+  return aggregates;
 };
 
 MT.createLinkColorMap = function () {
@@ -1506,29 +1509,35 @@ MT.createLinkColorMap = function () {
     };
     return [];
   }
+  var aggregates = {};
   var values = [];
+  var links = MT.getVisibleLinks();
+  var n = links.length;
   if (variable === "origin") {
-    session.data.links.forEach(function (l) {
+    for (var i = 0; i < n; i++) {
+      var l = links[i];
+      if (!l.visible) continue;
       l.origin.forEach(function (o) {
         if (!values.includes(o)) values.push(o);
-      });
+        if (o in aggregates) {
+          aggregates[o]++;
+        } else {
+          aggregates[o] = 1;
+        }
     });
+    }
   } else {
-    var links = session.data.links;
-    var n = links.length;
     for (var i = 0; i < n; i++) {
       var l = links[i];
       if (!l.visible) continue;
       var lv = l[variable];
       if (values.indexOf(lv) === -1) values.push(lv);
+      if (lv in aggregates) {
+        aggregates[lv]++;
+      } else {
+        aggregates[lv] = 1;
     }
   }
-  if (MT.isNumber(session.data.links[0][variable])) {
-    values.sort(function (a, b) {
-      return a - b;
-    });
-  } else {
-    values.sort();
   }
   if (values.length > session.style.linkColors.length) {
     var colors = [];
@@ -1539,7 +1548,7 @@ MT.createLinkColorMap = function () {
   temp.style.linkColorMap = d3
     .scaleOrdinal(session.style.linkColors)
     .domain(values);
-  return values;
+  return aggregates;
 };
 
 MT.applyStyle = function (style) {

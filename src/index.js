@@ -691,6 +691,30 @@ $(function() {
     }
   });
 
+  $('#link-color-table-counts').on('click', function () {
+    var $this = $(this);
+    if (session.style.widgets['link-color-table-counts']) {
+      session.style.widgets['link-color-table-counts'] = false;
+      $this.text("Show Counts");
+    } else {
+      session.style.widgets['link-color-table-counts'] = true;
+      $this.text("Hide Counts");
+    }
+    $("#link-color-variable").change();
+  });
+
+  $('#link-color-table-frequencies').on('click', function () {
+    var $this = $(this);
+    if (session.style.widgets['link-color-table-frequencies']) {
+      session.style.widgets['link-color-table-frequencies'] = false;
+      $this.text("Show Frequencies");
+    } else {
+      session.style.widgets['link-color-table-frequencies'] = true;
+      $this.text("Hide Frequencies");
+    }
+    $("#link-color-variable").change();
+  });
+
   $("#node-color-table-wrapper").on("contextmenu", function (e) {
     e.preventDefault();
     $("#node-color-table-context").css({
@@ -752,6 +776,30 @@ $(function() {
       });
       $this.text("Expand");
     }
+  });
+
+  $('#node-color-table-counts').on('click', function () {
+    var $this = $(this);
+    if (session.style.widgets['node-color-table-counts']) {
+      session.style.widgets['node-color-table-counts'] = false;
+      $this.text("Show Counts");
+    } else {
+      session.style.widgets['node-color-table-counts'] = true;
+      $this.text("Hide Counts");
+    }
+    $("#node-color-variable").change();
+  });
+
+  $('#node-color-table-frequencies').on('click', function () {
+    var $this = $(this);
+    if (session.style.widgets['node-color-table-frequencies']) {
+      session.style.widgets['node-color-table-frequencies'] = false;
+      $this.text("Show Frequencies");
+    } else {
+      session.style.widgets['node-color-table-frequencies'] = true;
+      $this.text("Hide Frequencies");
+    }
+    $("#node-color-variable").change();
   });
 
   $("#search").on("input", function (e) {
