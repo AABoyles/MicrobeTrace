@@ -11,7 +11,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: 34px;
+  padding-top: 38px;
   background-color: #f8f9fa;
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
@@ -32,7 +32,7 @@ body {
                                 supported by Chrome and Opera */
 }
 .navbar {
-  padding: 0.25rem 0.25rem 0 0;
+  padding: 0.25rem;
 }
 #search-form{
   display: none;
