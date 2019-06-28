@@ -350,8 +350,8 @@
       .selectAll("g")
       .data(branches)
       .enter().append('g');
-    branch.append('line').classed('hline', true);
-    branch.append('line').classed('vline', true);
+    branch.append('line').classed('hline', true).attr('stroke', 'gray');
+    branch.append('line').classed('vline', true).attr('stroke', 'gray');
     var nodes = hierarchy.descendants();
     var node = g
       .select("g.nodes")
