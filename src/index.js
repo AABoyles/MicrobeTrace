@@ -360,7 +360,7 @@ $(function () {
     });
   };
 
-  $("#link-sort-variable").on("change", function (e) {
+  $("#link-sort-variable").on("change", function () {
     session.style.widgets["link-sort-variable"] = this.value;
     MT.updateThresholdHistogram();
     MT.updateNetwork();
@@ -457,7 +457,7 @@ $(function () {
 
   $("#node-color-variable")
     .val(session.style.widgets["node-color-variable"])
-    .on("change", function (e) {
+    .on("change", function () {
       var variable = this.value;
       session.style.widgets["node-color-variable"] = variable;
       if (variable === "None") {
@@ -520,7 +520,7 @@ $(function () {
 
   $("#link-color-variable")
     .val(session.style.widgets["link-color-variable"])
-    .on("change", function (e) {
+    .on("change", function () {
       var variable = this.value;
       session.style.widgets["link-color-variable"] = variable;
       if (variable === "None") {
