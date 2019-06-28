@@ -200,7 +200,7 @@ performance of this software.</pre>
 
   <div id="link-color-table-wrapper" class="floater">
     <div id="link-color-table-draghandle"><span class="oi oi-move"></span></div>
-    <table id="link-colors"></table>
+    <table id="link-color-table"></table>
   </div>
 
   <div id="link-color-table-context" class="dropdown-menu">
@@ -213,7 +213,7 @@ performance of this software.</pre>
 
   <div id="node-color-table-wrapper" class="floater">
     <div id="node-color-table-draghandle"><span class="oi oi-move"></span></div>
-    <table id="node-colors"></table>
+    <table id="node-color-table"></table>
   </div>
 
   <div id="node-color-table-context" class="dropdown-menu">
@@ -226,28 +226,26 @@ performance of this software.</pre>
 
   <div id="network-statistics-wrapper" class="floater">
     <div id="network-statistics-draghandle"><span class="oi oi-move"></span></div>
-    <table id="network-statistics">
-      <tbody>
-        <tr>
-          <td class="text-right">
-            <span id="numberOfNodes"></span>
-            (<span id="numberOfSelectedNodes"></span>)
-          </td>
-          <td>Nodes (Selected)</td>
-        </tr>
-        <tr>
-          <td id="numberOfVisibleLinks" class="text-right"></td>
-          <td>Links</td>
-        </tr>
-        <tr>
-          <td id="numberOfDisjointComponents" class="text-right"></td>
-          <td>Clusters</td>
-        </tr>
-        <tr id="singletonsRow">
-          <td id="numberOfSingletonNodes" class="text-right"></td>
-          <td>Singletons</td>
-        </tr>
-      </tbody>
+    <table id="network-statistics-table">
+      <tr>
+        <td class="text-right">
+          <span id="numberOfNodes"></span>
+          (<span id="numberOfSelectedNodes"></span>)
+        </td>
+        <td>Nodes (Selected)</td>
+      </tr>
+      <tr>
+        <td id="numberOfVisibleLinks" class="text-right"></td>
+        <td>Links</td>
+      </tr>
+      <tr>
+        <td id="numberOfDisjointComponents" class="text-right"></td>
+        <td>Clusters</td>
+      </tr>
+      <tr>
+        <td id="numberOfSingletonNodes" class="text-right"></td>
+        <td>Singletons</td>
+      </tr>
     </table>
   </div>
 

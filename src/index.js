@@ -166,7 +166,7 @@ $(function () {
     }
   });
 
-  $("#OpenTab").on("change", function (e) {
+  $("#OpenTab").on("change", function () {
     if (e.target.files.length > 0) {
       var extension = e.target.files[0].name
         .split(".")
@@ -361,7 +361,7 @@ $(function () {
   };
 
   $("#link-sort-variable").on("change", function (e) {
-    session.style.widgets["link-sort-variable"] = e.target.value;
+    session.style.widgets["link-sort-variable"] = this.value;
     MT.updateThresholdHistogram();
     MT.updateNetwork();
   });
@@ -458,18 +458,18 @@ $(function () {
   $("#node-color-variable")
     .val(session.style.widgets["node-color-variable"])
     .on("change", function (e) {
-      var variable = e.target.value;
+      var variable = this.value;
       session.style.widgets["node-color-variable"] = variable;
       if (variable === "None") {
         $("#node-color-value-row").slideDown();
         $('#node-color-table-row').slideUp();
-        $("#node-colors").empty();
+        $("#node-color-table").empty();
         $window.trigger("node-color-change");
         return;
       }
       $("#node-color-value-row").slideUp();
       $('#node-color-table-row').slideDown();
-      var table = $("#node-colors").empty().append(
+      var table = $("#node-color-table").empty().append(
         "<tr>" +
         "<th class='p-1' contenteditable>Node " + MT.titleize(variable) + "</th>" +
         (session.style.widgets['node-color-table-counts'] ? "<th>Count</th>" : "") +
@@ -507,13 +507,13 @@ $(function () {
         $this.attr('contenteditable', false);
         session.style.nodeValueNames[$this.data('value')] = $this.text();
       })
-      sortable('#node-colors', { items: 'tr' });
+      sortable('#node-color-table', { items: 'tr' });
       $window.trigger("node-color-change");
     }).trigger('change');
 
   $("#node-color")
     .on("change", function (e) {
-      session.style.widgets["node-color"] = e.target.value;
+      session.style.widgets["node-color"] = this.value;
       $window.trigger("node-color-change");
     })
     .val(session.style.widgets["node-color"]);
@@ -521,18 +521,18 @@ $(function () {
   $("#link-color-variable")
     .val(session.style.widgets["link-color-variable"])
     .on("change", function (e) {
-      var variable = e.target.value;
+      var variable = this.value;
       session.style.widgets["link-color-variable"] = variable;
       if (variable === "None") {
         $("#link-color-value-row").slideDown();
         $('#link-color-table-row').slideUp();
-        $("#link-colors").empty();
+        $("#link-color-table").empty();
         $window.trigger("link-color-change");
         return;
       }
       $("#link-color-value-row").slideUp();
       $('#link-color-table-row').slideDown();
-      var table = $("#link-colors").empty().append(
+      var table = $("#link-color-table").empty().append(
         "<tr>" +
         ("<th class='p-1' contenteditable>Link " + MT.titleize(variable) + "</th>") +
         (session.style.widgets['link-color-table-counts'] ? "<th>Count</th>" : "") +
@@ -571,27 +571,27 @@ $(function () {
         $this.attr('contenteditable', false);
         session.style.linkValueNames[$this.data('value')] = $this.text();
       });
-      sortable('#link-colors', { items: 'tr' });
+      sortable('#link-color-table', { items: 'tr' });
       $window.trigger("link-color-change");
     }).trigger('change');
 
-  $("#link-color").on("change", function (e) {
-    session.style.widgets["link-color"] = e.target.value;
+  $("#link-color").on("change", function () {
+    session.style.widgets["link-color"] = this.value;
     $window.trigger("link-color-change");
   });
 
-  $("#selected-color").on("change", function (e) {
-    session.style.widgets["selected-color"] = e.target.value;
+  $("#selected-color").on("change", function () {
+    session.style.widgets["selected-color"] = this.value;
     session.style.widgets["selected-color-contrast"] = MT.contrastColor(
-      e.target.value
+      this.value
     );
     $window.trigger("selected-color-change");
   });
 
-  $("#background-color").on("change", function (e) {
-    session.style.widgets["background-color"] = e.target.value;
+  $("#background-color").on("change", function () {
+    session.style.widgets["background-color"] = this.value;
     session.style.widgets["background-color-contrast"] = MT.contrastColor(
-      e.target.value
+      this.value
     );
     $window.trigger("background-color-change");
   });
@@ -630,7 +630,7 @@ $(function () {
     }
   });
 
-  $("#HelpTab").on("click", function (e) {
+  $("#HelpTab").on("click", function () {
     if (navigator.onLine) {
       window.open("https://github.com/CDCgov/MicrobeTrace/wiki");
     } else {

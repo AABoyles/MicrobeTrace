@@ -168,18 +168,17 @@ svg#link-threshold-sparkline {
 }
 #link-color-table th {
   text-align: center;
-}
-#link-color-table th, td {
   border: 1px solid lightgray;
   padding: 4px;
 }
-#link-color-table select {
-  background: none;
+#link-color-table td{
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#link-color-table input[type="color"] {
+  background: transparent;
   border: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  text-indent: 1px;
-  text-overflow: "";
+  padding: 0;
 }
 #node-color-table-wrapper {
   position: absolute;
@@ -200,10 +199,15 @@ svg#link-threshold-sparkline {
 }
 #node-color-table th {
   text-align: center;
-}
-#node-color-table th, td {
   border: 1px solid lightgray;
   padding: 4px;
+}
+#node-color-table td {
+  border: 1px solid lightgray;
+}
+#node-color-table input[type="color"] {
+  border: none;
+  background: transparent;
 }
 #node-color-table select {
   background: none;
@@ -229,8 +233,9 @@ svg#link-threshold-sparkline {
   width: 100%;
   text-align: center;
 }
-#network-statistics-wrapper td {
+#network-statistics-table td {
   border: none;
+  padding: 0.125rem 0.25rem;
 }
 
 label[for="apply-style"] {
@@ -506,9 +511,11 @@ button.btn,
   text-align: center;
 }
 #node-symbol-table th {
+  border: 1px solid lightgray;
+  padding: 4px;
   text-align: center;
 }
-#node-symbol-table th, td {
+#node-symbol-table td {
   border: 1px solid lightgray;
   padding: 4px;
 }
