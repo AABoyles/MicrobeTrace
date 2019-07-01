@@ -294,8 +294,9 @@
 </div><!-- /.modal -->
 
 <script>
-    var tree;
+  var tree;
 
+  (function () {
     function drawTree() {
       var panel = $('#tree').parent();
       if (!panel.length) return;
@@ -324,11 +325,11 @@
         leafLabels: session.style.widgets['tree-leaf-label-show'],
         margin: [60, 100, 20, 20]
       }, {
-        select: select,
-        contextmenu: contextMenu,
-        showtooltip: tooltip,
-        hidetooltip: hideTooltip
-      });
+          select: select,
+          contextmenu: contextMenu,
+          showtooltip: tooltip,
+          hidetooltip: hideTooltip
+        });
 
       $('#tree').on('click', hideContext);
 
@@ -696,5 +697,5 @@
     });
 
     drawTree();
-})();
+  })();
 </script>
