@@ -626,6 +626,23 @@
     }
   }
 
+  function fit(thing, bounds) {
+    if (!bounds) bounds = g.node().getBBox();
+    if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
+    var parent = g.node().parentElement.parentElement,
+      midX = bounds.x + bounds.width / 2,
+      midY = bounds.y + bounds.height / 2;
+    var scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
+    d3.select('svg#physics-tree')
+      .transition()
+      .duration(750)
+      .call(zoom.transform, d3.zoomIdentity
+        .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
+        .scale(scale));
+  }
+
+  $('#physics-tree-fitbutton').on('click', fit);
+
   $window
     .on('node-color-change', updateNodeColors)
     .on('background-color-change', function () {
