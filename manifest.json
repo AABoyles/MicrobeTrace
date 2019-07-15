@@ -1,10 +1,11 @@
 {
   "name": "MicrobeTrace",
   "short_name": "MicrobeTrace",
+  "description": "The Visualization Multitool for Molecular Epidemiology and Bioinformatics",
   "theme_color": "#f8f9fa",
   "background_color": "#f8f9fa",
   "display": "standalone",
-  "Scope": "/",
+  "scope": "/",
   "start_url": "/",
   "icons": [
     {
@@ -18,5 +19,8 @@
       "type": "image/png"
     }
   ],
-  "splash_pages": null
+  "splash_pages": null,
+  "serviceworker": {
+    "src": "./sw.js"
+  }
 }
