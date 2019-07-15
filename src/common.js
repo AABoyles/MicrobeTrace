@@ -1514,10 +1514,10 @@ MT.createLinkColorMap = function() {
   var links = MT.getVisibleLinks();
   var i = 0,
     n = links.length,
-    l = links[0];
+    l;
   if (variable === "origin") {
-    for (i = 0; i < n; i++) {
-      l = links[i];
+    while (i < n) {
+      l = links[i++];
       if (!l.visible) continue;
       l.origin.forEach(function(o) {
         if (!values.includes(o)) values.push(o);
@@ -1529,8 +1529,8 @@ MT.createLinkColorMap = function() {
       });
     }
   } else {
-    for (i = 0; i < n; i++) {
-      l = links[i];
+    while (i < n) {
+      l = links[i++];
       if (!l.visible) continue;
       var lv = l[variable];
       if (values.indexOf(lv) === -1) values.push(lv);
