@@ -2,7 +2,7 @@ self.MT = {};
 
 MT.componentCache = {};
 
-MT.dataSkeleton = function () {
+MT.dataSkeleton = function() {
   return {
     nodes: [],
     links: [],
@@ -182,7 +182,7 @@ MT.defaultWidgets = {
   "tree-vertical-stretch": 1
 };
 
-MT.sessionSkeleton = function () {
+MT.sessionSkeleton = function() {
   return {
     data: MT.dataSkeleton(),
     files: [],
@@ -239,16 +239,16 @@ MT.sessionSkeleton = function () {
   };
 };
 
-MT.tempSkeleton = function () {
+MT.tempSkeleton = function() {
   return {
     style: {
-      linkColorMap: function () {
+      linkColorMap: function() {
         return session.style.widgets["link-color"];
       },
-      nodeColorMap: function () {
+      nodeColorMap: function() {
         return session.style.widgets["node-color"];
       },
-      nodeSymbolMap: function () {
+      nodeSymbolMap: function() {
         return session.style.widgets["node-symbol"];
       }
     },
@@ -259,7 +259,7 @@ MT.tempSkeleton = function () {
 
 MT.mapData = {};
 
-MT.defaultNode = function () {
+MT.defaultNode = function() {
   return {
     index: session.data.nodes.length,
     id: "",
@@ -271,11 +271,11 @@ MT.defaultNode = function () {
   };
 };
 
-MT.isNumber = function (a) {
+MT.isNumber = function(a) {
   return typeof a === "number";
 };
 
-MT.addNode = function (newNode, check) {
+MT.addNode = function(newNode, check) {
   if (MT.isNumber(newNode.id)) newNode.id = "" + newNode.id;
   if (check) {
     var nodes = session.data.nodes;
@@ -295,7 +295,7 @@ MT.addNode = function (newNode, check) {
   return 1;
 };
 
-MT.defaultLink = function () {
+MT.defaultLink = function() {
   return {
     index: session.data.links.length,
     source: "",
@@ -306,7 +306,7 @@ MT.defaultLink = function () {
   };
 };
 
-MT.addLink = function (newLink, check) {
+MT.addLink = function(newLink, check) {
   if (newLink.source === newLink.target) return;
   var links = session.data.links;
   if (check) {
@@ -325,18 +325,18 @@ MT.addLink = function (newLink, check) {
       }
     }
   }
-  session.state.metrics.forEach(function (m) {
+  session.state.metrics.forEach(function(m) {
     newLink[m] = parseFloat(newLink[m]);
   });
   links.push(Object.assign(MT.defaultLink(), newLink));
   return 1;
 };
 
-MT.processSVG = function (svg) {
+MT.processSVG = function(svg) {
   var nodes = [];
   var $xml = $(svg);
   if ($xml.find("#edges").length) {
-    $xml.find("#nodes circle").each(function (i, node) {
+    $xml.find("#nodes circle").each(function(i, node) {
       var $node = $(node);
       var gephid = $node.attr("class");
       nodes.push(gephid);
@@ -352,7 +352,7 @@ MT.processSVG = function (svg) {
     });
     session.data.nodeFields.push("color");
     session.data.nodeFields.push("size");
-    $xml.find("#edges path").each(function (i, link) {
+    $xml.find("#edges path").each(function(i, link) {
       var $link = $(link);
       var coords = $link.attr("class").split(" ");
       var source = coords[0];
@@ -363,14 +363,14 @@ MT.processSVG = function (svg) {
         color: $link.attr("stroke"),
         origin: ["Scraped MicrobeTrace SVG"]
       };
-      session.state.metrics.forEach(function (metric) {
+      session.state.metrics.forEach(function(metric) {
         base[metric] = 0;
       });
       MT.addLink(base, true);
     });
     session.data.linkFields.push("color");
   } else {
-    $xml.find(".nodes g").each(function (i, node) {
+    $xml.find(".nodes g").each(function(i, node) {
       nodes.push(
         $(node)
           .attr("transform")
@@ -386,15 +386,15 @@ MT.processSVG = function (svg) {
         false
       );
     });
-    $xml.find("line").each(function (i, link) {
+    $xml.find("line").each(function(i, link) {
       var $l = $(link);
-      var source = nodes.findIndex(function (d) {
+      var source = nodes.findIndex(function(d) {
         return (
           Math.abs(d[0] - parseFloat($l.attr("x1"))) < 0.0001 &&
           Math.abs(d[1] - parseFloat($l.attr("y1"))) < 0.0001
         );
       });
-      var target = nodes.findIndex(function (d) {
+      var target = nodes.findIndex(function(d) {
         return (
           Math.abs(d[0] - parseFloat($l.attr("x2"))) < 0.0001 &&
           Math.abs(d[1] - parseFloat($l.attr("y2"))) < 0.0001
@@ -406,7 +406,7 @@ MT.processSVG = function (svg) {
         target: target + "",
         origin: ["Scraped SVG"]
       };
-      session.state.metrics.forEach(function (metric) {
+      session.state.metrics.forEach(function(metric) {
         base[metric] = 0;
       });
       MT.addLink(base, true);
@@ -415,7 +415,7 @@ MT.processSVG = function (svg) {
   MT.finishUp();
 };
 
-MT.processJSON = function (json, extension) {
+MT.processJSON = function(json, extension) {
   var data;
   try {
     data = JSON.parse(json);
@@ -437,10 +437,10 @@ MT.processJSON = function (json, extension) {
   }
 };
 
-MT.applyHIVTrace = function (hivtrace) {
+MT.applyHIVTrace = function(hivtrace) {
   self.session = MT.sessionSkeleton();
   session.meta.startTime = Date.now();
-  hivtrace["trace_results"]["Nodes"].forEach(function (node) {
+  hivtrace["trace_results"]["Nodes"].forEach(function(node) {
     var newNode = JSON.parse(JSON.stringify(node.patient_attributes));
     newNode.id = node.id;
     newNode.origin = "HIVTRACE Import";
@@ -448,7 +448,7 @@ MT.applyHIVTrace = function (hivtrace) {
   });
   Object.keys(
     hivtrace["trace_results"]["Nodes"][0]["patient_attributes"]
-  ).forEach(function (key) {
+  ).forEach(function(key) {
     if (!session.data.nodeFields.includes(key))
       session.data.nodeFields.push(key);
   });
@@ -469,17 +469,17 @@ MT.applyHIVTrace = function (hivtrace) {
   MT.finishUp();
 };
 
-MT.applyGHOST = function (ghost) {
+MT.applyGHOST = function(ghost) {
   self.session = MT.sessionSkeleton();
   session.meta.startTime = Date.now();
-  ghost["samples"].forEach(function (node) {
+  ghost["samples"].forEach(function(node) {
     var newNode = JSON.parse(JSON.stringify(node));
     newNode.origin = "GHOST Import";
     newNode.genotypes = JSON.stringify(newNode.genotypes);
     newNode.id = "" + newNode.id;
     MT.addNode(newNode, false);
   });
-  ["genotypes", "group", "id", "name"].forEach(function (key) {
+  ["genotypes", "group", "id", "name"].forEach(function(key) {
     if (!session.data.nodeFields.includes(key))
       session.data.nodeFields.push(key);
   });
@@ -510,16 +510,16 @@ MT.applyGHOST = function (ghost) {
     "src_haps",
     "tgt_genotype",
     "tgt_haps"
-  ].forEach(function (key) {
+  ].forEach(function(key) {
     if (!session.data.linkFields.includes(key))
       session.data.linkFields.push(key);
   });
   MT.finishUp();
 };
 
-MT.parseFASTA = function (text, callback) {
+MT.parseFASTA = function(text, callback) {
   var computer = new Worker("workers/parse-fasta.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     var nodes = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.nodes))
     );
@@ -533,7 +533,7 @@ MT.parseFASTA = function (text, callback) {
   computer.postMessage(text);
 };
 
-MT.parseCSVMatrix = function (file, callback) {
+MT.parseCSVMatrix = function(file, callback) {
   var check = session.files.length > 1;
   var origin = [file.name];
   var nn = 0,
@@ -541,7 +541,7 @@ MT.parseCSVMatrix = function (file, callback) {
     tn = 0,
     tl = 0;
   var computer = new Worker("workers/parse-csv-matrix.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     var data = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.data))
     );
@@ -587,7 +587,7 @@ MT.r01 = Math.random;
 
 // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
 // example: MT.addFile(new File([MT.unparseFASTA(MT.generateSeqs("gen-", 50, 20))], "generated.fasta"))
-MT.generateSeqs = function (idPrefix, count, snps, seed) {
+MT.generateSeqs = function(idPrefix, count, snps, seed) {
   if (!count) count = 1000;
   if (!snps) snps = 100;
   if (!seed) seed = session.data.reference;
@@ -716,14 +716,14 @@ MT.generateSeqs = function (idPrefix, count, snps, seed) {
 
 MT.decoder = new TextDecoder("utf-8");
 
-MT.align = function (params, callback, merge) {
+MT.align = function(params, callback, merge) {
   if (params.aligner === "none") {
     if (callback) callback(params.nodes);
     return;
   }
   var n = params.nodes.length;
   var aligner = new Worker("workers/align-sw.js");
-  aligner.onmessage = function (response) {
+  aligner.onmessage = function(response) {
     var subset = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.nodes))
     );
@@ -760,13 +760,13 @@ MT.align = function (params, callback, merge) {
   aligner.postMessage(params);
 };
 
-MT.computeConsensus = function (callback) {
+MT.computeConsensus = function(callback) {
   if (!callback) return;
-  var nodes = session.data.nodes.filter(function (d) {
+  var nodes = session.data.nodes.filter(function(d) {
     return d.seq;
   });
   var computer = new Worker("workers/compute-consensus.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     console.log(
       "Consensus Transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
@@ -777,10 +777,10 @@ MT.computeConsensus = function (callback) {
   computer.postMessage(nodes);
 };
 
-MT.computeConsensusDistances = function (callback) {
+MT.computeConsensusDistances = function(callback) {
   var start = Date.now();
   var computer = new Worker("workers/compute-consensus-distances.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     var nodes = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.nodes))
     );
@@ -823,10 +823,10 @@ MT.computeConsensusDistances = function (callback) {
   });
 };
 
-MT.computeLinks = function (subset, callback) {
+MT.computeLinks = function(subset, callback) {
   var k = 0;
   var computer = new Worker("workers/compute-links.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     var links = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.links))
     );
@@ -856,9 +856,9 @@ MT.computeLinks = function (subset, callback) {
   });
 };
 
-MT.computeDM = function (callback) {
+MT.computeDM = function(callback) {
   var computer = new Worker("workers/compute-dm.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.matrix))
     );
@@ -879,9 +879,9 @@ MT.computeDM = function (callback) {
   });
 };
 
-MT.computeTree = function (type, callback) {
+MT.computeTree = function(type, callback) {
   var computer = new Worker("workers/compute-tree.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     temp.trees[type] = patristic.parseJSON(
       MT.decoder.decode(new Uint8Array(response.data.tree))
     );
@@ -899,9 +899,9 @@ MT.computeTree = function (type, callback) {
   });
 };
 
-MT.computeDirectionality = function (callback) {
+MT.computeDirectionality = function(callback) {
   var computer = new Worker("workers/compute-directionality.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     var flips = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.output))
     );
@@ -934,9 +934,9 @@ MT.computeDirectionality = function (callback) {
   if (callback) callback();
 };
 
-MT.computePatristicMatrix = function (type, callback) {
+MT.computePatristicMatrix = function(type, callback) {
   var computer = new Worker("workers/compute-patristic-matrix.js");
-  computer.onmessage = function (response) {
+  computer.onmessage = function(response) {
     var output = JSON.parse(
       MT.decoder.decode(new Uint8Array(response.data.output))
     );
@@ -954,17 +954,17 @@ MT.computePatristicMatrix = function (type, callback) {
   });
 };
 
-MT.computeNN = function (metric, callback) {
+MT.computeNN = function(metric, callback) {
   if (!session.data.distance_matrix[metric]) {
     console.error(
       "Couldn't find Distance Matrix " +
-      metric +
-      " to compute Nearest Neighbors."
+        metric +
+        " to compute Nearest Neighbors."
     );
     return;
   }
   var nnMachine = new Worker("workers/compute-nn.js");
-  nnMachine.onmessage = function (response) {
+  nnMachine.onmessage = function(response) {
     if (response.data === "Error") {
       console.error("Nearest Neighbor washed out");
       return;
@@ -994,17 +994,17 @@ MT.computeNN = function (metric, callback) {
   });
 };
 
-MT.computeTriangulation = function (metric, callback) {
+MT.computeTriangulation = function(metric, callback) {
   if (!session.data.distance_matrix[metric]) {
     console.error(
       "Couldn't find Distance Matrix " +
-      metric +
-      " to compute Nearest Neighbors."
+        metric +
+        " to compute Nearest Neighbors."
     );
     return;
   }
   var machine = new Worker("workers/compute-triangulation.js");
-  machine.onmessage = function (response) {
+  machine.onmessage = function(response) {
     if (response.data === "Error") {
       console.error("Triangulation washed out");
       return;
@@ -1025,18 +1025,18 @@ MT.computeTriangulation = function (metric, callback) {
   });
 };
 
-MT.finishUp = function (oldSession) {
+MT.finishUp = function(oldSession) {
   if (!oldSession) {
-    MT.computeDM(function () {
+    MT.computeDM(function() {
       if (
         $('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate"
       ) {
-        session.state.metrics.forEach(function (m) {
-          MT.computeTriangulation(m, function () {
+        session.state.metrics.forEach(function(m) {
+          MT.computeTriangulation(m, function() {
             if (m == session.style.widgets["default-distance-metric"]) {
               MT.computeNN(session.style.widgets["default-distance-metric"]);
             }
-            MT.computeTree(m, function () {
+            MT.computeTree(m, function() {
               if (m == session.style.widgets["link-sort-variable"]) {
                 MT.computeDirectionality();
               }
@@ -1045,8 +1045,8 @@ MT.finishUp = function (oldSession) {
         });
       } else {
         MT.computeNN(session.style.widgets["default-distance-metric"]);
-        session.state.metrics.forEach(function (m) {
-          MT.computeTree(m, function () {
+        session.state.metrics.forEach(function(m) {
+          MT.computeTree(m, function() {
             if (m == session.style.widgets["link-sort-variable"]) {
               MT.computeDirectionality();
             }
@@ -1056,12 +1056,12 @@ MT.finishUp = function (oldSession) {
     });
   }
   clearTimeout(temp.messageTimeout);
-  ["node", "link"].forEach(function (v) {
+  ["node", "link"].forEach(function(v) {
     var n = session.data[v + "s"].length;
     var fields = session.data[v + "Fields"];
     for (var i = 0; i < n; i++) {
       var d = session.data[v + "s"][i];
-      fields.forEach(function (field) {
+      fields.forEach(function(field) {
         if (!(field in d)) d[field] = null;
       });
     }
@@ -1069,23 +1069,19 @@ MT.finishUp = function (oldSession) {
   $("#search-field")
     .html(
       session.data.nodeFields
-        .map(function (field) {
+        .map(function(field) {
           return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
+            '<option value="' + field + '">' + MT.titleize(field) + "</option>"
           );
         })
         .join("\n")
     )
-    .val(session.style.widgets['search-field']);
-  $('#search-form').css('display', 'flex');
+    .val(session.style.widgets["search-field"]);
+  $("#search-form").css("display", "flex");
   $("#link-sort-variable")
     .html(
       session.data.linkFields
-        .map(function (field) {
+        .map(function(field) {
           return (
             '<option value="' + field + '">' + MT.titleize(field) + "</option>"
           );
@@ -1096,33 +1092,33 @@ MT.finishUp = function (oldSession) {
   $("#node-color-variable")
     .html(
       "<option selected>None</option>" +
-      session.data.nodeFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
+        session.data.nodeFields
+          .map(function(field) {
+            return (
+              '<option value="' +
+              field +
+              '">' +
+              MT.titleize(field) +
+              "</option>"
+            );
+          })
+          .join("\n")
     )
     .val(session.style.widgets["node-color-variable"]);
   $("#link-color-variable")
     .html(
       "<option>None</option>" +
-      session.data.linkFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
+        session.data.linkFields
+          .map(function(field) {
+            return (
+              '<option value="' +
+              field +
+              '">' +
+              MT.titleize(field) +
+              "</option>"
+            );
+          })
+          .join("\n")
     )
     .val(session.style.widgets["link-color-variable"]);
   try {
@@ -1133,7 +1129,7 @@ MT.finishUp = function (oldSession) {
     alertify
       .error("Something went wrong! Please start a new session and try again.")
       .delay(0)
-      .ondismiss(function () {
+      .ondismiss(function() {
         window.location.reload();
       });
   }
@@ -1147,7 +1143,7 @@ MT.finishUp = function (oldSession) {
   console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
   if (oldSession) {
     layout.root.contentItems[0].remove();
-    setTimeout(function () {
+    setTimeout(function() {
       MT.loadLayout(session.layout);
     }, 80);
   } else {
@@ -1156,7 +1152,7 @@ MT.finishUp = function (oldSession) {
   if (localStorage.getItem("stash-auto") === "true") {
     temp.autostash = {
       time: Date.now(),
-      interval: setInterval(function () {
+      interval: setInterval(function() {
         var newTime = Date.now();
         localStorage.setItem(
           "stash-" + newTime + "-autostash",
@@ -1168,8 +1164,8 @@ MT.finishUp = function (oldSession) {
     };
   }
   $(".hideForHIVTrace").css("display", "flex");
-  setTimeout(function () {
-    var files = layout.contentItems.find(function (item) {
+  setTimeout(function() {
+    var files = layout.contentItems.find(function(item) {
       return item.componentName === "files";
     });
     if (files) files.remove();
@@ -1177,13 +1173,13 @@ MT.finishUp = function (oldSession) {
   }, 1200);
 };
 
-MT.capitalize = function (c) {
+MT.capitalize = function(c) {
   return c.toUpperCase();
 };
 
-MT.titleize = function (title) {
+MT.titleize = function(title) {
   var small = title.toLowerCase().replace(/_/g, " ");
-  if (small == 'null') return "(Empty)";
+  if (small == "null") return "(Empty)";
   if (small == "id") return "ID";
   if (small == "tn93") return "TN93";
   if (small == "snps") return "SNPs";
@@ -1194,7 +1190,7 @@ MT.titleize = function (title) {
   return small.replace(/(?:^|\s|-)\S/g, MT.capitalize);
 };
 
-MT.tagClusters = function () {
+MT.tagClusters = function() {
   var start = Date.now();
   session.data.clusters = [];
   var nodes = session.data.nodes,
@@ -1243,7 +1239,7 @@ MT.tagClusters = function () {
       if (s && t) break;
     }
   }
-  session.data.clusters.forEach(function (c) {
+  session.data.clusters.forEach(function(c) {
     c.links = c.links / 2;
     c.links_per_node = c.links / c.nodes;
     c.mean_genetic_distance = c.sum_distances / 2 / c.links;
@@ -1255,7 +1251,7 @@ MT.tagClusters = function () {
   );
 };
 
-MT.DFS = function (id) {
+MT.DFS = function(id) {
   if (temp.nodes.indexOf(id) >= 0) return;
   temp.nodes.push(id);
   var node = {};
@@ -1286,7 +1282,7 @@ MT.DFS = function (id) {
   }
 };
 
-MT.setNodeVisibility = function (silent) {
+MT.setNodeVisibility = function(silent) {
   var start = Date.now();
   var dateField = session.style.widgets["timeline-date-field"];
   var nodes = session.data.nodes,
@@ -1318,7 +1314,7 @@ MT.setNodeVisibility = function (silent) {
   );
 };
 
-MT.setLinkVisibility = function (silent) {
+MT.setLinkVisibility = function(silent) {
   var start = Date.now();
   var metric = session.style.widgets["link-sort-variable"],
     threshold = session.style.widgets["link-threshold"],
@@ -1364,7 +1360,7 @@ MT.setLinkVisibility = function (silent) {
   );
 };
 
-MT.setClusterVisibility = function (silent) {
+MT.setClusterVisibility = function(silent) {
   var start = Date.now();
   var min = session.style.widgets["cluster-minimum-size"];
   var clusters = session.data.clusters;
@@ -1381,7 +1377,7 @@ MT.setClusterVisibility = function (silent) {
   );
 };
 
-MT.getVisibleNodes = function (copy) {
+MT.getVisibleNodes = function(copy) {
   var nodes = session.data.nodes;
   var n = nodes.length;
   var out = [];
@@ -1398,7 +1394,7 @@ MT.getVisibleNodes = function (copy) {
   return out;
 };
 
-MT.getVisibleLinks = function (copy) {
+MT.getVisibleLinks = function(copy) {
   var links = session.data.links;
   var n = links.length;
   var out = [],
@@ -1417,7 +1413,7 @@ MT.getVisibleLinks = function (copy) {
   return out;
 };
 
-MT.getVisibleClusters = function (copy) {
+MT.getVisibleClusters = function(copy) {
   var clusters = session.data.clusters;
   var n = clusters.length;
   var out = [],
@@ -1436,28 +1432,28 @@ MT.getVisibleClusters = function (copy) {
   return out;
 };
 
-MT.updateNetwork = function () {
+MT.updateNetwork = function() {
   MT.setLinkVisibility(true);
   MT.tagClusters();
   MT.setClusterVisibility(true);
   MT.setLinkVisibility(true);
   MT.setNodeVisibility(true);
-  ["cluster", "link", "node"].forEach(function (thing) {
+  ["cluster", "link", "node"].forEach(function(thing) {
     $window.trigger(thing + "-visibility");
   });
   MT.updateStatistics();
 };
 
-MT.updateStatistics = function () {
+MT.updateStatistics = function() {
   if ($("#network-statistics-hide").is(":checked")) return;
   var vnodes = MT.getVisibleNodes();
   var vlinks = MT.getVisibleLinks();
-  var singletons = vnodes.filter(function (d) {
+  var singletons = vnodes.filter(function(d) {
     return d.degree === 0;
   }).length;
   $("#numberOfSelectedNodes").text(
     vnodes
-      .filter(function (d) {
+      .filter(function(d) {
         return d.selected;
       })
       .length.toLocaleString()
@@ -1468,10 +1464,10 @@ MT.updateStatistics = function () {
   $("#numberOfDisjointComponents").text(session.data.clusters.length);
 };
 
-MT.createNodeColorMap = function () {
+MT.createNodeColorMap = function() {
   var variable = session.style.widgets["node-color-variable"];
   if (variable === "None") {
-    temp.style.nodeColorMap = function () {
+    temp.style.nodeColorMap = function() {
       return session.style.widgets["node-color"];
     };
     return [];
@@ -1486,7 +1482,7 @@ MT.createNodeColorMap = function () {
     var dv = d[variable];
     if (values.indexOf(dv) === -1) values.push(dv);
     if (dv in aggregates) {
-      aggregates[dv]++
+      aggregates[dv]++;
     } else {
       aggregates[dv] = 1;
     }
@@ -1505,10 +1501,10 @@ MT.createNodeColorMap = function () {
   return aggregates;
 };
 
-MT.createLinkColorMap = function () {
+MT.createLinkColorMap = function() {
   var variable = session.style.widgets["link-color-variable"];
   if (variable === "None") {
-    temp.style.linkColorMap = function () {
+    temp.style.linkColorMap = function() {
       return session.style.widgets["link-color"];
     };
     return [];
@@ -1516,12 +1512,14 @@ MT.createLinkColorMap = function () {
   var aggregates = {};
   var values = [];
   var links = MT.getVisibleLinks();
-  var n = links.length;
+  var i = 0,
+    n = links.length,
+    l = links[0];
   if (variable === "origin") {
-    for (var i = 0; i < n; i++) {
-      var l = links[i];
+    for (i = 0; i < n; i++) {
+      l = links[i];
       if (!l.visible) continue;
-      l.origin.forEach(function (o) {
+      l.origin.forEach(function(o) {
         if (!values.includes(o)) values.push(o);
         if (o in aggregates) {
           aggregates[o]++;
@@ -1531,8 +1529,8 @@ MT.createLinkColorMap = function () {
       });
     }
   } else {
-    for (var i = 0; i < n; i++) {
-      var l = links[i];
+    for (i = 0; i < n; i++) {
+      l = links[i];
       if (!l.visible) continue;
       var lv = l[variable];
       if (values.indexOf(lv) === -1) values.push(lv);
@@ -1555,7 +1553,7 @@ MT.createLinkColorMap = function () {
   return aggregates;
 };
 
-MT.applyStyle = function (style) {
+MT.applyStyle = function(style) {
   session.style = style;
   session.style.widgets = Object.assign(
     {},
@@ -1577,7 +1575,7 @@ MT.applyStyle = function (style) {
   }
 };
 
-MT.applySession = function (data, startTime) {
+MT.applySession = function(data, startTime) {
   $("#launch").prop("disabled", true);
   self.session = data;
   if (!startTime) startTime = Date.now();
@@ -1587,7 +1585,7 @@ MT.applySession = function (data, startTime) {
   MT.finishUp(true);
 };
 
-MT.reset = function () {
+MT.reset = function() {
   $("#network-statistics-hide")
     .parent()
     .trigger("click");
@@ -1602,7 +1600,7 @@ MT.reset = function () {
   MT.launchView("files");
 };
 
-MT.getMapData = function (type, callback) {
+MT.getMapData = function(type, callback) {
   var parts = type.split(".");
   var name = parts[0],
     format = parts[1];
@@ -1622,7 +1620,7 @@ MT.getMapData = function (type, callback) {
 };
 
 //adapted from from http://www.movable-type.co.uk/scripts/latlong.html
-MT.haversine = function (a, b) {
+MT.haversine = function(a, b) {
   var r = Math.PI / 180;
   var phi1 = a._lat * r;
   var phi2 = b._lat * r;
@@ -1630,15 +1628,15 @@ MT.haversine = function (a, b) {
   var deltaphi = (b._lat - a._lat) * r;
   var x =
     Math.cos(phi1) *
-    Math.cos(phi2) *
-    Math.sin(deltalambda / 2) *
-    Math.sin(deltalambda / 2) +
+      Math.cos(phi2) *
+      Math.sin(deltalambda / 2) *
+      Math.sin(deltalambda / 2) +
     Math.pow(Math.sin(deltaphi / 2), 2);
   var c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
   return c * 6378.1; // kilometers
 };
 
-MT.geoDM = function () {
+MT.geoDM = function() {
   var nodes = session.data.nodes;
   var n = nodes.length;
   var dm = Array(n);
@@ -1655,7 +1653,7 @@ MT.geoDM = function () {
 };
 
 //Adapted from https://24ways.org/2010/calculating-color-contrast/
-MT.contrastColor = function (hexcolor) {
+MT.contrastColor = function(hexcolor) {
   var r = parseInt(hexcolor.substr(1, 2), 16);
   var g = parseInt(hexcolor.substr(3, 2), 16);
   var b = parseInt(hexcolor.substr(5, 2), 16);
@@ -1663,15 +1661,15 @@ MT.contrastColor = function (hexcolor) {
   return yiq >= 128000 ? "#000000" : "#ffffff";
 };
 
-MT.peek = function (ra) {
+MT.peek = function(ra) {
   return ra[ra.length - 1];
 };
 
-MT.launchView = function (view, callback) {
+MT.launchView = function(view, callback) {
   if (!MT.componentCache[view]) {
-    $.get("components/" + view + ".html", function (response) {
+    $.get("components/" + view + ".html", function(response) {
       MT.componentCache[view] = response;
-      layout.registerComponent(view, function (container, state) {
+      layout.registerComponent(view, function(container, state) {
         container.getElement().html(state.text);
       });
       if (callback) {
@@ -1681,7 +1679,7 @@ MT.launchView = function (view, callback) {
       }
     });
   } else {
-    var contentItem = layout.contentItems.find(function (item) {
+    var contentItem = layout.contentItems.find(function(item) {
       return item.componentName === view;
     });
     if (contentItem) {
@@ -1698,8 +1696,8 @@ MT.launchView = function (view, callback) {
         type: "component"
       });
       contentItem = MT.peek(lastStack.contentItems);
-      contentItem.on("itemDestroyed", function () {
-        var i = layout.contentItems.findIndex(function (item) {
+      contentItem.on("itemDestroyed", function() {
+        var i = layout.contentItems.findIndex(function(item) {
           return item === contentItem;
         });
         layout.contentItems.splice(i, 1);
@@ -1708,84 +1706,84 @@ MT.launchView = function (view, callback) {
     }
     contentItem.element.find("select.nodeVariables").html(
       "<option>None</option>" +
-      session.data.nodeFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
-    );
-    contentItem.element.find("select.linkVariables").html(
-      "<option>None</option>" +
-      session.data.linkFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
-    );
-    contentItem.element.find("select.mixedVariables").html(
-      "<option>None</option>" +
-      session.data.linkFields
-        .map(function (field) {
-          return (
-            '<option value="links-' +
-            field +
-            '">Links ' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .concat(
-          session.data.nodeFields.map(function (field) {
+        session.data.nodeFields
+          .map(function(field) {
             return (
-              '<option value="nodes-' +
+              '<option value="' +
               field +
-              '">Nodes ' +
+              '">' +
               MT.titleize(field) +
               "</option>"
             );
           })
-        )
-        .join("\n")
+          .join("\n")
+    );
+    contentItem.element.find("select.linkVariables").html(
+      "<option>None</option>" +
+        session.data.linkFields
+          .map(function(field) {
+            return (
+              '<option value="' +
+              field +
+              '">' +
+              MT.titleize(field) +
+              "</option>"
+            );
+          })
+          .join("\n")
+    );
+    contentItem.element.find("select.mixedVariables").html(
+      "<option>None</option>" +
+        session.data.linkFields
+          .map(function(field) {
+            return (
+              '<option value="links-' +
+              field +
+              '">Links ' +
+              MT.titleize(field) +
+              "</option>"
+            );
+          })
+          .concat(
+            session.data.nodeFields.map(function(field) {
+              return (
+                '<option value="nodes-' +
+                field +
+                '">Nodes ' +
+                MT.titleize(field) +
+                "</option>"
+              );
+            })
+          )
+          .join("\n")
     );
     contentItem.element.find("select.branch-variables").html(
       "<option>None</option>" +
-      ["id", "depth", "height", "length", "value"]
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
+        ["id", "depth", "height", "length", "value"]
+          .map(function(field) {
+            return (
+              '<option value="' +
+              field +
+              '">' +
+              MT.titleize(field) +
+              "</option>"
+            );
+          })
+          .join("\n")
     );
-    contentItem.element.find(".launch-color-options").click(function () {
+    contentItem.element.find(".launch-color-options").click(function() {
       $("#style-tab").tab("show");
-      setTimeout(function () {
+      setTimeout(function() {
         $("#global-settings-modal").modal("show");
       }, 250);
     });
-    contentItem.element.find(".modal-header").on("mousedown", function (e1) {
+    contentItem.element.find(".modal-header").on("mousedown", function(e1) {
       var body = $("body");
       var parent = $(this)
         .parent()
         .parent()
         .parent();
-      body.on("mousemove", function (e2) {
+      body.on("mousemove", function(e2) {
         parent
           .css(
             "top",
@@ -1796,7 +1794,7 @@ MT.launchView = function (view, callback) {
             parseFloat(parent.css("left")) + e2.originalEvent.movementX + "px"
           );
       });
-      body.on("mouseup", function (e3) {
+      body.on("mouseup", function(e3) {
         body.off("mousemove").off("mouseup");
       });
     });
@@ -1819,7 +1817,7 @@ MT.launchView = function (view, callback) {
   }
 };
 
-MT.cacheLayout = function (contentItem) {
+MT.cacheLayout = function(contentItem) {
   if (["stack", "row", "column"].includes(contentItem.type)) {
     return {
       type: contentItem.type,
@@ -1829,16 +1827,16 @@ MT.cacheLayout = function (contentItem) {
   return { type: contentItem.componentName };
 };
 
-MT.loadLayout = function (component, parent) {
+MT.loadLayout = function(component, parent) {
   if (!parent) {
     parent = layout.root;
     try {
       parent.contentItems[0].remove();
-    } catch (e) { }
+    } catch (e) {}
   }
   if (["stack", "row", "column"].includes(component.type)) {
     parent.addChild({ type: component.type });
-    component.content.forEach(function (c) {
+    component.content.forEach(function(c) {
       MT.loadLayout(c, MT.peek(parent.contentItems));
     });
   } else {
@@ -1846,37 +1844,37 @@ MT.loadLayout = function (component, parent) {
   }
 };
 
-MT.unparseFASTA = function (nodes) {
+MT.unparseFASTA = function(nodes) {
   return nodes
-    .map(function (node) {
+    .map(function(node) {
       return ">" + node.id + "\r\n" + node.seq;
     })
     .join("\r\n");
 };
 
-MT.unparseMEGA = function (nodes) {
+MT.unparseMEGA = function(nodes) {
   return nodes
-    .map(function (node) {
+    .map(function(node) {
       return "#" + node.id + "\r\n" + node.seq;
     })
     .join("\r\n");
 };
 
-MT.unparseDM = function (dm) {
+MT.unparseDM = function(dm) {
   var labels = session.data.distance_matrix.labels;
   return (
     "," +
     labels.join(",") +
     "\n" +
     dm
-      .map(function (row, i) {
+      .map(function(row, i) {
         return labels[i] + "," + row.join(",");
       })
       .join("\n")
   );
 };
 
-MT.unparseSVG = function (svgNode) {
+MT.unparseSVG = function(svgNode) {
   svgNode.setAttribute("xlink", "http://www.w3.org/1999/xlink");
   var selectorTextArr = [];
 
@@ -1936,12 +1934,12 @@ MT.unparseSVG = function (svgNode) {
   return serializer.serializeToString(svgNode);
 };
 
-MT.blobifySVG = function (svgString, width, height, callback) {
+MT.blobifySVG = function(svgString, width, height, callback) {
   var canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   var image = new Image();
-  image.onload = function () {
+  image.onload = function() {
     var context = canvas.getContext("2d");
     context.clearRect(0, 0, width, height);
     context.drawImage(image, 0, 0, width, height);
@@ -1952,17 +1950,17 @@ MT.blobifySVG = function (svgString, width, height, callback) {
     btoa(unescape(encodeURIComponent(svgString)));
 };
 
-MT.getHelp = function (target, callback) {
-  $.get("help/" + target + ".md", function (response) {
+MT.getHelp = function(target, callback) {
+  $.get("help/" + target + ".md", function(response) {
     callback(marked(response));
   });
 };
 
-MT.ab2str = function (buf) {
+MT.ab2str = function(buf) {
   return String.fromCharCode.apply(null, new Uint8Array(buf));
 };
 
-MT.str2ab = function (str) {
+MT.str2ab = function(str) {
   var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
   var bufView = new Uint8Array(buf);
   for (var i = 0, strLen = str.length; i < strLen; i++) {
@@ -1971,27 +1969,27 @@ MT.str2ab = function (str) {
   return buf;
 };
 
-MT.exportHIVTRACE = function () {
-  var links = session.data.links.filter(function (l) {
+MT.exportHIVTRACE = function() {
+  var links = session.data.links.filter(function(l) {
     return l.visible;
   });
-  var geneticLinks = links.filter(function (l) {
+  var geneticLinks = links.filter(function(l) {
     return l.origin.includes("Genetic Distance");
   });
   var sequences = new Set(
     geneticLinks
-      .map(function (l) {
+      .map(function(l) {
         return l.source;
       })
       .concat(
-        geneticLinks.map(function (l) {
+        geneticLinks.map(function(l) {
           return l.target;
         })
       )
   ).size;
   var pas = {};
-  session.data.nodes.forEach(function (d) {
-    Object.keys(d).forEach(function (key) {
+  session.data.nodes.forEach(function(d) {
+    Object.keys(d).forEach(function(key) {
       if (pas[key]) return;
       pas[key] = {
         label: key,
@@ -2002,7 +2000,7 @@ MT.exportHIVTRACE = function () {
   return JSON.stringify(
     {
       trace_results: {
-        "Cluster sizes": session.data.clusters.map(function (c) {
+        "Cluster sizes": session.data.clusters.map(function(c) {
           return c.size;
         }),
         Degrees: {
@@ -2019,18 +2017,18 @@ MT.exportHIVTRACE = function () {
           }
         },
         "Edge Stages": {},
-        Edges: links.map(function (l) {
+        Edges: links.map(function(l) {
           return {
             attributes: ["BULK"],
             directed: false,
             length: l[session.style.widgets["link-sort-variable"]],
             removed: false,
             sequences: [l.source, l.target],
-            source: session.data.nodes.findIndex(function (d) {
+            source: session.data.nodes.findIndex(function(d) {
               return d.id === l.source;
             }),
             support: 0,
-            target: session.data.nodes.findIndex(function (d) {
+            target: session.data.nodes.findIndex(function(d) {
               return d.id === l.target;
             })
           };
@@ -2054,7 +2052,7 @@ MT.exportHIVTRACE = function () {
           Nodes: session.data.nodes.length,
           "Sequences used to make links": sequences
         },
-        Nodes: session.data.nodes.map(function (d) {
+        Nodes: session.data.nodes.map(function(d) {
           return {
             attributes: [],
             baseline: null,
