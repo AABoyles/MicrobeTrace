@@ -222,23 +222,23 @@ $(function() {
     screenfull.toggle();
   });
 
-  $('[name="NNOptions"]').on("change", function() {
-    MT.updateNetwork();
-  });
-
-  $("#links-show-all")
+  $("#link-show-all")
     .parent()
     .on("click", function() {
       $("#filtering-epsilon-row").slideUp();
+      session.style.widgets["link-show-nn"] = false;
+      MT.updateNetwork();
     });
 
-  $("#links-show-nn")
+  $("#link-show-nn")
     .parent()
     .on("click", function() {
       $("#filtering-epsilon-copy").val(
         Math.pow(10, parseFloat($("#filtering-epsilon").val())).toLocaleString()
       );
       $("#filtering-epsilon-row").css("display", "flex");
+      session.style.widgets["link-show-nn"] = true;
+      MT.updateNetwork();
     });
 
   $("#filtering-epsilon")
@@ -249,9 +249,12 @@ $(function() {
     })
     .on("change", function() {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
-      MT.computeNN(session.style.widgets["link-sort-variable"], function() {
-        MT.updateNetwork();
-      });
+      MT.computeNN(
+        session.style.widgets["default-distance-metric"],
+        function() {
+          MT.updateNetwork();
+        }
+      );
     });
 
   $("#cluster-minimum-size").on("change", function() {

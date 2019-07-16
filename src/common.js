@@ -98,6 +98,7 @@ MT.defaultWidgets = {
   "link-label-variable": "None",
   "link-length": 0.125,
   "link-opacity": 0,
+  "link-show-nn": false,
   "link-sort-variable": "distance",
   "link-threshold": 0.015,
   "link-tooltip-variable": "None",
@@ -1318,7 +1319,7 @@ MT.setLinkVisibility = function(silent) {
   var start = Date.now();
   var metric = session.style.widgets["link-sort-variable"],
     threshold = session.style.widgets["link-threshold"],
-    showNN = $("#links-show-nn").is(":checked");
+    showNN = session.style.widgets["link-show-nn"];
   var links = session.data.links;
   // var nodes = session.data.nodes;
   var clusters = session.data.clusters;
