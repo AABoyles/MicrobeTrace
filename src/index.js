@@ -491,44 +491,41 @@ $(function() {
       if (!session.style.nodeValueNames) session.style.nodeValueNames = {};
       var aggregates = MT.createNodeColorMap();
       var vnodes = MT.getVisibleNodes();
-      Object.keys(aggregates)
-        .sort(function(a, b) {
-          return aggregates[b] - aggregates[a];
-        })
-        .forEach(function(value, i) {
-          var input = $(
-            '<input type="color" value="' +
-              temp.style.nodeColorMap(value) +
-              '" />'
-          ).on("change", function(evt) {
-            session.style.nodeColors.splice(i, 1, evt.target.value);
-            temp.style.nodeColorMap = d3
-              .scaleOrdinal(session.style.nodeColors)
-              .domain(values);
-            $window.trigger("node-color-change");
-          });
-          var cell = $("<td></td>").append(input);
-          var row = $(
-            "<tr>" +
-              "<td data-value='" +
-              value +
-              "'>" +
-              (session.style.nodeValueNames[value]
-                ? session.style.nodeValueNames[value]
-                : MT.titleize("" + value)) +
-              "</td>" +
-              (session.style.widgets["node-color-table-counts"]
-                ? "<td>" + aggregates[value] + "</td>"
-                : "") +
-              (session.style.widgets["node-color-table-frequencies"]
-                ? "<td>" +
-                  (aggregates[value] / vnodes.length).toLocaleString() +
-                  "</td>"
-                : "") +
-              "</tr>"
-          ).append(cell);
-          table.append(row);
+      var values = Object.keys(aggregates);
+      values.forEach(function(value, i) {
+        var input = $(
+          '<input type="color" value="' +
+            temp.style.nodeColorMap(value) +
+            '" />'
+        ).on("change", function(evt) {
+          session.style.nodeColors.splice(i, 1, evt.target.value);
+          temp.style.nodeColorMap = d3
+            .scaleOrdinal(session.style.nodeColors)
+            .domain(values);
+          $window.trigger("node-color-change");
         });
+        var cell = $("<td></td>").append(input);
+        var row = $(
+          "<tr>" +
+            "<td data-value='" +
+            value +
+            "'>" +
+            (session.style.nodeValueNames[value]
+              ? session.style.nodeValueNames[value]
+              : MT.titleize("" + value)) +
+            "</td>" +
+            (session.style.widgets["node-color-table-counts"]
+              ? "<td>" + aggregates[value] + "</td>"
+              : "") +
+            (session.style.widgets["node-color-table-frequencies"]
+              ? "<td>" +
+                (aggregates[value] / vnodes.length).toLocaleString() +
+                "</td>"
+              : "") +
+            "</tr>"
+        ).append(cell);
+        table.append(row);
+      });
       table
         .find("td")
         .on("dblclick", function() {
@@ -586,45 +583,42 @@ $(function() {
       if (!session.style.linkValueNames) session.style.linkValueNames = {};
       var aggregates = MT.createLinkColorMap();
       var vlinks = MT.getVisibleLinks();
-      Object.keys(aggregates)
-        .sort(function(a, b) {
-          return aggregates[b] - aggregates[a];
-        })
-        .forEach(function(value, i) {
-          var input = $(
-            '<input type="color" value="' +
-              temp.style.linkColorMap(value) +
-              '" />'
-          ).on("change", function(evt) {
-            session.style.linkColors.splice(i, 1, evt.target.value);
-            temp.style.linkColorMap = d3
-              .scaleOrdinal(session.style.linkColors)
-              .domain(values);
-            $window.trigger("link-color-change");
-          });
-          var cell = $("<td></td>").append(input);
-          var row = $(
-            "<tr>" +
-              "<td data-value='" +
-              value +
-              "'>" +
-              (session.style.linkValueNames[value]
-                ? session.style.linkValueNames[value]
-                : MT.titleize("" + value)) +
-              "</td>" +
-              (session.style.widgets["link-color-table-counts"]
-                ? "<td>" + aggregates[value] + "</td>"
-                : "") +
-              (session.style.widgets["link-color-table-frequencies"]
-                ? "<td>" +
-                  (aggregates[value] / vlinks.length).toLocaleString() +
-                  "</td>"
-                : "") +
-              "</tr>"
-          );
-          row.append(cell);
-          table.append(row);
+      var values = Object.keys(aggregates);
+      values.forEach(function(value, i) {
+        var input = $(
+          '<input type="color" value="' +
+            temp.style.linkColorMap(value) +
+            '" />'
+        ).on("change", function(evt) {
+          session.style.linkColors.splice(i, 1, evt.target.value);
+          temp.style.linkColorMap = d3
+            .scaleOrdinal(session.style.linkColors)
+            .domain(values);
+          $window.trigger("link-color-change");
         });
+        var cell = $("<td></td>").append(input);
+        var row = $(
+          "<tr>" +
+            "<td data-value='" +
+            value +
+            "'>" +
+            (session.style.linkValueNames[value]
+              ? session.style.linkValueNames[value]
+              : MT.titleize("" + value)) +
+            "</td>" +
+            (session.style.widgets["link-color-table-counts"]
+              ? "<td>" + aggregates[value] + "</td>"
+              : "") +
+            (session.style.widgets["link-color-table-frequencies"]
+              ? "<td>" +
+                (aggregates[value] / vlinks.length).toLocaleString() +
+                "</td>"
+              : "") +
+            "</tr>"
+        );
+        row.append(cell);
+        table.append(row);
+      });
       table
         .find("td")
         .on("dblclick", function() {
