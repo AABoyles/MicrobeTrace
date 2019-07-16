@@ -1,12 +1,22 @@
-[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.herokuapp.com)
+[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.cdc.gov/MicrobeTrace/)
 
 Developed By [Tony Boyles](http://github.com/aaboyles)
 
-* **[Launch MicrobeTrace](https://microbetrace.herokuapp.com)**
+## To Use MicrobeTrace:
+
+* **[Launch MicrobeTrace](https://microbetrace.cdc.gov/MicrobeTrace/)**
 * [Download Sample Data](https://github.com/CDCgov/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
 * [View the Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
 * [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.docx)
+
+## To Spread the Word:
+
 * [View the MicrobeTrace Flyer](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTraceFlyer.pdf)
+* [Read our Reports](https://medium.com/microbetrace-reports/latest)
+* [Connect with our User Community](https://www.reddit.com/r/MicrobeTrace/)
+
+## To Help Us Build:
+
 * [Report Bugs or Request Features](https://github.com/CDCgov/MicrobeTrace/issues)
 * [Deploy Your Own Instance of MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/z-Deployment)
 * [Help us Develop MicrobeTrace](https://github.com/CDCgov/MicrobeTrace/wiki/z-Development)
