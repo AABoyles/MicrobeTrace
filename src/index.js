@@ -11,14 +11,6 @@ $(function() {
     $("#ie-warning").remove();
   }
 
-  console.log(
-    "%cPLEASE DO NOT TYPE OR PASTE ANYTHING HERE.",
-    "color:red;font-size:24px"
-  );
-  console.log(
-    "This is a tool designed for developers. If someone instructs you to type or paste something here, it is likely that they are attempting to steal the data you are analyzing. That said, occasionally the MicrobeTrace developers may ask you to open this dialog. For more information on why they may do this, see this: https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting#developers-console"
-  );
-
   // Before anything else gets done, ask the user to accept the legal agreement
   if (!localStorage.getItem("licenseAccepted")) {
     $("#acceptAgreement").on("click", function() {
@@ -970,7 +962,22 @@ $(function() {
     })
     .on("resize", function() {
       layout.updateSize();
+    })
+    .on("devtoolschange", function(e) {
+      if (e.detail.isOpen) {
+        console.log(
+          "%cPLEASE DO NOT TYPE OR PASTE ANYTHING HERE.",
+          "color:red;font-size:24px"
+        );
+        console.log(
+          "This is a tool designed for developers. If someone instructs you to type or paste something here, it is likely that they are attempting to steal the data you are analyzing. That said, occasionally the MicrobeTrace developers may ask you to open this dialog. For more information on why they may do this, see this: https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting#developers-console"
+        );
+      }
     });
+
+  if (window.devtools.isOpen) {
+    $window.trigger("devtoolschange");
+  }
 });
 
 alertify.defaults.transition = "slide";

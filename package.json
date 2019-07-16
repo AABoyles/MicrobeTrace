@@ -61,6 +61,7 @@
     "d3": "^5.9.7",
     "d3-force-attract": "^0.1.1",
     "d3-symbol-extra": "^0.1.0",
+    "devtools-detect": "^3.0.0",
     "fast-text-encoding": "^1.0.0",
     "file-saver": "^2.0.2",
     "fileto": "0.1.0",
