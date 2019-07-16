@@ -970,14 +970,6 @@ $(function() {
     })
     .on("resize", function() {
       layout.updateSize();
-    })
-    .on("beforeunload", function(e) {
-      e.preventDefault();
-      $("#exit-button").on("click", function() {
-        window.location.reload();
-      });
-      $("#exit-modal").modal();
-      e.returnValue = "Are you certain? This session will be lost!";
     });
 });
 
