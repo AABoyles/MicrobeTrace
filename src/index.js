@@ -464,7 +464,7 @@ $(function() {
       }
       $("#node-color-value-row").slideUp();
       $("#node-color-table-row").slideDown();
-      var table = $("#node-color-table")
+      var nodeColorTable = $("#node-color-table")
         .empty()
         .append(
           "<tr>" +
@@ -516,9 +516,9 @@ $(function() {
               : "") +
             "</tr>"
         ).append(cell);
-        table.append(row);
+        nodeColorTable.append(row);
       });
-      table
+      nodeColorTable
         .find("td")
         .on("dblclick", function() {
           $(this)
@@ -556,7 +556,7 @@ $(function() {
       }
       $("#link-color-value-row").slideUp();
       $("#link-color-table-row").slideDown();
-      var table = $("#link-color-table")
+      var linkColorTable = $("#link-color-table")
         .empty()
         .append(
           "<tr>" +
@@ -609,9 +609,9 @@ $(function() {
             "</tr>"
         );
         row.append(cell);
-        table.append(row);
+        linkColorTable.append(row);
       });
-      table
+      linkColorTable
         .find("td")
         .on("dblclick", function() {
           $(this)
@@ -964,7 +964,7 @@ $(function() {
       layout.updateSize();
     })
     .on("devtoolschange", function(e) {
-      if (e.detail.isOpen) {
+      if (window.devtools.isOpen) {
         console.log(
           "%cPLEASE DO NOT TYPE OR PASTE ANYTHING HERE.",
           "color:red;font-size:24px"

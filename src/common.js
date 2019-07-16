@@ -666,9 +666,9 @@ MT.generateSeqs = function(idPrefix, count, snps, seed) {
   ];
   var sampleSNPs = ["A", "C", "G", "T"];
 
-  function sample(vec, count) {
+  function sample(vec, nCodons) {
     var samples = [];
-    for (var x = 0; x < count; x++) {
+    for (var x = 0; x < nCodons; x++) {
       var idx = Math.floor(MT.r01() * vec.length);
       samples.push(vec[idx]);
     }
@@ -791,9 +791,9 @@ MT.computeConsensusDistances = function(callback) {
       "ms"
     );
     start = Date.now();
-    var n = nodes.length;
-    for (var i = 0; i < n; i++) {
-      session.data.nodes[i]._diff = nodes[i];
+    var nodesLength = nodes.length;
+    for (var j = 0; j < nodesLength; j++) {
+      session.data.nodes[j]._diff = nodes[j];
     }
     console.log(
       "Consensus Difference Merge time: ",
