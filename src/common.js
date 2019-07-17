@@ -210,8 +210,10 @@ MT.sessionSkeleton = function() {
       timeEnd: Date.now()
     },
     style: {
+      linkAlphas: [1],
       linkColors: d3.schemePaired,
       linkValueNames: {},
+      nodeAlphas: [1],
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
       nodeSymbols: [
         "symbolCircle",
@@ -243,8 +245,14 @@ MT.sessionSkeleton = function() {
 MT.tempSkeleton = function() {
   return {
     style: {
+      linkAlphaMap: function() {
+        return 1 - session.style.widgets["link-opacity"];
+      },
       linkColorMap: function() {
         return session.style.widgets["link-color"];
+      },
+      nodeAlphaMap: function() {
+        return 1;
       },
       nodeColorMap: function() {
         return session.style.widgets["node-color"];
@@ -1461,20 +1469,19 @@ MT.createNodeColorMap = function() {
     return [];
   }
   var aggregates = {};
-  var values = [];
   var nodes = session.data.nodes;
   var n = nodes.length;
   for (var i = 0; i < n; i++) {
     var d = nodes[i];
     if (!d.visible) continue;
     var dv = d[variable];
-    if (values.indexOf(dv) === -1) values.push(dv);
     if (dv in aggregates) {
       aggregates[dv]++;
     } else {
       aggregates[dv] = 1;
     }
   }
+  var values = Object.keys(aggregates);
   if (values.length > session.style.nodeColors.length) {
     var colors = [];
     var m = Math.ceil(values.length / session.style.nodeColors.length);
@@ -1483,8 +1490,16 @@ MT.createNodeColorMap = function() {
     }
     session.style.nodeColors = colors;
   }
+  if (values.length > session.style.nodeAlphas.length) {
+    session.style.nodeAlphas = session.style.nodeAlphas.concat(
+      new Array(values.length - session.style.nodeAlphas.length).fill(1)
+    );
+  }
   temp.style.nodeColorMap = d3
     .scaleOrdinal(session.style.nodeColors)
+    .domain(values);
+  temp.style.nodeAlphaMap = d3
+    .scaleOrdinal(session.style.nodeAlphas)
     .domain(values);
   return aggregates;
 };
@@ -1495,10 +1510,12 @@ MT.createLinkColorMap = function() {
     temp.style.linkColorMap = function() {
       return session.style.widgets["link-color"];
     };
+    temp.style.linkAlphaMap = function() {
+      return 1 - session.style.widgets["link-opacity"];
+    };
     return [];
   }
   var aggregates = {};
-  var values = [];
   var links = MT.getVisibleLinks();
   var i = 0,
     n = links.length,
@@ -1508,7 +1525,6 @@ MT.createLinkColorMap = function() {
       l = links[i++];
       if (!l.visible) continue;
       l.origin.forEach(function(o) {
-        if (!values.includes(o)) values.push(o);
         if (o in aggregates) {
           aggregates[o]++;
         } else {
@@ -1521,7 +1537,6 @@ MT.createLinkColorMap = function() {
       l = links[i++];
       if (!l.visible) continue;
       var lv = l[variable];
-      if (values.indexOf(lv) === -1) values.push(lv);
       if (lv in aggregates) {
         aggregates[lv]++;
       } else {
@@ -1529,14 +1544,23 @@ MT.createLinkColorMap = function() {
       }
     }
   }
+  var values = Object.keys(aggregates);
   if (values.length > session.style.linkColors.length) {
     var colors = [];
     var cycles = Math.ceil(values.length / session.style.linkColors.length);
     while (cycles-- > 0) colors = colors.concat(session.style.linkColors);
     session.style.linkColors = colors;
   }
+  if (values.length > session.style.linkAlphas.length) {
+    session.style.linkAlphas = session.style.linkAlphas.concat(
+      new Array(values.length - session.style.linkAlphas.length).fill(1)
+    );
+  }
   temp.style.linkColorMap = d3
     .scaleOrdinal(session.style.linkColors)
+    .domain(values);
+  temp.style.linkAlphaMap = d3
+    .scaleOrdinal(session.style.linkAlphas)
     .domain(values);
   return aggregates;
 };

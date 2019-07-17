@@ -225,6 +225,10 @@ performance of this software.</pre>
     <a href="#" id="node-color-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
   </div>
 
+  <div id="color-transparency-wrapper" class="floater">
+    <input id="color-transparency" type="range" min="0" max="1" step="0.05" value="1" orient="vertical" />
+  </div>
+
   <div id="network-statistics-wrapper" class="floater">
     <div id="network-statistics-draghandle"><span class="oi oi-move"></span></div>
     <table id="network-statistics-table">
@@ -405,8 +409,9 @@ performance of this software.</pre>
               </div>
               <div id="link-color-value-row" class="form-group row" title="What color should the links be?">
                 <div class="col-4"><label for="link-color">Links</label></div>
-                <div class="col-8"><input type="color" id="link-color" class="form-control form-control-sm"
-                    value="#a6cee3" /></div>
+                <div class="col-8">
+                  <input type="color" id="link-color" class="form-control form-control-sm" value="#a6cee3" />
+                </div>
               </div>
               <div class="form-group row" title="What color should denote selection?">
                 <div class="col-4"><label for="selected-color">Selected</label></div>
@@ -635,13 +640,22 @@ performance of this software.</pre>
             production and analytics and help you to discover, understand, and display relationships (links) between
             patients (nodes). MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby
             reducing both the startup cost and analysis time and effort.</p>
-          <p class="ifOnline"><a href="https://github.com/CDCgov/MicrobeTrace/wiki" target="_blank"
-              rel="noreferrer noopener">Click Here to Learn More</a></p>
+          <p class="ifOnline">
+            <a href="https://github.com/CDCgov/MicrobeTrace/wiki" target="_blank" rel="noreferrer noopener">
+              Click Here to Learn More
+            </a>
+          </p>
           <p>MicrobeTrace was built by the Molecular Epidemiology and Bionformatics Team at the CDC in Atlanta.</p>
-          <p><a href="https://cdcgov.github.io/MEBT" target="_blank" rel="noreferrer noopener" class="ifOnline">Click
-              Here to See MEBT's Other Tools</a></p>
-          <p class="text-right"><a href="humans.txt"><img src="img/humanstxt-isolated-blank.gif"
-                title="Click to see our humans.txt file" alt="humans.txt" /></a></p>
+          <p>
+            <a href="https://cdcgov.github.io/MEBT" target="_blank" rel="noreferrer noopener" class="ifOnline">
+              Click Here to See MEBT's Other Tools
+            </a>
+          </p>
+          <p class="text-right">
+            <a href="humans.txt">
+              <img src="img/humanstxt-isolated-blank.gif" title="Click to see our humans.txt file" alt="humans.txt" />
+            </a>
+          </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -655,8 +669,9 @@ performance of this software.</pre>
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exitModalLabel">Leave MicrobeTrace Session?</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-              aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
           Are you certain you want to leave this MicrobeTrace session? Any unsaved configurations will be lost!

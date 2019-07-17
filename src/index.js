@@ -485,7 +485,7 @@ $(function() {
       var vnodes = MT.getVisibleNodes();
       var values = Object.keys(aggregates);
       values.forEach(function(value, i) {
-        var input = $(
+        var colorinput = $(
           '<input type="color" value="' +
             temp.style.nodeColorMap(value) +
             '" />'
@@ -496,7 +496,27 @@ $(function() {
             .domain(values);
           $window.trigger("node-color-change");
         });
-        var cell = $("<td></td>").append(input);
+        var alphainput = $("<a>⇳</a>").on("click", function(e) {
+          $("#color-transparency-wrapper").css({
+            top: e.clientY,
+            left: e.clientX,
+            display: "block"
+          });
+          $("#color-transparency")
+            .val(session.style.nodeAlphas[i])
+            .one("change", function() {
+              session.style.nodeAlphas.splice(i, 1, parseFloat(this.value));
+              temp.style.nodeAlphaMap = d3
+                .scaleOrdinal(session.style.nodeAlphas)
+                .domain(values);
+              $("#color-transparency-wrapper").fadeOut();
+              $window.trigger("node-color-change");
+            });
+        });
+        var cell = $("<td></td>")
+          .append(colorinput)
+          .append(alphainput);
+
         var row = $(
           "<tr>" +
             "<td data-value='" +
@@ -577,7 +597,7 @@ $(function() {
       var vlinks = MT.getVisibleLinks();
       var values = Object.keys(aggregates);
       values.forEach(function(value, i) {
-        var input = $(
+        var colorinput = $(
           '<input type="color" value="' +
             temp.style.linkColorMap(value) +
             '" />'
@@ -588,7 +608,26 @@ $(function() {
             .domain(values);
           $window.trigger("link-color-change");
         });
-        var cell = $("<td></td>").append(input);
+        var alphainput = $("<a>⇳</a>").on("click", function(e) {
+          $("#color-transparency-wrapper").css({
+            top: e.clientY,
+            left: e.clientX,
+            display: "block"
+          });
+          $("#color-transparency")
+            .val(session.style.linkAlphas[i])
+            .one("change", function() {
+              session.style.linkAlphas.splice(i, 1, parseFloat(this.value));
+              temp.style.linkAlphaMap = d3
+                .scaleOrdinal(session.style.linkAlphas)
+                .domain(values);
+              $("#color-transparency-wrapper").fadeOut();
+              $window.trigger("link-color-change");
+            });
+        });
+        var cell = $("<td></td>")
+          .append(colorinput)
+          .append(alphainput);
         var row = $(
           "<tr>" +
             "<td data-value='" +

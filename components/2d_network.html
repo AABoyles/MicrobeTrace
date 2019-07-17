@@ -1088,9 +1088,11 @@ Note that this may cause slow performance on larger networks.">
       var nodes = svg.select('g.nodes').selectAll('g').select('path').data(session.network.nodes).classed('selected', d => d.selected);
       if (variable === 'None') {
         var col = session.style.widgets['node-color'];
-        nodes.attr('fill', col);
+        nodes.attr('fill', col).attr('opacity', 1);
       } else {
-        nodes.attr('fill', d => temp.style.nodeColorMap(d[variable]));
+        nodes
+          .attr('fill', d => temp.style.nodeColorMap(d[variable]))
+          .attr('opacity', d => temp.style.nodeAlphaMap(d[variable]));
       }
     }
 
@@ -1133,12 +1135,16 @@ Note that this may cause slow performance on larger networks.">
       var variable = session.style.widgets['link-color-variable'];
       var links = svg.select('g.links').selectAll('line');
       if (variable === 'None') {
-        var color = session.style.widgets['link-color'];
-        links.attr('stroke', color);
+        var color = session.style.widgets['link-color'],
+          opacity = 1 - session.style.widgets['link-opacity'];
+        links
+          .attr('stroke', color)
+          .attr('opacity', opacity);
       } else {
         links
           .data(getVLinks())
           .attr('stroke', l => temp.style.linkColorMap(l[variable]))
+          .attr('opacity', l => temp.style.linkAlphaMap(l[variable]))
           .attr('stroke-dasharray', l => {
             //This quirky little algorithm creates the dasharray code necessary to make dash-y links.
             var length = 15;

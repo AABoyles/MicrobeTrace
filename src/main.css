@@ -34,17 +34,17 @@ body {
 .navbar {
   padding: 0.25rem;
 }
-#search-form{
+#search-form {
   display: none;
 }
-label[for="search"]{
-  color:#555555;
+label[for="search"] {
+  color: #555555;
 }
-#search{
-  border-radius: .25rem 0 0 .25rem;
+#search {
+  border-radius: 0.25rem 0 0 0.25rem;
 }
-#search-field{
-  border-radius: 0 .25rem .25rem 0;
+#search-field {
+  border-radius: 0 0.25rem 0.25rem 0;
   border-left: 0;
 }
 #main-panel {
@@ -171,7 +171,7 @@ svg#link-threshold-sparkline {
   border: 1px solid lightgray;
   padding: 4px;
 }
-#link-color-table td{
+#link-color-table td {
   border: 1px solid lightgray;
   padding: 4px;
 }
@@ -216,6 +216,24 @@ svg#link-threshold-sparkline {
   -moz-appearance: none;
   text-indent: 1px;
   text-overflow: "";
+}
+#color-transparency-wrapper {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  border-radius: 0.25rem;
+  color: #303030;
+  background-color: #f8f9fa !important;
+  width: 30px;
+  height: 185px;
+  padding: 4px 8px;
+}
+#color-transparency {
+  writing-mode: bt-lr; /* IE */
+  -webkit-appearance: slider-vertical; /* WebKit */
+  width: 8px;
+  height: 175px;
+  padding: 0 5px;
 }
 #network-statistics-wrapper {
   display: none;
@@ -519,7 +537,7 @@ button.btn,
   border: 1px solid lightgray;
   padding: 4px;
 }
-#node-symbol-table select{
+#node-symbol-table select {
   border: none;
   background: transparent;
 }
@@ -806,9 +824,9 @@ button.btn,
   width: 100%;
   height: 100%;
 }
-#physics-tree g.links link{
+#physics-tree g.links link {
   stroke: gray;
 }
-#physics-tree g.nodes g circle{
+#physics-tree g.nodes g circle {
   cursor: grab;
 }
