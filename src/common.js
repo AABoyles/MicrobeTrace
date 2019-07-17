@@ -518,12 +518,17 @@ MT.applyGHOST = function(ghost) {
   MT.finishUp();
 };
 
+(function() {
+  var decoder = new TextDecoder("utf-8");
+  MT.decode = function(x) {
+    return decoder.decode(x);
+  };
+})();
+
 MT.parseFASTA = function(text, callback) {
   var computer = new Worker("workers/parse-fasta.js");
   computer.onmessage = function(response) {
-    var nodes = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.nodes))
-    );
+    var nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
     console.log(
       "FASTA Transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
@@ -543,9 +548,7 @@ MT.parseCSVMatrix = function(file, callback) {
     tl = 0;
   var computer = new Worker("workers/parse-csv-matrix.js");
   computer.onmessage = function(response) {
-    var data = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.data))
-    );
+    var data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
     console.log(
       "CSV Matrix Transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
@@ -715,8 +718,6 @@ MT.generateSeqs = function(idPrefix, count, snps, seed) {
   return seqs;
 };
 
-MT.decoder = new TextDecoder("utf-8");
-
 MT.align = function(params, callback, merge) {
   if (params.aligner === "none") {
     if (callback) callback(params.nodes);
@@ -725,9 +726,7 @@ MT.align = function(params, callback, merge) {
   var n = params.nodes.length;
   var aligner = new Worker("workers/align-sw.js");
   aligner.onmessage = function(response) {
-    var subset = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.nodes))
-    );
+    var subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
     console.log(
       "Alignment transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
@@ -773,7 +772,7 @@ MT.computeConsensus = function(callback) {
       (Date.now() - response.data.start).toLocaleString(),
       "ms"
     );
-    callback(MT.decoder.decode(new Uint8Array(response.data.consensus)));
+    callback(MT.decode(new Uint8Array(response.data.consensus)));
   };
   computer.postMessage(nodes);
 };
@@ -782,9 +781,7 @@ MT.computeConsensusDistances = function(callback) {
   var start = Date.now();
   var computer = new Worker("workers/compute-consensus-distances.js");
   computer.onmessage = function(response) {
-    var nodes = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.nodes))
-    );
+    var nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
     console.log(
       "Consensus Difference Transit time: ",
       (Date.now() - start).toLocaleString(),
@@ -828,9 +825,7 @@ MT.computeLinks = function(subset, callback) {
   var k = 0;
   var computer = new Worker("workers/compute-links.js");
   computer.onmessage = function(response) {
-    var links = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.links))
-    );
+    var links = JSON.parse(MT.decode(new Uint8Array(response.data.links)));
     computer.terminate();
     console.log(
       "Links Transit time: ",
@@ -861,10 +856,10 @@ MT.computeDM = function(callback) {
   var computer = new Worker("workers/compute-dm.js");
   computer.onmessage = function(response) {
     session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.matrix))
+      MT.decode(new Uint8Array(response.data.matrix))
     );
     session.data.distance_matrix.labels = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.labels))
+      MT.decode(new Uint8Array(response.data.labels))
     );
     console.log(
       "DM Transit time: ",
@@ -884,7 +879,7 @@ MT.computeTree = function(type, callback) {
   var computer = new Worker("workers/compute-tree.js");
   computer.onmessage = function(response) {
     temp.trees[type] = patristic.parseJSON(
-      MT.decoder.decode(new Uint8Array(response.data.tree))
+      MT.decode(new Uint8Array(response.data.tree))
     );
     console.log(
       "Tree (" + type + ") Transit time: ",
@@ -903,9 +898,7 @@ MT.computeTree = function(type, callback) {
 MT.computeDirectionality = function(callback) {
   var computer = new Worker("workers/compute-directionality.js");
   computer.onmessage = function(response) {
-    var flips = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.output))
-    );
+    var flips = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
     console.log(
       "Directionality Transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
@@ -938,9 +931,7 @@ MT.computeDirectionality = function(callback) {
 MT.computePatristicMatrix = function(type, callback) {
   var computer = new Worker("workers/compute-patristic-matrix.js");
   computer.onmessage = function(response) {
-    var output = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.output))
-    );
+    var output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
     session.data.distance_matrix["patristic-" + type] = output.matrix;
     session.data.distance_matrix["patristic-" + type].labels = output.labels;
     console.log(
@@ -970,9 +961,7 @@ MT.computeNN = function(metric, callback) {
       console.error("Nearest Neighbor washed out");
       return;
     }
-    var output = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.links))
-    );
+    var output = JSON.parse(MT.decode(new Uint8Array(response.data.links)));
     console.log(
       "NN Transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
@@ -1010,9 +999,7 @@ MT.computeTriangulation = function(metric, callback) {
       console.error("Triangulation washed out");
       return;
     }
-    var matrix = JSON.parse(
-      MT.decoder.decode(new Uint8Array(response.data.matrix))
-    );
+    var matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
     session.data.distance_matrix[metric] = matrix;
     console.log(
       "Triangulation Transit time: ",
