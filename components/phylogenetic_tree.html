@@ -294,9 +294,9 @@
 </div><!-- /.modal -->
 
 <script>
-  var tree;
-
   (function () {
+    var tree;
+
     function drawTree() {
       var panel = $('#tree').parent();
       if (!panel.length) return;
@@ -689,10 +689,12 @@
 
     layout.on('stateChanged', function () {
       if ($('#tree').length) {
-        redrawTree();
-        var wrapper = $('#tree').parent();
-        $('#tree-export-width').val(wrapper.width());
-        $('#tree-export-height').val(wrapper.height());
+        setTimeout(function () {
+          redrawTree();
+          var wrapper = $('#tree').parent();
+          $('#tree-export-width').val(wrapper.width());
+          $('#tree-export-height').val(wrapper.height());
+        }, 200);
       }
     });
 
