@@ -307,13 +307,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
             c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
           [a, b, c].forEach(function (list, i) {
+            $(these.get(i)).val("None");
             list.forEach(function (title) {
               if (headers.includes(title)) $(these.get(i)).val(title);
             });
-            if ((i === 1 && type === 'node') || (i === 2 && type === 'link')) {
-              $(these.get(i)).val('None');
-            } else if ($(these.get(i)).val() === 'None') {
+            if ($(these.get(i)).val() === 'None' &&
+              !(i === 1 && type === 'node') && //If Node Sequence...
+              !(i === 2 && type === 'link')) { //...or Link distance...
+                //...don't match to a variable in the dataset, leave them as "None".
               $(these.get(i)).val(headers[i]);
+                //Everything else, just guess the next ordinal column.
             }
           });
         }
