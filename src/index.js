@@ -979,7 +979,9 @@ $(function() {
     })
     .on("click", function() {
       $(
-        "#network-statistics-context, #link-color-table-context, #node-color-table-context"
+        "#network-statistics-context, " +
+          "#link-color-table-context, " +
+          "#node-color-table-context"
       ).hide();
     })
     .on("link-visibility", function() {
