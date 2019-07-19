@@ -163,7 +163,7 @@ MT.defaultWidgets = {
   "tree-animation-on": true,
   "tree-branch-distances-hide": true,
   "tree-branch-distance-size": 12,
-  "tree-branch-nodes-show": true,
+  "tree-branch-nodes-show": false,
   "tree-horizontal-stretch": 1,
   "tree-layout-vertical": false,
   "tree-layout-horizontal": true,
