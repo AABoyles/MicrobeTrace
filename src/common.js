@@ -160,6 +160,7 @@ MT.defaultWidgets = {
   "selected-color-contrast": "#000000",
   "timeline-date-field": "None",
   "timeline-noncumulative": true,
+  "tree-animation-on": true,
   "tree-branch-distances-hide": true,
   "tree-branch-distance-size": 12,
   "tree-branch-nodes-show": true,

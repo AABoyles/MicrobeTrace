@@ -89,6 +89,19 @@
           </div>
         </div>
       </div>
+      <div class="form-group row" title="Would you like to see animations as your tree updates?">
+        <div class="col-3">Animation</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+            <label class="btn btn-light btn-sm col active">
+              <input type="radio" name="tree-animation" id="tree-animation-on" autocomplete="off" checked> On
+            </label>
+            <label class="btn btn-light btn-sm col">
+              <input type="radio" name="tree-animation" id="tree-animation-off" autocomplete="off"> Off
+            </label>
+    </div>
+        </div>
+      </div>
     </div>
     <div class="tab-pane fade" id="tree-branch-configurations" role="tabpanel" aria-labelledby="tree-branch-tab">
       <div class="form-group row" title="What would you like the branches to be shaped like?">
@@ -496,6 +509,16 @@
     $('#tree-ruler-hide').parent().on('click', function () {
       session.style.widgets['tree-ruler-hide'] = true;
       tree.setRuler(false);
+    });
+
+    $('#tree-animation-on').parent().on('click', function () {
+      session.style.widgets['tree-animation-on'] = true;
+      tree.setAnimation(1200);
+    });
+
+    $('#tree-animation-off').parent().on('click', function () {
+      session.style.widgets['tree-animation-on'] = false;
+      tree.setAnimation(0);
     });
 
     $('#tree-mode-square').parent().on('click', function () {
