@@ -474,7 +474,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#generate-sequences').on('click', function () {
       $('#file-prompt').remove();
       $('#launch').prop('disabled', false).focus();
-      processFile(new File([MT.unparseFASTA(MT.generateSeqs('gen-' + Date.now() + '-', parseFloat($('#generate-number').val()), 20))], 'generated.fasta'));
+      processFile(new File([Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', parseFloat($('#generate-number').val()), 20))], 'generatedNodes.csv'));
     });
 
     function message(msg) {

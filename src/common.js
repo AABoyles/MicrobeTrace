@@ -198,6 +198,7 @@ MT.sessionSkeleton = function() {
     messages: [],
     meta: {
       loadTime: 0,
+      readyTime: Date.now(),
       startTime: 0
     },
     network: {
