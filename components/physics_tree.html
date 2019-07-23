@@ -1,12 +1,10 @@
 <svg id="physics-tree"></svg>
 
 <div class="view-controls">
-  <button id="toggle-physics-tree-settings" type="button" class="btn btn-light btn-sm" data-toggle="button"
-    title="Toggle Physics Tree Settings">
+  <button id="toggle-physics-tree-settings" type="button" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Physics Tree Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#physics-tree-export-modal"
-    title="Export Physics Tree">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#physics-tree-export-modal" title="Export Physics Tree">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button id="physics-tree-fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Physics Tree">
@@ -17,61 +15,70 @@
 <div id="physics-tree-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a class="nav-link active" id="physics-tree-tab" data-toggle="tab" href="#physics-tree-settings" role="tab"
-        aria-controls="physics-tree-settings" aria-selected="true">Tree</a>
+      <a class="nav-link active" id="physics-tree-tab" data-toggle="tab" href="#physics-tree-settings" role="tab" aria-controls="physics-tree-settings" aria-selected="true">
+        Tree
+      </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="physics-tree-branches-tab" data-toggle="tab" href="#physics-tree-branch-settings"
-        role="tab" aria-controls="physics-tree-branch-settings" aria-selected="false">Branches</a>
+      <a class="nav-link" id="physics-tree-branches-tab" data-toggle="tab" href="#physics-tree-branch-settings" role="tab" aria-controls="physics-tree-branch-settings" aria-selected="false">
+        Branches
+      </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="physics-tree-nodes-tab" data-toggle="tab" href="#physics-tree-node-settings" role="tab"
-        aria-controls="physics-tree-node-settings" aria-selected="false">Leaves</a>
+      <a class="nav-link" id="physics-tree-nodes-tab" data-toggle="tab" href="#physics-tree-node-settings" role="tab" aria-controls="physics-tree-node-settings" aria-selected="false">
+        Leaves
+      </a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="physics-tree-node-settings" role="tabpanel"
-      aria-labelledby="physics-tree-nodes-tab">
+    <div class="tab-pane fade show active" id="physics-tree-node-settings" role="tabpanel" aria-labelledby="physics-tree-nodes-tab">
       <div class="accordion" id="physics-tree-node-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#physics-tree-node-controls-labels" aria-expanded="true"
-              aria-controls="physics-tree-node-controls-labels" style="color:#495057">Labels and Tooltips</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-node-controls-labels" aria-expanded="true" aria-controls="physics-tree-node-controls-labels" style="color:#495057">
+              Labels and Tooltips
+            </button>
           </div>
-          <div id="physics-tree-node-controls-labels" class="collapse show"
-            data-parent="#physics-tree-node-controls-accordion">
+          <div id="physics-tree-node-controls-labels" class="collapse show" data-parent="#physics-tree-node-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
-                <div class="col-4"><label for="physics-tree-node-tooltip-variable">Tooltip</label></div>
-                <div class="col-8"><select id="physics-tree-node-tooltip-variable"
-                    class="form-control form-control-sm branch-variables">
+                <div class="col-4">
+                  <label for="physics-tree-node-tooltip-variable">Tooltip</label>
+                </div>
+                <div class="col-8">
+                  <select id="physics-tree-node-tooltip-variable" class="form-control form-control-sm branch-variables">
                     <option>None</option>
-                  </select></div>
+                  </select>
+                </div>
               </div>
               <div class="form-group row" title="What node data should be displayed as a label for the node?">
-                <div class="col-4"><label for="physics-tree-node-label-variable">Label</label></div>
-                <div class="col-8"><select id="physics-tree-node-label-variable"
-                    class="form-control form-control-sm branch-variables">
+                <div class="col-4">
+                  <label for="physics-tree-node-label-variable">Label</label>
+                </div>
+                <div class="col-8">
+                  <select id="physics-tree-node-label-variable" class="form-control form-control-sm branch-variables">
                     <option>None</option>
-                  </select></div>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse"
-              data-target="#physics-tree-node-controls-shapes" aria-expanded="false"
-              aria-controls="physics-tree-node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#physics-tree-node-controls-shapes" aria-expanded="false" aria-controls="physics-tree-node-controls-shapes" style="color:#495057">
+              Shapes and Sizes
+            </button>
           </div>
-          <div id="physics-tree-node-controls-shapes" class="collapse"
-            data-parent="#physics-tree-node-controls-accordion">
+          <div id="physics-tree-node-controls-shapes" class="collapse" data-parent="#physics-tree-node-controls-accordion">
             <div class="card-body">
               <div id="physics-tree-node-symbol-row" class="form-group row" title="What shape should the nodes be?">
-                <div class="col-4"><label for="physics-tree-node-symbol">Shape</label></div>
-                <div class="col-8"><select id="physics-tree-node-symbol" class="form-control form-control-sm">
-                    <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
+                <div class="col-4">
+                  <label for="physics-tree-node-symbol">Shape</label>
+                </div>
+                <div class="col-8">
+                  <select id="physics-tree-node-symbol" class="form-control form-control-sm">
+                    <option value="symbolCircle" selected="selected">&nbsp;&#11044; (Circle)</option>
                     <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
                     <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
                     <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
@@ -89,68 +96,82 @@
                     <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
                     <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
                     <option value="symbolStar">&nbsp;&#9733; (Star)</option>
-                  </select></div>
+                  </select>
+                </div>
               </div>
               <div class="form-group row" title="How big should the nodes be?">
-                <div class="col-4"><label for="physics-tree-node-size">Size</label></div>
-                <div class="col-8"><input type="range" id="physics-tree-node-size" min="1" value="3" step="1"
-                    max="50" /></div>
+                <div class="col-4">
+                  <label for="physics-tree-node-size">Size</label>
+                </div>
+                <div class="col-8">
+                  <input type="range" id="physics-tree-node-size" min="1" value="3" step="1" max="50"/>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button"
-              data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">
+              Colors
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="tab-pane fade" id="physics-tree-branch-settings" role="tabpanel"
-      aria-labelledby="physics-tree-branches-tab">
+    <div class="tab-pane fade" id="physics-tree-branch-settings" role="tabpanel" aria-labelledby="physics-tree-branches-tab">
       <div class="accordion" id="physics-tree-branch-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#physics-tree-branch-controls-shapes" aria-expanded="false"
-              aria-controls="physics-tree-branch-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-branch-controls-shapes" aria-expanded="false" aria-controls="physics-tree-branch-controls-shapes" style="color:#495057">
+              Shapes and Sizes
+            </button>
           </div>
-          <div id="physics-tree-branch-controls-shapes" class="collapse show"
-            data-parent="#physics-tree-branch-controls-accordion">
+          <div id="physics-tree-branch-controls-shapes" class="collapse show" data-parent="#physics-tree-branch-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="What type of branch weights do you wish to apply?">
-                <div class="col-4"><label for="physics-tree-branch-type">Type</label></div>
+                <div class="col-4">
+                  <label for="physics-tree-branch-type">Type</label>
+                </div>
                 <div class="col-8">
                   <select id="physics-tree-branch-type" class="form-control form-control-sm">
-                    <option selected>Straight</option>
+                    <option selected="selected">Straight</option>
                     <option>Square</option>
                   </select>
                 </div>
               </div>
               <div class="form-group row" title="How long should branches be?">
-                <div class="col-4"><label for="physics-tree-branch-length">Length</label></div>
-                <div class="col-8"><input type="range" id="physics-tree-branch-length" min="0" max="200" value="50" />
+                <div class="col-4">
+                  <label for="physics-tree-branch-length">Length</label>
+                </div>
+                <div class="col-8">
+                  <input type="range" id="physics-tree-branch-length" min="0" max="200" value="50"/>
                 </div>
               </div>
               <div class="form-group row" title="How thick should the branches be?">
-                <div class="col-4"><label for="physics-tree-branch-width">Width</label></div>
-                <div class="col-8"><input type="range" id="physics-tree-branch-width" min="0.3" max="30" step=".3"
-                    value="3" /></div>
+                <div class="col-4">
+                  <label for="physics-tree-branch-width">Width</label>
+                </div>
+                <div class="col-8">
+                  <input type="range" id="physics-tree-branch-width" min="0.3" max="30" step=".3" value="3"/>
+                </div>
               </div>
-              <div id="physics-tree-branch-transparency-row" class="form-group row"
-                title="How transparent should the branches be?">
-                <div class="col-4"><label for="physics-tree-branch-opacity">Transparency</label></div>
-                <div class="col-8"><input type="range" id="physics-tree-branch-opacity" min="0" max="1" value="0"
-                    step="0.01" /></div>
+              <div id="physics-tree-branch-transparency-row" class="form-group row" title="How transparent should the branches be?">
+                <div class="col-4">
+                  <label for="physics-tree-branch-opacity">Transparency</label>
+                </div>
+                <div class="col-8">
+                  <input type="range" id="physics-tree-branch-opacity" min="0" max="1" value="0" step="0.01"/>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" data-toggle="collapse"
-              aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">
+              Colors
+            </button>
           </div>
         </div>
       </div>
@@ -159,17 +180,19 @@
       <div class="accordion" id="physics-tree-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#physics-tree-controls-layout" aria-expanded="true"
-              aria-controls="physics-tree-controls-layout" style="color:#495057">Layout</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-layout" aria-expanded="true" aria-controls="physics-tree-controls-layout" style="color:#495057">
+              Layout
+            </button>
           </div>
           <div id="physics-tree-controls-layout" class="collapse show" data-parent="#physics-tree-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="What type of branch weights do you wish to apply?">
-                <div class="col-4"><label for="physics-tree-type">Type</label></div>
+                <div class="col-4">
+                  <label for="physics-tree-type">Type</label>
+                </div>
                 <div class="col-8">
                   <select id="physics-tree-type" class="form-control form-control-sm">
-                    <option value="tree" selected>Tree</option>
+                    <option value="tree" selected="selected">Tree</option>
                     <option value="weighted">Weighted Dendrogram</option>
                   </select>
                 </div>
@@ -187,8 +210,7 @@
               <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
                 <div class="col-4">Lateral Strength</div>
                 <div class="col-8">
-                  <input id="physics-tree-lateral-strength" type="range" min="0.001" max="0.1" step="0.001"
-                    value="0.05" />
+                  <input id="physics-tree-lateral-strength" type="range" min="0.001" max="0.1" step="0.001" value="0.05"/>
                 </div>
               </div>
             </div>
@@ -196,28 +218,36 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#physics-tree-controls-physics" aria-expanded="false"
-              aria-controls="physics-tree-controls-physics" style="color:#495057">Physics</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#physics-tree-controls-physics" aria-expanded="false" aria-controls="physics-tree-controls-physics" style="color:#495057">
+              Physics
+            </button>
           </div>
           <div id="physics-tree-controls-physics" class="collapse" data-parent="#physics-tree-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
-                <div class="col-4"><label for="physics-tree-charge">Charge</label></div>
-                <div class="col-8"><input type="range" id="physics-tree-charge" min="0" max="400" value="200" /></div>
+                <div class="col-4">
+                  <label for="physics-tree-charge">Charge</label>
+                </div>
+                <div class="col-8">
+                  <input type="range" id="physics-tree-charge" min="0" max="400" value="200"/>
+                </div>
               </div>
               <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
-                <div class="col-4"><label for="physics-tree-friction">Friction</label></div>
-                <div class="col-8"><input type="range" id="physics-tree-friction" min="0" max="1" value="0.4"
-                    step="0.025" /></div>
+                <div class="col-4">
+                  <label for="physics-tree-friction">Friction</label>
+                </div>
+                <div class="col-8">
+                  <input type="range" id="physics-tree-friction" min="0" max="1" value="0.4" step="0.025"/>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button"
-              data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">
+              Colors
+            </button>
           </div>
         </div>
       </div>
@@ -237,8 +267,7 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="physics-tree-export-file-name" class="form-control form-control-sm"
-              placeholder="Filename" />
+            <input type="text" id="physics-tree-export-file-name" class="form-control form-control-sm" placeholder="Filename"/>
           </div>
           <div class="col-3">
             <select id="physics-tree-export-file-type" class="form-control form-control-sm">
@@ -250,9 +279,9 @@
             </select>
           </div>
         </div>
-        <button id="physics-tree-export-advanced-button" class="btn btn-primary btn-sm" type="button"
-          data-toggle="collapse" data-target="#physics-tree-export-advanced" aria-expanded="false"
-          aria-controls="physics-tree-export-advanced">Advanced</button>
+        <button id="physics-tree-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#physics-tree-export-advanced" aria-expanded="false" aria-controls="physics-tree-export-advanced">
+          Advanced
+        </button>
         <div class="collapse" id="physics-tree-export-advanced">
           <div class="card card-body">
             <div class="form-group row">
@@ -260,8 +289,7 @@
                 <label for="physics-tree-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="physics-tree-export-scale" class="form-control form-control-sm" min="0"
-                  step="0.1" value="1" />
+                <input type="number" id="physics-tree-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1"/>
               </div>
             </div>
             <div class="form-group row">
@@ -273,7 +301,7 @@
                 <label for="physics-tree-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" id="physics-tree-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                <input type="range" id="physics-tree-export-quality" min="0" max="1.0" value="0.92" step="0.01"/>
               </div>
             </div>
           </div>
@@ -295,14 +323,10 @@
     zoom = d3.zoom().on('zoom', function () {
       transform = d3.event.transform;
       g.attr('transform', transform);
-    })
+    });
 
-  d3.select('svg#physics-tree')
-    .html(null) //Let's make sure the canvas is blank.
-    .attr('height', halfHeight * 2)
-    .attr('width', halfWidth * 2)
-    .on('click', hideContext)
-    .call(zoom);
+  d3.select('svg#physics-tree').html(null). //Let's make sure the canvas is blank.
+  attr('height', halfHeight * 2).attr('width', halfWidth * 2).on('click', hideContext).call(zoom);
 
   var g = d3.select('svg#physics-tree').append('g');
 

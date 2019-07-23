@@ -4,8 +4,7 @@
   <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm" title="Toggle Tree Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#tree-export-modal"
-    title="Export Tree">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#tree-export-modal" title="Export Tree">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button id="tree-fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Phylogenetic Tree">
@@ -16,16 +15,13 @@
 <div id="tree-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a href="#tree-configurations" id="tree-tab" class="nav-link active" aria-controls="tree" role="tab"
-        data-toggle="tab">Tree</a>
+      <a href="#tree-configurations" id="tree-tab" class="nav-link active" aria-controls="tree" role="tab" data-toggle="tab">Tree</a>
     </li>
     <li class="nav-item">
-      <a href="#tree-branch-configurations" id="tree-branch-tab" class="nav-link" aria-controls="tree" role="tab"
-        data-toggle="tab">Branches</a>
+      <a href="#tree-branch-configurations" id="tree-branch-tab" class="nav-link" aria-controls="tree" role="tab" data-toggle="tab">Branches</a>
     </li>
     <li class="nav-item">
-      <a href="#tree-leaf-configurations" id="tree-leaf-tab" class="nav-link" aria-controls="tree" role="tab"
-        data-toggle="tab">Leaves</a>
+      <a href="#tree-leaf-configurations" id="tree-leaf-tab" class="nav-link" aria-controls="tree" role="tab" data-toggle="tab">Leaves</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -37,7 +33,7 @@
         <div class="col-9">
           <select id="tree-type" class="form-control form-control-sm">
             <option value="tree">Tree</option>
-            <option value="weighted" selected>Weighted Dendrogram</option>
+            <option value="weighted" selected="selected">Weighted Dendrogram</option>
             <option value="dendrogram">Unweighted Dendrogram</option>
           </select>
         </div>
@@ -47,14 +43,16 @@
         <div class="col-9">
           <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm active col">
-              <input type="radio" name="tree-layout" id="tree-layout-vertical" autocomplete="off" checked>
+              <input type="radio" name="tree-layout" id="tree-layout-vertical" autocomplete="off" checked="checked">
               Vertical
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="tree-layout" id="tree-layout-horizontal" autocomplete="off"> Horizontal
+              <input type="radio" name="tree-layout" id="tree-layout-horizontal" autocomplete="off">
+              Horizontal
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="tree-layout" id="tree-layout-circular" autocomplete="off"> Circular
+              <input type="radio" name="tree-layout" id="tree-layout-circular" autocomplete="off">
+              Circular
             </label>
           </div>
         </div>
@@ -64,7 +62,7 @@
           <label for="tree-vertical-stretch">Vertical Stretch</label>
         </div>
         <div class="col-9">
-          <input id="tree-vertical-stretch" type="range" min="0.1" max="10" value="1" step="0.1" />
+          <input id="tree-vertical-stretch" type="range" min="0.1" max="10" value="1" step="0.1"/>
         </div>
       </div>
       <div class="form-group row" title="Would you like to horizontally stretch (or squish) the Tree?">
@@ -72,19 +70,20 @@
           <label for="tree-horizontal-stretch">Horizontal Stretch</label>
         </div>
         <div class="col-9">
-          <input id="tree-horizontal-stretch" type="range" min="0.1" max="10" value="1" step="0.1" />
+          <input id="tree-horizontal-stretch" type="range" min="0.1" max="10" value="1" step="0.1"/>
         </div>
       </div>
-      <div class="form-group row hideForCircular"
-        title="Would you like to see a ruler indicating patristic distances next to your tree?">
+      <div class="form-group row hideForCircular" title="Would you like to see a ruler indicating patristic distances next to your tree?">
         <div class="col-3">Ruler</div>
         <div class="col-9">
           <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="tree-ruler" id="tree-ruler-show" autocomplete="off" checked> Show
+              <input type="radio" name="tree-ruler" id="tree-ruler-show" autocomplete="off" checked="checked">
+              Show
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="tree-ruler" id="tree-ruler-hide" autocomplete="off"> Hide
+              <input type="radio" name="tree-ruler" id="tree-ruler-hide" autocomplete="off">
+              Hide
             </label>
           </div>
         </div>
@@ -94,10 +93,12 @@
         <div class="col-9">
           <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="tree-animation" id="tree-animation-on" autocomplete="off" checked> On
+              <input type="radio" name="tree-animation" id="tree-animation-on" autocomplete="off" checked="checked">
+              On
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="tree-animation" id="tree-animation-off" autocomplete="off"> Off
+              <input type="radio" name="tree-animation" id="tree-animation-off" autocomplete="off">
+              Off
             </label>
           </div>
         </div>
@@ -109,13 +110,16 @@
         <div class="col-9">
           <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="tree-mode" id="tree-mode-square" autocomplete="off" checked> Square
+              <input type="radio" name="tree-mode" id="tree-mode-square" autocomplete="off" checked="checked">
+              Square
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="tree-mode" id="tree-mode-smooth" autocomplete="off"> Smooth
+              <input type="radio" name="tree-mode" id="tree-mode-smooth" autocomplete="off">
+              Smooth
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="tree-mode" id="tree-mode-straight" autocomplete="off"> Straight
+              <input type="radio" name="tree-mode" id="tree-mode-straight" autocomplete="off">
+              Straight
             </label>
           </div>
         </div>
@@ -129,7 +133,7 @@
               Show
             </label>
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="tree-branch-nodes" id="tree-branch-nodes-hide" autocomplete="off" checked>
+              <input type="radio" name="tree-branch-nodes" id="tree-branch-nodes-hide" autocomplete="off" checked="checked">
               Hide
             </label>
           </div>
@@ -144,24 +148,23 @@
               Show
             </label>
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="tree-branch-distances" id="tree-branch-distances-hide" autocomplete="off"
-                checked>
+              <input type="radio" name="tree-branch-distances" id="tree-branch-distances-hide" autocomplete="off" checked="checked">
               Hide
             </label>
           </div>
         </div>
       </div>
-      <div class="form-group row tree-branch-distance-row"
-        title="Would you like to round distances in the tree to integers?">
+      <div class="form-group row tree-branch-distance-row" title="Would you like to round distances in the tree to integers?">
         <div class="col-3">Round Labels</div>
         <div class="col-9">
           <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm active col">
-              <input type="radio" name="tree-round" id="tree-round-false" autocomplete="off" checked>
+              <input type="radio" name="tree-round" id="tree-round-false" autocomplete="off" checked="checked">
               Unrounded
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="tree-round" id="tree-round-true" autocomplete="off"> Rounded
+              <input type="radio" name="tree-round" id="tree-round-true" autocomplete="off">
+              Rounded
             </label>
           </div>
         </div>
@@ -171,7 +174,7 @@
           <label for="tree-branch-distance-size">Label Size</label>
         </div>
         <div class="col-9">
-          <input id="tree-branch-distance-size" type="range" min="1" max="32" value="6" step="1" />
+          <input id="tree-branch-distance-size" type="range" min="1" max="32" value="6" step="1"/>
         </div>
       </div>
     </div>
@@ -179,9 +182,7 @@
       <div class="accordion" id="tree-node-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#tree-node-controls-labels" aria-expanded="true" aria-controls="tree-node-controls-labels"
-              style="color:#495057">Labels and Tooltips</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#tree-node-controls-labels" aria-expanded="true" aria-controls="tree-node-controls-labels" style="color:#495057">Labels and Tooltips</button>
           </div>
           <div id="tree-node-controls-labels" class="collapse show" data-parent="#tree-node-controls-accordion">
             <div class="card-body">
@@ -192,10 +193,12 @@
                 <div class="col-9">
                   <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                     <label class="btn btn-light btn-sm col active">
-                      <input type="radio" name="tree-tooltips" id="tree-tooltip-show" autocomplete="off" checked> Show
+                      <input type="radio" name="tree-tooltips" id="tree-tooltip-show" autocomplete="off" checked="checked">
+                      Show
                     </label>
                     <label class="btn btn-light btn-sm col">
-                      <input type="radio" name="tree-tooltips" id="tree-tooltip-hide" autocomplete="off"> Hide
+                      <input type="radio" name="tree-tooltips" id="tree-tooltip-hide" autocomplete="off">
+                      Hide
                     </label>
                   </div>
                 </div>
@@ -205,10 +208,11 @@
                 <div class="col-9">
                   <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                     <label class="btn btn-light btn-sm col">
-                      <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-show" autocomplete="off"> Show
+                      <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-show" autocomplete="off">
+                      Show
                     </label>
                     <label class="btn btn-light btn-sm col active">
-                      <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-hide" autocomplete="off" checked>
+                      <input type="radio" name="tree-leaf-labels" id="tree-leaf-label-hide" autocomplete="off" checked="checked">
                       Hide
                     </label>
                   </div>
@@ -219,7 +223,7 @@
                   <label for="tree-leaf-label-size">Label Size</label>
                 </div>
                 <div class="col-9">
-                  <input id="tree-leaf-label-size" type="range" min="1" max="32" value="6" step="1" />
+                  <input id="tree-leaf-label-size" type="range" min="1" max="32" value="6" step="1"/>
                 </div>
               </div>
             </div>
@@ -227,9 +231,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#tree-node-controls-geometry" aria-expanded="false"
-              aria-controls="tree-node-controls-geometry" style="color:#495057">Shapes and Sizes</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#tree-node-controls-geometry" aria-expanded="false" aria-controls="tree-node-controls-geometry" style="color:#495057">Shapes and Sizes</button>
           </div>
           <div id="tree-node-controls-geometry" class="collapse" data-parent="#tree-node-controls-accordion">
             <div class="card-body">
@@ -238,11 +240,12 @@
                 <div class="col-9">
                   <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
                     <label class="btn btn-light btn-sm col active">
-                      <input type="radio" name="tree-leaf-nodes" id="tree-leaf-node-show" autocomplete="off" checked>
+                      <input type="radio" name="tree-leaf-nodes" id="tree-leaf-node-show" autocomplete="off" checked="checked">
                       Show
                     </label>
                     <label class="btn btn-light btn-sm col">
-                      <input type="radio" name="tree-leaf-nodes" id="tree-leaf-node-hide" autocomplete="off"> Hide
+                      <input type="radio" name="tree-leaf-nodes" id="tree-leaf-node-hide" autocomplete="off">
+                      Hide
                     </label>
                   </div>
                 </div>
@@ -252,7 +255,7 @@
                   <label for="tree-leaf-node-size">Node Size</label>
                 </div>
                 <div class="col-9">
-                  <input id="tree-leaf-node-size" type="range" min="1" max="32" value="9" step="1" />
+                  <input id="tree-leaf-node-size" type="range" min="1" max="32" value="9" step="1"/>
                 </div>
               </div>
             </div>
@@ -260,8 +263,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button"
-              data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
@@ -288,11 +290,11 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="tree-export-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            <input type="text" id="tree-export-file-name" class="form-control form-control-sm" placeholder="Filename"/>
           </div>
           <div class="col-3">
             <select id="tree-export-file-type" class="form-control form-control-sm">
-              <option selected>png</option>
+              <option selected="selected">png</option>
               <option>jpeg</option>
               <option>webp</option>
               <option>svg</option>
@@ -300,9 +302,7 @@
             </select>
           </div>
         </div>
-        <button id="tree-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse"
-          data-target="#tree-export-advanced" aria-expanded="false"
-          aria-controls="tree-export-advanced">Advanced</button>
+        <button id="tree-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#tree-export-advanced" aria-expanded="false" aria-controls="tree-export-advanced">Advanced</button>
         <div class="collapse" id="tree-export-advanced">
           <div class="card card-body">
             <div class="form-group row">
@@ -310,8 +310,7 @@
                 <label for="tree-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="tree-export-scale" class="form-control form-control-sm" min="0" step="0.1"
-                  value="1" />
+                <input type="number" id="tree-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1"/>
               </div>
             </div>
             <div class="form-group row">
@@ -346,34 +345,32 @@
       if (!panel.length) return;
 
       var metric = session.style.widgets['default-distance-metric'];
-      if (!temp.trees[metric]) {
-        MT.computeTree(metric, drawTree);
-        return;
-      }
+      if (!temp.trees[metric]) return MT.computeTree(metric, drawTree);
 
       tree = new TidyTree(temp.trees[metric], {
         parent: '#tree',
         layout:
           session.style.widgets['tree-layout-vertical'] ? 'vertical' :
-            session.style.widgets['tree-layout-horizontal'] ? 'horizontal' :
-              'circular',
-        type: session.style.widgets['tree-type'],
+          session.style.widgets['tree-layout-horizontal'] ? 'horizontal' :
+          'circular',
+        type:
+          session.style.widgets['tree-type'],
         mode:
           session.style.widgets['tree-mode-square'] ? 'square' :
-            session.style.widgets['tree-mode-smooth'] ? 'smooth' :
-              'straight',
-        animation: 0,
+          session.style.widgets['tree-mode-smooth'] ? 'smooth' :
+          'straight',
+        animation: session.style.widgets['tree-animation-on'] ? 1200 : 0,
         branchNodes: session.style.widgets['tree-branch-nodes-show'],
         branchDistances: !session.style.widgets['tree-branch-distances-hide'],
         leafNodes: true,
         leafLabels: session.style.widgets['tree-leaf-label-show'],
         margin: [60, 100, 20, 20]
       }, {
-          select: select,
-          contextmenu: contextMenu,
-          showtooltip: tooltip,
-          hidetooltip: hideTooltip
-        });
+        select: select,
+        contextmenu: contextMenu,
+        showtooltip: tooltip,
+        hidetooltip: hideTooltip
+      });
 
       $('#tree').on('click', hideContext);
 
@@ -442,7 +439,7 @@
         tree.setData(d[0].data.flip().getRoot());
         menu.style('z-index', -1).style('display', 'none');
       });
-      d3.select('#tree-simplify').on('click', function(){
+      d3.select('#tree-simplify').on('click', function () {
         tree.setData(d[0].data.getRoot().simplify());
         menu.style('z-index', -1).style('display', 'none');
       });
@@ -726,7 +723,9 @@
       }
     });
 
-    $('#tree-fitbutton').on('click', function () { tree.recenter(); });
+    $('#tree-fitbutton').on('click', function () {
+      tree.recenter();
+    });
 
     function tagSelected() {
       tree.eachLeafNode(function (circle, data) {
