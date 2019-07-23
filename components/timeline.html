@@ -86,9 +86,7 @@
       margin = { top: 50, left: 20, right: 20, bottom: 30 };
 
     function refresh() {
-      var wrapper = $("#timeline")
-        .empty()
-        .parent();
+      var wrapper = $("#timeline").empty().parent();
       var tickFormat = d3.timeFormat("%Y-%m-%d");
       width = wrapper.width() - margin.left - margin.right;
       height = wrapper.height() - margin.top - margin.bottom;
@@ -96,12 +94,14 @@
 
       var field = $("#timeline-date-field").val();
       var times = [],
-        vnodes = JSON.parse(JSON.stringify(session.data.nodes));
+        vnodes = MT.getVisibleNodes(true);
       vnodes.forEach(d => {
         var time = moment(d[field]);
         if (time.isValid()) {
           d[field] = time.toDate();
           times.push(d[field]);
+        } else {
+          d[field] = null;
         }
       });
       if (times.length < 2) {
@@ -247,16 +247,14 @@
     });
 
     $('[name="timeline-options"]').on("change", function () {
-      session.style.widgets["timeline-window"] = $("#timeline-window").is(
-        ":checked"
-      );
+      session.style.widgets["timeline-window"] =
+        $("#timeline-window").is(":checked");
       setTimer();
     });
 
     $('[name="timeline-cumulation"]').on("change", function () {
-      session.style.widgets["timeline-noncumulative"] = $(
-        "#timeline-noncumulative"
-      ).is(":checked");
+      session.style.widgets["timeline-noncumulative"] =
+        $("#timeline-noncumulative").is(":checked");
       refresh();
     });
 
