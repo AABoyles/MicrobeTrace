@@ -273,6 +273,7 @@
   <a href="#" id="tree-rotate" class="dropdown-item">Rotate</a>
   <a href="#" id="tree-flip" class="dropdown-item">Flip</a>
   <a href="#" id="tree-reroot" class="dropdown-item">Set As Root</a>
+  <a href="#" id="tree-simplify" class="dropdown-item">Simplify</a>
 </div>
 
 <div id="tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
@@ -435,7 +436,11 @@
         menu.style('z-index', -1).style('display', 'none');
       });
       d3.select('#tree-flip').on('click', function () {
-        tree.setData(d[0].data.rotate(true).getRoot());
+        tree.setData(d[0].data.flip().getRoot());
+        menu.style('z-index', -1).style('display', 'none');
+      });
+      d3.select('#tree-simplify').on('click', function(){
+        tree.setData(d[0].data.getRoot().simplify());
         menu.style('z-index', -1).style('display', 'none');
       });
       menu
