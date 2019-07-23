@@ -401,6 +401,9 @@
       }
 
       tagSelected();
+      if (session.style.widgets['tree-round-true'])
+        roundBranchDistances();
+      }
     }
 
     function select(d) {
@@ -599,11 +602,15 @@
       tree.setBranchDistances(false);
     });
 
-    $('#tree-round-true').parent().on('click', function () {
-      session.style.widgets['tree-round-true'] = true;
+    function roundBranchDistances() {
       tree.eachBranchDistance(function (label, data) {
         d3.select(label).text(Math.round(data.target.data.length));
       });
+    }
+
+    $('#tree-round-true').parent().on('click', function () {
+      session.style.widgets['tree-round-true'] = true;
+      roundBranchDistances();
     });
 
     $('#tree-round-false').parent().on('click', function () {
