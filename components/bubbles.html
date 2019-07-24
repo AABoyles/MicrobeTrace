@@ -106,7 +106,7 @@
                 <label for="bubbles-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" id="bubbles-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                <input type="range" id="bubbles-export-quality" min="0" max="1.0" value="0.92" step="0.01" />
               </div>
             </div>
           </div>
@@ -306,16 +306,16 @@
       }
     });
 
-    $('#bubbles-export-filetype').on('change', function (e) {
-      if (e.target.value === 'svg') {
+    $('#bubbles-export-filetype').on('change', function () {
+      if (this.value === 'svg') {
         $('#bubbles-export-advanced-button').slideUp();
       } else {
         $('#bubbles-export-advanced-button').slideDown();
       }
     });
 
-    $('#bubbles-export-scale').on('input', function (e) {
-      let scale = parseFloat(e.target.value);
+    $('#bubbles-export-scale').on('input', function () {
+      let scale = parseFloat(this.value);
       let wrapper = $('#bubbles').parent();
       $('#bubbles-export-dimensions').text(
         Math.round(wrapper.width() * scale) + 'x' +
