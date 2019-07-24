@@ -42,22 +42,6 @@
           </div>
         </div>
       </div>
-      <div class="form-group row"
-        title="Would you like to play a fixed time window forward, or see all the past up to a given point?">
-        <div class="col-4">Timeline Mode</div>
-        <div class="col-8">
-          <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-            <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="timeline-options" id="timeline-past" autocomplete="off" checked />
-              All Past
-            </label>
-            <label class="btn btn-light btn-sm col">
-              <input type="radio" name="timeline-options" id="timeline-window" autocomplete="off" />
-              Window
-            </label>
-          </div>
-        </div>
-      </div>
       <div class="form-group row" title="How quickly would you like the timeline to advance?">
         <div class="col-4"><label for="timeline-speed">Play Speed</label></div>
         <div class="col-8">
@@ -81,7 +65,9 @@
       histogram,
       brush,
       brushG,
+      selection,
       timer,
+      tick = 0,
       isPlaying = false,
       margin = { top: 50, left: 20, right: 20, bottom: 30 };
 
@@ -94,7 +80,7 @@
 
       var field = $("#timeline-date-field").val();
       var times = [],
-        vnodes = MT.getVisibleNodes(true);
+        vnodes = JSON.parse(JSON.stringify(session.data.nodes));
       vnodes.forEach(d => {
         var time = moment(d[field]);
         if (time.isValid()) {
@@ -176,11 +162,21 @@
       brush = d3
         .brushX()
         .extent([[0, 0], [width, height]])
-        .on("end", function () {
-          var selection = d3.brushSelection(brushG.node());
-          if (!session.style.widgets["timeline-window"] && selection[0] > 0) {
+        .on("start brush", function () {
+          selection = d3.brushSelection(brushG.node());
+          if (!selection) return;
+          if (selection[0] > 0) {
             selection[0] = 0;
             brushG.call(brush.move, selection);
+          }
+        })
+        .on("end", function () {
+          selection = d3.brushSelection(brushG.node());
+          if (!selection) return;
+          if (selection[0] > 0) {
+            selection[0] = 0;
+            brushG.call(brush.move, selection);
+            propagate();
           }
         });
 
@@ -205,8 +201,11 @@
     });
 
     function setTimer() {
-      var delay = 110 - parseInt($("#timeline-speed").val());
-      var animate = function () {
+      if (timer) {
+        timer.stop();
+        d3.timerFlush();
+      }
+      timer = d3.interval(function () {
         var selection = d3.brushSelection(brushG.node());
         if (!selection) return timer.stop(); // Ignore empty selections
         if (selection[1] >= width) {
@@ -214,16 +213,20 @@
           return;
         }
         brushG.call(brush.move, selection.map(s => s + 1));
-        session.state.timeStart = x.invert(selection[0]);
-        session.state.timeEnd = x.invert(selection[1]);
-        MT.updateNetwork();
-      };
-      if (timer) {
-        timer.stop();
-        d3.timerFlush();
-      }
-      timer = d3.interval(animate, delay);
+        if(++tick % 5 == 0) propagate();
+      }, 110 - parseInt($("#timeline-speed").val()));
       if (!isPlaying) timer.stop();
+    }
+
+    function propagate(){
+      session.state.timeStart = x.invert(selection[0]);
+      session.state.timeEnd = x.invert(selection[1]);
+      MT.setNodeVisibility(true);
+      MT.setLinkVisibility(true);
+      MT.tagClusters();
+      ["node", "link"].forEach(function (thing) {
+        $window.trigger(thing + "-visibility");
+      });
     }
 
     $("#timeline-toggle-settings")
@@ -244,12 +247,6 @@
     $("#timeline-date-field").on("change", function () {
       session.style.widgets["timeline-date-field"] = this.value;
       refresh();
-    });
-
-    $('[name="timeline-options"]').on("change", function () {
-      session.style.widgets["timeline-window"] =
-        $("#timeline-window").is(":checked");
-      setTimer();
     });
 
     $('[name="timeline-cumulation"]').on("change", function () {
