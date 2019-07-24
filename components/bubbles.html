@@ -133,6 +133,9 @@
         if (old) {
           newNode.x = old.x;
           newNode.y = old.y;
+        } else {
+          newNode.x = center.x;
+          newNode.y = center.y;
         };
       });
       vnodes = newnodes;
