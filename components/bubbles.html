@@ -16,18 +16,29 @@
 
 <div id="bubble-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item active">
-      <a href="#bubble-configurations" id="bubble-nodes-tab" class="nav-link active"
-        aria-controls="bubble-configurations" role="tab" data-toggle="tab">Nodes</a>
+    <li class="nav-item">
+      <a href="#bubble-node-configurations" id="bubble-nodes-tab" class="nav-link active"
+        aria-controls="bubble-node-configurations" role="tab" data-toggle="tab">Nodes</a>
+    </li>
+    <li class="nav-item">
+      <a href="#bubble-physics-configurations" id="bubble-physics-tab" class="nav-link"
+        aria-controls="bubble-physics-configurations" role="tab" data-toggle="tab">Physics</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="bubble-configurations" role="tabpanel"
+    <div class="tab-pane fade show active" id="bubble-node-configurations" role="tabpanel"
       aria-labelledby="bubble-nodes-tab">
+      <div class="form-group row" title="How big should the bubbles be?">
+        <div class="col-3"><label for="bubble-size">Size</label></div>
+        <div class="col-9"><input type="range" id="bubble-size" class="form-control-range" min="1" value="5" max="15" step="0.1" /></div>
+      </div>
       <div class="form-group row">
         <div class="col-3">Color</div>
         <div class="col-9"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
       </div>
+    </div>
+    <div class="tab-pane fade" id="bubble-physics-configurations" role="tabpanel"
+      aria-labelledby="bubble-physics-tab">
       <div class="form-group row" title="What variable should be used for the Bubbles' X axis?">
         <div class="col-3"><label for="bubble-x">X</label></div>
         <div class="col-9"><select id="bubble-x" class="form-control form-control-sm nodeVariables"></select></div>
@@ -36,9 +47,9 @@
         <div class="col-3"><label for="bubble-y">Y</label></div>
         <div class="col-9"><select id="bubble-y" class="form-control form-control-sm nodeVariables"></select></div>
       </div>
-      <div class="form-group row" title="By what variable should bubble sizes be set?">
-        <div class="col-3"><label for="bubble-size">Size</label></div>
-        <div class="col-9"><input type="range" id="bubble-size" min="1" value="5" max="15" step="0.1"></input></div>
+      <div class="form-group row" title="How much should the bubbles repulse each other?">
+        <div class="col-3"><label for="bubble-charge">Charge</label></div>
+        <div class="col-9"><input type="range" id="bubble-charge" class="form-control-range" min="0" value="1.5" max="10" step="0.1" /></div>
       </div>
     </div>
   </div>
@@ -111,7 +122,7 @@
 
 <script>
   (function () {
-    let width, height, center, forceStrength, simulation, vnodes,
+    let width, height, center, simulation, vnodes,
       svg = d3.select('#bubbles');
 
     function updateVNodes() {
@@ -160,13 +171,12 @@
 
       updateNodeColors();
 
-      forceStrength = 0.03;
-
+      var charge = -session.style.widgets['bubble-charge'];
       simulation = d3.forceSimulation().nodes(vnodes)
         .velocityDecay(0.2)
-        .force('x', d3.forceX().strength(forceStrength).x(center.x))
-        .force('y', d3.forceY().strength(forceStrength).y(center.y))
-        .force('charge', d3.forceManyBody().strength(function (d) { return -50 * forceStrength }))
+        .force('x', d3.forceX().strength(0.03).x(center.x))
+        .force('y', d3.forceY().strength(0.03).y(center.y))
+        .force('charge', d3.forceManyBody().strength(d => charge))
         .on('tick', function () {
           svg.selectAll('circle')
             .attr('cx', function (d) { return d.x })
@@ -177,8 +187,8 @@
       groupBubblesY();
     }
 
-    $('#bubble-x').on('change', function (e) {
-      session.style.widgets['bubble-x'] = e.target.value;
+    $('#bubble-x').on('change', function () {
+      session.style.widgets['bubble-x'] = this.value;
       groupBubblesX();
     });
 
@@ -187,7 +197,7 @@
       if (field === 'None') {
         svg.select('#bubble-xAxisLabel').text('');
         svg.selectAll('.xtitle').remove();
-        simulation.force('x', d3.forceX().strength(forceStrength).x(center.x));
+        simulation.force('x', d3.forceX().strength(0.03).x(center.x));
         simulation.alpha(1).restart();
         return;
       }
@@ -212,14 +222,14 @@
         .transition()
         .text(function (d) { return d })
         .attr('x', function (d) { return ratio * values.indexOf(d) + ratio });
-      simulation.force('x', d3.forceX().strength(forceStrength).x(function (d) {
+      simulation.force('x', d3.forceX().strength(0.03).x(function (d) {
         return ratio * values.indexOf(d[field]) + ratio;
       }));
       simulation.alpha(1).restart();
     }
 
-    $('#bubble-y').on('change', function (e) {
-      session.style.widgets['bubble-y'] = e.target.value;
+    $('#bubble-y').on('change', function () {
+      session.style.widgets['bubble-y'] = this.value;
       groupBubblesY();
     });
 
@@ -228,7 +238,7 @@
       if (field === 'None') {
         svg.select('#bubble-yAxisLabel').text('');
         svg.selectAll('.ytitle').remove();
-        simulation.force('y', d3.forceY().strength(forceStrength).y(center.y));
+        simulation.force('y', d3.forceY().strength(0.03).y(center.y));
         simulation.alpha(1).restart();
         return;
       }
@@ -253,14 +263,21 @@
         .text(function (d) { return d })
         .attr('y', function (d) { return ratio * values.indexOf(d) + ratio })
         .attr('transform', function (d) { return 'rotate(270, 50,' + (ratio * values.indexOf(d) + ratio) + ')' });
-      simulation.force('y', d3.forceY().strength(forceStrength).y(function (d) {
+      simulation.force('y', d3.forceY().strength(0.03).y(function (d) {
         return ratio * values.indexOf(d[field]) + ratio;
       }));
       simulation.alpha(1).restart();
     }
 
-    $('#bubble-size').on('input', function (e) {
-      let v = parseFloat(e.target.value);
+    $('#bubble-charge').on('input', function () {
+      let v = -parseFloat(this.value);
+      simulation.force('charge', d3.forceManyBody().strength(d => v));
+      simulation.alpha(1).restart();
+      session.style.widgets['bubble-charge'] = -v;
+    });
+
+    $('#bubble-size').on('input', function () {
+      let v = parseFloat(this.value);
       svg.selectAll('circle').attr('r', v);
       session.style.widgets['bubble-size'] = v;
     });

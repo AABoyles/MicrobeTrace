@@ -54,6 +54,7 @@ MT.defaultWidgets = {
   "background-color-contrast": "#000000",
   "bubble-x": "None",
   "bubble-y": "None",
+  "bubble-charge": 1.5,
   "bubble-size": 5,
   "choropleth-aggregate-as": "states",
   "choropleth-aggregate-on": "None",
