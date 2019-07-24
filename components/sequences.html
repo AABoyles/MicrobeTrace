@@ -1,7 +1,7 @@
 <div id="sequences-panel"></div>
 
 <div id="sequences-view-controls" class="view-controls">
-  <button type="button" id="toggle-sequences-settings" class="btn btn-light btn-sm">
+  <button type="button" id="toggle-sequences-settings" class="btn btn-light btn-sm" data-toggle="button">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#sequences-export-modal">
@@ -138,7 +138,7 @@ For large sets of sequences, this can take a long time.">
 
     $('#toggle-sequences-settings').on('click', function () {
       let pane = $('#sequences-settings-pane');
-      if (pane.is(':visible')) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: '-400px' }, function () { pane.hide(); });
       } else {
         pane.show(0, function () { pane.animate({ left: '0px' }); });

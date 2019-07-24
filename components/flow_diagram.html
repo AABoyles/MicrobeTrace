@@ -1,7 +1,7 @@
 <div id="flow"></div>
 
 <div class="view-controls">
-  <button type="button" id="toggle-flow-settings" class="btn btn-light btn-sm">
+  <button type="button" id="toggle-flow-settings" data-toggle="button" class="btn btn-light btn-sm">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#flow-export-modal"
@@ -206,7 +206,7 @@
 
     $('#toggle-flow-settings').click(function () {
       let pane = $('#flow-settings-pane');
-      if (pane.is(':visible')) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: '-400px' }, function () { pane.hide(); });
       } else {
         pane.show(0, function () { pane.animate({ left: '0px' }); });

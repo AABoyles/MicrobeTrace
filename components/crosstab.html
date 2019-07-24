@@ -1,5 +1,5 @@
 <div class="view-controls">
-  <button type="button" id="crosstab-settings-toggle" class="btn btn-light btn-sm" title="Toggle crosstab Settings">
+  <button type="button" id="crosstab-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle crosstab Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#crosstab-export-modal"
@@ -134,7 +134,7 @@
 
     $("#crosstab-settings-toggle").click(function () {
       var pane = $("#crosstab-settings-pane");
-      if (pane.is(":visible")) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: "-400px" }, function () {
           pane.hide();
         });

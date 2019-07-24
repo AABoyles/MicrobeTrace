@@ -254,7 +254,7 @@
 
     $("#toggle-3DNet-settings").on("click", function () {
       var pane = $("#3DNet-settings-pane");
-      if (pane.is(":visible")) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: "-400px" }, function () {
           pane.hide();
         });

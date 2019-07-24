@@ -1,5 +1,5 @@
   <div class="view-controls">
-    <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm" title="Toggle Table Settings">
+    <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Table Settings">
       <span class="oi oi-cog"></span>
     </button>
     <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table-export-modal" title="Export table data">
@@ -119,7 +119,7 @@
 
     $('#table-settings-toggle').click(function(){
       let pane = $('#table-settings-pane');
-      if(pane.is(':visible')){
+      if($(this).hasClass('active')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
         pane.show(0, function(){ pane.animate({left: '0px'}); });

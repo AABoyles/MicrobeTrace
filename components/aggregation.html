@@ -3,6 +3,7 @@
     type="button"
     id="aggregation-settings-toggle"
     class="btn btn-light btn-sm"
+    data-toggle="button"
     title="Toggle Aggregation Settings"
   >
     <span class="oi oi-cog"></span>
@@ -193,7 +194,7 @@
 
     $("#aggregation-settings-toggle").click(function() {
       let pane = $("#aggregation-settings-pane");
-      if (pane.is(":visible")) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: "-400px" }, function() {
           pane.hide();
         });

@@ -1,7 +1,7 @@
 <div id="tree"></div>
 
 <div class="view-controls">
-  <button id="toggle-tree-settings" type="button" class="btn btn-light btn-sm" title="Toggle Tree Settings">
+  <button id="toggle-tree-settings" type="button" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Tree Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#tree-export-modal" title="Export Tree">
@@ -398,9 +398,7 @@
       }
 
       tagSelected();
-      if (session.style.widgets['tree-round-true'])
-        roundBranchDistances();
-      }
+      if (session.style.widgets['tree-round-true']) roundBranchDistances();
     }
 
     function select(d) {
@@ -482,7 +480,7 @@
 
     $('#toggle-tree-settings').on('click', function () {
       var pane = $('#tree-settings-pane');
-      if (pane.is(':visible')) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: '-400px' }, function () { pane.hide(); });
       } else {
         pane.show(0, function () { pane.animate({ left: '0px' }); });

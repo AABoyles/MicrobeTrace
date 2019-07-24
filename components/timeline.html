@@ -1,5 +1,5 @@
 <div class="view-controls">
-  <button type="button" id="timeline-toggle-settings" class="btn btn-light btn-sm">
+  <button type="button" id="timeline-toggle-settings" class="btn btn-light btn-sm" data-toggle="button">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" id="timeline-play" class="btn btn-light btn-sm">
@@ -229,7 +229,7 @@
     $("#timeline-toggle-settings")
       .click(function () {
         var pane = $("#timeline-settings-pane");
-        if (pane.is(":visible")) {
+        if ($(this).hasClass('active')) {
           pane.animate({ left: "-400px" }, function () {
             pane.hide();
           });

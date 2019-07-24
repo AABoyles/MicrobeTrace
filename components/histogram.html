@@ -1,7 +1,7 @@
 <div id="histogram"></div>
 
 <div class="view-controls">
-  <button id="toggle-histogram-settings" type="button" class="btn btn-light btn-sm">
+  <button id="toggle-histogram-settings" type="button" data-toggle="button" class="btn btn-light btn-sm">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#histogram-export-modal"
@@ -217,9 +217,9 @@
       $('#histogram .yaxislayer-above text').css('fill', contrast);
     }
 
-    $('#toggle-histogram-settings').click(function () {
+    $('#toggle-histogram-settings').on('click', function () {
       let pane = $('#histogram-settings-pane');
-      if (pane.is(':visible')) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: '-400px' }, function () { pane.hide(); });
       } else {
         pane.show(0, function () { pane.animate({ left: '0px' }); });

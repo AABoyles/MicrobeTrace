@@ -1,7 +1,7 @@
 <div id="map" class="h-100"></div>
 
 <div class="view-controls">
-  <button type="button" id="toggle-map-settings" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
+  <button type="button" id="toggle-map-settings" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#map-export-modal"
@@ -649,7 +649,7 @@
 
     $('#toggle-map-settings').on('click', function () {
       var pane = $('#map-settings-pane');
-      if (pane.is(':visible')) {
+      if ($(this).hasClass('active')) {
         pane.animate({ left: '-400px' }, function () { pane.hide(); });
       } else {
         pane.show(0, function () { pane.animate({ left: '0px' }); });
