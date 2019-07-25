@@ -4,15 +4,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="application-name" content="MicrobeTrace">
-  <meta name="Description"
-    content="MicrobeTrace is an interactive web application that renders existing data from high-risk contact networks in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to supplemental data sources and mathematical inferences like the most probable transmission pathways. MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data production and analytics and help you to discover, understand, and display relationships (links) between patients (nodes). MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby reducing both the startup cost and analysis time and effort.">
+  <meta name="Description" content="MicrobeTrace is an interactive web application that renders existing data from high-risk contact networks in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to supplemental data sources and mathematical inferences like the most probable transmission pathways. MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data production and analytics and help you to discover, understand, and display relationships (links) between patients (nodes). MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby reducing both the startup cost and analysis time and effort.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f9fa">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="msapplication-TileColor" content="#ffc40d">
   <meta name="apple-mobile-web-app-title" content="MicrobeTrace">
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' googletagmanager.com *.google-analytics.com; connect-src 'self' googletagmanager.com *.google-analytics.com stats.g.doubleclick.net api.mapbox.com *.cdc.gov; img-src 'self' googletagmanager.com *.google-analytics.com *.doubleclick.net www.google.com api.mapbox.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' googletagmanager.com *.google-analytics.com; connect-src 'self' googletagmanager.com *.google-analytics.com stats.g.doubleclick.net api.mapbox.com *.cdc.gov; img-src 'self' googletagmanager.com *.google-analytics.com *.doubleclick.net www.google.com api.mapbox.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self';">
   <title>MicrobeTrace</title>
   <link rel="manifest" href="manifest.json">
   <link rel="canonical" href="https://microbetrace.cdc.gov/MicrobeTrace/">
@@ -38,15 +36,12 @@
   <nav class="navbar fixed-top navbar-expand-xl navbar-light bg-light">
     <ul class="nav mr-auto">
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true"
-          aria-expanded="false">File</a>
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
         <div class="dropdown-menu">
-          <a href="#" id="StashDataTab" class="dropdown-item" data-toggle="modal"
-            data-target="#session-stash-modal">Stash</a>
+          <a href="#" id="StashDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-stash-modal">Stash</a>
           <a href="#" id="RecallDataTab" class="dropdown-item">Recall</a>
           <div class="dropdown-divider"></div>
-          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal"
-            data-target="#session-save-modal">Save</a>
+          <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal" data-target="#session-save-modal">Save</a>
           <label class="dropdown-item" for="OpenTab">Open</label><input type="file" class="d-none" id="OpenTab">
           <div class="dropdown-divider"></div>
           <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
@@ -54,12 +49,10 @@
         </div>
       </li>
       <li class="nav-item">
-        <a href="#" id="SettingsTab" class="nav-link py-0" data-toggle="modal"
-          data-target="#aligner-controls-modal">Settings</a>
+        <a href="#" id="SettingsTab" class="nav-link py-0" data-toggle="modal" data-target="#aligner-controls-modal">Settings</a>
       </li>
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true"
-          aria-expanded="false">View</a>
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
         <div class="dropdown-menu">
           <a href="#" class="dropdown-item viewbutton" data-href="2d_network">2D Network</a>
           <a href="#" class="dropdown-item viewbutton" data-href="3d_network">3D Network</a>
@@ -84,20 +77,17 @@
         </div>
       </li>
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true"
-          aria-expanded="false">Window</a>
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
         <div class="dropdown-menu">
           <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
           <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
         </div>
       </li>
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true"
-          aria-expanded="false">Help</a>
+        <a href="#" class="nav-link dropdown-toggle py-0" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
           <a href="#" id="HelpTab" class="dropdown-item">Help</a>
-          <a href="https://github.com/CDCgov/MicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank"
-            rel="noreferrer noopener">Report Bug</a>
+          <a href="https://github.com/CDCgov/MicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Report Bug</a>
           <div class="dropdown-divider ifOnline"></div>
           <a href="#" id="AboutTab" class="dropdown-item" data-toggle="modal" data-target="#about-modal">About</a>
         </div>
@@ -113,8 +103,7 @@
   </nav>
 
   <div id="ie-warning">
-    This application does not support Internet Explorer. To use MicrobeTrace, please switch to one of the following
-    browsers:<br>
+    This application does not support Internet Explorer. To use MicrobeTrace, please switch to one of the following browsers:<br>
     <a href='https://support.google.com/chrome/answer/95346'>Chrome</a>/
     <a href='https://www.opera.com/'>Opera</a>/
     <a href='https://www.mozilla.org/en-US/firefox/new/'>Firefox</a>
@@ -273,17 +262,14 @@ performance of this software.</pre>
         <div class="modal-body">
           <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item active">
-              <a class="nav-link active" id="filtering-tab" data-toggle="tab" href="#filtering-config" role="tab"
-                aria-controls="home" aria-selected="true">Filtering</a>
+              <a class="nav-link active" id="filtering-tab" data-toggle="tab" href="#filtering-config" role="tab" aria-controls="home" aria-selected="true">Filtering</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="style-tab" data-toggle="tab" href="#style-config" role="tab" aria-controls="home"
-                aria-selected="true">Styling</a>
+              <a class="nav-link" id="style-tab" data-toggle="tab" href="#style-config" role="tab" aria-controls="home" aria-selected="true">Styling</a>
             </li>
           </ul>
           <div class="tab-content">
-            <div class="tab-pane fade show active" id="filtering-config" role="tabpanel"
-              aria-labelledby="filtering-tab">
+            <div class="tab-pane fade show active" id="filtering-config" role="tabpanel" aria-labelledby="filtering-tab">
               <div class="form-group row" title="By what algorithm would you like to prune links from the network?">
                 <div class="col-4">Prune With</div>
                 <div class="col-8">
@@ -297,8 +283,7 @@ performance of this software.</pre>
                   </div>
                 </div>
               </div>
-              <div id="filtering-epsilon-row" class="form-group row"
-                title="How much genetic distance represents non-equality for your ">
+              <div id="filtering-epsilon-row" class="form-group row" title="How much genetic distance represents non-equality for your ">
                 <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
                 <div class="col-8">
                   <input type="range" class="custom-range" id="filtering-epsilon" min="-3" max="2" step=".01" value="-3">
@@ -307,14 +292,12 @@ performance of this software.</pre>
                   <input type="number" id="filtering-epsilon-copy" class="form-control form-control-sm" disabled>
                 </div>
               </div>
-              <div class="form-group row"
-                title="What's the minimum number of nodes a cluster must have in order to be visible?">
+              <div class="form-group row" title="What's the minimum number of nodes a cluster must have in order to be visible?">
                 <div class="col-4">
                   <label for="cluster-minimum-size">Minimum Cluster Size</label>
                 </div>
                 <div class="col-8">
-                  <input type="number" class="form-control form-control-sm" id="cluster-minimum-size" min="1" value="1"
-                    step="1">
+                  <input type="number" class="form-control form-control-sm" id="cluster-minimum-size" min="1" value="1" step="1">
                 </div>
               </div>
               <div id="filtering-wrapper">
@@ -346,12 +329,12 @@ performance of this software.</pre>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col" title="Show a table of overview statistics for the network">
-                      <input type="radio" name="network-statistics-visibility" id="network-statistics-show"
-                        autocomplete="off" checked> Show
+                      <input type="radio" name="network-statistics-visibility" id="network-statistics-show" autocomplete="off" checked>
+                      Show
                     </label>
                     <label class="btn btn-light col" title="Do not show a table of overview statistics for the network">
-                      <input type="radio" name="network-statistics-visibility" id="network-statistics-hide"
-                        autocomplete="off"> Hide
+                      <input type="radio" name="network-statistics-visibility" id="network-statistics-hide" autocomplete="off">
+                      Hide
                     </label>
                   </div>
                 </div>
@@ -360,18 +343,18 @@ performance of this software.</pre>
             <div class="tab-pane fade" id="style-config" role="tabpanel" aria-labelledby="style-tab">
               <div class="form-group row" title="By what variable nodes be colored?">
                 <div class="col-4"><label for="node-color-variable">Color Nodes By</label></div>
-                <div class="col-8"><select id="node-color-variable" class="form-control form-control-sm nodeVariables">
+                <div class="col-8">
+                  <select id="node-color-variable" class="form-control form-control-sm nodeVariables">
                     <option>None</option>
-                  </select></div>
+                  </select>
+                </div>
               </div>
-              <div id="node-color-table-row" class="form-group row"
-                title="Should MicrobeTrace display the table of colors?">
+              <div id="node-color-table-row" class="form-group row" title="Should MicrobeTrace display the table of colors?">
                 <div class="col-4">Node Color Table</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="nodeColorTableShowHide" id="node-color-table-show" autocomplete="off"
-                        checked>
+                      <input type="radio" name="nodeColorTableShowHide" id="node-color-table-show" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light col">
@@ -383,23 +366,24 @@ performance of this software.</pre>
               </div>
               <div id="node-color-value-row" class="form-group row" title="What color should the nodes be?">
                 <div class="col-4"><label for="node-color">Nodes</label></div>
-                <div class="col-8"><input type="color" id="node-color" class="form-control form-control-sm"
-                    value="#1f77b4"></div>
+                <div class="col-8">
+                  <input type="color" id="node-color" class="form-control form-control-sm" value="#1f77b4">
+                </div>
               </div>
               <div class="form-group row" title="By what variable should links be colored?">
                 <div class="col-4"><label for="link-color-variable">Color Links By</label></div>
-                <div class="col-8"><select id="link-color-variable" class="form-control form-control-sm linkVariables">
+                <div class="col-8">
+                  <select id="link-color-variable" class="form-control form-control-sm linkVariables">
                     <option>None</option>
-                  </select></div>
+                  </select>
+                </div>
               </div>
-              <div id="link-color-table-row" class="form-group row"
-                title="Should MicrobeTrace display the table of colors?">
+              <div id="link-color-table-row" class="form-group row" title="Should MicrobeTrace display the table of colors?">
                 <div class="col-4">Link Color Table</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="linkColorTableShowHide" id="link-color-table-show" autocomplete="off"
-                        checked>
+                      <input type="radio" name="linkColorTableShowHide" id="link-color-table-show" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light col">
@@ -417,13 +401,15 @@ performance of this software.</pre>
               </div>
               <div class="form-group row" title="What color should denote selection?">
                 <div class="col-4"><label for="selected-color">Selected</label></div>
-                <div class="col-8"><input type="color" id="selected-color" class="form-control form-control-sm"
-                    value="#ff8300"></div>
+                <div class="col-8">
+                  <input type="color" id="selected-color" class="form-control form-control-sm" value="#ff8300">
+                </div>
               </div>
               <div class="form-group row" title="What color should the background be?">
                 <div class="col-4"><label for="background-color">Background</label></div>
-                <div class="col-8"><input type="color" id="background-color" class="form-control form-control-sm"
-                    value="#ffffff"></div>
+                <div class="col-8">
+                  <input type="color" id="background-color" class="form-control form-control-sm" value="#ffffff">
+                </div>
               </div>
               <div class="form-group row" title="Load an existing MicrobeTrace style file">
                 <div class="col-4">Apply Style</div>
@@ -444,8 +430,7 @@ performance of this software.</pre>
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog"
-    aria-labelledby="#aligner-controls-title" aria-hidden="true" data-backdrop="false">
+  <div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true" data-backdrop="false">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -458,12 +443,13 @@ performance of this software.</pre>
           <div class="form-group row">
             <div class="col-12">
               <div class="alert alert-warning alert-dismissible" role="alert">
-                <p>MicrobeTrace is not intended to be an alignment program (although it can be used in that way). For
-                  best results, please align your sequences using <a
-                    href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank"
-                    rel="noreferrer noopener">an external tool</a> before loading them into MicrobeTrace. <a
-                    href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank"
-                    rel="noreferrer noopener">Click here for additional information.</a></p>
+                <p>
+                  MicrobeTrace is not intended to be an alignment program (although it can be used in that way).
+                  For best results, please align your sequences using
+                  <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank" rel="noreferrer noopener">an external tool</a>
+                  before loading them into MicrobeTrace.
+                  <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank" rel="noreferrer noopener">Click here for additional information.</a>
+                </p>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -551,12 +537,10 @@ performance of this software.</pre>
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-8">
-              <input type="text" id="save-file-name" class="form-control form-control-sm"
-                title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename">
+              <input type="text" id="save-file-name" class="form-control form-control-sm" title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename">
             </div>
             <div class="col-4">
-              <select id="save-file-format" class="form-control form-control-sm"
-                title="What format file would you like to save?">
+              <select id="save-file-format" class="form-control form-control-sm" title="What format file would you like to save?">
                 <option selected>microbetrace</option>
                 <option>hivtrace</option>
                 <option>microbetracestyle</option>
@@ -630,25 +614,28 @@ performance of this software.</pre>
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="aboutModalLabel">About MicrobeTrace</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-              aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
           <h3>MicrobeTrace <small>v<span id="version"></span></small></h3>
-          <p>MicrobeTrace is an interactive web application that renders existing data from high-risk contact networks
+          <p>
+            MicrobeTrace is an interactive web application that renders existing data from high-risk contact networks
             in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to
             supplemental data sources and mathematical inferences like the most probable transmission pathways.
             MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data
             production and analytics and help you to discover, understand, and display relationships (links) between
             patients (nodes). MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby
-            reducing both the startup cost and analysis time and effort.</p>
+            reducing both the startup cost and analysis time and effort.
+          </p>
           <p class="ifOnline">
             <a href="https://github.com/CDCgov/MicrobeTrace/wiki" target="_blank" rel="noreferrer noopener">
               Click Here to Learn More
             </a>
           </p>
-          <p>MicrobeTrace was built by the Molecular Epidemiology and Bionformatics Team at the CDC in Atlanta.</p>
           <p>
+            MicrobeTrace was built by the Molecular Epidemiology and Bionformatics Team at the CDC in Atlanta.
             <a href="https://cdcgov.github.io/MEBT" target="_blank" rel="noreferrer noopener" class="ifOnline">
               Click Here to See MEBT's Other Tools
             </a>
