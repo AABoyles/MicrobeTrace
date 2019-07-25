@@ -12,10 +12,10 @@ onmessage = function(e) {
   }
   for (var j = 0; j < m; j++) {
     var link = links[j];
-    var row = labels.findIndex(l => l === link.source);
-    if (row === -1) continue;
-    var col = labels.findIndex(l => l === link.target);
-    if (col === -1) continue;
+    var row = labels.findIndex(l => l == link.source);
+    if (row == -1) continue;
+    var col = labels.findIndex(l => l == link.target);
+    if (col == -1) continue;
     output[row][col] = link["distance"];
     output[col][row] = link["distance"];
   }

@@ -16,7 +16,7 @@ onmessage = function(e) {
           var source = "" + row[0];
           for (var j = 1; j < n; j++) {
             var target = "" + nodeIDs[j];
-            if (source === target) continue;
+            if (source == target) continue;
             links.push({
               source: source,
               target: target,

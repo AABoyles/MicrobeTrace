@@ -503,8 +503,8 @@
         nodes.forEach(n => {
           let county;
           county = MT.mapData.counties.features.find(c => {
-            return (c.properties.fips === n[cval] ||
-              parseFloat(c.properties.fips) === parseFloat(n[cval]));
+            return (c.properties.fips == n[cval] ||
+              parseFloat(c.properties.fips) == parseFloat(n[cval]));
           });
           if (county) {
             n._lat = county.properties._lat;
@@ -720,8 +720,8 @@
       while (n-- > 0) {
         let d = links[n];
         if (!d.visible) continue;
-        let source = nodes.find(node => node.id === d.source);
-        let target = nodes.find(node => node.id === d.target);
+        let source = nodes.find(node => node.id == d.source);
+        let target = nodes.find(node => node.id == d.target);
         if (source && target) {
           if (source._jlat && source._jlon && target._jlat && target._jlon) {
             var s = [source._jlon, source._jlat];
@@ -748,8 +748,8 @@
       let jitter = session.style.widgets['globe-node-jitter'] > 0;
       links.forEach(function (d) {
         if (!d.visible) return;
-        let source = nodes.find(node => node.id === d.source);
-        let target = nodes.find(node => node.id === d.target);
+        let source = nodes.find(node => node.id == d.source);
+        let target = nodes.find(node => node.id == d.target);
         if (source && target) {
           if (source._lat && source._lon && target._lat && target._lon) {
             features.push({
@@ -785,7 +785,7 @@
         canvg.node().toBlob(blob => {
           saveAs(blob, $('#globe-export-file-name').val() + '.' + format);
         }, 'image/' + format);
-      } else if (format === 'geojson') {
+      } else if (format == 'geojson') {
         saveAs(
           new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
           $('#globe-export-file-name').val() + '.' + format

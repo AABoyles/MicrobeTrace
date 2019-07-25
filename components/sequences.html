@@ -124,13 +124,13 @@ For large sets of sequences, this can take a long time.">
 
     $('#sequences-export').on('click', function () {
       let type = $('#export-sequences-file-type').val();
-      if (type === 'fasta') {
+      if (type == 'fasta') {
         let blob = new Blob([MT.unparseFASTA(session.data.nodes.filter(d => d.seq))]);
         saveAs(blob, $('#export-sequences-file-name').val() + '.fasta');
-      } else if (type === 'mega') {
+      } else if (type == 'mega') {
         let blob = new Blob([MT.unparseMEGA(session.data.nodes.filter(d => d.seq))]);
         saveAs(blob, $('#export-sequences-file-name').val() + '.mega');
-      } else if (type === 'png') {
+      } else if (type == 'png') {
         $('#sequences-panel canvas').get(0).toBlob(function (blob) {
           saveAs(blob, $('#export-sequences-file-name').val() + '.png');
         });

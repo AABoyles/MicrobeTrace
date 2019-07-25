@@ -131,7 +131,7 @@
 
     function updateNodeTooltip() {
       var nodeTooltip = session.style.widgets["3DNet-node-tooltip-variable"];
-      if (nodeTooltip === "None" || nodeTooltip === null) {
+      if (nodeTooltip == "None" || nodeTooltip == null) {
         graph.nodeLabel("");
       } else {
         graph.nodeLabel(
@@ -145,7 +145,7 @@
 
     function updateNodeColors() {
       var nodeColorBy = session.style.widgets["node-color-variable"];
-      if (nodeColorBy === "None") {
+      if (nodeColorBy == "None") {
         var nodeColor = session.style.widgets["node-color"];
         graph.nodeColor(d =>
           d.selected ? session.style.widgets["selected-color"] : nodeColor
@@ -168,7 +168,7 @@
 
     function updateLinkTooltip() {
       var linkTooltip = session.style.widgets["3DNet-link-tooltip-variable"];
-      if (linkTooltip === "None") {
+      if (linkTooltip == "None") {
         graph.linkLabel("");
       } else {
         graph.linkLabel(
@@ -182,7 +182,7 @@
 
     function updateLinkColors() {
       var linkColorBy = session.style.widgets["link-color-variable"];
-      if (linkColorBy === "None") {
+      if (linkColorBy == "None") {
         var linkColor = session.style.widgets["link-color"];
         graph.linkColor(l => linkColor);
       } else {

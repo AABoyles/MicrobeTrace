@@ -2,45 +2,43 @@ self.MT = {};
 
 MT.componentCache = {};
 
-MT.dataSkeleton = function () {
-  return {
-    nodes: [],
-    links: [],
-    clusters: [],
-    distance_matrix: {},
-    nodeFields: [
-      "index",
-      "id",
-      "selected",
-      "cluster",
-      "visible",
-      "degree",
-      "origin"
-    ],
-    linkFields: [
-      "index",
-      "source",
-      "target",
-      "distance",
-      "visible",
-      "cluster",
-      "origin",
-      "nn",
-      "directed"
-    ],
-    clusterFields: [
-      "id",
-      "nodes",
-      "links",
-      "sum_distances",
-      "links_per_node",
-      "mean_genetic_distance",
-      "visible"
-    ],
-    reference:
-      "CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC"
-  };
-};
+MT.dataSkeleton = () => ({
+  nodes: [],
+  links: [],
+  clusters: [],
+  distance_matrix: {},
+  nodeFields: [
+    "index",
+    "id",
+    "selected",
+    "cluster",
+    "visible",
+    "degree",
+    "origin"
+  ],
+  linkFields: [
+    "index",
+    "source",
+    "target",
+    "distance",
+    "visible",
+    "cluster",
+    "origin",
+    "nn",
+    "directed"
+  ],
+  clusterFields: [
+    "id",
+    "nodes",
+    "links",
+    "sum_distances",
+    "links_per_node",
+    "mean_genetic_distance",
+    "visible"
+  ],
+  reference:
+    "CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTTCCCATTAGCCCTATTGAGACTGTACCAGTAAAATTAAAGCCAGGAATGGATGGCCCAAAAGTTAAACAATGGCCATTGACAGAAGAAAAAATAAAAGCATTAGTAGAAATTTGTACAGAGATGGAAAAGGAAGGGAAAATTTCAAAAATTGGGCCTGAAAATCCATACAATACTCCAGTATTTGCCATAAAGAAAAAAGACAGTACTAAATGGAGAAAATTAGTAGATTTCAGAGAACTTAATAAGAGAACTCAAGACTTCTGGGAAGTTCAATTAGGAATACCACATCCCGCAGGGTTAAAAAAGAAAAAATCAGTAACAGTACTGGATGTGGGTGATGCATATTTTTCAGTTCCCTTAGATGAAGACTTCAGGAAGTATACTGCATTTACCATACCTAGTATAAACAATGAGACACCAGGGATTAGATATCAGTACAATGTGCTTCCACAGGGATGGAAAGGATCACCAGCAATATTCCAAAGTAGCATGACAAAAATCTTAGAGCCTTTTAGAAAACAAAATCCAGACATAGTTATCTATCAATACATGGATGATTTGTATGTAGGATCTGACTTAGAAATAGGGCAGCATAGAACAAAAATAGAGGAGCTGAGACAACATCTGTTGAGGTGGGGACTTACCACACCAGACAAAAAACATCAGAAAGAACCTCCATTCCTTTGGATGGGTTATGAACTCCATCCTGATAAATGGACAGTACAGCCTATAGTGCTGCCAGAAAAAGACAGCTGGACTGTCAATGACATACAGAAGTTAGTGGGGAAATTGAATTGGGCAAGTCAGATTTACCCAGGGATTAAAGTAAGGCAATTATGTAAACTCCTTAGAGGAACCAAAGCACTAACAGAAGTAATACCACTAACAGAAGAAGCAGAGCTAGAACTGGCAGAAAACAGAGAGATTCTAAAAGAACCAGTACATGGAGTGTATTATGACCCATCAAAAGACTTAATAGCAGAAATACAGAAGCAGGGGCAAGGCCAATGGACATATCAAATTTATCAAGAGCCATTTAAAAATCTGAAAACAGGAAAATATGCAAGAATGAGGGGTGCCCACACTAATGATGTAAAACAATTAACAGAGGCAGTGCAAAAAATAACCACAGAAAGCATAGTAATATGGGGAAAGACTCCTAAATTTAAACTGCCCATACAAAAGGAAACATGGGAAACATGGTGGACAGAGTATTGGCAAGCCACCTGGATTCCTGAGTGGGAGTTTGTTAATACCCCTCCCTTAGTGAAATTATGGTACCAGTTAGAGAAAGAACCCATAGTAGGAGCAGAAACCTTC"
+});
 
 MT.defaultWidgets = {
   "3DNet-link-tooltip-variable": "None",
@@ -184,116 +182,98 @@ MT.defaultWidgets = {
   "tree-vertical-stretch": 1
 };
 
-MT.sessionSkeleton = function () {
-  return {
-    data: MT.dataSkeleton(),
-    files: [],
-    layout: {
-      content: [
-        {
-          type: "files"
-        }
-      ],
-      type: "stack"
-    },
-    messages: [],
-    meta: {
-      loadTime: 0,
-      readyTime: Date.now(),
-      startTime: 0
-    },
-    network: {
-      allPinned: false,
-      nodes: []
-    },
-    state: {
-      metrics: ["tn93"],
-      timeStart: 0,
-      timeEnd: Date.now()
-    },
-    style: {
-      linkAlphas: [1],
-      linkColors: d3.schemePaired,
-      linkValueNames: {},
-      nodeAlphas: [1],
-      nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
-      nodeSymbols: [
-        "symbolCircle",
-        "symbolCross",
-        "symbolDiamond",
-        "symbolSquare",
-        "symbolStar",
-        "symbolTriangle",
-        "symbolWye",
-        "symbolTriangleDown",
-        "symbolTriangleLeft",
-        "symbolTriangleRight",
-        "symbolDiamondAlt",
-        "symbolDiamondSquare",
-        "symbolPentagon",
-        "symbolHexagon",
-        "symbolHexagonAlt",
-        "symbolOctagon",
-        "symbolOctagonAlt",
-        "symbolX"
-      ],
-      nodeValueNames: {},
-      widgets: MT.defaultWidgets
-    },
-    warnings: []
-  };
-};
-
-MT.tempSkeleton = function () {
-  return {
-    style: {
-      linkAlphaMap: function () {
-        return 1 - session.style.widgets["link-opacity"];
-      },
-      linkColorMap: function () {
-        return session.style.widgets["link-color"];
-      },
-      nodeAlphaMap: function () {
-        return 1;
-      },
-      nodeColorMap: function () {
-        return session.style.widgets["node-color"];
-      },
-      nodeSymbolMap: function () {
-        return session.style.widgets["node-symbol"];
+MT.sessionSkeleton = () => ({
+  data: MT.dataSkeleton(),
+  files: [],
+  layout: {
+    content: [
+      {
+        type: "files"
       }
-    },
-    trees: {},
-    messageTimeout: null
-  };
-};
+    ],
+    type: "stack"
+  },
+  messages: [],
+  meta: {
+    loadTime: 0,
+    readyTime: Date.now(),
+    startTime: 0
+  },
+  network: {
+    allPinned: false,
+    nodes: []
+  },
+  state: {
+    metrics: ["tn93"],
+    timeStart: 0,
+    timeEnd: Date.now()
+  },
+  style: {
+    linkAlphas: [1],
+    linkColors: d3.schemePaired,
+    linkValueNames: {},
+    nodeAlphas: [1],
+    nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
+    nodeSymbols: [
+      "symbolCircle",
+      "symbolCross",
+      "symbolDiamond",
+      "symbolSquare",
+      "symbolStar",
+      "symbolTriangle",
+      "symbolWye",
+      "symbolTriangleDown",
+      "symbolTriangleLeft",
+      "symbolTriangleRight",
+      "symbolDiamondAlt",
+      "symbolDiamondSquare",
+      "symbolPentagon",
+      "symbolHexagon",
+      "symbolHexagonAlt",
+      "symbolOctagon",
+      "symbolOctagonAlt",
+      "symbolX"
+    ],
+    nodeValueNames: {},
+    widgets: MT.defaultWidgets
+  },
+  warnings: []
+});
+
+MT.tempSkeleton = () => ({
+  style: {
+    linkAlphaMap: () => 1 - session.style.widgets["link-opacity"],
+    linkColorMap: () => session.style.widgets["link-color"],
+    nodeAlphaMap: () => 1,
+    nodeColorMap: () => session.style.widgets["node-color"],
+    nodeSymbolMap: () => session.style.widgets["node-symbol"]
+  },
+  trees: {},
+  messageTimeout: null
+});
 
 MT.mapData = {};
 
-MT.defaultNode = function () {
-  return {
-    index: session.data.nodes.length,
-    id: "",
-    selected: false,
-    cluster: 1,
-    visible: true,
-    degree: 0,
-    origin: []
-  };
-};
+MT.defaultNode = () => ({
+  index: session.data.nodes.length,
+  id: "",
+  selected: false,
+  cluster: 1,
+  visible: true,
+  degree: 0,
+  origin: []
+});
 
-MT.isNumber = function (a) {
-  return typeof a === "number";
-};
+MT.isNumber = a => typeof a == "number";
 
-MT.addNode = function (newNode, check) {
+MT.addNode = (newNode, check) => {
   if (MT.isNumber(newNode.id)) newNode.id = "" + newNode.id;
   if (check) {
-    var nodes = session.data.nodes;
-    var n = nodes.length;
-    for (var i = 0; i < n; i++) {
-      var node = nodes[i];
-      if (node.id === newNode.id) {
+    let nodes = session.data.nodes;
+    let n = nodes.length;
+    for (let i = 0; i < n; i++) {
+      let node = nodes[i];
+      if (node.id == newNode.id) {
         if (newNode.origin) {
           newNode.origin = newNode.origin.concat(node.origin);
         }
@@ -306,24 +286,22 @@ MT.addNode = function (newNode, check) {
   return 1;
 };
 
-MT.defaultLink = function () {
-  return {
-    index: session.data.links.length,
-    source: "",
-    target: "",
-    visible: false,
-    cluster: 1,
-    origin: []
-  };
-};
+MT.defaultLink = () => ({
+  index: session.data.links.length,
+  source: "",
+  target: "",
+  visible: false,
+  cluster: 1,
+  origin: []
+});
 
-MT.addLink = function (newLink, check) {
-  if (newLink.source === newLink.target) return;
-  var links = session.data.links;
+MT.addLink = (newLink, check) => {
+  if (newLink.source == newLink.target) return;
+  let links = session.data.links;
   if (check) {
-    var n = links.length;
-    for (var i = 0; i < n; i++) {
-      var l = links[i];
+    let n = links.length;
+    for (let i = 0; i < n; i++) {
+      let l = links[i];
       if (
         (l.source == newLink.source && l.target == newLink.target) ||
         (l.source == newLink.target && l.target == newLink.source)
@@ -336,20 +314,18 @@ MT.addLink = function (newLink, check) {
       }
     }
   }
-  session.state.metrics.forEach(function (m) {
-    newLink[m] = parseFloat(newLink[m]);
-  });
+  session.state.metrics.forEach(m => newLink[m] = parseFloat(newLink[m]));
   links.push(Object.assign(MT.defaultLink(), newLink));
   return 1;
 };
 
-MT.processSVG = function (svg) {
-  var nodes = [];
-  var $xml = $(svg);
+MT.processSVG = svg => {
+  let nodes = [];
+  let $xml = $(svg);
   if ($xml.find("#edges").length) {
-    $xml.find("#nodes circle").each(function (i, node) {
-      var $node = $(node);
-      var gephid = $node.attr("class");
+    $xml.find("#nodes circle").each((i, node) => {
+      let $node = $(node);
+      let gephid = $node.attr("class");
       nodes.push(gephid);
       MT.addNode(
         {
@@ -363,25 +339,25 @@ MT.processSVG = function (svg) {
     });
     session.data.nodeFields.push("color");
     session.data.nodeFields.push("size");
-    $xml.find("#edges path").each(function (i, link) {
-      var $link = $(link);
-      var coords = $link.attr("class").split(" ");
-      var source = coords[0];
-      var target = coords[1];
-      var base = {
+    $xml.find("#edges path").each((i, link) => {
+      let $link = $(link);
+      let coords = $link.attr("class").split(" ");
+      let source = coords[0];
+      let target = coords[1];
+      let base = {
         source: source + "",
         target: target + "",
         color: $link.attr("stroke"),
         origin: ["Scraped MicrobeTrace SVG"]
       };
-      session.state.metrics.forEach(function (metric) {
+      session.state.metrics.forEach(metric => {
         base[metric] = 0;
       });
       MT.addLink(base, true);
     });
     session.data.linkFields.push("color");
   } else {
-    $xml.find(".nodes g").each(function (i, node) {
+    $xml.find(".nodes g").each((i, node) => {
       nodes.push(
         $(node)
           .attr("transform")
@@ -397,37 +373,35 @@ MT.processSVG = function (svg) {
         false
       );
     });
-    $xml.find("line").each(function (i, link) {
-      var $l = $(link);
-      var source = nodes.findIndex(function (d) {
+    $xml.find("line").each((i, link) => {
+      let $l = $(link);
+      let source = nodes.findIndex(d => {
         return (
           Math.abs(d[0] - parseFloat($l.attr("x1"))) < 0.0001 &&
           Math.abs(d[1] - parseFloat($l.attr("y1"))) < 0.0001
         );
       });
-      var target = nodes.findIndex(function (d) {
+      let target = nodes.findIndex(d => {
         return (
           Math.abs(d[0] - parseFloat($l.attr("x2"))) < 0.0001 &&
           Math.abs(d[1] - parseFloat($l.attr("y2"))) < 0.0001
         );
       });
       if (source < 0 || target < 0) return;
-      var base = {
+      let base = {
         source: source + "",
         target: target + "",
         origin: ["Scraped SVG"]
       };
-      session.state.metrics.forEach(function (metric) {
-        base[metric] = 0;
-      });
+      session.state.metrics.forEach(metric => base[metric] = 0);
       MT.addLink(base, true);
     });
   }
   MT.finishUp();
 };
 
-MT.processJSON = function (json, extension) {
-  var data;
+MT.processJSON = (json, extension) => {
+  let data;
   try {
     data = JSON.parse(json);
   } catch (error) {
@@ -437,7 +411,7 @@ MT.processJSON = function (json, extension) {
     console.error(error);
     return;
   }
-  if (extension === "microbetrace") {
+  if (extension == "microbetrace") {
     MT.applySession(data);
   } else {
     if (data.version) {
@@ -448,26 +422,26 @@ MT.processJSON = function (json, extension) {
   }
 };
 
-MT.applyHIVTrace = function (hivtrace) {
+MT.applyHIVTrace = (hivtrace) => {
   self.session = MT.sessionSkeleton();
   session.meta.startTime = Date.now();
-  hivtrace["trace_results"]["Nodes"].forEach(function (node) {
-    var newNode = JSON.parse(JSON.stringify(node.patient_attributes));
+  hivtrace["trace_results"]["Nodes"].forEach(node => {
+    let newNode = JSON.parse(JSON.stringify(node.patient_attributes));
     newNode.id = node.id;
     newNode.origin = "HIVTRACE Import";
     MT.addNode(newNode, false);
   });
   Object.keys(
     hivtrace["trace_results"]["Nodes"][0]["patient_attributes"]
-  ).forEach(function (key) {
+  ).forEach(key => {
     if (!session.data.nodeFields.includes(key))
       session.data.nodeFields.push(key);
   });
-  var n = hivtrace["trace_results"]["Edges"].length;
-  var metric = session.state.metrics[0];
-  for (var i = 0; i < n; i++) {
-    var link = hivtrace["trace_results"]["Edges"][i];
-    var newLink = {
+  let n = hivtrace["trace_results"]["Edges"].length;
+  let metric = session.state.metrics[0];
+  for (let i = 0; i < n; i++) {
+    let link = hivtrace["trace_results"]["Edges"][i];
+    let newLink = {
       source: "" + link.sequences[0],
       target: "" + link.sequences[1],
       origin: ["HIVTRACE Import"],
@@ -480,26 +454,27 @@ MT.applyHIVTrace = function (hivtrace) {
   MT.finishUp();
 };
 
-MT.applyGHOST = function (ghost) {
+MT.applyGHOST = ghost => {
   self.session = MT.sessionSkeleton();
   session.meta.startTime = Date.now();
-  ghost["samples"].forEach(function (node) {
-    var newNode = JSON.parse(JSON.stringify(node));
+  ghost["samples"].forEach(node => {
+    let newNode = JSON.parse(JSON.stringify(node));
     newNode.origin = "GHOST Import";
     newNode.genotypes = JSON.stringify(newNode.genotypes);
     newNode.id = "" + newNode.id;
     MT.addNode(newNode, false);
   });
-  ["genotypes", "group", "id", "name"].forEach(function (key) {
-    if (!session.data.nodeFields.includes(key))
+  ["genotypes", "group", "id", "name"].forEach(key => {
+    if (!session.data.nodeFields.includes(key)){
       session.data.nodeFields.push(key);
+    }
   });
-  var links = ghost["links"];
-  var n = links.length;
-  var metric = session.state.metrics[0];
-  for (var i = 0; i < n; i++) {
-    var link = links[i];
-    var newLink = Object.assign({}, link, {
+  let links = ghost["links"];
+  let n = links.length;
+  let metric = session.state.metrics[0];
+  for (let i = 0; i < n; i++) {
+    let link = links[i];
+    let newLink = Object.assign({}, link, {
       source: "" + link.source,
       target: "" + link.target,
       dist: parseFloat(link.dist),
@@ -521,78 +496,62 @@ MT.applyGHOST = function (ghost) {
     "src_haps",
     "tgt_genotype",
     "tgt_haps"
-  ].forEach(function (key) {
+  ].forEach(key => {
     if (!session.data.linkFields.includes(key))
       session.data.linkFields.push(key);
   });
   MT.finishUp();
 };
 
-(function () {
-  var decoder = new TextDecoder("utf-8");
-  MT.decode = function (x) {
-    return decoder.decode(x);
-  };
+(() => {
+  let decoder = new TextDecoder("utf-8");
+  MT.decode = x => decoder.decode(x);
 })();
 
-MT.parseFASTA = function (text, callback) {
-  var computer = new Worker("workers/parse-fasta.js");
-  computer.onmessage = function (response) {
-    var nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log(
-      "FASTA Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+MT.parseFASTA = (text, callback) => {
+  let computer = new Worker("workers/parse-fasta.js");
+  computer.onmessage = response => {
+    let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+    console.log("FASTA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     if (callback) callback(nodes);
   };
   computer.postMessage(text);
 };
 
-MT.parseCSVMatrix = function (file, callback) {
-  var check = session.files.length > 1;
-  var origin = [file.name];
-  var nn = 0,
+MT.parseCSVMatrix = (file, callback) => {
+  let check = session.files.length > 1;
+  let origin = [file.name];
+  let nn = 0,
     nl = 0,
     tn = 0,
     tl = 0;
-  var computer = new Worker("workers/parse-csv-matrix.js");
-  computer.onmessage = function (response) {
-    var data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
-    console.log(
-      "CSV Matrix Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+  let computer = new Worker("workers/parse-csv-matrix.js");
+  computer.onmessage = response => {
+    let data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
+    console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     start = Date.now();
-    var nodes = data.nodes;
+    let nodes = data.nodes;
     tn = nodes.length;
-    for (var i = 0; i < tn; i++) {
-      nn += MT.addNode(
-        {
-          id: nodes[i],
-          origin: origin
-        },
-        check
-      );
+    for (let i = 0; i < tn; i++) {
+      nn += MT.addNode({
+        id: nodes[i],
+        origin: origin
+      }, check);
     }
-    var links = data.links;
+    let links = data.links;
     tl = links.length;
-    for (var j = 0; j < tl; j++) {
+    for (let j = 0; j < tl; j++) {
       nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
     }
-    console.log(
-      "CSV Matrix Merge time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
-    if (callback)
+    console.log("CSV Matrix Merge time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+    if (callback){
       callback({
         nn: nn,
         nl: nl,
         tn: tn,
         tl: tl
       });
+    }
   };
   computer.postMessage(file.contents);
 };
@@ -601,12 +560,12 @@ MT.r01 = Math.random;
 
 // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
 // example: MT.addFile(new File([MT.unparseFASTA(MT.generateSeqs("gen-", 50, 20))], "generated.fasta"))
-MT.generateSeqs = function (idPrefix, count, snps, seed) {
+MT.generateSeqs = (idPrefix, count, snps, seed) => {
   if (!count) count = 1000;
   if (!snps) snps = 100;
   if (!seed) seed = session.data.reference;
 
-  var sampleCodons = [
+  let sampleCodons = [
     "GCA",
     "GCC",
     "GCG",
@@ -677,47 +636,47 @@ MT.generateSeqs = function (idPrefix, count, snps, seed) {
     "GAA",
     "GAG"
   ];
-  var sampleSNPs = ["A", "C", "G", "T"];
+  let sampleSNPs = ["A", "C", "G", "T"];
 
   function sample(vec, nCodons) {
-    var samples = [];
-    for (var x = 0; x < nCodons; x++) {
-      var idx = Math.floor(MT.r01() * vec.length);
+    let samples = [];
+    for (let x = 0; x < nCodons; x++) {
+      let idx = Math.floor(MT.r01() * vec.length);
       samples.push(vec[idx]);
     }
     return samples;
   }
 
-  var seqs = [];
+  let seqs = [];
 
   seqs.push({ id: idPrefix + "0", seq: seed });
 
   while (seqs.length < count) {
     // number codons to vary
-    var nCodons = Math.floor(MT.r01() * 10) + 1;
+    let nCodons = Math.floor(MT.r01() * 10) + 1;
 
     // randomly select this many to check for existence
-    var randomCodonSet = sample(sampleCodons, nCodons).join("");
+    let randomCodonSet = sample(sampleCodons, nCodons).join("");
 
     // try again if not present
     if (seqs[seqs.length - 1].seq.indexOf(randomCodonSet) == -1) continue;
 
     // sequence to mutate
-    var oldseed = seqs[Math.floor(MT.r01() * seqs.length)].seq;
+    let oldseed = seqs[Math.floor(MT.r01() * seqs.length)].seq;
 
     // select codons to replace randomCodonSet
-    var replacementCodonSet = sample(sampleCodons, nCodons).join("");
+    let replacementCodonSet = sample(sampleCodons, nCodons).join("");
 
     // replace codon set
-    var newseed = oldseed.replace(randomCodonSet, replacementCodonSet);
+    let newseed = oldseed.replace(randomCodonSet, replacementCodonSet);
 
     // add snp substitutions randomly across entire sequence
     // - randomly sample addedSNP
     // - randomly pick SNPS to replace
-    var addedSNPs = Math.floor(MT.r01() * snps);
-    for (var j = 0; j < addedSNPs; j++) {
-      var randomSNP = sample(sampleSNPs, 1)[0];
-      var locOfSNP = Math.floor(MT.r01() * seed.length);
+    let addedSNPs = Math.floor(MT.r01() * snps);
+    for (let j = 0; j < addedSNPs; j++) {
+      let randomSNP = sample(sampleSNPs, 1)[0];
+      let locOfSNP = Math.floor(MT.r01() * seed.length);
       newseed =
         newseed.substr(0, locOfSNP) + randomSNP + newseed.substr(locOfSNP + 1);
     }
@@ -728,35 +687,31 @@ MT.generateSeqs = function (idPrefix, count, snps, seed) {
   return seqs;
 };
 
-MT.align = function (params, callback, merge) {
-  if (params.aligner === "none") {
+MT.align = (params, callback, merge) => {
+  if (params.aligner == "none") {
     if (callback) callback(params.nodes);
     return;
   }
-  var n = params.nodes.length;
-  var aligner = new Worker("workers/align-sw.js");
-  aligner.onmessage = function (response) {
-    var subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log(
-      "Alignment transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
-    var start = Date.now();
-    var minPadding = Infinity,
+  let n = params.nodes.length;
+  let aligner = new Worker("workers/align-sw.js");
+  aligner.onmessage = response => {
+    let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+    console.log("Alignment transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+    let start = Date.now();
+    let minPadding = Infinity,
       maxLength = 0,
       d = null;
-    for (var i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
       d = subset[i];
       if (!d.seq) d.seq = "";
       if (minPadding > d.padding) minPadding = d.padding;
     }
-    for (var j = 0; j < n; j++) {
+    for (let j = 0; j < n; j++) {
       d = subset[j];
       d.seq = "-".repeat(d.padding - minPadding) + d.seq;
       if (maxLength < d.seq.length) maxLength = d.seq.length;
     }
-    for (var k = 0; k < n; k++) {
+    for (let k = 0; k < n; k++) {
       d = subset[k];
       d.seq = d.seq + "-".repeat(maxLength - d.seq.length);
     }
@@ -770,36 +725,32 @@ MT.align = function (params, callback, merge) {
   aligner.postMessage(params);
 };
 
-MT.computeConsensus = function (callback) {
+MT.computeConsensus = callback => {
   if (!callback) return;
-  var nodes = session.data.nodes.filter(function (d) {
+  let nodes = session.data.nodes.filter(d => {
     return d.seq;
   });
-  var computer = new Worker("workers/compute-consensus.js");
-  computer.onmessage = function (response) {
-    console.log(
-      "Consensus Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+  let computer = new Worker("workers/compute-consensus.js");
+  computer.onmessage = response => {
+    console.log("Consensus Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     callback(MT.decode(new Uint8Array(response.data.consensus)));
   };
   computer.postMessage(nodes);
 };
 
-MT.computeConsensusDistances = function (callback) {
-  var start = Date.now();
-  var computer = new Worker("workers/compute-consensus-distances.js");
-  computer.onmessage = function (response) {
-    var nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+MT.computeConsensusDistances = callback => {
+  let start = Date.now();
+  let computer = new Worker("workers/compute-consensus-distances.js");
+  computer.onmessage = (response) => {
+    let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
     console.log(
       "Consensus Difference Transit time: ",
       (Date.now() - start).toLocaleString(),
       "ms"
     );
     start = Date.now();
-    var nodesLength = nodes.length;
-    for (var j = 0; j < nodesLength; j++) {
+    let nodesLength = nodes.length;
+    for (let j = 0; j < nodesLength; j++) {
       session.data.nodes[j]._diff = nodes[j];
     }
     console.log(
@@ -809,10 +760,10 @@ MT.computeConsensusDistances = function (callback) {
     );
     if (callback) callback();
   };
-  var subset = [];
-  var n = session.data.nodes.length;
-  for (var i = 0; i < n; i++) {
-    var node = session.data.nodes[i];
+  let subset = [];
+  let n = session.data.nodes.length;
+  for (let i = 0; i < n; i++) {
+    let node = session.data.nodes[i];
     if (node.seq) {
       subset.push({
         index: i,
@@ -831,28 +782,20 @@ MT.computeConsensusDistances = function (callback) {
   });
 };
 
-MT.computeLinks = function (subset, callback) {
-  var k = 0;
-  var computer = new Worker("workers/compute-links.js");
-  computer.onmessage = function (response) {
-    var links = JSON.parse(MT.decode(new Uint8Array(response.data.links)));
+MT.computeLinks = (subset, callback) => {
+  let k = 0;
+  let computer = new Worker("workers/compute-links.js");
+  computer.onmessage = response => {
+    let links = JSON.parse(MT.decode(new Uint8Array(response.data.links)));
     computer.terminate();
-    console.log(
-      "Links Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
-    var start = Date.now();
-    var check = session.files.length > 1;
-    var n = links.length;
-    for (var i = 0; i < n; i++) {
+    console.log("Links Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+    let start = Date.now();
+    let check = session.files.length > 1;
+    let n = links.length;
+    for (let i = 0; i < n; i++) {
       k += MT.addLink(links[i], check);
     }
-    console.log(
-      "Links Merge time: ",
-      (Date.now() - start).toLocaleString(),
-      "ms"
-    );
+    console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
     callback(k);
   };
   computer.postMessage({
@@ -862,9 +805,9 @@ MT.computeLinks = function (subset, callback) {
   });
 };
 
-MT.computeDM = function (callback) {
-  var computer = new Worker("workers/compute-dm.js");
-  computer.onmessage = function (response) {
+MT.computeDM = callback => {
+  let computer = new Worker("workers/compute-dm.js");
+  computer.onmessage = response => {
     session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
       MT.decode(new Uint8Array(response.data.matrix))
     );
@@ -885,9 +828,9 @@ MT.computeDM = function (callback) {
   });
 };
 
-MT.computeTree = function (type, callback) {
-  var computer = new Worker("workers/compute-tree.js");
-  computer.onmessage = function (response) {
+MT.computeTree = (type, callback) => {
+  let computer = new Worker("workers/compute-tree.js");
+  computer.onmessage = response => {
     temp.trees[type] = patristic.parseJSON(
       MT.decode(new Uint8Array(response.data.tree))
     );
@@ -905,21 +848,21 @@ MT.computeTree = function (type, callback) {
   });
 };
 
-MT.computeDirectionality = function (callback) {
-  var computer = new Worker("workers/compute-directionality.js");
-  computer.onmessage = function (response) {
-    var flips = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
+MT.computeDirectionality = callback => {
+  let computer = new Worker("workers/compute-directionality.js");
+  computer.onmessage = response => {
+    let flips = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
     console.log(
       "Directionality Transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
       "ms"
     );
-    var start = Date.now();
-    var n = flips.length;
-    for (var i = 0; i < n; i++) {
+    let start = Date.now();
+    let n = flips.length;
+    for (let i = 0; i < n; i++) {
       if (flips[i]) {
-        var fliplink = session.data.links[i];
-        var fliptemp = fliplink.source;
+        let fliplink = session.data.links[i];
+        let fliptemp = fliplink.source;
         fliplink.source = fliplink.target;
         fliplink.target = fliptemp;
       }
@@ -938,10 +881,10 @@ MT.computeDirectionality = function (callback) {
   if (callback) callback();
 };
 
-MT.computePatristicMatrix = function (type, callback) {
-  var computer = new Worker("workers/compute-patristic-matrix.js");
-  computer.onmessage = function (response) {
-    var output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
+MT.computePatristicMatrix = (type, callback) => {
+  let computer = new Worker("workers/compute-patristic-matrix.js");
+  computer.onmessage = response => {
+    let output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
     session.data.distance_matrix["patristic-" + type] = output.matrix;
     session.data.distance_matrix["patristic-" + type].labels = output.labels;
     console.log(
@@ -956,7 +899,7 @@ MT.computePatristicMatrix = function (type, callback) {
   });
 };
 
-MT.computeNN = function (metric, callback) {
+MT.computeNN = (metric, callback) => {
   if (!session.data.distance_matrix[metric]) {
     console.error(
       "Couldn't find Distance Matrix " +
@@ -965,22 +908,22 @@ MT.computeNN = function (metric, callback) {
     );
     return;
   }
-  var nnMachine = new Worker("workers/compute-nn.js");
-  nnMachine.onmessage = function (response) {
-    if (response.data === "Error") {
+  let nnMachine = new Worker("workers/compute-nn.js");
+  nnMachine.onmessage = response => {
+    if (response.data == "Error") {
       console.error("Nearest Neighbor washed out");
       return;
     }
-    var output = JSON.parse(MT.decode(new Uint8Array(response.data.links)));
+    let output = JSON.parse(MT.decode(new Uint8Array(response.data.links)));
     console.log(
       "NN Transit time: ",
       (Date.now() - response.data.start).toLocaleString(),
       "ms"
     );
-    var start = Date.now();
-    var links = session.data.links;
-    var n = links.length;
-    for (var i = 0; i < n; i++) {
+    let start = Date.now();
+    let links = session.data.links;
+    let n = links.length;
+    for (let i = 0; i < n; i++) {
       links[i].nn = output[i];
     }
     console.log("NN Merge time: ", (Date.now() - start).toLocaleString(), "ms");
@@ -994,7 +937,7 @@ MT.computeNN = function (metric, callback) {
   });
 };
 
-MT.computeTriangulation = function (metric, callback) {
+MT.computeTriangulation = (metric, callback) => {
   if (!session.data.distance_matrix[metric]) {
     console.error(
       "Couldn't find Distance Matrix " +
@@ -1003,13 +946,13 @@ MT.computeTriangulation = function (metric, callback) {
     );
     return;
   }
-  var machine = new Worker("workers/compute-triangulation.js");
-  machine.onmessage = function (response) {
-    if (response.data === "Error") {
+  let machine = new Worker("workers/compute-triangulation.js");
+  machine.onmessage = response => {
+    if (response.data == "Error") {
       console.error("Triangulation washed out");
       return;
     }
-    var matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
+    let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
     session.data.distance_matrix[metric] = matrix;
     console.log(
       "Triangulation Transit time: ",
@@ -1023,18 +966,16 @@ MT.computeTriangulation = function (metric, callback) {
   });
 };
 
-MT.finishUp = function (oldSession) {
+MT.finishUp = oldSession => {
   if (!oldSession) {
-    MT.computeDM(function () {
-      if (
-        $('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate"
-      ) {
-        session.state.metrics.forEach(function (m) {
-          MT.computeTriangulation(m, function () {
+    MT.computeDM(() => {
+      if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
+        session.state.metrics.forEach(m => {
+          MT.computeTriangulation(m, () => {
             if (m == session.style.widgets["default-distance-metric"]) {
               MT.computeNN(session.style.widgets["default-distance-metric"]);
             }
-            MT.computeTree(m, function () {
+            MT.computeTree(m, () => {
               if (m == session.style.widgets["link-sort-variable"]) {
                 MT.computeDirectionality();
               }
@@ -1043,8 +984,8 @@ MT.finishUp = function (oldSession) {
         });
       } else {
         MT.computeNN(session.style.widgets["default-distance-metric"]);
-        session.state.metrics.forEach(function (m) {
-          MT.computeTree(m, function () {
+        session.state.metrics.forEach(m => {
+          MT.computeTree(m, () => {
             if (m == session.style.widgets["link-sort-variable"]) {
               MT.computeDirectionality();
             }
@@ -1054,70 +995,32 @@ MT.finishUp = function (oldSession) {
     });
   }
   clearTimeout(temp.messageTimeout);
-  ["node", "link"].forEach(function (v) {
-    var n = session.data[v + "s"].length;
-    var fields = session.data[v + "Fields"];
-    for (var i = 0; i < n; i++) {
-      var d = session.data[v + "s"][i];
-      fields.forEach(function (field) {
+  ["node", "link"].forEach(v => {
+    let n = session.data[v + "s"].length;
+    let fields = session.data[v + "Fields"];
+    for (let i = 0; i < n; i++) {
+      let d = session.data[v + "s"][i];
+      fields.forEach(field => {
         if (!(field in d)) d[field] = null;
       });
     }
   });
   $("#search-field")
-    .html(
-      session.data.nodeFields
-        .map(function (field) {
-          return (
-            '<option value="' + field + '">' + MT.titleize(field) + "</option>"
-          );
-        })
-        .join("\n")
-    )
+    .html(session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
     .val(session.style.widgets["search-field"]);
   $("#search-form").css("display", "flex");
   $("#link-sort-variable")
-    .html(
-      session.data.linkFields
-        .map(function (field) {
-          return (
-            '<option value="' + field + '">' + MT.titleize(field) + "</option>"
-          );
-        })
-        .join("\n")
-    )
+    .html(session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
     .val(session.style.widgets["link-sort-variable"]);
   $("#node-color-variable")
     .html(
       "<option selected>None</option>" +
-      session.data.nodeFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
-    )
+      session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
     .val(session.style.widgets["node-color-variable"]);
   $("#link-color-variable")
     .html(
       "<option>None</option>" +
-      session.data.linkFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
-    )
+      session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
     .val(session.style.widgets["link-color-variable"]);
   try {
     MT.updateThresholdHistogram();
@@ -1125,11 +1028,9 @@ MT.finishUp = function (oldSession) {
     console.error(error);
     $("#loading-information-modal").modal("hide");
     alertify
-      .error("Something went wrong! Please start a new session and try again.")
+      .error("Something went wrong! Please click here to start a new session and try again.")
       .delay(0)
-      .ondismiss(function () {
-        window.location.reload();
-      });
+      .ondismiss(() => window.location.reload());
   }
   MT.setLinkVisibility();
   MT.setNodeVisibility();
@@ -1141,42 +1042,33 @@ MT.finishUp = function (oldSession) {
   console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
   if (oldSession) {
     layout.root.contentItems[0].remove();
-    setTimeout(function () {
-      MT.loadLayout(session.layout);
-    }, 80);
+    setTimeout(() => MT.loadLayout(session.layout), 80);
   } else {
     MT.launchView($("#default-view").val());
   }
-  if (localStorage.getItem("stash-auto") === "true") {
+  if (localStorage.getItem("stash-auto") == "true") {
     temp.autostash = {
       time: Date.now(),
-      interval: setInterval(function () {
-        var newTime = Date.now();
-        localStorage.setItem(
-          "stash-" + newTime + "-autostash",
-          JSON.stringify(session)
-        );
+      interval: setInterval(() => {
+        let newTime = Date.now();
+        localStorage.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
         localSorage.removeItem("stash-" + temp.autostash.time + "-autostash");
         temp.autostash.time = newTime;
       }, 60000)
     };
   }
   $(".hideForHIVTrace").css("display", "flex");
-  setTimeout(function () {
-    var files = layout.contentItems.find(function (item) {
-      return item.componentName === "files";
-    });
+  setTimeout(() => {
+    let files = layout.contentItems.find(item => item.componentName == "files");
     if (files) files.remove();
     $("#loading-information-modal").modal("hide");
   }, 1200);
 };
 
-MT.capitalize = function (c) {
-  return c.toUpperCase();
-};
+MT.capitalize = c => c.toUpperCase();
 
-MT.titleize = function (title) {
-  var small = title.toLowerCase().replace(/_/g, " ");
+MT.titleize = title => {
+  let small = title.toLowerCase().replace(/_/g, " ");
   if (small == "null") return "(Empty)";
   if (small == "id") return "ID";
   if (small == "tn93") return "TN93";
@@ -1188,19 +1080,19 @@ MT.titleize = function (title) {
   return small.replace(/(?:^|\s|-)\S/g, MT.capitalize);
 };
 
-MT.tagClusters = function () {
-  var start = Date.now();
+MT.tagClusters = () => {
+  let start = Date.now();
   session.data.clusters = [];
-  var nodes = session.data.nodes,
-    links = session.data.links;
-  var n = nodes.length,
-    numLinks = links.length;
+  let nodes = session.data.nodes,
+      links = session.data.links;
+  let numNodes = nodes.length,
+      numLinks = links.length;
   temp.nodes = [];
-  for (var k = 0; k < n; k++) {
-    var d = nodes[k];
+  for (let k = 0; k < numNodes; k++) {
+    let d = nodes[k];
     d.degree = 0;
-    var id = d.id;
-    if (temp.nodes.indexOf(id) === -1) {
+    let id = d.id;
+    if (temp.nodes.indexOf(id) == -1) {
       session.data.clusters.push({
         id: session.data.clusters.length,
         nodes: 0,
@@ -1213,19 +1105,15 @@ MT.tagClusters = function () {
       MT.DFS(id);
     }
   }
-  console.log(
-    "Cluster Tagging time:",
-    (Date.now() - start).toLocaleString(),
-    "ms"
-  );
+  console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
   start = Date.now();
-  for (var i = 0; i < numLinks; i++) {
-    var l = links[i];
+  for (let i = 0; i < numLinks; i++) {
+    let l = links[i];
     if (!l.visible) continue;
-    var s = false,
-      t = false;
-    for (var j = 0; j < n; j++) {
-      var node = nodes[j];
+    let s = false,
+        t = false;
+    for (let j = 0; j < numNodes; j++) {
+      let node = nodes[j];
       if (l.source == node.id) {
         s = true;
         node.degree++;
@@ -1237,41 +1125,37 @@ MT.tagClusters = function () {
       if (s && t) break;
     }
   }
-  session.data.clusters.forEach(function (c) {
+  session.data.clusters.forEach(c => {
     c.links = c.links / 2;
     c.links_per_node = c.links / c.nodes;
     c.mean_genetic_distance = c.sum_distances / 2 / c.links;
   });
-  console.log(
-    "Degree Computation time:",
-    (Date.now() - start).toLocaleString(),
-    "ms"
-  );
+  console.log("Degree Computation time:", (Date.now() - start).toLocaleString(), "ms");
 };
 
-MT.DFS = function (id) {
+MT.DFS = id => {
   if (temp.nodes.indexOf(id) >= 0) return;
   temp.nodes.push(id);
-  var node = {};
-  var nodes = session.data.nodes;
-  var n = nodes.length;
-  for (var i = 0; i < n; i++) {
-    var d = nodes[i];
-    if (d.id === id) {
+  let node = {};
+  let nodes = session.data.nodes;
+  let n = nodes.length;
+  for (let i = 0; i < n; i++) {
+    let d = nodes[i];
+    if (d.id == id) {
       node = d;
       break;
     }
   }
-  var lsv = session.style.widgets["link-sort-variable"];
+  let lsv = session.style.widgets["link-sort-variable"];
   node.cluster = session.data.clusters.length - 1;
   session.data.clusters[session.data.clusters.length - 1].nodes++;
-  var links = session.data.links;
-  var m = links.length;
-  for (var j = 0; j < m; j++) {
-    var l = links[j];
-    if (l.visible && (l.source === id || l.target === id)) {
+  let links = session.data.links;
+  let m = links.length;
+  for (let j = 0; j < m; j++) {
+    let l = links[j];
+    if (l.visible && (l.source == id || l.target == id)) {
       l.cluster = session.data.clusters.length - 1;
-      var cluster = session.data.clusters[session.data.clusters.length - 1];
+      let cluster = session.data.clusters[session.data.clusters.length - 1];
       cluster.links++;
       cluster.sum_distances += parseFloat(l[lsv]);
       MT.DFS(l.source);
@@ -1280,16 +1164,16 @@ MT.DFS = function (id) {
   }
 };
 
-MT.setNodeVisibility = function (silent) {
-  var start = Date.now();
-  var dateField = session.style.widgets["timeline-date-field"];
-  var nodes = session.data.nodes,
+MT.setNodeVisibility = silent => {
+  let start = Date.now();
+  let dateField = session.style.widgets["timeline-date-field"];
+  let nodes = session.data.nodes,
     clusters = session.data.clusters;
-  var n = nodes.length;
-  for (var i = 0; i < n; i++) {
-    var node = nodes[i];
+  let n = nodes.length;
+  for (let i = 0; i < n; i++) {
+    let node = nodes[i];
     node.visible = true;
-    var cluster = clusters[node.cluster];
+    let cluster = clusters[node.cluster];
     if (cluster) {
       node.visible = node.visible && cluster.visible;
     }
@@ -1312,29 +1196,29 @@ MT.setNodeVisibility = function (silent) {
   );
 };
 
-MT.setLinkVisibility = function (silent) {
-  var start = Date.now();
-  var metric = session.style.widgets["link-sort-variable"],
+MT.setLinkVisibility = silent => {
+  let start = Date.now();
+  let metric = session.style.widgets["link-sort-variable"],
     threshold = session.style.widgets["link-threshold"],
     showNN = session.style.widgets["link-show-nn"];
-  var links = session.data.links;
-  // var nodes = session.data.nodes;
-  var clusters = session.data.clusters;
-  var n = links.length;
-  for (var i = 0; i < n; i++) {
-    var link = links[i];
+  let links = session.data.links;
+  // let nodes = session.data.nodes;
+  let clusters = session.data.clusters;
+  let n = links.length;
+  for (let i = 0; i < n; i++) {
+    let link = links[i];
     link.visible = true;
-    if (link[metric] === null) {
+    if (link[metric] == null) {
       link.visible = false;
       continue;
     } else {
       link.visible = link.visible && link[metric] <= threshold;
     }
     if (showNN) link.visible = link.visible && link.nn;
-    // var s = false,
+    // let s = false,
     //   t = false;
-    // for (var k = 0; k < o; k++) {
-    //   var node = nodes[k];
+    // for (let k = 0; k < o; k++) {
+    //   let node = nodes[k];
     //   if (link.source == node.id) {
     //     link.visible = link.visible && node.visible;
     //     s = true;
@@ -1345,7 +1229,7 @@ MT.setLinkVisibility = function (silent) {
     //   }
     //   if (s && t) break;
     // }
-    var cluster = clusters[link.cluster];
+    let cluster = clusters[link.cluster];
     if (cluster) {
       link.visible = link.visible && cluster.visible;
     }
@@ -1358,13 +1242,13 @@ MT.setLinkVisibility = function (silent) {
   );
 };
 
-MT.setClusterVisibility = function (silent) {
-  var start = Date.now();
-  var min = session.style.widgets["cluster-minimum-size"];
-  var clusters = session.data.clusters;
-  var n = clusters.length;
-  for (var i = 0; i < n; i++) {
-    var cluster = clusters[i];
+MT.setClusterVisibility = silent => {
+  let start = Date.now();
+  let min = session.style.widgets["cluster-minimum-size"];
+  let clusters = session.data.clusters;
+  let n = clusters.length;
+  for (let i = 0; i < n; i++) {
+    let cluster = clusters[i];
     cluster.visible = cluster.nodes >= min;
   }
   if (!silent) $window.trigger("cluster-visibility");
@@ -1375,12 +1259,12 @@ MT.setClusterVisibility = function (silent) {
   );
 };
 
-MT.getVisibleNodes = function (copy) {
-  var nodes = session.data.nodes;
-  var n = nodes.length;
-  var out = [];
-  for (var i = 0; i < n; i++) {
-    var node = nodes[i];
+MT.getVisibleNodes = copy => {
+  let nodes = session.data.nodes;
+  let n = nodes.length;
+  let out = [];
+  for (let i = 0; i < n; i++) {
+    let node = nodes[i];
     if (node.visible) {
       if (copy) {
         out.push(JSON.parse(JSON.stringify(node)));
@@ -1392,18 +1276,18 @@ MT.getVisibleNodes = function (copy) {
   return out;
 };
 
-MT.getVisibleLinks = function (copy) {
-  var links = session.data.links;
-  var n = links.length;
-  var out = [],
+MT.getVisibleLinks = copy => {
+  let links = session.data.links;
+  let n = links.length;
+  let out = [],
     link = null;
   if (copy) {
-    for (var i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
       link = links[i];
       if (link.visible) out.push(JSON.parse(JSON.stringify(link)));
     }
   } else {
-    for (var j = 0; j < n; j++) {
+    for (let j = 0; j < n; j++) {
       link = links[j];
       if (link.visible) out.push(link);
     }
@@ -1411,18 +1295,18 @@ MT.getVisibleLinks = function (copy) {
   return out;
 };
 
-MT.getVisibleClusters = function (copy) {
-  var clusters = session.data.clusters;
-  var n = clusters.length;
-  var out = [],
+MT.getVisibleClusters = copy => {
+  let clusters = session.data.clusters;
+  let n = clusters.length;
+  let out = [],
     cluster = null;
   if (copy) {
-    for (var i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
       cluster = clusters[i];
       if (cluster.visible) out.push(JSON.parse(JSON.stringify(cluster)));
     }
   } else {
-    for (var j = 0; j < n; j++) {
+    for (let j = 0; j < n; j++) {
       cluster = clusters[j];
       if (cluster.visible) out.push(cluster);
     }
@@ -1430,63 +1314,51 @@ MT.getVisibleClusters = function (copy) {
   return out;
 };
 
-MT.updateNetwork = function () {
+MT.updateNetwork = () => {
   MT.setLinkVisibility(true);
   MT.tagClusters();
   MT.setClusterVisibility(true);
   MT.setLinkVisibility(true);
   MT.setNodeVisibility(true);
-  ["cluster", "link", "node"].forEach(function (thing) {
-    $window.trigger(thing + "-visibility");
-  });
+  ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
   MT.updateStatistics();
 };
 
-MT.updateStatistics = function () {
+MT.updateStatistics = () => {
   if ($("#network-statistics-hide").is(":checked")) return;
-  var vnodes = MT.getVisibleNodes();
-  var vlinks = MT.getVisibleLinks();
-  var singletons = vnodes.filter(function (d) {
-    return d.degree === 0;
-  }).length;
-  $("#numberOfSelectedNodes").text(
-    vnodes
-      .filter(function (d) {
-        return d.selected;
-      })
-      .length.toLocaleString()
-  );
+  let vnodes = MT.getVisibleNodes();
+  let vlinks = MT.getVisibleLinks();
+  let singletons = vnodes.filter(d => d.degree == 0).length;
+  $("#numberOfSelectedNodes").text(vnodes.filter(d => d.selected).length.toLocaleString());
   $("#numberOfNodes").text(vnodes.length.toLocaleString());
   $("#numberOfVisibleLinks").text(vlinks.length.toLocaleString());
   $("#numberOfSingletonNodes").text(singletons.toLocaleString());
   $("#numberOfDisjointComponents").text(session.data.clusters.length);
 };
 
-MT.createNodeColorMap = function () {
-  var variable = session.style.widgets["node-color-variable"];
-  if (variable === "None") {
-    temp.style.nodeColorMap = function () {
-      return session.style.widgets["node-color"];
-    };
+MT.createNodeColorMap = () => {
+  let variable = session.style.widgets["node-color-variable"];
+  if (variable == "None") {
+    temp.style.nodeColorMap = () => session.style.widgets["node-color"];
     return [];
   }
-  var aggregates = {};
-  var nodes = session.data.nodes;
-  var n = nodes.length;
-  for (var i = 0; i < n; i++) {
-    var d = nodes[i];
+  let aggregates = {};
+  let nodes = session.data.nodes;
+  let n = nodes.length;
+  for (let i = 0; i < n; i++) {
+    let d = nodes[i];
     if (!d.visible) continue;
-    var dv = d[variable];
+    let dv = d[variable];
     if (dv in aggregates) {
       aggregates[dv]++;
     } else {
       aggregates[dv] = 1;
     }
   }
-  var values = Object.keys(aggregates);
+  let values = Object.keys(aggregates);
   if (values.length > session.style.nodeColors.length) {
-    var colors = [];
-    var m = Math.ceil(values.length / session.style.nodeColors.length);
+    let colors = [];
+    let m = Math.ceil(values.length / session.style.nodeColors.length);
     while (m-- > 0) {
       colors = colors.concat(session.style.nodeColors);
     }
@@ -1506,27 +1378,23 @@ MT.createNodeColorMap = function () {
   return aggregates;
 };
 
-MT.createLinkColorMap = function () {
-  var variable = session.style.widgets["link-color-variable"];
-  if (variable === "None") {
-    temp.style.linkColorMap = function () {
-      return session.style.widgets["link-color"];
-    };
-    temp.style.linkAlphaMap = function () {
-      return 1 - session.style.widgets["link-opacity"];
-    };
+MT.createLinkColorMap = () => {
+  let variable = session.style.widgets["link-color-variable"];
+  if (variable == "None") {
+    temp.style.linkColorMap = () => session.style.widgets["link-color"];
+    temp.style.linkAlphaMap = () => 1 - session.style.widgets["link-opacity"];
     return [];
   }
-  var aggregates = {};
-  var links = MT.getVisibleLinks();
-  var i = 0,
+  let aggregates = {};
+  let links = MT.getVisibleLinks();
+  let i = 0,
     n = links.length,
     l;
-  if (variable === "origin") {
+  if (variable == "origin") {
     while (i < n) {
       l = links[i++];
       if (!l.visible) continue;
-      l.origin.forEach(function (o) {
+      l.origin.forEach(o => {
         if (o in aggregates) {
           aggregates[o]++;
         } else {
@@ -1538,7 +1406,7 @@ MT.createLinkColorMap = function () {
     while (i < n) {
       l = links[i++];
       if (!l.visible) continue;
-      var lv = l[variable];
+      let lv = l[variable];
       if (lv in aggregates) {
         aggregates[lv]++;
       } else {
@@ -1546,10 +1414,10 @@ MT.createLinkColorMap = function () {
       }
     }
   }
-  var values = Object.keys(aggregates);
+  let values = Object.keys(aggregates);
   if (values.length > session.style.linkColors.length) {
-    var colors = [];
-    var cycles = Math.ceil(values.length / session.style.linkColors.length);
+    let colors = [];
+    let cycles = Math.ceil(values.length / session.style.linkColors.length);
     while (cycles-- > 0) colors = colors.concat(session.style.linkColors);
     session.style.linkColors = colors;
   }
@@ -1567,7 +1435,7 @@ MT.createLinkColorMap = function () {
   return aggregates;
 };
 
-MT.applyStyle = function (style) {
+MT.applyStyle = style => {
   session.style = style;
   session.style.widgets = Object.assign(
     {},
@@ -1576,8 +1444,8 @@ MT.applyStyle = function (style) {
   );
   MT.createLinkColorMap();
   MT.createNodeColorMap();
-  var $id = null;
-  for (var id in session.style.widgets) {
+  let $id = null;
+  for (let id in session.style.widgets) {
     $id = $("#" + id);
     if ($id.length > 0) {
       if (["radio", "checkbox"].includes($id[0].type)) {
@@ -1589,7 +1457,7 @@ MT.applyStyle = function (style) {
   }
 };
 
-MT.applySession = function (data, startTime) {
+MT.applySession = (data, startTime) => {
   $("#launch").prop("disabled", true);
   self.session = data;
   if (!startTime) startTime = Date.now();
@@ -1599,10 +1467,8 @@ MT.applySession = function (data, startTime) {
   MT.finishUp(true);
 };
 
-MT.reset = function () {
-  $("#network-statistics-hide")
-    .parent()
-    .trigger("click");
+MT.reset = () => {
+  $("#network-statistics-hide").parent().trigger("click");
   $("#SettingsTab").attr("data-target", "#aligner-controls-modal");
   window.session = MT.sessionSkeleton();
   layout.unbind("stateChanged");
@@ -1614,19 +1480,19 @@ MT.reset = function () {
   MT.launchView("files");
 };
 
-MT.getMapData = function (type, callback) {
-  var parts = type.split(".");
-  var name = parts[0],
-    format = parts[1];
+MT.getMapData = (type, callback) => {
+  let parts = type.split(".");
+  let name = parts[0],
+      format = parts[1];
   if (MT.mapData[name]) {
     callback();
     return;
   }
   $.get("data/" + type, response => {
-    if (format === "csv") {
+    if (format == "csv") {
       MT.mapData[name] = Papa.parse(response, { header: true }).data;
     }
-    if (format === "json") {
+    if (format == "json") {
       MT.mapData[name] = response;
     }
     callback();
@@ -1634,31 +1500,31 @@ MT.getMapData = function (type, callback) {
 };
 
 //adapted from from http://www.movable-type.co.uk/scripts/latlong.html
-MT.haversine = function (a, b) {
-  var r = Math.PI / 180;
-  var phi1 = a._lat * r;
-  var phi2 = b._lat * r;
-  var deltalambda = (b._lon - a._lon) * r;
-  var deltaphi = (b._lat - a._lat) * r;
-  var x =
+MT.haversine = (a, b) => {
+  let r = Math.PI / 180;
+  let phi1 = a._lat * r;
+  let phi2 = b._lat * r;
+  let deltalambda = (b._lon - a._lon) * r;
+  let deltaphi = (b._lat - a._lat) * r;
+  let x =
     Math.cos(phi1) *
     Math.cos(phi2) *
     Math.sin(deltalambda / 2) *
     Math.sin(deltalambda / 2) +
     Math.pow(Math.sin(deltaphi / 2), 2);
-  var c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+  let c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
   return c * 6378.1; // kilometers
 };
 
-MT.geoDM = function () {
-  var nodes = session.data.nodes;
-  var n = nodes.length;
-  var dm = Array(n);
-  for (var i = 0; i < n; i++) {
+MT.geoDM = () => {
+  let nodes = session.data.nodes;
+  let n = nodes.length;
+  let dm = Array(n);
+  for (let i = 0; i < n; i++) {
     dm[i] = Array(n);
     dm[i][i] = 0;
-    for (var j = 0; j < i; j++) {
-      var dist = MT.haversine(nodes[i], nodes[j]);
+    for (let j = 0; j < i; j++) {
+      let dist = MT.haversine(nodes[i], nodes[j]);
       dm[i][j] = dist;
       dm[j][i] = dist;
     }
@@ -1667,22 +1533,21 @@ MT.geoDM = function () {
 };
 
 //Adapted from https://24ways.org/2010/calculating-color-contrast/
-MT.contrastColor = function (hexcolor) {
-  var r = parseInt(hexcolor.substr(1, 2), 16);
-  var g = parseInt(hexcolor.substr(3, 2), 16);
-  var b = parseInt(hexcolor.substr(5, 2), 16);
-  var yiq = r * 299 + g * 587 + b * 114;
+MT.contrastColor = hexcolor => {
+  let r = parseInt(hexcolor.substr(1, 2), 16);
+  let g = parseInt(hexcolor.substr(3, 2), 16);
+  let b = parseInt(hexcolor.substr(5, 2), 16);
+  let yiq = r * 299 + g * 587 + b * 114;
   return yiq >= 128000 ? "#000000" : "#ffffff";
 };
 
-MT.peek = function (ra) {
-  return ra[ra.length - 1];
-};
+MT.peek = ra => ra[ra.length - 1];
 
-MT.launchView = function (view, callback) {
+MT.launchView = (view, callback) => {
   if (!MT.componentCache[view]) {
-    $.get("components/" + view + ".html", function (response) {
+    $.get("components/" + view + ".html", response => {
       MT.componentCache[view] = response;
+      //This MUST NOT be replace by an arrow function!
       layout.registerComponent(view, function (container, state) {
         container.getElement().html(state.text);
       });
@@ -1693,15 +1558,11 @@ MT.launchView = function (view, callback) {
       }
     });
   } else {
-    var contentItem = layout.contentItems.find(function (item) {
-      return item.componentName === view;
-    });
+    var contentItem = layout.contentItems.find(item => item.componentName == view);
     if (contentItem) {
       contentItem.parent.setActiveContentItem(contentItem);
     } else {
-      var lastStack = MT.peek(
-        layout.root.contentItems[0].getItemsByType("stack")
-      );
+      var lastStack = MT.peek(layout.root.contentItems[0].getItemsByType("stack"));
       if (!lastStack) lastStack = layout.root.contentItems[0];
       lastStack.addChild({
         componentName: view,
@@ -1710,107 +1571,39 @@ MT.launchView = function (view, callback) {
         type: "component"
       });
       contentItem = MT.peek(lastStack.contentItems);
-      contentItem.on("itemDestroyed", function () {
-        var i = layout.contentItems.findIndex(function (item) {
-          return item === contentItem;
-        });
-        layout.contentItems.splice(i, 1);
-      });
+      contentItem.on("itemDestroyed", () => layout.contentItems.splice(layout.contentItems.findIndex(item => item === contentItem), 1));
       layout.contentItems.push(contentItem);
     }
     contentItem.element.find("select.nodeVariables").html(
       "<option>None</option>" +
-      session.data.nodeFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
+      session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
     );
     contentItem.element.find("select.linkVariables").html(
       "<option>None</option>" +
-      session.data.linkFields
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
+      session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
     );
     contentItem.element.find("select.mixedVariables").html(
       "<option>None</option>" +
-      session.data.linkFields
-        .map(function (field) {
-          return (
-            '<option value="links-' +
-            field +
-            '">Links ' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .concat(
-          session.data.nodeFields.map(function (field) {
-            return (
-              '<option value="nodes-' +
-              field +
-              '">Nodes ' +
-              MT.titleize(field) +
-              "</option>"
-            );
-          })
-        )
-        .join("\n")
+      session.data.linkFields.map(field => '<option value="links-' + field + '">Links ' + MT.titleize(field) + "</option>").join("\n") +
+      session.data.nodeFields.map(field => '<option value="nodes-' + field + '">Nodes ' + MT.titleize(field) + "</option>").join("\n")
     );
     contentItem.element.find("select.branch-variables").html(
       "<option>None</option>" +
-      ["id", "depth", "height", "length", "value"]
-        .map(function (field) {
-          return (
-            '<option value="' +
-            field +
-            '">' +
-            MT.titleize(field) +
-            "</option>"
-          );
-        })
-        .join("\n")
+      ["id", "depth", "height", "length", "value"].map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
     );
-    contentItem.element.find(".launch-color-options").click(function () {
+    contentItem.element.find(".launch-color-options").click(() => {
       $("#style-tab").tab("show");
-      setTimeout(function () {
-        $("#global-settings-modal").modal("show");
-      }, 250);
+      setTimeout(() => $("#global-settings-modal").modal("show"), 250);
     });
-    contentItem.element.find(".modal-header").on("mousedown", function (e1) {
+    contentItem.element.find(".modal-header").on("mousedown", function(){
       var body = $("body");
-      var parent = $(this)
-        .parent()
-        .parent()
-        .parent();
-      body.on("mousemove", function (e2) {
+      var parent = $(this).parent().parent().parent();
+      body.on("mousemove", e => {
         parent
-          .css(
-            "top",
-            parseFloat(parent.css("top")) + e2.originalEvent.movementY + "px"
-          )
-          .css(
-            "left",
-            parseFloat(parent.css("left")) + e2.originalEvent.movementX + "px"
-          );
+          .css("top",  parseFloat(parent.css("top" )) + e.originalEvent.movementY + "px")
+          .css("left", parseFloat(parent.css("left")) + e.originalEvent.movementX + "px");
       });
-      body.on("mouseup", function (e3) {
-        body.off("mousemove").off("mouseup");
-      });
+      body.one("mouseup", () => body.off("mousemove"));
     });
     if (navigator.onLine) contentItem.element.find(".ifOnline").show();
     for (var id in session.style.widgets) {
@@ -1831,7 +1624,7 @@ MT.launchView = function (view, callback) {
   }
 };
 
-MT.cacheLayout = function (contentItem) {
+MT.cacheLayout = contentItem => {
   if (["stack", "row", "column"].includes(contentItem.type)) {
     return {
       type: contentItem.type,
@@ -1841,7 +1634,7 @@ MT.cacheLayout = function (contentItem) {
   return { type: contentItem.componentName };
 };
 
-MT.loadLayout = function (component, parent) {
+MT.loadLayout = (component, parent) => {
   if (!parent) {
     parent = layout.root;
     try {
@@ -1850,67 +1643,47 @@ MT.loadLayout = function (component, parent) {
   }
   if (["stack", "row", "column"].includes(component.type)) {
     parent.addChild({ type: component.type });
-    component.content.forEach(function (c) {
-      MT.loadLayout(c, MT.peek(parent.contentItems));
-    });
+    component.content.forEach(c => MT.loadLayout(c, MT.peek(parent.contentItems)));
   } else {
     MT.launchView(component.type);
   }
 };
 
-MT.unparseFASTA = function (nodes) {
-  return nodes
-    .map(function (node) {
-      return ">" + node.id + "\r\n" + node.seq;
-    })
-    .join("\r\n");
-};
+MT.unparseFASTA = nodes => nodes.map(node => ">" + node.id + "\r\n" + node.seq).join("\r\n");
 
-MT.unparseMEGA = function (nodes) {
-  return nodes
-    .map(function (node) {
-      return "#" + node.id + "\r\n" + node.seq;
-    })
-    .join("\r\n");
-};
+MT.unparseMEGA = nodes => nodes.map(node => "#" + node.id + "\r\n" + node.seq).join("\r\n");
 
-MT.unparseDM = function (dm) {
-  var labels = session.data.distance_matrix.labels;
-  return (
-    "," +
-    labels.join(",") +
-    "\n" +
-    dm
-      .map(function (row, i) {
-        return labels[i] + "," + row.join(",");
-      })
-      .join("\n")
+MT.unparseDM = dm => {
+  let labels = session.data.distance_matrix.labels;
+  return(
+    "," + labels.join(",") + "\r\n" +
+    dm.map((row, i) => labels[i] + "," + row.join(",").join("\r\n"))
   );
 };
 
-MT.unparseSVG = function (svgNode) {
+MT.unparseSVG = svgNode => {
   svgNode.setAttribute("xlink", "http://www.w3.org/1999/xlink");
-  var selectorTextArr = [];
+  let selectorTextArr = [];
 
   // Add Parent element Id and Classes to the list
   selectorTextArr.push("#" + svgNode.id);
-  var nClasses = svgNode.classList.length;
-  for (var c = 0; c < nClasses; c++) {
+  let nClasses = svgNode.classList.length;
+  for (let c = 0; c < nClasses; c++) {
     if (!("." + svgNode.classList[c]).includes(selectorTextArr)) {
       selectorTextArr.push("." + svgNode.classList[c]);
     }
   }
 
   // Add Children element Ids and Classes to the list
-  var nodes = svgNode.getElementsByTagName("*");
-  var nNodes = nodes.length;
-  for (var i = 0; i < nNodes; i++) {
-    var id = nodes[i].id;
+  let nodes = svgNode.getElementsByTagName("*");
+  let nNodes = nodes.length;
+  for (let i = 0; i < nNodes; i++) {
+    let id = nodes[i].id;
     if (!("#" + id).includes(selectorTextArr)) {
       selectorTextArr.push("#" + id);
     }
-    var classes = nodes[i].classList;
-    for (var d = 0; d < classes.length; d++) {
+    let classes = nodes[i].classList;
+    for (let d = 0; d < classes.length; d++) {
       if (!("." + classes[d]).includes(selectorTextArr)) {
         selectorTextArr.push("." + classes[d]);
       }
@@ -1918,20 +1691,20 @@ MT.unparseSVG = function (svgNode) {
   }
 
   // Extract CSS Rules
-  var extractedCSSText = "";
-  var nStylesheets = document.styleSheets.length;
-  for (var j = 0; j < nStylesheets; j++) {
-    var s = document.styleSheets[j];
+  let extractedCSSText = "";
+  let nStylesheets = document.styleSheets.length;
+  for (let j = 0; j < nStylesheets; j++) {
+    let s = document.styleSheets[j];
     try {
       if (!s.cssRules) continue;
     } catch (e) {
       if (e.name !== "SecurityError") throw e; // for Firefox
       continue;
     }
-    var cssRules = s.cssRules;
-    var nRules = cssRules.length;
-    for (var r = 0; r < nRules; r++) {
-      var rule = cssRules[r];
+    let cssRules = s.cssRules;
+    let nRules = cssRules.length;
+    for (let r = 0; r < nRules; r++) {
+      let rule = cssRules[r];
       if (!rule.selectorText) continue;
       if (rule.selectorText.includes(selectorTextArr)) {
         extractedCSSText += rule.cssText;
@@ -1939,22 +1712,22 @@ MT.unparseSVG = function (svgNode) {
     }
   }
 
-  var styleElement = document.createElement("style");
+  let styleElement = document.createElement("style");
   styleElement.setAttribute("type", "text/css");
   styleElement.innerHTML = extractedCSSText;
-  var refNode = svgNode.hasChildNodes() ? svgNode.children[0] : null;
+  let refNode = svgNode.hasChildNodes() ? svgNode.children[0] : null;
   svgNode.insertBefore(styleElement, refNode);
-  var serializer = new XMLSerializer();
+  let serializer = new XMLSerializer();
   return serializer.serializeToString(svgNode);
 };
 
-MT.blobifySVG = function (svgString, width, height, callback) {
-  var canvas = document.createElement("canvas");
+MT.blobifySVG = (svgString, width, height, callback) => {
+  let canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  var image = new Image();
-  image.onload = function () {
-    var context = canvas.getContext("2d");
+  let image = new Image();
+  image.onload = () => {
+    let context = canvas.getContext("2d");
     context.clearRect(0, 0, width, height);
     context.drawImage(image, 0, 0, width, height);
     canvas.toBlob(callback);
@@ -1964,46 +1737,29 @@ MT.blobifySVG = function (svgString, width, height, callback) {
     btoa(unescape(encodeURIComponent(svgString)));
 };
 
-MT.getHelp = function (target, callback) {
-  $.get("help/" + target + ".md", function (response) {
-    callback(marked(response));
-  });
-};
+MT.getHelp = (target, callback) => $.get("help/" + target + ".md", response => callback(marked(response)));
 
-MT.ab2str = function (buf) {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
-};
+MT.ab2str = buf => String.fromCharCode.apply(null, new Uint8Array(buf));
 
-MT.str2ab = function (str) {
-  var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-  var bufView = new Uint8Array(buf);
-  for (var i = 0, strLen = str.length; i < strLen; i++) {
+MT.str2ab = str => {
+  let buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+  let bufView = new Uint8Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
     bufView[i] = str.charCodeAt(i);
   }
   return buf;
 };
 
-MT.exportHIVTRACE = function () {
-  var links = session.data.links.filter(function (l) {
-    return l.visible;
-  });
-  var geneticLinks = links.filter(function (l) {
-    return l.origin.includes("Genetic Distance");
-  });
-  var sequences = new Set(
-    geneticLinks
-      .map(function (l) {
-        return l.source;
-      })
-      .concat(
-        geneticLinks.map(function (l) {
-          return l.target;
-        })
-      )
+MT.exportHIVTRACE = () => {
+  let links = session.data.links.filter(l => l.visible);
+  let geneticLinks = links.filter(l => l.origin.includes("Genetic Distance"));
+  let sequences = new Set(
+    geneticLinks.map(l => l.source).concat(
+    geneticLinks.map(l => l.target))
   ).size;
-  var pas = {};
-  session.data.nodes.forEach(function (d) {
-    Object.keys(d).forEach(function (key) {
+  let pas = {};
+  session.data.nodes.forEach(d => {
+    Object.keys(d).forEach(key => {
       if (pas[key]) return;
       pas[key] = {
         label: key,
@@ -2014,9 +1770,7 @@ MT.exportHIVTRACE = function () {
   return JSON.stringify(
     {
       trace_results: {
-        "Cluster sizes": session.data.clusters.map(function (c) {
-          return c.size;
-        }),
+        "Cluster sizes": session.data.clusters.map(c => c.size),
         Degrees: {
           Distribution: [],
           Model: "Waring",
@@ -2031,22 +1785,16 @@ MT.exportHIVTRACE = function () {
           }
         },
         "Edge Stages": {},
-        Edges: links.map(function (l) {
-          return {
-            attributes: ["BULK"],
-            directed: false,
-            length: l[session.style.widgets["link-sort-variable"]],
-            removed: false,
-            sequences: [l.source, l.target],
-            source: session.data.nodes.findIndex(function (d) {
-              return d.id === l.source;
-            }),
-            support: 0,
-            target: session.data.nodes.findIndex(function (d) {
-              return d.id === l.target;
-            })
-          };
-        }),
+        Edges: links.map(l => ({
+          attributes: ["BULK"],
+          directed: false,
+          length: l[session.style.widgets["link-sort-variable"]],
+          removed: false,
+          sequences: [l.source, l.target],
+          source: session.data.nodes.findIndex(d => d.id == l.source),
+          support: 0,
+          target: session.data.nodes.findIndex(d => d.id == l.target)
+        })),
         "HIV Stages": {
           "A-1": 0,
           "A-2": 0,
@@ -2066,16 +1814,14 @@ MT.exportHIVTRACE = function () {
           Nodes: session.data.nodes.length,
           "Sequences used to make links": sequences
         },
-        Nodes: session.data.nodes.map(function (d) {
-          return {
-            attributes: [],
-            baseline: null,
-            cluster: d.cluster,
-            edi: null,
-            id: d.id,
-            patient_attributes: d
-          };
-        }),
+        Nodes: session.data.nodes.map(d => ({
+          attributes: [],
+          baseline: null,
+          cluster: d.cluster,
+          edi: null,
+          id: d.id,
+          patient_attributes: d
+        })),
         patient_attribute_schema: pas,
         Settings: {
           "contaminant-ids": [],

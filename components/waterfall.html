@@ -52,7 +52,7 @@
     function resetNodes(cluster){
       resetNeighbors();
       let list = $('#waterfall-node-list').empty();
-      if(typeof cluster === 'undefined') return;
+      if(typeof cluster == 'undefined') return;
       session.data.nodes.forEach(node => {
         if(node.cluster !== cluster) return;
         $(`<a href="#" class="list-group-item list-group-item-action">
@@ -80,7 +80,7 @@
     function resetNeighbors(node){
       let list = $('#waterfall-neighbor-list').empty();
       let lsv = session.style.widgets['link-sort-variable'];
-      if(typeof node === 'undefined') return;
+      if(typeof node == 'undefined') return;
       session.data.links.forEach(link => {
         if(!link.visible) return;
         if(!(link.source == node.id || link.target == node.id)) return;
@@ -91,7 +91,7 @@
             <small>${link[lsv].toLocaleString()}</small>
           </div>
           <div class="hideIfNotActive">
-            ${Object.keys(link).filter(k => !meta.includes(k)).map(k => MT.titleize(k) + ': ' + (typeof link[k] === 'number' ? link[k].toLocaleString() : link[k])).join('\n<br>')}
+            ${Object.keys(link).filter(k => !meta.includes(k)).map(k => MT.titleize(k) + ': ' + (typeof link[k] == 'number' ? link[k].toLocaleString() : link[k])).join('\n<br>')}
           </div>
         </a>`).click(function(){
           let wasActive = false;

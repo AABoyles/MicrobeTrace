@@ -246,8 +246,8 @@
       MT.mapData.counties.features.forEach(c => c.properties.density = 0);
       nodes.forEach(n => {
         var county = MT.mapData.counties.features.find(c => {
-          return (c.properties.fips === n[val] ||
-            parseFloat(c.properties.fips) === parseFloat(n[val]));
+          return (c.properties.fips == n[val] ||
+            parseFloat(c.properties.fips) == parseFloat(n[val]));
         });
         if (county) return county.properties.density++;
       });
@@ -357,7 +357,7 @@
 
   function clickHandler(e) {
     var node = e.sourceTarget.feature.properties;
-    var d = session.data.nodes.find(d => d.id === node.id);
+    var d = session.data.nodes.find(d => d.id == node.id);
     if (!e.originalEvent.ctrlKey) {
       session.data.nodes
         .filter(node => node.id !== d.id)

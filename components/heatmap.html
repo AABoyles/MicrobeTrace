@@ -231,7 +231,7 @@
     });
 
     $('#heatmap-export-filetype').on('change', function (e) {
-      if (e.target.value === 'svg') {
+      if (e.target.value == 'svg') {
         $('#heatmap-export-advanced-button').slideUp();
       } else {
         $('#heatmap-export-advanced-button').slideDown();
@@ -250,16 +250,16 @@
     $('#heatmap-export').on('click', function () {
       let filename = $('#heatmap-export-filename').val(),
         filetype = $('#heatmap-export-filetype').val();
-      if (filetype === 'csv' || filetype === 'xlsx') {
+      if (filetype == 'csv' || filetype == 'xlsx') {
         let data = [[''].concat(session.data.distance_matrix.labels)].concat(
           session.data.distance_matrix[session.style.widgets['link-sort-variable']].map((l, i) => {
             return [session.data.distance_matrix.labels[i]].concat(l);
           })
         );
-        if (filetype === 'csv') {
+        if (filetype == 'csv') {
           let blob = new Blob([Papa.unparse(data)], { type: 'text/csv;charset=utf-8' });
           saveAs(blob, filename + '.' + filetype);
-        } else if (filetype === 'xlsx') {
+        } else if (filetype == 'xlsx') {
           let wb = XLSX.utils.book_new();
           let ws = XLSX.utils.aoa_to_sheet(data);
           XLSX.utils.book_append_sheet(wb, ws, name);
@@ -275,7 +275,7 @@
         .attr('x', $heatmap.width() - 150)
         .attr('y', 40)
         .attr('class', 'watermark');
-      if (filetype === 'svg') {
+      if (filetype == 'svg') {
         let content = MT.unparseSVG(heatmap);
         let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);

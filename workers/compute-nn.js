@@ -25,8 +25,8 @@ onmessage = function(e){
     }
     for(let k = 0; k < m; k++){
       let l = links[k];
-      if((l.source === nodeid & targets.includes(l.target)) |
-         (l.target === nodeid & targets.includes(l.source))){
+      if((l.source == nodeid & targets.includes(l.target)) |
+         (l.target == nodeid & targets.includes(l.source))){
         output[k] = true;
       }
     }

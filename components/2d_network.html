@@ -445,7 +445,7 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function brushed() {
-      if (d3.event.sourceEvent.type === 'end') return;
+      if (d3.event.sourceEvent.type == 'end') return;
       var selection = [
         transform.invert(d3.event.selection[0]),
         transform.invert(d3.event.selection[1])
@@ -455,7 +455,7 @@ Note that this may cause slow performance on larger networks.">
         d.selected = (d._previouslySelected ^ (
           selection[0][0] <= d.x && d.x <= selection[1][0] &&
           selection[0][1] <= d.y && d.y <= selection[1][1]
-        )) === 1;
+        )) == 1;
       });
     }
 
@@ -464,7 +464,7 @@ Note that this may cause slow performance on larger networks.">
       d3.select(this).call(d3.event.target.move, null);
       session.network.nodes.forEach(d => delete d._previouslySelected);
       session.data.nodes.forEach(d => {
-        var match = session.network.nodes.find(node => node.id === d.id);
+        var match = session.network.nodes.find(node => node.id == d.id);
         if (match) d.selected = match.selected;
       });
       $window.trigger('node-selected');
@@ -531,7 +531,7 @@ Note that this may cause slow performance on larger networks.">
       var newNodes = MT.getVisibleNodes(true);
 
       newNodes.forEach((d, i) => {
-        var match = session.network.nodes.find(d2 => d2.id === d.id);
+        var match = session.network.nodes.find(d2 => d2.id == d.id);
         if (match) {
           ['x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed'].forEach(v => {
             if (typeof match[v] != "undefined") d[v] = match[v];
@@ -555,8 +555,8 @@ Note that this may cause slow performance on larger networks.">
               .on('contextmenu', showContextMenu)
               .on('click', clickHandler)
               .on('keydown', n => {
-                if (d3.event.code === 'Space') clickHandler(n);
-                if (d3.event.shiftKey && d3.event.key === 'F10') showContextMenu(n);
+                if (d3.event.code == 'Space') clickHandler(n);
+                if (d3.event.shiftKey && d3.event.key == 'F10') showContextMenu(n);
               });
             g.append('path')
               .attr('stroke', '#ffffff')
@@ -622,22 +622,22 @@ Note that this may cause slow performance on larger networks.">
       var n = vlinks.length;
       for (var i = 0; i < n; i++) {
         if (vlinks[i].origin) {
-          if (typeof vlinks[i].origin === 'object') {
+          if (typeof vlinks[i].origin == 'object') {
             vlinks[i].origin.forEach((o, j, l) => {
               output.push(Object.assign({}, vlinks[i], {
                 origin: o,
                 oNum: j,
                 origins: l.length,
-                source: session.network.nodes.find(d => d.id === vlinks[i].source),
-                target: session.network.nodes.find(d => d.id === vlinks[i].target)
+                source: session.network.nodes.find(d => d.id == vlinks[i].source),
+                target: session.network.nodes.find(d => d.id == vlinks[i].target)
               }));
             });
           } else {
             output.push(Object.assign({}, vlinks[i], {
               oNum: 0,
               origins: 1,
-              source: session.network.nodes.find(d => d.id === vlinks[i].source),
-              target: session.network.nodes.find(d => d.id === vlinks[i].target)
+              source: session.network.nodes.find(d => d.id == vlinks[i].source),
+              target: session.network.nodes.find(d => d.id == vlinks[i].target)
             }));
           }
         } else {
@@ -645,8 +645,8 @@ Note that this may cause slow performance on larger networks.">
             origin: 'Unknown',
             oNum: 0,
             origins: 1,
-            source: session.network.nodes.find(d => d.id === vlinks[i].source),
-            target: session.network.nodes.find(d => d.id === vlinks[i].target)
+            source: session.network.nodes.find(d => d.id == vlinks[i].source),
+            target: session.network.nodes.find(d => d.id == vlinks[i].target)
           }));
         }
       }
@@ -657,8 +657,8 @@ Note that this may cause slow performance on larger networks.">
       var vlinks = MT.getVisibleLinks(true);
       var n = vlinks.length;
       for (var i = 0; i < n; i++) {
-        vlinks[i].source = session.network.nodes.find(d => d.id === vlinks[i].source);
-        vlinks[i].target = session.network.nodes.find(d => d.id === vlinks[i].target);
+        vlinks[i].source = session.network.nodes.find(d => d.id == vlinks[i].source);
+        vlinks[i].target = session.network.nodes.find(d => d.id == vlinks[i].target);
       }
       return vlinks;
     }
@@ -717,10 +717,10 @@ Note that this may cause slow performance on larger networks.">
 
     function clickHandler(n) {
       if (d3.event.ctrlKey) {
-        session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
+        session.data.nodes.find(node => node.id == n.id).selected = !n.selected;
       } else {
         session.data.nodes.forEach(node => {
-          if (node.id === n.id) {
+          if (node.id == n.id) {
             node.selected = !n.selected;
           } else {
             node.selected = false;
@@ -742,9 +742,9 @@ Note that this may cause slow performance on larger networks.">
       d3.select('#viewAttributes').on('click', function () {
         hideContextMenu();
         var target = $('#network-attribute-modal tbody').empty();
-        var nd = session.data.nodes.find(nd => nd.id === d.id);
+        var nd = session.data.nodes.find(nd => nd.id == d.id);
         for (var attribute in nd) {
-          if (attribute[0] === '_') continue;
+          if (attribute[0] == '_') continue;
           target.append(`<tr><td><strong>${MT.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
         }
         $('#network-attribute-modal').modal('show');
@@ -781,7 +781,7 @@ Note that this may cause slow performance on larger networks.">
 
     function showNodeTooltip(d) {
       if (session.style.widgets['node-highlight']) highlightNeighbors(d);
-      if ($('#node-tooltip-variable').val() === 'None') return;
+      if ($('#node-tooltip-variable').val() == 'None') return;
       d3.select('#tooltip')
         .html(d[$('#node-tooltip-variable').val()])
         .style('left', (d3.event.pageX + 8) + 'px')
@@ -800,7 +800,7 @@ Note that this may cause slow performance on larger networks.">
         if (l.source.id !== node.id && l.target.id !== node.id) {
           lindices.push(l.index);
         } else {
-          if (l.source.id === node.id) {
+          if (l.source.id == node.id) {
             neighbors.push(l.target.id);
           } else {
             neighbors.push(l.source.id);
@@ -825,9 +825,9 @@ Note that this may cause slow performance on larger networks.">
 
     function showLinkTooltip(d) {
       var v = session.style.widgets['link-tooltip-variable'];
-      if (v === 'None') return;
+      if (v == 'None') return;
       d3.select('#tooltip')
-        .html((v === 'source' || v === 'target') ? d[v].id : d[v])
+        .html((v == 'source' || v == 'target') ? d[v].id : d[v])
         .style('left', (d3.event.pageX + 8) + 'px')
         .style('top', (d3.event.pageY - 28) + 'px')
         .style('z-index', 1000)
@@ -878,7 +878,7 @@ Note that this may cause slow performance on larger networks.">
         max = Number.MIN_VALUE;
         for (var i = 0; i < n; i++) {
           var size = session.network.nodes[i][sizeVariable];
-          if (typeof size === 'undefined') continue;
+          if (typeof size == 'undefined') continue;
           if (size < min) min = size;
           if (size > max) max = size;
         }
@@ -901,7 +901,7 @@ Note that this may cause slow performance on larger networks.">
     function redrawLabels() {
       var nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes).select('text'),
         labelVar = session.style.widgets['node-label-variable'];
-      if (labelVar === 'None') {
+      if (labelVar == 'None') {
         nodes.text('');
       } else {
         var size = session.style.widgets['node-label-size'],
@@ -954,7 +954,7 @@ Note that this may cause slow performance on larger networks.">
 
     $('#node-label-variable').on('change', function () {
       session.style.widgets['node-label-variable'] = this.value;
-      if (this.value === 'None') {
+      if (this.value == 'None') {
         $('.node-label-row').slideUp();
       } else {
         $('.node-label-row').css('display', 'flex');
@@ -986,7 +986,7 @@ Note that this may cause slow performance on larger networks.">
       session.style.widgets['node-symbol-variable'] = variable;
       var wrapper = $('#node-symbol-table-wrapper');
       var table = wrapper.find('table');
-      if (variable === 'None') {
+      if (variable == 'None') {
         temp.style.nodeSymbolMap = function () { return session.style.widgets['node-symbol']; };
         $('#node-symbol-table-row').slideUp();
         $('#node-symbol-row').slideDown();
@@ -1006,7 +1006,7 @@ Note that this may cause slow performance on larger networks.">
         if (!d.visible) continue;
         vnodes++;
         var dv = d[variable];
-        if (values.indexOf(dv) === -1) values.push(dv);
+        if (values.indexOf(dv) == -1) values.push(dv);
         if (dv in aggregates) {
           aggregates[dv]++;
         } else {
@@ -1074,7 +1074,7 @@ Note that this may cause slow performance on larger networks.">
     function updateNodeColors() {
       var variable = session.style.widgets['node-color-variable'];
       var nodes = svg.select('g.nodes').selectAll('g').select('path').data(session.network.nodes).classed('selected', d => d.selected);
-      if (variable === 'None') {
+      if (variable == 'None') {
         var col = session.style.widgets['node-color'];
         nodes.attr('fill', col).attr('opacity', 1);
       } else {
@@ -1104,7 +1104,7 @@ Note that this may cause slow performance on larger networks.">
     $('#link-label-variable').on('change', function () {
       var label = this.value;
       session.style.widgets['link-label-variable'] = label;
-      if (label === 'None') {
+      if (label == 'None') {
         svg.select('g.links').selectAll('text').text('');
       } else {
         svg.select('g.links').selectAll('text').data(getLLinks()).text(l => l[label]);
@@ -1122,7 +1122,7 @@ Note that this may cause slow performance on larger networks.">
     function updateLinkColor() {
       var variable = session.style.widgets['link-color-variable'];
       var links = svg.select('g.links').selectAll('line');
-      if (variable === 'None') {
+      if (variable == 'None') {
         var color = session.style.widgets['link-color'],
           opacity = 1 - session.style.widgets['link-opacity'];
         links
@@ -1161,7 +1161,7 @@ Note that this may cause slow performance on larger networks.">
       var variable = session.style.widgets['link-width-variable'];
       var vlinks = getVLinks();
       var links = svg.select('g.links').selectAll('line').data(vlinks);
-      if (variable === 'None') return links.attr('stroke-width', scalar);
+      if (variable == 'None') return links.attr('stroke-width', scalar);
       var n = vlinks.length;
       var max = -Infinity;
       var min = Infinity;
@@ -1188,7 +1188,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#link-width-variable').on('change', function () {
-      if (this.value === 'None') {
+      if (this.value == 'None') {
         $('#link-reciprocalthickness-row').slideUp();
       } else {
         $('#link-reciprocalthickness-row').css('display', 'flex');
@@ -1246,7 +1246,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#network-export-filetype').on('change', function () {
-      if (this.value === 'svg') {
+      if (this.value == 'svg') {
         $('#network-export-advanced-button').parent().parent().slideUp();
       } else {
         $('#network-export-advanced-button').parent().parent().slideDown();
@@ -1272,7 +1272,7 @@ Note that this may cause slow performance on larger networks.">
         .attr('class', 'watermark');
       var filetype = $('#network-export-filetype').val(),
         filename = $('#network-export-filename').val();
-      if (filetype === 'svg') {
+      if (filetype == 'svg') {
         var content = MT.unparseSVG(network);
         var blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);
@@ -1289,7 +1289,7 @@ Note that this may cause slow performance on larger networks.">
 
     function fit(thing, bounds) {
       if (!bounds) bounds = svg.node().getBBox();
-      if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
+      if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
       var parent = svg.node().parentElement.parentElement,
         midX = bounds.x + bounds.width / 2,
         midY = bounds.y + bounds.height / 2;
@@ -1376,7 +1376,7 @@ Note that this may cause slow performance on larger networks.">
 
     $("#node-symbol-table-expand").on("click", function () {
       var $this = $(this);
-      if ($this.text() === "Expand") {
+      if ($this.text() == "Expand") {
         $("#node-symbol-table-wrapper").css({
           "max-height": "none",
           "overflow-y": "auto"

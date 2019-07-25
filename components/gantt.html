@@ -153,15 +153,15 @@
         let dateid = $el.data('dateid');
         let startField = $el.find(`#date-${dateid}-start`).val();
         let endField = $el.find(`#date-${dateid}-end`).val();
-        if (endField === 'None') endField = startField;
+        if (endField == 'None') endField = startField;
         session.data.nodes.filter(d => d.visible).forEach(d => {
           let startDate, endDate;
-          if (typeof d[startField] === 'number') {
+          if (typeof d[startField] == 'number') {
             startDate = moment((d[startField] - 25567) * 24 * 60 * 60 * 1000);
           } else {
             startDate = moment(d[startField]);
           }
-          if (typeof d[endField] === 'number') {
+          if (typeof d[endField] == 'number') {
             endDate = moment((d[endField] - 25567) * 24 * 60 * 60 * 1000);
           } else {
             endDate = moment(d[endField]);
@@ -178,7 +178,7 @@
         });
       });
 
-      if (bars.length === 0) return;
+      if (bars.length == 0) return;
 
       bars.sort((a, b) => b.endDate - a.endDate);
       let timeDomainEnd = bars[0].endDate;
@@ -302,7 +302,7 @@
     });
 
     $('#gantt-export-filetype').on('change', function (e) {
-      if (e.target.value === 'svg') {
+      if (e.target.value == 'svg') {
         $('#gantt-export-advanced-button').slideUp();
       } else {
         $('#gantt-export-advanced-button').slideDown();
@@ -328,7 +328,7 @@
         .attr('class', 'watermark');
       let filename = $('#gantt-export-filename').val(),
         filetype = $('#gantt-export-filetype').val();
-      if (filetype === 'svg') {
+      if (filetype == 'svg') {
         let content = MT.unparseSVG(gantt);
         let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);

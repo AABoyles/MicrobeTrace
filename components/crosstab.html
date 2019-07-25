@@ -157,15 +157,15 @@
     $("#crosstab-export").click(function () {
       var format = $("#export-crosstab-file-type").val();
       var name = $("#export-crosstab-file-name").val();
-      if (format === "csv") {
+      if (format == "csv") {
         saveAs(new Blob([Papa.unparse(data)], { type: "text/csv;charset=utf-8" }), name + "." + format);
-      } else if (format === "xlsx") {
+      } else if (format == "xlsx") {
         var wb = XLSX.utils.book_new();
         var ws = XLSX.utils.json_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws,
           MT.titleize($('#crosstab-field-x').val()) + " by " + MT.titleize($('#crosstab-field-y').val()));
         XLSX.writeFile(wb, name + "." + format);
-      } else if (format === "pdf") {
+      } else if (format == "pdf") {
         var keys = Object.keys(data[0]);
         pdfMake
           .createPdf({

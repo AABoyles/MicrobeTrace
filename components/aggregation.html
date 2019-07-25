@@ -160,7 +160,7 @@
                   .map(
                     v =>
                       `<option value="node ${v}" ${
-                        v === "cluster" ? "selected" : ""
+                        v == "cluster" ? "selected" : ""
                       }>Node ${MT.titleize(v)}</option>`
                   )
                   .join("\n")}
@@ -215,7 +215,7 @@
     $("#aggregation-export").click(function() {
       let format = $("#export-aggregation-file-type").val();
       let name = $("#export-aggregation-file-name").val();
-      if (format === "csv.zip") {
+      if (format == "csv.zip") {
         var zip = new JSZip();
         data.forEach(t => {
           zip.file(t.dataset + "_" + t.column + ".csv", Papa.unparse(t.data));
@@ -223,7 +223,7 @@
         zip
           .generateAsync({ type: "blob" })
           .then(content => saveAs(content, name + ".zip"));
-      } else if (format === "xlsx") {
+      } else if (format == "xlsx") {
         let wb = XLSX.utils.book_new();
         data.forEach(t => {
           let ws = XLSX.utils.json_to_sheet(t.data);
@@ -234,7 +234,7 @@
           );
         });
         XLSX.writeFile(wb, name + "." + format);
-      } else if (format === "pdf") {
+      } else if (format == "pdf") {
         pdfMake
           .createPdf({
             content: [

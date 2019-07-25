@@ -639,7 +639,7 @@
       var vnodes = MT.getVisibleNodes();
       var nodes = g.select('g.nodes').selectAll('g').select('circle').classed('selected', d => d.selected);
       var col = session.style.widgets['node-color'];
-      if (variable === 'None') {
+      if (variable == 'None') {
         nodes.attr('fill', col);
       } else {
         nodes.attr('fill', d => {
@@ -652,7 +652,7 @@
 
     function fit(thing, bounds) {
       if (!bounds) bounds = g.node().getBBox();
-      if (bounds.width === 0 || bounds.height === 0) return; // nothing to fit
+      if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
       var parent = g.node().parentElement.parentElement,
         midX = bounds.x + bounds.width / 2,
         midY = bounds.y + bounds.height / 2;

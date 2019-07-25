@@ -382,13 +382,13 @@
         color = session.style.widgets['node-color'],
         ncv = session.style.widgets['node-color-variable'];
 
-      if (ncv === 'None') {
+      if (ncv == 'None') {
         tree.eachLeafNode(d => d3.select(d).attr('r', size).style('fill', color));
       } else {
         var ncm = temp.style.nodeColorMap;
         tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
           var id = data.data.id;
-          var match = session.data.nodes.find(node => node.id === id);
+          var match = session.data.nodes.find(node => node.id == id);
           if (match) {
             return ncm(match[ncv]);
           } else {
@@ -406,10 +406,10 @@
       var n = d[0].data;
       e.preventDefault();
       if (e.ctrlKey) {
-        session.data.nodes.find(node => node.id === n.id).selected = !n.selected;
+        session.data.nodes.find(node => node.id == n.id).selected = !n.selected;
       } else {
         session.data.nodes.forEach(node => {
-          if (node.id === n.id) {
+          if (node.id == n.id) {
             node.selected = !n.selected;
           } else {
             node.selected = false;
@@ -679,7 +679,7 @@
     });
 
     $('#tree-export-filetype').on('change', function () {
-      if (this.value === 'svg' || this.value === 'nwk') {
+      if (this.value == 'svg' || this.value == 'nwk') {
         $('#tree-export-advanced-button').slideUp();
       } else {
         $('#tree-export-advanced-button').slideDown();
@@ -698,10 +698,10 @@
     $('#tree-export').on('click', function () {
       var filetype = $('#tree-export-file-type').val();
       var filename = $('#tree-export-file-name').val();
-      if (filetype === 'nwk') {
+      if (filetype == 'nwk') {
         var blob = new Blob([temp.trees[session.style.widgets['default-distance-metric']].toNewick()], { type: 'application/newick;charset=utf-8' });
         saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
-      } else if (filetype === 'svg') {
+      } else if (filetype == 'svg') {
         var blob = new Blob([MT.unparseSVG($('#tree svg')[0])], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, $('#tree-export-file-name').val() + '.svg');
       } else {
@@ -727,7 +727,7 @@
 
     function tagSelected() {
       tree.eachLeafNode(function (circle, data) {
-        var node = session.data.nodes.find(d => d.id === data.data.id);
+        var node = session.data.nodes.find(d => d.id == data.data.id);
         if (node.selected) {
           d3.select(circle)
             .style('stroke', session.style.widgets['selected-color'])

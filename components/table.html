@@ -149,10 +149,10 @@
       let format = $('#export-table-file-type').val();
       let data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
       let name = $('#export-table-file-name').val();
-      if(format === 'csv'){
+      if(format == 'csv'){
         let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
         saveAs(blob, name + '.' + format);
-      } else if(format === 'xlsx'){
+      } else if(format == 'xlsx'){
         let headers = session.data[$('input[name=nodelink]:checked').data('value').slice(0,-1) + 'Fields'];
         data.forEach(thing => {
           Object.keys(thing).forEach(field => {

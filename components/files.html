@@ -182,7 +182,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function processFile(rawfile) {
       var extension = rawfile.name.split('.').pop().toLowerCase();
-      if (extension === 'zip') {
+      if (extension == 'zip') {
         var new_zip = new JSZip();
         new_zip
           .loadAsync(rawfile)
@@ -195,21 +195,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           });
         return;
       }
-      if (extension === 'microbetrace' || extension === 'hivtrace') {
+      if (extension == 'microbetrace' || extension == 'hivtrace') {
         var reader = new FileReader();
         reader.onloadend = function (out) {
           MT.processJSON(out.target.result, extension);
         };
         reader.readAsText(rawfile, 'UTF-8');
       }
-      if (extension === 'svg') {
+      if (extension == 'svg') {
         var reader = new FileReader();
         reader.onloadend = function (out) {
           MT.processSVG(out.target.result);
         };
         reader.readAsText(rawfile, 'UTF-8');
       }
-      var isXL = (extension === 'xlsx' || extension === 'xls');
+      var isXL = (extension == 'xlsx' || extension == 'xls');
       fileto.promise(rawfile, isXL ? 'ArrayBuffer' : 'Text').then(function (file) {
         session.files.push(file);
         addToTable(file);
@@ -220,7 +220,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       var extension = file.name.split('.').pop().toLowerCase();
       var isFasta = extension.indexOf('fas') > -1;
       var isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
-      var isXL = (extension === 'xlsx' || extension === 'xls');
+      var isXL = (extension == 'xlsx' || extension == 'xls');
       var isNode = file.name.toLowerCase().includes('node');
       if (isXL) {
         var workbook = XLSX.read(file.contents, { type: 'array' });
@@ -295,17 +295,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         function matchHeaders(type) {
           var these = $(`[data-file='${file.name}'] select`);
-          var a = type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-            b = type === 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+          var a = type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+            b = type == 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
             c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
           [a, b, c].forEach(function (list, i) {
             $(these.get(i)).val("None");
             list.forEach(function (title) {
               if (headers.includes(title)) $(these.get(i)).val(title);
             });
-            if ($(these.get(i)).val() === 'None' &&
-              !(i === 1 && type === 'node') && //If Node Sequence...
-              !(i === 2 && type === 'link')) { //...or Link distance...
+            if ($(these.get(i)).val() == 'None' &&
+              !(i == 1 && type == 'node') && //If Node Sequence...
+              !(i == 2 && type == 'link')) { //...or Link distance...
                 //...don't match to a variable in the dataset, leave them as "None".
               $(these.get(i)).val(headers[i]);
                 //Everything else, just guess the next ordinal column.
@@ -322,12 +322,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             first = $(these.get(0)),
             second = $(these.get(1));
           third = $(these.get(2));
-          if (type === 'node') {
+          if (type == 'node') {
             first.slideDown().find('label').text('ID');
             second.slideDown().find('label').text('Sequence');
             third.slideUp();
             matchHeaders(type);
-          } else if (type === 'link') {
+          } else if (type == 'link') {
             first.slideDown().find('label').text('Source');
             second.slideDown().find('label').text('Target');
             third.slideDown();
@@ -345,11 +345,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     function readFastas() {
       var read = 0, data = [];
       var fastas = session.files.filter(function (f) { return f.name.split('.').pop().includes('fas'); });
-      if (fastas.length === 0) return;
+      if (fastas.length == 0) return;
       fastas.forEach(function (fasta) {
         MT.parseFASTA(fasta.contents, function (nodes) {
           data = data.concat(nodes);
-          if (++read === fastas.length) updatePreview(data);
+          if (++read == fastas.length) updatePreview(data);
         });
       });
     }
@@ -417,7 +417,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       var lsv = e.target.value;
       localStorage.setItem('default-distance-metric', lsv);
       $('#default-distance-metric').val(lsv);
-      if (lsv === 'snps') {
+      if (lsv == 'snps') {
         $('#ambiguities-row').slideUp();
         $('#default-distance-threshold, #link-threshold')
           .attr('step', 1)
@@ -457,7 +457,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       localStorage.setItem('stash-auto', 'true');
     });
 
-    if (localStorage.getItem('stash-auto') === 'true') {
+    if (localStorage.getItem('stash-auto') == 'true') {
       $('#stash-auto-yes').parent().trigger('click');
     }
 
@@ -498,7 +498,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         var $el = $(el);
         var fname = $el.data('filename');
         var selects = $el.find('select');
-        var f = session.files.find(function (file) { return file.name === fname; });
+        var f = session.files.find(function (file) { return file.name == fname; });
         f.format = $el.find('input[type="radio"]:checked').data('type');
         f.field1 = selects.get(0).value;
         f.field2 = selects.get(1).value;
@@ -522,7 +522,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         var extension = filename.split('.').pop().toLowerCase();
         var origin = [filename];
 
-        if (file.format === 'fasta') {
+        if (file.format == 'fasta') {
 
           message(`Parsing ${filename} as FASTA...`);
           anySequences = true;
@@ -539,10 +539,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
             console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
-            if (fileNum === session.files.length - 1) processSequences();
+            if (fileNum == session.files.length - 1) processSequences();
           });
 
-        } else if (file.format === 'link') {
+        } else if (file.format == 'link') {
 
           message(`Parsing ${filename} as Link List...`);
           var l = 0;
@@ -559,7 +559,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               target: '' + link[file.field2],
               origin: origin,
               visible: true,
-              distance: file.field3 === 'None' ? 0 : parseFloat(link[file.field3])
+              distance: file.field3 == 'None' ? 0 : parseFloat(link[file.field3])
             }, link), check);
           }
 
@@ -583,7 +583,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             for (var i = 0; i < k; i++) {
               var l = data[i];
               var f1 = l[file.field1];
-              if (nodeIDs.indexOf(f1) === -1) {
+              if (nodeIDs.indexOf(f1) == -1) {
                 t++;
                 nodeIDs.push(f1);
                 n += MT.addNode({
@@ -592,7 +592,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 }, true);
               }
               var f2 = l[file.field2];
-              if (nodeIDs.indexOf(f2) === -1) {
+              if (nodeIDs.indexOf(f2) == -1) {
                 t++;
                 nodeIDs.push(f2);
                 n += MT.addNode({
@@ -603,7 +603,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
             console.log('Link Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
-            if (fileNum === session.files.length - 1) processSequences();
+            if (fileNum == session.files.length - 1) processSequences();
 
           } else {
 
@@ -627,7 +627,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 for (var i = 0; i < n; i++) {
                   var l = data[i];
                   var f1 = l[file.field1];
-                  if (nodeIDs.indexOf(f1) === -1) {
+                  if (nodeIDs.indexOf(f1) == -1) {
                     totalNodes++;
                     newNodes += MT.addNode({
                       id: '' + f1,
@@ -635,7 +635,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     }, true);
                   }
                   var f2 = l[file.field2];
-                  if (nodeIDs.indexOf(f2) === -1) {
+                  if (nodeIDs.indexOf(f2) == -1) {
                     totalNodes++;
                     newNodes += MT.addNode({
                       id: '' + f2,
@@ -645,11 +645,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 }
                 console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
-                if (fileNum === session.files.length - 1) processSequences();
+                if (fileNum == session.files.length - 1) processSequences();
               }
             });
           }
-        } else if (file.format === 'node') {
+        } else if (file.format == 'node') {
 
           message(`Parsing ${filename} as Node List...`);
           if (file.field2 !== 'None') anySequences = true;
@@ -674,7 +674,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             });
             console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
-            if (fileNum === session.files.length - 1) processSequences();
+            if (fileNum == session.files.length - 1) processSequences();
 
           } else {
 
@@ -683,7 +683,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               dynamicTyping: true,
               skipEmptyLines: true,
               step: function (results) {
-                if (0 === n++) {
+                if (0 == n++) {
                   results.meta.fields.forEach(function (key) {
                     key = filterXSS(key);
                     if (!session.data.nodeFields.includes(key)) {
@@ -700,12 +700,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               complete: function () {
                 console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
-                if (fileNum === session.files.length - 1) processSequences();
+                if (fileNum == session.files.length - 1) processSequences();
               }
             });
           }
 
-        } else if (file.format === 'matrix') {
+        } else if (file.format == 'matrix') {
 
           message(`Parsing ${filename} as Distance Matrix...`);
 
@@ -728,9 +728,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               } else {
                 var source = '' + row[0];
                 row.forEach(function (cell, j) {
-                  if (j === 0) return;
+                  if (j == 0) return;
                   var target = '' + nodeIDs[j];
-                  if (source === target) return;
+                  if (source == target) return;
                   var base = {
                     source: source,
                     target: target,
@@ -744,14 +744,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             console.log('Distance Matrix Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${nn} New, ${data.length - 1} Total Nodes from Excel Distance Matrix.`);
             message(` - Parsed ${nl} New, ${((data.length - 1) ** 2 - (data.length - 1)) / 2} Total Links from Excel Distance Matrix.`);
-            if (fileNum === session.files.length - 1) processSequences();
+            if (fileNum == session.files.length - 1) processSequences();
 
           } else {
 
             MT.parseCSVMatrix(file, function (o) {
               message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
-              if (fileNum === session.files.length - 1) processSequences();
+              if (fileNum == session.files.length - 1) processSequences();
             });
           }
         } else { // if(file.format == 'newick'){
@@ -781,7 +781,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           console.log('Newick Tree Parse time:', (Date.now() - start).toLocaleString(), 'ms');
           message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
           message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
-          if (fileNum === session.files.length - 1) processSequences();
+          if (fileNum == session.files.length - 1) processSequences();
         }
       });
 

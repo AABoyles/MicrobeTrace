@@ -119,7 +119,7 @@
       let newnodes = MT.getVisibleNodes(true);
       if (!vnodes) vnodes = newnodes;
       newnodes.forEach(newNode => {
-        let old = vnodes.find(oldNode => oldNode.id === newNode.id);
+        let old = vnodes.find(oldNode => oldNode.id == newNode.id);
         if (old) {
           newNode.x = old.x;
           newNode.y = old.y;
@@ -157,7 +157,7 @@
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 2)
         .on('click', function (d) {
-          let c = session.data.nodes.find(node => d.id === node.id);
+          let c = session.data.nodes.find(node => d.id == node.id);
           c.selected = !c.selected;
           $window.trigger('node-selected');
         });
@@ -187,7 +187,7 @@
 
     function groupBubblesX() {
       let field = session.style.widgets['bubble-x'];
-      if (field === 'None') {
+      if (field == 'None') {
         svg.select('#bubble-xAxisLabel').text('');
         svg.selectAll('.xtitle').remove();
         simulation.force('x', d3.forceX().strength(0.03).x(center.x));
@@ -228,7 +228,7 @@
 
     function groupBubblesY() {
       let field = session.style.widgets['bubble-y'];
-      if (field === 'None') {
+      if (field == 'None') {
         svg.select('#bubble-yAxisLabel').text('');
         svg.selectAll('.ytitle').remove();
         simulation.force('y', d3.forceY().strength(0.03).y(center.y));
@@ -279,7 +279,7 @@
       let field = session.style.widgets['node-color-variable'];
       let bubble = svg.selectAll('circle').data(vnodes);
       bubble.attr('stroke', d => d.selected ? session.style.widgets['selected-color'] : '#ffffff');
-      if (field === 'None') {
+      if (field == 'None') {
         let color = session.style.widgets['node-color'];
         bubble.transition().attr('fill', color);
       } else {
@@ -297,7 +297,7 @@
     });
 
     $('#bubbles-export-filetype').on('change', function () {
-      if (this.value === 'svg') {
+      if (this.value == 'svg') {
         $('#bubbles-export-advanced-button').slideUp();
       } else {
         $('#bubbles-export-advanced-button').slideDown();
@@ -323,7 +323,7 @@
         .attr('class', 'watermark');
       let filename = $('#bubbles-export-filename').val(),
         filetype = $('#bubbles-export-filetype').val();
-      if (filetype === 'svg') {
+      if (filetype == 'svg') {
         let content = MT.unparseSVG(bubbles);
         let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);

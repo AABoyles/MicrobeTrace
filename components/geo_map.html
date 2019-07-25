@@ -382,9 +382,9 @@
         if (['countries', 'states', 'counties'].includes(name)) {
           layers[name] = L.geoJSON(MT.mapData[name], {
             color: '#dadde0',
-            weight: name === 'countries' ? 1 : 0.5,
+            weight: name == 'countries' ? 1 : 0.5,
             fillColor: '#fafaf8',
-            fillOpacity: name === 'countries' ? 1 : 0
+            fillOpacity: name == 'countries' ? 1 : 0
           });
         }
         if (callback) callback();
@@ -455,8 +455,8 @@
         nodes.forEach(n => {
           var county;
           county = MT.mapData.counties.features.find(c => {
-            return (c.properties.fips === n[cval] ||
-              parseFloat(c.properties.fips) === parseFloat(n[cval]));
+            return (c.properties.fips == n[cval] ||
+              parseFloat(c.properties.fips) == parseFloat(n[cval]));
           });
           if (county) {
             n._lat = county.properties._lat;
@@ -540,7 +540,7 @@
         if (!d._jlat || !d._jlon) continue;
         features.push(L.circleMarker(L.latLng(d._jlat, d._jlon), {
           color: d.selected ? selectedColor : '#ffffff',
-          fillColor: colorVariable === 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
+          fillColor: colorVariable == 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
           fillOpacity: opacity,
           data: d
         }));
@@ -572,15 +572,15 @@
       layers.links = L.featureGroup();
       links.forEach(function (d) {
         if (!d.visible) return;
-        var source = nodes.find(node => node.id === d.source);
-        var target = nodes.find(node => node.id === d.target);
+        var source = nodes.find(node => node.id == d.source);
+        var target = nodes.find(node => node.id == d.target);
         if (source && target) {
           if (source._jlat && source._jlon && target._jlat && target._jlon) {
             layers.links.addLayer(L.polyline([[
               [source._jlat, source._jlon],
               [target._jlat, target._jlon]
             ]], {
-                color: lcv === "None" ?
+                color: lcv == "None" ?
                   session.style.widgets['link-color'] :
                   temp.style.linkColorMap(d[lcv]),
                 opacity: opacity,
@@ -633,7 +633,7 @@
 
     function clickHandler(e) {
       var node = e.sourceTarget.feature.properties;
-      var d = session.data.nodes.find(d => d.id === node.id);
+      var d = session.data.nodes.find(d => d.id == node.id);
       if (!e.originalEvent.ctrlKey) {
         session.data.nodes
           .filter(node => node.id !== d.id)
@@ -886,8 +886,8 @@
       });
       MT.getVisibleLinks().forEach(function (d) {
         if (!d.visible) return;
-        var source = nodes.find(node => node.id === d.source);
-        var target = nodes.find(node => node.id === d.target);
+        var source = nodes.find(node => node.id == d.source);
+        var target = nodes.find(node => node.id == d.target);
         if (source && target) {
           if (source._lat && source._lon && target._lat && target._lon) {
             features.push({
@@ -921,7 +921,7 @@
             saveAs(blob, $('#map-export-file-name').val() + '.' + format);
           }, 'image/' + format);
         });
-      } else if (format === 'geojson') {
+      } else if (format == 'geojson') {
         saveAs(
           new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
           $('#map-export-file-name').val() + '.' + format

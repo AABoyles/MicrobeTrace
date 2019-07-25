@@ -151,7 +151,7 @@
             showlegend: false,
             hoverinfo: 'skip'
           };
-          trace[axis] = vnodes.filter(d => d[field] === v).map(d => d[varName]);
+          trace[axis] = vnodes.filter(d => d[field] == v).map(d => d[varName]);
           traces.push(trace);
         });
         layout.barmode = 'stack';
@@ -171,7 +171,7 @@
             showlegend: false,
             hoverinfo: 'skip'
           };
-          trace[axis] = vlinks.filter(d => d[field] === v).map(d => d[varName]);
+          trace[axis] = vlinks.filter(d => d[field] == v).map(d => d[varName]);
           traces.push(trace);
         });
         layout.barmode = 'stack';
@@ -184,7 +184,7 @@
           showlegend: false,
           hoverinfo: 'skip'
         };
-        trace[axis] = (varSource === 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks()).map(l => l[varName]);
+        trace[axis] = (varSource == 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks()).map(l => l[varName]);
         traces = [trace];
       }
       layout[axis + 'axis'] = {
@@ -248,7 +248,7 @@
     });
 
     $('#histogram-export-filetype').on('change', function (e) {
-      if (e.target.value === 'svg') {
+      if (e.target.value == 'svg') {
         $('#histogram-export-advanced-button').slideUp();
       } else {
         $('#histogram-export-advanced-button').slideDown();
@@ -275,7 +275,7 @@
         .attr('class', 'watermark');
       let filename = $('#histogram-export-filename').val(),
         filetype = $('#histogram-export-filetype').val();
-      if (filetype === 'svg') {
+      if (filetype == 'svg') {
         let content = MT.unparseSVG(histogram);
         let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);

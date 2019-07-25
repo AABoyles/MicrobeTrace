@@ -226,7 +226,7 @@
       $('#flow-variables').append(`<li class='flow-items'>
         <span class="oi oi-x flow-remove"></span>
         <select class='form-control form-control-sm flow-selector'>
-          ${fields.map(v => `<option value="${v}" ${v === 'cluster' ? 'selected' : ''}>${MT.titleize(v)}</option>`).join('\n')}
+          ${fields.map(v => `<option value="${v}" ${v == 'cluster' ? 'selected' : ''}>${MT.titleize(v)}</option>`).join('\n')}
         </select>
         <span class="oi oi-elevator"></span>
       </li>`);
@@ -242,7 +242,7 @@
     }).trigger('click').trigger('click');
 
     $('#flow-export-filetype').on('change', function (e) {
-      if (e.target.value === 'svg') {
+      if (e.target.value == 'svg') {
         $('#flow-export-advanced-button').slideUp();
       } else {
         $('#flow-export-advanced-button').slideDown();
@@ -268,7 +268,7 @@
         .attr('class', 'watermark');
       let filename = $('#flow-export-filename').val(),
         filetype = $('#flow-export-filetype').val();
-      if (filetype === 'svg') {
+      if (filetype == 'svg') {
         let content = MT.unparseSVG(flow);
         let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);
