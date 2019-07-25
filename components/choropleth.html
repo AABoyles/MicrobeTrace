@@ -3,12 +3,10 @@
 <div id="choropleth-ramp"></div>
 
 <div class="view-controls">
-  <button type="button" id="toggle-choropleth-settings" class="btn btn-light btn-sm"
-    data-toggle="button" title="Toggle choropleth Settings Panel">
+  <button type="button" id="toggle-choropleth-settings" class="btn btn-light btn-sm" data-toggle="button" title="Toggle choropleth Settings Panel">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#choropleth-export-modal"
-    title="Export choropleth Data">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#choropleth-export-modal" title="Export choropleth Data">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button id="choropleth-fit" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
@@ -19,12 +17,10 @@
 <div id="choropleth-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
-      <a href="#choropleth-data-configurations" class="nav-link active" aria-controls="choropleth-data-configurations"
-        role="tab" data-toggle="tab">Data</a>
+      <a href="#choropleth-data-configurations" class="nav-link active" aria-controls="choropleth-data-configurations" role="tab" data-toggle="tab">Data</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#choropleth-layer-configurations" class="nav-link" aria-controls="choropleth-layer-configurations"
-        role="tab" data-toggle="tab">Layers</a>
+      <a href="#choropleth-layer-configurations" class="nav-link" aria-controls="choropleth-layer-configurations" role="tab" data-toggle="tab">Layers</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -52,23 +48,20 @@
       <div class="accordion" id="choropleth-layers-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#choropleth-layers-choropleth" aria-expanded="true"
-              aria-controls="choropleth-layers-choropleth" style="color:#495057">Choropleth</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#choropleth-layers-choropleth" aria-expanded="true" aria-controls="choropleth-layers-choropleth" style="color:#495057">Choropleth</button>
           </div>
           <div id="choropleth-layers-choropleth" class="collapse" data-parent="#choropleth-layers-accordion">
             <div class="card-body">
               <div class="form-group row" title="What color scheme would you like the heatmap to use?">
                 <div class="col-4">Color Scheme</div>
                 <div class="col">
-                  <input type="color" id="choropleth-color-low" class="form-control form-control-sm" value="#ffffcc" />
+                  <input type="color" id="choropleth-color-low" class="form-control form-control-sm" value="#ffffcc">
                 </div>
                 <div class="col">
-                  <input type="color" id="choropleth-color-medium" class="form-control form-control-sm"
-                    value="#fd8d3c" />
+                  <input type="color" id="choropleth-color-medium" class="form-control form-control-sm" value="#fd8d3c">
                 </div>
                 <div class="col">
-                  <input type="color" id="choropleth-color-high" class="form-control form-control-sm" value="#800026" />
+                  <input type="color" id="choropleth-color-high" class="form-control form-control-sm" value="#800026">
                 </div>
               </div>
               <div class="form-group row">
@@ -76,8 +69,7 @@
                   <label for="choropleth-transparency">Transparency</label>
                 </div>
                 <div class="col-8">
-                  <input type="range" class="form-control-range" id="choropleth-transparency" min="0" value="0.3"
-                    max="1" step="0.01" />
+                  <input type="range" class="custom-range" id="choropleth-transparency" min="0" value="0.3" max="1" step="0.01">
                 </div>
               </div>
             </div>
@@ -85,17 +77,15 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#choropleth-layers-tiles" aria-expanded="true" aria-controls="choropleth-layers-tiles"
-              style="color:#495057">Online</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#choropleth-layers-tiles" aria-expanded="true" aria-controls="choropleth-layers-tiles" style="color:#495057">Online</button>
           </div>
           <div id="choropleth-layers-tiles" class="collapse show" data-parent="#choropleth-layers-accordion">
             <div class="card-body">
               <div class="row">
                 <div class="col-12">
                   <div class="alert alert-warning alert-dismissible" role="alert">
-                    Enabling any of the layers below will download tiles from the Internet. <a
-                      href="https://github.com/CDCgov/MicrobeTrace/wiki/Tile-maps">Read More.</a>
+                    Enabling any of the layers below will download tiles from the Internet.
+                    <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Tile-maps">Read More.</a>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -107,12 +97,10 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col">
-                      <input type="radio" name="choropleth-basemap-options" id="choropleth-basemap-show"
-                        autocomplete="off"> Show
+                      <input type="radio" name="choropleth-basemap-options" id="choropleth-basemap-show" autocomplete="off"> Show
                     </label>
                     <label class="btn btn-light active col">
-                      <input type="radio" name="choropleth-basemap-options" id="choropleth-basemap-hide"
-                        autocomplete="off" checked> Hide
+                      <input type="radio" name="choropleth-basemap-options" id="choropleth-basemap-hide" autocomplete="off" checked> Hide
                     </label>
                   </div>
                 </div>
@@ -122,12 +110,10 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col">
-                      <input type="radio" name="choropleth-satellite-options" id="choropleth-satellite-show"
-                        autocomplete="off"> Show
+                      <input type="radio" name="choropleth-satellite-options" id="choropleth-satellite-show" autocomplete="off"> Show
                     </label>
                     <label class="btn btn-light active col">
-                      <input type="radio" name="choropleth-satellite-options" id="choropleth-satellite-hide"
-                        autocomplete="off" checked> Hide
+                      <input type="radio" name="choropleth-satellite-options" id="choropleth-satellite-hide" autocomplete="off" checked> Hide
                     </label>
                   </div>
                 </div>
@@ -137,9 +123,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#choropleth-layers-user" aria-expanded="true" aria-controls="choropleth-layers-user"
-              style="color:#495057">User-Provided</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#choropleth-layers-user" aria-expanded="true" aria-controls="choropleth-layers-user" style="color:#495057">User-Provided</button>
           </div>
           <div id="choropleth-layers-user" class="collapse" data-parent="#choropleth-layers-accordion">
             <div class="card-body">
@@ -156,7 +140,7 @@
               <div class="form-group row" title="Import GeoJSON choropleth Data here">
                 <div class="col-12">
                   <div class="custom-file">
-                    <input type="file" id="choropleth-file-input" class="custom-file-input" multiple />
+                    <input type="file" id="choropleth-file-input" class="custom-file-input" multiple>
                     <label for="choropleth-file-input" class="custom-file-label">Choose File</label>
                   </div>
                 </div>
@@ -182,8 +166,7 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-8">
-            <input type="text" id="choropleth-export-file-name" class="form-control form-control-sm"
-              placeholder="Filename" />
+            <input type="text" id="choropleth-export-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-4">
             <select id="choropleth-export-file-format" class="form-control form-control-sm">
@@ -199,12 +182,12 @@
         <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
         <button type="button" id="choropleth-export" class="btn btn-primary" data-dismiss="modal">Export</button>
       </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+    </div> <!-- /.modal-content -->
+  </div> <!-- /.modal-dialog -->
+</div> <!-- /.modal -->
 
 <script>
-  //(function () {
+(function () {
   if (navigator.onLine) {
     $('#choropleth').parent().find('.ifOnline').css('display', 'flex');
   }
@@ -279,6 +262,7 @@
   ]);
 
   function render() {
+    if(!$('#choropleth').length) return;
     layers.aggregates.remove();
     var maxD = 0, minD = Infinity;
     var data = MT.mapData[session.style.widgets['choropleth-aggregate-as']];
@@ -475,7 +459,7 @@
           });
           layers[layerName].addTo(choropleth);
           var colorCell = $('<div class="col-3"></div>').append(
-            $('<input type="color" class="w-100" />').on('change', function (e) {
+            $('<input type="color" class="w-100">').on('change', function (e) {
               layers[layerName].setStyle(f => ({ color: e.target.value }));
             })
           );
@@ -542,6 +526,5 @@
     });
     layers.countries.addTo(choropleth);
   });
-
-  //}) ();
+}) ();
 </script>

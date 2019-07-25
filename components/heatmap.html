@@ -4,8 +4,7 @@
   <button type="button" id="heatmap-settings-toggle" data-toggle="button" class="btn btn-light btn-sm">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#heatmap-export-modal"
-    title="Export Heatmap">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#heatmap-export-modal" title="Export Heatmap">
     <span class="oi oi-data-transfer-download"></span>
   </button>
 </div>
@@ -13,8 +12,7 @@
 <div id="heatmap-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a href="#heatmap-configurations" id="heatmap-tab" class="nav-link active" aria-controls="heatmap" role="tab"
-        data-toggle="tab">Heatmap</a>
+      <a href="#heatmap-configurations" id="heatmap-tab" class="nav-link active" aria-controls="heatmap" role="tab" data-toggle="tab">Heatmap</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -43,13 +41,13 @@
       <div class="form-group row" title="What color scheme would you like the heatmap to use?">
         <div class="col-3">Color Scheme</div>
         <div class="col-3">
-          <input type="color" id="heatmap-color-high" class="form-control form-control-sm" value="#a50026" />
+          <input type="color" id="heatmap-color-high" class="form-control form-control-sm" value="#a50026">
         </div>
         <div class="col-3">
-          <input type="color" id="heatmap-color-medium" class="form-control form-control-sm" value="#ffffbf" />
+          <input type="color" id="heatmap-color-medium" class="form-control form-control-sm" value="#ffffbf">
         </div>
         <div class="col-3">
-          <input type="color" id="heatmap-color-low" class="form-control form-control-sm" value="#313695" />
+          <input type="color" id="heatmap-color-low" class="form-control form-control-sm" value="#313695">
         </div>
       </div>
       <div class="form-group row" title="Would you like to show axis labels on the heatmap?">
@@ -81,8 +79,7 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="heatmap-export-filename" class="form-control form-control-sm"
-              placeholder="Filename" />
+            <input type="text" id="heatmap-export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
             <select id="heatmap-export-filetype" class="form-control form-control-sm">
@@ -97,9 +94,7 @@
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="heatmap-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button"
-              data-toggle="collapse" data-target="#heatmap-export-advanced" aria-expanded="false"
-              aria-controls="heatmap-export-advanced">Advanced</button>
+            <button id="heatmap-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#heatmap-export-advanced" aria-expanded="false" aria-controls="heatmap-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="heatmap-export-advanced">
@@ -109,8 +104,7 @@
                 <label for="heatmap-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="heatmap-export-scale" class="form-control form-control-sm" min="0" step="0.1"
-                  value="1" />
+                <input type="number" id="heatmap-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
               </div>
             </div>
             <div class="form-group row">
@@ -122,7 +116,7 @@
                 <label for="heatmap-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" id="heatmap-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                <input type="range" class="custom-range" id="heatmap-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>

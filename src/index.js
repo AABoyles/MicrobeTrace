@@ -488,7 +488,7 @@ $(function() {
         var colorinput = $(
           '<input type="color" value="' +
             temp.style.nodeColorMap(value) +
-            '" />'
+            '">'
         ).on("change", function(evt) {
           session.style.nodeColors.splice(i, 1, evt.target.value);
           temp.style.nodeColorMap = d3
@@ -600,7 +600,7 @@ $(function() {
         var colorinput = $(
           '<input type="color" value="' +
             temp.style.linkColorMap(value) +
-            '" />'
+            '">'
         ).on("change", function(evt) {
           session.style.linkColors.splice(i, 1, evt.target.value);
           temp.style.linkColorMap = d3

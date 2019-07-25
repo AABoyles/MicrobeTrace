@@ -142,9 +142,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#map-layers-vectors" aria-expanded="true" aria-controls="map-layers-vectors"
-              style="color:#495057">Offline</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-vectors" aria-expanded="true" aria-controls="map-layers-vectors" style="color:#495057">Offline</button>
           </div>
           <div id="map-layers-vectors" class="collapse show" data-parent="#map-layers-accordion">
             <div class="card-body">
@@ -244,9 +242,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#map-layers-user" aria-expanded="true" aria-controls="map-layers-user"
-              style="color:#495057">User-Provided</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-user" aria-expanded="true" aria-controls="map-layers-user" style="color:#495057">User-Provided</button>
           </div>
           <div id="map-layers-user" class="collapse" data-parent="#map-layers-accordion">
             <div class="card-body">
@@ -263,14 +259,12 @@
               <div class="form-group row" title="Import GeoJSON Map Data here">
                 <div class="col-12">
                   <div class="custom-file">
-                    <input type="file" id="map-file-input" class="custom-file-input" multiple />
+                    <input type="file" id="map-file-input" class="custom-file-input" multiple>
                     <label for="map-file-input" class="custom-file-label">Choose File</label>
                   </div>
                 </div>
               </div>
-              <div id="map-geojson-layers" class="form-group row" title="GeoJSON Layers">
-
-              </div>
+              <div id="map-geojson-layers" class="form-group row" title="GeoJSON Layers"></div>
             </div>
           </div>
         </div>
@@ -296,21 +290,22 @@
       </div>
       <div class="form-group row" title="How transparent would you like the nodes to be?">
         <div class="col-4"><label for="map-node-transparency">Transparency</label></div>
-        <div class="col-8"><input type="range" id="map-node-transparency" min="0.00" max="1.00" step="0.01"
-            value="0.00" /></div>
+        <div class="col-8"><input type="range" class="custom-range" id="map-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
       </div>
       <div class="form-group row" title="How much randomness do you want to add to node locations?">
         <div class="col-4">
           <label for="map-node-jitter">Jitter</label>
           <button id="map-node-jitter-reroll" class="btn btn-light btn-sm">Reroll</button>
         </div>
-        <div class="col-8"><input type="range" id="map-node-jitter" min="-2" max="4" step="0.01" value="-2" /></div>
+        <div class="col-8"><input type="range" class="custom-range" id="map-node-jitter" min="-2" max="4" step="0.01" value="-2"></div>
       </div>
       <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
         <div class="col-4"><label for="map-node-tooltip-variable">Tooltip</label></div>
-        <div class="col-8"><select id="map-node-tooltip-variable" class="form-control form-control-sm nodeVariables">
+        <div class="col-8">
+          <select id="map-node-tooltip-variable" class="form-control form-control-sm nodeVariables">
             <option selected>None</option>
-          </select></div>
+          </select>
+        </div>
       </div>
     </div>
     <div role="tabpanel" class="tab-pane fade" id="map-link-configurations">
@@ -320,8 +315,7 @@
       </div>
       <div class="form-group row" title="How transparent would you like links to be?">
         <div class="col-4"><label for="map-link-transparency">Transparency</label></div>
-        <div class="col-8"><input type="range" id="map-link-transparency" min="0.00" max="1.00" step="0.01"
-            value="0.00" /></div>
+        <div class="col-8"><input type="range" class="custom-range" id="map-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
       </div>
       <div class="form-group row" title="What link data would you like displayed as a tooltip for the link?">
         <div class="col-4"><label for="map-link-tooltip-variable">Tooltip</label></div>
@@ -347,7 +341,7 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-8">
-            <input type="text" id="map-export-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            <input type="text" id="map-export-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-4">
             <select id="map-export-file-format" class="form-control form-control-sm">
@@ -532,6 +526,7 @@
     }
 
     function drawNodes() {
+      if(!$('#map').length) return;
       layers.nodes.remove();
       if (!session.style.widgets['map-node-show']) return;
       var fillcolor = session.style.widgets['node-color'],
@@ -568,6 +563,7 @@
     }
 
     function drawLinks() {
+      if(!$('#map').length) return;
       layers.links.remove();
       if (!session.style.widgets['map-link-show']) return;
       var lcv = session.style.widgets['link-color-variable'];
@@ -680,7 +676,7 @@
             });
             layers[layerName].addTo(map);
             var colorCell = $('<div class="col-3"></div>').append(
-              $('<input type="color" class="w-100" />').on('change', function (e) {
+              $('<input type="color" class="w-100">').on('change', function (e) {
                 layers[layerName].setStyle(f => ({ color: e.target.value }));
               })
             );

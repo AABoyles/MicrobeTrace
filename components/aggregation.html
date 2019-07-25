@@ -1,58 +1,29 @@
+<div id="aggregation" class="table-sm"></div>
+
 <div class="view-controls">
-  <button
-    type="button"
-    id="aggregation-settings-toggle"
-    class="btn btn-light btn-sm"
-    data-toggle="button"
-    title="Toggle Aggregation Settings"
-  >
+  <button type="button" id="aggregation-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Aggregation Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button
-    type="button"
-    class="btn btn-light btn-sm"
-    data-toggle="modal"
-    data-target="#aggregation-export-modal"
-    title="Export Aggregation data"
-  >
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#aggregation-export-modal" title="Export Aggregation data">
     <span class="oi oi-data-transfer-download"></span>
   </button>
 </div>
 
-<div id="aggregation" class="table-sm"></div>
-
 <div id="aggregation-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a
-        href="#aggregation-settings"
-        id="aggregation-tab"
-        class="nav-link active"
-        aria-controls="aggregation"
-        role="tab"
-        data-toggle="tab"
-        >Aggregation</a
-      >
+      <a href="#aggregation-settings" id="aggregation-tab" class="nav-link active" aria-controls="aggregation" role="tab" data-toggle="tab">
+        Aggregation
+      </a>
     </li>
   </ul>
   <div class="tab-content">
-    <div
-      class="tab-pane fade show active"
-      role="tabpanel"
-      aria-labelledby="aggregation-tab"
-    >
-      <div
-        class="form-group row"
-        title="What data field would you like to aggregate on?"
-      >
+    <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="aggregation-tab">
+      <div class="form-group row" title="What data field would you like to aggregate on?">
         <div class="col-3">Tables</div>
         <div class="col-9">
           <ul id="aggregation-variables"></ul>
-          <button
-            type="button"
-            class="btn btn-primary btn-sm w-100"
-            id="aggregation-add-variable"
-          >
+          <button type="button" class="btn btn-primary btn-sm w-100" id="aggregation-add-variable">
             Add Variable
           </button>
         </div>
@@ -61,41 +32,22 @@
   </div>
 </div>
 
-<div
-  id="aggregation-export-modal"
-  class="modal fade"
-  tabindex="-1"
-  role="dialog"
-  data-backdrop="false"
->
+<div id="aggregation-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Export Aggregation</h5>
-        <button
-          type="button"
-          class="close"
-          data-dismiss="modal"
-          aria-label="Close"
-        >
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input
-              type="text"
-              id="export-aggregation-file-name"
-              class="form-control form-control-sm"
-              placeholder="Filename"
-            />
+            <input type="text" id="export-aggregation-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select
-              id="export-aggregation-file-type"
-              class="form-control form-control-sm"
-            >
+            <select id="export-aggregation-file-type" class="form-control form-control-sm">
               <option selected>csv.zip</option>
               <option>xlsx</option>
               <option>pdf</option>
@@ -108,21 +60,13 @@
         <button type="button" class="btn btn-error" data-dismiss="modal">
           Cancel
         </button>
-        <button
-          type="button"
-          id="aggregation-export"
-          class="btn btn-primary"
-          data-dismiss="modal"
-        >
+        <button type="button" id="aggregation-export" class="btn btn-primary" data-dismiss="modal">
           Export
         </button>
       </div>
-    </div>
-    <!-- /.modal-content -->
-  </div>
-  <!-- /.modal-dialog -->
-</div>
-<!-- /.modal -->
+    </div> <!-- /.modal-content -->
+  </div> <!-- /.modal-dialog -->
+</div> <!-- /.modal -->
 
 <script>
   (function() {

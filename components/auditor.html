@@ -1,12 +1,3 @@
-<script type="text/erb-template" id="auditor-alter-template">
-    <div class="alert alert-<%=level%> alert-dismissible fade show" role="alert">
-      <%=text%>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-  </script>
-
 <div id="auditor-panel" class="container">
   <div class="alert alert-success" role="alert">Great news! Looks like all your sequences are in good shape.</div>
 </div>
@@ -34,7 +25,7 @@
           <label for="avwidth">Width</label>
         </div>
         <div class="col-9">
-          <input type="number" id="avwidth" class="form-control form-control-sm" value="9"></input>
+          <input type="number" id="avwidth" class="form-control form-control-sm" value="9">
         </div>
       </div>
       <div class="form-group row">
@@ -42,7 +33,7 @@
           <label for="avheight">Height</label>
         </div>
         <div class="col-9">
-          <input type="number" id="avheight" class="form-control form-control-sm" value="12"></input>
+          <input type="number" id="avheight" class="form-control form-control-sm" value="12">
         </div>
       </div>
       <div class="form-group row">
@@ -75,7 +66,7 @@
         <div class="form-group row">
           <div class="col-9">
             <input type="text" id="export-auditor-file-name" class="form-control form-control-sm"
-              placeholder="Filename" />
+              placeholder="Filename">
           </div>
           <div class="col-3">
             <select id="export-auditor-file-type" class="form-control form-control-sm">
@@ -91,6 +82,15 @@
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+<script type="text/erb-template" id="auditor-alter-template">
+  <div class="alert alert-<%=level%> alert-dismissible fade show" role="alert">
+    <%=text%>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+</script>
 
 <script>
   (function () {

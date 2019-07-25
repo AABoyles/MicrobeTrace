@@ -1,81 +1,82 @@
-  <div class="view-controls">
-    <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Table Settings">
-      <span class="oi oi-cog"></span>
-    </button>
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table-export-modal" title="Export table data">
-      <span class="oi oi-data-transfer-download"></span>
-    </button>
+<div id="table" class="table-sm"></div>
+
+<div class="view-controls">
+  <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Table Settings">
+    <span class="oi oi-cog"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table-export-modal" title="Export table data">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+</div>
+
+<div id="table-type-panel" title="What dataset would you like to view?">
+  <div class="btn-group btn-group-toggle btn-group-sm floater" data-toggle="buttons">
+    <label class="btn btn-light active">
+      <input type="radio" name="nodelink" data-value="nodes" autocomplete="off" checked> Nodes
+    </label>
+    <label class="btn btn-light">
+      <input type="radio" name="nodelink" data-value="links" autocomplete="off"> Links
+    </label>
+    <label class="btn btn-light">
+      <input type="radio" name="nodelink" data-value="clusters" autocomplete="off"> Clusters
+    </label>
   </div>
+  <select id="table-columns" class="chosen-select" multiple title="What columns would you like to see?"></select>
+</div>
 
-  <div id="table-type-panel" title="What dataset would you like to view?">
-    <div class="btn-group btn-group-toggle btn-group-sm floater" data-toggle="buttons">
-      <label class="btn btn-light active">
-        <input type="radio" name="nodelink" data-value="nodes" autocomplete="off" checked> Nodes
-      </label>
-      <label class="btn btn-light">
-        <input type="radio" name="nodelink" data-value="links" autocomplete="off"> Links
-      </label>
-      <label class="btn btn-light">
-        <input type="radio" name="nodelink" data-value="clusters" autocomplete="off"> Clusters
-      </label>
-    </div>
-    <select id="table-columns" class="chosen-select" multiple title="What columns would you like to see?"></select>
-  </div>
-
-  <div id="table" class="table-sm"></div>
-
-  <div id="table-settings-pane" class="left-pane">
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="nav-item active">
-        <a href="#table-settings" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="table-tab">
-        <div class="form-group row" title="What size would you like the Table's font to be?">
-          <div class="col-4"><label for="table-font-size">Text Size</label></div>
-          <div class="col-8"><input type="range" id="table-font-size" min="6" value="14" max="72" step="1" /></div>
-        </div>
+<div id="table-settings-pane" class="left-pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item active">
+      <a href="#table-settings" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="table-tab">
+      <div class="form-group row" title="What size would you like the Table's font to be?">
+        <div class="col-4"><label for="table-font-size">Text Size</label></div>
+        <div class="col-8"><input type="range" class="custom-range" id="table-font-size" min="6" value="14" max="72" step="1"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <div id="table-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Export Table</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-9">
-              <input type="text" id="export-table-file-name" class="form-control form-control-sm" placeholder="Filename" />
-            </div>
-            <div class="col-3">
-              <select id="export-table-file-type" class="form-control form-control-sm">
-                <option selected>csv</option>
-                <option>xlsx</option>
-                <option>json</option>
-              </select>
-            </div>
+<div id="table-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export Table</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-9">
+            <input type="text" id="export-table-file-name" class="form-control form-control-sm" placeholder="Filename">
+          </div>
+          <div class="col-3">
+            <select id="export-table-file-type" class="form-control form-control-sm">
+              <option selected>csv</option>
+              <option>xlsx</option>
+              <option>json</option>
+            </select>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="table-export" class="btn btn-primary" data-dismiss="modal">Export</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+        <button type="button" id="table-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
-  <script>
+<script>
   (function(){
     let table, meta = ['selected', 'visible', 'nn'];
 
     function updateColumns(){
+      if(!$('#table').length) return;
       let type = $('input[name=nodelink]:checked').data('value').slice(0,-1);
       $('#table-columns')
         .chosen('destroy')
@@ -88,6 +89,7 @@
     }
 
     function updateTable(){
+      if(!$('#table').length) return;
       let data_type = $('input[name=nodelink]:checked').data('value');
       let columns = $('#table-columns').val();
       table = new Tabulator("#table", {
@@ -181,4 +183,4 @@
     updateColumns();
     updateTable();
   })();
-  </script>
+</script>

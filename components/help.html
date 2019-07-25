@@ -1,18 +1,18 @@
-  <div id="help-panel">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="https://github.com/CDCgov/MicrobeTrace/wiki/Home">Home</a></li>
-      </ol>
-    </nav>
-    <div class="container">
-      <h1 id="help-title"></h1>
-      <div id="help-content"></div>
-      <div id="help-footer"></div>
-    </div>
+<div id="help-panel">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="https://github.com/CDCgov/MicrobeTrace/wiki/Home">Home</a></li>
+    </ol>
+  </nav>
+  <div class="container">
+    <h1 id="help-title"></h1>
+    <div id="help-content"></div>
+    <div id="help-footer"></div>
   </div>
+</div>
 
-  <script>
-  $(function(){
+<script>
+  (function(){
 
     let breadcrumbs = ['Home'];
 
@@ -43,7 +43,5 @@
     });
 
     renderPage('Home');
-  });
-  </script>
-</body>
-</html>
+  })();
+</script>

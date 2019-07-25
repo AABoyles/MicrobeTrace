@@ -12,20 +12,21 @@
 <div id="sequences-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a href="#sequencesConfigurations" id="sequences-tab" class="nav-link active" aria-controls="sequences" role="tab"
-        data-toggle="tab">Sequences</a>
+      <a href="#sequencesConfigurations" id="sequences-tab" class="nav-link active" aria-controls="sequences" role="tab" data-toggle="tab">Sequences</a>
     </li>
   </ul>
   <div class="tab-content">
     <div class="tab-pane fade show active" id="sequencesConfigurations" role="tabpanel" aria-labelledby="sequences-tab">
       <div class="form-group row" title="How wide should each cell in the sequences viewer be?">
         <div class="col-3"><label for="avwidth">Width</label></div>
-        <div class="col-9"><input type="number" id="avwidth" class="form-control form-control-sm" value="9"></input>
+        <div class="col-9">
+          <input type="number" id="avwidth" class="form-control form-control-sm" value="9">
         </div>
       </div>
       <div class="form-group row" title="How tall should each cell in the sequences viewer be?">
         <div class="col-3"><label for="avheight">Height</label></div>
-        <div class="col-9"><input type="number" id="avheight" class="form-control form-control-sm" value="12"></input>
+        <div class="col-9">
+          <input type="number" id="avheight" class="form-control form-control-sm" value="12">
         </div>
       </div>
       <div class="form-group row" title="Should the sequences viewer include the nucleotide character in each cell?
@@ -58,8 +59,7 @@ For large sets of sequences, this can take a long time.">
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="export-sequences-file-name" class="form-control form-control-sm"
-              placeholder="Filename" />
+            <input type="text" id="export-sequences-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
             <select id="export-sequences-file-type" class="form-control form-control-sm">
@@ -84,6 +84,7 @@ For large sets of sequences, this can take a long time.">
     let av = $('#sequences-panel');
 
     function update() {
+      if(!$('#sequences-panel').length) return;
       alignmentViewer(session.data.nodes.filter(d => d.seq), {
         width: 0 | $('#avwidth').val(),
         height: 0 | $('#avheight').val(),

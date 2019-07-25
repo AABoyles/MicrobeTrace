@@ -4,8 +4,7 @@
   <button type="button" id="toggle-flow-settings" data-toggle="button" class="btn btn-light btn-sm">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#flow-export-modal"
-    title="Export Network">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#flow-export-modal" title="Export Network">
     <span class="oi oi-data-transfer-download"></span>
   </button>
 </div>
@@ -13,8 +12,7 @@
 <div id="flow-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a href="#flow-configurations" id="flow-tab" class="nav-link active" aria-controls="flow" role="tab"
-        data-toggle="tab">Flow Diagram</a>
+      <a href="#flow-configurations" id="flow-tab" class="nav-link active" aria-controls="flow" role="tab" data-toggle="tab">Flow Diagram</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -55,7 +53,7 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="flow-export-filename" class="form-control form-control-sm" placeholder="Filename" />
+            <input type="text" id="flow-export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
             <select id="flow-export-filetype" class="form-control form-control-sm">
@@ -81,7 +79,7 @@
               </div>
               <div class="col-9">
                 <input type="number" id="flow-export-scale" class="form-control form-control-sm" min="0" step="0.1"
-                  value="1" />
+                  value="1">
               </div>
             </div>
             <div class="form-group row">
@@ -93,7 +91,7 @@
                 <label for="flow-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" id="flow-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                <input type="range" class="custom-range" id="flow-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>

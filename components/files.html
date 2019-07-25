@@ -8,22 +8,19 @@
   <div class="container" style="padding: 15px">
     <div class="row">
       <div class="col">
-        <input type="file" id="data-files" class="d-none" multiple="true" />
+        <input type="file" id="data-files" class="d-none" multiple="true">
         <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
-        <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal"
-          data-target="#aligner-controls-modal">Alignment Settings</button>
+        <button type="button" id="alignerControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#aligner-controls-modal">Alignment Settings</button>
       </div>
       <div class="col text-right">
-        <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File"
-          disabled>Launch</button>
+        <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Launch</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="view-controls">
-  <button type="button" id="file-settings-toggle" class="btn btn-light btn-sm" data-toggle="button"
-    title="Toggle File Settings">
+  <button type="button" id="file-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle File Settings">
     <span class="oi oi-cog"></span>
   </button>
 </div>
@@ -31,21 +28,19 @@
 <div id="file-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a class="nav-link active" id="files-tab" data-toggle="tab" href="#file-settings" role="tab"
-        aria-controls="file-settings" aria-selected="true">Files</a>
+      <a class="nav-link active" id="files-tab" data-toggle="tab" href="#file-settings" role="tab" aria-controls="file-settings" aria-selected="true">Files</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="experimental-tab" data-toggle="tab" href="#experimental-settings" role="tab"
-        aria-controls="experimental-settings" aria-selected="false">Experimental</a>
+      <a class="nav-link" id="experimental-tab" data-toggle="tab" href="#experimental-settings" role="tab" aria-controls="experimental-settings" aria-selected="false">Experimental</a>
     </li>
   </ul>
   <div class="tab-content">
     <div id="file-settings" class="tab-pane fade active show" role="tabpanel">
       <div class="form-group row">
         <div class="col-3">
-          <label for="default-distance-metric" class="mr-2"
-            title="Which Genetic Distance Metric should Microbe use to first construct the network?">Distance
-            Metric</label>
+          <label for="default-distance-metric" class="mr-2" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
+            Distance Metric
+          </label>
         </div>
         <div class="col-9">
           <select id="default-distance-metric" class="form-control form-control-sm mr-5">
@@ -56,8 +51,9 @@
       </div>
       <div id="ambiguities-row" class="form-group row">
         <div class="col-3">
-          <label for="ambiguity-resolution-strategy" class="mr-2"
-            title="What Strategy should MicrobeTrace use to handle ambiguities?">Ambiguities</label>
+          <label for="ambiguity-resolution-strategy" class="mr-2" title="What Strategy should MicrobeTrace use to handle ambiguities?">
+            Ambiguities
+          </label>
         </div>
         <div class="col-9">
           <select id="ambiguity-resolution-strategy" class="form-control form-control-sm mr-5">
@@ -70,13 +66,12 @@
       </div>
       <div class="form-group row">
         <div class="col-3">
-          <label for="default-distance-threshold" class="mr-2"
-            title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">Link
-            Threshold</label>
+          <label for="default-distance-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+            Link Threshold
+          </label>
         </div>
         <div class="col-9">
-          <input type="number" id="default-distance-threshold" class="form-control form-control-sm" min="0"
-            value="0.015" step="0.001" />
+          <input type="number" id="default-distance-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
         </div>
       </div>
       <div class="form-group row">
@@ -84,8 +79,7 @@
           <label for="default-view">View to Launch</label>
         </div>
         <div class="col-9">
-          <select id="default-view" class="form-control form-control-sm"
-            title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
+          <select id="default-view" class="form-control form-control-sm" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
             <option value="2d_network" selected>2D Network</option>
             <option value="3d_network">3D Network</option>
             <option value="bubbles">Bubbles</option>
@@ -108,15 +102,13 @@
       <div class="form-group row" title="Would you like to generate a network based on random data?">
         <div class="col-3">Generate</div>
         <div class="col">
-          <input id="generate-number" type="number" class="form-control form-control-sm" min="1" max="2000" step="1"
-            value="100"></input>
+          <input id="generate-number" type="number" class="form-control form-control-sm" min="1" max="2000" step="1" value="100">
         </div>
         <div class="col">
           <button id="generate-sequences" class="btn btn-light btn-sm col">Sequences</button>
         </div>
       </div>
-      <div class="form-group row"
-        title="Would you like to attempt to triangulate missing values in your distance matrices?">
+      <div class="form-group row" title="Would you like to attempt to triangulate missing values in your distance matrices?">
         <div class="col-3">Triangulation</div>
         <div class="col-9">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -265,19 +257,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           .append(`
         <div class="btn-group btn-group-toggle btn-group-sm float-right" data-toggle="buttons">
           <label class="btn btn-light${!isFasta & !isNewick & !isNode ? ' active' : ''}">
-            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta & !isNewick & !isNode ? ' checked' : ''}>Link</input>
+            <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta & !isNewick & !isNode ? ' checked' : ''}>Link
           </label>
           <label class="btn btn-light${!isFasta & !isNewick & isNode ? ' active' : ''}">
-            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta & !isNewick & isNode ? ' checked' : ''}>Node</input>
+            <input type="radio" name="options-${file.name}" data-type="node" autocomplete="off"${!isFasta & !isNewick & isNode ? ' checked' : ''}>Node
           </label>
           <label class="btn btn-light">
-            <input type="radio" name="options-${file.name}" data-type="matrix" autocomplete="off">Matrix</input>
+            <input type="radio" name="options-${file.name}" data-type="matrix" autocomplete="off">Matrix
           </label>
           <label class="btn btn-light${isFasta ? ' active' : ''}">
-            <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta ? ' checked' : ''}>FASTA</input>
+            <input type="radio" name="options-${file.name}" data-type="fasta" autocomplete="off"${isFasta ? ' checked' : ''}>FASTA
           </label>
           <label class="btn btn-light${isNewick ? ' active' : ''}">
-            <input type="radio" name="options-${file.name}" data-type="newick" autocomplete="off"${isNewick ? ' checked' : ''}>Newick</input>
+            <input type="radio" name="options-${file.name}" data-type="newick" autocomplete="off"${isNewick ? ' checked' : ''}>Newick
           </label>
         </div>
         `)
@@ -482,7 +474,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function message(msg) {
       session.messages.push(msg);
-      $('#loading-information').html(session.messages.join('<br />'));
+      $('#loading-information').html(session.messages.join('<br>'));
     }
 
     $('#launch').click(function (e) {

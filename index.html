@@ -2,30 +2,30 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="application-name" content="MicrobeTrace" />
+  <meta charset="utf-8">
+  <meta name="application-name" content="MicrobeTrace">
   <meta name="Description"
     content="MicrobeTrace is an interactive web application that renders existing data from high-risk contact networks in an easy-to-use Graphical User Interface (GUI). The network visualization can be customized according to supplemental data sources and mathematical inferences like the most probable transmission pathways. MicrobeTrace is a highly responsive, visual sequence analytics tool which can reduce the gap between data production and analytics and help you to discover, understand, and display relationships (links) between patients (nodes). MicrobeTrace can be deployed on laptops to locations without any Internet access, thereby reducing both the startup cost and analysis time and effort.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f8f9fa" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="msapplication-TileColor" content="#ffc40d" />
-  <meta name="apple-mobile-web-app-title" content="MicrobeTrace" />
+  <meta name="theme-color" content="#f8f9fa">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="msapplication-TileColor" content="#ffc40d">
+  <meta name="apple-mobile-web-app-title" content="MicrobeTrace">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' googletagmanager.com *.google-analytics.com; connect-src 'self' googletagmanager.com *.google-analytics.com stats.g.doubleclick.net api.mapbox.com *.cdc.gov; img-src 'self' googletagmanager.com *.google-analytics.com *.doubleclick.net www.google.com api.mapbox.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self';" />
+    content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' googletagmanager.com *.google-analytics.com; connect-src 'self' googletagmanager.com *.google-analytics.com stats.g.doubleclick.net api.mapbox.com *.cdc.gov; img-src 'self' googletagmanager.com *.google-analytics.com *.doubleclick.net www.google.com api.mapbox.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self';">
   <title>MicrobeTrace</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="canonical" href="https://microbetrace.cdc.gov/MicrobeTrace/" />
-  <link rel="author" type="text/plain" href="humans.txt" />
-  <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48x48.png" />
-  <link rel="mask-icon" href="img/safari-pinned-tab.svg" color="#5bbad5" />
-  <link rel="stylesheet" type="text/css" href="dist/bundle.primary.css" />
-  <link rel="stylesheet" type="text/css" href="dist/main.css" />
-  <link rel="preload" as="script" href="dist/bundle.primary.js" />
-  <link rel="preload" as="font" href="fonts/open-iconic.woff" crossorigin="anonymous" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="canonical" href="https://microbetrace.cdc.gov/MicrobeTrace/">
+  <link rel="author" type="text/plain" href="humans.txt">
+  <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48x48.png">
+  <link rel="mask-icon" href="img/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="stylesheet" type="text/css" href="dist/bundle.primary.css">
+  <link rel="stylesheet" type="text/css" href="dist/main.css">
+  <link rel="preload" as="script" href="dist/bundle.primary.js">
+  <link rel="preload" as="font" href="fonts/open-iconic.woff" crossorigin="anonymous">
 </head>
 
 <body>
@@ -47,7 +47,7 @@
           <div class="dropdown-divider"></div>
           <a href="#" id="SaveDataTab" class="dropdown-item" data-toggle="modal"
             data-target="#session-save-modal">Save</a>
-          <label class="dropdown-item" for="OpenTab">Open</label><input type="file" class="d-none" id="OpenTab" />
+          <label class="dropdown-item" for="OpenTab">Open</label><input type="file" class="d-none" id="OpenTab">
           <div class="dropdown-divider"></div>
           <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
           <a href="#" id="NewTab" class="dropdown-item">New</a>
@@ -105,7 +105,7 @@
     </ul>
     <div id="search-form" class="form-inline navbar-form">
       <label for="search">Search</label>
-      <input type="search" id="search" class="form-control form-control-sm py-0 ml-2" placeholder="Nodes" />
+      <input type="search" id="search" class="form-control form-control-sm py-0 ml-2" placeholder="Nodes">
       <select id="search-field" class="form-control form-control-sm nodeValues">
         <option val="id">ID</option>
       </select>
@@ -114,7 +114,7 @@
 
   <div id="ie-warning">
     This application does not support Internet Explorer. To use MicrobeTrace, please switch to one of the following
-    browsers:<br />
+    browsers:<br>
     <a href='https://support.google.com/chrome/answer/95346'>Chrome</a>/
     <a href='https://www.opera.com/'>Opera</a>/
     <a href='https://www.mozilla.org/en-US/firefox/new/'>Firefox</a>
@@ -226,7 +226,7 @@ performance of this software.</pre>
   </div>
 
   <div id="color-transparency-wrapper" class="floater">
-    <input id="color-transparency" type="range" min="0" max="1" step="0.05" value="1" orient="vertical" />
+    <input type="range" class="custom-range" id="color-transparency" min="0" max="1" step="0.05" value="1" orient="vertical">
   </div>
 
   <div id="network-statistics-wrapper" class="floater">
@@ -300,10 +300,12 @@ performance of this software.</pre>
               <div id="filtering-epsilon-row" class="form-group row"
                 title="How much genetic distance represents non-equality for your ">
                 <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
-                <div class="col-8"><input type="range" id="filtering-epsilon" class="form-control form-control-sm"
-                    min="-3" max="2" step=".01" value="-3"></input></div>
-                <div class="col-8 offset-4"><input type="number" id="filtering-epsilon-copy"
-                    class="form-control form-control-sm" disabled></input></div>
+                <div class="col-8">
+                  <input type="range" class="custom-range" id="filtering-epsilon" min="-3" max="2" step=".01" value="-3">
+                </div>
+                <div class="col-8 offset-4">
+                  <input type="number" id="filtering-epsilon-copy" class="form-control form-control-sm" disabled>
+                </div>
               </div>
               <div class="form-group row"
                 title="What's the minimum number of nodes a cluster must have in order to be visible?">
@@ -312,7 +314,7 @@ performance of this software.</pre>
                 </div>
                 <div class="col-8">
                   <input type="number" class="form-control form-control-sm" id="cluster-minimum-size" min="1" value="1"
-                    step="1" />
+                    step="1">
                 </div>
               </div>
               <div id="filtering-wrapper">
@@ -328,7 +330,7 @@ performance of this software.</pre>
                   <div class="col-4"><label for="link-threshold">Filtering Threshold</label></div>
                   <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
                   <div class="col-8 offset-4">
-                    <input type="number" class="form-control form-control-sm" id="link-threshold" />
+                    <input type="number" class="form-control form-control-sm" id="link-threshold">
                   </div>
                 </div>
               </div>
@@ -338,7 +340,7 @@ performance of this software.</pre>
                   <button id="RevealAllTab" type="button" class="btn btn-light btn-sm w-100">Everything</button>
                 </div>
               </div>
-              <hr />
+              <hr>
               <div class="form-group row" title="Display a table of overview statistics for the network">
                 <div class="col-4">Statistics</div>
                 <div class="col-8">
@@ -382,7 +384,7 @@ performance of this software.</pre>
               <div id="node-color-value-row" class="form-group row" title="What color should the nodes be?">
                 <div class="col-4"><label for="node-color">Nodes</label></div>
                 <div class="col-8"><input type="color" id="node-color" class="form-control form-control-sm"
-                    value="#1f77b4" /></div>
+                    value="#1f77b4"></div>
               </div>
               <div class="form-group row" title="By what variable should links be colored?">
                 <div class="col-4"><label for="link-color-variable">Color Links By</label></div>
@@ -410,23 +412,23 @@ performance of this software.</pre>
               <div id="link-color-value-row" class="form-group row" title="What color should the links be?">
                 <div class="col-4"><label for="link-color">Links</label></div>
                 <div class="col-8">
-                  <input type="color" id="link-color" class="form-control form-control-sm" value="#a6cee3" />
+                  <input type="color" id="link-color" class="form-control form-control-sm" value="#a6cee3">
                 </div>
               </div>
               <div class="form-group row" title="What color should denote selection?">
                 <div class="col-4"><label for="selected-color">Selected</label></div>
                 <div class="col-8"><input type="color" id="selected-color" class="form-control form-control-sm"
-                    value="#ff8300" /></div>
+                    value="#ff8300"></div>
               </div>
               <div class="form-group row" title="What color should the background be?">
                 <div class="col-4"><label for="background-color">Background</label></div>
                 <div class="col-8"><input type="color" id="background-color" class="form-control form-control-sm"
-                    value="#ffffff" /></div>
+                    value="#ffffff"></div>
               </div>
               <div class="form-group row" title="Load an existing MicrobeTrace style file">
                 <div class="col-4">Apply Style</div>
                 <div class="col-8">
-                  <input type="file" id="apply-style" class="d-none" />
+                  <input type="file" id="apply-style" class="d-none">
                   <label class="custom-file-label" for="apply-style">Choose MicrobeTrace Style File</label>
                 </div>
               </div>
@@ -487,7 +489,7 @@ performance of this software.</pre>
             <div class="col-3" title="Against what sequence should MicrobeTrace align your sequences?">Reference</div>
             <div class="col-9">
               <div class="custom-file">
-                <input type="file" class="custom-file-input" id="refSeqFileLoad" />
+                <input type="file" class="custom-file-input" id="refSeqFileLoad">
                 <label class="custom-file-label" for="refSeqFileLoad">HIV (HXB2.pol)</label>
               </div>
             </div>
@@ -508,21 +510,21 @@ performance of this software.</pre>
           <div class="row alignConfigRow">
             <div class="form-group col offset-3" title="How much should MicrobeTrace reward matching bases?">
               <label for="alignerMatch">Match Reward</label>
-              <input type="number" id="alignerMatch" class="form-control" value="1" min="0"></input>
+              <input type="number" id="alignerMatch" class="form-control" value="1" min="0">
             </div>
             <div class="form-group col" title="How much should MicrobeTrace penalize non-matching bases?">
               <label for="alignerMismatch">Mismatch Cost</label>
-              <input type="number" id="alignerMismatch" class="form-control" value="1" min="0"></input>
+              <input type="number" id="alignerMismatch" class="form-control" value="1" min="0">
             </div>
           </div>
           <div class="row alignConfigRow">
             <div class="form-group col offset-3" title="How much should MicrobeTrace Penalize opening a gap?">
               <label for="alignerGapO">Gap Opening Cost</label>
-              <input type="number" id="alignerGapO" class="form-control" value="5" min="0"></input>
+              <input type="number" id="alignerGapO" class="form-control" value="5" min="0">
             </div>
             <div class="form-group col" title="How much should MicrobeTrace Penalize extending a gap?">
               <label for="alignerGapE">Gap Extension Cost</label>
-              <input type="number" id="alignerGapE" class="form-control" value="2" min="0"></input>
+              <input type="number" id="alignerGapE" class="form-control" value="2" min="0">
             </div>
           </div>
           <div class="row alignPreviewRow">
@@ -550,7 +552,7 @@ performance of this software.</pre>
           <div class="form-group row">
             <div class="col-8">
               <input type="text" id="save-file-name" class="form-control form-control-sm"
-                title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename" />
+                title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename">
             </div>
             <div class="col-4">
               <select id="save-file-format" class="form-control form-control-sm"
@@ -564,7 +566,7 @@ performance of this software.</pre>
           <div class="form-group row" title="Should MicrobeTrace compress this save file?">
             <div class="col">
               <div class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" id="save-file-compress" checked />
+                <input class="form-check-input" type="checkbox" id="save-file-compress" checked>
                 <label class="form-check-label" for="save-file-compress">Compress?</label>
               </div>
             </div>
@@ -590,7 +592,7 @@ performance of this software.</pre>
         <div class="modal-body">
           <div class="form-group row" title="What would you like to call this Stash?">
             <div class="col">
-              <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Name your stash!" />
+              <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Name your stash!">
             </div>
           </div>
         </div>
@@ -653,7 +655,7 @@ performance of this software.</pre>
           </p>
           <p class="text-right">
             <a href="humans.txt">
-              <img src="img/humanstxt-isolated-blank.gif" title="Click to see our humans.txt file" alt="humans.txt" />
+              <img src="img/humanstxt-isolated-blank.gif" title="Click to see our humans.txt file" alt="humans.txt">
             </a>
           </p>
         </div>
@@ -696,7 +698,7 @@ performance of this software.</pre>
   <script src="dist/common.js" async charset="utf-8"></script>
   <script src="dist/index.js" async charset="utf-8"></script>
   <script src="dist/bundle.secondary.js" defer charset="utf-8"></script>
-  <link rel="stylesheet" type="text/css" href="dist/bundle.secondary.css" />
+  <link rel="stylesheet" type="text/css" href="dist/bundle.secondary.css">
 </body>
 
 </html>

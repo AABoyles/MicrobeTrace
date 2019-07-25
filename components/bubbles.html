@@ -4,12 +4,10 @@
 </svg>
 
 <div class="view-controls">
-  <button type="button" id="bubble-toggle-settings" class="btn btn-light btn-sm" data-toggle="button"
-    title="Toggle Bubble Settings">
+  <button type="button" id="bubble-toggle-settings" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Bubble Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#bubbles-export-modal"
-    title="Export Bubbles">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#bubbles-export-modal" title="Export Bubbles">
     <span class="oi oi-data-transfer-download"></span>
   </button>
 </div>
@@ -17,28 +15,24 @@
 <div id="bubble-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a href="#bubble-node-configurations" id="bubble-nodes-tab" class="nav-link active"
-        aria-controls="bubble-node-configurations" role="tab" data-toggle="tab">Nodes</a>
+      <a href="#bubble-node-configurations" id="bubble-nodes-tab" class="nav-link active" aria-controls="bubble-node-configurations" role="tab" data-toggle="tab">Nodes</a>
     </li>
     <li class="nav-item">
-      <a href="#bubble-physics-configurations" id="bubble-physics-tab" class="nav-link"
-        aria-controls="bubble-physics-configurations" role="tab" data-toggle="tab">Physics</a>
+      <a href="#bubble-physics-configurations" id="bubble-physics-tab" class="nav-link" aria-controls="bubble-physics-configurations" role="tab" data-toggle="tab">Physics</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="bubble-node-configurations" role="tabpanel"
-      aria-labelledby="bubble-nodes-tab">
+    <div class="tab-pane fade show active" id="bubble-node-configurations" role="tabpanel" aria-labelledby="bubble-nodes-tab">
       <div class="form-group row" title="How big should the bubbles be?">
         <div class="col-3"><label for="bubble-size">Size</label></div>
-        <div class="col-9"><input type="range" id="bubble-size" class="form-control-range" min="1" value="5" max="15" step="0.1" /></div>
+        <div class="col-9"><input type="range" id="bubble-size" class="custom-range" min="1" value="5" max="15" step="0.1"></div>
       </div>
       <div class="form-group row">
         <div class="col-3">Color</div>
         <div class="col-9"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
       </div>
     </div>
-    <div class="tab-pane fade" id="bubble-physics-configurations" role="tabpanel"
-      aria-labelledby="bubble-physics-tab">
+    <div class="tab-pane fade" id="bubble-physics-configurations" role="tabpanel" aria-labelledby="bubble-physics-tab">
       <div class="form-group row" title="What variable should be used for the Bubbles' X axis?">
         <div class="col-3"><label for="bubble-x">X</label></div>
         <div class="col-9"><select id="bubble-x" class="form-control form-control-sm nodeVariables"></select></div>
@@ -49,7 +43,7 @@
       </div>
       <div class="form-group row" title="How much should the bubbles repulse each other?">
         <div class="col-3"><label for="bubble-charge">Charge</label></div>
-        <div class="col-9"><input type="range" id="bubble-charge" class="form-control-range" min="0" value="1.5" max="10" step="0.1" /></div>
+        <div class="col-9"><input type="range" id="bubble-charge" class="custom-range" min="0" value="1.5" max="10" step="0.1"></div>
       </div>
     </div>
   </div>
@@ -67,8 +61,7 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="bubbles-export-filename" class="form-control form-control-sm"
-              placeholder="Filename" />
+            <input type="text" id="bubbles-export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
             <select id="bubbles-export-filetype" class="form-control form-control-sm">
@@ -81,9 +74,7 @@
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="bubbles-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button"
-              data-toggle="collapse" data-target="#bubbles-export-advanced" aria-expanded="false"
-              aria-controls="bubbles-export-advanced">Advanced</button>
+            <button id="bubbles-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#bubbles-export-advanced" aria-expanded="false" aria-controls="bubbles-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="bubbles-export-advanced">
@@ -93,8 +84,7 @@
                 <label for="bubbles-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="bubbles-export-scale" class="form-control form-control-sm" min="0" step="0.1"
-                  value="1" />
+                <input type="number" id="bubbles-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
               </div>
             </div>
             <div class="form-group row">
@@ -106,7 +96,7 @@
                 <label for="bubbles-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" id="bubbles-export-quality" min="0" max="1.0" value="0.92" step="0.01" />
+                <input type="range" class="custom-range" id="bubbles-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>

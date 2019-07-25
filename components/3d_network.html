@@ -1,12 +1,10 @@
 <div id="3DNet"></div>
 
 <div class="view-controls">
-  <button type="button" id="toggle-3DNet-settings" class="btn btn-light btn-sm" data-toggle="button"
-    title="Toggle 3D Network Settings">
+  <button type="button" id="toggle-3DNet-settings" class="btn btn-light btn-sm" data-toggle="button" title="Toggle 3D Network Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#export_3d-modal"
-    title="Export 3D Network">
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#export_3d-modal" title="Export 3D Network">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button type="button" id="reload-3DNet" class="btn btn-light btn-sm" title="Refresh Network">
@@ -15,18 +13,14 @@
 </div>
 
 <div id="3DNet-settings-pane" class="left-pane">
-  <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
-      <a href="#threeDNodeConfigurations" class="nav-link active" aria-controls="profile" role="tab"
-        data-toggle="tab">Nodes</a>
+      <a href="#threeDNodeConfigurations" class="nav-link active" aria-controls="profile" role="tab" data-toggle="tab">Nodes</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#threeDLinkConfigurations" class="nav-link" aria-controls="profile" role="tab"
-        data-toggle="tab">Links</a>
+      <a href="#threeDLinkConfigurations" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab">Links</a>
     </li>
   </ul>
-  <!-- Tab panes -->
   <div class="tab-content">
     <div id="threeDNodeConfigurations" class="tab-pane fade show active" role="tabpanel">
       <div class="form-group row" title="What do you want to see when you hover over a node?">
@@ -56,7 +50,7 @@
       <div class="form-group row" title="How large should the nodes be?">
         <div class="col-4"><label for="3DNet-node-radius">Size</label></div>
         <div class="col-8">
-          <input type="range" id="3DNet-node-radius" min=".1" value="4" step=".1" max="20" />
+          <input type="range" class="custom-range" id="3DNet-node-radius" min=".1" value="4" step=".1" max="20">
         </div>
       </div>
     </div>
@@ -82,13 +76,13 @@
           <label for="3DNet-link-transparency">Transparency</label>
         </div>
         <div class="col-8">
-          <input type="range" id="3DNet-link-transparency" min="0" max="1" value="0" step="0.01" />
+          <input type="range" class="custom-range" id="3DNet-link-transparency" min="0" max="1" value="0" step="0.01">
         </div>
       </div>
       <div class="form-group row" title="How wide should the links be?">
         <div class="col-4"><label for="3DNet-link-width">Width</label></div>
         <div class="col-8">
-          <input type="range" id="3DNet-link-width" min=".1" value="1.6" step=".1" max="20" />
+          <input type="range" class="custom-range" id="3DNet-link-width" min=".1" value="1.6" step=".1" max="20">
         </div>
       </div>
     </div>
@@ -105,10 +99,9 @@
         </button>
       </div>
       <div class="modal-body">
-        ;
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="export-3d-file-name" class="form-control form-control-sm" placeholder="Filename" />
+            <input type="text" id="export-3d-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
             <select id="export-img-file-type" class="form-control form-control-sm">
@@ -125,12 +118,9 @@
           Export
         </button>
       </div>
-    </div>
-    <!-- /.modal-content -->
-  </div>
-  <!-- /.modal-dialog -->
-</div>
-<!-- /.modal -->
+    </div> <!-- /.modal-content -->
+  </div> <!-- /.modal-dialog -->
+</div> <!-- /.modal -->
 
 <script>
   (function () {
@@ -213,6 +203,7 @@
     }
 
     function updateData() {
+      if(!$('#3DNet').length) return;
       var newNodes = MT.getVisibleNodes(true);
       newNodes.forEach(d => {
         var match = nodes.find(d2 => d.id == d2.id);

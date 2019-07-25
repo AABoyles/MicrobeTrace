@@ -40,7 +40,7 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="gantt-export-filename" class="form-control form-control-sm" placeholder="Filename" />
+            <input type="text" id="gantt-export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
             <select id="gantt-export-filetype" class="form-control form-control-sm">
@@ -53,9 +53,7 @@
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button"
-              data-toggle="collapse" data-target="#gantt-export-advanced" aria-expanded="false"
-              aria-controls="gantt-export-advanced">Advanced</button>
+            <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="gantt-export-advanced">
@@ -65,8 +63,7 @@
                 <label for="gantt-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="gantt-export-scale" class="form-control form-control-sm" min="0" step="0.1"
-                  value="1" />
+                <input type="number" id="gantt-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
               </div>
             </div>
             <div class="form-group row">
@@ -78,7 +75,7 @@
                 <label for="gantt-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" id="gantt-export-quality" min="0" max="1.0" value="0.92" step="0.01"></input>
+                <input type="range" class="custom-range" id="gantt-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>
@@ -278,11 +275,11 @@
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
-        <div class='col-8'><input id="date-${clickCount}-color" data-dateid="${clickCount}" class="form-control form-control-sm" type="color"></select></div>
+        <div class='col-8'><input id="date-${clickCount}-color" data-dateid="${clickCount}" class="form-control form-control-sm" type="color"></div>
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-transparency">Transparency</label></div>
-        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" min="0" max="1" step="0.01" value="0.5"></select></div>
+        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" class="custom-range" min="0" max="1" step="0.01" value="0.5"></div>
       </div>
     </div>`);
       root.appendTo('#ganttConfigurations');

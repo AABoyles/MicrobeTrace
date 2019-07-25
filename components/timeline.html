@@ -1,3 +1,5 @@
+<div id="timeline"></div>
+
 <div class="view-controls">
   <button type="button" id="timeline-toggle-settings" class="btn btn-light btn-sm" data-toggle="button">
     <span class="oi oi-cog"></span>
@@ -7,18 +9,14 @@
   </button>
 </div>
 
-<div id="timeline"></div>
-
 <div id="timeline-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a href="#timeline-configurations" id="timeline-nodes-tab" class="nav-link active"
-        aria-controls="timeline-configurations" role="tab" data-toggle="tab">Timeline</a>
+      <a href="#timeline-configurations" id="timeline-nodes-tab" class="nav-link active" aria-controls="timeline-configurations" role="tab" data-toggle="tab">Timeline</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel"
-      aria-labelledby="timeline-nodes-tab">
+    <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel" aria-labelledby="timeline-nodes-tab">
       <div class="form-group row" title="Which variable in your data contains the date?">
         <div class="col-4">
           <label for="timeline-date-field">Date Field</label>
@@ -32,11 +30,11 @@
         <div class="col-8">
           <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="timeline-cumulation" id="timeline-noncumulative" autocomplete="off" checked />
+              <input type="radio" name="timeline-cumulation" id="timeline-noncumulative" autocomplete="off" checked>
               Noncumulative
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="timeline-cumulation" id="timeline-cumulative" autocomplete="off" />
+              <input type="radio" name="timeline-cumulation" id="timeline-cumulative" autocomplete="off">
               Cumulative
             </label>
           </div>
@@ -45,7 +43,7 @@
       <div class="form-group row" title="How quickly would you like the timeline to advance?">
         <div class="col-4"><label for="timeline-speed">Play Speed</label></div>
         <div class="col-8">
-          <input type="range" id="timeline-speed" min="0" max="100" step="10" />
+          <input type="range" class="custom-range" id="timeline-speed" min="0" max="100" step="10">
         </div>
       </div>
     </div>
