@@ -1202,44 +1202,27 @@ MT.setLinkVisibility = silent => {
     threshold = session.style.widgets["link-threshold"],
     showNN = session.style.widgets["link-show-nn"];
   let links = session.data.links;
-  // let nodes = session.data.nodes;
   let clusters = session.data.clusters;
   let n = links.length;
   for (let i = 0; i < n; i++) {
     let link = links[i];
-    link.visible = true;
+    let visible = true;
     if (link[metric] == null) {
-      link.visible = false;
-      continue;
+      visible = false;
     } else {
-      link.visible = link.visible && link[metric] <= threshold;
+      visible = visible && link[metric] <= threshold;
     }
-    if (showNN) link.visible = link.visible && link.nn;
-    // let s = false,
-    //   t = false;
-    // for (let k = 0; k < o; k++) {
-    //   let node = nodes[k];
-    //   if (link.source == node.id) {
-    //     link.visible = link.visible && node.visible;
-    //     s = true;
-    //   }
-    //   if (link.target == node.id) {
-    //     link.visible = link.visible && node.visible;
-    //     t = true;
-    //   }
-    //   if (s && t) break;
-    // }
+    if (showNN) {
+      visible = visible && link.nn;
+    }
     let cluster = clusters[link.cluster];
     if (cluster) {
-      link.visible = link.visible && cluster.visible;
+      visible = visible && cluster.visible;
     }
+    link.visible = visible;
   }
   if (!silent) $window.trigger("link-visibility");
-  console.log(
-    "Link Visibility Setting time:",
-    (Date.now() - start).toLocaleString(),
-    "ms"
-  );
+  console.log("Link Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
 };
 
 MT.setClusterVisibility = silent => {
