@@ -286,28 +286,23 @@ MT.addNode = (newNode, check) => {
   return 1;
 };
 
-MT.defaultLink = () => ({
-  index: session.data.links.length,
-  source: "",
-  target: "",
-  visible: false,
-  cluster: 1,
-  origin: []
-});
-
 MT.addLink = (newLink, check) => {
   if (newLink.source == newLink.target) return;
   let links = session.data.links;
   if (check) {
     let n = links.length;
     for (let i = 0; i < n; i++) {
-      let l = links[i];
-      if (
-        (l.source == newLink.source && l.target == newLink.target) ||
-        (l.source == newLink.target && l.target == newLink.source)
-      ) {
-        if (newLink.origin && !l.origin.includes(newLink.origin)) {
-          newLink.origin = newLink.origin.concat(l.origin);
+      let l = links[i],
+          oldsource = l.source,
+          newsource = newLink.source,
+          oldtarget = l.target,
+          newtarget = newLink.target,
+          oldorigin = l.origin,
+          neworigin = newLink.origin;
+      if ((oldsource == newsource && oldtarget == newtarget) ||
+          (oldsource == newtarget && oldtarget == newsource)) {
+        if (neworigin && !oldorigin.includes(neworigin)) {
+          neworigin = neworigin.concat(oldorigin);
         }
         Object.assign(l, newLink);
         return 0;
@@ -315,7 +310,14 @@ MT.addLink = (newLink, check) => {
     }
   }
   session.state.metrics.forEach(m => newLink[m] = parseFloat(newLink[m]));
-  links.push(Object.assign(MT.defaultLink(), newLink));
+  links.push(Object.assign({
+    index: session.data.links.length,
+    source: "",
+    target: "",
+    visible: false,
+    cluster: 1,
+    origin: []
+  }, newLink));
   return 1;
 };
 
@@ -1043,10 +1045,7 @@ MT.finishUp = oldSession => {
       .delay(0)
       .ondismiss(() => window.location.reload());
   }
-  MT.setLinkVisibility();
-  MT.setNodeVisibility();
-  MT.tagClusters();
-  MT.updateStatistics();
+  MT.updateNetwork();
   $("#network-statistics-wrapper").fadeIn();
   $("#SettingsTab").attr("data-target", "#global-settings-modal");
   session.meta.loadTime = Date.now() - session.meta.startTime;
@@ -1091,21 +1090,55 @@ MT.titleize = title => {
   return small.replace(/(?:^|\s|-)\S/g, MT.capitalize);
 };
 
+MT.DFS = id => {
+  let tempnodes = temp.nodes;
+  if (tempnodes.indexOf(id) >= 0) return;
+  tempnodes.push(id);
+  let node = {};
+  let nodes = session.data.nodes;
+  let n = nodes.length;
+  for (let i = 0; i < n; i++) {
+    let d = nodes[i];
+    if (d.id == id) {
+      node = d;
+      break;
+    }
+  }
+  let lsv = session.style.widgets["link-sort-variable"];
+  let clusters = session.data.clusters;
+  let clusterID = clusters.length - 1;
+  let cluster = clusters[clusterID];
+  node.cluster = clusterID;
+  clusters[clusterID].nodes++;
+  let links = session.data.links;
+  let m = links.length;
+  for (let j = 0; j < m; j++) {
+    let l = links[j];
+    if (!l.visible || (l.source != id && l.target != id)) continue;
+    l.cluster = clusterID;
+    cluster.links++;
+    cluster.sum_distances += parseFloat(l[lsv]);
+    if(tempnodes.length == n) return;
+    MT.DFS(l.source);
+    MT.DFS(l.target);
+  }
+};
+
 MT.tagClusters = () => {
   let start = Date.now();
-  session.data.clusters = [];
+  let clusters = session.data.clusters = [];
   let nodes = session.data.nodes,
       links = session.data.links;
   let numNodes = nodes.length,
       numLinks = links.length;
-  temp.nodes = [];
+  let tempnodes = temp.nodes = [];
   for (let k = 0; k < numNodes; k++) {
     let d = nodes[k];
     d.degree = 0;
     let id = d.id;
-    if (temp.nodes.indexOf(id) == -1) {
-      session.data.clusters.push({
-        id: session.data.clusters.length,
+    if (tempnodes.indexOf(id) == -1) {
+      clusters.push({
+        id: clusters.length,
         nodes: 0,
         links: 0,
         sum_distances: 0,
@@ -1142,37 +1175,6 @@ MT.tagClusters = () => {
     c.mean_genetic_distance = c.sum_distances / 2 / c.links;
   });
   console.log("Degree Computation time:", (Date.now() - start).toLocaleString(), "ms");
-};
-
-MT.DFS = id => {
-  if (temp.nodes.indexOf(id) >= 0) return;
-  temp.nodes.push(id);
-  let node = {};
-  let nodes = session.data.nodes;
-  let n = nodes.length;
-  for (let i = 0; i < n; i++) {
-    let d = nodes[i];
-    if (d.id == id) {
-      node = d;
-      break;
-    }
-  }
-  let lsv = session.style.widgets["link-sort-variable"];
-  node.cluster = session.data.clusters.length - 1;
-  session.data.clusters[session.data.clusters.length - 1].nodes++;
-  let links = session.data.links;
-  let m = links.length;
-  for (let j = 0; j < m; j++) {
-    let l = links[j];
-    if (l.visible && (l.source == id || l.target == id)) {
-      l.cluster = session.data.clusters.length - 1;
-      let cluster = session.data.clusters[session.data.clusters.length - 1];
-      cluster.links++;
-      cluster.sum_distances += parseFloat(l[lsv]);
-      MT.DFS(l.source);
-      MT.DFS(l.target);
-    }
-  }
 };
 
 MT.setNodeVisibility = silent => {
