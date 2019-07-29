@@ -7,18 +7,15 @@
   <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table-export-modal" title="Export table data">
     <span class="oi oi-data-transfer-download"></span>
   </button>
-</div>
-
-<div id="table-type-panel" title="What dataset would you like to view?">
-  <div class="btn-group btn-group-toggle btn-group-sm floater" data-toggle="buttons">
+  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" title="What dataset would you like to view?">
     <label class="btn btn-light active">
-      <input type="radio" name="nodelink" data-value="nodes" autocomplete="off" checked> Nodes
+      <input type="radio" name="table-dataset" data-value="nodes" autocomplete="off" checked> Nodes
     </label>
     <label class="btn btn-light">
-      <input type="radio" name="nodelink" data-value="links" autocomplete="off"> Links
+      <input type="radio" name="table-dataset" data-value="links" autocomplete="off"> Links
     </label>
     <label class="btn btn-light">
-      <input type="radio" name="nodelink" data-value="clusters" autocomplete="off"> Clusters
+      <input type="radio" name="table-dataset" data-value="clusters" autocomplete="off"> Clusters
     </label>
   </div>
   <select id="table-columns" class="chosen-select" multiple title="What columns would you like to see?"></select>
@@ -77,7 +74,7 @@
 
     function updateColumns(){
       if(!$('#table').length) return;
-      let type = $('input[name=nodelink]:checked').data('value').slice(0,-1);
+      let type = $('input[name=table-dataset]:checked').data('value').slice(0,-1);
       $('#table-columns')
         .chosen('destroy')
         .html(
@@ -85,12 +82,14 @@
             if(meta.includes(d)) return;
             return `<option value="${d}"${(i < 7) ? " selected" : ""}>${MT.titleize(d)}</option>`
           }).join('\n')
-        ).chosen({width: "100%"}).change(updateTable);
+        )
+        .chosen({'width': 'auto'})
+        .on('change', updateTable);
     }
 
     function updateTable(){
       if(!$('#table').length) return;
-      let data_type = $('input[name=nodelink]:checked').data('value');
+      let data_type = $('input[name=table-dataset]:checked').data('value');
       let columns = $('#table-columns').val();
       table = new Tabulator("#table", {
        	height: "calc(100% - 60px) !important",
@@ -115,7 +114,7 @@
     }
 
     function updateData(){
-      let type = $('input[name=nodelink]:checked').data('value');
+      let type = $('input[name=table-dataset]:checked').data('value');
       table.replaceData(session.data[type]);
     }
 
@@ -136,7 +135,7 @@
       });
     }
 
-    $('input[name=nodelink]').on('change', e => {
+    $('input[name=table-dataset]').on('change', e => {
       updateColumns();
       updateTable();
     });
@@ -147,13 +146,13 @@
 
     $('#table-export').click(function(){
       let format = $('#export-table-file-type').val();
-      let data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
+      let data = JSON.parse(JSON.stringify(session.data[$('input[name=table-dataset]:checked').data('value')]));
       let name = $('#export-table-file-name').val();
       if(format == 'csv'){
         let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
         saveAs(blob, name + '.' + format);
       } else if(format == 'xlsx'){
-        let headers = session.data[$('input[name=nodelink]:checked').data('value').slice(0,-1) + 'Fields'];
+        let headers = session.data[$('input[name=table-dataset]:checked').data('value').slice(0,-1) + 'Fields'];
         data.forEach(thing => {
           Object.keys(thing).forEach(field => {
             if(!headers.includes(field)){

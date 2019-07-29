@@ -658,31 +658,10 @@ button.btn,
 }
 
 /* Table */
-#table-type-panel {
-  width: calc(100% - 100px);
-  margin-top: 10px;
-  margin-left: 90px;
-}
-#table-type-panel .chosen-container {
-  margin-left: 8px;
-  margin-right: 8px;
-  width: auto !important;
-}
-#table-type-panel .chosen-choices {
-  max-height: 30px;
-  border-radius: 0.25rem;
-  padding: 2px;
-}
-#table-type-panel .search-choice {
-  background-image: none;
-  background-color: #f8f9fa;
-}
 #table {
-  height: calc(100% - 60px) !important;
-  width: calc(100% - 20px);
-  margin: 10px;
-  border: 1px solid #ced4da;
-  border-radius: 0.25rem;
+  height: 100% !important;
+  padding-top: 50px;
+  border: none;
 }
 
 /* Gantt */
