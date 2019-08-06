@@ -1090,40 +1090,6 @@ MT.titleize = title => {
   return small.replace(/(?:^|\s|-)\S/g, MT.capitalize);
 };
 
-MT.DFS = id => {
-  let tempnodes = temp.nodes;
-  if (tempnodes.indexOf(id) >= 0) return;
-  tempnodes.push(id);
-  let node = {};
-  let nodes = session.data.nodes;
-  let n = nodes.length;
-  for (let i = 0; i < n; i++) {
-    let d = nodes[i];
-    if (d.id == id) {
-      node = d;
-      break;
-    }
-  }
-  let lsv = session.style.widgets["link-sort-variable"];
-  let clusters = session.data.clusters;
-  let clusterID = clusters.length - 1;
-  let cluster = clusters[clusterID];
-  node.cluster = clusterID;
-  clusters[clusterID].nodes++;
-  let links = session.data.links;
-  let m = links.length;
-  for (let j = 0; j < m; j++) {
-    let l = links[j];
-    if (!l.visible || (l.source != id && l.target != id)) continue;
-    l.cluster = clusterID;
-    cluster.links++;
-    cluster.sum_distances += parseFloat(l[lsv]);
-    if(tempnodes.length == n) return;
-    MT.DFS(l.source);
-    MT.DFS(l.target);
-  }
-};
-
 MT.tagClusters = () => {
   let start = Date.now();
   let clusters = session.data.clusters = [];
@@ -1132,12 +1098,40 @@ MT.tagClusters = () => {
   let numNodes = nodes.length,
       numLinks = links.length;
   let tempnodes = temp.nodes = [];
+  let lsv = session.style.widgets["link-sort-variable"];
+
+  let DFS = (id, cluster) => {
+    if (tempnodes.indexOf(id) >= 0) return;
+    tempnodes.push(id);
+    let node = {};
+    for (let i = 0; i < numNodes; i++) {
+      let d = nodes[i];
+      if (d.id == id) {
+        node = d;
+        break;
+      }
+    }
+    let clusterID = cluster.id;
+    node.cluster = clusterID;
+    cluster.nodes++;
+    for (let j = 0; j < numLinks; j++) {
+      let l = links[j];
+      if (!l.visible || (l.source != id && l.target != id)) continue;
+      l.cluster = clusterID;
+      cluster.links++;
+      cluster.sum_distances += l[lsv];
+      if(tempnodes.length == numNodes) return;
+      DFS(l.source, cluster);
+      DFS(l.target, cluster);
+    }
+  };
+
   for (let k = 0; k < numNodes; k++) {
     let d = nodes[k];
     d.degree = 0;
     let id = d.id;
     if (tempnodes.indexOf(id) == -1) {
-      clusters.push({
+      let cluster = {
         id: clusters.length,
         nodes: 0,
         links: 0,
@@ -1145,19 +1139,22 @@ MT.tagClusters = () => {
         links_per_node: 0,
         mean_genetic_distance: undefined,
         visible: true
-      });
-      MT.DFS(id);
+      };
+      clusters.push(cluster);
+      DFS(id, cluster);
+      if(tempnodes.length == numNodes) break;
     }
   }
+
   console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
   start = Date.now();
-  for (let i = 0; i < numLinks; i++) {
-    let l = links[i];
+  for (let m = 0; m < numLinks; m++) {
+    let l = links[m];
     if (!l.visible) continue;
     let s = false,
         t = false;
-    for (let j = 0; j < numNodes; j++) {
-      let node = nodes[j];
+    for (let n = 0; n < numNodes; n++) {
+      let node = nodes[n];
       if (l.source == node.id) {
         s = true;
         node.degree++;
