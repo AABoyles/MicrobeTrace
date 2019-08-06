@@ -914,11 +914,7 @@ MT.computePatristicMatrix = (type, callback) => {
 
 MT.computeNN = (metric, callback) => {
   if (!session.data.distance_matrix[metric]) {
-    console.error(
-      "Couldn't find Distance Matrix " +
-      metric +
-      " to compute Nearest Neighbors."
-    );
+    console.error("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
     return;
   }
   let nnMachine = new Worker("workers/compute-nn.js");
@@ -928,11 +924,7 @@ MT.computeNN = (metric, callback) => {
       return;
     }
     let output = JSON.parse(MT.decode(new Uint8Array(response.data.links)));
-    console.log(
-      "NN Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+    console.log("NN Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     let start = Date.now();
     let links = session.data.links;
     let n = links.length;
