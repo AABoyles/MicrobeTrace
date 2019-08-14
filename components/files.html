@@ -140,6 +140,110 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   </div>
 </div>
 
+<div id="aligner-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#aligner-controls-title" aria-hidden="true" data-backdrop="false">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="aligner-controls-title" class="modal-title">Alignment Settings</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-12">
+            <div class="alert alert-warning alert-dismissible" role="alert">
+              <p>
+                MicrobeTrace is not intended to be an alignment program (although it can be used in that way).
+                For best results, please align your sequences using
+                <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank" rel="noreferrer noopener">an external tool</a>
+                before loading them into MicrobeTrace.
+                <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank" rel="noreferrer noopener">Click here for additional information.</a>
+              </p>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-2" title="Should MicrobeTrace align your sequences?">Align</div>
+          <div class="col-10">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light active col" title="Do Not Align Sequences">
+                <input type="radio" name="shouldAlign" id="align-none" data-aligner="none" autocomplete="off" checked>
+                None
+              </label>
+              <label class="btn btn-light col" title="Align Sequences using Smith-Waterman aligner">
+                <input type="radio" name="shouldAlign" id="align-sw" data-aligner="sw" autocomplete="off">
+                Smith-Waterman
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row alignConfigRow">
+          <div class="col-2" title="What should MicrobeTrace use as a reference to align your sequences?">Reference Source</div>
+          <div class="col-10">
+            <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+              <label class="btn btn-light active col" title="Load Reference from FASTA">
+                <input type="radio" name="reference-source" id="reference-source-file" autocomplete="off" checked>
+                Load From FASTA
+              </label>
+              <label class="btn btn-light col" title="Use First Sequence as Reference">
+                <input type="radio" name="reference-source" id="reference-source-first" autocomplete="off">
+                First Sequence
+              </label>
+              <label class="btn btn-light col" title="Generate a Consensus Sequence to use as a Reference">
+                <input type="radio" name="reference-source" id="reference-source-consensus" autocomplete="off">
+                Consensus
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row" id="reference-file-row">
+          <div class="col-2" title="Against what sequence should MicrobeTrace align your sequences?">Reference</div>
+          <div class="col-5">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="refSeqFileLoad">
+              <label class="custom-file-label" for="refSeqFileLoad" style="overflow:hidden">HXB2</label>
+            </div>
+          </div>
+          <div class="col-5">
+            <select id="refSeqID" class="form-control"></select>
+          </div>
+        </div>
+        <div class="row alignConfigRow">
+          <div class="form-group col offset-2" title="How much should MicrobeTrace reward matching bases?">
+            <label for="alignerMatch">Match Reward</label>
+            <input type="number" id="alignerMatch" class="form-control" value="1" min="0">
+          </div>
+          <div class="form-group col" title="How much should MicrobeTrace penalize non-matching bases?">
+            <label for="alignerMismatch">Mismatch Cost</label>
+            <input type="number" id="alignerMismatch" class="form-control" value="1" min="0">
+          </div>
+        </div>
+        <div class="row alignConfigRow">
+          <div class="form-group col offset-2" title="How much should MicrobeTrace Penalize opening a gap?">
+            <label for="alignerGapO">Gap Opening Cost</label>
+            <input type="number" id="alignerGapO" class="form-control" value="5" min="0">
+          </div>
+          <div class="form-group col" title="How much should MicrobeTrace Penalize extending a gap?">
+            <label for="alignerGapE">Gap Extension Cost</label>
+            <input type="number" id="alignerGapE" class="form-control" value="2" min="0">
+          </div>
+        </div>
+        <div class="row alignPreviewRow">
+          <div class="w-100 text-center" id="alignment-preview"></div>
+        </div>
+      </div>
+      <div class="modal-footer clearfix">
+        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal"
+          title="Confirm Load Settings are All Properly Set">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   (function () {
 
@@ -356,7 +460,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function updatePreview(data) {
       $('#alignment-preview').empty().append('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
-      if ($('#swAlign').is(':checked')) {
+      if ($('#align-sw').is(':checked')) {
         MT.align({
           nodes: data,
           reference: session.data.reference,
@@ -381,40 +485,77 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     $('.alignConfigRow').hide();
 
-    $('#swAlign').parent().click(function () {
-      $('.alignConfigRow').slideDown();
+    $('#align-sw').parent().on('click', function () {
+      session.style.widgets['align-sw'] = true;
+      session.style.widgets['align-none'] = false;
+      $('.alignConfigRow, #reference-file-row').slideDown();
       $('#alignment-preview').slideUp(function () {
-        $(this).empty().show();
+        $(this).empty();
       });
     });
 
-    $('#doNotAlign').parent().click(function () {
-      $('.alignConfigRow').slideUp();
+    $('#align-none').parent().on('click', function () {
+      session.style.widgets['align-sw'] = false;
+      session.style.widgets['align-none'] = true;
+      $('.alignConfigRow, #reference-file-row').slideUp();
       $('#alignment-preview').slideUp(function () {
-        $(this).empty().show();
+        $(this).empty();
       });
     });
 
-    $('#refSeqFileLoad').on('change', function (e) {
-      var file = e.target.files[0];
+    $('#reference-source-file').parent().on('click', function(){
+      session.style.widgets['reference-source-file'] = true;
+      session.style.widgets['reference-source-first'] = false;
+      session.style.widgets['reference-source-consensus'] = false;
+      if(!session.style.widgets['align-none']) $('#reference-file-row').slideDown();
+    });
+
+    $('#reference-source-first').parent().on('click', function(){
+      session.style.widgets['reference-source-file'] = false;
+      session.style.widgets['reference-source-first'] = true;
+      session.style.widgets['reference-source-consensus'] = false;
+      $('#reference-file-row').slideUp();
+    });
+
+    $('#reference-source-consensus').parent().on('click', function(){
+      session.style.widgets['reference-source-file'] = false;
+      session.style.widgets['reference-source-first'] = false;
+      session.style.widgets['reference-source-consensus'] = true;
+      $('#reference-file-row').slideUp();
+    });
+
+    $('#reference-file-row').hide();
+
+    $('#refSeqFileLoad').on('change', function () {
+      var file = this.files[0];
       var reader = new FileReader();
       reader.onloadend = function (e) {
         if (e.target.readyState == FileReader.DONE) {
-          var node = MT.parseFASTA(e.target.result, function (nodes) {
-            var node = nodes[0];
-            session.data.reference = filterXSS(node);
-            $('label[for="refSeqFileLoad"]').text(`${file.name} (${filterXSS(node.id)})`);
-            readFastas();
+          MT.parseFASTA(e.target.result, function (nodes) {
+            $('#refSeqID')
+              .html(nodes.map((d, i) => `
+                <option value="${filterXSS(d.seq)}" ${i == 0 ? "selected" : ""}>${filterXSS(d.id)}</option>
+              `))
+              .trigger('change');
           });
+          $('label[for="refSeqFileLoad"]').text(`${filterXSS(file.name)}`);
         }
       };
       reader.readAsText(file);
     });
 
-    $('#alignerControlsButton, #alignment-preview').click(readFastas);
+    $('#refSeqID').html(`
+      <option value="${MT.HXB2.substr(2000, 2100)}" selected>Pol</option>
+      <option value="${MT.HXB2}">Complete</option>
+    `).on('change', function(){
+      session.data.reference = this.value;
+      readFastas();
+    });
 
-    $('#default-distance-metric').change(function (e) {
-      var lsv = e.target.value;
+    $('#alignerControlsButton, #alignment-preview').on('click', readFastas);
+
+    $('#default-distance-metric').change(function () {
+      var lsv = this.value;
       localStorage.setItem('default-distance-metric', lsv);
       $('#default-distance-metric').val(lsv);
       if (lsv == 'snps') {
@@ -804,7 +945,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             subset.push(d);
           }
         }
-        if ($('#doNotAlign').is(':checked')) {
+        if ($('#align-none').is(':checked')) {
           computeLinks(subset);
         } else {
           message('Aligning Sequences...');
