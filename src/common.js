@@ -297,19 +297,19 @@ MT.addLink = (newLink, check) => {
   if (check) {
     let n = links.length;
     for (let i = 0; i < n; i++) {
-      let l = links[i],
-          oldsource = l.source,
+      let oldLink = links[i],
+          oldsource = oldLink.source,
           newsource = newLink.source,
-          oldtarget = l.target,
+          oldtarget = oldLink.target,
           newtarget = newLink.target,
-          oldorigin = l.origin,
+          oldorigin = oldLink.origin,
           neworigin = newLink.origin;
       if ((oldsource == newsource && oldtarget == newtarget) ||
           (oldsource == newtarget && oldtarget == newsource)) {
-        if (neworigin && !oldorigin.includes(neworigin)) {
-          neworigin = neworigin.concat(oldorigin);
+        if (neworigin && !oldorigin.includes(neworigin[0])) {
+          newLink.origin = neworigin.concat(oldorigin);
         }
-        Object.assign(l, newLink);
+        Object.assign(oldLink, newLink);
         return 0;
       }
     }
@@ -694,12 +694,13 @@ MT.generateSeqs = (idPrefix, count, snps, seed) => {
   return seqs;
 };
 
-MT.align = (params, callback, merge) => {
+MT.align = (params, callback) => {
   if (params.aligner == "none") {
     if (callback) callback(params.nodes);
     return;
   }
   let n = params.nodes.length;
+  let referenceLength = params.reference.length;
   let aligner = new Worker("workers/align-sw.js");
   aligner.onmessage = response => {
     let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
@@ -716,17 +717,13 @@ MT.align = (params, callback, merge) => {
     for (let j = 0; j < n; j++) {
       d = subset[j];
       d.seq = "-".repeat(d.padding - minPadding) + d.seq;
-      if (maxLength < d.seq.length) maxLength = d.seq.length;
+      if (d.seq.length > referenceLength){
+        d.seq = d.seq.substring(0, referenceLength);
+      } else {
+        d.seq = d.seq.padEnd(referenceLength, "-");
+      }
     }
-    for (let k = 0; k < n; k++) {
-      d = subset[k];
-      d.seq = d.seq + "-".repeat(maxLength - d.seq.length);
-    }
-    console.log(
-      "Alignment Padding time: ",
-      (Date.now() - start).toLocaleString(),
-      "ms"
-    );
+    console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
     callback(subset);
   };
   aligner.postMessage(params);
@@ -1217,7 +1214,7 @@ MT.setLinkVisibility = silent => {
     if (link[metric] == null) {
       visible = false;
     } else {
-      visible = visible && link[metric] <= threshold;
+      visible = visible && (link[metric] <= threshold);
     }
     if (showNN) {
       visible = visible && link.nn;
@@ -1242,11 +1239,7 @@ MT.setClusterVisibility = silent => {
     cluster.visible = cluster.nodes >= min;
   }
   if (!silent) $window.trigger("cluster-visibility");
-  console.log(
-    "Cluster Visibility Setting time:",
-    (Date.now() - start).toLocaleString(),
-    "ms"
-  );
+  console.log("Cluster Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
 };
 
 MT.getVisibleNodes = copy => {
