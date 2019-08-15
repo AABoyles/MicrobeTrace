@@ -4,7 +4,6 @@
 # It is unlikely that you should need to modify this, unless you're working on
 # index.html, components/files.html, or scripts/index.js
 primaryscripts=(
-  "node_modules/fast-text-encoding/text.min.js"
   "node_modules/jquery/dist/jquery.min.js"
   "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
   "node_modules/alertifyjs/build/alertify.min.js"
