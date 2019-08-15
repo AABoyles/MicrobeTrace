@@ -786,18 +786,18 @@ $(function() {
       let v = this.value;
       let vre = new RegExp(v);
       for(let i = 0; i < n; i++){
-        let n = node[i];
-        if (!n[field]) {
-          n.selected = false;
+        let node = node[i];
+        if (!node[field]) {
+          node.selected = false;
         }
-        if (typeof n[field] == "string") {
-          n.selected = vre.test(n[field]);
+        if (typeof node[field] == "string") {
+          node.selected = vre.test(node[field]);
         }
-        if (typeof n[field] == "number") {
-          n.selected = n[field] + "" == v;
+        if (typeof node[field] == "number") {
+          node.selected = node[field] + "" == v;
         }
       }
-      if (!nodes.some(n => n.selected)) alertify.warning("No matches!");
+      if (!nodes.some(node => node.selected)) alertify.warning("No matches!");
     }
     $window.trigger("node-selected");
   });
