@@ -1,7 +1,6 @@
 importScripts('../vendor/tn93.min.js');
 
-function snps(s1, s2) {
-  //If we aligned them, these will definitely be the same length. If not...
+const snps = (s1, s2) => {
   var n = Math.min(s1.length, s2.length);
   var sum = 0;
   for (var i = 0; i < n; i++) {
@@ -10,9 +9,7 @@ function snps(s1, s2) {
     sum += (c1 != c2) & (c1 != '-') & (c2 != '-');
   }
   return sum;
-}
-
-var encoder = new TextEncoder();
+};
 
 onmessage = function(e) {
   var start = Date.now();
@@ -28,13 +25,12 @@ onmessage = function(e) {
     let source = subset[i];
     for (let j = 0; j < i; j++) {
       output[t++] = metrics[0] == 'snps' ?
-          snps(source['seq'], subset[j]['seq']) :
-          tn93(source['seq'], subset[j]['seq'], s);
+        snps(source['seq'], subset[j]['seq']) :
+        tn93(source['seq'], subset[j]['seq'], s);
     }
   }
   console.log('Links Compute time: ', (Date.now() - start).toLocaleString(), 'ms');
   start = Date.now();
-  // output = encoder.encode(JSON.stringify(output)).buffer;
   postMessage({ links: output.buffer, start: start }, [output.buffer]);
   close();
 };
