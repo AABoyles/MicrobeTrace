@@ -30,7 +30,7 @@ primaryscripts=(
 secondaryscripts=(
   "node_modules/d3-force-attract/dist/d3-force-attract.min.js"
   "node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"
-  "node_modules/plotly.js/dist/plotly.min.js"
+  "node_modules/plotly.js/dist/plotly-cartesian.min.js"
   "node_modules/3d-force-graph/dist/3d-force-graph.min.js"
   "node_modules/moment/min/moment-with-locales.min.js"
   "node_modules/tidytree/dist/tidytree.min.js"
@@ -93,6 +93,26 @@ cp node_modules/patristic/dist/patristic.min.js vendor/
 cp node_modules/tn93/dist/tn93.min.js vendor/
 cp node_modules/papaparse/papaparse.min.js vendor/
 cp -r node_modules/open-iconic/font/fonts/ .
+
+echo 'Building Dependencies...'
+
+# This little nightmare is a hack to add the Sankey diagram logic to Plotly's
+# Cartesian build
+rm node_modules/plotly.js/lib/index-cartesian.js
+echo """'use strict';
+var Plotly = require('./core');
+Plotly.register([
+    require('./heatmap'),
+    require('./histogram'),
+    require('./scatterternary'),
+    require('./sankey')
+]);
+module.exports = Plotly;
+""" > node_modules/plotly.js/lib/index-cartesian.js
+cd node_modules/plotly.js
+npm install
+npm run bundle
+cd ../..
 
 echo 'Assembling Javascript Bundle...'
 
