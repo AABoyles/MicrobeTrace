@@ -747,21 +747,13 @@ MT.computeConsensusDistances = callback => {
   let computer = new Worker("workers/compute-consensus-distances.js");
   computer.onmessage = (response) => {
     let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log(
-      "Consensus Difference Transit time: ",
-      (Date.now() - start).toLocaleString(),
-      "ms"
-    );
+    console.log("Consensus Difference Transit time: ", (Date.now() - start).toLocaleString(), "ms");
     start = Date.now();
     let nodesLength = nodes.length;
     for (let j = 0; j < nodesLength; j++) {
       session.data.nodes[j]._diff = nodes[j];
     }
-    console.log(
-      "Consensus Difference Merge time: ",
-      (Date.now() - start).toLocaleString(),
-      "ms"
-    );
+    console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
     if (callback) callback();
   };
   let subset = [];
@@ -829,11 +821,7 @@ MT.computeDM = callback => {
     session.data.distance_matrix.labels = JSON.parse(
       MT.decode(new Uint8Array(response.data.labels))
     );
-    console.log(
-      "DM Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+    console.log("DM Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     if (callback) callback();
   };
   computer.postMessage({
@@ -849,11 +837,7 @@ MT.computeTree = (type, callback) => {
     temp.trees[type] = patristic.parseJSON(
       MT.decode(new Uint8Array(response.data.tree))
     );
-    console.log(
-      "Tree (" + type + ") Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+    console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     if (callback) callback();
   };
   computer.postMessage({
@@ -867,11 +851,7 @@ MT.computeDirectionality = callback => {
   let computer = new Worker("workers/compute-directionality.js");
   computer.onmessage = response => {
     let flips = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
-    console.log(
-      "Directionality Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+    console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     let start = Date.now();
     let n = flips.length;
     for (let i = 0; i < n; i++) {
@@ -882,11 +862,7 @@ MT.computeDirectionality = callback => {
         fliplink.target = fliptemp;
       }
     }
-    console.log(
-      "Directionality Integration time: ",
-      (Date.now() - start).toLocaleString(),
-      "ms"
-    );
+    console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
     if (callback) callback();
   };
   computer.postMessage({
@@ -902,11 +878,7 @@ MT.computePatristicMatrix = (type, callback) => {
     let output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
     session.data.distance_matrix["patristic-" + type] = output.matrix;
     session.data.distance_matrix["patristic-" + type].labels = output.labels;
-    console.log(
-      "Patristic Matrix (" + type + ") Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+    console.log("Patristic Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     if (callback) callback();
   };
   computer.postMessage({
@@ -946,11 +918,7 @@ MT.computeNN = (metric, callback) => {
 
 MT.computeTriangulation = (metric, callback) => {
   if (!session.data.distance_matrix[metric]) {
-    console.error(
-      "Couldn't find Distance Matrix " +
-      metric +
-      " to compute Nearest Neighbors."
-    );
+    console.error("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
     return;
   }
   let machine = new Worker("workers/compute-triangulation.js");
@@ -961,11 +929,7 @@ MT.computeTriangulation = (metric, callback) => {
     }
     let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
     session.data.distance_matrix[metric] = matrix;
-    console.log(
-      "Triangulation Transit time: ",
-      (Date.now() - response.data.start).toLocaleString(),
-      "ms"
-    );
+    console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
     if (callback) callback();
   };
   machine.postMessage({
@@ -1193,11 +1157,7 @@ MT.setNodeVisibility = silent => {
     }
   }
   if (!silent) $window.trigger("node-visibility");
-  console.log(
-    "Node Visibility Setting time:",
-    (Date.now() - start).toLocaleString(),
-    "ms"
-  );
+  console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
 };
 
 MT.setLinkVisibility = silent => {
@@ -1420,8 +1380,7 @@ MT.createLinkColorMap = () => {
 
 MT.applyStyle = style => {
   session.style = style;
-  session.style.widgets = Object.assign(
-    {},
+  session.style.widgets = Object.assign({},
     MT.defaultWidgets,
     session.style.widgets
   );
