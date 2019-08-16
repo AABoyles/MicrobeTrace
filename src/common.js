@@ -729,11 +729,9 @@ MT.align = (params, callback) => {
   aligner.postMessage(params);
 };
 
-MT.computeConsensus = callback => {
+MT.computeConsensus = (callback, nodes) => {
   if (!callback) return;
-  let nodes = session.data.nodes.filter(d => {
-    return d.seq;
-  });
+  if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
   let computer = new Worker("workers/compute-consensus.js");
   computer.onmessage = response => {
     console.log("Consensus Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");

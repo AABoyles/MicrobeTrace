@@ -9,7 +9,7 @@ onmessage = function(e) {
     let rst = bioseq.align(
       reference,
       node.seq,
-      e.data.isLocal,
+      false,
       e.data.match,
       e.data.gap
     );

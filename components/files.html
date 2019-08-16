@@ -263,8 +263,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.files.forEach(addToTable);
     }
 
-    $('#data-files').on('change', function (e) {
-      var files = e.target.files;
+    $('#data-files').on('change', function () {
+      var files = this.files;
       $('#file-prompt').remove();
       for (var i = 0, f; f = files[i]; i++) processFile(f);
       $('#launch').prop('disabled', false).focus();
@@ -350,7 +350,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         var root = $('<div class="file-table-row"></div>').data('filename', file.name);
         var fnamerow = $('<div class="row w-100"></div>');
         $('<div class="file-name col"></div>')
-          .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').click(function (e) {
+          .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', function () {
             session.files.splice(session.files.indexOf(file.name), 1);
             root.slideUp(function () { root.remove(); });
           }))
@@ -376,8 +376,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <input type="radio" name="options-${file.name}" data-type="newick" autocomplete="off"${isNewick ? ' checked' : ''}>Newick
           </label>
         </div>
-        `)
-          .appendTo(fnamerow);
+        `).appendTo(fnamerow);
         fnamerow.appendTo(root);
         var optionsrow = $('<div class="row w-100"></div>');
         var options = '<option>None</option>' + headers.map(function (h) { return '<option value="' + h + '">' + MT.titleize(h) + '</option>'; }).join('\n');
@@ -424,8 +423,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
             these = $(`[data-file='${file.name}']`),
             first = $(these.get(0)),
-            second = $(these.get(1));
-          third = $(these.get(2));
+            second = $(these.get(1)),
+            third = $(these.get(2));
           if (type == 'node') {
             first.slideDown().find('label').text('ID');
             second.slideDown().find('label').text('Sequence');
@@ -448,12 +447,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function readFastas() {
       var read = 0, data = [];
-      var fastas = session.files.filter(function (f) { return f.name.split('.').pop().includes('fas'); });
+      var fastas = session.files.filter(f => f.name.split('.').pop().includes('fas'));
       if (fastas.length == 0) return;
-      fastas.forEach(function (fasta) {
-        MT.parseFASTA(fasta.contents, function (nodes) {
+      fastas.forEach((fasta, i) => {
+        MT.parseFASTA(fasta.contents, nodes => {
+          if(i == 0 && session.style.widgets['reference-source-first']){
+            session.data.reference = nodes[0].seq;
+          }
           data = data.concat(nodes);
-          if (++read == fastas.length) updatePreview(data);
+          if (++read == fastas.length) {
+            MT.computeConsensus(consensus => session.data.reference = consensus, data);
+            updatePreview(data);
+          }
         });
       });
     }
@@ -464,22 +469,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         MT.align({
           nodes: data,
           reference: session.data.reference,
-          isLocal: $('#localAlign').is(':checked'),
           match: [parseFloat($('#alignerMatch').val()), -parseFloat($('#alignerMismatch').val())],
           gap: [-parseFloat($('#alignerGapO').val()), -parseFloat($('#alignerGapE').val())]
         }, function (output) {
-          alignmentViewer(output, {
-            showID: false
-          }).then(function (canvas) {
-            $('#alignment-preview').empty().append(canvas);
-          });
+          alignmentViewer(output, { showID: false })
+            .then(canvas => $('#alignment-preview').empty().append(canvas));
         });
       } else {
-        alignmentViewer(data, {
-          showID: false
-        }).then(function (canvas) {
-          $('#alignment-preview').empty().append(canvas);
-        });
+        alignmentViewer(data, { showID: false })
+          .then(canvas => $('#alignment-preview').empty().append(canvas));
       }
     }
 
@@ -490,7 +488,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['align-none'] = false;
       $('.alignConfigRow, #reference-file-row').slideDown();
       $('#alignment-preview').slideUp(function () {
-        $(this).empty();
+        $(this).empty().show();
       });
     });
 
@@ -499,7 +497,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['align-none'] = true;
       $('.alignConfigRow, #reference-file-row').slideUp();
       $('#alignment-preview').slideUp(function () {
-        $(this).empty();
+        $(this).empty().show();
       });
     });
 
@@ -507,6 +505,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['reference-source-file'] = true;
       session.style.widgets['reference-source-first'] = false;
       session.style.widgets['reference-source-consensus'] = false;
+      session.data.reference = $('#refSeqID').val();
       if(!session.style.widgets['align-none']) $('#reference-file-row').slideDown();
     });
 
@@ -547,12 +546,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#refSeqID').html(`
       <option value="${MT.HXB2.substr(2000, 2100)}" selected>Pol</option>
       <option value="${MT.HXB2}">Complete</option>
-    `).on('change', function(){
-      session.data.reference = this.value;
-      readFastas();
-    });
+    `).on('change', function(){ session.data.reference = this.value; });
 
-    $('#alignerControlsButton, #alignment-preview').on('click', readFastas);
+    $('#alignment-preview').on('click', readFastas);
 
     $('#default-distance-metric').change(function () {
       var lsv = this.value;
