@@ -744,22 +744,11 @@ MT.computeConsensus = callback => {
 
 MT.computeConsensusDistances = callback => {
   let start = Date.now();
-  let computer = new Worker("workers/compute-consensus-distances.js");
-  computer.onmessage = (response) => {
-    let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log("Consensus Difference Transit time: ", (Date.now() - start).toLocaleString(), "ms");
-    start = Date.now();
-    let nodesLength = nodes.length;
-    for (let j = 0; j < nodesLength; j++) {
-      session.data.nodes[j]._diff = nodes[j];
-    }
-    console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
+  let nodes = session.data.nodes;
+  let nodesLength = nodes.length;
   let subset = [];
-  let n = session.data.nodes.length;
-  for (let i = 0; i < n; i++) {
-    let node = session.data.nodes[i];
+  for (let i = 0; i < nodesLength; i++) {
+    let node = nodes[i];
     if (node.seq) {
       subset.push({
         index: i,
@@ -772,9 +761,22 @@ MT.computeConsensusDistances = callback => {
       });
     }
   }
+  let subsetLength = subset.length;
+  let computer = new Worker("workers/compute-consensus-distances.js");
+  computer.onmessage = response => {
+    let dists = new Uint16Array(response.data.dists);
+    console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+    start = Date.now();
+    for (let j = 0; j < subsetLength; j++) {
+      nodes[subset[j].index]._diff = dists[j];
+    }
+    console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+    if (callback) callback();
+  };
   computer.postMessage({
     consensus: session.data.consensus,
-    nodes: subset
+    subset: subset,
+    start: start
   });
 };
 
