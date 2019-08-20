@@ -1,9 +1,9 @@
 importScripts('../vendor/tn93.min.js');
 
 const snps = (s1, s2) => {
-  var n = Math.min(s1.length, s2.length);
-  var sum = 0;
-  for (var i = 0; i < n; i++) {
+  let n = Math.min(s1.length, s2.length);
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
     let c1 = s1[i];
     let c2 = s2[i];
     sum += (c1 != c2) & (c1 != '-') & (c2 != '-');
@@ -12,13 +12,13 @@ const snps = (s1, s2) => {
 };
 
 onmessage = function(e) {
-  var start = Date.now();
-  var subset = e.data.nodes,
+  let start = Date.now();
+  let subset = e.data.nodes,
     metrics = e.data.metrics,
     n = subset.length,
     s = e.data.strategy.toUpperCase(),
     t = 0;
-  var output = metrics[0] == 'snps' ?
+  let output = metrics[0] == 'snps' ?
       new Uint16Array((n * n - n) / 2) :
       new Float32Array((n * n - n) / 2);
   for (let i = 0; i < n; i++) {
@@ -31,6 +31,6 @@ onmessage = function(e) {
   }
   console.log('Links Compute time: ', (Date.now() - start).toLocaleString(), 'ms');
   start = Date.now();
-  postMessage({ links: output.buffer, start: start }, [output.buffer]);
+  postMessage({ links: output.buffer, start }, [output.buffer]);
   close();
 };

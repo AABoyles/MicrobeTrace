@@ -246,15 +246,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
 <script>
   (function () {
+    'use strict';
 
     $('#file-panel').parent().css('z-index', 1000);
 
     $('#file-settings-toggle').on('click', function () {
-      var pane = $('#file-settings-pane');
+      const pane = $('#file-settings-pane');
       if ($(this).hasClass('active')) {
-        pane.animate({ left: '-400px' }, function () { pane.hide(); });
+        pane.animate({ left: '-400px' }, () => pane.hide());
       } else {
-        pane.show(0, function () { pane.animate({ left: '0px' }); });
+        pane.show(0, () => pane.animate({ left: '0px' }));
       }
     });
 
@@ -264,97 +265,90 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
 
     $('#data-files').on('change', function () {
-      var files = this.files;
-      $('#file-prompt').remove();
-      for (var i = 0, f; f = files[i]; i++) processFile(f);
-      $('#launch').prop('disabled', false).focus();
+      processFiles(this.files);
     });
 
-    $('#file-panel').on('dragover', function (evt) {
+    $('#file-panel').on('dragover', evt => {
       evt.stopPropagation();
       evt.preventDefault();
       evt.originalEvent.dataTransfer.dropEffect = 'copy';
-    }).on('drop', function (evt) {
+    }).on('drop', evt => {
       evt.stopPropagation();
       evt.preventDefault();
-      var files = evt.originalEvent.dataTransfer.files;
-      var n = files.length;
-      $('#file-prompt').remove();
-      for (var i = 0, f; f = files[i]; i++) processFile(f);
-      $('#launch').prop('disabled', false).focus();
+      processFiles(evt.originalEvent.dataTransfer.files);
     });
 
+    function processFiles(files){
+      const n = files.length;
+      $('#file-prompt').remove();
+      for (let i = 0; i < n; i++) processFile(files[i]);
+      $('#launch').prop('disabled', false).focus();
+    }
+
     function processFile(rawfile) {
-      var extension = rawfile.name.split('.').pop().toLowerCase();
+      const extension = rawfile.name.split('.').pop().toLowerCase();
       if (extension == 'zip') {
-        var new_zip = new JSZip();
+        let new_zip = new JSZip();
         new_zip
           .loadAsync(rawfile)
-          .then(function (zip) {
-            zip.forEach(function (relativePath, zipEntry) {
-              zipEntry.async("string").then(function (c) {
-                MT.processJSON(c, zipEntry.name.split('.').pop());
+          .then(zip => {
+            zip.forEach((relativePath, zipEntry) => {
+              zipEntry.async("string").then(c => {
+                MT.processJSON(c, zipEntry.name.split('.').pop())
               });
             });
           });
         return;
       }
       if (extension == 'microbetrace' || extension == 'hivtrace') {
-        var reader = new FileReader();
-        reader.onloadend = function (out) {
-          MT.processJSON(out.target.result, extension);
-        };
+        let reader = new FileReader();
+        reader.onloadend = out => MT.processJSON(out.target.result, extension);
         reader.readAsText(rawfile, 'UTF-8');
       }
       if (extension == 'svg') {
-        var reader = new FileReader();
-        reader.onloadend = function (out) {
-          MT.processSVG(out.target.result);
-        };
+        let reader = new FileReader();
+        reader.onloadend = out => MT.processSVG(out.target.result);
         reader.readAsText(rawfile, 'UTF-8');
       }
-      var isXL = (extension == 'xlsx' || extension == 'xls');
-      fileto.promise(rawfile, isXL ? 'ArrayBuffer' : 'Text').then(function (file) {
+      fileto.promise(rawfile, (extension == 'xlsx' || extension == 'xls') ? 'ArrayBuffer' : 'Text').then(file => {
         session.files.push(file);
         addToTable(file);
       });
     }
 
     function addToTable(file) {
-      var extension = file.name.split('.').pop().toLowerCase();
-      var isFasta = extension.indexOf('fas') > -1;
-      var isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
-      var isXL = (extension == 'xlsx' || extension == 'xls');
-      var isNode = file.name.toLowerCase().includes('node');
+      const extension = file.name.split('.').pop().toLowerCase();
+      const isFasta = extension.indexOf('fas') > -1;
+      const isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
+      const isXL = (extension == 'xlsx' || extension == 'xls');
+      const isNode = file.name.toLowerCase().includes('node');
       if (isXL) {
-        var workbook = XLSX.read(file.contents, { type: 'array' });
-        var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        var headers = [];
-        data.forEach(function (row) {
-          Object.keys(row).forEach(function (key) {
-            key = filterXSS(key);
-            if (!headers.includes(key)) headers.push(key);
-          })
+        let workbook = XLSX.read(file.contents, { type: 'array' });
+        let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        let headers = [];
+        data.forEach(row => {
+          Object.keys(row).forEach(key => {
+            const safeKey = filterXSS(key);
+            if (!headers.includes(safeKey)) headers.push(safeKey);
+          });
         });
         addTableTile(headers);
       } else {
         Papa.parse(file.contents, {
           header: true,
           preview: 1,
-          complete: function (output) {
-            addTableTile(output.meta.fields.map(filterXSS));
-          }
+          complete: output => addTableTile(output.meta.fields.map(filterXSS))
         });
       }
       function addTableTile(headers) {
-        var root = $('<div class="file-table-row"></div>').data('filename', file.name);
-        var fnamerow = $('<div class="row w-100"></div>');
+        let root = $('<div class="file-table-row"></div>').data('filename', file.name);
+        let fnamerow = $('<div class="row w-100"></div>');
         $('<div class="file-name col"></div>')
-          .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', function () {
+          .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', () => {
             session.files.splice(session.files.indexOf(file.name), 1);
-            root.slideUp(function () { root.remove(); });
+            root.slideUp(() => root.remove());
           }))
-          .append($('<a href="#" class="oi oi-data-transfer-download align-middle p-1" title="Resave this file"></a>').on('click', function () {
+          .append($('<a href="#" class="oi oi-data-transfer-download align-middle p-1" title="Resave this file"></a>').on('click', () => {
             saveAs(new Blob([file.contents], { type: file.type | 'text' }), file.name);
           }))
           .append('<span class="p-1">' + file.name + '</span>')
@@ -378,8 +372,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         </div>
         `).appendTo(fnamerow);
         fnamerow.appendTo(root);
-        var optionsrow = $('<div class="row w-100"></div>');
-        var options = '<option>None</option>' + headers.map(function (h) { return '<option value="' + h + '">' + MT.titleize(h) + '</option>'; }).join('\n');
+        let optionsrow = $('<div class="row w-100"></div>');
+        let options = '<option>None</option>' + headers.map(h => `<option value="${h}">${MT.titleize(h)}</option>`).join('\n');
         optionsrow.append(`
       <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-1">${isNode ? 'ID' : 'Source'}</label>
@@ -397,13 +391,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         optionsrow.appendTo(root);
 
         function matchHeaders(type) {
-          var these = $(`[data-file='${file.name}'] select`);
-          var a = type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+          const these = $(`[data-file='${file.name}'] select`);
+          const a = type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
             b = type == 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
             c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
-          [a, b, c].forEach(function (list, i) {
+          [a, b, c].forEach((list, i) => {
             $(these.get(i)).val("None");
-            list.forEach(function (title) {
+            list.forEach(title => {
               if (headers.includes(title)) $(these.get(i)).val(title);
             });
             if ($(these.get(i)).val() == 'None' &&
@@ -420,7 +414,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         matchHeaders($(`[name="options-${file.name}"]:checked`).data('type'));
 
         function refit(e) {
-          var type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
+          const type = $(e ? e.target : `[name="options-${file.name}"]:checked`).data('type'),
             these = $(`[data-file='${file.name}']`),
             first = $(these.get(0)),
             second = $(these.get(1)),
@@ -446,8 +440,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
 
     function readFastas() {
-      var read = 0, data = [];
-      var fastas = session.files.filter(f => f.name.split('.').pop().includes('fas'));
+      let read = 0, data = [];
+      const fastas = session.files.filter(f => f.name.split('.').pop().includes('fas'));
       if (fastas.length == 0) return;
       fastas.forEach((fasta, i) => {
         MT.parseFASTA(fasta.contents, nodes => {
@@ -471,7 +465,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           reference: session.data.reference,
           match: [parseFloat($('#alignerMatch').val()), -parseFloat($('#alignerMismatch').val())],
           gap: [-parseFloat($('#alignerGapO').val()), -parseFloat($('#alignerGapE').val())]
-        }, function (output) {
+        }, output => {
           alignmentViewer(output, { showID: false })
             .then(canvas => $('#alignment-preview').empty().append(canvas));
         });
@@ -483,16 +477,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     $('.alignConfigRow').hide();
 
-    $('#align-sw').parent().on('click', function () {
+    $('#align-sw').parent().on('click', () => {
       session.style.widgets['align-sw'] = true;
       session.style.widgets['align-none'] = false;
       $('.alignConfigRow, #reference-file-row').slideDown();
-      $('#alignment-preview').slideUp(function () {
+      $('#alignment-preview').slideUp(function() {
         $(this).empty().show();
       });
     });
 
-    $('#align-none').parent().on('click', function () {
+    $('#align-none').parent().on('click', () => {
       session.style.widgets['align-sw'] = false;
       session.style.widgets['align-none'] = true;
       $('.alignConfigRow, #reference-file-row').slideUp();
@@ -501,7 +495,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
     });
 
-    $('#reference-source-file').parent().on('click', function(){
+    $('#reference-source-file').parent().on('click', () => {
       session.style.widgets['reference-source-file'] = true;
       session.style.widgets['reference-source-first'] = false;
       session.style.widgets['reference-source-consensus'] = false;
@@ -509,14 +503,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       if(!session.style.widgets['align-none']) $('#reference-file-row').slideDown();
     });
 
-    $('#reference-source-first').parent().on('click', function(){
+    $('#reference-source-first').parent().on('click', () => {
       session.style.widgets['reference-source-file'] = false;
       session.style.widgets['reference-source-first'] = true;
       session.style.widgets['reference-source-consensus'] = false;
       $('#reference-file-row').slideUp();
     });
 
-    $('#reference-source-consensus').parent().on('click', function(){
+    $('#reference-source-consensus').parent().on('click', () => {
       session.style.widgets['reference-source-file'] = false;
       session.style.widgets['reference-source-first'] = false;
       session.style.widgets['reference-source-consensus'] = true;
@@ -526,18 +520,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#reference-file-row').hide();
 
     $('#refSeqFileLoad').on('change', function () {
-      var file = this.files[0];
-      var reader = new FileReader();
-      reader.onloadend = function (e) {
+      const file = this.files[0];
+      let reader = new FileReader();
+      reader.onloadend = e => {
         if (e.target.readyState == FileReader.DONE) {
-          MT.parseFASTA(e.target.result, function (nodes) {
+          MT.parseFASTA(e.target.result, nodes => {
             $('#refSeqID')
               .html(nodes.map((d, i) => `
                 <option value="${filterXSS(d.seq)}" ${i == 0 ? "selected" : ""}>${filterXSS(d.id)}</option>
               `))
               .trigger('change');
           });
-          $('label[for="refSeqFileLoad"]').text(`${filterXSS(file.name)}`);
+          $('label[for="refSeqFileLoad"]').text(filterXSS(file.name));
         }
       };
       reader.readAsText(file);
@@ -551,7 +545,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#alignment-preview').on('click', readFastas);
 
     $('#default-distance-metric').change(function () {
-      var lsv = this.value;
+      const lsv = this.value;
       localStorage.setItem('default-distance-metric', lsv);
       $('#default-distance-metric').val(lsv);
       if (lsv == 'snps') {
@@ -570,22 +564,28 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['default-distance-metric'] = lsv;
     });
 
-    var cachedLSV = localStorage.getItem('default-distance-metric');
+    const cachedLSV = localStorage.getItem('default-distance-metric');
     if (cachedLSV) {
       $('#default-distance-metric').val(cachedLSV).trigger('change');
     }
 
-    $('#ambiguity-resolution-strategy').change(function (e) {
-      session.style.widgets['ambiguity-resolution-strategy'] = e.target.value;
-    });
+    $('#ambiguity-resolution-strategy').change(function () {
+      const v = this.value;
+      session.style.widgets['ambiguity-resolution-strategy'] = v;
+      if(v == 'HIVTRACE-G'){
+        $('#ambiguity-threshold-row').slideDown();
+      } else {
+        $('#ambiguity-threshold-row').slideUp();
+      }
+    }).change();
 
-    var cachedView = localStorage.getItem('default-view');
+    const cachedView = localStorage.getItem('default-view');
     if (cachedView) {
       $('#default-view').val(cachedView);
     }
 
-    $('#default-view').change(function (e) {
-      var v = e.target.value;
+    $('#default-view').change(function () {
+      const v = this.value;
       localStorage.setItem('default-view', v);
       session.layout.content[0].type = v;
     });
@@ -598,12 +598,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       $('#stash-auto-yes').parent().trigger('click');
     }
 
-    $('#stash-auto-no').parent().on('click', function () {
+    $('#stash-auto-no').parent().on('click', () => {
       if (temp.autostash) clearInterval(temp.autostash.interval);
       localStorage.setItem('stash-auto', 'false');
     });
 
-    $('#generate-sequences').on('click', function () {
+    $('#generate-sequences').on('click', () => {
       $('#file-prompt').remove();
       $('#launch').prop('disabled', false).focus();
       processFile(new File([Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', parseFloat($('#generate-number').val()), 20))], 'generatedNodes.csv'));
@@ -614,7 +614,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       $('#loading-information').html(session.messages.join('<br>'));
     }
 
-    $('#launch').click(function (e) {
+    $('#launch').on('click', () => {
       session.meta.startTime = Date.now();
       $('#launch').prop('disabled', true);
       session.messages = [];
@@ -626,48 +626,48 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         keyboard: false
       });
 
-      temp.messageTimeout = setTimeout(function () {
+      temp.messageTimeout = setTimeout(() => {
         $('#loadCancelButton').slideDown();
         alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
       }, 20000);
 
-      $('#file-panel .file-table-row').each(function (i, el) {
-        var $el = $(el);
-        var fname = $el.data('filename');
-        var selects = $el.find('select');
-        var f = session.files.find(function (file) { return file.name == fname; });
+      $('#file-panel .file-table-row').each((i, el) => {
+        const $el = $(el);
+        const fname = $el.data('filename');
+        const selects = $el.find('select');
+        const f = session.files.find(file => file.name == fname);
         f.format = $el.find('input[type="radio"]:checked').data('type');
         f.field1 = selects.get(0).value;
         f.field2 = selects.get(1).value;
         f.field3 = selects.get(2).value;
       });
 
-      var hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
+      let anySequences = false;
 
-      var anySequences = false;
-      var check = session.files.length > 1;
-      var defaultMetric = session.style.widgets['default-distance-metric'];
+      const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
+      const check = session.files.length > 1;
+      const defaultMetric = session.style.widgets['default-distance-metric'];
 
       session.state.metrics = [defaultMetric];
 
-      session.files.sort(function (a, b) { return hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format); });
+      session.files.sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
 
       //First Pass: Read all files, identify all distinct nodes.
-      session.files.forEach(function (file, fileNum) {
-        var start = Date.now();
-        var filename = filterXSS(file.name);
-        var extension = filename.split('.').pop().toLowerCase();
-        var origin = [filename];
+      session.files.forEach((file, fileNum) => {
+        const start = Date.now();
+        const filename = filterXSS(file.name);
+        const extension = filename.split('.').pop().toLowerCase();
+        const origin = [filename];
 
         if (file.format == 'fasta') {
 
           message(`Parsing ${filename} as FASTA...`);
           anySequences = true;
-          var newNodes = 0;
-          MT.parseFASTA(file.contents, function (seqs) {
-            var n = seqs.length;
-            for (var i = 0; i < n; i++) {
-              var node = seqs[i];
+          let newNodes = 0;
+          MT.parseFASTA(file.contents, seqs => {
+            const n = seqs.length;
+            for (let i = 0; i < n; i++) {
+              let node = seqs[i];
               if (!node) continue;
               node.id = filterXSS(node.id);
               node.seq = filterXSS(node.seq);
@@ -682,13 +682,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         } else if (file.format == 'link') {
 
           message(`Parsing ${filename} as Link List...`);
-          var l = 0;
+          let l = 0;
 
           function forEachLink(link) {
-            var keys = Object.keys(link);
-            var n = keys.length;
-            for (var i = 0; i < n; i++) {
-              var key = keys[i];
+            const keys = Object.keys(link);
+            const n = keys.length;
+            for (let i = 0; i < n; i++) {
+              let key = keys[i];
               link[key] = filterXSS(link[key]);
             }
             l += MT.addLink(Object.assign({
@@ -702,24 +702,24 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           if (extension == 'xls' || extension == 'xlsx') {
 
-            var workbook = XLSX.read(file.contents, { type: 'array' });
-            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            let workbook = XLSX.read(file.contents, { type: 'array' });
+            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
             data.map(forEachLink);
             message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-            data.forEach(function (row) {
-              Object.keys(row).forEach(function (key) {
-                key = filterXSS(key);
-                if (!session.data.linkFields.includes(key)) {
-                  session.data.linkFields.push(key);
+            data.forEach(row => {
+              Object.keys(row).forEach(key => {
+                const safeKey = filterXSS(key);
+                if (!session.data.linkFields.includes(safeKey)) {
+                  session.data.linkFields.push(safeKey);
                 }
               });
             });
-            var n = 0, t = 0;
-            var nodeIDs = [];
-            var k = data.length;
-            for (var i = 0; i < k; i++) {
-              var l = data[i];
-              var f1 = l[file.field1];
+            let n = 0, t = 0;
+            let nodeIDs = [];
+            const k = data.length;
+            for (let i = 0; i < k; i++) {
+              const l = data[i];
+              const f1 = l[file.field1];
               if (nodeIDs.indexOf(f1) == -1) {
                 t++;
                 nodeIDs.push(f1);
@@ -728,7 +728,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   origin: origin
                 }, true);
               }
-              var f2 = l[file.field2];
+              const f2 = l[file.field2];
               if (nodeIDs.indexOf(f2) == -1) {
                 t++;
                 nodeIDs.push(f2);
@@ -748,22 +748,22 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
-              complete: function (results) {
-                var data = results.data;
+              complete: results => {
+                let data = results.data;
                 data.map(forEachLink);
                 message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
-                results.meta.fields.forEach(function (key) {
-                  key = filterXSS(key);
-                  if (!session.data.linkFields.includes(key)) {
-                    session.data.linkFields.push(key);
+                results.meta.fields.forEach(key => {
+                  const safeKey = filterXSS(safeKey);
+                  if (!session.data.linkFields.includes(safeKey)) {
+                    session.data.linkFields.push(safeKey);
                   }
                 });
-                var newNodes = 0, totalNodes = 0;
-                var n = data.length;
-                var nodeIDs = [];
-                for (var i = 0; i < n; i++) {
-                  var l = data[i];
-                  var f1 = l[file.field1];
+                let newNodes = 0, totalNodes = 0;
+                const n = data.length;
+                let nodeIDs = [];
+                for (let i = 0; i < n; i++) {
+                  const l = data[i];
+                  const f1 = l[file.field1];
                   if (nodeIDs.indexOf(f1) == -1) {
                     totalNodes++;
                     newNodes += MT.addNode({
@@ -771,7 +771,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                       origin: origin
                     }, true);
                   }
-                  var f2 = l[file.field2];
+                  const f2 = l[file.field2];
                   if (nodeIDs.indexOf(f2) == -1) {
                     totalNodes++;
                     newNodes += MT.addNode({
@@ -791,15 +791,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           message(`Parsing ${filename} as Node List...`);
           if (file.field2 !== 'None') anySequences = true;
 
-          var m = 0, n = 0;
+          let m = 0, n = 0;
 
           if (extension == 'xls' || extension == 'xlsx') {
 
-            var workbook = XLSX.read(file.contents, { type: 'array' });
-            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            data.forEach(function (results) {
-              var node = JSON.parse(filterXSS(JSON.stringify(results)));
-              Object.keys(node).forEach(function (key) {
+            let workbook = XLSX.read(file.contents, { type: 'array' });
+            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            data.forEach(results => {
+              let node = JSON.parse(filterXSS(JSON.stringify(results)));
+              Object.keys(node).forEach(key => {
                 if (!session.data.nodeFields.includes(key)) {
                   session.data.nodeFields.push(key);
                 }
@@ -819,22 +819,22 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
-              step: function (results) {
+              step: results => {
                 if (0 == n++) {
-                  results.meta.fields.forEach(function (key) {
-                    key = filterXSS(key);
-                    if (!session.data.nodeFields.includes(key)) {
-                      session.data.nodeFields.push(key);
+                  results.meta.fields.forEach(key => {
+                    const safeKey = filterXSS(key);
+                    if (!session.data.nodeFields.includes(safeKey)) {
+                      session.data.nodeFields.push(safeKey);
                     }
                   });
                 }
-                node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
+                let node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
                 node.id = '' + node[file.field1];
                 if (file.field2 !== 'None') node.seq = node[file.field2];
                 node['origin'] = origin;
                 m += MT.addNode(node, check);
               },
-              complete: function () {
+              complete: () => {
                 console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
                 if (fileNum == session.files.length - 1) processSequences();
@@ -848,13 +848,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           if (extension == 'xls' || extension == 'xlsx') {
 
-            var workbook = XLSX.read(file.contents, { type: 'array' });
-            var data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            var nodeIDs = [], nn = 0, nl = 0;
-            data.forEach(function (row, i) {
+            let workbook = XLSX.read(file.contents, { type: 'array' });
+            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            let nodeIDs = [], nn = 0, nl = 0;
+            data.forEach((row, i) => {
               if (i == 0) {
                 nodeIDs = row.map(filterXSS);
-                nodeIDs.forEach(function (cell, k) {
+                nodeIDs.forEach((cell, k) => {
                   if (k > 0) {
                     nn += MT.addNode({
                       id: '' + cell,
@@ -863,18 +863,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   }
                 });
               } else {
-                var source = '' + row[0];
-                row.forEach(function (cell, j) {
+                const source = '' + row[0];
+                row.forEach((cell, j) => {
                   if (j == 0) return;
-                  var target = '' + nodeIDs[j];
+                  const target = '' + nodeIDs[j];
                   if (source == target) return;
-                  var base = {
+                  nl += MT.addLink({
                     source: source,
                     target: target,
                     origin: origin,
                     distance: parseFloat(cell)
-                  };
-                  nl += MT.addLink(base, check);
+                  }, check);
                 });
               }
             });
@@ -885,7 +884,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           } else {
 
-            MT.parseCSVMatrix(file, function (o) {
+            MT.parseCSVMatrix(file, o => {
               message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
               if (fileNum == session.files.length - 1) processSequences();
@@ -893,25 +892,24 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           }
         } else { // if(file.format == 'newick'){
 
-          var links = 0;
-          var newLinks = 0;
-          var newNodes = 0;
-          var tree = patristic.parseNewick(file.contents);
-          var m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
-          for (var i = 0; i < n; i++) {
-            var source = labels[i];
+          let links = 0;
+          let newLinks = 0;
+          let newNodes = 0;
+          const tree = patristic.parseNewick(file.contents);
+          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
+          for (let i = 0; i < n; i++) {
+            const source = labels[i];
             newNodes += MT.addNode({
               id: source,
               origin: origin
             }, check);
-            for (var j = 0; j < i; j++) {
-              var base = {
+            for (let j = 0; j < i; j++) {
+              newLinks += MT.addLink({
                 source: source,
                 target: labels[j],
                 origin: origin,
                 distance: parseFloat(matrix[i][j])
-              };
-              newLinks += MT.addLink(base, check);
+              }, check);
               links++;
             }
           }
@@ -931,10 +929,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         session.data.nodeFields.push('seq');
         $('.show-for-seq').show();
         $('.show-for-seq.row').css('display', 'flex');
-        var nodes = session.data.nodes, subset = [];
-        var n = nodes.length;
-        for (var i = 0; i < n; i++) {
-          var d = nodes[i];
+        let nodes = session.data.nodes, subset = [];
+        const n = nodes.length;
+        for (let i = 0; i < n; i++) {
+          const d = nodes[i];
           if (!d.seq) {
             d.seq = '';
           } else {
@@ -951,18 +949,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
             gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
             nodes: subset
-          }, function (output) {
-            var start = Date.now();
-            var m = subset.length;
-            for (var j = 0; j < m; j++) {
-              var node = subset[j];
-              Object.assign(node, output[j]);
+          }, output => {
+            const start = Date.now();
+            const m = subset.length;
+            for (let j = 0; j < m; j++) {
+              Object.assign(subset[j], output[j]);
             }
-            console.log(
-              "Alignment Merge time: ",
-              (Date.now() - start).toLocaleString(),
-              "ms"
-            );
+            console.log("Alignment Merge time: ", (Date.now() - start).toLocaleString(), "ms");
             computeLinks(subset);
           });
         }
@@ -970,13 +963,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       function computeLinks(nodes) {
         message('Computing Links based on Genomic Proximity...');
-        MT.computeConsensus(function (consensus) {
+        MT.computeConsensus(consensus => {
           session.data.consensus = consensus;
-          MT.computeConsensusDistances(function () {
-            nodes.sort(function (a, b) {
-              return a['_diff'] - b['_diff'];
-            });
-            MT.computeLinks(nodes, function (k) {
+          MT.computeConsensusDistances(() => {
+            nodes.sort((a, b) => a['_diff'] - b['_diff']);
+            MT.computeLinks(nodes, k => {
               message(` - Found ${k} New Links from Genomic Proximity`);
               MT.finishUp();
             });

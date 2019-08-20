@@ -5,7 +5,7 @@ onmessage = function(e){
       dm = e.data.matrix,
       epsilon = Math.pow(10, e.data.epsilon);
   let n = nodes.length, m = links.length;
-  let output = Array(m).fill(false);
+  let output = new Uint8Array(m);
   for(let i = 0; i < n; i++){
     let minDist = Number.MAX_VALUE;
     let targets = [];
@@ -33,8 +33,6 @@ onmessage = function(e){
   }
   console.log('NN Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
-  var encoder = new TextEncoder();
-  output = encoder.encode(JSON.stringify(output)).buffer;
-  postMessage({links: output, start: start}, [output]);
+  postMessage({links: output.buffer, start: start}, [output.buffer]);
   close();
 };
