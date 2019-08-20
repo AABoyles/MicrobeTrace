@@ -1,36 +1,47 @@
-  <div id="help-panel" class="container">
+<div id="help-panel">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="https://github.com/CDCgov/MicrobeTrace/wiki/Home">Home</a></li>
+    </ol>
+  </nav>
+  <div class="container">
     <h1 id="help-title"></h1>
     <div id="help-content"></div>
     <div id="help-footer"></div>
   </div>
+</div>
 
-  <script>
-  $(function(){
+<script>
+  (function(){
 
-    function renderPage(filename){
-      $('#help-title').text(app.titleize(filename.replace('-', ' ').slice(0,-3)));
-      app.getHelp(filename, function(content){
+    let breadcrumbs = ['Home'];
+
+    function renderPage(target){
+      $('#help-title').text(MT.titleize(target));
+      MT.getHelp(target, function(content){
         $('#help-content').html(content);
-        $('#help-content a').on('click', function(e){
-          if(navigator.onLine) return;
-          e.preventDefault();
-          var components = e.target.href.split('/');
-          $('#help-panel').slideUp(function(){
-            renderPage(_.last(components) + '.md');
-            $('#help-panel').slideDown();
-          });
-          //alertify.error('This is an external link.<br />Please connect to the internet and click it again.');
-        });
+        $('#help-panel a').on('click', clickedLink);
       });
     }
 
-    app.getHelp('_Footer.md', function(html){
-      $('#help-footer').html(html)
-        .find('a').click(clickedLink);
+    function clickedLink(e){
+      e.preventDefault();
+      var target = e.target.href.split('/').pop();
+      if(breadcrumbs.includes(target)) breadcrumbs.splice(breadcrumbs.indexOf(target), 1);
+      breadcrumbs.push(target);
+      $('#help-panel .breadcrumb').html(
+        breadcrumbs.map(crumb => `<li class="breadcrumb-item"><a href="https://github.com/CDCgov/MicrobeTrace/wiki/${crumb}">${crumb}</a></li>`).join('')
+      );
+      $('#help-panel').slideUp(function(){
+        renderPage(target);
+        $('#help-panel').slideDown();
+      });
+    }
+
+    MT.getHelp('_Footer', function(html){
+      $('#help-footer').html(html).find('a').click(clickedLink);
     });
 
-    renderPage('Home.md');
-  });
-  </script>
-</body>
-</html>
+    renderPage('Home');
+  })();
+</script>

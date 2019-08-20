@@ -1,351 +1,368 @@
-  <div id="gantt"></div>
+<div id="gantt"></div>
 
-  <div class="view_controls">
-    <button type="button" id="toggle_gantt_settings" class="btn btn-light btn-sm">
-      <span class="oi oi-cog"></span>
-    </button>
-    <button type="button" class="btn btn-light btn-sm"  data-toggle="modal" data-target="#gantt-export-modal" title="Export Gantt">
-      <span class="oi oi-data-transfer-download"></span>
-    </button>
-  </div>
+<div class="view-controls">
+  <button type="button" id="toggle-gantt-settings" data-toggle="button" class="btn btn-light btn-sm">
+    <span class="oi oi-cog"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#gantt-export-modal"
+    title="Export Gantt">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+</div>
 
-  <div id="gantt_settings_pane" class="left_pane">
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="nav-item active">
-        <a href="#ganttConfigurations" id="gantt-tab" class="nav-link active" aria-controls="gantt" role="tab" data-toggle="tab">Gantt</a>
-      </li>
-    </ul>
-    <!-- Tab panes -->
-    <div class="tab-content">
-      <div class="tab-pane fade show active" id="ganttConfigurations" role="tabpanel" aria-labelledby="gantt-tab">
-        <div class="form-group row">
-          <div class="col-12"><button id="addDate" type="button" class="btn btn-light w-100">Add Date</button></div>
-        </div>
+<div id="gantt-settings-pane" class="left-pane">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item active">
+      <a href="#ganttConfigurations" id="gantt-tab" class="nav-link active" aria-controls="gantt" role="tab"
+        data-toggle="tab">Gantt</a>
+    </li>
+  </ul>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="ganttConfigurations" role="tabpanel" aria-labelledby="gantt-tab">
+      <div class="form-group row">
+        <div class="col"><button id="addDate" type="button" class="btn btn-light w-100">Add Date</button></div>
       </div>
     </div>
   </div>
+</div>
 
-  <div id="gantt-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Export gantt Image</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-9">
-              <input type="text" id="gantt-export-filename" class="form-control form-control-sm" placeholder="Filename" />
-            </div>
-            <div class="col-3">
-              <select id="gantt-export-filetype" class="form-control form-control-sm">
-                <option selected>png</option>
-                <option>svg</option>
-              </select>
-            </div>
+<div id="gantt-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export Gantt Diagram</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-9">
+            <input type="text" id="gantt-export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
-          <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
-          <div class="collapse" id="gantt-export-advanced">
-            <div class="card card-body">
-              <div class="form-group row">
-                <div class="col">
-                  <label for="gantt-export-width">Width</label>
-                  <input type="number" id="gantt-export-width" class="form-control form-control-sm" />
-                </div>
-                <div class="col">
-                  <label for="gantt-export-height">Height</label>
-                  <input type="number" id="gantt-export-height" class="form-control form-control-sm" />
-                </div>
-              </div>
-              <div class="form-group row">
-                <div class="col text-right">
-                  <input type="checkbox" id="gantt-export-preserveaspect" checked />
-                  <label for="gantt-export-preserveaspect" class="form-check-label">Preserve Aspect Ratio?</label>
-                </div>
-              </div>
-            </div>
+          <div class="col-3">
+            <select id="gantt-export-filetype" class="form-control form-control-sm">
+              <option selected>png</option>
+              <option>jpeg</option>
+              <option>webp</option>
+              <option>svg</option>
+            </select>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="gantt-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        <div class="form-group row mb-0">
+          <div class="col-3 offset-9">
+            <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
+          </div>
         </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+        <div class="collapse" id="gantt-export-advanced">
+          <div class="card card-body">
+            <div class="form-group row">
+              <div class="col-3">
+                <label for="gantt-export-scale">Scale</label>
+              </div>
+              <div class="col-9">
+                <input type="number" id="gantt-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-3">Resolution</div>
+              <div id="gantt-export-dimensions" class="col-9 text-right"></div>
+            </div>
+            <div class="row">
+              <div class="col-3">
+                <label for="gantt-export-quality">Quality</label>
+              </div>
+              <div class="col-9">
+                <input type="range" class="custom-range" id="gantt-export-quality" min="0" max="1.0" value="0.92" step="0.01">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+        <button type="button" id="gantt-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
-  <script>
-(function(){
-  let bars = [];
-  let margin = {
-    top : 40,
-    right : 20,
-    bottom : 0,
-    left : 40
-  };
-  let svg = d3.select('#gantt').append("svg");
-  let x, y, height = 600, width = 800, rect;
-  let tickFormat = d3.timeFormat("%Y-%m-%d");
-  let clickCount = 0;
+<script>
+  (function () {
+    let bars = [];
+    let margin = {
+      top: 40,
+      right: 20,
+      bottom: 0,
+      left: 80
+    };
+    let svg = d3.select('#gantt').append("svg");
+    let x, y, height = 600, width = 800, rect;
+    let tickFormat = d3.timeFormat("%Y-%m-%d");
+    let clickCount = 0;
 
-  svg.append("g")
-    .attr("class", "gantt-chart")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+    svg.append("g")
+      .attr("class", "gantt-chart")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
-  svg.append("g").attr("class", "x-axis");
+    svg.append("g").attr("class", "x-axis");
 
-  svg.append("g")
-    .attr("class", "y-axis")
-    .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+    svg.append("g")
+      .attr("class", "y-axis")
+      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
-  let mouseG = svg.append("g").attr("class", "mouse-over-effects")
+    let mouseG = svg.append("g").attr("class", "mouse-over-effects")
 
-  let mouseLine = mouseG.append("path")
-    .attr("class", "mouse-line")
-    .style("stroke", "black")
-    .style("stroke-width", "1px")
-    .style("opacity", "0");
+    let mouseLine = mouseG.append("path")
+      .attr("class", "mouse-line")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("opacity", "0");
 
-  let timestamp = mouseG.append('text').attr('y', margin.top).attr('text-anchor', 'middle');
+    let timestamp = mouseG.append('text').attr('y', margin.top).attr('text-anchor', 'middle');
 
-  let mousebox = mouseG.append('rect')
-    .attr('fill', 'none')
-    .attr('pointer-events', 'all')
-    .on('mouseout', function(){
-      mouseLine.style("opacity", "0");
-      timestamp.style("opacity", "0");
-    })
-    .on('mouseover', function(){
-      mouseLine.style("opacity", "1");
-      timestamp.style("opacity", "1");
-    });
-
-  function refresh(){
-    let wrapper = $('#gantt').parent();
-    if(!wrapper.length) return;
-    height = wrapper.height() - margin.top  - margin.bottom - 5;
-    width  = wrapper.width()  - margin.left - margin.right  - 5;
-
-    bars = [];
-
-    svg.attr("width",  width  + margin.left + margin.right)
-       .attr("height", height + margin.top  + margin.bottom);
-
-    $('.date-table-row').each((i, el) => {
-      let $el = $(el);
-      let dateid = $el.data('dateid');
-      let startField = $el.find(`#date-${dateid}-start`).val();
-      let endField = $el.find(`#date-${dateid}-end`).val();
-      if(endField === 'None') endField = startField;
-      session.data.nodes.filter(d => d.visible).forEach(d => {
-        let startDate = moment(d[startField]);
-        let endDate = moment(d[endField]);
-        if(startDate.isValid() || endDate.isValid()){
-          bars.push({
-            "startDate" : startDate.isValid() ? startDate.toDate() : endDate.toDate(),
-            "endDate" : endDate.isValid() ? endDate.toDate() : startDate.toDate(),
-            "barID" : `${d.id}-${dateid}`,
-            "barClass" : `date-${dateid}`,
-            "row": d.id
-          });
-        }
-      });
-    });
-
-    if(bars.length === 0) return;
-
-    bars.sort((a, b) => b.endDate - a.endDate);
-    let timeDomainEnd = bars[0].endDate;
-
-    bars.sort((a, b) => a.startDate - b.startDate);
-    let timeDomainStart = bars[0].startDate;
-
-    x = d3.scaleTime()
-          .domain([timeDomainStart, timeDomainEnd])
-          .range([0, width])
-          .clamp(true);
-
-    y = d3.scaleBand()
-          .domain(Array.from(new Set(bars.map(t => t.row))))
-          .range([0, height - margin.top - margin.bottom])
-          .padding(0.1);
-
-    svg.select('.x-axis')
-      .transition()
-      .attr("transform", "translate(" + margin.left + ", " + height + ")")
-      .call(d3.axisBottom()
-            .scale(x)
-            .tickFormat(tickFormat)
-            .tickSize(8)
-            .tickPadding(8));
-
-    svg.select('.y-axis')
-      .transition()
-      .call(d3.axisLeft()
-            .scale(y)
-            .tickSize(0));
-
-    rect = svg.select(".gantt-chart").selectAll("rect").data(bars, d => d.barID);
-
-    rect.exit().remove();
-
-    rect.enter().append("rect")
-      .attr("rx", 5)
-      .attr("ry", 5)
-      .attr('fill-opacity', .6)
-      .attr("class", d => d.barClass)
-      .transition()
-      .attr("y", 0)
-      .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
-      .attr("height", d => y.bandwidth())
-      .attr("width", d => {
-        return Math.max(x(d.endDate) - x(d.startDate), 5);
+    let mousebox = mouseG.append('rect')
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('mouseout', function () {
+        mouseLine.style("opacity", "0");
+        timestamp.style("opacity", "0");
+      })
+      .on('mouseover', function () {
+        mouseLine.style("opacity", "1");
+        timestamp.style("opacity", "1");
       });
 
-    rect = rect.merge(rect)
-      .transition()
-      .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
-      .attr("height", d => y.bandwidth())
-      .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
+    function refresh() {
+      let wrapper = $('#gantt').parent().css('z-index', 1000);
+      if (!wrapper.length) return;
+      height = wrapper.height() - margin.top - margin.bottom - 5;
+      width = wrapper.width() - margin.left - margin.right - 5;
 
-    mousebox
-      .attr('width', width)
-      .attr('height', height - margin.top - margin.bottom)
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-      .on('mousemove', function(){
-        let xc = d3.mouse(this)[0] + margin.left;
-        let h = height - margin.bottom;
-        mouseLine.attr("d", function(){
-          return "M" + xc + "," + h + " " + xc + "," + margin.top;
+      bars = [];
+
+      svg.attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+      $('.date-table-row').each((i, el) => {
+        let $el = $(el);
+        let dateid = $el.data('dateid');
+        let startField = $el.find(`#date-${dateid}-start`).val();
+        let endField = $el.find(`#date-${dateid}-end`).val();
+        if (endField == 'None') endField = startField;
+        session.data.nodes.filter(d => d.visible).forEach(d => {
+          let startDate, endDate;
+          if (typeof d[startField] == 'number') {
+            startDate = moment((d[startField] - 25567) * 24 * 60 * 60 * 1000);
+          } else {
+            startDate = moment(d[startField]);
+          }
+          if (typeof d[endField] == 'number') {
+            endDate = moment((d[endField] - 25567) * 24 * 60 * 60 * 1000);
+          } else {
+            endDate = moment(d[endField]);
+          }
+          if (startDate.isValid() || endDate.isValid()) {
+            bars.push({
+              "startDate": startDate.isValid() ? startDate.toDate() : endDate.toDate(),
+              "endDate": endDate.isValid() ? endDate.toDate() : startDate.toDate(),
+              "barID": `${d.id}-${dateid}`,
+              "barClass": `date-${dateid}`,
+              "row": d.id
+            });
+          }
         });
-        timestamp.attr('x', Math.min(Math.max(xc, 125), width)).text(tickFormat(x.invert(xc - margin.left)));
       });
 
-    setBackground();
-  }
+      if (bars.length == 0) return;
 
-  $('#addDate').click(function(){
-    clickCount++;
-    let root = $(`<div class="form-group date-table-row" data-dateid='${clickCount}'></div>`);
-    $('<a href="#"><span class="oi oi-circle-x"></span></a>').css({
-      position: 'relative',
-      top: '2px',
-      left: '2px'
-    }).click(function(e){
-      root.slideUp(function(){
-        root.remove();
-        refresh();
-      });
-    }).appendTo(root);
-    let options = '<option>None</option>' + session.data.nodeFields.map(function(h){ return '<option value="'+h+'">'+app.titleize(h)+'</option>'; }).join('\n');
-    root.append(`
+      bars.sort((a, b) => b.endDate - a.endDate);
+      let timeDomainEnd = bars[0].endDate;
+
+      bars.sort((a, b) => a.startDate - b.startDate);
+      let timeDomainStart = bars[0].startDate;
+
+      x = d3.scaleTime()
+        .domain([timeDomainStart, timeDomainEnd])
+        .range([0, width])
+        .clamp(true);
+
+      y = d3.scaleBand()
+        .domain(Array.from(new Set(bars.map(t => t.row))))
+        .range([0, height - margin.top - margin.bottom])
+        .padding(0.1);
+
+      svg.select('.x-axis')
+        .transition()
+        .attr("transform", "translate(" + margin.left + ", " + height + ")")
+        .call(d3.axisBottom()
+          .scale(x)
+          .tickFormat(tickFormat)
+          .tickSize(8)
+          .tickPadding(8));
+
+      svg.select('.y-axis')
+        .transition()
+        .call(d3.axisLeft()
+          .scale(y)
+          .tickSize(0));
+
+      rect = svg.select(".gantt-chart").selectAll("rect").data(bars, d => d.barID);
+
+      rect.exit().remove();
+
+      rect.enter().append("rect")
+        .attr("rx", 5)
+        .attr("ry", 5)
+        .attr('fill-opacity', .6)
+        .attr("class", d => d.barClass)
+        .transition()
+        .attr("y", 0)
+        .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
+        .attr("height", d => y.bandwidth())
+        .attr("width", d => {
+          return Math.max(x(d.endDate) - x(d.startDate), 5);
+        });
+
+      rect = rect.merge(rect)
+        .transition()
+        .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
+        .attr("height", d => y.bandwidth())
+        .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
+
+      mousebox
+        .attr('width', width)
+        .attr('height', height - margin.top - margin.bottom)
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+        .on('mousemove', function () {
+          let xc = d3.mouse(this)[0] + margin.left;
+          let h = height - margin.bottom;
+          mouseLine.attr("d", function () {
+            return "M" + xc + "," + h + " " + xc + "," + margin.top;
+          });
+          timestamp.attr('x', Math.min(Math.max(xc, 125), width)).text(tickFormat(x.invert(xc - margin.left)));
+        });
+
+      setBackground();
+    }
+
+    $('#addDate').click(function () {
+      clickCount++;
+      let root = $(`<div class="form-group date-table-row" data-dateid='${clickCount}'></div>`);
+      $('<a href="#"><span class="oi oi-circle-x"></span></a>').css({
+        position: 'relative',
+        top: '2px',
+        left: '2px'
+      }).click(function (e) {
+        root.slideUp(function () {
+          root.remove();
+          refresh();
+        });
+      }).appendTo(root);
+      let options = '<option>None</option>' + session.data.nodeFields.map(function (h) { return '<option value="' + h + '">' + MT.titleize(h) + '</option>'; }).join('\n');
+      root.append(`
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-start">Start</label></div>
-        <div class='col-8'><select id="date-${clickCount}-start" data-dateid="${clickCount}" class="custom-select custom-select-sm">${options}</select></div>
+        <div class='col-8'><select id="date-${clickCount}-start" data-dateid="${clickCount}" class="form-control form-control-sm">${options}</select></div>
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-end">End</label></div>
-        <div class='col-8'><select id="date-${clickCount}-end" data-dateid="${clickCount}" class="custom-select custom-select-sm">${options}</select></div>
+        <div class='col-8'><select id="date-${clickCount}-end" data-dateid="${clickCount}" class="form-control form-control-sm">${options}</select></div>
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
-        <div class='col-8'><input id="date-${clickCount}-color" data-dateid="${clickCount}" class="custom-select custom-select-sm" type="color"></select></div>
+        <div class='col-8'><input id="date-${clickCount}-color" data-dateid="${clickCount}" class="form-control form-control-sm" type="color"></div>
       </div>
       <div class="row">
         <div class='col-3 offset-1'><label for="date-${clickCount}-transparency">Transparency</label></div>
-        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" min="0" max="1" step="0.01" value="0.5"></select></div>
+        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" class="custom-range" min="0" max="1" step="0.01" value="0.5"></div>
       </div>
     </div>`);
-    root.appendTo('#ganttConfigurations');
-    $('#date-' + clickCount + '-start, #date-' + clickCount + '-end').on('change', refresh);
-    $('#date-' + clickCount + '-color').on('change', function(e){
-      svg.selectAll('.date-' + $(this).data('dateid')).attr('fill', e.target.value);
-    });
-    $('#date-' + clickCount + '-transparency').on('change', function(e){
-      svg.selectAll('.date-' + $(this).data('dateid')).attr('fill-opacity', 1 - e.target.value);
-    });
-  });
-
-  $('#toggle_gantt_settings').click(function(){
-    let pane = $('#gantt_settings_pane');
-    if(pane.is(':visible')){
-      pane.animate({left: '-400px'}, function(){ pane.hide(); });
-    } else {
-      pane.show(0, function(){ pane.animate({left: '0px'}); });
-    }
-  });
-
-  $('#gantt-export-filetype').on('change', function(e){
-    if(e.target.value === 'png'){
-      $('#gantt-export-advanced-button').slideDown();
-    } else {
-      $('#gantt-export-advanced-button').slideUp();
-    }
-  });
-
-  $('#gantt-export-width').on('input', function(e){
-    if(!$('#gantt-export-preserveaspect').is(':checked')) return;
-    let wrapper = $('#gantt').parent();
-    let ratio = wrapper.height()/wrapper.width();
-    $('#gantt-export-height').val(Math.round(e.target.value*ratio));
-  });
-
-  $('#gantt-export-height').on('input', function(e){
-    if(!$('#gantt-export-preserveaspect').is(':checked')) return;
-    let wrapper = $('#gantt').parent();
-    let ratio = wrapper.width()/wrapper.height();
-    $('#gantt-export-width').val(Math.round(e.target.value*ratio));
-  });
-
-  $('#gantt-export-preserveaspect').on('click', function(e){
-    if(!$(this).is(':checked')) return;
-    let wrapper = $('#gantt').parent();
-    let height = wrapper.height();
-    let ratio = height/wrapper.width();
-    $('#gantt-export-height').val(Math.round($('#gantt-export-width').val()*ratio));
-  });
-
-  $('#gantt-export').on('click', function(){
-    let gantt = $('#gantt svg')[0];
-    let content = app.unparseSVG(gantt);
-    let filetype = $('#gantt-export-filetype').val();
-    let width  = parseFloat($('#gantt-export-width' ).val());
-    let height = parseFloat($('#gantt-export-height').val());
-    if(filetype === 'svg'){
-      let blob = new Blob([content], {type: 'image/svg+xml;charset=utf-8'});
-      saveAs(blob, $('#gantt-export-filename').val() + '.' + filetype);
-    } else {
-      app.blobifySVG(content, width, height, function(blob){
-        saveAs(blob, $('#gantt-export-filename').val() + '.' + filetype);
+      root.appendTo('#ganttConfigurations');
+      $('#date-' + clickCount + '-start, #date-' + clickCount + '-end').on('change', refresh);
+      $('#date-' + clickCount + '-color').on('change', function (e) {
+        svg.selectAll('.date-' + $(this).data('dateid')).attr('fill', e.target.value);
       });
+      $('#date-' + clickCount + '-transparency').on('change', function (e) {
+        svg.selectAll('.date-' + $(this).data('dateid')).attr('fill-opacity', 1 - e.target.value);
+      });
+    });
+
+    $('#toggle-gantt-settings').click(function () {
+      let pane = $('#gantt-settings-pane');
+      if ($(this).hasClass('active')) {
+        pane.animate({ left: '-400px' }, function () { pane.hide(); });
+      } else {
+        pane.show(0, function () { pane.animate({ left: '0px' }); });
+      }
+    });
+
+    $('#gantt-export-filetype').on('change', function (e) {
+      if (e.target.value == 'svg') {
+        $('#gantt-export-advanced-button').slideUp();
+      } else {
+        $('#gantt-export-advanced-button').slideDown();
+      }
+    });
+
+    $('#gantt-export-scale').on('input', function (e) {
+      let scale = parseFloat(e.target.value);
+      let wrapper = $('#gantt').parent();
+      $('#gantt-export-dimensions').text(
+        Math.round(wrapper.width() * scale) + 'x' +
+        Math.round(wrapper.height() * scale) + 'px'
+      );
+    }).trigger('input');
+
+    $('#gantt-export').on('click', function () {
+      let $gantt = $('#gantt svg');
+      let gantt = $gantt.get(0);
+      let watermark = d3.select(gantt).append('text')
+        .text('MicrobeTrace')
+        .attr('x', $gantt.width() - 150)
+        .attr('y', 40)
+        .attr('class', 'watermark');
+      let filename = $('#gantt-export-filename').val(),
+        filetype = $('#gantt-export-filetype').val();
+      if (filetype == 'svg') {
+        let content = MT.unparseSVG(gantt);
+        let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
+        saveAs(blob, filename + '.' + filetype);
+        watermark.remove();
+      } else {
+        saveSvgAsPng(gantt, filename + '.' + filetype, {
+          scale: parseFloat($('#gantt-export-scale').val()),
+          backgroundColor: session.style.widgets['background-color'],
+          encoderType: 'image/' + filetype,
+          encoderOptions: parseFloat($('#gantt-export-quality').val())
+        }).then(() => watermark.remove());
+      }
+    });
+
+    function setBackground() {
+      let col = session.style.widgets['background-color'];
+      $('#gantt').css('background', col);
+
+      let contrast = session.style.widgets['background-color-contrast'];
+      $('#gantt .x-axis, .y-axis').css('color', contrast);
     }
-  });
 
-  function setBackground(){
-    let col = session.style.widgets['background-color'];
-    $('#gantt').css('background', col);
+    $window.on('background-color-change', setBackground);
 
-    let contrast = session.style.widgets['background-color-contrast'];
-    $('#gantt .x-axis, .y-axis').css('color', contrast);
-  }
+    layout.on('stateChanged', function () {
+      refresh();
+      let wrapper = $('#gantt').parent();
+      $('#gantt-export-width').val(wrapper.width());
+      $('#gantt-export-height').val(wrapper.height());
+    });
 
-  $(window).on('background-color-change', setBackground);
-
-  layout.on('stateChanged', function(){
-    refresh();
-    let wrapper = $('#gantt').parent();
-    $('#gantt-export-width' ).val(wrapper.width());
-    $('#gantt-export-height').val(wrapper.height());
-  });
-
-  setTimeout(function(){
-    refresh();
-    setBackground();
-  }, 80);
-})();
-  </script>
+    setTimeout(function () {
+      refresh();
+      setBackground();
+    }, 80);
+  })();
+</script>

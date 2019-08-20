@@ -1,247 +1,163 @@
-  <div class="view_controls">
-    <button type="button" id="toggle_table_settings" class="btn btn-light btn-sm">
-      <span class="oi oi-cog"></span>
-    </button>
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table_export_modal">
-      <span class="oi oi-data-transfer-download"></span>
-    </button>
-  </div>
+<div id="table" class="table-sm"></div>
 
-  <div id="table-type-panel">
-    <div class="btn-group btn-group-toggle btn-group-sm floater" data-toggle="buttons">
-      <label class="btn btn-light active">
-        <input type="radio" name="nodelink" data-value="nodes" autocomplete="off" checked> Nodes
-      </label>
-      <label class="btn btn-light">
-        <input type="radio" name="nodelink" data-value="links" autocomplete="off"> Links
-      </label>
-      <label class="btn btn-light">
-        <input type="radio" name="nodelink" data-value="clusters" autocomplete="off"> Clusters
-      </label>
-    </div>
-    <select id="columns" class="chosen-select" multiple></select>
+<div class="view-controls">
+  <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Table Settings">
+    <span class="oi oi-cog"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#table-export-modal" title="Export table data">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" title="What dataset would you like to view?">
+    <label class="btn btn-light active">
+      <input type="radio" name="table-dataset" data-value="nodes" autocomplete="off" checked> Nodes
+    </label>
+    <label class="btn btn-light">
+      <input type="radio" name="table-dataset" data-value="links" autocomplete="off"> Links
+    </label>
+    <label class="btn btn-light">
+      <input type="radio" name="table-dataset" data-value="clusters" autocomplete="off"> Clusters
+    </label>
   </div>
+  <select id="table-columns" class="chosen-select" multiple title="What columns would you like to see?"></select>
+</div>
 
-  <div id="table_settings_pane" class="left_pane left_pane_opaque">
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="nav-item active">
-        <a href="#tableConfigurations" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="table-tab">
-        <div class="form-group row">
-          <div class="col-3">Text Size</div>
-          <div class="col-9"><input type="range" id="font-size-slider" min="6" value="14" max="72" step="1" /></div>
-        </div>
-        <div class="form-group row">
-          <div class="col-3">Header Tilt</div>
-          <div class="col-9"><input type="range" id="tiltHeaders" min="-7.5" value="0" max="7.5" step=".25" /></div>
-        </div>
+<div id="table-settings-pane" class="left-pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item active">
+      <a href="#table-settings" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-toggle="tab">Table</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="table-tab">
+      <div class="form-group row" title="What size would you like the Table's font to be?">
+        <div class="col-4"><label for="table-font-size">Text Size</label></div>
+        <div class="col-8"><input type="range" class="custom-range" id="table-font-size" min="6" value="14" max="72" step="1"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <div id="table-wrapper" class="table-responsive">
-    <mt-table
-      :data="gridData"
-      :columns="gridColumns">
-    </mt-table>
-  </div>
-
-  <script type="text/x-template" id="mt-table-template">
-    <table class="table table-hover table-sm" cellspacing="0">
-      <thead>
-        <tr>
-          <th v-for="key in columns"
-            @click="sortBy(key)"
-            :class="{ active: sortKey == key }">
-            {{ app.titleize(key) }}
-            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
-            </span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="entry in filteredData"
-          @click="select(entry)"
-          :class="entry.selected ? 'table-row-selected' : ''">
-          <td v-for="key in columns">{{ entry[key] }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </script>
-
-  <div id="table_export_modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Export Table</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group row">
-            <div class="col-9">
-              <input type="text" id="export-table-file-name" class="form-control form-control-sm" placeholder="Filename" />
-            </div>
-            <div class="col-3">
-              <select id="export-table-file-type" class="form-control form-control-sm">
-                <option selected>csv</option>
-                <option>xlsx</option>
-                <option>json</option>
-              </select>
-            </div>
+<div id="table-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export Table</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-9">
+            <input type="text" id="export-table-file-name" class="form-control form-control-sm" placeholder="Filename">
+          </div>
+          <div class="col-3">
+            <select id="export-table-file-type" class="form-control form-control-sm">
+              <option selected>csv</option>
+              <option>xlsx</option>
+              <option>json</option>
+            </select>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-          <button type="button" id="table_export" class="btn btn-primary" data-dismiss="modal">Export</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
+        <button type="button" id="table-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
-  <script>
+<script>
   (function(){
-    let table;
-
-    let meta = ['index', 'selected', 'visible', 'nn'];
-
-    Vue.component('mt-table', {
-      template: '#mt-table-template',
-      props: {
-        data: Array,
-        columns: Array
-      },
-      data: function(){
-        let sortOrders = {};
-        this.columns.forEach(function(key){
-          sortOrders[key] = 1;
-        });
-        return {
-          sortKey: 'id',
-          sortOrders: sortOrders
-        }
-      },
-      computed: {
-        filteredData: function(){
-          let sortKey = this.sortKey;
-          let order = this.sortOrders[sortKey] || 1;
-          let data = this.data.filter(d => d.visible);
-          if(sortKey){
-            data = data.slice().sort(function(a, b){
-              if(a.selected && !b.selected) return -1;
-              if(b.selected && !a.selected) return 1;
-              return (a[sortKey] === b[sortKey] ? 0 : a[sortKey] > b[sortKey] ? 1 : -1) * order;
-            });
-          }
-          return data;
-        }
-      },
-      methods: {
-        sortBy: function(key){
-          this.sortKey = key;
-          this.sortOrders[key] = this.sortOrders[key] * -1;
-        },
-        select: function(entry){
-          entry.selected = !entry.selected;
-          if($('input[name=nodelink]:checked').data('value') === 'nodes'){
-            session.data.nodes.find(d => d.id === entry.id).selected = entry.selected;
-            $(window).trigger('node-selected');
-          }
-        }
-      }
-    });
-
-    function updateTable(){
-      let data_type = $('input[name=nodelink]:checked').data('value');
-      table.gridColumns = $('#columns').val();
-      table.gridData = JSON.parse(JSON.stringify(session.data[data_type]));
-      resetTextsize();
-      resetColor();
-    }
+    let table, meta = ['selected', 'visible', 'nn'];
 
     function updateColumns(){
-      let type = $('input[name=nodelink]:checked').data('value').slice(0,-1);
-      $('#columns')
+      if(!$('#table').length) return;
+      let type = $('input[name=table-dataset]:checked').data('value').slice(0,-1);
+      $('#table-columns')
         .chosen('destroy')
         .html(
           session.data[type+'Fields'].map((d, i) => {
             if(meta.includes(d)) return;
-            return `<option value="${d}"${(i < 7) ? " selected" : ""}>${app.titleize(d)}</option>`
+            return `<option value="${d}"${(i < 7) ? " selected" : ""}>${MT.titleize(d)}</option>`
           }).join('\n')
-        ).chosen({width: "100%"}).change(updateTable);
+        )
+        .chosen({'width': 'auto'})
+        .on('change', updateTable);
     }
 
-    $('#toggle_table_settings').click(function(){
-      let pane = $('#table_settings_pane');
-      if(pane.is(':visible')){
+    function updateTable(){
+      if(!$('#table').length) return;
+      let data_type = $('input[name=table-dataset]:checked').data('value');
+      let columns = $('#table-columns').val();
+      table = new Tabulator("#table", {
+       	height: "calc(100% - 60px) !important",
+       	layout: "fitColumns",
+       	columns: columns.map(c => ({title: MT.titleize(c), field: c})),
+       	rowClick: function(e, row){
+       		let entity = row.getData();
+          entity.selected = !entity.selected;
+          if(entity.selected){
+            $(row.getElement()).css("background", session.style.widgets['selected-color']);
+          }
+          $window.trigger('node-selected');
+       	},
+        rowFormatter: function(row){
+          if(row.getData().selected){
+            $(row.getElement()).css("background", session.style.widgets['selected-color']);
+          }
+        }
+      });
+      table.setData(session.data[data_type]);
+      resetTextsize();
+    }
+
+    function updateData(){
+      let type = $('input[name=table-dataset]:checked').data('value');
+      table.replaceData(session.data[type]);
+    }
+
+    $('#table-settings-toggle').click(function(){
+      let pane = $('#table-settings-pane');
+      if($(this).hasClass('active')){
         pane.animate({left: '-400px'}, function(){ pane.hide(); });
       } else {
         pane.show(0, function(){ pane.animate({left: '0px'}); });
       }
     });
 
-    $('#tiltHeaders').on('input', function(e){
-      let theta = $(this).val();
-      let h = $('th:first').width() * Math.sin(Math.abs(theta) * Math.PI / 180);
-      $('th').css({
-        'transform': `rotate(${-theta}deg)`,
-        'border-bottom': '0px',
-        'height': `${h}px`,
-        'overflow': 'visible'
-      });
-      if($(this).val() === 0){
-        $('th').css({
-          'border-bottom': '1px solid black',
-          'overflow': 'hidden'
-        });
-      }
-    });
-
     function resetTextsize(){
-      let s = $('#font-size-slider').val();
-      $('#table-wrapper').css({
+      let s = $('#table-font-size').val();
+      $('#table').css({
         'font-size': s + 'px',
         'line-height': s/10
       });
     }
 
-    function resetColor(){
-      $('#table-wrapper tr').css({
-        background: '#ffffff',
-        color: '#000000'
-      }).filter('.table-row-selected').css({
-        background: session.style.widgets['selected-color'],
-        color: session.style.widgets['selected-color-contrast']
-      });
-    }
-
-    $('input[name=nodelink]').on('change', e => {
+    $('input[name=table-dataset]').on('change', e => {
       updateColumns();
       updateTable();
     });
 
-    $('#columns').on('change', updateTable);
+    $('#table-columns').on('change', updateTable);
 
-    $('#font-size-slider').on('input', resetTextsize);
+    $('#table-font-size').on('input', resetTextsize);
 
-    $('#table_export').click(function(){
+    $('#table-export').click(function(){
       let format = $('#export-table-file-type').val();
-      let data = JSON.parse(JSON.stringify(session.data[$('input[name=nodelink]:checked').data('value')]));
+      let data = JSON.parse(JSON.stringify(session.data[$('input[name=table-dataset]:checked').data('value')]));
       let name = $('#export-table-file-name').val();
-      if(format === 'csv'){
+      if(format == 'csv'){
         let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
         saveAs(blob, name + '.' + format);
-      } else if(format === 'xlsx'){
-        let headers = session.data[$('input[name=nodelink]:checked').data('value').slice(0,-1) + 'Fields'];
+      } else if(format == 'xlsx'){
+        let headers = session.data[$('input[name=table-dataset]:checked').data('value').slice(0,-1) + 'Fields'];
         data.forEach(thing => {
           Object.keys(thing).forEach(field => {
             if(!headers.includes(field)){
               delete thing[field];
-            } else if(_.isArray(thing[field])){
+            } else if(Array.isArray(thing[field])){
               thing[field] = thing[field].join('; ');
             }
           });
@@ -256,20 +172,14 @@
       }
     });
 
-    $(window)
-      .on('link-threshold-change', updateTable)
-      .on('node-selected selected-color-change', resetColor);
+    $('#table').parent().css('z-index', 1000);
 
-    setTimeout(function(){
-      updateColumns();
-      table = new Vue({
-        el: '#table-wrapper',
-        data: {
-          gridColumns: [],
-          gridData: []
-        }
-      });
-      updateTable();
-    }, 100);
+    $window
+      .on('link-visibility', updateTable)
+      .on('node-selected', updateData)
+      .on('selected-color-change', updateTable);
+
+    updateColumns();
+    updateTable();
   })();
-  </script>
+</script>
