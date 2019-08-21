@@ -378,9 +378,9 @@
 
     function getMapData(type, callback) {
       var name = type.split('.')[0];
-      MT.getMapData(type, function () {
+      MT.getMapData(type).then(data => {
         if (['countries', 'states', 'counties'].includes(name)) {
-          layers[name] = L.geoJSON(MT.mapData[name], {
+          layers[name] = L.geoJSON(data, {
             color: '#dadde0',
             weight: name == 'countries' ? 1 : 0.5,
             fillColor: '#fafaf8',

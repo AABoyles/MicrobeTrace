@@ -217,7 +217,7 @@ $(function() {
     })
     .on("change", function() {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
-      MT.computeNN(session.style.widgets["default-distance-metric"], MT.updateNetwork);
+      MT.computeNN(session.style.widgets["default-distance-metric"]).then(MT.updateNetwork);
     });
 
   $("#cluster-minimum-size").on("change", function() {

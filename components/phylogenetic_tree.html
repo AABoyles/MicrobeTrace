@@ -345,7 +345,7 @@
       if (!panel.length) return;
 
       var metric = session.style.widgets['default-distance-metric'];
-      if (!temp.trees[metric]) return MT.computeTree(metric, drawTree);
+      if (!temp.trees[metric]) return MT.computeTree(metric).then(drawTree);
 
       tree = new TidyTree(temp.trees[metric], {
         parent: '#tree',

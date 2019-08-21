@@ -317,15 +317,15 @@
 
     function init() {
       if (!MT.mapData.land) {
-        MT.getMapData('land.json', init);
+        MT.getMapData('land.json').then(init);
         return;
       }
       if (!MT.mapData.stars) {
-        MT.getMapData('stars.json', init);
+        MT.getMapData('stars.json').then(init);
         return;
       }
       if (!MT.mapData.countries) {
-        MT.getMapData('countries.json', init);
+        MT.getMapData('countries.json').then(init);
         return;
       }
       resize();
@@ -467,7 +467,7 @@
     function matchCoordinates(callback) {
       if (session.style.widgets['globe-field-country'] !== 'None') {
         if (!MT.mapData.countries) {
-          MT.getMapData('countries.json', () => matchCoordinates(callback));
+          MT.getMapData('countries.json').then(() => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-country'];
@@ -481,7 +481,7 @@
       }
       if (session.style.widgets['globe-field-state'] !== 'None') {
         if (!MT.mapData.states) {
-          MT.getMapData('states.json', () => matchCoordinates(callback));
+          MT.getMapData('states.json').then(() => matchCoordinates(callback));
           return;
         }
         let sval = session.style.widgets['globe-field-state'];
@@ -495,7 +495,7 @@
       }
       if (session.style.widgets['globe-field-county'] !== 'None') {
         if (!MT.mapData.counties) {
-          MT.getMapData('counties.json', () => matchCoordinates(callback));
+          MT.getMapData('counties.json').then(() => matchCoordinates(callback));
           return;
         }
         let sval = session.style.widgets['globe-field-state'];
@@ -527,7 +527,7 @@
       }
       if (session.style.widgets['globe-field-zipcode'] !== 'None') {
         if (!MT.mapData.zipcodes) {
-          MT.getMapData('zipcodes.csv', () => matchCoordinates(callback));
+          MT.getMapData('zipcodes.csv').then(() => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-zipcode'];
@@ -541,7 +541,7 @@
       }
       if (session.style.widgets['globe-field-tract'] !== 'None') {
         if (!MT.mapData.tracts) {
-          MT.getMapData('tracts.csv', () => matchCoordinates(callback));
+          MT.getMapData('tracts.csv').then(() => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-tract'];

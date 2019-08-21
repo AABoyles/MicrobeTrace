@@ -353,7 +353,7 @@
 
       var metric = session.style.widgets['default-distance-metric'];
       if (!temp.trees[metric]) {
-        MT.computeTree(metric, drawTree);
+        MT.computeTree(metric).then(drawTree);
         return;
       }
 

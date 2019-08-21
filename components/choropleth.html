@@ -217,7 +217,7 @@
     var unit = session.style.widgets['choropleth-aggregate-as'];
     if (unit == 'countries') {
       if (!MT.mapData.countries) {
-        MT.getMapData('countries.json', () => aggregate(false, callback));
+        MT.getMapData('countries.json').then(() => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
@@ -228,7 +228,7 @@
       });
     } else if (unit == 'states') {
       if (!MT.mapData.states) {
-        MT.getMapData('states.json', () => aggregate(false, callback));
+        MT.getMapData('states.json').then(() => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
@@ -239,7 +239,7 @@
       });
     } else { //unit == 'counties'
       if (!MT.mapData.counties) {
-        MT.getMapData('counties.json', () => aggregate(false, callback));
+        MT.getMapData('counties.json').then(() => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
@@ -517,7 +517,7 @@
     }, 80);
   });
 
-  MT.getMapData('countries.json', () => {
+  MT.getMapData('countries.json').then(() => {
     layers.countries = L.geoJSON(MT.mapData.countries, {
       color: '#dadde0',
       weight: 1,

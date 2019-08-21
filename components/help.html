@@ -16,31 +16,34 @@
 
     let breadcrumbs = ['Home'];
 
-    function renderPage(target){
-      $('#help-title').text(MT.titleize(target));
-      MT.getHelp(target, function(content){
-        $('#help-content').html(content);
-        $('#help-panel a').on('click', clickedLink);
+    function getHelp(target){
+      return new Promise(resolve => {
+        $.get("help/" + target + ".md", response => resolve(marked(response)));
       });
+    }
+
+    async function renderPage(target){
+      $('#help-title').text(MT.titleize(target));
+      $('#help-panel a').on('click', clickedLink);
+      const content = await getHelp(target);
+      $('#help-content').html(content);
     }
 
     function clickedLink(e){
       e.preventDefault();
-      var target = e.target.href.split('/').pop();
+      let target = e.target.href.split('/').pop();
       if(breadcrumbs.includes(target)) breadcrumbs.splice(breadcrumbs.indexOf(target), 1);
       breadcrumbs.push(target);
       $('#help-panel .breadcrumb').html(
         breadcrumbs.map(crumb => `<li class="breadcrumb-item"><a href="https://github.com/CDCgov/MicrobeTrace/wiki/${crumb}">${crumb}</a></li>`).join('')
       );
-      $('#help-panel').slideUp(function(){
+      $('#help-panel').slideUp(() => {
         renderPage(target);
         $('#help-panel').slideDown();
       });
     }
 
-    MT.getHelp('_Footer', function(html){
-      $('#help-footer').html(html).find('a').click(clickedLink);
-    });
+    getHelp('_Footer').then(html => $('#help-footer').html(html).find('a').click(clickedLink));
 
     renderPage('Home');
   })();

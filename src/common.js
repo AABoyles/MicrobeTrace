@@ -428,7 +428,7 @@ MT.processJSON = (json, extension) => {
   }
 };
 
-MT.applyHIVTrace = (hivtrace) => {
+MT.applyHIVTrace = hivtrace => {
   self.session = MT.sessionSkeleton();
   session.meta.startTime = Date.now();
   hivtrace["trace_results"]["Nodes"].forEach(node => {
@@ -514,58 +514,52 @@ MT.applyGHOST = ghost => {
   MT.decode = x => decoder.decode(x);
 })();
 
-MT.parseFASTA = (text, callback) => {
-  let computer = new Worker("workers/parse-fasta.js");
-  computer.onmessage = response => {
-    let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log("FASTA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback(nodes);
-  };
-  computer.postMessage(text);
+MT.parseFASTA = text => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/parse-fasta.js");
+    computer.onmessage = response => {
+      let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+      console.log("FASTA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve(nodes);
+    };
+    computer.postMessage(text);
+  });
 };
 
-MT.parseCSVMatrix = (file, callback) => {
-  let check = session.files.length > 1;
-  let origin = [file.name];
-  let nn = 0,
-    nl = 0,
-    tn = 0,
-    tl = 0;
-  let computer = new Worker("workers/parse-csv-matrix.js");
-  computer.onmessage = response => {
-    let data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
-    console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    start = Date.now();
-    let nodes = data.nodes;
-    tn = nodes.length;
-    for (let i = 0; i < tn; i++) {
-      nn += MT.addNode({
-        id: nodes[i],
-        origin: origin
-      }, check);
-    }
-    let links = data.links;
-    tl = links.length;
-    for (let j = 0; j < tl; j++) {
-      nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
-    }
-    console.log("CSV Matrix Merge time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback){
-      callback({
-        nn: nn,
-        nl: nl,
-        tn: tn,
-        tl: tl
-      });
-    }
-  };
-  computer.postMessage(file.contents);
+MT.parseCSVMatrix = file => {
+  return new Promise(resolve => {
+    let check = session.files.length > 1;
+    let origin = [file.name];
+    let nn = 0,
+        nl = 0;
+    let computer = new Worker("workers/parse-csv-matrix.js");
+    computer.onmessage = response => {
+      let data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
+      console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      start = Date.now();
+      let nodes = data.nodes;
+      const tn = nodes.length;
+      for (let i = 0; i < tn; i++) {
+        nn += MT.addNode({
+          id: nodes[i],
+          origin: origin
+        }, check);
+      }
+      let links = data.links;
+      const tl = links.length;
+      for (let j = 0; j < tl; j++) {
+        nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
+      }
+      console.log("CSV Matrix Merge time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve({ nn, nl, tn, tl });
+    };
+    computer.postMessage(file.contents);
+  })
 };
 
 MT.r01 = Math.random;
 
 // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
-// example: MT.addFile(new File([MT.unparseFASTA(MT.generateSeqs("gen-", 50, 20))], "generated.fasta"))
 MT.generateSeqs = (idPrefix, count, snps, seed) => {
   if (!count) count = 1000;
   if (!snps) snps = 100;
@@ -693,261 +687,287 @@ MT.generateSeqs = (idPrefix, count, snps, seed) => {
   return seqs;
 };
 
-MT.align = (params, callback) => {
-  if (params.aligner == "none") {
-    if (callback) callback(params.nodes);
-    return;
-  }
-  let n = params.nodes.length;
-  let referenceLength = params.reference.length;
-  let aligner = new Worker("workers/align-sw.js");
-  aligner.onmessage = response => {
-    let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log("Alignment transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    let start = Date.now();
-    let minPadding = Infinity,
+MT.align = params => {
+  return new Promise(resolve => {
+    if (params.aligner == "none") {
+      return resolve(params.nodes);
+    }
+    let n = params.nodes.length;
+    let referenceLength = params.reference.length;
+    let aligner = new Worker("workers/align-sw.js");
+    aligner.onmessage = response => {
+      let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+      console.log("Alignment transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let minPadding = Infinity,
       maxLength = 0,
       d = null;
-    for (let i = 0; i < n; i++) {
-      d = subset[i];
-      if (!d.seq) d.seq = "";
-      if (minPadding > d.padding) minPadding = d.padding;
-    }
-    for (let j = 0; j < n; j++) {
-      d = subset[j];
-      d.seq = "-".repeat(d.padding - minPadding) + d.seq;
-      if (d.seq.length > referenceLength){
-        d.seq = d.seq.substring(0, referenceLength);
-      } else {
-        d.seq = d.seq.padEnd(referenceLength, "-");
+      for (let i = 0; i < n; i++) {
+        d = subset[i];
+        if (!d.seq) d.seq = "";
+        if (minPadding > d.padding) minPadding = d.padding;
       }
-    }
-    console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
-    callback(subset);
-  };
-  aligner.postMessage(params);
+      for (let j = 0; j < n; j++) {
+        d = subset[j];
+        d.seq = "-".repeat(d.padding - minPadding) + d.seq;
+        if (d.seq.length > referenceLength){
+          d.seq = d.seq.substring(0, referenceLength);
+        } else {
+          d.seq = d.seq.padEnd(referenceLength, "-");
+        }
+      }
+      console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve(subset);
+    };
+    aligner.postMessage(params);
+  });
 };
 
-MT.computeConsensus = (callback, nodes) => {
-  if (!callback) return;
+MT.computeConsensus = nodes => {
   if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
-  let computer = new Worker("workers/compute-consensus.js");
-  computer.onmessage = response => {
-    console.log("Consensus Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    callback(MT.decode(new Uint8Array(response.data.consensus)));
-  };
-  computer.postMessage(nodes);
-};
-
-MT.computeConsensusDistances = callback => {
-  let start = Date.now();
-  let nodes = session.data.nodes;
-  let nodesLength = nodes.length;
-  let subset = [];
-  for (let i = 0; i < nodesLength; i++) {
-    let node = nodes[i];
-    if (node.seq) {
-      subset.push({
-        index: i,
-        seq: node.seq
-      });
-    } else {
-      subset.push({
-        index: i,
-        seq: ""
-      });
-    }
-  }
-  let subsetLength = subset.length;
-  let computer = new Worker("workers/compute-consensus-distances.js");
-  computer.onmessage = response => {
-    let dists = new Uint16Array(response.data.dists);
-    console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    start = Date.now();
-    for (let j = 0; j < subsetLength; j++) {
-      nodes[subset[j].index]._diff = dists[j];
-    }
-    console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    consensus: session.data.consensus,
-    subset: subset,
-    start: start
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-consensus.js");
+    computer.onmessage = response => {
+      console.log("Consensus Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve(MT.decode(new Uint8Array(response.data.consensus)));
+    };
+    computer.postMessage(nodes);
   });
 };
 
-MT.computeLinks = (subset, callback) => {
-  let k = 0;
-  let computer = new Worker("workers/compute-links.js");
-  computer.onmessage = response => {
-    let dists = session.state.metrics[0] == 'snps' ?
-        new Uint16Array(response.data.links) :
-        new Float32Array(response.data.links);
-    console.log("Links Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    let start = Date.now();
-    let check = session.files.length > 1;
-    let n = subset.length;
-    let l = 0;
-    for (let i = 0; i < n; i++) {
-      let source = subset[i];
-      for (let j = 0; j < i; j++) {
-        let target = subset[j];
-        k += MT.addLink({
-          source: source['id'],
-          target: target['id'],
-          distance: dists[l++],
-          origin: ['Genetic Distance']
-        }, check);
+MT.computeAmbiguityCounts = () => {
+  return new Promise(resolve => {
+    let nodes = session.data.nodes;
+    let subset = nodes.filter(d => d.seq);
+    const subsetLength = subset.length;
+    let computer = new Worker("workers/compute-ambiguity-counts.js");
+    computer.onmessage = response => {
+      console.log("Ambiguity Count Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      const dists = new Float32Array(response.data.counts);
+      for (let j = 0; j < subsetLength; j++) {
+        nodes[subset[j].index]._ambiguity = dists[j];
       }
-    }
-    console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    callback(k);
-  };
-  computer.postMessage({
-    nodes: subset,
-    metrics: session.state.metrics,
-    strategy: session.style.widgets["ambiguity-resolution-strategy"]
+      resolve();
+    };
+    computer.postMessage(subset);
   });
 };
 
-MT.computeDM = callback => {
-  let computer = new Worker("workers/compute-dm.js");
-  computer.onmessage = response => {
-    session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
-      MT.decode(new Uint8Array(response.data.matrix))
-    );
-    session.data.distance_matrix.labels = JSON.parse(
-      MT.decode(new Uint8Array(response.data.labels))
-    );
-    console.log("DM Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    nodes: session.data.nodes,
-    links: session.data.links,
-    metrics: session.state.metrics
-  });
-};
-
-MT.computeTree = (type, callback) => {
-  let computer = new Worker("workers/compute-tree.js");
-  computer.onmessage = response => {
-    temp.trees[type] = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
-    console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    matrix: session.data.distance_matrix[type],
-    labels: session.data.distance_matrix.labels,
-    round: session.style.widgets["tree-round"]
-  });
-};
-
-MT.computeDirectionality = callback => {
-  let computer = new Worker("workers/compute-directionality.js");
-  computer.onmessage = response => {
-    let flips = new Uint8Array(response.data.output);
-    console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+MT.computeConsensusDistances = () => {
+  return new Promise(resolve => {
     let start = Date.now();
-    let n = flips.length;
-    for (let i = 0; i < n; i++) {
-      if (flips[i]) {
-        let fliplink = session.data.links[i];
-        let fliptemp = fliplink.source;
-        fliplink.source = fliplink.target;
-        fliplink.target = fliptemp;
-      }
-    }
-    console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    links: session.data.links,
-    tree: temp.trees[session.style.widgets["default-distance-metric"]]
-  });
-  if (callback) callback();
-};
-
-MT.computePatristicMatrix = (type, callback) => {
-  let computer = new Worker("workers/compute-patristic-matrix.js");
-  computer.onmessage = response => {
-    let output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
-    session.data.distance_matrix["patristic-" + type] = output.matrix;
-    session.data.distance_matrix["patristic-" + type].labels = output.labels;
-    console.log("Patristic Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    newick: temp.trees[type]
-  });
-};
-
-MT.computeNN = (metric, callback) => {
-  if (!session.data.distance_matrix[metric]) {
-    console.error("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
-    return;
-  }
-  let nnMachine = new Worker("workers/compute-nn.js");
-  nnMachine.onmessage = response => {
-    if (response.data == "Error") {
-      console.error("Nearest Neighbor washed out");
-      return;
-    }
-    let output = new Uint8Array(response.data.links);
-    console.log("NN Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    let start = Date.now();
-    let links = session.data.links;
-    let n = links.length;
-    for (let i = 0; i < n; i++) {
-      links[i].nn = output[i] ? true : false;
-    }
-    console.log("NN Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  nnMachine.postMessage({
-    links: session.data.links,
-    nodes: session.data.nodes,
-    matrix: session.data.distance_matrix[metric],
-    epsilon: session.style.widgets["filtering-epsilon"]
-  });
-};
-
-MT.computeTriangulation = (metric, callback) => {
-  if (!session.data.distance_matrix[metric]) {
-    console.error("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
-    return;
-  }
-  let machine = new Worker("workers/compute-triangulation.js");
-  machine.onmessage = response => {
-    if (response.data == "Error") {
-      console.error("Triangulation washed out");
-      return;
-    }
-    let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
-    session.data.distance_matrix[metric] = matrix;
-    console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  machine.postMessage({
-    matrix: session.data.distance_matrix[metric]
-  });
-};
-
-MT.finishUp = oldSession => {
-  if (!oldSession) {
-    let m = session.style.widgets["default-distance-metric"];
-    MT.computeDM(() => {
-      if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
-        MT.computeTriangulation(m, () => {
-          MT.computeNN(m);
-          MT.computeTree(m, () => MT.computeDirectionality());
+    let nodes = session.data.nodes;
+    let nodesLength = nodes.length;
+    let subset = [];
+    for (let i = 0; i < nodesLength; i++) {
+      let node = nodes[i];
+      if (node.seq) {
+        subset.push({
+          index: i,
+          seq: node.seq
         });
       } else {
-        MT.computeNN(m);
-        MT.computeTree(m, () => MT.computeDirectionality());
+        subset.push({
+          index: i,
+          seq: ""
+        });
       }
+    }
+    let subsetLength = subset.length;
+    let computer = new Worker("workers/compute-consensus-distances.js");
+    computer.onmessage = response => {
+      let dists = new Uint16Array(response.data.dists);
+      console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      start = Date.now();
+      for (let j = 0; j < subsetLength; j++) {
+        nodes[subset[j].index]._diff = dists[j];
+      }
+      console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve();
+    };
+    computer.postMessage({
+      consensus: session.data.consensus,
+      subset: subset,
+      start: start
     });
+  });
+};
+
+MT.computeLinks = subset => {
+  return new Promise(resolve => {
+    let k = 0;
+    let computer = new Worker("workers/compute-links.js");
+    computer.onmessage = response => {
+      let dists = session.state.metrics[0] == 'snps' ?
+        new Uint16Array(response.data.links) :
+        new Float32Array(response.data.links);
+      console.log("Links Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let check = session.files.length > 1;
+      let n = subset.length;
+      let l = 0;
+      for (let i = 0; i < n; i++) {
+        let source = subset[i];
+        for (let j = 0; j < i; j++) {
+          let target = subset[j];
+          k += MT.addLink({
+            source: source['id'],
+            target: target['id'],
+            distance: dists[l++],
+            origin: ['Genetic Distance']
+          }, check);
+        }
+      }
+      console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve(k);
+    };
+    computer.postMessage({
+      nodes: subset,
+      metrics: session.state.metrics,
+      strategy: session.style.widgets["ambiguity-resolution-strategy"]
+    });
+  });
+};
+
+MT.computeDM = () => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-dm.js");
+    computer.onmessage = response => {
+      session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
+        MT.decode(new Uint8Array(response.data.matrix))
+      );
+      session.data.distance_matrix.labels = JSON.parse(
+        MT.decode(new Uint8Array(response.data.labels))
+      );
+      console.log("DM Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve();
+    };
+    computer.postMessage({
+      nodes: session.data.nodes,
+      links: session.data.links,
+      metrics: session.state.metrics
+    });
+  });
+};
+
+MT.computeTree = type => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-tree.js");
+    computer.onmessage = response => {
+      temp.trees[type] = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+      console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve();
+    };
+    computer.postMessage({
+      matrix: session.data.distance_matrix[type],
+      labels: session.data.distance_matrix.labels,
+      round: session.style.widgets["tree-round"]
+    });
+  })
+};
+
+MT.computeDirectionality = () => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-directionality.js");
+    computer.onmessage = response => {
+      let flips = new Uint8Array(response.data.output);
+      console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let n = flips.length;
+      for (let i = 0; i < n; i++) {
+        if (flips[i]) {
+          let fliplink = session.data.links[i];
+          let fliptemp = fliplink.source;
+          fliplink.source = fliplink.target;
+          fliplink.target = fliptemp;
+        }
+      }
+      console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve();
+    };
+    computer.postMessage({
+      links: session.data.links,
+      tree: temp.trees[session.style.widgets["default-distance-metric"]]
+    });
+  });
+};
+
+MT.computePatristicMatrix = type => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-patristic-matrix.js");
+    computer.onmessage = response => {
+      let output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
+      session.data.distance_matrix["patristic-" + type] = output.matrix;
+      session.data.distance_matrix["patristic-" + type].labels = output.labels;
+      console.log("Patristic Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve();
+    };
+    computer.postMessage({
+      newick: temp.trees[type]
+    });
+  });
+};
+
+MT.computeNN = metric => {
+  return new Promise((resolve, reject) => {
+    if (!session.data.distance_matrix[metric]) {
+      return reject("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
+    }
+    let nnMachine = new Worker("workers/compute-nn.js");
+    nnMachine.onmessage = response => {
+      if (response.data == "Error") {
+        return reject("Nearest Neighbor washed out");
+      }
+      let output = new Uint8Array(response.data.links);
+      console.log("NN Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      const start = Date.now();
+      let links = session.data.links;
+      const numLinks = links.length;
+      for (let i = 0; i < numLinks; i++) {
+        links[i].nn = output[i] ? true : false;
+      }
+      console.log("NN Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve();
+    };
+    nnMachine.postMessage({
+      links: session.data.links,
+      nodes: session.data.nodes,
+      matrix: session.data.distance_matrix[metric],
+      epsilon: session.style.widgets["filtering-epsilon"]
+    });
+  });
+};
+
+MT.computeTriangulation = metric => {
+  return new Promise((resolve, reject) => {
+    if (!session.data.distance_matrix[metric]) {
+      return reject("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
+    }
+    let machine = new Worker("workers/compute-triangulation.js");
+    machine.onmessage = response => {
+      if (response.data == "Error") {
+        return reject("Triangulation washed out");
+      }
+      let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
+      session.data.distance_matrix[metric] = matrix;
+      console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve();
+    };
+    machine.postMessage({
+      matrix: session.data.distance_matrix[metric]
+    });
+  });
+};
+
+MT.finishUp = async oldSession => {
+  if (!oldSession) {
+    let m = session.style.widgets["default-distance-metric"];
+    await MT.computeDM();
+    if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
+      await MT.computeTriangulation(m);
+    }
+    MT.computeNN(m);
+    MT.computeTree(m).then(MT.computeDirectionality);
   }
   clearTimeout(temp.messageTimeout);
   ["node", "link"].forEach(v => {
@@ -1404,22 +1424,23 @@ MT.reset = () => {
   MT.launchView("files");
 };
 
-MT.getMapData = (type, callback) => {
-  let parts = type.split(".");
-  let name = parts[0],
-      format = parts[1];
-  if (MT.mapData[name]) {
-    callback();
-    return;
-  }
-  $.get("data/" + type, response => {
-    if (format == "csv") {
-      MT.mapData[name] = Papa.parse(response, { header: true }).data;
+MT.getMapData = type => {
+  return new Promise(resolve => {
+    let parts = type.split(".");
+    let name = parts[0],
+        format = parts[1];
+    if (MT.mapData[name]) {
+      return resolve(MT.mapData[name]);
     }
-    if (format == "json") {
-      MT.mapData[name] = response;
-    }
-    callback();
+    $.get("data/" + type, response => {
+      if (format == "csv") {
+        MT.mapData[name] = Papa.parse(response, { header: true }).data;
+      }
+      if (format == "json") {
+        MT.mapData[name] = response;
+      }
+      resolve(MT.mapData[name]);
+    });
   });
 };
 
@@ -1645,23 +1666,21 @@ MT.unparseSVG = svgNode => {
   return serializer.serializeToString(svgNode);
 };
 
-MT.blobifySVG = (svgString, width, height, callback) => {
-  let canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  let image = new Image();
-  image.onload = () => {
-    let context = canvas.getContext("2d");
-    context.clearRect(0, 0, width, height);
-    context.drawImage(image, 0, 0, width, height);
-    canvas.toBlob(callback);
-  };
-  image.src =
-    "data:image/svg+xml;base64," +
-    btoa(unescape(encodeURIComponent(svgString)));
+MT.blobifySVG = (svgString, width, height) => {
+  return new Promise(resolve => {
+    let canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    let image = new Image();
+    image.onload = () => {
+      let context = canvas.getContext("2d");
+      context.clearRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+      canvas.toBlob(resolve);
+    };
+    image.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
+  });
 };
-
-MT.getHelp = (target, callback) => $.get("help/" + target + ".md", response => callback(marked(response)));
 
 MT.exportHIVTRACE = () => {
   let links = session.data.links.filter(l => l.visible);
