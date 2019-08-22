@@ -190,12 +190,23 @@ $(function() {
     screenfull.toggle();
   });
 
+  let updateNetwork = () => {
+    MT.setLinkVisibility(true);
+    MT.tagClusters().then(() => {
+      MT.setClusterVisibility(true);
+      MT.setLinkVisibility(true);
+      MT.setNodeVisibility(true);
+      ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
+      MT.updateStatistics();
+    });
+  };
+
   $("#link-show-all")
     .parent()
     .on("click", () => {
       $("#filtering-epsilon-row").slideUp();
       session.style.widgets["link-show-nn"] = false;
-      MT.updateNetwork();
+      updateNetwork();
     });
 
   $("#link-show-nn")
@@ -206,7 +217,7 @@ $(function() {
       );
       $("#filtering-epsilon-row").css("display", "flex");
       session.style.widgets["link-show-nn"] = true;
-      MT.updateNetwork();
+      updateNetwork();
     });
 
   $("#filtering-epsilon")
@@ -217,7 +228,7 @@ $(function() {
     })
     .on("change", function() {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
-      MT.computeNN(session.style.widgets["default-distance-metric"]).then(MT.updateNetwork);
+      MT.computeNN(session.style.widgets["default-distance-metric"]).then(updateNetwork);
     });
 
   $("#cluster-minimum-size").on("change", function() {
@@ -298,14 +309,14 @@ $(function() {
 
     svg.on("click", () => {
       updateThreshold();
-      MT.updateNetwork();
+      updateNetwork();
     });
 
     svg.on("mousedown", () => {
       d3.event.preventDefault();
       svg.on("mousemove", updateThreshold);
       svg.on("mouseup mouseleave", () => {
-        MT.updateNetwork();
+        updateNetwork();
         svg
           .on("mousemove", null)
           .on("mouseup", null)
@@ -317,22 +328,23 @@ $(function() {
   $("#link-sort-variable").on("change", function() {
     session.style.widgets["link-sort-variable"] = this.value;
     MT.updateThresholdHistogram();
-    MT.updateNetwork();
+    updateNetwork();
   });
 
   $("#link-threshold").on("change", function() {
     session.style.widgets["link-threshold"] = parseFloat(this.value);
     MT.setLinkVisibility(true);
-    MT.tagClusters();
-    MT.setClusterVisibility(true);
-    //To catch links that should be filtered out based on cluster size:
-    MT.setLinkVisibility(true);
-    MT.setNodeVisibility(true);
-    //Because the network isn't robust to the order in which these operations
-    //take place, we just do them all silently and then react as though we did
-    //them each after all of them are already done.
-    ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
-    MT.updateStatistics();
+    MT.tagClusters().then(() => {
+      MT.setClusterVisibility(true);
+      //To catch links that should be filtered out based on cluster size:
+      MT.setLinkVisibility(true);
+      MT.setNodeVisibility(true);
+      //Because the network isn't robust to the order in which these operations
+      //take place, we just do them all silently and then react as though we did
+      //them each after all of them are already done.
+      ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
+      MT.updateStatistics();
+    });
   });
 
   $("#network-statistics-show")

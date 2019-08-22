@@ -53,6 +53,7 @@ MT.defaultWidgets = {
   "align-sw": false,
   "align-none": true,
   "ambiguity-resolution-strategy": "AVERAGE",
+  "ambiguity-threshold": 0.015,
   "background-color": "#ffffff",
   "background-color-contrast": "#000000",
   "bubble-x": "None",
@@ -824,7 +825,8 @@ MT.computeLinks = subset => {
     computer.postMessage({
       nodes: subset,
       metrics: session.state.metrics,
-      strategy: session.style.widgets["ambiguity-resolution-strategy"]
+      strategy: session.style.widgets["ambiguity-resolution-strategy"],
+      threshold: session.style.widgets["ambiguity-threshold"]
     });
   });
 };
@@ -959,15 +961,22 @@ MT.computeTriangulation = metric => {
   });
 };
 
-MT.finishUp = async oldSession => {
+MT.finishUp = oldSession => {
   if (!oldSession) {
     let m = session.style.widgets["default-distance-metric"];
-    await MT.computeDM();
     if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
-      await MT.computeTriangulation(m);
+      MT.computeDM().then(() => {
+        MT.computeTriangulation(m).then(() => {
+          MT.computeNN(m);
+          MT.computeTree(m).then(MT.computeDirectionality);
+        })
+      })
+    } else {
+      MT.computeDM().then(() => {
+        MT.computeNN(m);
+        MT.computeTree(m).then(MT.computeDirectionality);
+      })
     }
-    MT.computeNN(m);
-    MT.computeTree(m).then(MT.computeDirectionality);
   }
   clearTimeout(temp.messageTimeout);
   ["node", "link"].forEach(v => {
@@ -1007,8 +1016,7 @@ MT.finishUp = async oldSession => {
       .delay(0)
       .ondismiss(() => window.location.reload());
   }
-  MT.updateNetwork();
-  $("#network-statistics-wrapper").fadeIn();
+  MT.setLinkVisibility(true);
   $("#SettingsTab").attr("data-target", "#global-settings-modal");
   session.meta.loadTime = Date.now() - session.meta.startTime;
   console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
@@ -1018,6 +1026,14 @@ MT.finishUp = async oldSession => {
   } else {
     MT.launchView($("#default-view").val());
   }
+  MT.tagClusters().then(() => {
+    MT.setClusterVisibility(true);
+    MT.setLinkVisibility(true);
+    MT.setNodeVisibility(true);
+    ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
+    MT.updateStatistics();
+    $("#network-statistics-wrapper").fadeIn();
+  });
   if (localStorage.getItem("stash-auto") == "true") {
     temp.autostash = {
       time: Date.now(),
@@ -1051,87 +1067,90 @@ MT.titleize = title => {
 };
 
 MT.tagClusters = () => {
-  let start = Date.now();
-  let clusters = session.data.clusters = [];
-  let nodes = session.data.nodes,
-      links = session.data.links;
-  let numNodes = nodes.length,
-      numLinks = links.length;
-  let tempnodes = temp.nodes = [];
-  let lsv = session.style.widgets["link-sort-variable"];
+  return new Promise(resolve => {
+    let start = Date.now();
+    let clusters = session.data.clusters = [];
+    let nodes = session.data.nodes,
+    links = session.data.links;
+    let numNodes = nodes.length,
+    numLinks = links.length;
+    let tempnodes = temp.nodes = [];
+    let lsv = session.style.widgets["link-sort-variable"];
 
-  let DFS = (id, cluster) => {
-    if (tempnodes.indexOf(id) >= 0) return;
-    tempnodes.push(id);
-    let node = {};
-    for (let i = 0; i < numNodes; i++) {
-      let d = nodes[i];
-      if (d.id == id) {
-        node = d;
-        break;
+    let DFS = (id, cluster) => {
+      if (tempnodes.indexOf(id) >= 0) return;
+      tempnodes.push(id);
+      let node = {};
+      for (let i = 0; i < numNodes; i++) {
+        let d = nodes[i];
+        if (d.id == id) {
+          node = d;
+          break;
+        }
+      }
+      let clusterID = cluster.id;
+      node.cluster = clusterID;
+      cluster.nodes++;
+      for (let j = 0; j < numLinks; j++) {
+        let l = links[j];
+        if (!l.visible || (l.source != id && l.target != id)) continue;
+        l.cluster = clusterID;
+        cluster.links++;
+        cluster.sum_distances += l[lsv];
+        if(tempnodes.length == numNodes) return;
+        DFS(l.source, cluster);
+        DFS(l.target, cluster);
+      }
+    };
+
+    for (let k = 0; k < numNodes; k++) {
+      let d = nodes[k];
+      d.degree = 0;
+      let id = d.id;
+      if (tempnodes.indexOf(id) == -1) {
+        let cluster = {
+          id: clusters.length,
+          nodes: 0,
+          links: 0,
+          sum_distances: 0,
+          links_per_node: 0,
+          mean_genetic_distance: undefined,
+          visible: true
+        };
+        clusters.push(cluster);
+        DFS(id, cluster);
+        if(tempnodes.length == numNodes) break;
       }
     }
-    let clusterID = cluster.id;
-    node.cluster = clusterID;
-    cluster.nodes++;
-    for (let j = 0; j < numLinks; j++) {
-      let l = links[j];
-      if (!l.visible || (l.source != id && l.target != id)) continue;
-      l.cluster = clusterID;
-      cluster.links++;
-      cluster.sum_distances += l[lsv];
-      if(tempnodes.length == numNodes) return;
-      DFS(l.source, cluster);
-      DFS(l.target, cluster);
-    }
-  };
 
-  for (let k = 0; k < numNodes; k++) {
-    let d = nodes[k];
-    d.degree = 0;
-    let id = d.id;
-    if (tempnodes.indexOf(id) == -1) {
-      let cluster = {
-        id: clusters.length,
-        nodes: 0,
-        links: 0,
-        sum_distances: 0,
-        links_per_node: 0,
-        mean_genetic_distance: undefined,
-        visible: true
-      };
-      clusters.push(cluster);
-      DFS(id, cluster);
-      if(tempnodes.length == numNodes) break;
-    }
-  }
-
-  console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
-  start = Date.now();
-  for (let m = 0; m < numLinks; m++) {
-    let l = links[m];
-    if (!l.visible) continue;
-    let s = false,
-        t = false;
-    for (let n = 0; n < numNodes; n++) {
-      let node = nodes[n];
-      if (l.source == node.id) {
-        s = true;
-        node.degree++;
+    console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
+    start = Date.now();
+    for (let m = 0; m < numLinks; m++) {
+      let l = links[m];
+      if (!l.visible) continue;
+      let s = false,
+      t = false;
+      for (let n = 0; n < numNodes; n++) {
+        let node = nodes[n];
+        if (l.source == node.id) {
+          s = true;
+          node.degree++;
+        }
+        if (l.target == node.id) {
+          t = true;
+          node.degree++;
+        }
+        if (s && t) break;
       }
-      if (l.target == node.id) {
-        t = true;
-        node.degree++;
-      }
-      if (s && t) break;
     }
-  }
-  session.data.clusters.forEach(c => {
-    c.links = c.links / 2;
-    c.links_per_node = c.links / c.nodes;
-    c.mean_genetic_distance = c.sum_distances / 2 / c.links;
+    session.data.clusters.forEach(c => {
+      c.links = c.links / 2;
+      c.links_per_node = c.links / c.nodes;
+      c.mean_genetic_distance = c.sum_distances / 2 / c.links;
+    });
+    console.log("Degree Computation time:", (Date.now() - start).toLocaleString(), "ms");
+    resolve();
   });
-  console.log("Degree Computation time:", (Date.now() - start).toLocaleString(), "ms");
 };
 
 MT.setNodeVisibility = silent => {
@@ -1257,16 +1276,6 @@ MT.getVisibleClusters = copy => {
     }
   }
   return out;
-};
-
-MT.updateNetwork = () => {
-  MT.setLinkVisibility(true);
-  MT.tagClusters();
-  MT.setClusterVisibility(true);
-  MT.setLinkVisibility(true);
-  MT.setNodeVisibility(true);
-  ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
-  MT.updateStatistics();
 };
 
 MT.updateStatistics = () => {

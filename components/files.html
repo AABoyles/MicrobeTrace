@@ -61,7 +61,18 @@
             <option value="RESOLVE">Resolve</option>
             <option value="SKIP">Skip</option>
             <option value="GAPMM">GapMM</option>
+            <option value="HIVTRACE-G">HIV-TRACE -g</option>
           </select>
+        </div>
+      </div>
+      <div id="ambiguity-threshold-row" class="form-group row">
+        <div class="col-3">
+          <label for="ambiguity-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+            Ambiguity Threshold
+          </label>
+        </div>
+        <div class="col-9">
+          <input type="number" id="ambiguity-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
         </div>
       </div>
       <div class="form-group row">
@@ -340,6 +351,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           complete: output => addTableTile(output.meta.fields.map(filterXSS))
         });
       }
+      //For the love of all that's good...
+      //TODO: Rewrite this as a [Web Component](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) or [something](https://reactjs.org/docs/react-component.html).
       function addTableTile(headers) {
         let root = $('<div class="file-table-row"></div>').data('filename', file.name);
         let fnamerow = $('<div class="row w-100"></div>');
@@ -569,7 +582,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       $('#default-distance-metric').val(cachedLSV).trigger('change');
     }
 
-    $('#ambiguity-resolution-strategy').change(function () {
+    $('#ambiguity-resolution-strategy').on('change', function () {
       const v = this.value;
       session.style.widgets['ambiguity-resolution-strategy'] = v;
       if(v == 'HIVTRACE-G'){
@@ -578,6 +591,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         $('#ambiguity-threshold-row').slideUp();
       }
     }).change();
+
+    $('#ambiguity-threshold').on('change', function(){
+      const v = this.value;
+      session.style.widgets['ambiguity-threshold'] = v;
+    });
 
     const cachedView = localStorage.getItem('default-view');
     if (cachedView) {
@@ -920,7 +938,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
       });
 
-      function processSequences() {
+      async function processSequences() {
         if (!anySequences) {
           $('.show-for-seq').hide();
           MT.finishUp();
@@ -931,45 +949,53 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         $('.show-for-seq.row').css('display', 'flex');
         let nodes = session.data.nodes, subset = [];
         const n = nodes.length;
+        const gapString = '-'.repeat(session.data.reference.length);
         for (let i = 0; i < n; i++) {
           const d = nodes[i];
           if (!d.seq) {
-            d.seq = '';
+            d.seq = gapString;
           } else {
             subset.push(d);
           }
         }
-        if ($('#align-none').is(':checked')) {
-          computeLinks(subset);
-        } else {
+        if (session.style.widgets['align-sw']){
           message('Aligning Sequences...');
-          MT.align({
+          let output = await MT.align({
             reference: session.data.reference,
             isLocal: $('#localAlign').is(':checked'),
             match: [$('#alignerMatch').val(), $('#alignerMismatch').val()].map(parseFloat),
             gap: [$('#alignerGapO').val(), $('#alignerGapE').val()].map(parseFloat),
             nodes: subset
-          }).then(output => {
-            const start = Date.now();
-            const m = subset.length;
-            for (let j = 0; j < m; j++) {
-              Object.assign(subset[j], output[j]);
-            }
-            console.log("Alignment Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-            computeLinks(subset);
           });
+          const start = Date.now();
+          const m = subset.length;
+          for (let j = 0; j < m; j++) {
+            Object.assign(subset[j], output[j]);
+          }
+          console.log("Alignment Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         }
+        const start = Date.now();
+        for(let k = 0; k < n; k++){
+          let node = nodes[k];
+          node['_seqInt'] = tn93.toInts(node['seq']);
+        }
+        console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
+        computeLinks(subset);
       };
 
       async function computeLinks(nodes) {
-        message('Computing Links based on Genomic Proximity...');
         session.data.consensus = await MT.computeConsensus();
         await MT.computeConsensusDistances();
         nodes.sort((a, b) => a['_diff'] - b['_diff']);
+        session.data.nodeFields.push('_diff');
+        message('Computing Links based on Genomic Proximity...');
+        if(session.style.widgets['ambiguity-resolution-strategy']){
+          await MT.computeAmbiguityCounts();
+          session.data.nodeFields.push('_ambiguity');
+        }
         const k = await MT.computeLinks(nodes);
         message(` - Found ${k} New Links from Genomic Proximity`);
         MT.finishUp();
-        session.data.nodeFields.push('_diff');
       };
     });
   })();

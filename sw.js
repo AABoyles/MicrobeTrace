@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-08-15R2033';
+var CACHE = 'MicrobeTraceD2019-08-22R1048';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -24,6 +24,7 @@ self.addEventListener('install', function(event) {
         'dist/index.js',
         'dist/main.css',
         'workers/align-sw.js',
+        'workers/compute-ambiguity-counts.js',
         'workers/compute-consensus-distances.js',
         'workers/compute-consensus.js',
         'workers/compute-directionality.js',
