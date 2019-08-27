@@ -273,10 +273,10 @@ MT.defaultNode = () => ({
   origin: []
 });
 
-MT.isNumber = a => typeof a == "number";
+let isNumber = a => typeof a == "number";
 
 MT.addNode = (newNode, check) => {
-  if (MT.isNumber(newNode.id)) newNode.id = "" + newNode.id;
+  if (isNumber(newNode.id)) newNode.id = "" + newNode.id;
   if (check) {
     let nodes = session.data.nodes;
     const n = nodes.length;

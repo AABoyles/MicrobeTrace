@@ -863,6 +863,8 @@ Note that this may cause slow performance on larger networks.">
         .on('end', () => tooltip.style('z-index', -1));
     }
 
+    let isNumber = a => typeof a == "number";
+
     function redrawNodes() {
       //Things to track in the function:
       //* Shapes:
@@ -890,7 +892,7 @@ Note that this may cause slow performance on larger networks.">
         if (symbolVariable !== 'None') type = d3[temp.style.nodeSymbolMap(d[symbolVariable])];
         if (sizeVariable !== 'None') {
           size = d[sizeVariable];
-          if (!MT.isNumber(size)) size = med;
+          if (!isNumber(size)) size = med;
           size = (size - min) / oldrng;
           size = size * size * defaultSize + 100;
         }
@@ -1167,7 +1169,7 @@ Note that this may cause slow performance on larger networks.">
       var min = Infinity;
       for (var i = 0; i < n; i++) {
         var l = vlinks[i][variable];
-        if (!MT.isNumber(l)) return;
+        if (!isNumber(l)) return;
         if (l > max) max = l;
         if (l < min) min = l;
       }
@@ -1177,7 +1179,7 @@ Note that this may cause slow performance on larger networks.">
         .range([1, scalar]);
       links.attr('stroke-width', d => {
         var v = d[variable];
-        if (!MT.isNumber(v)) v = mid;
+        if (!isNumber(v)) v = mid;
         return scale(v);
       });
     }

@@ -185,6 +185,8 @@
       groupBubblesX();
     });
 
+    let isNumber = a => typeof a == "number";
+
     function groupBubblesX() {
       let field = session.style.widgets['bubble-x'];
       if (field == 'None') {
@@ -199,7 +201,7 @@
       vnodes.forEach(function (d) {
         if (values.indexOf(d[field]) == -1) values.push(d[field]);
       });
-      if (MT.isNumber(values[0])) {
+      if (isNumber(values[0])) {
         values.sort((a, b) => a - b);
       } else {
         values.sort();
@@ -240,7 +242,7 @@
       vnodes.forEach(function (d) {
         if (values.indexOf(d[field]) == -1) values.push(d[field]);
       });
-      if (MT.isNumber(values[0])) {
+      if (isNumber(values[0])) {
         values.sort((a, b) => b - a);
       } else {
         values.sort();
