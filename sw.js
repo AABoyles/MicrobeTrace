@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-08-22R1048';
+var CACHE = 'MicrobeTraceD2019-08-27R4605';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -135,7 +135,9 @@ self.addEventListener('install', function(event) {
         'help/z-Deployment.md',
         'help/z-Development.md',
         'help/z-Nomenclature.md',
+        'help/z-Optimization.md',
         'help/z-Security-Considerations.md',
+        'help/z-What-We-Should-Have-Done.md',
       ]);
     })
   );
