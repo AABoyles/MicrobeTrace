@@ -47,10 +47,10 @@
     "express": "^4.17.1",
     "express-http-to-https": "^1.1.4",
     "express-static-gzip": "^1.1.3",
-    "gzipper": "^2.8.1"
+    "gzipper": "^2.9.0"
   },
   "devDependencies": {
-    "3d-force-graph": "^1.49.7",
+    "3d-force-graph": "^1.52.0",
     "alertifyjs": "^1.11.4",
     "alignment-viewer": "^0.3.2",
     "bioseq": "^0.1.4",
@@ -58,7 +58,7 @@
     "chosen-js": "^1.8.5",
     "clipboard": "^2.0.4",
     "cssnano": "^4.1.10",
-    "d3": "^5.9.7",
+    "d3": "^5.11.0",
     "d3-force-attract": "^0.1.1",
     "d3-symbol-extra": "^0.1.0",
     "devtools-detect": "^3.0.0",
@@ -75,17 +75,17 @@
     "moment": "^2.24.0",
     "open-iconic": "^1.1.1",
     "papaparse": "^4.6.3",
-    "patristic": "^0.4.0",
-    "pdfmake": "^0.1.57",
-    "plotly.js": "^1.48.3",
+    "patristic": "^0.4.3",
+    "pdfmake": "^0.1.58",
+    "plotly.js": "^1.49.4",
     "postcss-cli": "^6.1.3",
-    "puppeteer": "^1.18.1",
+    "puppeteer": "^1.19.0",
     "save-svg-as-png": "^1.4.14",
     "screenfull": "^3.3.2",
-    "tabulator-tables": "^4.2.7",
+    "tabulator-tables": "^4.4.1",
     "tidytree": "^0.4.2",
     "tn93": "^0.3.0",
-    "xlsx": "^0.14.3",
+    "xlsx": "^0.14.5",
     "xss": "^1.0.6"
   }
 }
