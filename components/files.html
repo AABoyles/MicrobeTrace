@@ -771,7 +771,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 data.map(forEachLink);
                 message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
                 results.meta.fields.forEach(key => {
-                  const safeKey = filterXSS(safeKey);
+                  const safeKey = filterXSS(key);
                   if (!session.data.linkFields.includes(safeKey)) {
                     session.data.linkFields.push(safeKey);
                   }
