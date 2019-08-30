@@ -19,6 +19,7 @@ MT.dataSkeleton = () => ({
     "degree",
     "origin"
   ],
+  nodeExclusions: [],
   linkFields: [
     "index",
     "source",
@@ -277,6 +278,7 @@ let isNumber = a => typeof a == "number";
 
 MT.addNode = (newNode, check) => {
   if (isNumber(newNode.id)) newNode.id = "" + newNode.id;
+  if (session.data.nodeExclusions.indexOf(newNode.id) > -1) return 0;
   if (check) {
     let nodes = session.data.nodes;
     const n = nodes.length;
@@ -1422,7 +1424,7 @@ MT.applySession = (data, startTime) => {
 
 MT.reset = () => {
   $("#network-statistics-hide").parent().trigger("click");
-  $("#SettingsTab").attr("data-target", "#aligner-controls-modal");
+  $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
   self.session = MT.sessionSkeleton();
   layout.unbind("stateChanged");
   layout.root.replaceChild(layout.root.contentItems[0], {
