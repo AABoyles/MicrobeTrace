@@ -3,8 +3,6 @@
 
 let MT = {};
 
-MT.componentCache = {};
-
 MT.dataSkeleton = () => ({
   nodes: [],
   links: [],
@@ -251,6 +249,10 @@ MT.sessionSkeleton = () => ({
 });
 
 MT.tempSkeleton = () => ({
+  componentCache: {},
+  mapData: {},
+  matrix: {},
+  messageTimeout: null,
   style: {
     linkAlphaMap: () => 1 - session.style.widgets["link-opacity"],
     linkColorMap: () => session.style.widgets["link-color"],
@@ -258,10 +260,7 @@ MT.tempSkeleton = () => ({
     nodeColorMap: () => session.style.widgets["node-color"],
     nodeSymbolMap: () => session.style.widgets["node-symbol"]
   },
-  trees: {},
-  mapData: {},
-  matrix: {},
-  messageTimeout: null
+  trees: {}
 });
 
 MT.defaultNode = () => ({
@@ -570,6 +569,7 @@ MT.r01 = Math.random;
 
 // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
 MT.generateSeqs = (idPrefix, count, snps, seed) => {
+  let start = Date.now();
   if (!count) count = 1000;
   if (!snps) snps = 100;
   if (!seed) seed = session.data.reference;
@@ -692,7 +692,7 @@ MT.generateSeqs = (idPrefix, count, snps, seed) => {
 
     seqs.push({ id: idPrefix + "" + seqs.length, seq: newseed });
   }
-
+  console.log("Sequence spawn time:", (Date.now() - start).toLocaleString(), 'ms');
   return seqs;
 };
 
@@ -839,27 +839,23 @@ MT.computeLinks = subset => {
   });
 };
 
-MT.getDM = metric => {
-  if(!metric) metric = 'distance';
-  let labels = session.data.distance_matrix.labels;
-  const n = labels.length;
-  let dm = new Array(n);
-  for(let i = 0; i < n; i++){
-    dm[i] = new Array(n);
-    dm[i][i] = 0;
-    let source = labels[i];
-    for(let j = 0; j < i; j++){
-      dm[i][j] = dm[j][i] = temp.matrix[source][labels[j]][metric];
-    }
-  }
-  return dm;
-};
-
 MT.computeDM = () => {
   let start = Date.now();
   return new Promise(resolve => {
     session.data.distance_matrix.labels = session.data.nodes.map(d => d.id);
-    session.data.distance_matrix[session.state.metrics[0]] = MT.getDM(session.style.widgets['link-sort-variable'])
+    let metric = session.style.widgets['link-sort-variable'];
+    let labels = session.data.distance_matrix.labels;
+    const n = labels.length;
+    let dm = new Array(n);
+    for(let i = 0; i < n; i++){
+      dm[i] = new Array(n);
+      dm[i][i] = 0;
+      let source = labels[i];
+      for(let j = 0; j < i; j++){
+        dm[i][j] = dm[j][i] = temp.matrix[source][labels[j]][metric];
+      }
+    }
+    session.data.distance_matrix[session.state.metrics[0]] = dm;
     console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
     resolve();
   });
@@ -903,22 +899,6 @@ MT.computeDirectionality = () => {
     computer.postMessage({
       links: session.data.links,
       tree: temp.trees[session.style.widgets["default-distance-metric"]]
-    });
-  });
-};
-
-MT.computePatristicMatrix = type => {
-  return new Promise(resolve => {
-    let computer = new Worker("workers/compute-patristic-matrix.js");
-    computer.onmessage = response => {
-      let output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
-      session.data.distance_matrix["patristic-" + type] = output.matrix;
-      session.data.distance_matrix["patristic-" + type].labels = output.labels;
-      console.log("Patristic Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-      resolve();
-    };
-    computer.postMessage({
-      newick: temp.trees[type]
     });
   });
 };
@@ -1469,39 +1449,6 @@ MT.getMapData = type => {
   });
 };
 
-//adapted from from http://www.movable-type.co.uk/scripts/latlong.html
-MT.haversine = (a, b) => {
-  let r = Math.PI / 180;
-  let phi1 = a._lat * r;
-  let phi2 = b._lat * r;
-  let deltalambda = (b._lon - a._lon) * r;
-  let deltaphi = (b._lat - a._lat) * r;
-  let x =
-    Math.cos(phi1) *
-    Math.cos(phi2) *
-    Math.sin(deltalambda / 2) *
-    Math.sin(deltalambda / 2) +
-    Math.pow(Math.sin(deltaphi / 2), 2);
-  let c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-  return c * 6378.1; // kilometers
-};
-
-MT.geoDM = () => {
-  let nodes = session.data.nodes;
-  let n = nodes.length;
-  let dm = Array(n);
-  for (let i = 0; i < n; i++) {
-    dm[i] = Array(n);
-    dm[i][i] = 0;
-    for (let j = 0; j < i; j++) {
-      let dist = MT.haversine(nodes[i], nodes[j]);
-      dm[i][j] = dist;
-      dm[j][i] = dist;
-    }
-  }
-  session.data.distance_matrix.geo = dm;
-};
-
 //Adapted from https://24ways.org/2010/calculating-color-contrast/
 MT.contrastColor = hexcolor => {
   let r = parseInt(hexcolor.substr(1, 2), 16);
@@ -1514,9 +1461,9 @@ MT.contrastColor = hexcolor => {
 let peek = ra => ra[ra.length - 1];
 
 MT.launchView = (view, callback) => {
-  if (!MT.componentCache[view]) {
+  if (!temp.componentCache[view]) {
     $.get("components/" + view + ".html", response => {
-      MT.componentCache[view] = response;
+      temp.componentCache[view] = response;
       //This MUST NOT be replace by an arrow function!
       layout.registerComponent(view, function (container, state) {
         container.getElement().html(state.text);
@@ -1536,7 +1483,7 @@ MT.launchView = (view, callback) => {
       if (!lastStack) lastStack = layout.root.contentItems[0];
       lastStack.addChild({
         componentName: view,
-        componentState: { text: MT.componentCache[view] },
+        componentState: { text: temp.componentCache[view] },
         title: MT.titleize(view),
         type: "component"
       });
@@ -1619,18 +1566,6 @@ MT.loadLayout = (component, parent) => {
   }
 };
 
-MT.unparseFASTA = nodes => nodes.map(node => ">" + node.id + "\r\n" + node.seq).join("\r\n");
-
-MT.unparseMEGA = nodes => nodes.map(node => "#" + node.id + "\r\n" + node.seq).join("\r\n");
-
-MT.unparseDM = dm => {
-  let labels = session.data.distance_matrix.labels;
-  return(
-    "," + labels.join(",") + "\r\n" +
-    dm.map((row, i) => labels[i] + "," + row.join(",").join("\r\n"))
-  );
-};
-
 MT.unparseSVG = svgNode => {
   svgNode.setAttribute("xlink", "http://www.w3.org/1999/xlink");
   let selectorTextArr = [];
@@ -1689,22 +1624,6 @@ MT.unparseSVG = svgNode => {
   svgNode.insertBefore(styleElement, refNode);
   let serializer = new XMLSerializer();
   return serializer.serializeToString(svgNode);
-};
-
-MT.blobifySVG = (svgString, width, height) => {
-  return new Promise(resolve => {
-    let canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    let image = new Image();
-    image.onload = () => {
-      let context = canvas.getContext("2d");
-      context.clearRect(0, 0, width, height);
-      context.drawImage(image, 0, 0, width, height);
-      canvas.toBlob(resolve);
-    };
-    image.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
-  });
 };
 
 MT.exportHIVTRACE = () => {
