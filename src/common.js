@@ -1118,8 +1118,8 @@ MT.tagClusters = () => {
         if(tempnodes.length == numNodes) break;
       }
     }
-
     console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
+
     start = Date.now();
     for (let m = 0; m < numLinks; m++) {
       let l = links[m];
@@ -1139,7 +1139,7 @@ MT.tagClusters = () => {
         if (s && t) break;
       }
     }
-    session.data.clusters.forEach(c => {
+    clusters.forEach(c => {
       c.links = c.links / 2;
       c.links_per_node = c.links / c.nodes;
       c.mean_genetic_distance = c.sum_distances / 2 / c.links;
