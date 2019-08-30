@@ -424,19 +424,20 @@ Note that this may cause slow performance on larger networks.">
 </div><!-- /.modal -->
 
 <script>
-  (function () {
+  (() => {
 
-    var halfWidth = $('#network').parent().width() / 2,
+    let halfWidth = $('#network').parent().width() / 2,
       halfHeight = $('#network').parent().parent().parent().height() / 2,
       transform = {},
-      zoom = d3.zoom().on('zoom', function () {
+      zoom = d3.zoom().on('zoom', () => {
         transform = d3.event.transform;
         svg.attr('transform', transform);
       }),
       brush = d3.brush()
         .on('start', brushstarted)
         .on('brush', brushed)
-        .on('end', brushended);
+        .on('end', brushended),
+      settings = session.style.widgets;
 
     function brushstarted() {
       session.network.nodes.forEach(d => {
@@ -446,7 +447,7 @@ Note that this may cause slow performance on larger networks.">
 
     function brushed() {
       if (d3.event.sourceEvent.type == 'end') return;
-      var selection = [
+      let selection = [
         transform.invert(d3.event.selection[0]),
         transform.invert(d3.event.selection[1])
       ];
@@ -464,7 +465,7 @@ Note that this may cause slow performance on larger networks.">
       d3.select(this).call(d3.event.target.move, null);
       session.network.nodes.forEach(d => delete d._previouslySelected);
       session.data.nodes.forEach(d => {
-        var match = session.network.nodes.find(node => node.id == d.id);
+        let match = session.network.nodes.find(node => node.id == d.id);
         if (match) d.selected = match.selected;
       });
       $window.trigger('node-selected');
@@ -493,7 +494,7 @@ Note that this may cause slow performance on larger networks.">
       .select('rect.overlay')
       .attr('pointer-events', 'none');
 
-    var svg = d3.select('svg#network').append('g');
+    let svg = d3.select('svg#network').append('g');
 
     svg.append('g').attr('class', 'links');
     svg.append('g').attr('class', 'nodes');
@@ -509,29 +510,31 @@ Note that this may cause slow performance on larger networks.">
       .append('svg:path')
       .attr('d', 'M0,0 L0,10 L10,5 z');
 
-    var force = d3.forceSimulation()
+    let force = d3.forceSimulation()
       .force('link', d3.forceLink()
         .id(d => d.id)
-        .distance(l => l.origin.length * session.style.widgets['link-length'])
+        .distance(l => l.origin.length * settings['link-length'])
         .strength(0.125)
       )
       .force('charge', d3.forceManyBody()
-        .strength(-session.style.widgets['node-charge'])
+        .strength(-settings['node-charge'])
       )
       .force('gravity', d3.forceAttract()
         .target([halfWidth, halfHeight])
-        .strength(session.style.widgets['network-gravity'])
+        .strength(settings['network-gravity'])
       )
       .force('center', d3.forceCenter(halfWidth, halfHeight));
 
-    if (session.style.widgets['network-friction']) force.velocityDecay(session.style.widgets['network-friction']);
+    if (settings['network-friction']) force.velocityDecay(settings['network-friction']);
 
     function render() {
       if(!$('#network').length) return;
-      var newNodes = MT.getVisibleNodes(true);
+      const start = Date.now();
+      let newNodes = MT.getVisibleNodes(true);
+      let oldNodes = session.network.nodes;
 
       newNodes.forEach((d, i) => {
-        var match = session.network.nodes.find(d2 => d2.id == d.id);
+        let match = oldNodes.find(d2 => d2.id == d.id);
         if (match) {
           ['x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed'].forEach(v => {
             if (typeof match[v] != "undefined") d[v] = match[v];
@@ -541,10 +544,10 @@ Note that this may cause slow performance on larger networks.">
 
       session.network.nodes = newNodes;
 
-      var nodes = svg.select('g.nodes').selectAll('g').data(newNodes, function (d) { return d.id; })
+      let nodes = svg.select('g.nodes').selectAll('g').data(newNodes, d => d.id)
         .join(
           enter => {
-            var g = enter.append('g')
+            let g = enter.append('g')
               .attr('tabindex', '0')
               .call(d3.drag() //A bunch of mouse handlers.
                 .on('start', dragstarted)
@@ -572,22 +575,22 @@ Note that this may cause slow performance on larger networks.">
       updateNodeColors();
       redrawLabels();
 
-      var vlinks = getVLinks();
-      var links = svg.select('g.links').selectAll('line').data(vlinks)
+      let vlinks = getVLinks();
+      let links = svg.select('g.links').selectAll('line').data(vlinks)
         .join('line')
-        .attr('stroke-width', session.style.widgets['link-width'])
-        .attr('opacity', 1 - session.style.widgets['link-opacity'])
+        .attr('stroke-width', settings['link-width'])
+        .attr('opacity', 1 - settings['link-opacity'])
         .on('mouseenter', showLinkTooltip)
         .on('mouseout', hideTooltip);
 
       updateLinkColor();
       scaleLinkWidth();
 
-      var linklabels = svg.select('g.links').selectAll('text').data(getLLinks())
+      let linklabels = svg.select('g.links').selectAll('text').data(getLLinks())
         .join('text')
         .attr('text-anchor', 'middle')
-        .attr('dy', session.style.widgets['link-width'] + 2)
-        .text(l => l[session.style.widgets['link-label-variable']]);
+        .attr('dy', settings['link-width'] + 2)
+        .text(l => l[settings['link-label-variable']]);
 
       force.nodes(session.network.nodes).on('tick', function () {
         nodes
@@ -600,7 +603,7 @@ Note that this may cause slow performance on larger networks.">
           .attr('y1', l => l.source.y)
           .attr('x2', l => l.target.x)
           .attr('y2', l => l.target.y);
-        if (session.style.widgets['link-label-variable'] !== 'None') {
+        if (settings['link-label-variable'] !== 'None') {
           linklabels
             .attr('x', l => (l.source.x + l.target.x) / 2)
             .attr('y', l => (l.source.y + l.target.y) / 2)
@@ -614,13 +617,14 @@ Note that this may cause slow performance on larger networks.">
       force.force('link').links(vlinks);
       force.alpha(0.3).alphaTarget(0).restart();
       $('#node-symbol-variable').trigger('change');
+      console.log("Network render time:", (Date.now() - start).toLocaleString(), 'ms');
     }
 
     function getVLinks() {
-      var vlinks = MT.getVisibleLinks(true);
-      var output = [];
-      var n = vlinks.length;
-      for (var i = 0; i < n; i++) {
+      let vlinks = MT.getVisibleLinks(true);
+      let output = [];
+      let n = vlinks.length;
+      for (let i = 0; i < n; i++) {
         if (vlinks[i].origin) {
           if (typeof vlinks[i].origin == 'object') {
             vlinks[i].origin.forEach((o, j, l) => {
@@ -654,21 +658,21 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function getLLinks() {
-      var vlinks = MT.getVisibleLinks(true);
-      var n = vlinks.length;
-      for (var i = 0; i < n; i++) {
+      let vlinks = MT.getVisibleLinks(true);
+      let n = vlinks.length;
+      for (let i = 0; i < n; i++) {
         vlinks[i].source = session.network.nodes.find(d => d.id == vlinks[i].source);
         vlinks[i].target = session.network.nodes.find(d => d.id == vlinks[i].target);
       }
       return vlinks;
     }
 
-    var radToDeg = 180 / Math.PI;
+    const radToDeg = 180 / Math.PI;
     function calcAngle(source, target) {
       return Math.atan((source.y - target.y) / (source.x - target.x)) * radToDeg;
     }
 
-    var selected, multidrag = false;
+    let selected, multidrag = false;
 
     function dragstarted(n) {
       if (!d3.event.active) force.alphaTarget(0.3).restart();
@@ -730,7 +734,7 @@ Note that this may cause slow performance on larger networks.">
       $window.trigger('node-selected');
     }
 
-    var clipboard = new ClipboardJS('#copyID, #copySeq');
+    let clipboard = new ClipboardJS('#copyID, #copySeq');
 
     clipboard.on('success', hideContextMenu);
 
@@ -741,9 +745,9 @@ Note that this may cause slow performance on larger networks.">
       $('#copySeq').attr('data-clipboard-text', d.seq);
       d3.select('#viewAttributes').on('click', function () {
         hideContextMenu();
-        var target = $('#network-attribute-modal tbody').empty();
-        var nd = session.data.nodes.find(nd => nd.id == d.id);
-        for (var attribute in nd) {
+        let target = $('#network-attribute-modal tbody').empty();
+        let nd = session.data.nodes.find(nd => nd.id == d.id);
+        for (let attribute in nd) {
           if (attribute[0] == '_') continue;
           target.append(`<tr><td><strong>${MT.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
         }
@@ -780,7 +784,7 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function showNodeTooltip(d) {
-      if (session.style.widgets['node-highlight']) highlightNeighbors(d);
+      if (settings['node-highlight']) highlightNeighbors(d);
       if ($('#node-tooltip-variable').val() == 'None') return;
       d3.select('#tooltip')
         .html(d[$('#node-tooltip-variable').val()])
@@ -792,11 +796,11 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function highlightNeighbors(node) {
-      var links = getVLinks();
-      var lindices = [], neighbors = [node.id];
-      var n = links.length;
-      for (var i = 0; i < n; i++) {
-        var l = links[i];
+      let links = getVLinks();
+      let lindices = [], neighbors = [node.id];
+      let n = links.length;
+      for (let i = 0; i < n; i++) {
+        let l = links[i];
         if (l.source.id !== node.id && l.target.id !== node.id) {
           lindices.push(l.index);
         } else {
@@ -820,11 +824,11 @@ Note that this may cause slow performance on larger networks.">
     }
 
     $('#link-tooltip-variable').on('change', function () {
-      session.style.widgets['link-tooltip-variable'] = this.value;
+      settings['link-tooltip-variable'] = this.value;
     });
 
     function showLinkTooltip(d) {
-      var v = session.style.widgets['link-tooltip-variable'];
+      let v = settings['link-tooltip-variable'];
       if (v == 'None') return;
       d3.select('#tooltip')
         .html((v == 'source' || v == 'target') ? d[v].id : d[v])
@@ -836,27 +840,27 @@ Note that this may cause slow performance on larger networks.">
     }
 
     $('#highlight-neighbors').parent().on('click', function () {
-      session.style.widgets['node-highlight'] = true;
+      settings['node-highlight'] = true;
     });
 
     $('#dont-highlight-neighbors').parent().on('click', function () {
-      session.style.widgets['node-highlight'] = false;
+      settings['node-highlight'] = false;
     });
 
     function hideTooltip() {
-      if (session.style.widgets['node-highlight']) {
+      if (settings['node-highlight']) {
         svg
           .select('g.nodes')
           .selectAll('g')
           .selectAll('path')
           .attr('opacity', 1);
-        var linkOpacity = 1 - session.style.widgets['link-opacity'];
+        let linkOpacity = 1 - settings['link-opacity'];
         svg
           .select('g.links')
           .selectAll('line')
           .attr('opacity', linkOpacity);
       }
-      var tooltip = d3.select('#tooltip');
+      let tooltip = d3.select('#tooltip');
       tooltip
         .transition().duration(100)
         .style('opacity', 0)
@@ -868,18 +872,18 @@ Note that this may cause slow performance on larger networks.">
     function redrawNodes() {
       //Things to track in the function:
       //* Shapes:
-      var type = d3[session.style.widgets['node-symbol']];
-      var symbolVariable = session.style.widgets['node-symbol-variable'];
+      let type = d3[settings['node-symbol']];
+      let symbolVariable = settings['node-symbol-variable'];
       //* Sizes:
-      var defaultSize = session.style.widgets['node-radius'];
-      var size = defaultSize, med = defaultSize, oldrng, min, max;
-      var sizeVariable = session.style.widgets['node-radius-variable'];
+      let defaultSize = settings['node-radius'];
+      let size = defaultSize, med = defaultSize, oldrng, min, max;
+      let sizeVariable = settings['node-radius-variable'];
       if (sizeVariable !== 'None') {
-        var n = session.network.nodes.length;
+        let n = session.network.nodes.length;
         min = Number.MAX_VALUE;
         max = Number.MIN_VALUE;
-        for (var i = 0; i < n; i++) {
-          var size = session.network.nodes[i][sizeVariable];
+        for (let i = 0; i < n; i++) {
+          let size = session.network.nodes[i][sizeVariable];
           if (typeof size == 'undefined') continue;
           if (size < min) min = size;
           if (size > max) max = size;
@@ -887,7 +891,7 @@ Note that this may cause slow performance on larger networks.">
         oldrng = max - min;
         med = oldrng / 2;
       }
-      var nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
+      let nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
       nodes.selectAll('path').each(function (d) {
         if (symbolVariable !== 'None') type = d3[temp.style.nodeSymbolMap(d[symbolVariable])];
         if (sizeVariable !== 'None') {
@@ -901,13 +905,13 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function redrawLabels() {
-      var nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes).select('text'),
-        labelVar = session.style.widgets['node-label-variable'];
+      let nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes).select('text'),
+        labelVar = settings['node-label-variable'];
       if (labelVar == 'None') {
         nodes.text('');
       } else {
-        var size = session.style.widgets['node-label-size'],
-          orientation = session.style.widgets['node-label-orientation'];
+        let size = settings['node-label-size'],
+          orientation = settings['node-label-orientation'];
         nodes
           .text(n => n[labelVar])
           .style('font-size', size + 'px');
@@ -946,7 +950,7 @@ Note that this may cause slow performance on larger networks.">
     }
 
     $('#network-settings-toggle').on('click', function () {
-      var pane = $('#network-settings-pane');
+      let pane = $('#network-settings-pane');
       if ($(this).hasClass('active')) {
         pane.animate({ left: '-400px' }, function () { pane.hide(); });
       } else {
@@ -955,7 +959,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#node-label-variable').on('change', function () {
-      session.style.widgets['node-label-variable'] = this.value;
+      settings['node-label-variable'] = this.value;
       if (this.value == 'None') {
         $('.node-label-row').slideUp();
       } else {
@@ -965,31 +969,31 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#node-label-size').on('input', function () {
-      session.style.widgets['node-label-size'] = parseFloat(this.value);
+      settings['node-label-size'] = parseFloat(this.value);
       redrawLabels();
     });
 
     $('#node-label-orientation').on('change', function () {
-      session.style.widgets['node-label-orientation'] = this.value;
+      settings['node-label-orientation'] = this.value;
       redrawLabels();
     });
 
     $('#node-tooltip-variable').on('change', function () {
-      session.style.widgets['node-tooltip-variable'] = this.value;
+      settings['node-tooltip-variable'] = this.value;
     });
 
     $('#node-symbol').on('input', function () {
-      session.style.widgets['node-symbol'] = this.value;
+      settings['node-symbol'] = this.value;
       redrawNodes();
     });
 
     $('#node-symbol-variable').on('change', function () {
-      var variable = this.value;
-      session.style.widgets['node-symbol-variable'] = variable;
-      var wrapper = $('#node-symbol-table-wrapper');
-      var table = wrapper.find('table');
+      let variable = this.value;
+      settings['node-symbol-variable'] = variable;
+      let wrapper = $('#node-symbol-table-wrapper');
+      let table = wrapper.find('table');
       if (variable == 'None') {
-        temp.style.nodeSymbolMap = function () { return session.style.widgets['node-symbol']; };
+        temp.style.nodeSymbolMap = function () { return settings['node-symbol']; };
         $('#node-symbol-table-row').slideUp();
         $('#node-symbol-row').slideDown();
         wrapper.fadeOut(function () { table.empty(); });
@@ -998,16 +1002,16 @@ Note that this may cause slow performance on larger networks.">
       }
       $('#node-symbol-row').slideUp();
       $('#node-symbol-table-row').slideDown();
-      var values = [];
-      var aggregates = {};
-      var nodes = session.data.nodes;
-      var n = nodes.length;
-      var vnodes = 0;
-      for (var i = 0; i < n; i++) {
-        var d = nodes[i];
+      let values = [];
+      let aggregates = {};
+      let nodes = session.data.nodes;
+      let n = nodes.length;
+      let vnodes = 0;
+      for (let i = 0; i < n; i++) {
+        let d = nodes[i];
         if (!d.visible) continue;
         vnodes++;
-        var dv = d[variable];
+        let dv = d[variable];
         if (values.indexOf(dv) == -1) values.push(dv);
         if (dv in aggregates) {
           aggregates[dv]++;
@@ -1016,8 +1020,8 @@ Note that this may cause slow performance on larger networks.">
         }
       }
       if (values.length > session.style.nodeSymbols.length) {
-        var symbols = [];
-        var m = Math.ceil(values.length / session.style.nodeSymbols.length);
+        let symbols = [];
+        let m = Math.ceil(values.length / session.style.nodeSymbols.length);
         while (m-- > 0) {
           symbols = symbols.concat(session.style.nodeSymbols);
         }
@@ -1027,25 +1031,25 @@ Note that this may cause slow performance on larger networks.">
       table.empty().append(
         '<tr>' +
         '<th contenteditable>Node ' + MT.titleize(variable) + '</th>' +
-        (session.style.widgets['node-symbol-table-counts'] ? '<th>Count</th>' : '') +
-        (session.style.widgets['node-symbol-table-frequencies'] ? '<th>Frequency</th>' : '') +
+        (settings['node-symbol-table-counts'] ? '<th>Count</th>' : '') +
+        (settings['node-symbol-table-frequencies'] ? '<th>Frequency</th>' : '') +
         '<th>Shape</th>' +
         '</tr>');
-      var options = $('#node-symbol').html();
+      let options = $('#node-symbol').html();
       values.sort(function (a, b) {
         return aggregates[b] - aggregates[a];
       }).forEach(function (v, i) {
-        var selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function (e) {
+        let selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function (e) {
           session.style.nodeSymbols.splice(i, 1, this.value);
           temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
           redrawNodes();
         });
-        var cell = $('<td></td>').append(selector);
-        var row = $(
+        let cell = $('<td></td>').append(selector);
+        let row = $(
           '<tr>' +
           '<td contenteditable>' + MT.titleize('' + v) + '</td>' +
-          (session.style.widgets['node-symbol-table-counts'] ? ('<td>' + aggregates[v] + '</td>') : '') +
-          (session.style.widgets['node-symbol-table-frequencies'] ? ('<td>' + (aggregates[v] / vnodes).toLocaleString() + '</td>') : '') +
+          (settings['node-symbol-table-counts'] ? ('<td>' + aggregates[v] + '</td>') : '') +
+          (settings['node-symbol-table-frequencies'] ? ('<td>' + (aggregates[v] / vnodes).toLocaleString() + '</td>') : '') +
           '</tr>'
         ).append(cell);
         table.append(row);
@@ -1064,20 +1068,20 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#node-radius').on('input', function () {
-      session.style.widgets['node-radius'] = parseFloat(this.value);
+      settings['node-radius'] = parseFloat(this.value);
       redrawNodes();
     });
 
     $('#node-radius-variable').on('change', function () {
-      session.style.widgets['node-radius-variable'] = this.value;
+      settings['node-radius-variable'] = this.value;
       redrawNodes();
     });
 
     function updateNodeColors() {
-      var variable = session.style.widgets['node-color-variable'];
-      var nodes = svg.select('g.nodes').selectAll('g').select('path').data(session.network.nodes).classed('selected', d => d.selected);
+      let variable = settings['node-color-variable'];
+      let nodes = svg.select('g.nodes').selectAll('g').select('path').data(session.network.nodes).classed('selected', d => d.selected);
       if (variable == 'None') {
-        var col = session.style.widgets['node-color'];
+        let col = settings['node-color'];
         nodes.attr('fill', col).attr('opacity', 1);
       } else {
         nodes
@@ -1087,25 +1091,25 @@ Note that this may cause slow performance on larger networks.">
     }
 
     $('#node-charge').on('input', function () {
-      var v = parseFloat(this.value);
+      let v = parseFloat(this.value);
       force.force('charge').strength(-v);
       force.alpha(0.3).alphaTarget(0).restart();
-      session.style.widgets['node-charge'] = v;
+      settings['node-charge'] = v;
     });
 
     $('#link-directed').parent().on('click', function () {
       svg.select('g.links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
-      session.style.widgets['link-directed'] = true;
+      settings['link-directed'] = true;
     });
 
     $('#link-undirected').parent().on('click', function () {
       svg.select('g.links').selectAll('line').attr('marker-end', null);
-      session.style.widgets['link-directed'] = false;
+      settings['link-directed'] = false;
     });
 
     $('#link-label-variable').on('change', function () {
-      var label = this.value;
-      session.style.widgets['link-label-variable'] = label;
+      let label = this.value;
+      settings['link-label-variable'] = label;
       if (label == 'None') {
         svg.select('g.links').selectAll('text').text('');
       } else {
@@ -1115,18 +1119,18 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#link-length').on('input', function () {
-      var v = parseFloat(this.value);
+      let v = parseFloat(this.value);
       force.force('link').distance(this.value);
       force.alpha(0.3).alphaTarget(0).restart();
-      session.style.widgets['link-length'] = v;
+      settings['link-length'] = v;
     });
 
     function updateLinkColor() {
-      var variable = session.style.widgets['link-color-variable'];
-      var links = svg.select('g.links').selectAll('line');
+      let variable = settings['link-color-variable'];
+      let links = svg.select('g.links').selectAll('line');
       if (variable == 'None') {
-        var color = session.style.widgets['link-color'],
-          opacity = 1 - session.style.widgets['link-opacity'];
+        let color = settings['link-color'],
+          opacity = 1 - settings['link-opacity'];
         links
           .attr('stroke', color)
           .attr('opacity', opacity);
@@ -1137,13 +1141,13 @@ Note that this may cause slow performance on larger networks.">
           .attr('opacity', l => temp.style.linkAlphaMap(l[variable]))
           .attr('stroke-dasharray', l => {
             //This quirky little algorithm creates the dasharray code necessary to make dash-y links.
-            var length = 15;
-            var out = new Array(l.origins * 2);
-            var ofs = new Array(l.origins).fill(1);
-            var ons = new Array(l.origins).fill(0);
+            let length = 15;
+            let out = new Array(l.origins * 2);
+            let ofs = new Array(l.origins).fill(1);
+            let ons = new Array(l.origins).fill(0);
             ons[l.oNum] = 1;
             ofs[l.oNum] = 0;
-            for (var i = 0; i < l.origins; i++) {
+            for (let i = 0; i < l.origins; i++) {
               out[2 * i] = ons[i] * length;
               out[2 * i + 1] = ofs[i] * length;
             }
@@ -1153,39 +1157,39 @@ Note that this may cause slow performance on larger networks.">
     }
 
     $('#link-opacity').on('input', function () {
-      session.style.widgets['link-opacity'] = parseFloat(this.value);
-      var opacity = 1 - parseFloat(this.value);
+      settings['link-opacity'] = parseFloat(this.value);
+      let opacity = 1 - parseFloat(this.value);
       svg.select('g.links').selectAll('line').attr('opacity', opacity);
     });
 
     function scaleLinkWidth() {
-      var scalar = session.style.widgets['link-width'];
-      var variable = session.style.widgets['link-width-variable'];
-      var vlinks = getVLinks();
-      var links = svg.select('g.links').selectAll('line').data(vlinks);
+      let scalar = settings['link-width'];
+      let variable = settings['link-width-variable'];
+      let vlinks = getVLinks();
+      let links = svg.select('g.links').selectAll('line').data(vlinks);
       if (variable == 'None') return links.attr('stroke-width', scalar);
-      var n = vlinks.length;
-      var max = -Infinity;
-      var min = Infinity;
-      for (var i = 0; i < n; i++) {
-        var l = vlinks[i][variable];
+      let n = vlinks.length;
+      let max = -Infinity;
+      let min = Infinity;
+      for (let i = 0; i < n; i++) {
+        let l = vlinks[i][variable];
         if (!isNumber(l)) return;
         if (l > max) max = l;
         if (l < min) min = l;
       }
-      var mid = (max - min) / 2 + min;
-      var scale = d3.scaleLinear()
-        .domain(session.style.widgets['link-width-reciprocal'] ? [max, min] : [min, max])
+      let mid = (max - min) / 2 + min;
+      let scale = d3.scaleLinear()
+        .domain(settings['link-width-reciprocal'] ? [max, min] : [min, max])
         .range([1, scalar]);
       links.attr('stroke-width', d => {
-        var v = d[variable];
+        let v = d[variable];
         if (!isNumber(v)) v = mid;
         return scale(v);
       });
     }
 
     $('#link-width').on('input', function () {
-      session.style.widgets['link-width'] = parseFloat(this.value);
+      settings['link-width'] = parseFloat(this.value);
       scaleLinkWidth();
     });
 
@@ -1195,24 +1199,24 @@ Note that this may cause slow performance on larger networks.">
       } else {
         $('#link-reciprocalthickness-row').css('display', 'flex');
       }
-      session.style.widgets['link-width-variable'] = this.value;
+      settings['link-width-variable'] = this.value;
       scaleLinkWidth();
     });
 
     $('#link-width-reciprocal').parent().on('click', function () {
-      session.style.widgets['link-width-reciprocal'] = true;
+      settings['link-width-reciprocal'] = true;
       scaleLinkWidth();
     });
 
     $('#link-width-nonreciprocal').parent().on('click', function () {
-      session.style.widgets['link-width-reciprocal'] = false;
+      settings['link-width-reciprocal'] = false;
       scaleLinkWidth();
     });
 
     $('#network-gridlines-show').parent().on('click', function () {
-      session.style.widgets['network-gridlines-show'] = true;
-      var range = Math.ceil(Math.max(halfWidth, halfHeight) / 50);
-      var ords = Object.keys(new Array(range).fill(null)).map(parseFloat);
+      settings['network-gridlines-show'] = true;
+      let range = Math.ceil(Math.max(halfWidth, halfHeight) / 50);
+      let ords = Object.keys(new Array(range).fill(null)).map(parseFloat);
       d3.select('#network g.horizontal-gridlines').selectAll('line').data(ords).enter().append('line')
         .attr('x1', 0)
         .attr('x2', halfWidth * 2)
@@ -1228,23 +1232,23 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#network-gridlines-hide').parent().on('click', function () {
-      session.style.widgets['network-gridlines-show'] = false;
+      settings['network-gridlines-show'] = false;
       d3.select('#network g.horizontal-gridlines').html(null);
       d3.select('#network g.vertical-gridlines').html(null);
     });
 
     $('#network-friction').on('input', function () {
-      var v = parseFloat(this.value);
+      let v = parseFloat(this.value);
       force.velocityDecay(v);
       force.alpha(0.3).alphaTarget(0).restart();
-      session.style.widgets['network-friction'] = v;
+      settings['network-friction'] = v;
     });
 
     $('#network-gravity').on('input', function () {
-      var v = parseFloat(this.value);
+      let v = parseFloat(this.value);
       force.force('gravity').strength(v);
       force.alpha(0.3).alphaTarget(0).restart();
-      session.style.widgets['network-gravity'] = v;
+      settings['network-gravity'] = v;
     });
 
     $('#network-export-filetype').on('change', function () {
@@ -1256,8 +1260,8 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#network-export-scale').on('input', function () {
-      var scale = parseFloat(this.value);
-      var wrapper = $('#network').parent();
+      let scale = parseFloat(this.value);
+      let wrapper = $('#network').parent();
       $('#network-export-dimensions').text(
         Math.round(wrapper.width() * scale) + 'x' +
         Math.round(wrapper.height() * scale) + 'px'
@@ -1265,24 +1269,24 @@ Note that this may cause slow performance on larger networks.">
     }).trigger('input');
 
     $('#network-export').on('click', function () {
-      var network = document.getElementById('network');
-      var $network = $(network);
-      var watermark = d3.select(network).append('text')
+      let network = document.getElementById('network');
+      let $network = $(network);
+      let watermark = d3.select(network).append('text')
         .text('MicrobeTrace')
         .attr('x', $network.width() - 150)
         .attr('y', $network.height() - 20)
         .attr('class', 'watermark');
-      var filetype = $('#network-export-filetype').val(),
+      let filetype = $('#network-export-filetype').val(),
         filename = $('#network-export-filename').val();
       if (filetype == 'svg') {
-        var content = MT.unparseSVG(network);
-        var blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
+        let content = MT.unparseSVG(network);
+        let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);
         watermark.remove();
       } else {
         saveSvgAsPng(network, filename + '.' + filetype, {
           scale: parseFloat($('#network-export-scale').val()),
-          backgroundColor: session.style.widgets['background-color'],
+          backgroundColor: settings['background-color'],
           encoderType: 'image/' + filetype,
           encoderOptions: parseFloat($('#network-export-quality').val())
         }).then(() => watermark.remove());
@@ -1292,10 +1296,10 @@ Note that this may cause slow performance on larger networks.">
     function fit(thing, bounds) {
       if (!bounds) bounds = svg.node().getBBox();
       if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
-      var parent = svg.node().parentElement.parentElement,
+      let parent = svg.node().parentElement.parentElement,
         midX = bounds.x + bounds.width / 2,
         midY = bounds.y + bounds.height / 2;
-      var scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
+      let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
       d3.select('svg#network')
         .transition()
         .duration(750)
@@ -1307,7 +1311,7 @@ Note that this may cause slow performance on larger networks.">
     $('#fitbutton').on('click', fit);
 
     $('#pinbutton').on('click', function () {
-      var nodes = svg
+      let nodes = svg
         .select('g.nodes')
         .selectAll('g')
         .data(session.network.nodes)
@@ -1339,7 +1343,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $("#node-symbol-table-move").on("click", function () {
-      var $this = $(this);
+      let $this = $(this);
       $this.parent().hide();
       if ($this.text() == "Drag") {
         $("#node-symbol-table-draghandle").slideDown();
@@ -1351,8 +1355,8 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $("#node-symbol-table-draghandle").on("mousedown", function () {
-      var body = $("body");
-      var parent = $(this).parent();
+      let body = $("body");
+      let parent = $(this).parent();
       body.on("mousemove", function (e2) {
         parent
           .css(
@@ -1377,7 +1381,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $("#node-symbol-table-expand").on("click", function () {
-      var $this = $(this);
+      let $this = $(this);
       if ($this.text() == "Expand") {
         $("#node-symbol-table-wrapper").css({
           "max-height": "none",
@@ -1395,12 +1399,12 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#node-symbol-table-counts').on('click', function () {
-      var $this = $(this);
-      if (session.style.widgets['node-symbol-table-counts']) {
-        session.style.widgets['node-symbol-table-counts'] = false;
+      let $this = $(this);
+      if (settings['node-symbol-table-counts']) {
+        settings['node-symbol-table-counts'] = false;
         $this.text("Show Counts");
       } else {
-        session.style.widgets['node-symbol-table-counts'] = true;
+        settings['node-symbol-table-counts'] = true;
         $this.text("Hide Counts");
       }
       $("#node-symbol-variable").trigger('change');
@@ -1408,12 +1412,12 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#node-symbol-table-frequencies').on('click', function () {
-      var $this = $(this);
-      if (session.style.widgets['node-symbol-table-frequencies']) {
-        session.style.widgets['node-symbol-table-frequencies'] = false;
+      let $this = $(this);
+      if (settings['node-symbol-table-frequencies']) {
+        settings['node-symbol-table-frequencies'] = false;
         $this.text("Show Frequencies");
       } else {
-        session.style.widgets['node-symbol-table-frequencies'] = true;
+        settings['node-symbol-table-frequencies'] = true;
         $this.text("Hide Frequencies");
       }
       $("#node-symbol-variable").change();
@@ -1431,24 +1435,24 @@ Note that this may cause slow performance on larger networks.">
       .on('node-color-change', updateNodeColors)
       .on('link-color-change', updateLinkColor)
       .on('background-color-change', function () {
-        $('#network').css('background-color', session.style.widgets['background-color']);
+        $('#network').css('background-color', settings['background-color']);
       })
       .on('node-visibility link-visibility cluster-visibility node-selected', render);
 
     layout.on('stateChanged', function () {
-      var wrapper = $('#network').parent();
+      let wrapper = $('#network').parent();
       $('#network-export-width').val(wrapper.width());
       $('#network-export-height').val(wrapper.height());
       brush.extent(brush.extent());
     });
 
     if (session.files.length > 1) $('#link-color-variable').val('origin').change();
-    if (session.style.widgets['background-color']) $('#network').css('background-color', session.style.widgets['background-color']);
+    if (settings['background-color']) $('#network').css('background-color', settings['background-color']);
     render();
 
     //For some mysterious reason, this really needed a delay...
     setTimeout(function () {
-      if (session.style.widgets['node-symbol-variable'] !== 'None') {
+      if (settings['node-symbol-variable'] !== 'None') {
         $('#node-symbol-variable').trigger('change');
       }
     }, 1);
