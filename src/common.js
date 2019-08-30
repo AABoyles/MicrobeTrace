@@ -1084,9 +1084,10 @@ MT.tagClusters = () => {
     let start = Date.now();
     let clusters = session.data.clusters = [];
     let nodes = session.data.nodes,
-    links = session.data.links;
+        links = session.data.links,
+        labels = session.data.distance_matrix.labels;
     let numNodes = nodes.length,
-    numLinks = links.length;
+        numLinks = links.length;
     let tempnodes = temp.nodes = [];
     let lsv = session.style.widgets["link-sort-variable"];
 
@@ -1104,9 +1105,11 @@ MT.tagClusters = () => {
       let clusterID = cluster.id;
       node.cluster = clusterID;
       cluster.nodes++;
-      for (let j = 0; j < numLinks; j++) {
-        let l = links[j];
-        if (!l.visible || (l.source != id && l.target != id)) continue;
+      let row = temp.matrix[id];
+      for (let j = 0; j < numNodes; j++) {
+        let l = row[labels[j]];
+        if (!l) continue;
+        if (!l.visible) continue;
         l.cluster = clusterID;
         cluster.links++;
         cluster.sum_distances += l[lsv];
