@@ -216,36 +216,36 @@
     if (refresh) nodes = MT.getVisibleNodes();
     var unit = session.style.widgets['choropleth-aggregate-as'];
     if (unit == 'countries') {
-      if (!MT.mapData.countries) {
+      if (!temp.mapData.countries) {
         MT.getMapData('countries.json').then(() => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
-      MT.mapData.countries.features.forEach(c => c.properties.density = 0);
+      temp.mapData.countries.features.forEach(c => c.properties.density = 0);
       nodes.forEach(n => {
-        var country = MT.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
+        var country = temp.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
         if (country) country.properties.density++;
       });
     } else if (unit == 'states') {
-      if (!MT.mapData.states) {
+      if (!temp.mapData.states) {
         MT.getMapData('states.json').then(() => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
-      MT.mapData.states.features.forEach(c => c.properties.density = 0);
+      temp.mapData.states.features.forEach(c => c.properties.density = 0);
       nodes.forEach(n => {
-        var state = MT.mapData.states.features.find(s => s.properties.usps == n[val] || s.properties.name == n[val]);
+        var state = temp.mapData.states.features.find(s => s.properties.usps == n[val] || s.properties.name == n[val]);
         if (state) state.properties.density++;
       });
     } else { //unit == 'counties'
-      if (!MT.mapData.counties) {
+      if (!temp.mapData.counties) {
         MT.getMapData('counties.json').then(() => aggregate(false, callback));
         return;
       }
       var val = session.style.widgets['choropleth-aggregate-on'];
-      MT.mapData.counties.features.forEach(c => c.properties.density = 0);
+      temp.mapData.counties.features.forEach(c => c.properties.density = 0);
       nodes.forEach(n => {
-        var county = MT.mapData.counties.features.find(c => {
+        var county = temp.mapData.counties.features.find(c => {
           return (c.properties.fips == n[val] ||
             parseFloat(c.properties.fips) == parseFloat(n[val]));
         });
@@ -265,7 +265,7 @@
     if(!$('#choropleth').length) return;
     layers.aggregates.remove();
     var maxD = 0, minD = Infinity;
-    var data = MT.mapData[session.style.widgets['choropleth-aggregate-as']];
+    var data = temp.mapData[session.style.widgets['choropleth-aggregate-as']];
     var n = data.features.length;
     for (var i = 0; i < n; i++) {
       var thing = data.features[i];
@@ -450,8 +450,8 @@
         const layerName = name.split('.').slice(0, -1).join('.').toLowerCase();
         const reader = new FileReader();
         reader.onload = function (event2) {
-          MT.mapData[layerName] = JSON.parse(event2.target.result);
-          layers[layerName] = L.geoJSON(MT.mapData[layerName], {
+          temp.mapData[layerName] = JSON.parse(event2.target.result);
+          layers[layerName] = L.geoJSON(temp.mapData[layerName], {
             color: '#000',
             weight: .75,
             fillColor: '#fafaf8',
@@ -495,7 +495,7 @@
     } else { //geojson
       saveAs(
         new Blob(
-          [JSON.stringify(MT.mapData[session.style.widgets['choropleth-aggregate-as']])],
+          [JSON.stringify(temp.mapData[session.style.widgets['choropleth-aggregate-as']])],
           { type: 'application/json;charset=utf-8' }),
         $('#choropleth-export-file-name').val() + '.' + format
       );
@@ -518,7 +518,7 @@
   });
 
   MT.getMapData('countries.json').then(() => {
-    layers.countries = L.geoJSON(MT.mapData.countries, {
+    layers.countries = L.geoJSON(temp.mapData.countries, {
       color: '#dadde0',
       weight: 1,
       fillColor: '#fafaf8',

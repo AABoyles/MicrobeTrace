@@ -25,8 +25,8 @@ $(function() {
     });
   }
 
-  self.session = MT.sessionSkeleton();
   self.temp = MT.tempSkeleton();
+  self.session = MT.sessionSkeleton();
   self.layout = new GoldenLayout({
     settings: {
       selectionEnabled: true,

@@ -316,15 +316,15 @@
     var k = 1;
 
     function init() {
-      if (!MT.mapData.land) {
+      if (!temp.mapData.land) {
         MT.getMapData('land.json').then(init);
         return;
       }
-      if (!MT.mapData.stars) {
+      if (!temp.mapData.stars) {
         MT.getMapData('stars.json').then(init);
         return;
       }
-      if (!MT.mapData.countries) {
+      if (!temp.mapData.countries) {
         MT.getMapData('countries.json').then(init);
         return;
       }
@@ -345,7 +345,7 @@
         .translate(t)
         .precision(0.1);
       starProjection = starProjection
-        .fitExtent([[0, 0], [3 * width, 3 * height]], MT.mapData.stars)
+        .fitExtent([[0, 0], [3 * width, 3 * height]], temp.mapData.stars)
         .translate(t);
     }
 
@@ -355,7 +355,7 @@
 
       if (session.style.widgets['globe-stars-show']) {
         context.beginPath();
-        starPath(MT.mapData.stars);
+        starPath(temp.mapData.stars);
         context.fillStyle = "#fff";
         context.fill();
       }
@@ -367,9 +367,9 @@
 
       context.beginPath();
       if (session.style.widgets['globe-countries-show']) {
-        path(MT.mapData.countries);
+        path(temp.mapData.countries);
       } else {
-        path(MT.mapData.land);
+        path(temp.mapData.land);
       }
       context.fillStyle = "#6CCC00";
       context.fill();
@@ -466,13 +466,13 @@
 
     function matchCoordinates(callback) {
       if (session.style.widgets['globe-field-country'] !== 'None') {
-        if (!MT.mapData.countries) {
+        if (!temp.mapData.countries) {
           MT.getMapData('countries.json').then(() => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-country'];
         nodes.forEach(n => {
-          let country = MT.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
+          let country = temp.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
           if (country) {
             n._lat = country.properties._lat,
               n._lon = country.properties._lon
@@ -480,13 +480,13 @@
         });
       }
       if (session.style.widgets['globe-field-state'] !== 'None') {
-        if (!MT.mapData.states) {
+        if (!temp.mapData.states) {
           MT.getMapData('states.json').then(() => matchCoordinates(callback));
           return;
         }
         let sval = session.style.widgets['globe-field-state'];
         nodes.forEach(n => {
-          let state = MT.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
+          let state = temp.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
           if (state) {
             n._lat = state.properties._lat;
             n._lon = state.properties._lon;
@@ -494,7 +494,7 @@
         });
       }
       if (session.style.widgets['globe-field-county'] !== 'None') {
-        if (!MT.mapData.counties) {
+        if (!temp.mapData.counties) {
           MT.getMapData('counties.json').then(() => matchCoordinates(callback));
           return;
         }
@@ -502,7 +502,7 @@
         let cval = session.style.widgets['globe-field-county'];
         nodes.forEach(n => {
           let county;
-          county = MT.mapData.counties.features.find(c => {
+          county = temp.mapData.counties.features.find(c => {
             return (c.properties.fips == n[cval] ||
               parseFloat(c.properties.fips) == parseFloat(n[cval]));
           });
@@ -511,8 +511,8 @@
             n._lon = county.properties._lon;
             return;
           }
-          let state = MT.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
-          county = MT.mapData.counties.features.find(c => {
+          let state = temp.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
+          county = temp.mapData.counties.features.find(c => {
             var small = n[cval].toLowerCase();
             return c.properties.state == state.properties.usps && (
               c.properties.name.includes(small) ||
@@ -526,13 +526,13 @@
         });
       }
       if (session.style.widgets['globe-field-zipcode'] !== 'None') {
-        if (!MT.mapData.zipcodes) {
+        if (!temp.mapData.zipcodes) {
           MT.getMapData('zipcodes.csv').then(() => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-zipcode'];
         nodes.forEach(n => {
-          let zo = MT.mapData.zipcodes.find(z => z.zipcode == n[val]);
+          let zo = temp.mapData.zipcodes.find(z => z.zipcode == n[val]);
           if (zo) {
             n._lat = zo._lat;
             n._lon = zo._lon;
@@ -540,13 +540,13 @@
         });
       }
       if (session.style.widgets['globe-field-tract'] !== 'None') {
-        if (!MT.mapData.tracts) {
+        if (!temp.mapData.tracts) {
           MT.getMapData('tracts.csv').then(() => matchCoordinates(callback));
           return;
         }
         let val = session.style.widgets['globe-field-tract'];
         nodes.forEach(n => {
-          let tract = MT.mapData.tracts.find(t => t.tract == n[val]);
+          let tract = temp.mapData.tracts.find(t => t.tract == n[val]);
           if (tract) {
             n._lat = tract._lat;
             n._lon = tract._lon;
@@ -680,7 +680,7 @@
               $('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', function () {
                 nameCell.remove();
                 colorCell.remove();
-                delete MT.mapData[layerName];
+                delete temp.mapData[layerName];
               })
             );
             $('#globe-geojson-layers')

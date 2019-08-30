@@ -259,10 +259,10 @@ MT.tempSkeleton = () => ({
     nodeSymbolMap: () => session.style.widgets["node-symbol"]
   },
   trees: {},
+  mapData: {},
+  matrix: {},
   messageTimeout: null
 });
-
-MT.mapData = {};
 
 MT.defaultNode = () => ({
   index: session.data.nodes.length,
@@ -512,10 +512,8 @@ MT.applyGHOST = ghost => {
   MT.finishUp();
 };
 
-(() => {
-  let decoder = new TextDecoder("utf-8");
-  MT.decode = x => decoder.decode(x);
-})();
+let decoder = new TextDecoder("utf-8");
+MT.decode = x => decoder.decode(x);
 
 MT.parseFASTA = text => {
   return new Promise(resolve => {
@@ -1440,17 +1438,17 @@ MT.getMapData = type => {
     let parts = type.split(".");
     let name = parts[0],
         format = parts[1];
-    if (MT.mapData[name]) {
-      return resolve(MT.mapData[name]);
+    if (temp.mapData[name]) {
+      return resolve(temp.mapData[name]);
     }
     $.get("data/" + type, response => {
       if (format == "csv") {
-        MT.mapData[name] = Papa.parse(response, { header: true }).data;
+        temp.mapData[name] = Papa.parse(response, { header: true }).data;
       }
       if (format == "json") {
-        MT.mapData[name] = response;
+        temp.mapData[name] = response;
       }
-      resolve(MT.mapData[name]);
+      resolve(temp.mapData[name]);
     });
   });
 };

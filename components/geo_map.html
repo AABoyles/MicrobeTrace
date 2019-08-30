@@ -418,13 +418,13 @@
     function matchCoordinates(callback, norefresh) {
       if (!norefresh) nodes = MT.getVisibleNodes();
       if (session.style.widgets['map-field-country'] !== 'None') {
-        if (!MT.mapData.countries) {
+        if (!temp.mapData.countries) {
           getMapData('countries.json', () => matchCoordinates(callback, true));
           return;
         }
         var val = session.style.widgets['map-field-country'];
         nodes.forEach(n => {
-          var country = MT.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
+          var country = temp.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
           if (country) {
             n._lat = country.properties._lat,
               n._lon = country.properties._lon
@@ -432,13 +432,13 @@
         });
       }
       if (session.style.widgets['map-field-state'] !== 'None') {
-        if (!MT.mapData.states) {
+        if (!temp.mapData.states) {
           getMapData('states.json', () => matchCoordinates(callback, true));
           return;
         }
         var sval = session.style.widgets['map-field-state'];
         nodes.forEach(n => {
-          var state = MT.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
+          var state = temp.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
           if (state) {
             n._lat = state.properties._lat;
             n._lon = state.properties._lon;
@@ -446,7 +446,7 @@
         });
       }
       if (session.style.widgets['map-field-county'] !== 'None') {
-        if (!MT.mapData.counties) {
+        if (!temp.mapData.counties) {
           getMapData('counties.json', () => matchCoordinates(callback, true));
           return;
         }
@@ -454,7 +454,7 @@
         var cval = session.style.widgets['map-field-county'];
         nodes.forEach(n => {
           var county;
-          county = MT.mapData.counties.features.find(c => {
+          county = temp.mapData.counties.features.find(c => {
             return (c.properties.fips == n[cval] ||
               parseFloat(c.properties.fips) == parseFloat(n[cval]));
           });
@@ -463,8 +463,8 @@
             n._lon = county.properties._lon;
             return;
           }
-          var state = MT.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
-          county = MT.mapData.counties.features.find(c => {
+          var state = temp.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
+          county = temp.mapData.counties.features.find(c => {
             var small = n[cval].toLowerCase();
             return c.properties.state == state.properties.usps && (
               c.properties.name.includes(small) ||
@@ -478,13 +478,13 @@
         });
       }
       if (session.style.widgets['map-field-zipcode'] !== 'None') {
-        if (!MT.mapData.zipcodes) {
+        if (!temp.mapData.zipcodes) {
           getMapData('zipcodes.csv', () => matchCoordinates(callback, true));
           return;
         }
         var val = session.style.widgets['map-field-zipcode'];
         nodes.forEach(n => {
-          var zo = MT.mapData.zipcodes.find(z => z.zipcode == n[val]);
+          var zo = temp.mapData.zipcodes.find(z => z.zipcode == n[val]);
           if (zo) {
             n._lat = zo._lat;
             n._lon = zo._lon;
@@ -492,13 +492,13 @@
         });
       }
       if (session.style.widgets['map-field-tract'] !== 'None') {
-        if (!MT.mapData.tracts) {
+        if (!temp.mapData.tracts) {
           getMapData('tracts.csv', () => matchCoordinates(callback, true));
           return;
         }
         var val = session.style.widgets['map-field-tract'];
         nodes.forEach(n => {
-          var tract = MT.mapData.tracts.find(t => t.tract == n[val]);
+          var tract = temp.mapData.tracts.find(t => t.tract == n[val]);
           if (tract) {
             n._lat = tract._lat;
             n._lon = tract._lon;
@@ -667,8 +667,8 @@
           const layerName = name.split('.').slice(0, -1).join('.').toLowerCase();
           const reader = new FileReader();
           reader.onload = function (event2) {
-            MT.mapData[layerName] = JSON.parse(event2.target.result);
-            layers[layerName] = L.geoJSON(MT.mapData[layerName], {
+            temp.mapData[layerName] = JSON.parse(event2.target.result);
+            layers[layerName] = L.geoJSON(temp.mapData[layerName], {
               color: '#000',
               weight: .75,
               fillColor: '#fafaf8',
