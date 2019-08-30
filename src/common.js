@@ -297,39 +297,47 @@ MT.addNode = (newNode, check) => {
   return 1;
 };
 
-MT.addLink = (newLink, check) => {
-  if (newLink.source == newLink.target) return;
-  let links = session.data.links;
-  if (check) {
-    const n = links.length;
-    for (let i = 0; i < n; i++) {
-      let oldLink = links[i],
-          oldsource = oldLink.source,
-          newsource = newLink.source,
-          oldtarget = oldLink.target,
-          newtarget = newLink.target,
-          oldorigin = oldLink.origin,
-          neworigin = newLink.origin;
-      if ((oldsource == newsource && oldtarget == newtarget) ||
-          (oldsource == newtarget && oldtarget == newsource)) {
-        if (neworigin && !oldorigin.includes(neworigin[0])) {
-          newLink.origin = neworigin.concat(oldorigin);
-        }
-        Object.assign(oldLink, newLink);
-        return 0;
+MT.addLink = newLink => {
+  if (newLink.source == newLink.target) return 0;
+  let linkIsNew = 1;
+  let sdlinks = session.data.links;
+  if(!temp.matrix[newLink.source]){
+    temp.matrix[newLink.source] = {};
+  }
+  if(!temp.matrix[newLink.target]){
+    temp.matrix[newLink.target] = {};
+  }
+  if(temp.matrix[newLink.source][newLink.target]){
+    let oldLink = temp.matrix[newLink.source][newLink.target];
+    if (newLink.origin && !oldLink.origin.includes(newLink.origin[0])) {
+      newLink.origin = newLink.origin.concat(oldLink.origin);
+    }
+    Object.assign(oldLink, newLink);
+    linkIsNew = 0;
+  } else {
+    if(temp.matrix[newLink.target][newLink.source]){
+      let oldLink = temp.matrix[newLink.target][newLink.source];
+      if (newLink.origin && !oldLink.origin.includes(newLink.origin[0])) {
+        newLink.origin = newLink.origin.concat(oldLink.origin);
       }
+      Object.assign(oldLink, newLink);
+      linkIsNew = 0;
+    } else {
+      newLink = Object.assign({
+        index: sdlinks.length,
+        source: "",
+        target: "",
+        visible: false,
+        cluster: 1,
+        origin: []
+      }, newLink);
+      temp.matrix[newLink.source][newLink.target] = newLink;
+      temp.matrix[newLink.target][newLink.source] = newLink;
+      sdlinks.push(newLink);
+      linkIsNew = 1;
     }
   }
-  session.state.metrics.forEach(m => newLink[m] = parseFloat(newLink[m]));
-  links.push(Object.assign({
-    index: session.data.links.length,
-    source: "",
-    target: "",
-    visible: false,
-    cluster: 1,
-    origin: []
-  }, newLink));
-  return 1;
+  return linkIsNew;
 };
 
 MT.processSVG = svg => {
@@ -831,24 +839,29 @@ MT.computeLinks = subset => {
   });
 };
 
+MT.getDM = metric => {
+  if(!metric) metric = 'distance';
+  let labels = session.data.distance_matrix.labels;
+  const n = labels.length;
+  let dm = new Array(n);
+  for(let i = 0; i < n; i++){
+    dm[i] = new Array(n);
+    dm[i][i] = 0;
+    let source = labels[i];
+    for(let j = 0; j < i; j++){
+      dm[i][j] = dm[j][i] = temp.matrix[source][labels[j]][metric];
+    }
+  }
+  return dm;
+};
+
 MT.computeDM = () => {
+  let start = Date.now();
   return new Promise(resolve => {
-    let computer = new Worker("workers/compute-dm.js");
-    computer.onmessage = response => {
-      session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
-        MT.decode(new Uint8Array(response.data.matrix))
-      );
-      session.data.distance_matrix.labels = JSON.parse(
-        MT.decode(new Uint8Array(response.data.labels))
-      );
-      console.log("DM Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-      resolve();
-    };
-    computer.postMessage({
-      nodes: session.data.nodes,
-      links: session.data.links,
-      metrics: session.state.metrics
-    });
+    session.data.distance_matrix.labels = session.data.nodes.map(d => d.id);
+    session.data.distance_matrix[session.state.metrics[0]] = MT.getDM(session.style.widgets['link-sort-variable'])
+    console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
+    resolve();
   });
 };
 
