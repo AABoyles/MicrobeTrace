@@ -24,7 +24,7 @@
       resetNodes();
       let list = $('#waterfall-cluster-list').empty();
       session.data.clusters.forEach(cluster => {
-        if(!cluster.visible) return;
+        if(!cluster.visible || cluster.nodes == 1) return;
         $(`<a href="#" class="list-group-item list-group-item-action">
           <div class="d-flex w-100 justify-content-between">
             <span>${cluster.id}</span>
@@ -81,7 +81,7 @@
       let list = $('#waterfall-neighbor-list').empty();
       let lsv = session.style.widgets['link-sort-variable'];
       if(typeof node == 'undefined') return;
-      let labels = session.data.distance_matrix.labels;
+      let labels = Object.keys(temp.matrix);
       const n = labels.length;
       let row = temp.matrix[node.id];
       for(let i = 0; i < n; i++){
