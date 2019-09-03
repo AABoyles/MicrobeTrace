@@ -133,25 +133,34 @@
 <script>
   (function () {
 
-    let plot;
+    let labels, matrix, plot;
 
     function redrawHeatmap() {
       if (!$('#heatmap').length) return;
       if (plot) Plotly.purge('heatmap');
-      if (session.data.distance_matrix.length < 2) {
-        return alertify.error('No distance matrix could be found!');
-      }
-      let xLabels = session.data.distance_matrix.labels.map(d => 'N' + d);
+      let labels = Object.keys(temp.matrix);
+      let xLabels = labels.map(d => 'N' + d);
       let yLabels = xLabels.slice();
-      let data = session.data.distance_matrix[session.style.widgets['default-distance-metric']].map(l => l.slice());
+      const metric = session.style.widgets['link-sort-variable'];
+      const n = xLabels.length;
+      matrix = new Array(n);
+      for(let i = 0; i < n; i++){
+        matrix[i] = new Array(n);
+        matrix[i][i] = 0;
+        const source = labels[i];
+        for(let j = 0; j < i; j++){
+          const target = labels[j];
+          matrix[i][j] = matrix[j][i] = temp.matrix[source][target][metric];
+        }
+      }
 
       if (session.style.widgets['heatmap-invertX']) {
-        data.forEach(l => l.reverse());
+        matrix.forEach(l => l.reverse());
         xLabels.reverse();
       }
 
       if (session.style.widgets['heatmap-invertY']) {
-        data.reverse();
+        matrix.reverse();
         yLabels.reverse();
       }
 
@@ -167,7 +176,7 @@
       plot = Plotly.newPlot('heatmap', [{
         x: xLabels,
         y: yLabels,
-        z: data,
+        z: matrix,
         type: 'heatmap',
         colorscale: [
           [0, session.style.widgets['heatmap-color-low']],
@@ -189,9 +198,9 @@
     $('#heatmap-settings-toggle').click(function () {
       let pane = $('#heatmap-settings-pane');
       if ($(this).hasClass('active')) {
-        pane.animate({ left: '-400px' }, function () { pane.hide(); });
+        pane.animate({ left: '-400px' }, () => pane.hide());
       } else {
-        pane.show(0, function () { pane.animate({ left: '0px' }); });
+        pane.show(0, () => pane.animate({ left: '0px' }));
       }
     });
 
@@ -215,31 +224,31 @@
       redrawHeatmap();
     });
 
-    $('#heatmap-color-low').on('change', function (e) {
-      session.style.widgets['heatmap-color-low'] = e.target.value;
+    $('#heatmap-color-low').on('change', function () {
+      session.style.widgets['heatmap-color-low'] = this.value;
       redrawHeatmap();
     });
 
-    $('#heatmap-color-medium').on('change', function (e) {
-      session.style.widgets['heatmap-color-medium'] = e.target.value;
+    $('#heatmap-color-medium').on('change', function () {
+      session.style.widgets['heatmap-color-medium'] = this.value;
       redrawHeatmap();
     });
 
-    $('#heatmap-color-high').on('change', function (e) {
-      session.style.widgets['heatmap-color-high'] = e.target.value;
+    $('#heatmap-color-high').on('change', function () {
+      session.style.widgets['heatmap-color-high'] = this.value;
       redrawHeatmap();
     });
 
-    $('#heatmap-export-filetype').on('change', function (e) {
-      if (e.target.value == 'svg') {
+    $('#heatmap-export-filetype').on('change', function () {
+      if (this.value == 'svg') {
         $('#heatmap-export-advanced-button').slideUp();
       } else {
         $('#heatmap-export-advanced-button').slideDown();
       }
     });
 
-    $('#heatmap-export-scale').on('input', function (e) {
-      let scale = parseFloat(e.target.value);
+    $('#heatmap-export-scale').on('input', function () {
+      let scale = parseFloat(this.value);
       let wrapper = $('#heatmap').parent();
       $('#heatmap-export-dimensions').text(
         Math.round(wrapper.width() * scale) + 'x' +
@@ -251,11 +260,7 @@
       let filename = $('#heatmap-export-filename').val(),
         filetype = $('#heatmap-export-filetype').val();
       if (filetype == 'csv' || filetype == 'xlsx') {
-        let data = [[''].concat(session.data.distance_matrix.labels)].concat(
-          session.data.distance_matrix[session.style.widgets['link-sort-variable']].map((l, i) => {
-            return [session.data.distance_matrix.labels[i]].concat(l);
-          })
-        );
+        let data = [[''].concat(labels)].concat(matrix.map((l, i) => [labels[i]].concat(l)));
         if (filetype == 'csv') {
           let blob = new Blob([Papa.unparse(data)], { type: 'text/csv;charset=utf-8' });
           saveAs(blob, filename + '.' + filetype);
