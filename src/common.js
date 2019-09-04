@@ -866,11 +866,13 @@ MT.computeTree = type => {
       console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
       resolve();
     };
-    computer.postMessage({
-      matrix: session.data.distance_matrix[type],
-      labels: session.data.distance_matrix.labels,
-      round: session.style.widgets["tree-round"]
-    });
+    MT.getDM().then(dm => {
+      computer.postMessage({
+        labels: Object.keys(temp.matrix),
+        matrix: dm,
+        round: session.style.widgets["tree-round"]
+      });
+    })
   })
 };
 
