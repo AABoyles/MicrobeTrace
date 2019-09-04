@@ -709,7 +709,6 @@ MT.align = params => {
       console.log("Alignment transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
       let start = Date.now();
       let minPadding = Infinity,
-      maxLength = 0,
       d = null;
       for (let i = 0; i < n; i++) {
         d = subset[i];
@@ -1189,9 +1188,10 @@ MT.setLinkVisibility = silent => {
     let link = links[i];
     let visible = true;
     if (link[metric] == null) {
-      visible = false;
+      link.visible = false;
+      continue;
     } else {
-      visible = visible && (link[metric] <= threshold);
+      visible = link[metric] <= threshold;
     }
     if (showNN) {
       visible = visible && link.nn;
