@@ -902,11 +902,8 @@ MT.computeDirectionality = () => {
   });
 };
 
-MT.computeNN = metric => {
+MT.computeNN = () => {
   return new Promise((resolve, reject) => {
-    if (!session.data.distance_matrix[metric]) {
-      return reject("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
-    }
     let nnMachine = new Worker("workers/compute-nn.js");
     nnMachine.onmessage = response => {
       if (response.data == "Error") {
@@ -925,18 +922,15 @@ MT.computeNN = metric => {
     };
     nnMachine.postMessage({
       links: session.data.links,
-      nodes: session.data.nodes,
-      matrix: session.data.distance_matrix[metric],
-      epsilon: session.style.widgets["filtering-epsilon"]
+      matrix: temp.matrix,
+      epsilon: session.style.widgets["filtering-epsilon"],
+      metric: session.style.widgets['link-sort-variable']
     });
   });
 };
 
 MT.computeTriangulation = metric => {
   return new Promise((resolve, reject) => {
-    if (!session.data.distance_matrix[metric]) {
-      return reject("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
-    }
     let machine = new Worker("workers/compute-triangulation.js");
     machine.onmessage = response => {
       if (response.data == "Error") {
