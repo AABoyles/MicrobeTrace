@@ -897,7 +897,7 @@ MT.computeDirectionality = () => {
     };
     computer.postMessage({
       links: session.data.links,
-      tree: temp.trees[session.style.widgets["default-distance-metric"]]
+      tree: temp.trees[session.style.widgets["link-sort-variable"]]
     });
   });
 };
