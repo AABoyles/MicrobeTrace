@@ -175,7 +175,8 @@ $(function() {
 
   $("#exit-button").on("click", MT.reset);
 
-  $(".viewbutton").on("click", function(){
+  $(".viewbutton").on("click", function(e){
+    e.preventDefault();
     MT.launchView($(this).data("href"))
   });
 
