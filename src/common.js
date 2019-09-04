@@ -1283,7 +1283,7 @@ MT.updateStatistics = () => {
   $("#numberOfNodes").text(vnodes.length.toLocaleString());
   $("#numberOfVisibleLinks").text(vlinks.length.toLocaleString());
   $("#numberOfSingletonNodes").text(singletons.toLocaleString());
-  $("#numberOfDisjointComponents").text(session.data.clusters.length);
+  $("#numberOfDisjointComponents").text(session.data.clusters.length - singletons);
 };
 
 MT.createNodeColorMap = () => {
