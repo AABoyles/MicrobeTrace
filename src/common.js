@@ -838,12 +838,11 @@ MT.computeLinks = subset => {
   });
 };
 
-MT.computeDM = () => {
+MT.getDM = () => {
   let start = Date.now();
   return new Promise(resolve => {
-    session.data.distance_matrix.labels = session.data.nodes.map(d => d.id);
+    let labels = session.data.nodes.map(d => d.id);
     let metric = session.style.widgets['link-sort-variable'];
-    let labels = session.data.distance_matrix.labels;
     const n = labels.length;
     let dm = new Array(n);
     for(let i = 0; i < n; i++){
@@ -854,9 +853,8 @@ MT.computeDM = () => {
         dm[i][j] = dm[j][i] = temp.matrix[source][labels[j]][metric];
       }
     }
-    session.data.distance_matrix[session.state.metrics[0]] = dm;
     console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
-    resolve();
+    resolve(dm);
   });
 };
 
@@ -957,14 +955,14 @@ MT.finishUp = oldSession => {
   if (!oldSession) {
     let m = session.style.widgets["default-distance-metric"];
     if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
-      MT.computeDM().then(() => {
+      MT.getDM().then(dm => {
         MT.computeTriangulation(m).then(() => {
           MT.computeNN(m);
           MT.computeTree(m).then(MT.computeDirectionality);
         })
       })
     } else {
-      MT.computeDM().then(() => {
+      MT.getDM().then(dm => {
         MT.computeNN(m);
         MT.computeTree(m).then(MT.computeDirectionality);
       })
