@@ -537,15 +537,15 @@ MT.parseFASTA = text => {
 MT.parseCSVMatrix = file => {
   return new Promise(resolve => {
     let check = session.files.length > 1;
-    let origin = [file.name];
+    const origin = [file.name];
     let nn = 0,
         nl = 0;
     let computer = new Worker("workers/parse-csv-matrix.js");
     computer.onmessage = response => {
-      let data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
+      const data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
       console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-      start = Date.now();
-      let nodes = data.nodes;
+      const start = Date.now();
+      const nodes = data.nodes;
       const tn = nodes.length;
       for (let i = 0; i < tn; i++) {
         nn += MT.addNode({
@@ -553,12 +553,12 @@ MT.parseCSVMatrix = file => {
           origin: origin
         }, check);
       }
-      let links = data.links;
+      const links = data.links;
       const tl = links.length;
       for (let j = 0; j < tl; j++) {
         nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
       }
-      console.log("CSV Matrix Merge time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
       resolve({ nn, nl, tn, tl });
     };
     computer.postMessage(file.contents);
