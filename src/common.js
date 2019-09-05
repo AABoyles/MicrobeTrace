@@ -7,7 +7,6 @@ MT.dataSkeleton = () => ({
   nodes: [],
   links: [],
   clusters: [],
-  distance_matrix: {},
   nodeFields: [
     "index",
     "id",
