@@ -890,6 +890,7 @@ MT.computeDirectionality = () => {
           let fliptemp = fliplink.source;
           fliplink.source = fliplink.target;
           fliplink.target = fliptemp;
+          fliplink.directed = true;
         }
       }
       console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
