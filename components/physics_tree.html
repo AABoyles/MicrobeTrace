@@ -352,12 +352,12 @@
       if (!panel.length) return;
 
       var metric = session.style.widgets['default-distance-metric'];
-      if (!temp.trees[metric]) {
+      if (!temp.tree) {
         MT.computeTree(metric).then(drawTree);
         return;
       }
 
-      var tree = temp.trees[metric];
+      var tree = temp.tree;
       var range = [Infinity, 0];
       var hierarchy = d3.hierarchy(tree, d => d.children)
         .eachBefore(d => {

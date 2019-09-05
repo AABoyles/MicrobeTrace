@@ -866,7 +866,7 @@ MT.computeTree = () => {
   return new Promise(resolve => {
     let computer = new Worker("workers/compute-tree.js");
     computer.onmessage = response => {
-      temp.trees[type] = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+      temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
       console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
       resolve();
     };
@@ -902,7 +902,7 @@ MT.computeDirectionality = () => {
     };
     computer.postMessage({
       links: session.data.links,
-      tree: temp.trees[session.style.widgets["link-sort-variable"]]
+      tree: temp.tree
     });
   });
 };

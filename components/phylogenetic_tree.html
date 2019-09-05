@@ -345,9 +345,9 @@
       if (!panel.length) return;
 
       var metric = session.style.widgets['default-distance-metric'];
-      if (!temp.trees[metric]) return MT.computeTree(metric).then(drawTree);
+      if (!temp.tree) return MT.computeTree().then(drawTree);
 
-      tree = new TidyTree(temp.trees[metric], {
+      tree = new TidyTree(temp.tree, {
         parent: '#tree',
         layout:
           session.style.widgets['tree-layout-vertical'] ? 'vertical' :
@@ -705,7 +705,7 @@
       var filetype = $('#tree-export-file-type').val();
       var filename = $('#tree-export-file-name').val();
       if (filetype == 'nwk') {
-        var blob = new Blob([temp.trees[session.style.widgets['default-distance-metric']].toNewick()], { type: 'application/newick;charset=utf-8' });
+        var blob = new Blob([temp.tree.toNewick()], { type: 'application/newick;charset=utf-8' });
         saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
       } else if (filetype == 'svg') {
         var blob = new Blob([MT.unparseSVG($('#tree svg')[0])], { type: 'image/svg+xml;charset=utf-8' });
