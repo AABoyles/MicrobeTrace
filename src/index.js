@@ -789,17 +789,17 @@ $(function() {
 
   $("#search").on("input", function() {
     let nodes = session.data.nodes
-    let n = nodes.length
-    if (this.value == "") {
+    const n = nodes.length
+    const v = this.value;
+    if (v == "") {
       for(let i = 0; i < n; i++){
-        node[i].selected = false;
+        nodes[i].selected = false;
       }
     } else {
-      let field = session.style.widgets["search-field"];
-      let v = this.value;
-      let vre = new RegExp(v);
+      const field = session.style.widgets["search-field"];
+      const vre = new RegExp(v);
       for(let i = 0; i < n; i++){
-        let node = node[i];
+        let node = nodes[i];
         if (!node[field]) {
           node.selected = false;
         }
@@ -807,7 +807,7 @@ $(function() {
           node.selected = vre.test(node[field]);
         }
         if (typeof node[field] == "number") {
-          node.selected = node[field] + "" == v;
+          node.selected = (node[field] + "" == v);
         }
       }
       if (!nodes.some(node => node.selected)) alertify.warning("No matches!");
