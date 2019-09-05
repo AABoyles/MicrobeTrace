@@ -337,33 +337,48 @@
 </div><!-- /.modal -->
 
 <script>
-  (function () {
-    var tree;
+  (() => {
+    let tree;
 
-    function drawTree() {
-      var panel = $('#tree').parent();
+    let redrawTree = () => {
+      let size = session.style.widgets['tree-leaf-node-size'],
+        color = session.style.widgets['node-color'],
+        ncv = session.style.widgets['node-color-variable'];
+
+      if (ncv == 'None') {
+        tree.eachLeafNode(d => d3.select(d).attr('r', size).style('fill', color));
+      } else {
+        let ncm = temp.style.nodeColorMap;
+        tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
+          let id = data.data.id;
+          let match = session.data.nodes.find(node => node.id == id);
+          if (match) {
+            return ncm(match[ncv]);
+          } else {
+            return color;
+          }
+        }));
+      }
+
+      tagSelected();
+      if (session.style.widgets['tree-round-true']) roundBranchDistances();
+    };
+
+    let drawTree = () => {
+      let panel = $('#tree').parent();
       if (!panel.length) return;
-
-      var metric = session.style.widgets['default-distance-metric'];
       if (!temp.tree) return MT.computeTree().then(drawTree);
 
       tree = new TidyTree(temp.tree, {
         parent: '#tree',
-        layout:
-          session.style.widgets['tree-layout-vertical'] ? 'vertical' :
-          session.style.widgets['tree-layout-horizontal'] ? 'horizontal' :
-          'circular',
-        type:
-          session.style.widgets['tree-type'],
-        mode:
-          session.style.widgets['tree-mode-square'] ? 'square' :
-          session.style.widgets['tree-mode-smooth'] ? 'smooth' :
-          'straight',
-        animation: session.style.widgets['tree-animation-on'] ? 1200 : 0,
-        branchNodes: session.style.widgets['tree-branch-nodes-show'],
-        branchDistances: !session.style.widgets['tree-branch-distances-hide'],
+        layout: 'horizontal',
+        type: 'weighted',
+        mode: 'square',
+        animation: 0,
+        branchNodes: false,
+        branchDistances: false,
         leafNodes: true,
-        leafLabels: session.style.widgets['tree-leaf-label-show'],
+        leafLabels: false,
         margin: [60, 100, 20, 20]
       }, {
         select: select,
@@ -375,35 +390,11 @@
       $('#tree').on('click', hideContext);
 
       redrawTree();
-    }
-
-    function redrawTree() {
-      var size = session.style.widgets['tree-leaf-node-size'],
-        color = session.style.widgets['node-color'],
-        ncv = session.style.widgets['node-color-variable'];
-
-      if (ncv == 'None') {
-        tree.eachLeafNode(d => d3.select(d).attr('r', size).style('fill', color));
-      } else {
-        var ncm = temp.style.nodeColorMap;
-        tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
-          var id = data.data.id;
-          var match = session.data.nodes.find(node => node.id == id);
-          if (match) {
-            return ncm(match[ncv]);
-          } else {
-            return color;
-          }
-        }));
-      }
-
-      tagSelected();
-      if (session.style.widgets['tree-round-true']) roundBranchDistances();
-    }
+    };
 
     function select(d) {
-      var e = d3.event;
-      var n = d[0].data;
+      let e = d3.event;
+      let n = d[0].data;
       e.preventDefault();
       if (e.ctrlKey) {
         session.data.nodes.find(node => node.id == n.id).selected = !n.selected;
@@ -420,10 +411,10 @@
     }
 
     function contextMenu(d) {
-      var e = d3.event;
+      let e = d3.event;
       e.preventDefault();
       hideTooltip();
-      var menu = d3.select('#tree-context-menu');
+      let menu = d3.select('#tree-context-menu');
       d3.select('#tree-reroot').on('click', function () {
         tree.setData(d[0].data.reroot());
         $('#tree-branch-distance-size').trigger('input');
@@ -450,7 +441,7 @@
     }
 
     function hideContext() {
-      var menu = d3.select('#tree-context-menu');
+      let menu = d3.select('#tree-context-menu');
       menu
         .transition().duration(100)
         .style('opacity', 0)
@@ -459,7 +450,7 @@
 
     function tooltip(d) {
       if (session.style.widgets['tree-tooltip-show']) {
-        var e = d3.event;
+        let e = d3.event;
         e.preventDefault();
         d3.select('#tooltip')
           .text(d[0].data.id)
@@ -471,7 +462,7 @@
     }
 
     function hideTooltip() {
-      var tooltip = d3.select('#tooltip');
+      let tooltip = d3.select('#tooltip');
       tooltip
         .transition().duration(100)
         .style('opacity', 0)
@@ -479,11 +470,11 @@
     }
 
     $('#toggle-tree-settings').on('click', function () {
-      var pane = $('#tree-settings-pane');
+      let pane = $('#tree-settings-pane');
       if ($(this).hasClass('active')) {
-        pane.animate({ left: '-400px' }, function () { pane.hide(); });
+        pane.animate({ left: '-400px' }, () => pane.hide());
       } else {
-        pane.show(0, function () { pane.animate({ left: '0px' }); });
+        pane.show(0, () => pane.animate({ left: '0px' }));
       }
     });
 
@@ -492,7 +483,7 @@
       tree.setType(session.style.widgets['tree-type']);
     });
 
-    $('#tree-layout-vertical').parent().on('click', function () {
+    $('#tree-layout-vertical').parent().on('click', () => {
       session.style.widgets['tree-layout-vertical'] = true;
       session.style.widgets['tree-layout-horizontal'] = false;
       session.style.widgets['tree-layout-circular'] = false;
@@ -500,7 +491,7 @@
       $('.hideForCircular').slideDown();
     });
 
-    $('#tree-layout-horizontal').parent().on('click', function () {
+    $('#tree-layout-horizontal').parent().on('click', () => {
       session.style.widgets['tree-layout-vertical'] = false;
       session.style.widgets['tree-layout-horizontal'] = true;
       session.style.widgets['tree-layout-circular'] = false;
@@ -508,7 +499,7 @@
       $('.hideForCircular').slideDown();
     });
 
-    $('#tree-layout-circular').parent().on('click', function () {
+    $('#tree-layout-circular').parent().on('click', () => {
       session.style.widgets['tree-layout-vertical'] = false;
       session.style.widgets['tree-layout-horizontal'] = false;
       session.style.widgets['tree-layout-circular'] = true;
@@ -517,170 +508,156 @@
     });
 
     $('#tree-vertical-stretch').on('input', function () {
-      var val = parseFloat(this.value);
+      let val = parseFloat(this.value);
       session.style.widgets['tree-vertical-stretch'] = val;
-      var cached = tree.animation;
+      let cached = tree.animation;
       tree.setAnimation(0);
       tree.setVStretch(val);
       tree.setAnimation(cached);
     });
 
     $('#tree-horizontal-stretch').on('input', function () {
-      var val = parseFloat(this.value);
+      let val = parseFloat(this.value);
       session.style.widgets['tree-horizontal-stretch'] = val;
-      var cached = tree.animation;
+      let cached = tree.animation;
       tree.setAnimation(0);
       tree.setHStretch(val);
       tree.setAnimation(cached);
     });
 
-    $('#tree-ruler-show').parent().on('click', function () {
+    $('#tree-ruler-show').parent().on('click', () => {
       session.style.widgets['tree-ruler-hide'] = false;
       tree.setRuler(true);
     });
 
-    $('#tree-ruler-hide').parent().on('click', function () {
+    $('#tree-ruler-hide').parent().on('click', () => {
       session.style.widgets['tree-ruler-hide'] = true;
       tree.setRuler(false);
     });
 
-    $('#tree-animation-on').parent().on('click', function () {
+    $('#tree-animation-on').parent().on('click', () => {
       session.style.widgets['tree-animation-on'] = true;
       tree.setAnimation(1200);
     });
 
-    $('#tree-animation-off').parent().on('click', function () {
+    $('#tree-animation-off').parent().on('click', () => {
       session.style.widgets['tree-animation-on'] = false;
       tree.setAnimation(0);
     });
 
-    $('#tree-mode-square').parent().on('click', function () {
+    $('#tree-mode-square').parent().on('click', () => {
       session.style.widgets['tree-mode-square'] = true;
       session.style.widgets['tree-mode-smooth'] = false;
       session.style.widgets['tree-mode-straight'] = false;
       tree.setMode('square');
     });
 
-    $('#tree-mode-smooth').parent().on('click', function () {
+    $('#tree-mode-smooth').parent().on('click', () => {
       session.style.widgets['tree-mode-square'] = false;
       session.style.widgets['tree-mode-smooth'] = true;
       session.style.widgets['tree-mode-straight'] = false;
       tree.setMode('smooth');
     });
 
-    $('#tree-mode-straight').parent().on('click', function () {
+    $('#tree-mode-straight').parent().on('click', () => {
       session.style.widgets['tree-mode-square'] = false;
       session.style.widgets['tree-mode-smooth'] = false;
       session.style.widgets['tree-mode-straight'] = true;
       tree.setMode('straight');
     });
 
-    $('#tree-branch-nodes-show').parent().on('click', function () {
+    $('#tree-branch-nodes-show').parent().on('click', () => {
       session.style.widgets['tree-branch-nodes-hide'] = false;
       tree.setBranchNodes(true);
     });
 
-    $('#tree-branch-nodes-hide').parent().on('click', function () {
+    $('#tree-branch-nodes-hide').parent().on('click', () => {
       session.style.widgets['tree-branch-nodes-hide'] = true;
       tree.setBranchNodes(false);
     });
 
-    $('#tree-branch-distances-show').parent().on('click', function () {
+    $('#tree-branch-distances-show').parent().on('click', () => {
       session.style.widgets['tree-branch-distances-hide'] = false;
       $('.tree-branch-distance-row').slideDown();
       tree.setBranchDistances(true);
     });
 
-    $('#tree-branch-distances-hide').parent().on('click', function () {
+    $('#tree-branch-distances-hide').parent().on('click', () => {
       session.style.widgets['tree-branch-distances-hide'] = true;
       $('.tree-branch-distance-row').slideUp();
       tree.setBranchDistances(false);
     });
 
     function roundBranchDistances(unround) {
-      if(unround){
-        tree.eachBranchDistance(function (label, data) {
-          d3.select(label).text(data.target.data.length.toFixed(3));
-        });
-      } else {
-        tree.eachBranchDistance(function (label, data) {
-          d3.select(label).text(Math.round(data.target.data.length));
-        });
-      }
+      tree.eachBranchDistance((label, data) => d3.select(label).text(Math.round(data.target.data.length)));
     }
 
-    $('#tree-round-true').parent().on('click', function () {
+    $('#tree-round-true').parent().on('click', () => {
       session.style.widgets['tree-round-true'] = true;
       roundBranchDistances();
     });
 
-    $('#tree-round-false').parent().on('click', function () {
+    $('#tree-round-false').parent().on('click', () => {
       session.style.widgets['tree-round-true'] = false;
-      roundBranchDistances(true);
+      tree.eachBranchDistance((label, data) => d3.select(label).text(data.target.data.length.toFixed(3)));
     });
 
     $('#tree-branch-distance-size').on('input', function () {
-      var speed = tree.animation;
+      let speed = tree.animation;
       tree.animation = 0;
-      var size = parseFloat(this.value);
+      let size = parseFloat(this.value);
       session.style.widgets['tree-branch-distance-size'] = size;
-      tree.eachBranchDistance(function (label, data) {
-        d3.select(label).style('font-size', size + 'px');
-      });
+      tree.eachBranchDistance((label, data) => d3.select(label).style('font-size', size + 'px'));
       tree.animation = speed;
     });
 
-    $('#tree-leaf-node-show').parent().on('click', function () {
+    $('#tree-leaf-node-show').parent().on('click', () => {
       session.style.widgets['tree-leaf-node-show'] = true;
       $('.tree-leaf-node-row').slideDown();
       tree.setLeafNodes(true);
     });
 
-    $('#tree-leaf-node-hide').parent().on('click', function () {
+    $('#tree-leaf-node-hide').parent().on('click', () => {
       session.style.widgets['tree-leaf-node-show'] = false;
       $('.tree-leaf-node-row').slideUp();
       tree.setLeafNodes(false);
     });
 
     $('#tree-leaf-node-size').on('input', function () {
-      var speed = tree.animation;
+      let speed = tree.animation;
       tree.animation = 0;
-      var size = parseFloat(this.value);
+      let size = parseFloat(this.value);
       session.style.widgets['tree-leaf-node-size'] = size;
-      tree.eachLeafNode(function (node, data) {
-        d3.select(node).attr('r', size);
-      });
+      tree.eachLeafNode(node => d3.select(node).attr('r', size));
       tree.animation = speed;
     });
 
-    $('#tree-tooltip-show').parent().on('click', function () {
+    $('#tree-tooltip-show').parent().on('click', () => {
       session.style.widgets['tree-tooltip-show'] = true;
     });
 
-    $('#tree-tooltip-hide').parent().on('click', function () {
+    $('#tree-tooltip-hide').parent().on('click', () => {
       session.style.widgets['tree-tooltip-show'] = false;
     });
 
-    $('#tree-leaf-label-show').parent().on('click', function () {
+    $('#tree-leaf-label-show').parent().on('click', () => {
       session.style.widgets['tree-leaf-label-show'] = true;
       $('#tree-leaf-label-size-row').slideDown();
       tree.setLeafLabels(true);
     });
 
-    $('#tree-leaf-label-hide').parent().on('click', function () {
+    $('#tree-leaf-label-hide').parent().on('click', () => {
       session.style.widgets['tree-leaf-label-show'] = false;
       $('#tree-leaf-label-size-row').slideUp();
       tree.setLeafLabels(false);
     });
 
-    $('#tree-leaf-label-size').on('input', function () {
-      var speed = tree.animation;
+    $('#tree-leaf-label-size').on('input', function() {
+      let speed = tree.animation;
       tree.animation = 0;
-      var size = parseFloat(this.value);
+      let size = parseFloat(this.value);
       session.style.widgets['tree-leaf-label-size'] = size;
-      tree.eachLeafLabel(function (label, data) {
-        d3.select(label).style('font-size', size + 'px');
-      });
+      tree.eachLeafLabel(label => d3.select(label).style('font-size', size + 'px'));
       tree.animation = speed;
     });
 
@@ -693,27 +670,27 @@
     });
 
     $('#tree-export-scale').on('input', function () {
-      var scale = parseFloat(this.value);
-      var wrapper = $('#tree').parent();
+      let scale = parseFloat(this.value);
+      let wrapper = $('#tree').parent();
       $('#tree-export-dimensions').text(
         Math.round(wrapper.width() * scale) + 'x' +
         Math.round(wrapper.height() * scale) + 'px'
       );
     }).trigger('input');
 
-    $('#tree-export').on('click', function () {
-      var filetype = $('#tree-export-file-type').val();
-      var filename = $('#tree-export-file-name').val();
+    $('#tree-export').on('click', () => {
+      let filetype = $('#tree-export-file-type').val();
+      let filename = $('#tree-export-file-name').val();
       if (filetype == 'nwk') {
-        var blob = new Blob([temp.tree.toNewick()], { type: 'application/newick;charset=utf-8' });
+        let blob = new Blob([temp.tree.toNewick()], { type: 'application/newick;charset=utf-8' });
         saveAs(blob, $('#tree-export-file-name').val() + '.nwk');
       } else if (filetype == 'svg') {
-        var blob = new Blob([MT.unparseSVG($('#tree svg')[0])], { type: 'image/svg+xml;charset=utf-8' });
+        let blob = new Blob([MT.unparseSVG($('#tree svg')[0])], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, $('#tree-export-file-name').val() + '.svg');
       } else {
-        var $root = $('#tree svg');
-        var root = $root[0];
-        var watermark = d3.select(root).append('text')
+        let $root = $('#tree svg');
+        let root = $root[0];
+        let watermark = d3.select(root).append('text')
           .text('MicrobeTrace')
           .attr('x', $root.width() - 150)
           .attr('y', $root.height() - 20)
@@ -727,13 +704,11 @@
       }
     });
 
-    $('#tree-fitbutton').on('click', function () {
-      tree.recenter();
-    });
+    $('#tree-fitbutton').on('click', () => tree.recenter());
 
     function tagSelected() {
-      tree.eachLeafNode(function (circle, data) {
-        var node = session.data.nodes.find(d => d.id == data.data.id);
+      tree.eachLeafNode((circle, data) => {
+        let node = session.data.nodes.find(d => d.id == data.data.id);
         if (node.selected) {
           d3.select(circle)
             .style('stroke', session.style.widgets['selected-color'])
@@ -749,17 +724,17 @@
     $window
       .on('node-selected', tagSelected)
       .on('node-color-change', redrawTree)
-      .on('background-color-change', function () {
+      .on('background-color-change', () => {
         $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
       });
 
     $('#tree svg').parent().css('background-color', session.style.widgets['background-color']);
 
-    layout.on('stateChanged', function () {
+    layout.on('stateChanged', () => {
       if ($('#tree').length) {
-        setTimeout(function () {
+        setTimeout(() => {
           redrawTree();
-          var wrapper = $('#tree').parent();
+          let wrapper = $('#tree').parent();
           $('#tree-export-width').val(wrapper.width());
           $('#tree-export-height').val(wrapper.height());
         }, 200);
