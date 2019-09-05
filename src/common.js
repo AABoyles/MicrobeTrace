@@ -936,19 +936,39 @@ MT.computeNN = () => {
 
 MT.computeTriangulation = () => {
   return new Promise((resolve, reject) => {
+    const metric = session.style.widgets['link-sort-variable'];
     let machine = new Worker("workers/compute-triangulation.js");
     machine.onmessage = response => {
-      if (response.data == "Error") {
-        return reject("Triangulation washed out");
-      }
-      let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
+      if (response.data == "Error") return reject("Triangulation washed out");
       console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
+      let labels = Object.keys(temp.matrix);
+      const n = labels.length;
+      for(let i = 0; i < n; i++){
+        let source = labels[i];
+        let row = temp.matrix[source];
+        for(let j = 0; j < i; j++){
+          let target = labels[j];
+          if(!row[target]){
+            MT.addLink({
+              source: source,
+              target: target,
+              origin: ['Triangulation'],
+              visible: false
+            });
+          }
+          row[target][metric] = matrix[i][j];
+        }
+      }
+      console.log("Triangulation Merge time: ", (Date.now() - start).toLocaleString(), "ms");
       resolve();
     };
-    machine.postMessage({
-      matrix: temp.matrix,
-      links: session.data.links
-    });
+    MT.getDM().then(dm => {
+      machine.postMessage({
+        matrix: dm
+      });
+    })
   });
 };
 
