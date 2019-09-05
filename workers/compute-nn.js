@@ -13,15 +13,19 @@ onmessage = function(e){
     const nodeid = labels[i];
     const row = dm[nodeid];
     for(let j = 0; j < i; j++){
-      let cell = row[labels[j]][metric];
-      if(typeof cell != 'number' || isNaN(cell)) continue;
-      if(cell < minDist) minDist = cell;
+      let cell = row[labels[j]];
+      if(!cell) continue;
+      let value = cell[metric];
+      if(typeof value != 'number' || isNaN(value)) continue;
+      if(value < minDist) minDist = value;
     }
     for(let h = 0; h < i; h++){
       let node = labels[h];
-      let cell = row[node][metric];
-      if(typeof cell != 'number' || isNaN(cell)) continue;
-      if(Math.abs(cell - minDist) < epsilon){
+      let cell = row[node];
+      if(!cell) continue;
+      let value = cell[metric];
+      if(typeof value != 'number' || isNaN(value)) continue;
+      if(Math.abs(value - minDist) < epsilon){
         targets.push(node);
       }
     }

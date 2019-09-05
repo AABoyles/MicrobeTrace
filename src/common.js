@@ -850,7 +850,12 @@ MT.getDM = () => {
       dm[i][i] = 0;
       let source = labels[i];
       for(let j = 0; j < i; j++){
-        dm[i][j] = dm[j][i] = temp.matrix[source][labels[j]][metric];
+        let link = temp.matrix[source][labels[j]];
+        if(link){
+          dm[i][j] = dm[j][i] = link[metric];
+        } else {
+          dm[i][j] = dm[j][i] = null;
+        }
       }
     }
     console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
@@ -858,7 +863,7 @@ MT.getDM = () => {
   });
 };
 
-MT.computeTree = type => {
+MT.computeTree = () => {
   return new Promise(resolve => {
     let computer = new Worker("workers/compute-tree.js");
     computer.onmessage = response => {
@@ -930,7 +935,7 @@ MT.computeNN = () => {
   });
 };
 
-MT.computeTriangulation = metric => {
+MT.computeTriangulation = () => {
   return new Promise((resolve, reject) => {
     let machine = new Worker("workers/compute-triangulation.js");
     machine.onmessage = response => {
@@ -938,30 +943,29 @@ MT.computeTriangulation = metric => {
         return reject("Triangulation washed out");
       }
       let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
-      session.data.distance_matrix[metric] = matrix;
       console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
       resolve();
     };
     machine.postMessage({
-      matrix: session.data.distance_matrix[metric]
+      matrix: temp.matrix,
+      links: session.data.links
     });
   });
 };
 
 MT.finishUp = oldSession => {
   if (!oldSession) {
-    let m = session.style.widgets["default-distance-metric"];
     if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
       MT.getDM().then(dm => {
-        MT.computeTriangulation(m).then(() => {
-          MT.computeNN(m);
-          MT.computeTree(m).then(MT.computeDirectionality);
+        MT.computeTriangulation().then(() => {
+          MT.computeNN();
+          MT.computeTree().then(MT.computeDirectionality);
         })
       })
     } else {
       MT.getDM().then(dm => {
-        MT.computeNN(m);
-        MT.computeTree(m).then(MT.computeDirectionality);
+        MT.computeNN();
+        MT.computeTree().then(MT.computeDirectionality);
       })
     }
   }
@@ -1115,6 +1119,8 @@ MT.tagClusters = () => {
     console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
 
     start = Date.now();
+    //This is O(N^3)
+    //TODO: Refactor using temp.matrix to get O(N^2)
     for (let m = 0; m < numLinks; m++) {
       let l = links[m];
       if (!l.visible) continue;
