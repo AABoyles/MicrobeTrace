@@ -1058,7 +1058,7 @@ MT.tagClusters = () => {
     let clusters = session.data.clusters = [];
     let nodes = session.data.nodes,
         links = session.data.links,
-        labels = session.data.distance_matrix.labels;
+        labels = nodes.map(d => d.id);
     let numNodes = nodes.length,
         numLinks = links.length;
     let tempnodes = temp.nodes = [];
