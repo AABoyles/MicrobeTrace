@@ -1428,6 +1428,9 @@ MT.applyStyle = style => {
 
 MT.applySession = (data, startTime) => {
   $("#launch").prop("disabled", true);
+  //We have to do this to build temp.matrix:
+  data.data.nodes.forEach(MT.addNode);
+  data.data.links.forEach(MT.addLink);
   self.session = data;
   if (!startTime) startTime = Date.now();
   if (!session.meta) session.meta = {};
