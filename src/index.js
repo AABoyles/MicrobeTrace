@@ -447,7 +447,7 @@ $(function() {
           });
         let alphainput = $("<a>⇳</a>").on("click", e => {
           $("#color-transparency-wrapper").css({
-            top: e.clientY,
+            top: e.clientY + 129,
             left: e.clientX,
             display: "block"
           });
@@ -539,7 +539,7 @@ $(function() {
         let alphainput = $("<a>⇳</a>")
           .on("click", e => {
             $("#color-transparency-wrapper").css({
-              top: e.clientY,
+              top: e.clientY + 129,
               left: e.clientX,
               display: "block"
             });
