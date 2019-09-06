@@ -744,6 +744,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#default-view').change(function () {
       const v = this.value;
       localStorage.setItem('default-view', v);
+      session.style.widgets['default-view'] = v;
       session.layout.content[0].type = v;
     });
 
