@@ -973,22 +973,14 @@ MT.computeTriangulation = () => {
   });
 };
 
-MT.finishUp = oldSession => {
+MT.finishUp = async oldSession => {
   if (!oldSession) {
     if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
-      MT.getDM().then(dm => {
-        MT.computeTriangulation().then(() => {
-          MT.computeNN();
-          MT.computeTree().then(MT.computeDirectionality);
-        })
-      })
-    } else {
-      MT.getDM().then(dm => {
-        MT.computeNN();
-        MT.computeTree().then(MT.computeDirectionality);
-      })
+      await MT.computeTriangulation();
     }
+    MT.computeNN();
   }
+  MT.computeTree().then(MT.computeDirectionality);
   clearTimeout(temp.messageTimeout);
   ["node", "link"].forEach(v => {
     let n = session.data[v + "s"].length;
