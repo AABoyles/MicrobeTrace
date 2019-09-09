@@ -1096,6 +1096,7 @@ MT.tagClusters = () => {
       node.cluster = clusterID;
       cluster.nodes++;
       let row = temp.matrix[id];
+      if(!row) return;
       for (let j = 0; j < numNodes; j++) {
         let l = row[labels[j]];
         if (!l) continue;
