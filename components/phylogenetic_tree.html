@@ -293,6 +293,14 @@
                   </div>
                 </div>
               </div>
+              <div class="form-group row tree-leaf-node-row" title="Which variable should determine the size of the node?">
+                <div class="col-3"><label for="tree-leaf-node-radius-variable">Size By</label></div>
+                <div class="col-9">
+                  <select id="tree-leaf-node-radius-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
               <div class="form-group row tree-leaf-node-row">
                 <div class="col-3">
                   <label for="tree-leaf-node-size">Node Size</label>
@@ -657,27 +665,6 @@
       tree.animation = speed;
     });
 
-    $('#tree-leaf-node-show').parent().on('click', () => {
-      session.style.widgets['tree-leaf-node-show'] = true;
-      $('.tree-leaf-node-row').slideDown();
-      tree.setLeafNodes(true);
-    });
-
-    $('#tree-leaf-node-hide').parent().on('click', () => {
-      session.style.widgets['tree-leaf-node-show'] = false;
-      $('.tree-leaf-node-row').slideUp();
-      tree.setLeafNodes(false);
-    });
-
-    $('#tree-leaf-node-size').on('input', function () {
-      let speed = tree.animation;
-      tree.animation = 0;
-      let size = parseFloat(this.value);
-      session.style.widgets['tree-leaf-node-size'] = size;
-      tree.eachLeafNode(node => d3.select(node).attr('r', size));
-      tree.animation = speed;
-    });
-
     $('#tree-tooltip-show').parent().on('click', () => {
       session.style.widgets['tree-tooltip-show'] = true;
     });
@@ -704,6 +691,76 @@
       let size = parseFloat(this.value);
       session.style.widgets['tree-leaf-label-size'] = size;
       tree.eachLeafLabel(label => d3.select(label).style('font-size', size + 'px'));
+      tree.animation = speed;
+    });
+
+    $('#tree-leaf-node-show').parent().on('click', () => {
+      session.style.widgets['tree-leaf-node-show'] = true;
+      $('.tree-leaf-node-row').slideDown();
+      tree.setLeafNodes(true);
+    });
+
+    $('#tree-leaf-node-hide').parent().on('click', () => {
+      session.style.widgets['tree-leaf-node-show'] = false;
+      $('.tree-leaf-node-row').slideUp();
+      tree.setLeafNodes(false);
+    });
+
+    //TODO: s/respresenting/representing/g
+    // Must fix in patristic before correcting here!
+    let treeVars = ['height', 'depth', 'length', 'respresenting', 'value'];
+    $('#tree-leaf-node-radius-variable').on('change', function(){
+      let v = this.value;
+      let nodes = session.data.nodes;
+      session.style.widgets['tree-leaf-node-radius-variable'] = v;
+      let cap = session.style.widgets['tree-leaf-node-size'];
+      if(treeVars.includes(v)){
+        let minVal = Number.MAX_VALUE, maxVal = Number.MIN_VALUE;
+        tree.data.each(branch => {
+          let value = branch[v];
+          if(value < minVal) minVal = value;
+          if(value > maxVal) maxVal = value;
+        });
+        let scale = d3.scaleLinear()
+          .domain([minVal, maxVal])
+          .range([4, cap]);
+        tree.eachLeafNode((node, branch) => {
+          d3.select(node).attr('r', scale(branch.data[v]));
+        });
+      } else {
+        let minVal = Number.MAX_VALUE, maxVal = Number.MIN_VALUE;
+        nodes.forEach(branch => {
+          let value = branch[v];
+          if(value < minVal) minVal = value;
+          if(value > maxVal) maxVal = value;
+        });
+        let scale = d3.scaleLinear()
+          .domain([minVal, maxVal])
+          .range([4, cap]);
+        tree.eachLeafNode((node, data) => {
+          let id = data.data.id;
+          let package = nodes.find(d => d.id == id);
+          d3.select(node).attr('r', scale(package[v]));
+        });
+      }
+    });
+
+    setTimeout(() => {
+      $('#tree-leaf-node-radius-variable').append(
+        treeVars.map(v => `<option value="${v}">${MT.titleize(v)}</option>`).join('\n')
+      );
+    }, 1200);
+
+    $('#tree-leaf-node-size').on('input', function () {
+      let speed = tree.animation;
+      tree.animation = 0;
+      let size = parseFloat(this.value);
+      session.style.widgets['tree-leaf-node-size'] = size;
+      if(session.style.widgets['tree-leaf-node-radius-variable'] == 'None'){
+        tree.eachLeafNode(node => d3.select(node).attr('r', size));
+      } else {
+        $('#tree-leaf-node-radius-variable').trigger('change');
+      }
       tree.animation = speed;
     });
 

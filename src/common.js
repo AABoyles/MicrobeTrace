@@ -178,6 +178,7 @@ MT.defaultWidgets = {
   "tree-labels-show": false,
   "tree-leaf-label-show": false,
   "tree-leaf-label-size": 12,
+  "tree-leaf-node-radius-variable": "None",
   "tree-leaf-node-show": true,
   "tree-leaf-node-size": 9,
   "tree-mode-square": true,
