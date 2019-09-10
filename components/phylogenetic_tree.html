@@ -411,7 +411,7 @@
       if (!panel.length) return;
       if (!temp.tree) return MT.computeTree().then(drawTree);
 
-      tree = new TidyTree(temp.tree, {
+      tree = new TidyTree(temp.tree.clone(), {
         parent: '#tree',
         layout: 'horizontal',
         type: 'weighted',
