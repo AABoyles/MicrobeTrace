@@ -216,7 +216,7 @@
                 <div class="col-8"><input type="range" class="custom-range" id="link-length" min="0" max="200" value="50"></div>
               </div>
               <div class="form-group row hideForHIVTrace" title="Shoul arrowheads pointing to the">
-                <div class="col-4">Arrowheads</div>
+                <div class="col-4">Arrows</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
@@ -428,48 +428,39 @@ Note that this may cause slow performance on larger networks.">
 
     let halfWidth = $('#network').parent().width() / 2,
       halfHeight = $('#network').parent().parent().parent().height() / 2,
-      transform = {},
-      zoom = d3.zoom().on('zoom', () => {
-        transform = d3.event.transform;
-        svg.attr('transform', transform);
-      }),
-      brush = d3.brush()
-        .on('start', brushstarted)
-        .on('brush', brushed)
-        .on('end', brushended),
+      transform = d3.zoomTransform(d3.select('svg#network').node()),
       settings = session.style.widgets;
 
-    function brushstarted() {
-      session.network.nodes.forEach(d => {
-        if (d.visible) d._previouslySelected = d.selected;
-      });
-    }
+    let zoom = d3.zoom().on('zoom', () => svg.attr('transform', transform = d3.event.transform));
 
-    function brushed() {
-      if (d3.event.sourceEvent.type == 'end') return;
-      let selection = [
-        transform.invert(d3.event.selection[0]),
-        transform.invert(d3.event.selection[1])
-      ];
-      if (selection.includes(null)) return;
-      session.network.nodes.forEach(function (d) {
-        d.selected = (d._previouslySelected ^ (
-          selection[0][0] <= d.x && d.x <= selection[1][0] &&
-          selection[0][1] <= d.y && d.y <= selection[1][1]
-        )) == 1;
+    let brush = d3.brush()
+      .on('start', function(){
+        session.network.nodes.forEach(d => {
+          if (d.visible) d._previouslySelected = d.selected;
+        });
+      })
+      .on('brush', function(){
+        let e = d3.event;
+        if (e.sourceEvent.type == 'end') return;
+        let selection0 = transform.invert(e.selection[0]),
+            selection1 = transform.invert(e.selection[1]);
+        if (selection.includes(null)) return;
+        session.network.nodes.forEach(d => {
+          d.selected = (d._previouslySelected ^ (
+            selection0[0] <= d.x && d.x <= selection1[0] &&
+            selection0[1] <= d.y && d.y <= selection1[1]
+          )) == 1;
+        });
+      })
+      .on('end', function(){
+        if (d3.event.selection == null) return;
+        session.network.nodes.forEach(d => delete d._previouslySelected);
+        session.data.nodes.forEach(d => {
+          let match = session.network.nodes.find(node => node.id == d.id);
+          if (match) d.selected = match.selected;
+        });
+        $window.trigger('node-selected');
       });
-    }
-
-    function brushended() {
-      if (d3.event.selection == null) return;
-      d3.select(this).call(d3.event.target.move, null);
-      session.network.nodes.forEach(d => delete d._previouslySelected);
-      session.data.nodes.forEach(d => {
-        let match = session.network.nodes.find(node => node.id == d.id);
-        if (match) d.selected = match.selected;
-      });
-      $window.trigger('node-selected');
-    }
 
     d3.select('svg#network')
       .html(null) //Let's make sure the canvas is blank.
@@ -480,19 +471,19 @@ Note that this may cause slow performance on larger networks.">
 
     d3.select('svg#network')
       .append('g')
-      .attr('class', 'horizontal-gridlines');
-
-    d3.select('svg#network')
-      .append('g')
-      .attr('class', 'vertical-gridlines');
-
-    d3.select('svg#network')
-      .append('g')
       .attr('class', 'brush')
       .call(brush)
       .attr('pointer-events', 'none')
       .select('rect.overlay')
       .attr('pointer-events', 'none');
+
+    d3.select('svg#network')
+      .append('g')
+      .attr('class', 'horizontal-gridlines');
+
+    d3.select('svg#network')
+      .append('g')
+      .attr('class', 'vertical-gridlines');
 
     let svg = d3.select('svg#network').append('g');
 
