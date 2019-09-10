@@ -25,8 +25,8 @@ $(function() {
     });
   }
 
-  self.session = MT.sessionSkeleton();
   self.temp = MT.tempSkeleton();
+  self.session = MT.sessionSkeleton();
   self.layout = new GoldenLayout({
     settings: {
       selectionEnabled: true,
@@ -175,7 +175,8 @@ $(function() {
 
   $("#exit-button").on("click", MT.reset);
 
-  $(".viewbutton").on("click", function(){
+  $(".viewbutton").on("click", function(e){
+    e.preventDefault();
     MT.launchView($(this).data("href"))
   });
 
@@ -190,12 +191,23 @@ $(function() {
     screenfull.toggle();
   });
 
+  let updateNetwork = () => {
+    MT.setLinkVisibility(true);
+    MT.tagClusters().then(() => {
+      MT.setClusterVisibility(true);
+      MT.setLinkVisibility(true);
+      MT.setNodeVisibility(true);
+      ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
+      MT.updateStatistics();
+    });
+  };
+
   $("#link-show-all")
     .parent()
     .on("click", () => {
       $("#filtering-epsilon-row").slideUp();
       session.style.widgets["link-show-nn"] = false;
-      MT.updateNetwork();
+      updateNetwork();
     });
 
   $("#link-show-nn")
@@ -206,7 +218,7 @@ $(function() {
       );
       $("#filtering-epsilon-row").css("display", "flex");
       session.style.widgets["link-show-nn"] = true;
-      MT.updateNetwork();
+      updateNetwork();
     });
 
   $("#filtering-epsilon")
@@ -217,7 +229,7 @@ $(function() {
     })
     .on("change", function() {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
-      MT.computeNN(session.style.widgets["default-distance-metric"], MT.updateNetwork);
+      MT.computeNN(session.style.widgets["default-distance-metric"]).then(updateNetwork);
     });
 
   $("#cluster-minimum-size").on("change", function() {
@@ -298,14 +310,14 @@ $(function() {
 
     svg.on("click", () => {
       updateThreshold();
-      MT.updateNetwork();
+      updateNetwork();
     });
 
     svg.on("mousedown", () => {
       d3.event.preventDefault();
       svg.on("mousemove", updateThreshold);
       svg.on("mouseup mouseleave", () => {
-        MT.updateNetwork();
+        updateNetwork();
         svg
           .on("mousemove", null)
           .on("mouseup", null)
@@ -317,22 +329,23 @@ $(function() {
   $("#link-sort-variable").on("change", function() {
     session.style.widgets["link-sort-variable"] = this.value;
     MT.updateThresholdHistogram();
-    MT.updateNetwork();
+    updateNetwork();
   });
 
   $("#link-threshold").on("change", function() {
     session.style.widgets["link-threshold"] = parseFloat(this.value);
     MT.setLinkVisibility(true);
-    MT.tagClusters();
-    MT.setClusterVisibility(true);
-    //To catch links that should be filtered out based on cluster size:
-    MT.setLinkVisibility(true);
-    MT.setNodeVisibility(true);
-    //Because the network isn't robust to the order in which these operations
-    //take place, we just do them all silently and then react as though we did
-    //them each after all of them are already done.
-    ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
-    MT.updateStatistics();
+    MT.tagClusters().then(() => {
+      MT.setClusterVisibility(true);
+      //To catch links that should be filtered out based on cluster size:
+      MT.setLinkVisibility(true);
+      MT.setNodeVisibility(true);
+      //Because the network isn't robust to the order in which these operations
+      //take place, we just do them all silently and then react as though we did
+      //them each after all of them are already done.
+      ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
+      MT.updateStatistics();
+    });
   });
 
   $("#network-statistics-show")
@@ -434,7 +447,7 @@ $(function() {
           });
         let alphainput = $("<a>⇳</a>").on("click", e => {
           $("#color-transparency-wrapper").css({
-            top: e.clientY,
+            top: e.clientY + 129,
             left: e.clientX,
             display: "block"
           });
@@ -526,7 +539,7 @@ $(function() {
         let alphainput = $("<a>⇳</a>")
           .on("click", e => {
             $("#color-transparency-wrapper").css({
-              top: e.clientY,
+              top: e.clientY + 129,
               left: e.clientX,
               display: "block"
             });
@@ -776,17 +789,17 @@ $(function() {
 
   $("#search").on("input", function() {
     let nodes = session.data.nodes
-    let n = nodes.length
-    if (this.value == "") {
+    const n = nodes.length
+    const v = this.value;
+    if (v == "") {
       for(let i = 0; i < n; i++){
-        node[i].selected = false;
+        nodes[i].selected = false;
       }
     } else {
-      let field = session.style.widgets["search-field"];
-      let v = this.value;
-      let vre = new RegExp(v);
+      const field = session.style.widgets["search-field"];
+      const vre = new RegExp(v);
       for(let i = 0; i < n; i++){
-        let node = node[i];
+        let node = nodes[i];
         if (!node[field]) {
           node.selected = false;
         }
@@ -794,7 +807,7 @@ $(function() {
           node.selected = vre.test(node[field]);
         }
         if (typeof node[field] == "number") {
-          node.selected = node[field] + "" == v;
+          node.selected = (node[field] + "" == v);
         }
       }
       if (!nodes.some(node => node.selected)) alertify.warning("No matches!");

@@ -16,7 +16,7 @@ onmessage = function(e){
         seq: ''
       };
     } else {
-      currentSeq.seq += line;
+      currentSeq.seq += line.toUpperCase();
     }
   }
   seqs.push(currentSeq);

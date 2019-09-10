@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2019-08-15R2033';
+var CACHE = 'MicrobeTraceD2019-08-30R7185';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -24,10 +24,10 @@ self.addEventListener('install', function(event) {
         'dist/index.js',
         'dist/main.css',
         'workers/align-sw.js',
+        'workers/compute-ambiguity-counts.js',
         'workers/compute-consensus-distances.js',
         'workers/compute-consensus.js',
         'workers/compute-directionality.js',
-        'workers/compute-dm.js',
         'workers/compute-links.js',
         'workers/compute-nn.js',
         'workers/compute-patristic-matrix.js',
@@ -39,7 +39,6 @@ self.addEventListener('install', function(event) {
         'components/2d_network.html',
         'components/3d_network.html',
         'components/aggregation.html',
-        'components/auditor.html',
         'components/bubbles.html',
         'components/choropleth.html',
         'components/crosstab.html',
@@ -134,7 +133,9 @@ self.addEventListener('install', function(event) {
         'help/z-Deployment.md',
         'help/z-Development.md',
         'help/z-Nomenclature.md',
+        'help/z-Optimization.md',
         'help/z-Security-Considerations.md',
+        'help/z-What-We-Should-Have-Done.md',
       ]);
     })
   );

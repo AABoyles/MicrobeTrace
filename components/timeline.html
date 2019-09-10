@@ -221,9 +221,10 @@
       session.state.timeEnd = x.invert(selection[1]);
       MT.setNodeVisibility(true);
       MT.setLinkVisibility(true);
-      MT.tagClusters();
-      ["node", "link"].forEach(function (thing) {
-        $window.trigger(thing + "-visibility");
+      MT.tagClusters().then(() => {
+        ["node", "link"].forEach(function (thing) {
+          $window.trigger(thing + "-visibility");
+        });
       });
     }
 

@@ -3,13 +3,10 @@
 
 let MT = {};
 
-MT.componentCache = {};
-
 MT.dataSkeleton = () => ({
   nodes: [],
   links: [],
   clusters: [],
-  distance_matrix: {},
   nodeFields: [
     "index",
     "id",
@@ -19,6 +16,7 @@ MT.dataSkeleton = () => ({
     "degree",
     "origin"
   ],
+  nodeExclusions: [],
   linkFields: [
     "index",
     "source",
@@ -53,6 +51,7 @@ MT.defaultWidgets = {
   "align-sw": false,
   "align-none": true,
   "ambiguity-resolution-strategy": "AVERAGE",
+  "ambiguity-threshold": 0.015,
   "background-color": "#ffffff",
   "background-color-contrast": "#000000",
   "bubble-x": "None",
@@ -68,6 +67,7 @@ MT.defaultWidgets = {
   "choropleth-satellite-show": false,
   "choropleth-transparency": 0.3,
   "cluster-minimum-size": 1,
+  "default-view": "2d_network",
   "filtering-epsilon": -8,
   "flow-showNodes": "selected",
   "globe-countries-show": false,
@@ -178,6 +178,7 @@ MT.defaultWidgets = {
   "tree-labels-show": false,
   "tree-leaf-label-show": false,
   "tree-leaf-label-size": 12,
+  "tree-leaf-node-radius-variable": "None",
   "tree-leaf-node-show": true,
   "tree-leaf-node-size": 9,
   "tree-mode-square": true,
@@ -249,6 +250,10 @@ MT.sessionSkeleton = () => ({
 });
 
 MT.tempSkeleton = () => ({
+  componentCache: {},
+  mapData: {},
+  matrix: {},
+  messageTimeout: null,
   style: {
     linkAlphaMap: () => 1 - session.style.widgets["link-opacity"],
     linkColorMap: () => session.style.widgets["link-color"],
@@ -256,11 +261,8 @@ MT.tempSkeleton = () => ({
     nodeColorMap: () => session.style.widgets["node-color"],
     nodeSymbolMap: () => session.style.widgets["node-symbol"]
   },
-  trees: {},
-  messageTimeout: null
+  trees: {}
 });
-
-MT.mapData = {};
 
 MT.defaultNode = () => ({
   index: session.data.nodes.length,
@@ -272,10 +274,11 @@ MT.defaultNode = () => ({
   origin: []
 });
 
-MT.isNumber = a => typeof a == "number";
+let isNumber = a => typeof a == "number";
 
 MT.addNode = (newNode, check) => {
-  if (MT.isNumber(newNode.id)) newNode.id = "" + newNode.id;
+  if (isNumber(newNode.id)) newNode.id = "" + newNode.id;
+  if (session.data.nodeExclusions.indexOf(newNode.id) > -1) return 0;
   if (check) {
     let nodes = session.data.nodes;
     const n = nodes.length;
@@ -294,39 +297,47 @@ MT.addNode = (newNode, check) => {
   return 1;
 };
 
-MT.addLink = (newLink, check) => {
-  if (newLink.source == newLink.target) return;
-  let links = session.data.links;
-  if (check) {
-    const n = links.length;
-    for (let i = 0; i < n; i++) {
-      let oldLink = links[i],
-          oldsource = oldLink.source,
-          newsource = newLink.source,
-          oldtarget = oldLink.target,
-          newtarget = newLink.target,
-          oldorigin = oldLink.origin,
-          neworigin = newLink.origin;
-      if ((oldsource == newsource && oldtarget == newtarget) ||
-          (oldsource == newtarget && oldtarget == newsource)) {
-        if (neworigin && !oldorigin.includes(neworigin[0])) {
-          newLink.origin = neworigin.concat(oldorigin);
-        }
-        Object.assign(oldLink, newLink);
-        return 0;
+MT.addLink = newLink => {
+  if (newLink.source == newLink.target) return 0;
+  let linkIsNew = 1;
+  let sdlinks = session.data.links;
+  if(!temp.matrix[newLink.source]){
+    temp.matrix[newLink.source] = {};
+  }
+  if(!temp.matrix[newLink.target]){
+    temp.matrix[newLink.target] = {};
+  }
+  if(temp.matrix[newLink.source][newLink.target]){
+    let oldLink = temp.matrix[newLink.source][newLink.target];
+    if (newLink.origin && !oldLink.origin.includes(newLink.origin[0])) {
+      newLink.origin = newLink.origin.concat(oldLink.origin);
+    }
+    Object.assign(oldLink, newLink);
+    linkIsNew = 0;
+  } else {
+    if(temp.matrix[newLink.target][newLink.source]){
+      let oldLink = temp.matrix[newLink.target][newLink.source];
+      if (newLink.origin && !oldLink.origin.includes(newLink.origin[0])) {
+        newLink.origin = newLink.origin.concat(oldLink.origin);
       }
+      Object.assign(oldLink, newLink);
+      linkIsNew = 0;
+    } else {
+      newLink = Object.assign({
+        index: sdlinks.length,
+        source: "",
+        target: "",
+        visible: false,
+        cluster: 1,
+        origin: []
+      }, newLink);
+      temp.matrix[newLink.source][newLink.target] = newLink;
+      temp.matrix[newLink.target][newLink.source] = newLink;
+      sdlinks.push(newLink);
+      linkIsNew = 1;
     }
   }
-  session.state.metrics.forEach(m => newLink[m] = parseFloat(newLink[m]));
-  links.push(Object.assign({
-    index: session.data.links.length,
-    source: "",
-    target: "",
-    visible: false,
-    cluster: 1,
-    origin: []
-  }, newLink));
-  return 1;
+  return linkIsNew;
 };
 
 MT.processSVG = svg => {
@@ -428,7 +439,7 @@ MT.processJSON = (json, extension) => {
   }
 };
 
-MT.applyHIVTrace = (hivtrace) => {
+MT.applyHIVTrace = hivtrace => {
   self.session = MT.sessionSkeleton();
   session.meta.startTime = Date.now();
   hivtrace["trace_results"]["Nodes"].forEach(node => {
@@ -509,64 +520,57 @@ MT.applyGHOST = ghost => {
   MT.finishUp();
 };
 
-(() => {
-  let decoder = new TextDecoder("utf-8");
-  MT.decode = x => decoder.decode(x);
-})();
+let decoder = new TextDecoder("utf-8");
+MT.decode = x => decoder.decode(x);
 
-MT.parseFASTA = (text, callback) => {
-  let computer = new Worker("workers/parse-fasta.js");
-  computer.onmessage = response => {
-    let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log("FASTA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback(nodes);
-  };
-  computer.postMessage(text);
+MT.parseFASTA = text => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/parse-fasta.js");
+    computer.onmessage = response => {
+      let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+      console.log("FASTA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve(nodes);
+    };
+    computer.postMessage(text);
+  });
 };
 
-MT.parseCSVMatrix = (file, callback) => {
-  let check = session.files.length > 1;
-  let origin = [file.name];
-  let nn = 0,
-    nl = 0,
-    tn = 0,
-    tl = 0;
-  let computer = new Worker("workers/parse-csv-matrix.js");
-  computer.onmessage = response => {
-    let data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
-    console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    start = Date.now();
-    let nodes = data.nodes;
-    tn = nodes.length;
-    for (let i = 0; i < tn; i++) {
-      nn += MT.addNode({
-        id: nodes[i],
-        origin: origin
-      }, check);
-    }
-    let links = data.links;
-    tl = links.length;
-    for (let j = 0; j < tl; j++) {
-      nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
-    }
-    console.log("CSV Matrix Merge time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback){
-      callback({
-        nn: nn,
-        nl: nl,
-        tn: tn,
-        tl: tl
-      });
-    }
-  };
-  computer.postMessage(file.contents);
+MT.parseCSVMatrix = file => {
+  return new Promise(resolve => {
+    let check = session.files.length > 1;
+    const origin = [file.name];
+    let nn = 0,
+        nl = 0;
+    let computer = new Worker("workers/parse-csv-matrix.js");
+    computer.onmessage = response => {
+      const data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
+      console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      const start = Date.now();
+      const nodes = data.nodes;
+      const tn = nodes.length;
+      for (let i = 0; i < tn; i++) {
+        nn += MT.addNode({
+          id: nodes[i],
+          origin: origin
+        }, check);
+      }
+      const links = data.links;
+      const tl = links.length;
+      for (let j = 0; j < tl; j++) {
+        nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
+      }
+      console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve({ nn, nl, tn, tl });
+    };
+    computer.postMessage(file.contents);
+  })
 };
 
 MT.r01 = Math.random;
 
 // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
-// example: MT.addFile(new File([MT.unparseFASTA(MT.generateSeqs("gen-", 50, 20))], "generated.fasta"))
 MT.generateSeqs = (idPrefix, count, snps, seed) => {
+  let start = Date.now();
   if (!count) count = 1000;
   if (!snps) snps = 100;
   if (!seed) seed = session.data.reference;
@@ -689,266 +693,295 @@ MT.generateSeqs = (idPrefix, count, snps, seed) => {
 
     seqs.push({ id: idPrefix + "" + seqs.length, seq: newseed });
   }
-
+  console.log("Sequence spawn time:", (Date.now() - start).toLocaleString(), 'ms');
   return seqs;
 };
 
-MT.align = (params, callback) => {
-  if (params.aligner == "none") {
-    if (callback) callback(params.nodes);
-    return;
-  }
-  let n = params.nodes.length;
-  let referenceLength = params.reference.length;
-  let aligner = new Worker("workers/align-sw.js");
-  aligner.onmessage = response => {
-    let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-    console.log("Alignment transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    let start = Date.now();
-    let minPadding = Infinity,
-      maxLength = 0,
+MT.align = params => {
+  return new Promise(resolve => {
+    if (params.aligner == "none") {
+      return resolve(params.nodes);
+    }
+    let n = params.nodes.length;
+    let referenceLength = params.reference.length;
+    let aligner = new Worker("workers/align-sw.js");
+    aligner.onmessage = response => {
+      let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+      console.log("Alignment transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let minPadding = Infinity,
       d = null;
-    for (let i = 0; i < n; i++) {
-      d = subset[i];
-      if (!d.seq) d.seq = "";
-      if (minPadding > d.padding) minPadding = d.padding;
-    }
-    for (let j = 0; j < n; j++) {
-      d = subset[j];
-      d.seq = "-".repeat(d.padding - minPadding) + d.seq;
-      if (d.seq.length > referenceLength){
-        d.seq = d.seq.substring(0, referenceLength);
-      } else {
-        d.seq = d.seq.padEnd(referenceLength, "-");
+      for (let i = 0; i < n; i++) {
+        d = subset[i];
+        if (!d.seq) d.seq = "";
+        if (minPadding > d.padding) minPadding = d.padding;
       }
-    }
-    console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
-    callback(subset);
-  };
-  aligner.postMessage(params);
+      for (let j = 0; j < n; j++) {
+        d = subset[j];
+        d.seq = "-".repeat(d.padding - minPadding) + d.seq;
+        if (d.seq.length > referenceLength){
+          d.seq = d.seq.substring(0, referenceLength);
+        } else {
+          d.seq = d.seq.padEnd(referenceLength, "-");
+        }
+      }
+      console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve(subset);
+    };
+    aligner.postMessage(params);
+  });
 };
 
-MT.computeConsensus = (callback, nodes) => {
-  if (!callback) return;
+MT.computeConsensus = nodes => {
   if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
-  let computer = new Worker("workers/compute-consensus.js");
-  computer.onmessage = response => {
-    console.log("Consensus Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    callback(MT.decode(new Uint8Array(response.data.consensus)));
-  };
-  computer.postMessage(nodes);
-};
-
-MT.computeConsensusDistances = callback => {
-  let start = Date.now();
-  let nodes = session.data.nodes;
-  let nodesLength = nodes.length;
-  let subset = [];
-  for (let i = 0; i < nodesLength; i++) {
-    let node = nodes[i];
-    if (node.seq) {
-      subset.push({
-        index: i,
-        seq: node.seq
-      });
-    } else {
-      subset.push({
-        index: i,
-        seq: ""
-      });
-    }
-  }
-  let subsetLength = subset.length;
-  let computer = new Worker("workers/compute-consensus-distances.js");
-  computer.onmessage = response => {
-    let dists = new Uint16Array(response.data.dists);
-    console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    start = Date.now();
-    for (let j = 0; j < subsetLength; j++) {
-      nodes[subset[j].index]._diff = dists[j];
-    }
-    console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    consensus: session.data.consensus,
-    subset: subset,
-    start: start
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-consensus.js");
+    computer.onmessage = response => {
+      console.log("Consensus Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve(MT.decode(new Uint8Array(response.data.consensus)));
+    };
+    computer.postMessage(nodes);
   });
 };
 
-MT.computeLinks = (subset, callback) => {
-  let k = 0;
-  let computer = new Worker("workers/compute-links.js");
-  computer.onmessage = response => {
-    let dists = session.state.metrics[0] == 'snps' ?
-        new Uint16Array(response.data.links) :
-        new Float32Array(response.data.links);
-    console.log("Links Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    let start = Date.now();
-    let check = session.files.length > 1;
-    let n = subset.length;
-    let l = 0;
-    for (let i = 0; i < n; i++) {
-      let source = subset[i];
-      for (let j = 0; j < i; j++) {
-        let target = subset[j];
-        k += MT.addLink({
-          source: source['id'],
-          target: target['id'],
-          distance: dists[l++],
-          origin: ['Genetic Distance']
-        }, check);
+MT.computeAmbiguityCounts = () => {
+  return new Promise(resolve => {
+    let nodes = session.data.nodes;
+    let subset = nodes.filter(d => d.seq);
+    const subsetLength = subset.length;
+    let computer = new Worker("workers/compute-ambiguity-counts.js");
+    computer.onmessage = response => {
+      console.log("Ambiguity Count Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      const dists = new Float32Array(response.data.counts);
+      for (let j = 0; j < subsetLength; j++) {
+        nodes[subset[j].index]._ambiguity = dists[j];
       }
-    }
-    console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    callback(k);
-  };
-  computer.postMessage({
-    nodes: subset,
-    metrics: session.state.metrics,
-    strategy: session.style.widgets["ambiguity-resolution-strategy"]
+      resolve();
+    };
+    computer.postMessage(subset);
   });
 };
 
-MT.computeDM = callback => {
-  let computer = new Worker("workers/compute-dm.js");
-  computer.onmessage = response => {
-    session.data.distance_matrix[session.state.metrics[0]] = JSON.parse(
-      MT.decode(new Uint8Array(response.data.matrix))
-    );
-    session.data.distance_matrix.labels = JSON.parse(
-      MT.decode(new Uint8Array(response.data.labels))
-    );
-    console.log("DM Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    nodes: session.data.nodes,
-    links: session.data.links,
-    metrics: session.state.metrics
-  });
-};
-
-MT.computeTree = (type, callback) => {
-  let computer = new Worker("workers/compute-tree.js");
-  computer.onmessage = response => {
-    temp.trees[type] = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
-    console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    matrix: session.data.distance_matrix[type],
-    labels: session.data.distance_matrix.labels,
-    round: session.style.widgets["tree-round"]
-  });
-};
-
-MT.computeDirectionality = callback => {
-  let computer = new Worker("workers/compute-directionality.js");
-  computer.onmessage = response => {
-    let flips = new Uint8Array(response.data.output);
-    console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+MT.computeConsensusDistances = () => {
+  return new Promise(resolve => {
     let start = Date.now();
-    let n = flips.length;
-    for (let i = 0; i < n; i++) {
-      if (flips[i]) {
-        let fliplink = session.data.links[i];
-        let fliptemp = fliplink.source;
-        fliplink.source = fliplink.target;
-        fliplink.target = fliptemp;
-      }
-    }
-    console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    links: session.data.links,
-    tree: temp.trees[session.style.widgets["default-distance-metric"]]
-  });
-  if (callback) callback();
-};
-
-MT.computePatristicMatrix = (type, callback) => {
-  let computer = new Worker("workers/compute-patristic-matrix.js");
-  computer.onmessage = response => {
-    let output = JSON.parse(MT.decode(new Uint8Array(response.data.output)));
-    session.data.distance_matrix["patristic-" + type] = output.matrix;
-    session.data.distance_matrix["patristic-" + type].labels = output.labels;
-    console.log("Patristic Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  computer.postMessage({
-    newick: temp.trees[type]
-  });
-};
-
-MT.computeNN = (metric, callback) => {
-  if (!session.data.distance_matrix[metric]) {
-    console.error("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
-    return;
-  }
-  let nnMachine = new Worker("workers/compute-nn.js");
-  nnMachine.onmessage = response => {
-    if (response.data == "Error") {
-      console.error("Nearest Neighbor washed out");
-      return;
-    }
-    let output = new Uint8Array(response.data.links);
-    console.log("NN Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    let start = Date.now();
-    let links = session.data.links;
-    let n = links.length;
-    for (let i = 0; i < n; i++) {
-      links[i].nn = output[i] ? true : false;
-    }
-    console.log("NN Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  nnMachine.postMessage({
-    links: session.data.links,
-    nodes: session.data.nodes,
-    matrix: session.data.distance_matrix[metric],
-    epsilon: session.style.widgets["filtering-epsilon"]
-  });
-};
-
-MT.computeTriangulation = (metric, callback) => {
-  if (!session.data.distance_matrix[metric]) {
-    console.error("Couldn't find Distance Matrix " + metric + " to compute Nearest Neighbors.");
-    return;
-  }
-  let machine = new Worker("workers/compute-triangulation.js");
-  machine.onmessage = response => {
-    if (response.data == "Error") {
-      console.error("Triangulation washed out");
-      return;
-    }
-    let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
-    session.data.distance_matrix[metric] = matrix;
-    console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-    if (callback) callback();
-  };
-  machine.postMessage({
-    matrix: session.data.distance_matrix[metric]
-  });
-};
-
-MT.finishUp = oldSession => {
-  if (!oldSession) {
-    let m = session.style.widgets["default-distance-metric"];
-    MT.computeDM(() => {
-      if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
-        MT.computeTriangulation(m, () => {
-          MT.computeNN(m);
-          MT.computeTree(m, () => MT.computeDirectionality());
+    let nodes = session.data.nodes;
+    let nodesLength = nodes.length;
+    let subset = [];
+    for (let i = 0; i < nodesLength; i++) {
+      let node = nodes[i];
+      if (node.seq) {
+        subset.push({
+          index: i,
+          seq: node.seq
         });
       } else {
-        MT.computeNN(m);
-        MT.computeTree(m, () => MT.computeDirectionality());
+        subset.push({
+          index: i,
+          seq: ""
+        });
       }
+    }
+    let subsetLength = subset.length;
+    let computer = new Worker("workers/compute-consensus-distances.js");
+    computer.onmessage = response => {
+      let dists = new Uint16Array(response.data.dists);
+      console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      start = Date.now();
+      for (let j = 0; j < subsetLength; j++) {
+        nodes[subset[j].index]._diff = dists[j];
+      }
+      console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve();
+    };
+    computer.postMessage({
+      consensus: session.data.consensus,
+      subset: subset,
+      start: start
     });
+  });
+};
+
+MT.computeLinks = subset => {
+  return new Promise(resolve => {
+    let k = 0;
+    let computer = new Worker("workers/compute-links.js");
+    computer.onmessage = response => {
+      let dists = session.state.metrics[0] == 'snps' ?
+        new Uint16Array(response.data.links) :
+        new Float32Array(response.data.links);
+      console.log("Links Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let check = session.files.length > 1;
+      let n = subset.length;
+      let l = 0;
+      for (let i = 0; i < n; i++) {
+        let source = subset[i];
+        for (let j = 0; j < i; j++) {
+          let target = subset[j];
+          k += MT.addLink({
+            source: source['id'],
+            target: target['id'],
+            distance: dists[l++],
+            origin: ['Genetic Distance']
+          }, check);
+        }
+      }
+      console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve(k);
+    };
+    computer.postMessage({
+      nodes: subset,
+      metrics: session.state.metrics,
+      strategy: session.style.widgets["ambiguity-resolution-strategy"],
+      threshold: session.style.widgets["ambiguity-threshold"]
+    });
+  });
+};
+
+MT.getDM = () => {
+  let start = Date.now();
+  return new Promise(resolve => {
+    let labels = session.data.nodes.map(d => d.id);
+    let metric = session.style.widgets['link-sort-variable'];
+    const n = labels.length;
+    let dm = new Array(n);
+    for(let i = 0; i < n; i++){
+      dm[i] = new Array(n);
+      dm[i][i] = 0;
+      let source = labels[i];
+      for(let j = 0; j < i; j++){
+        let link = temp.matrix[source][labels[j]];
+        if(link){
+          dm[i][j] = dm[j][i] = link[metric];
+        } else {
+          dm[i][j] = dm[j][i] = null;
+        }
+      }
+    }
+    console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
+    resolve(dm);
+  });
+};
+
+MT.computeTree = () => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-tree.js");
+    computer.onmessage = response => {
+      temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+      console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      resolve();
+    };
+    MT.getDM().then(dm => {
+      computer.postMessage({
+        labels: Object.keys(temp.matrix),
+        matrix: dm,
+        round: session.style.widgets["tree-round"]
+      });
+    })
+  })
+};
+
+MT.computeDirectionality = () => {
+  return new Promise(resolve => {
+    let computer = new Worker("workers/compute-directionality.js");
+    computer.onmessage = response => {
+      let flips = new Uint8Array(response.data.output);
+      console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let n = flips.length;
+      for (let i = 0; i < n; i++) {
+        if (flips[i]) {
+          let fliplink = session.data.links[i];
+          let fliptemp = fliplink.source;
+          fliplink.source = fliplink.target;
+          fliplink.target = fliptemp;
+          fliplink.directed = true;
+        }
+      }
+      console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve();
+    };
+    computer.postMessage({
+      links: session.data.links,
+      tree: temp.tree
+    });
+  });
+};
+
+MT.computeNN = () => {
+  return new Promise((resolve, reject) => {
+    let nnMachine = new Worker("workers/compute-nn.js");
+    nnMachine.onmessage = response => {
+      if (response.data == "Error") {
+        return reject("Nearest Neighbor washed out");
+      }
+      let output = new Uint8Array(response.data.links);
+      console.log("NN Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      const start = Date.now();
+      let links = session.data.links;
+      const numLinks = links.length;
+      for (let i = 0; i < numLinks; i++) {
+        links[i].nn = output[i] ? true : false;
+      }
+      console.log("NN Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve();
+    };
+    nnMachine.postMessage({
+      links: session.data.links,
+      matrix: temp.matrix,
+      epsilon: session.style.widgets["filtering-epsilon"],
+      metric: session.style.widgets['link-sort-variable']
+    });
+  });
+};
+
+MT.computeTriangulation = () => {
+  return new Promise((resolve, reject) => {
+    const metric = session.style.widgets['link-sort-variable'];
+    let machine = new Worker("workers/compute-triangulation.js");
+    machine.onmessage = response => {
+      if (response.data == "Error") return reject("Triangulation washed out");
+      console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
+      let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
+      let labels = Object.keys(temp.matrix);
+      const n = labels.length;
+      for(let i = 0; i < n; i++){
+        let source = labels[i];
+        let row = temp.matrix[source];
+        for(let j = 0; j < i; j++){
+          let target = labels[j];
+          if(!row[target]){
+            MT.addLink({
+              source: source,
+              target: target,
+              origin: ['Triangulation'],
+              visible: false
+            });
+          }
+          row[target][metric] = matrix[i][j];
+        }
+      }
+      console.log("Triangulation Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+      resolve();
+    };
+    MT.getDM().then(dm => {
+      machine.postMessage({
+        matrix: dm
+      });
+    })
+  });
+};
+
+MT.finishUp = async oldSession => {
+  if (!oldSession) {
+    if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
+      await MT.computeTriangulation();
+    }
+    MT.computeNN();
   }
+  MT.computeTree().then(MT.computeDirectionality);
   clearTimeout(temp.messageTimeout);
   ["node", "link"].forEach(v => {
     let n = session.data[v + "s"].length;
@@ -987,8 +1020,7 @@ MT.finishUp = oldSession => {
       .delay(0)
       .ondismiss(() => window.location.reload());
   }
-  MT.updateNetwork();
-  $("#network-statistics-wrapper").fadeIn();
+  MT.setLinkVisibility(true);
   $("#SettingsTab").attr("data-target", "#global-settings-modal");
   session.meta.loadTime = Date.now() - session.meta.startTime;
   console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
@@ -998,6 +1030,14 @@ MT.finishUp = oldSession => {
   } else {
     MT.launchView($("#default-view").val());
   }
+  MT.tagClusters().then(() => {
+    MT.setClusterVisibility(true);
+    MT.setLinkVisibility(true);
+    MT.setNodeVisibility(true);
+    ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
+    MT.updateStatistics();
+    $("#network-statistics-wrapper").fadeIn();
+  });
   if (localStorage.getItem("stash-auto") == "true") {
     temp.autostash = {
       time: Date.now(),
@@ -1031,87 +1071,96 @@ MT.titleize = title => {
 };
 
 MT.tagClusters = () => {
-  let start = Date.now();
-  let clusters = session.data.clusters = [];
-  let nodes = session.data.nodes,
-      links = session.data.links;
-  let numNodes = nodes.length,
-      numLinks = links.length;
-  let tempnodes = temp.nodes = [];
-  let lsv = session.style.widgets["link-sort-variable"];
+  return new Promise(resolve => {
+    let start = Date.now();
+    let clusters = session.data.clusters = [];
+    let nodes = session.data.nodes,
+        links = session.data.links,
+        labels = nodes.map(d => d.id);
+    let numNodes = nodes.length,
+        numLinks = links.length;
+    let tempnodes = temp.nodes = [];
+    let lsv = session.style.widgets["link-sort-variable"];
 
-  let DFS = (id, cluster) => {
-    if (tempnodes.indexOf(id) >= 0) return;
-    tempnodes.push(id);
-    let node = {};
-    for (let i = 0; i < numNodes; i++) {
-      let d = nodes[i];
-      if (d.id == id) {
-        node = d;
-        break;
+    let DFS = (id, cluster) => {
+      if (tempnodes.indexOf(id) >= 0) return;
+      tempnodes.push(id);
+      let node = {};
+      for (let i = 0; i < numNodes; i++) {
+        let d = nodes[i];
+        if (d.id == id) {
+          node = d;
+          break;
+        }
+      }
+      let clusterID = cluster.id;
+      node.cluster = clusterID;
+      cluster.nodes++;
+      let row = temp.matrix[id];
+      if(!row) return;
+      for (let j = 0; j < numNodes; j++) {
+        let l = row[labels[j]];
+        if (!l) continue;
+        if (!l.visible) continue;
+        l.cluster = clusterID;
+        cluster.links++;
+        cluster.sum_distances += l[lsv];
+        if(tempnodes.length == numNodes) return;
+        DFS(l.source, cluster);
+        DFS(l.target, cluster);
+      }
+    };
+
+    for (let k = 0; k < numNodes; k++) {
+      let d = nodes[k];
+      d.degree = 0;
+      let id = d.id;
+      if (tempnodes.indexOf(id) == -1) {
+        let cluster = {
+          id: clusters.length,
+          nodes: 0,
+          links: 0,
+          sum_distances: 0,
+          links_per_node: 0,
+          mean_genetic_distance: undefined,
+          visible: true
+        };
+        clusters.push(cluster);
+        DFS(id, cluster);
+        if(tempnodes.length == numNodes) break;
       }
     }
-    let clusterID = cluster.id;
-    node.cluster = clusterID;
-    cluster.nodes++;
-    for (let j = 0; j < numLinks; j++) {
-      let l = links[j];
-      if (!l.visible || (l.source != id && l.target != id)) continue;
-      l.cluster = clusterID;
-      cluster.links++;
-      cluster.sum_distances += l[lsv];
-      if(tempnodes.length == numNodes) return;
-      DFS(l.source, cluster);
-      DFS(l.target, cluster);
-    }
-  };
+    console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
 
-  for (let k = 0; k < numNodes; k++) {
-    let d = nodes[k];
-    d.degree = 0;
-    let id = d.id;
-    if (tempnodes.indexOf(id) == -1) {
-      let cluster = {
-        id: clusters.length,
-        nodes: 0,
-        links: 0,
-        sum_distances: 0,
-        links_per_node: 0,
-        mean_genetic_distance: undefined,
-        visible: true
-      };
-      clusters.push(cluster);
-      DFS(id, cluster);
-      if(tempnodes.length == numNodes) break;
-    }
-  }
-
-  console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
-  start = Date.now();
-  for (let m = 0; m < numLinks; m++) {
-    let l = links[m];
-    if (!l.visible) continue;
-    let s = false,
-        t = false;
-    for (let n = 0; n < numNodes; n++) {
-      let node = nodes[n];
-      if (l.source == node.id) {
-        s = true;
-        node.degree++;
+    start = Date.now();
+    //This is O(N^3)
+    //TODO: Refactor using temp.matrix to get O(N^2)
+    for (let m = 0; m < numLinks; m++) {
+      let l = links[m];
+      if (!l.visible) continue;
+      let s = false,
+      t = false;
+      for (let n = 0; n < numNodes; n++) {
+        let node = nodes[n];
+        if (l.source == node.id) {
+          s = true;
+          node.degree++;
+        }
+        if (l.target == node.id) {
+          t = true;
+          node.degree++;
+        }
+        if (s && t) break;
       }
-      if (l.target == node.id) {
-        t = true;
-        node.degree++;
-      }
-      if (s && t) break;
     }
-  }
-  session.data.clusters.forEach(c => {
-    c.links = c.links / 2;
-    c.links_per_node = c.links / c.nodes;
-    c.mean_genetic_distance = c.sum_distances / 2 / c.links;
+    clusters.forEach(c => {
+      c.links = c.links / 2;
+      c.links_per_node = c.links / c.nodes;
+      c.mean_genetic_distance = c.sum_distances / 2 / c.links;
+    });
+    console.log("Degree Computation time:", (Date.now() - start).toLocaleString(), "ms");
+    resolve();
   });
-  console.log("Degree Computation time:", (Date.now() - start).toLocaleString(), "ms");
 };
 
 MT.setNodeVisibility = silent => {
@@ -1154,9 +1203,10 @@ MT.setLinkVisibility = silent => {
     let link = links[i];
     let visible = true;
     if (link[metric] == null) {
-      visible = false;
+      link.visible = false;
+      continue;
     } else {
-      visible = visible && (link[metric] <= threshold);
+      visible = link[metric] <= threshold;
     }
     if (showNN) {
       visible = visible && link.nn;
@@ -1239,16 +1289,6 @@ MT.getVisibleClusters = copy => {
   return out;
 };
 
-MT.updateNetwork = () => {
-  MT.setLinkVisibility(true);
-  MT.tagClusters();
-  MT.setClusterVisibility(true);
-  MT.setLinkVisibility(true);
-  MT.setNodeVisibility(true);
-  ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
-  MT.updateStatistics();
-};
-
 MT.updateStatistics = () => {
   if ($("#network-statistics-hide").is(":checked")) return;
   let vnodes = MT.getVisibleNodes();
@@ -1258,7 +1298,7 @@ MT.updateStatistics = () => {
   $("#numberOfNodes").text(vnodes.length.toLocaleString());
   $("#numberOfVisibleLinks").text(vlinks.length.toLocaleString());
   $("#numberOfSingletonNodes").text(singletons.toLocaleString());
-  $("#numberOfDisjointComponents").text(session.data.clusters.length);
+  $("#numberOfDisjointComponents").text(session.data.clusters.length - singletons);
 };
 
 MT.createNodeColorMap = () => {
@@ -1383,6 +1423,9 @@ MT.applyStyle = style => {
 
 MT.applySession = (data, startTime) => {
   $("#launch").prop("disabled", true);
+  //We have to do this to build temp.matrix:
+  data.data.nodes.forEach(MT.addNode);
+  data.data.links.forEach(MT.addLink);
   self.session = data;
   if (!startTime) startTime = Date.now();
   if (!session.meta) session.meta = {};
@@ -1393,7 +1436,7 @@ MT.applySession = (data, startTime) => {
 
 MT.reset = () => {
   $("#network-statistics-hide").parent().trigger("click");
-  $("#SettingsTab").attr("data-target", "#aligner-controls-modal");
+  $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
   self.session = MT.sessionSkeleton();
   layout.unbind("stateChanged");
   layout.root.replaceChild(layout.root.contentItems[0], {
@@ -1404,56 +1447,24 @@ MT.reset = () => {
   MT.launchView("files");
 };
 
-MT.getMapData = (type, callback) => {
-  let parts = type.split(".");
-  let name = parts[0],
-      format = parts[1];
-  if (MT.mapData[name]) {
-    callback();
-    return;
-  }
-  $.get("data/" + type, response => {
-    if (format == "csv") {
-      MT.mapData[name] = Papa.parse(response, { header: true }).data;
+MT.getMapData = type => {
+  return new Promise(resolve => {
+    let parts = type.split(".");
+    let name = parts[0],
+        format = parts[1];
+    if (temp.mapData[name]) {
+      return resolve(temp.mapData[name]);
     }
-    if (format == "json") {
-      MT.mapData[name] = response;
-    }
-    callback();
+    $.get("data/" + type, response => {
+      if (format == "csv") {
+        temp.mapData[name] = Papa.parse(response, { header: true }).data;
+      }
+      if (format == "json") {
+        temp.mapData[name] = response;
+      }
+      resolve(temp.mapData[name]);
+    });
   });
-};
-
-//adapted from from http://www.movable-type.co.uk/scripts/latlong.html
-MT.haversine = (a, b) => {
-  let r = Math.PI / 180;
-  let phi1 = a._lat * r;
-  let phi2 = b._lat * r;
-  let deltalambda = (b._lon - a._lon) * r;
-  let deltaphi = (b._lat - a._lat) * r;
-  let x =
-    Math.cos(phi1) *
-    Math.cos(phi2) *
-    Math.sin(deltalambda / 2) *
-    Math.sin(deltalambda / 2) +
-    Math.pow(Math.sin(deltaphi / 2), 2);
-  let c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-  return c * 6378.1; // kilometers
-};
-
-MT.geoDM = () => {
-  let nodes = session.data.nodes;
-  let n = nodes.length;
-  let dm = Array(n);
-  for (let i = 0; i < n; i++) {
-    dm[i] = Array(n);
-    dm[i][i] = 0;
-    for (let j = 0; j < i; j++) {
-      let dist = MT.haversine(nodes[i], nodes[j]);
-      dm[i][j] = dist;
-      dm[j][i] = dist;
-    }
-  }
-  session.data.distance_matrix.geo = dm;
 };
 
 //Adapted from https://24ways.org/2010/calculating-color-contrast/
@@ -1468,9 +1479,9 @@ MT.contrastColor = hexcolor => {
 let peek = ra => ra[ra.length - 1];
 
 MT.launchView = (view, callback) => {
-  if (!MT.componentCache[view]) {
+  if (!temp.componentCache[view]) {
     $.get("components/" + view + ".html", response => {
-      MT.componentCache[view] = response;
+      temp.componentCache[view] = response;
       //This MUST NOT be replace by an arrow function!
       layout.registerComponent(view, function (container, state) {
         container.getElement().html(state.text);
@@ -1490,7 +1501,7 @@ MT.launchView = (view, callback) => {
       if (!lastStack) lastStack = layout.root.contentItems[0];
       lastStack.addChild({
         componentName: view,
-        componentState: { text: MT.componentCache[view] },
+        componentState: { text: temp.componentCache[view] },
         title: MT.titleize(view),
         type: "component"
       });
@@ -1573,18 +1584,6 @@ MT.loadLayout = (component, parent) => {
   }
 };
 
-MT.unparseFASTA = nodes => nodes.map(node => ">" + node.id + "\r\n" + node.seq).join("\r\n");
-
-MT.unparseMEGA = nodes => nodes.map(node => "#" + node.id + "\r\n" + node.seq).join("\r\n");
-
-MT.unparseDM = dm => {
-  let labels = session.data.distance_matrix.labels;
-  return(
-    "," + labels.join(",") + "\r\n" +
-    dm.map((row, i) => labels[i] + "," + row.join(",").join("\r\n"))
-  );
-};
-
 MT.unparseSVG = svgNode => {
   svgNode.setAttribute("xlink", "http://www.w3.org/1999/xlink");
   let selectorTextArr = [];
@@ -1644,24 +1643,6 @@ MT.unparseSVG = svgNode => {
   let serializer = new XMLSerializer();
   return serializer.serializeToString(svgNode);
 };
-
-MT.blobifySVG = (svgString, width, height, callback) => {
-  let canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  let image = new Image();
-  image.onload = () => {
-    let context = canvas.getContext("2d");
-    context.clearRect(0, 0, width, height);
-    context.drawImage(image, 0, 0, width, height);
-    canvas.toBlob(callback);
-  };
-  image.src =
-    "data:image/svg+xml;base64," +
-    btoa(unescape(encodeURIComponent(svgString)));
-};
-
-MT.getHelp = (target, callback) => $.get("help/" + target + ".md", response => callback(marked(response)));
 
 MT.exportHIVTRACE = () => {
   let links = session.data.links.filter(l => l.visible);

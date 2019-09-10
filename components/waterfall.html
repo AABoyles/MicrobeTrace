@@ -24,7 +24,7 @@
       resetNodes();
       let list = $('#waterfall-cluster-list').empty();
       session.data.clusters.forEach(cluster => {
-        if(!cluster.visible) return;
+        if(!cluster.visible || cluster.nodes == 1) return;
         $(`<a href="#" class="list-group-item list-group-item-action">
           <div class="d-flex w-100 justify-content-between">
             <span>${cluster.id}</span>
@@ -81,10 +81,14 @@
       let list = $('#waterfall-neighbor-list').empty();
       let lsv = session.style.widgets['link-sort-variable'];
       if(typeof node == 'undefined') return;
-      session.data.links.forEach(link => {
-        if(!link.visible) return;
-        if(!(link.source == node.id || link.target == node.id)) return;
-        let neighbor = link.source == node.id ? link.target : link.source;
+      let labels = Object.keys(temp.matrix);
+      const n = labels.length;
+      let row = temp.matrix[node.id];
+      for(let i = 0; i < n; i++){
+        let neighbor = labels[i];
+        let link = row[neighbor];
+        if(!link) continue;
+        if(!link.visible) continue;
         $(`<a href="#" class="list-group-item list-group-item-action">
           <div class="d-flex w-100 justify-content-between">
             <span class="ellipsisToFit">${neighbor}</span>
@@ -93,13 +97,13 @@
           <div class="hideIfNotActive">
             ${Object.keys(link).filter(k => !meta.includes(k)).map(k => MT.titleize(k) + ': ' + (typeof link[k] == 'number' ? link[k].toLocaleString() : link[k])).join('\n<br>')}
           </div>
-        </a>`).click(function(){
+        </a>`).on('click', function(){
           let wasActive = false;
           if($(this).hasClass('active')) wasActive = true;
           list.find('a').removeClass('active');
           if(!wasActive) $(this).addClass('active');
         }).appendTo(list);
-      });
+      }
     }
 
     $('#waterfall').parent()
