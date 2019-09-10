@@ -14,7 +14,7 @@ newest production-released version of MicrobeTrace by default.
 | WinHIVTRACE | :x:   |
 
 Historical projects from which MicrobeTrace has evolved are NOT supported. Anyone using these is strongly encouraged to begin
-using [MicrobeTrace](https://microbetrace.herokuapp.com/) instead.
+using [MicrobeTrace](https://microbetrace.cdc.gov/MicrobeTrace/) instead.
 
 ## Reporting a Vulnerability
 
