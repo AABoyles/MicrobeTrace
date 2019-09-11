@@ -295,9 +295,6 @@ label[for="apply-style"] {
 button.navbar-toggler {
   font-size: 1rem;
 }
-.show-for-seq {
-  display: none;
-}
 label[for="OpenTab"] {
   cursor: pointer;
 }

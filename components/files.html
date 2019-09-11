@@ -1067,13 +1067,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       async function processSequences() {
         if (!anySequences) {
-          $('.show-for-seq').hide();
-          MT.finishUp();
-          return;
+          return MT.finishUp();
         }
         session.data.nodeFields.push('seq');
-        $('.show-for-seq').show();
-        $('.show-for-seq.row').css('display', 'flex');
         let nodes = session.data.nodes, subset = [];
         const n = nodes.length;
         const gapString = '-'.repeat(session.data.reference.length);
