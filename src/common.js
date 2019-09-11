@@ -476,7 +476,7 @@ MT.applyGHOST = ghost => {
   session.meta.startTime = Date.now();
   ghost["samples"].forEach(node => {
     let newNode = JSON.parse(JSON.stringify(node));
-    newNode.origin = "GHOST Import";
+    newNode.origin = ["GHOST Import"];
     newNode.genotypes = JSON.stringify(newNode.genotypes);
     newNode.id = "" + newNode.id;
     MT.addNode(newNode, false);
@@ -488,24 +488,18 @@ MT.applyGHOST = ghost => {
   });
   let links = ghost["links"];
   let n = links.length;
-  let metric = session.state.metrics[0];
   for (let i = 0; i < n; i++) {
     let link = links[i];
     let newLink = Object.assign({}, link, {
       source: "" + link.source,
       target: "" + link.target,
-      dist: parseFloat(link.dist),
+      distance: parseFloat(link.dist),
       origin: ["GHOST Import"],
       visible: true
     });
-    newLink[metric] = newLink.dist;
-    if (isNaN(newLink[metric])) {
-      newLink[metric] = metric == "tn93" ? 1 : 100;
-    }
     MT.addLink(newLink, false);
   }
   [
-    metric,
     "density",
     "dist",
     "shared",
@@ -1028,7 +1022,7 @@ MT.finishUp = async oldSession => {
     layout.root.contentItems[0].remove();
     setTimeout(() => MT.loadLayout(session.layout), 80);
   } else {
-    MT.launchView($("#default-view").val());
+    MT.launchView(session.style.widgets['default-view']);
   }
   MT.tagClusters().then(() => {
     MT.setClusterVisibility(true);
