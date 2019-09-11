@@ -783,14 +783,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
       }, 20000);
 
-      let anySequences = false;
+      const check = session.files.length > 1;
+      const nFiles = session.files.length - 1;
 
       const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
-      const check = session.files.length > 1;
-      const defaultMetric = session.style.widgets['default-distance-metric'];
-
-      session.state.metrics = [defaultMetric];
-
       session.files.sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
 
       //First Pass: Read all files, identify all distinct nodes.
@@ -803,7 +799,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         if (file.format == 'fasta') {
 
           message(`Parsing ${filename} as FASTA...`);
-          anySequences = true;
+          session.meta.anySequences = true;
           let newNodes = 0;
           MT.parseFASTA(file.contents).then(seqs => {
             const n = seqs.length;
@@ -817,7 +813,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
             console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
-            if (fileNum == session.files.length - 1) processSequences();
+            if (fileNum == nFiles) processSequences();
           });
 
         } else if (file.format == 'link') {
@@ -881,7 +877,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
             console.log('Link Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
-            if (fileNum == session.files.length - 1) processSequences();
+            if (fileNum == nFiles) processSequences();
 
           } else {
 
@@ -923,14 +919,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 }
                 console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
-                if (fileNum == session.files.length - 1) processSequences();
+                if (fileNum == nFiles) processSequences();
               }
             });
           }
         } else if (file.format == 'node') {
 
           message(`Parsing ${filename} as Node List...`);
-          if (file.field2 !== 'None') anySequences = true;
+          let anySeqs = file.field2 !== 'None';
+          if (anySeqs) session.meta.anySequences = true;
 
           let m = 0, n = 0;
 
@@ -946,13 +943,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 }
               });
               node.id = '' + node[file.field1];
-              if (file.field2 !== 'None') node.seq = node[file.field2];
+              if (anySeqs) node.seq = node[file.field2];
               node['origin'] = origin;
               m += MT.addNode(node, check);
             });
             console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
-            if (fileNum == session.files.length - 1) processSequences();
+            if (fileNum == nFiles) processSequences();
 
           } else {
 
@@ -978,7 +975,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               complete: () => {
                 console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
-                if (fileNum == session.files.length - 1) processSequences();
+                if (fileNum == nFiles) processSequences();
               }
             });
           }
@@ -1021,14 +1018,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             console.log('Distance Matrix Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${nn} New, ${data.length - 1} Total Nodes from Excel Distance Matrix.`);
             message(` - Parsed ${nl} New, ${((data.length - 1) ** 2 - (data.length - 1)) / 2} Total Links from Excel Distance Matrix.`);
-            if (fileNum == session.files.length - 1) processSequences();
+            if (fileNum == nFiles) processSequences();
 
           } else {
 
             MT.parseCSVMatrix(file).then(o => {
               message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
-              if (fileNum == session.files.length - 1) processSequences();
+              if (fileNum == nFiles) processSequences();
             });
           }
         } else { // if(file.format == 'newick'){
@@ -1057,14 +1054,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           console.log('Newick Tree Parse time:', (Date.now() - start).toLocaleString(), 'ms');
           message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
           message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
-          if (fileNum == session.files.length - 1) processSequences();
+          if (fileNum == nFiles) processSequences();
         }
       });
 
       async function processSequences() {
-        if (!anySequences) {
-          return MT.finishUp();
-        }
+        if (!session.meta.anySequences) return MT.finishUp();
         session.data.nodeFields.push('seq');
         let nodes = session.data.nodes, subset = [];
         const n = nodes.length;
@@ -1099,20 +1094,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           node['_seqInt'] = tn93.toInts(node['seq']);
         }
         console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
-        computeLinks(subset);
-      };
-
-      async function computeLinks(nodes) {
         session.data.consensus = await MT.computeConsensus();
         await MT.computeConsensusDistances();
-        nodes.sort((a, b) => a['_diff'] - b['_diff']);
-        session.data.nodeFields.push('_diff');
-        message('Computing Links based on Genomic Proximity...');
+        subset.sort((a, b) => a['_diff'] - b['_diff']);
         if(session.style.widgets['ambiguity-resolution-strategy']){
           await MT.computeAmbiguityCounts();
-          session.data.nodeFields.push('_ambiguity');
         }
-        const k = await MT.computeLinks(nodes);
+        message('Computing Links based on Genomic Proximity...');
+        const k = await MT.computeLinks(subset);
         message(` - Found ${k} New Links from Genomic Proximity`);
         MT.finishUp();
       };

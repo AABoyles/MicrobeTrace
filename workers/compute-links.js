@@ -19,9 +19,9 @@ onmessage = function(e) {
     n = subset.length,
     threshold = parseFloat(e.data.threshold),
     strategy = e.data.strategy.toUpperCase(),
-    metrics = e.data.metrics;
+    metric = e.data.metric;
 
-  if(metrics[0] == 'snps'){
+  if(metric == 'snps'){
 
     output = new Uint16Array((n * n - n) / 2);
     for (let i = 0; i < n; i++) {

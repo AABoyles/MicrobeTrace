@@ -20,10 +20,10 @@ onmessage = function(e) {
       rst.CIGAR,
       true
     );
-    node.score = rst.score;
-    node.padding = rst.position;
-    node.cigar = rst.CIGAR;
-    node.seq = fmt[1];
+    node._score = rst.score;
+    node._padding = rst.position;
+    node._cigar = rst.CIGAR;
+    node._seq = fmt[1];
   }
   console.log("Alignment time: ", (Date.now() - start).toLocaleString(), "ms");
   start = Date.now();

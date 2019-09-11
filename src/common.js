@@ -206,14 +206,14 @@ MT.sessionSkeleton = () => ({
   meta: {
     loadTime: 0,
     readyTime: Date.now(),
-    startTime: 0
+    startTime: 0,
+    anySequences: false
   },
   network: {
     allPinned: false,
     nodes: []
   },
   state: {
-    metrics: ["tn93"],
     timeStart: 0,
     timeEnd: Date.now()
   },
@@ -369,7 +369,7 @@ MT.processSVG = svg => {
         color: $link.attr("stroke"),
         origin: ["Scraped MicrobeTrace SVG"]
       };
-      session.state.metrics.forEach(metric => base[metric] = 0);
+      base[session.style.widgets['default-distance-metric']] = 0;
       MT.addLink(base, true);
     });
     session.data.linkFields.push("color");
@@ -410,7 +410,7 @@ MT.processSVG = svg => {
         target: target + "",
         origin: ["Scraped SVG"]
       };
-      session.state.metrics.forEach(metric => base[metric] = 0);
+      base[session.style.widgets['default-distance-metric']] = 0;
       MT.addLink(base, true);
     });
   }
@@ -455,7 +455,7 @@ MT.applyHIVTrace = hivtrace => {
       session.data.nodeFields.push(key);
   });
   let n = hivtrace["trace_results"]["Edges"].length;
-  let metric = session.state.metrics[0];
+  let metric = session.style.widgets['default-distance-metric'];
   for (let i = 0; i < n; i++) {
     let link = hivtrace["trace_results"]["Edges"][i];
     let newLink = {
@@ -707,18 +707,21 @@ MT.align = params => {
       d = null;
       for (let i = 0; i < n; i++) {
         d = subset[i];
-        if (!d.seq) d.seq = "";
-        if (minPadding > d.padding) minPadding = d.padding;
+        if (!d._seq) d._seq = "";
+        if (minPadding > d._padding) minPadding = d._padding;
       }
       for (let j = 0; j < n; j++) {
         d = subset[j];
-        d.seq = "-".repeat(d.padding - minPadding) + d.seq;
-        if (d.seq.length > referenceLength){
-          d.seq = d.seq.substring(0, referenceLength);
+        d._seq = "-".repeat(d._padding - minPadding) + d._seq;
+        if (d._seq.length > referenceLength){
+          d._seq = d._seq.substring(0, referenceLength);
         } else {
-          d.seq = d.seq.padEnd(referenceLength, "-");
+          d._seq = d._seq.padEnd(referenceLength, "-");
         }
       }
+      session.data.nodeFields.push('_score');
+      session.data.nodeFields.push('_padding');
+      session.data.nodeFields.push('_cigar');
       console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
       resolve(subset);
     };
@@ -746,10 +749,13 @@ MT.computeAmbiguityCounts = () => {
     let computer = new Worker("workers/compute-ambiguity-counts.js");
     computer.onmessage = response => {
       console.log("Ambiguity Count Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      let start = Date.now();
       const dists = new Float32Array(response.data.counts);
       for (let j = 0; j < subsetLength; j++) {
         nodes[subset[j].index]._ambiguity = dists[j];
       }
+      session.data.nodeFields.push('_ambiguity');
+      console.log("Ambiguity Count Merge time: ", (Date.now() - start).toLocaleString(), "ms");
       resolve();
     };
     computer.postMessage(subset);
@@ -785,6 +791,7 @@ MT.computeConsensusDistances = () => {
       for (let j = 0; j < subsetLength; j++) {
         nodes[subset[j].index]._diff = dists[j];
       }
+      session.data.nodeFields.push('_diff');
       console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
       resolve();
     };
@@ -801,7 +808,7 @@ MT.computeLinks = subset => {
     let k = 0;
     let computer = new Worker("workers/compute-links.js");
     computer.onmessage = response => {
-      let dists = session.state.metrics[0] == 'snps' ?
+      let dists = session.style.widgets['default-distance-metric'] == 'snps' ?
         new Uint16Array(response.data.links) :
         new Float32Array(response.data.links);
       console.log("Links Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
@@ -826,7 +833,7 @@ MT.computeLinks = subset => {
     };
     computer.postMessage({
       nodes: subset,
-      metrics: session.state.metrics,
+      metric: session.style.widgets['default-distance-metric'],
       strategy: session.style.widgets["ambiguity-resolution-strategy"],
       threshold: session.style.widgets["ambiguity-threshold"]
     });
