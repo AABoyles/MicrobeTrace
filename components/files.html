@@ -994,7 +994,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 nodeIDs.forEach((cell, k) => {
                   if (k > 0) {
                     nn += MT.addNode({
-                      _id: filternXSS('' + cell),
+                      _id: filterXSS('' + cell),
                       origin: origin
                     }, check);
                   }
