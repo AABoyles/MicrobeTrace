@@ -985,7 +985,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
-              step: node => {
+              step: data => {
+                let node = data.data[0];
                 let safeNode = {
                   _id: filterXSS('' + node[file.field1]),
                   seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),

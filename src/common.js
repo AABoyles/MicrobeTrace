@@ -278,28 +278,7 @@ MT.defaultNode = () => ({
 
 let isNumber = a => typeof a == "number";
 
-MT.addNode = (newNode, check) => {
-  if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
-  if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
-  if (check) {
-    let nodes = session.data.nodes;
-    const n = nodes.length;
-    for (let i = 0; i < n; i++) {
-      let node = nodes[i];
-      if (node._id == newNode._id) {
-        if (newNode.origin) {
-          newNode.origin = newNode.origin.concat(node.origin);
-        }
-        Object.assign(node, newNode);
-        return 0;
-      }
-    }
-  }
-  session.data.nodes.push(Object.assign(MT.defaultNode(), newNode));
-  return 1;
-};
-
-function uniq(a) {
+let uniq = a => {
   let seen = {};
   let out = [];
   let len = a.length;
@@ -312,7 +291,26 @@ function uniq(a) {
     }
   }
   return out;
-}
+};
+
+MT.addNode = (newNode, check) => {
+  if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
+  if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
+  if (check) {
+    let nodes = session.data.nodes;
+    const n = nodes.length;
+    for (let i = 0; i < n; i++) {
+      let node = nodes[i];
+      if (node._id == newNode._id) {
+        newNode.origin = uniq(newNode.origin.concat(node.origin));
+        Object.assign(node, newNode);
+        return 0;
+      }
+    }
+  }
+  session.data.nodes.push(Object.assign(MT.defaultNode(), newNode));
+  return 1;
+};
 
 MT.addLink = newLink => {
   if(!temp.matrix[newLink.source]){
