@@ -93,6 +93,7 @@ MT.defaultWidgets = {
   "histogram-axis-x": true,
   "histogram-scale-log": false,
   "histogram-variable": "links-distance",
+  "infer-directionality-false": true,
   "link-color": "#a6cee3",
   "link-color-table-counts": true,
   "link-color-table-frequencies": false,
@@ -188,7 +189,8 @@ MT.defaultWidgets = {
   "tree-ruler-show": true,
   "tree-tooltip-show": true,
   "tree-type": "weighted",
-  "tree-vertical-stretch": 1
+  "tree-vertical-stretch": 1,
+  "triangulate-false": true
 };
 
 MT.sessionSkeleton = () => ({
@@ -992,15 +994,11 @@ MT.computeTriangulation = () => {
 
 MT.finishUp = async oldSession => {
   if (!oldSession) {
-    if ($('[name="shouldTriangulate"]:checked').attr("id") == "doTriangulate") {
-      await MT.computeTriangulation();
-    }
+    if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation();
     MT.computeNN();
   }
   MT.computeTree().then(() => {
-    if($('#doInferDirectionality').is(':checked')){
-      MT.computeDirectionality();
-    }
+    if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
   });
   clearTimeout(temp.messageTimeout);
   ["node", "link"].forEach(v => {

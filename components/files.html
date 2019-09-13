@@ -124,10 +124,10 @@
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
             <label class="btn btn-light active col" title="Do Not infer transmission directionality.">
-              <input type="radio" name="inferDirectionality" id="doNotInferDirectionality" autocomplete="off" checked> Off
+              <input type="radio" name="infer-directionality" id="infer-directionality-false" autocomplete="off" checked> Off
             </label>
             <label class="btn btn-light col" title="Attempt to infer transmission directionality?">
-              <input type="radio" name="inferDirectionality" id="doInferDirectionality" autocomplete="off"> Inferred
+              <input type="radio" name="infer-directionality" id="infer-directionality" autocomplete="off"> Inferred
             </label>
           </div>
         </div>
@@ -136,11 +136,11 @@
         <div class="col-4">Triangulation</div>
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-            <label class="btn btn-light active col" title="Do Not Triangulate missing cells in Distance Matrices.">
-              <input type="radio" name="shouldTriangulate" id="doNotTriangulate" autocomplete="off" checked> Off
+            <label class="btn btn-light col active" title="Do Not Triangulate missing cells in Distance Matrices.">
+              <input type="radio" name="triangulate" id="triangulate-false" autocomplete="off" checked> Off
             </label>
             <label class="btn btn-light col" title="Attempt to Triangulate missing cells in Distance Matrices.">
-              <input type="radio" name="shouldTriangulate" id="doTriangulate" autocomplete="off"> On
+              <input type="radio" name="triangulate" id="triangulate" autocomplete="off"> On
             </label>
           </div>
         </div>
@@ -759,7 +759,29 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       .val(cachedView ? cachedView : session.style.widgets['default-view'])
       .trigger('change');
 
-    $('#stash-auto-yes').parent().on('click', function () {
+    $('#generate-sequences').on('click', () => {
+      $('#file-prompt').remove();
+      $('#launch').prop('disabled', false).focus();
+      processFile(new File([Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', parseFloat($('#generate-number').val()), 20))], 'generatedNodes.csv'));
+    });
+
+    $('#infer-directionality-false').parent().on('click', () => {
+      session.style.widgets['infer-directionality-false'] = true;
+    });
+
+    $('#infer-directionality').parent().on('click', () => {
+      session.style.widgets['infer-directionality-false'] = false;
+    });
+
+    $('#triangulate-false').parent().on('click', () => {
+      session.style.widgets['triangulate-false'] = true;
+    });
+
+    $('#triangulate').parent().on('click', () => {
+      session.style.widgets['triangulate-false'] = false;
+    });
+
+    $('#stash-auto-yes').parent().on('click', () => {
       localStorage.setItem('stash-auto', 'true');
     });
 
@@ -770,12 +792,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#stash-auto-no').parent().on('click', () => {
       if (temp.autostash) clearInterval(temp.autostash.interval);
       localStorage.setItem('stash-auto', 'false');
-    });
-
-    $('#generate-sequences').on('click', () => {
-      $('#file-prompt').remove();
-      $('#launch').prop('disabled', false).focus();
-      processFile(new File([Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', parseFloat($('#generate-number').val()), 20))], 'generatedNodes.csv'));
     });
 
     function message(msg) {
