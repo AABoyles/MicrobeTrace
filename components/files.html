@@ -381,13 +381,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         reader.readAsText(rawfile, 'UTF-8');
       }
       fileto.promise(rawfile, (extension == 'xlsx' || extension == 'xls') ? 'ArrayBuffer' : 'Text').then(file => {
+        file.name = filterXSS(file.name);
+        file.extension = file.name.split('.').pop().toLowerCase();
         session.files.push(file);
         addToTable(file);
       });
     }
 
     function addToTable(file) {
-      const extension = file.name.split('.').pop().toLowerCase();
+      const extension = file.extension;
       const isFasta = extension.indexOf('fas') > -1;
       const isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
       const isXL = (extension == 'xlsx' || extension == 'xls');
@@ -417,7 +419,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         let fnamerow = $('<div class="row w-100"></div>');
         $('<div class="file-name col"></div>')
           .append($('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', () => {
-            session.files.splice(session.files.indexOf(file.name), 1);
+            session.files.splice(session.files.findIndex(f => f.name == file.name), 1);
             root.slideUp(() => root.remove());
           }))
           .append($('<a href="#" class="oi oi-data-transfer-download align-middle p-1" title="Resave this file"></a>').on('click', () => {
@@ -529,7 +531,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
 
     async function readFastas() {
-      const fastas = session.files.filter(f => f.name.split('.').pop().includes('fas'));
+      const fastas = session.files.filter(f => f.extension.includes('fas'));
       const nodeCSVsWithSeqs = session.files.filter(f => f.format == "node" && f.field2 != "None" && f.field2 != "");
       if (fastas.length == 0 && nodeCSVsWithSeqs.length == 0) return [];
       let data = [];
@@ -538,12 +540,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         let nodes = await MT.parseFASTA(fasta.contents);
         data = data.concat(nodes);
       }
-      for(let j = 0; j < nodeCSVsWithSeqs.length; j++){
-        let csv = nodeCSVsWithSeqs[j];
-        // await MT.parseFASTA(fasta.contents).then(nodes => {
-        //   data = data.concat(nodes);
-        // });
-      }
+      // TODO: Cannot presently preview sequences in Node CSV/XLSX tables.
+      // for(let j = 0; j < nodeCSVsWithSeqs.length; j++){
+      //   let csv = nodeCSVsWithSeqs[j];
+      //   await MT.parseNodeCSV(csv.contents).then(nodes => {
+      //     data = data.concat(nodes);
+      //   });
+      // }
       return data;
     }
 
@@ -783,23 +786,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
       }, 20000);
 
-      const check = session.files.length > 1;
       const nFiles = session.files.length - 1;
+      const check = nFiles > 0;
 
       const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
       session.files.sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
 
-      //First Pass: Read all files, identify all distinct nodes.
+      session.meta.anySequences = session.files.some(file => (file.format == "fasta") || (file.format == "node" && file.field2 !== "None"));
+
       session.files.forEach((file, fileNum) => {
         const start = Date.now();
-        const filename = filterXSS(file.name);
-        const extension = filename.split('.').pop().toLowerCase();
-        const origin = [filename];
+        const origin = [file.name];
 
         if (file.format == 'fasta') {
 
-          message(`Parsing ${filename} as FASTA...`);
-          session.meta.anySequences = true;
+          message(`Parsing ${file.name} as FASTA...`);
           let newNodes = 0;
           MT.parseFASTA(file.contents).then(seqs => {
             const n = seqs.length;
@@ -818,39 +819,35 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         } else if (file.format == 'link') {
 
-          message(`Parsing ${filename} as Link List...`);
+          message(`Parsing ${file.name} as Link List...`);
           let l = 0;
 
-          function forEachLink(link) {
+          let forEachLink = link => {
             const keys = Object.keys(link);
             const n = keys.length;
+            let safeLink = {};
             for (let i = 0; i < n; i++) {
-              let key = keys[i];
-              link[key] = filterXSS(link[key]);
+              let key = filterXSS(keys[i]);
+              safeLink[key] = filterXSS(link[key]);
+              if (!session.data.linkFields.includes(key)) {
+                session.data.linkFields.push(key);
+              }
             }
             l += MT.addLink(Object.assign({
-              source: '' + link[file.field1],
-              target: '' + link[file.field2],
+              source: '' + safeLink[file.field1],
+              target: '' + safeLink[file.field2],
               origin: origin,
               visible: true,
-              distance: file.field3 == 'None' ? 0 : parseFloat(link[file.field3])
-            }, link), check);
-          }
+              distance: file.field3 == 'None' ? 0 : parseFloat(safeLink[file.field3])
+            }, safeLink), check);
+          };
 
-          if (extension == 'xls' || extension == 'xlsx') {
+          if (file.extension == 'xls' || file.extension == 'xlsx') {
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
             data.map(forEachLink);
             message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-            data.forEach(row => {
-              Object.keys(row).forEach(key => {
-                const safeKey = filterXSS(key);
-                if (!session.data.linkFields.includes(safeKey)) {
-                  session.data.linkFields.push(safeKey);
-                }
-              });
-            });
             let n = 0, t = 0;
             let nodeIDs = [];
             const k = data.length;
@@ -925,13 +922,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           }
         } else if (file.format == 'node') {
 
-          message(`Parsing ${filename} as Node List...`);
-          let anySeqs = file.field2 !== 'None';
-          if (anySeqs) session.meta.anySequences = true;
+          message(`Parsing ${file.name} as Node List...`);
 
           let m = 0, n = 0;
 
-          if (extension == 'xls' || extension == 'xlsx') {
+          if (file.extension == 'xls' || file.extension == 'xlsx') {
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
@@ -982,9 +977,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         } else if (file.format == 'matrix') {
 
-          message(`Parsing ${filename} as Distance Matrix...`);
+          message(`Parsing ${file.name} as Distance Matrix...`);
 
-          if (extension == 'xls' || extension == 'xlsx') {
+          if (file.extension == 'xls' || file.extension == 'xlsx') {
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
@@ -1001,10 +996,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   }
                 });
               } else {
-                const source = '' + row[0];
+                const source = filterXSS('' + row[0]);
                 row.forEach((cell, j) => {
                   if (j == 0) return;
-                  const target = '' + nodeIDs[j];
+                  const target = filterXSS('' + nodeIDs[j]);
                   if (source == target) return;
                   nl += MT.addLink({
                     source: source,
@@ -1028,6 +1023,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               if (fileNum == nFiles) processSequences();
             });
           }
+
         } else { // if(file.format == 'newick'){
 
           let links = 0;
