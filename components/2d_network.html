@@ -456,7 +456,7 @@ Note that this may cause slow performance on larger networks.">
         if (d3.event.selection == null) return;
         session.network.nodes.forEach(d => delete d._previouslySelected);
         session.data.nodes.forEach(d => {
-          let match = session.network.nodes.find(node => node.id == d.id);
+          let match = session.network.nodes.find(node => node._id == d._id);
           if (match) d.selected = match.selected;
         });
         $window.trigger('node-selected');
@@ -503,7 +503,7 @@ Note that this may cause slow performance on larger networks.">
 
     let force = d3.forceSimulation()
       .force('link', d3.forceLink()
-        .id(d => d.id)
+        .id(d => d._id)
         .distance(l => l.origin.length * settings['link-length'])
         .strength(0.125)
       )
@@ -525,7 +525,7 @@ Note that this may cause slow performance on larger networks.">
       let oldNodes = session.network.nodes;
 
       newNodes.forEach((d, i) => {
-        let match = oldNodes.find(d2 => d2.id == d.id);
+        let match = oldNodes.find(d2 => d2._id == d._id);
         if (match) {
           ['x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed'].forEach(v => {
             if (typeof match[v] != "undefined") d[v] = match[v];
@@ -535,7 +535,7 @@ Note that this may cause slow performance on larger networks.">
 
       session.network.nodes = newNodes;
 
-      let nodes = svg.select('g.nodes').selectAll('g').data(newNodes, d => d.id)
+      let nodes = svg.select('g.nodes').selectAll('g').data(newNodes, d => d._id)
         .join(
           enter => {
             let g = enter.append('g')
@@ -623,16 +623,16 @@ Note that this may cause slow performance on larger networks.">
                 origin: o,
                 oNum: j,
                 origins: l.length,
-                source: session.network.nodes.find(d => d.id == vlinks[i].source),
-                target: session.network.nodes.find(d => d.id == vlinks[i].target)
+                source: session.network.nodes.find(d => d._id == vlinks[i].source),
+                target: session.network.nodes.find(d => d._id == vlinks[i].target)
               }));
             });
           } else {
             output.push(Object.assign({}, vlinks[i], {
               oNum: 0,
               origins: 1,
-              source: session.network.nodes.find(d => d.id == vlinks[i].source),
-              target: session.network.nodes.find(d => d.id == vlinks[i].target)
+              source: session.network.nodes.find(d => d._id == vlinks[i].source),
+              target: session.network.nodes.find(d => d._id == vlinks[i].target)
             }));
           }
         } else {
@@ -640,8 +640,8 @@ Note that this may cause slow performance on larger networks.">
             origin: 'Unknown',
             oNum: 0,
             origins: 1,
-            source: session.network.nodes.find(d => d.id == vlinks[i].source),
-            target: session.network.nodes.find(d => d.id == vlinks[i].target)
+            source: session.network.nodes.find(d => d._id == vlinks[i].source),
+            target: session.network.nodes.find(d => d._id == vlinks[i].target)
           }));
         }
       }
@@ -652,8 +652,8 @@ Note that this may cause slow performance on larger networks.">
       let vlinks = MT.getVisibleLinks(true);
       let n = vlinks.length;
       for (let i = 0; i < n; i++) {
-        vlinks[i].source = session.network.nodes.find(d => d.id == vlinks[i].source);
-        vlinks[i].target = session.network.nodes.find(d => d.id == vlinks[i].target);
+        vlinks[i].source = session.network.nodes.find(d => d._id == vlinks[i].source);
+        vlinks[i].target = session.network.nodes.find(d => d._id == vlinks[i].target);
       }
       return vlinks;
     }
@@ -675,7 +675,7 @@ Note that this may cause slow performance on larger networks.">
       selected = svg.select('g.nodes')
         .selectAll('g')
         .data(session.network.nodes)
-        .filter(function (d) { return d.selected; });
+        .filter(d => d.selected);
       if (multidrag) {
         selected.each(setNode);
       } else {
@@ -712,10 +712,10 @@ Note that this may cause slow performance on larger networks.">
 
     function clickHandler(n) {
       if (d3.event.ctrlKey) {
-        session.data.nodes.find(node => node.id == n.id).selected = !n.selected;
+        session.data.nodes.find(node => node._id == n._id).selected = !n.selected;
       } else {
         session.data.nodes.forEach(node => {
-          if (node.id == n.id) {
+          if (node._id == n._id) {
             node.selected = !n.selected;
           } else {
             node.selected = false;
@@ -732,12 +732,12 @@ Note that this may cause slow performance on larger networks.">
     function showContextMenu(d) {
       d3.event.preventDefault();
       hideTooltip();
-      $('#copyID').attr('data-clipboard-text', d.id);
+      $('#copyID').attr('data-clipboard-text', d._id);
       $('#copySeq').attr('data-clipboard-text', d.seq);
       d3.select('#viewAttributes').on('click', function () {
         hideContextMenu();
         let target = $('#network-attribute-modal tbody').empty();
-        let nd = session.data.nodes.find(nd => nd.id == d.id);
+        let nd = session.data.nodes.find(nd => nd._id == d._id);
         for (let attribute in nd) {
           if (attribute[0] == '_') continue;
           target.append(`<tr><td><strong>${MT.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
@@ -788,17 +788,17 @@ Note that this may cause slow performance on larger networks.">
 
     function highlightNeighbors(node) {
       let links = getVLinks();
-      let lindices = [], neighbors = [node.id];
+      let lindices = [], neighbors = [node._id];
       let n = links.length;
       for (let i = 0; i < n; i++) {
         let l = links[i];
-        if (l.source.id !== node.id && l.target.id !== node.id) {
+        if (l.source._id !== node._id && l.target._id !== node._id) {
           lindices.push(l.index);
         } else {
-          if (l.source.id == node.id) {
-            neighbors.push(l.target.id);
+          if (l.source._id == node._id) {
+            neighbors.push(l.target._id);
           } else {
-            neighbors.push(l.source.id);
+            neighbors.push(l.source._id);
           }
         }
       }
@@ -806,7 +806,7 @@ Note that this may cause slow performance on larger networks.">
         .select('g.nodes')
         .selectAll('g')
         .selectAll('path')
-        .attr('opacity', d => neighbors.includes(d.id) ? 1 : .1);
+        .attr('opacity', d => neighbors.includes(d._id) ? 1 : .1);
       svg
         .select('g.links')
         .selectAll('line')
@@ -822,7 +822,7 @@ Note that this may cause slow performance on larger networks.">
       let v = settings['link-tooltip-variable'];
       if (v == 'None') return;
       d3.select('#tooltip')
-        .html((v == 'source' || v == 'target') ? d[v].id : d[v])
+        .html((v == 'source' || v == 'target') ? d[v]._id : d[v])
         .style('left', (d3.event.pageX + 8) + 'px')
         .style('top', (d3.event.pageY - 28) + 'px')
         .style('z-index', 1000)

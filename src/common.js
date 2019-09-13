@@ -9,7 +9,7 @@ MT.dataSkeleton = () => ({
   clusters: [],
   nodeFields: [
     "index",
-    "id",
+    "_id",
     "selected",
     "cluster",
     "visible",
@@ -45,7 +45,7 @@ MT.defaultWidgets = {
   "3DNet-link-tooltip-variable": "None",
   "3DNet-link-transparency": 0,
   "3DNet-link-width": 1.6,
-  "3DNet-node-tooltip-variable": "id",
+  "3DNet-node-tooltip-variable": "_id",
   "3DNet-node-radius": 4,
   "3DNet-node-radius-variable": "None",
   "align-sw": false,
@@ -124,7 +124,7 @@ MT.defaultWidgets = {
   "map-link-transparency": 0,
   "map-node-jitter": -2,
   "map-node-show": true,
-  "map-node-tooltip-variable": "id",
+  "map-node-tooltip-variable": "_id",
   "map-node-transparency": 0,
   "map-satellite-show": false,
   "map-states-show": true,
@@ -144,7 +144,7 @@ MT.defaultWidgets = {
   "node-symbol-table-counts": true,
   "node-symbol-table-frequencies": false,
   "node-symbol-variable": "None",
-  "node-tooltip-variable": "id",
+  "node-tooltip-variable": "_id",
   "physics-tree-branch-type": "Straight",
   "physics-tree-charge": 30,
   "physics-tree-friction": 0.05,
@@ -161,7 +161,7 @@ MT.defaultWidgets = {
   "scatterplot-yVar": "distance",
   "scatterplot-logScale": false,
   "scatterplot-showNodes": false,
-  "search-field": "id",
+  "search-field": "_id",
   "selected-color": "#ff8300",
   "selected-color-contrast": "#000000",
   "timeline-date-field": "None",
@@ -266,7 +266,7 @@ MT.tempSkeleton = () => ({
 
 MT.defaultNode = () => ({
   index: session.data.nodes.length,
-  id: "",
+  _id: "",
   selected: false,
   cluster: 1,
   visible: true,
@@ -277,14 +277,14 @@ MT.defaultNode = () => ({
 let isNumber = a => typeof a == "number";
 
 MT.addNode = (newNode, check) => {
-  if (isNumber(newNode.id)) newNode.id = "" + newNode.id;
-  if (session.data.nodeExclusions.indexOf(newNode.id) > -1) return 0;
+  if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
+  if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
   if (check) {
     let nodes = session.data.nodes;
     const n = nodes.length;
     for (let i = 0; i < n; i++) {
       let node = nodes[i];
-      if (node.id == newNode.id) {
+      if (node._id == newNode._id) {
         if (newNode.origin) {
           newNode.origin = newNode.origin.concat(node.origin);
         }
@@ -444,7 +444,7 @@ MT.applyHIVTrace = hivtrace => {
   session.meta.startTime = Date.now();
   hivtrace["trace_results"]["Nodes"].forEach(node => {
     let newNode = JSON.parse(JSON.stringify(node.patient_attributes));
-    newNode.id = node.id;
+    newNode._id = node._id;
     newNode.origin = "HIVTRACE Import";
     MT.addNode(newNode, false);
   });
@@ -478,10 +478,10 @@ MT.applyGHOST = ghost => {
     let newNode = JSON.parse(JSON.stringify(node));
     newNode.origin = ["GHOST Import"];
     newNode.genotypes = JSON.stringify(newNode.genotypes);
-    newNode.id = "" + newNode.id;
+    newNode._id = "" + newNode._id;
     MT.addNode(newNode, false);
   });
-  ["genotypes", "group", "id", "name"].forEach(key => {
+  ["genotypes", "group", "_id", "name"].forEach(key => {
     if (!session.data.nodeFields.includes(key)){
       session.data.nodeFields.push(key);
     }
@@ -544,7 +544,7 @@ MT.parseCSVMatrix = file => {
       const tn = nodes.length;
       for (let i = 0; i < tn; i++) {
         nn += MT.addNode({
-          id: nodes[i],
+          _id: filterXSS(nodes[i]),
           origin: origin
         }, check);
       }
@@ -817,12 +817,12 @@ MT.computeLinks = subset => {
       let n = subset.length;
       let l = 0;
       for (let i = 0; i < n; i++) {
-        let source = subset[i];
+        let sourceID = subset[i]._id;
         for (let j = 0; j < i; j++) {
-          let target = subset[j];
+          let targetID = subset[j]._id;
           k += MT.addLink({
-            source: source['id'],
-            target: target['id'],
+            source: sourceID,
+            target: targetID,
             distance: dists[l++],
             origin: ['Genetic Distance']
           }, check);
@@ -843,7 +843,7 @@ MT.computeLinks = subset => {
 MT.getDM = () => {
   let start = Date.now();
   return new Promise(resolve => {
-    let labels = session.data.nodes.map(d => d.id);
+    let labels = session.data.nodes.map(d => d._id);
     let metric = session.style.widgets['link-sort-variable'];
     const n = labels.length;
     let dm = new Array(n);
@@ -851,8 +851,13 @@ MT.getDM = () => {
       dm[i] = new Array(n);
       dm[i][i] = 0;
       let source = labels[i];
+      let row = temp.matrix[source];
+      if(!row){
+        console.error('Incompletely populated temp.matrix! Couldn\'t find ' + source);
+        continue;
+      }
       for(let j = 0; j < i; j++){
-        let link = temp.matrix[source][labels[j]];
+        let link = row[labels[j]];
         if(link){
           dm[i][j] = dm[j][i] = link[metric];
         } else {
@@ -982,7 +987,11 @@ MT.finishUp = async oldSession => {
     }
     MT.computeNN();
   }
-  MT.computeTree().then(MT.computeDirectionality);
+  MT.computeTree().then(() => {
+    if($('#doInferDirectionality').is(':checked')){
+      MT.computeDirectionality();
+    }
+  });
   clearTimeout(temp.messageTimeout);
   ["node", "link"].forEach(v => {
     let n = session.data[v + "s"].length;
@@ -1061,7 +1070,7 @@ MT.finishUp = async oldSession => {
 MT.titleize = title => {
   let small = title.toLowerCase().replace(/_/g, " ");
   if (small == "null") return "(Empty)";
-  if (small == "id") return "ID";
+  if (small == "id" || small == " id") return "ID";
   if (small == "tn93") return "TN93";
   if (small == "snps") return "SNPs";
   if (small == "2d network") return "2D Network";
@@ -1077,7 +1086,7 @@ MT.tagClusters = () => {
     let clusters = session.data.clusters = [];
     let nodes = session.data.nodes,
         links = session.data.links,
-        labels = nodes.map(d => d.id);
+        labels = nodes.map(d => d._id);
     let numNodes = nodes.length,
         numLinks = links.length;
     let tempnodes = temp.nodes = [];
@@ -1089,7 +1098,7 @@ MT.tagClusters = () => {
       let node = {};
       for (let i = 0; i < numNodes; i++) {
         let d = nodes[i];
-        if (d.id == id) {
+        if (d._id == id) {
           node = d;
           break;
         }
@@ -1115,7 +1124,7 @@ MT.tagClusters = () => {
     for (let k = 0; k < numNodes; k++) {
       let d = nodes[k];
       d.degree = 0;
-      let id = d.id;
+      let id = d._id;
       if (tempnodes.indexOf(id) == -1) {
         let cluster = {
           id: clusters.length,
@@ -1143,11 +1152,11 @@ MT.tagClusters = () => {
       t = false;
       for (let n = 0; n < numNodes; n++) {
         let node = nodes[n];
-        if (l.source == node.id) {
+        if (l.source == node._id) {
           s = true;
           node.degree++;
         }
-        if (l.target == node.id) {
+        if (l.target == node._id) {
           t = true;
           node.degree++;
         }
@@ -1602,7 +1611,7 @@ MT.unparseSVG = svgNode => {
   let nodes = svgNode.getElementsByTagName("*");
   let nNodes = nodes.length;
   for (let i = 0; i < nNodes; i++) {
-    let id = nodes[i].id;
+    let id = nodes[i]._id;
     if (!("#" + id).includes(selectorTextArr)) {
       selectorTextArr.push("#" + id);
     }
@@ -1686,9 +1695,9 @@ MT.exportHIVTRACE = () => {
           length: l[session.style.widgets["link-sort-variable"]],
           removed: false,
           sequences: [l.source, l.target],
-          source: session.data.nodes.findIndex(d => d.id == l.source),
+          source: session.data.nodes.findIndex(d => d._id == l.source),
           support: 0,
-          target: session.data.nodes.findIndex(d => d.id == l.target)
+          target: session.data.nodes.findIndex(d => d._id == l.target)
         })),
         "HIV Stages": {
           "A-1": 0,
@@ -1714,7 +1723,7 @@ MT.exportHIVTRACE = () => {
           baseline: null,
           cluster: d.cluster,
           edi: null,
-          id: d.id,
+          id: d._id,
           patient_attributes: d
         })),
         patient_attribute_schema: pas,

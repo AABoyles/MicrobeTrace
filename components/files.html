@@ -807,10 +807,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             for (let i = 0; i < n; i++) {
               let node = seqs[i];
               if (!node) continue;
-              node.id = filterXSS(node.id);
-              node.seq = filterXSS(node.seq);
-              node.origin = origin;
-              newNodes += MT.addNode(node, check);
+              newNodes += MT.addNode({
+                _id: filterXSS(node.id),
+                seq: filterXSS(node.seq),
+                origin: origin
+              }, check);
             }
             console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
@@ -858,7 +859,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 t++;
                 nodeIDs.push(f1);
                 n += MT.addNode({
-                  id: '' + f1,
+                  _id: '' + f1,
                   origin: origin
                 }, true);
               }
@@ -867,7 +868,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 t++;
                 nodeIDs.push(f2);
                 n += MT.addNode({
-                  id: '' + f2,
+                  _id: '' + f2,
                   origin: origin
                 }, true);
               }
@@ -901,7 +902,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   if (nodeIDs.indexOf(f1) == -1) {
                     totalNodes++;
                     newNodes += MT.addNode({
-                      id: '' + f1,
+                      _id: '' + f1,
                       origin: origin
                     }, true);
                   }
@@ -909,7 +910,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   if (nodeIDs.indexOf(f2) == -1) {
                     totalNodes++;
                     newNodes += MT.addNode({
-                      id: '' + f2,
+                      _id: '' + f2,
                       origin: origin
                     }, true);
                   }
@@ -930,17 +931,20 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            data.forEach(results => {
-              let node = JSON.parse(filterXSS(JSON.stringify(results)));
+            data.forEach(node => {
+              let safeNode = {
+                _id: filterXSS('' + node[file.field1]),
+                seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),
+                origin: origin
+              };
               Object.keys(node).forEach(key => {
-                if (!session.data.nodeFields.includes(key)) {
-                  session.data.nodeFields.push(key);
+                let safeKey = filterXSS(key);
+                if (!session.data.nodeFields.includes(safeKey)) {
+                  session.data.nodeFields.push(safeKey);
                 }
+                safeNode[safeKey] = filterXSS(node[key]);
               });
-              node.id = '' + node[file.field1];
-              if (anySeqs) node.seq = node[file.field2];
-              node['origin'] = origin;
-              m += MT.addNode(node, check);
+              m += MT.addNode(safeNode, check);
             });
             console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
@@ -952,20 +956,20 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
-              step: results => {
-                if (0 == n++) {
-                  results.meta.fields.forEach(key => {
-                    const safeKey = filterXSS(key);
-                    if (!session.data.nodeFields.includes(safeKey)) {
-                      session.data.nodeFields.push(safeKey);
-                    }
-                  });
-                }
-                let node = JSON.parse(filterXSS(JSON.stringify(results.data[0])));
-                node.id = '' + node[file.field1];
-                if (file.field2 !== 'None') node.seq = node[file.field2];
-                node['origin'] = origin;
-                m += MT.addNode(node, check);
+              step: node => {
+                let safeNode = {
+                  _id: filterXSS('' + node[file.field1]),
+                  seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),
+                  origin: origin
+                };
+                Object.keys(node).forEach(key => {
+                  let safeKey = filterXSS(key);
+                  if (!session.data.nodeFields.includes(safeKey)) {
+                    session.data.nodeFields.push(safeKey);
+                  }
+                  safeNode[safeKey] = filterXSS(node[key]);
+                });
+                m += MT.addNode(safeNode, check);
               },
               complete: () => {
                 console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
@@ -986,11 +990,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let nodeIDs = [], nn = 0, nl = 0;
             data.forEach((row, i) => {
               if (i == 0) {
-                nodeIDs = row.map(filterXSS);
+                nodeIDs = row;
                 nodeIDs.forEach((cell, k) => {
                   if (k > 0) {
                     nn += MT.addNode({
-                      id: '' + cell,
+                      _id: filternXSS('' + cell),
                       origin: origin
                     }, check);
                   }
@@ -1034,7 +1038,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           for (let i = 0; i < n; i++) {
             const source = labels[i];
             newNodes += MT.addNode({
-              id: source,
+              _id: source,
               origin: origin
             }, check);
             for (let j = 0; j < i; j++) {
