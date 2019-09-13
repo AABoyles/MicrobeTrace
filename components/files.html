@@ -37,12 +37,12 @@
   <div class="tab-content">
     <div id="file-settings" class="tab-pane fade active show" role="tabpanel">
       <div class="form-group row">
-        <div class="col-3">
+        <div class="col-5">
           <label for="default-distance-metric" class="mr-2" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
             Distance Metric
           </label>
         </div>
-        <div class="col-9">
+        <div class="col-7">
           <select id="default-distance-metric" class="form-control form-control-sm mr-5">
             <option value="tn93" selected>TN93</option>
             <option value="snps">SNPs</option>
@@ -50,12 +50,12 @@
         </div>
       </div>
       <div id="ambiguities-row" class="form-group row">
-        <div class="col-3">
+        <div class="col-5">
           <label for="ambiguity-resolution-strategy" class="mr-2" title="What Strategy should MicrobeTrace use to handle ambiguities?">
             Ambiguities
           </label>
         </div>
-        <div class="col-9">
+        <div class="col-7">
           <select id="ambiguity-resolution-strategy" class="form-control form-control-sm mr-5">
             <option value="AVERAGE">Average</option>
             <option value="RESOLVE">Resolve</option>
@@ -66,30 +66,30 @@
         </div>
       </div>
       <div id="ambiguity-threshold-row" class="form-group row">
-        <div class="col-3">
+        <div class="col-5">
           <label for="ambiguity-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
             Ambiguity Threshold
           </label>
         </div>
-        <div class="col-9">
+        <div class="col-7">
           <input type="number" id="ambiguity-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
         </div>
       </div>
       <div class="form-group row">
-        <div class="col-3">
+        <div class="col-5">
           <label for="default-distance-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
             Link Threshold
           </label>
         </div>
-        <div class="col-9">
+        <div class="col-7">
           <input type="number" id="default-distance-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
         </div>
       </div>
       <div class="form-group row">
-        <div class="col-3">
+        <div class="col-5">
           <label for="default-view">View to Launch</label>
         </div>
-        <div class="col-9">
+        <div class="col-7">
           <select id="default-view" class="form-control form-control-sm" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
             <option value="2d_network" selected>2D Network</option>
             <option value="3d_network">3D Network</option>
@@ -111,7 +111,7 @@
         </div>
       </div>
       <div class="form-group row" title="Would you like to generate a network based on random data?">
-        <div class="col-3">Generate</div>
+        <div class="col-4">Generate</div>
         <div class="col">
           <input id="generate-number" type="number" class="form-control form-control-sm" min="1" max="2000" step="1" value="100">
         </div>
@@ -119,9 +119,22 @@
           <button id="generate-sequences" class="btn btn-light btn-sm col">Sequences</button>
         </div>
       </div>
+      <div class="form-group row" title="Would you like to attempt to infer the direction of your links?">
+        <div class="col-4">Directionality</div>
+        <div class="col-8">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+            <label class="btn btn-light active col" title="Do Not infer transmission directionality.">
+              <input type="radio" name="inferDirectionality" id="doNotInferDirectionality" autocomplete="off" checked> Off
+            </label>
+            <label class="btn btn-light col" title="Attempt to infer transmission directionality?">
+              <input type="radio" name="inferDirectionality" id="doInferDirectionality" autocomplete="off"> Inferred
+            </label>
+          </div>
+        </div>
+      </div>
       <div class="form-group row" title="Would you like to attempt to triangulate missing values in your distance matrices?">
-        <div class="col-3">Triangulation</div>
-        <div class="col-9">
+        <div class="col-4">Triangulation</div>
+        <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
             <label class="btn btn-light active col" title="Do Not Triangulate missing cells in Distance Matrices.">
               <input type="radio" name="shouldTriangulate" id="doNotTriangulate" autocomplete="off" checked> Off
@@ -135,8 +148,8 @@
       <div class="form-group row"
         title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
 Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
-        <div class="col-3">Autostash</div>
-        <div class="col-9">
+        <div class="col-4">Autostashing</div>
+        <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
             <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
               <input type="radio" name="stash-auto" id="stash-auto-no" autocomplete="off" checked> Off
