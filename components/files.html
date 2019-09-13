@@ -387,11 +387,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         let reader = new FileReader();
         reader.onloadend = out => MT.processJSON(out.target.result, extension);
         reader.readAsText(rawfile, 'UTF-8');
+        return;
       }
       if (extension == 'svg') {
         let reader = new FileReader();
         reader.onloadend = out => MT.processSVG(out.target.result);
         reader.readAsText(rawfile, 'UTF-8');
+        return;
       }
       fileto.promise(rawfile, (extension == 'xlsx' || extension == 'xls') ? 'ArrayBuffer' : 'Text').then(file => {
         file.name = filterXSS(file.name);
