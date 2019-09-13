@@ -297,45 +297,55 @@ MT.addNode = (newNode, check) => {
   return 1;
 };
 
+function uniq(a) {
+  let seen = {};
+  let out = [];
+  let len = a.length;
+  let j = 0;
+  for(let i = 0; i < len; i++) {
+    let item = a[i];
+    if(seen[item] !== 1) {
+      seen[item] = 1;
+      out[j++] = item;
+    }
+  }
+  return out;
+}
+
 MT.addLink = newLink => {
-  if (newLink.source == newLink.target) return 0;
-  let linkIsNew = 1;
-  let sdlinks = session.data.links;
   if(!temp.matrix[newLink.source]){
     temp.matrix[newLink.source] = {};
   }
   if(!temp.matrix[newLink.target]){
     temp.matrix[newLink.target] = {};
   }
+  if (newLink.source == newLink.target) return 0;
+  let linkIsNew = 1;
+  let sdlinks = session.data.links;
   if(temp.matrix[newLink.source][newLink.target]){
     let oldLink = temp.matrix[newLink.source][newLink.target];
-    if (newLink.origin && !oldLink.origin.includes(newLink.origin[0])) {
-      newLink.origin = newLink.origin.concat(oldLink.origin);
-    }
-    Object.assign(oldLink, newLink);
+    let origin = uniq(newLink.origin.concat(oldLink.origin));
+    Object.assign(oldLink, newLink, {origin: origin});
+    linkIsNew = 0;
+  } else if(temp.matrix[newLink.target][newLink.source]){
+    console.warn("This scope should be unreachable. If you're using this code, something's wrong.");
+    let oldLink = temp.matrix[newLink.target][newLink.source];
+    let origin = uniq(newLink.origin.concat(oldLink.origin));
+    Object.assign(oldLink, newLink, {origin: origin});
     linkIsNew = 0;
   } else {
-    if(temp.matrix[newLink.target][newLink.source]){
-      let oldLink = temp.matrix[newLink.target][newLink.source];
-      if (newLink.origin && !oldLink.origin.includes(newLink.origin[0])) {
-        newLink.origin = newLink.origin.concat(oldLink.origin);
-      }
-      Object.assign(oldLink, newLink);
-      linkIsNew = 0;
-    } else {
-      newLink = Object.assign({
-        index: sdlinks.length,
-        source: "",
-        target: "",
-        visible: false,
-        cluster: 1,
-        origin: []
-      }, newLink);
-      temp.matrix[newLink.source][newLink.target] = newLink;
-      temp.matrix[newLink.target][newLink.source] = newLink;
-      sdlinks.push(newLink);
-      linkIsNew = 1;
-    }
+    newLink = Object.assign({
+      index: sdlinks.length,
+      source: "",
+      target: "",
+      visible: false,
+      cluster: 1,
+      origin: []
+    }, newLink);
+    temp.matrix[newLink.source][newLink.target] = newLink;
+    temp.matrix[newLink.target][newLink.source] = newLink;
+    sdlinks.push(newLink);
+    linkIsNew = 1;
   }
   return linkIsNew;
 };
