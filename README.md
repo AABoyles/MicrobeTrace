@@ -1,4 +1,6 @@
-[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/image256.png "MicrobeTrace")](https://microbetrace.cdc.gov/MicrobeTrace/)
+[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/android-chrome-512x512.png "MicrobeTrace")](https://microbetrace.cdc.gov/MicrobeTrace/)
+
+# MicrobeTrace
 
 Developed By [Tony Boyles](http://github.com/aaboyles)
 
