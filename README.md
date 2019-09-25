@@ -13,7 +13,7 @@ Developed By [Tony Boyles](http://github.com/aaboyles)
 
 ## To Spread the Word:
 
-* [View the MicrobeTrace Flyer](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTraceFlyer.pdf)
+* [View the MicrobeTrace Flyer](https://github.com/CDCgov/MicrobeTrace/blob/master/docs/MicrobeTrace%20Flyer_Sept_2019.pdf)
 * [Read our Reports](https://medium.com/microbetrace-reports/latest)
 * [Connect with our User Community](https://www.reddit.com/r/MicrobeTrace/)
 
