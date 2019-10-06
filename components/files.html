@@ -404,7 +404,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
 
     function addToTable(file) {
-      const extension = file.extension;
+      const extension = file.extension ? file.extension : filterXSS(file.name).split('.').pop().toLowerCase();
       const isFasta = extension.indexOf('fas') > -1;
       const isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
       const isXL = (extension == 'xlsx' || extension == 'xls');
@@ -1091,7 +1091,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
 
       async function processSequences() {
-        if (!session.meta.anySequences) return MT.finishUp();
+        if (!session.meta.anySequences) return MT.runHamsters();
         session.data.nodeFields.push('seq');
         let nodes = session.data.nodes, subset = [];
         const n = nodes.length;
@@ -1135,7 +1135,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         message('Computing Links based on Genomic Proximity...');
         const k = await MT.computeLinks(subset);
         message(` - Found ${k} New Links from Genomic Proximity`);
-        MT.finishUp();
+        MT.runHamsters();
       };
     });
   })();

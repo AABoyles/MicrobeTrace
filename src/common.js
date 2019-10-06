@@ -424,7 +424,7 @@ MT.processSVG = svg => {
       MT.addLink(base, true);
     });
   }
-  MT.finishUp();
+  MT.runHamsters();
 };
 
 MT.processJSON = (json, extension) => {
@@ -445,6 +445,55 @@ MT.processJSON = (json, extension) => {
       MT.applyGHOST(data);
     } else {
       MT.applyHIVTrace(data);
+    }
+  }
+};
+
+MT.applySession = oldSession => {
+  //If anything here seems eccentric, assume it's to maintain compatibility with
+  //session files from older versions of MicrobeTrace.
+  $("#launch").prop("disabled", true);
+  session.files = oldSession.files;
+  session.state = oldSession.state;
+  session.meta.startTime = Date.now();
+  const nodes = oldSession.data.nodes,
+        links = oldSession.data.links,
+        n = nodes.length,
+        m = links.length;
+  for(let i = 0; i < n; i++) MT.addNode(nodes[i]);
+  for(let j = 0; j < m; j++) MT.addLink(links[j]);
+  ['nodeFields', 'linkFields', 'clusterFields', 'nodeExclusions'].forEach(v => {
+    if(oldSession.data[v]) session.data[v] = uniq(session.data[v].concat(oldSession.data[v]));
+  });
+  if(oldSession.network) session.network = oldSession.network;
+  MT.applyStyle(session.style);
+  if(!links[0]['distance']){
+    if(links[0]['tn93']){
+      session.style.widgets['link-sort-variable'] = 'tn93';
+    } else {
+      session.style.widgets['link-sort-variable'] = 'snps';
+    }
+  }
+  MT.finishUp();
+};
+
+MT.applyStyle = style => {
+  session.style = style;
+  session.style.widgets = Object.assign({},
+    MT.defaultWidgets,
+    style.widgets
+  );
+  MT.createLinkColorMap();
+  MT.createNodeColorMap();
+  let $id = null;
+  for (let id in session.style.widgets) {
+    $id = $("#" + id);
+    if ($id.length > 0) {
+      if (["radio", "checkbox"].includes($id[0].type)) {
+        if (session.style.widgets[id]) $id.trigger("click");
+      } else {
+        $id.val(session.style.widgets[id]);
+      }
     }
   }
 };
@@ -478,7 +527,7 @@ MT.applyHIVTrace = hivtrace => {
     MT.addLink(newLink, false);
   }
   session.data.linkFields.push(metric);
-  MT.finishUp();
+  MT.runHamsters();
 };
 
 MT.applyGHOST = ghost => {
@@ -521,7 +570,7 @@ MT.applyGHOST = ghost => {
     if (!session.data.linkFields.includes(key))
       session.data.linkFields.push(key);
   });
-  MT.finishUp();
+  MT.runHamsters();
 };
 
 let decoder = new TextDecoder("utf-8");
@@ -990,14 +1039,15 @@ MT.computeTriangulation = () => {
   });
 };
 
-MT.finishUp = async oldSession => {
-  if (!oldSession) {
-    if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation();
-    MT.computeNN();
-  }
-  MT.computeTree().then(() => {
-    if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
-  });
+MT.runHamsters = async () => {
+  if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation();
+  MT.computeNN();
+  await MT.computeTree();
+  if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
+  MT.finishUp();
+};
+
+MT.finishUp = async () => {
   clearTimeout(temp.messageTimeout);
   ["node", "link"].forEach(v => {
     let n = session.data[v + "s"].length;
@@ -1040,12 +1090,7 @@ MT.finishUp = async oldSession => {
   $("#SettingsTab").attr("data-target", "#global-settings-modal");
   session.meta.loadTime = Date.now() - session.meta.startTime;
   console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
-  if (oldSession) {
-    layout.root.contentItems[0].remove();
-    setTimeout(() => MT.loadLayout(session.layout), 80);
-  } else {
-    MT.launchView(session.style.widgets['default-view']);
-  }
+  MT.launchView(session.style.widgets['default-view']);
   MT.tagClusters().then(() => {
     MT.setClusterVisibility(true);
     MT.setLinkVisibility(true);
@@ -1345,6 +1390,7 @@ MT.createNodeColorMap = () => {
     }
     session.style.nodeColors = colors;
   }
+  if(!session.style.nodeAlphas) session.style.nodeAlphas = new Array(values.length).fill(1);
   if (values.length > session.style.nodeAlphas.length) {
     session.style.nodeAlphas = session.style.nodeAlphas.concat(
       new Array(values.length - session.style.nodeAlphas.length).fill(1)
@@ -1414,40 +1460,6 @@ MT.createLinkColorMap = () => {
     .scaleOrdinal(session.style.linkAlphas)
     .domain(values);
   return aggregates;
-};
-
-MT.applyStyle = style => {
-  session.style = style;
-  session.style.widgets = Object.assign({},
-    MT.defaultWidgets,
-    session.style.widgets
-  );
-  MT.createLinkColorMap();
-  MT.createNodeColorMap();
-  let $id = null;
-  for (let id in session.style.widgets) {
-    $id = $("#" + id);
-    if ($id.length > 0) {
-      if (["radio", "checkbox"].includes($id[0].type)) {
-        if (session.style.widgets[id]) $id.trigger("click");
-      } else {
-        $id.val(session.style.widgets[id]);
-      }
-    }
-  }
-};
-
-MT.applySession = (data, startTime) => {
-  $("#launch").prop("disabled", true);
-  //We have to do this to build temp.matrix:
-  data.data.nodes.forEach(MT.addNode);
-  data.data.links.forEach(MT.addLink);
-  self.session = data;
-  if (!startTime) startTime = Date.now();
-  if (!session.meta) session.meta = {};
-  session.meta.startTime = startTime;
-  MT.applyStyle(session.style);
-  MT.finishUp(true);
 };
 
 MT.reset = () => {
