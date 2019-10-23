@@ -124,13 +124,13 @@
 
 <script>
   (function () {
-    var links = [];
-    var nodes = [];
+    let links = [];
+    let nodes = [];
 
-    var graph = ForceGraph3D()($("#3DNet").get(0));
+    let graph = ForceGraph3D()($("#3DNet").get(0));
 
     function updateNodeTooltip() {
-      var nodeTooltip = session.style.widgets["3DNet-node-tooltip-variable"];
+      let nodeTooltip = session.style.widgets["3DNet-node-tooltip-variable"];
       if (nodeTooltip == "None" || nodeTooltip == null) {
         graph.nodeLabel("");
       } else {
@@ -139,9 +139,9 @@
     }
 
     function updateNodeColors() {
-      var nodeColorBy = session.style.widgets["node-color-variable"];
+      let nodeColorBy = session.style.widgets["node-color-variable"];
       if (nodeColorBy == "None") {
-        var nodeColor = session.style.widgets["node-color"];
+        let nodeColor = session.style.widgets["node-color"];
         graph.nodeColor(d =>
           d.selected ? session.style.widgets["selected-color"] : nodeColor
         );
@@ -156,29 +156,24 @@
     }
 
     function updateNodeSizes() {
-      var nodeSizeBy = session.style.widgets["3DNet-node-radius-variable"];
+      let nodeSizeBy = session.style.widgets["3DNet-node-radius-variable"];
       if (nodeSizeBy !== "None") graph.nodeVal(nodeSizeBy);
       graph.nodeRelSize(session.style.widgets["3DNet-node-radius"]);
     }
 
     function updateLinkTooltip() {
-      var linkTooltip = session.style.widgets["3DNet-link-tooltip-variable"];
+      let linkTooltip = session.style.widgets["3DNet-link-tooltip-variable"];
       if (linkTooltip == "None") {
         graph.linkLabel("");
       } else {
-        graph.linkLabel(
-          d =>
-            '<span style="color:#333333;background:#f5f5f5;border:1px solid #cccccc;border-radius:.25rem;padding:.25rem;">' +
-            d[linkTooltip] +
-            "</span>"
-        );
+        graph.linkLabel(d => `<span style="color:#333333;background:#f5f5f5;border:1px solid #cccccc;border-radius:.25rem;padding:.25rem;">${d[linkTooltip]}</span>`);
       }
     }
 
     function updateLinkColors() {
-      var linkColorBy = session.style.widgets["link-color-variable"];
+      let linkColorBy = session.style.widgets["link-color-variable"];
       if (linkColorBy == "None") {
-        var linkColor = session.style.widgets["link-color"];
+        let linkColor = session.style.widgets["link-color"];
         graph.linkColor(l => linkColor);
       } else {
         graph.linkColor(l => temp.style.linkColorMap(l[linkColorBy]));
@@ -199,9 +194,9 @@
 
     function updateData() {
       if(!$('#3DNet').length) return;
-      var newNodes = MT.getVisibleNodes(true);
+      let newNodes = MT.getVisibleNodes(true);
       newNodes.forEach(d => {
-        var match = nodes.find(d2 => d.id == d2.id);
+        let match = nodes.find(d2 => d._id == d2._id || d.id == d2.id);
         if (match) {
           d.x = match.x;
           d.y = match.y;
@@ -210,6 +205,7 @@
           d.vy = match.vy;
           d.vz = match.vz;
         }
+        d.id = d._id;
       });
       nodes = newNodes;
       links = MT.getVisibleLinks(true);
@@ -220,26 +216,26 @@
     }
 
     function updateGraph() {
-      updateNodeTooltip();
-      updateNodeColors();
+      updateData();
+      updateBackground();
       updateNodeSizes();
-      updateLinkTooltip();
+      updateNodeColors();
+      updateNodeTooltip();
+      updateLinkWidth();
       updateLinkColors();
       updateLinkOpacity();
-      updateLinkWidth();
-      updateBackground();
-      updateData();
+      updateLinkTooltip();
     }
 
     // graph.onNodeClick(function(node){
-    //   var model = session.data.nodes.find(d => node.id = d.id);
+    //   let model = session.data.nodes.find(d => node.id = d.id);
     //   if(!model) return;
     //   model.selected = !model.selected;
     //   $window.trigger('node-selected');
     // });
 
     $("#toggle-3DNet-settings").on("click", function () {
-      var pane = $("#3DNet-settings-pane");
+      let pane = $("#3DNet-settings-pane");
       if ($(this).hasClass('active')) {
         pane.animate({ left: "-400px" }, function () {
           pane.hide();
@@ -251,7 +247,7 @@
       }
     });
 
-    var a,
+    let a,
       downloads = 0;
     function download() {
       if (downloads) {
