@@ -57,7 +57,7 @@
         if(node.cluster !== cluster) return;
         $(`<a href="#" class="list-group-item list-group-item-action">
           <div class="d-flex w-100 justify-content-between">
-            <span class="ellipsisToFit">${node.id}</span>
+            <span class="ellipsisToFit">${'_id' in node ? node._id : node.id}</span>
             <small>${node.degree}</small>
           </div>
           <div class="hideIfNotActive">
@@ -79,11 +79,11 @@
 
     function resetNeighbors(node){
       let list = $('#waterfall-neighbor-list').empty();
-      let lsv = session.style.widgets['link-sort-variable'];
       if(typeof node == 'undefined') return;
+      let lsv = session.style.widgets['link-sort-variable'];
       let labels = Object.keys(temp.matrix);
       const n = labels.length;
-      let row = temp.matrix[node.id];
+      let row = temp.matrix['_id' in node ? node._id : node.id];
       for(let i = 0; i < n; i++){
         let neighbor = labels[i];
         let link = row[neighbor];
