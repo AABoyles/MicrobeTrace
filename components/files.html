@@ -999,7 +999,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   if (!session.data.nodeFields.includes(safeKey)) {
                     session.data.nodeFields.push(safeKey);
                   }
-                  safeNode[safeKey] = filterXSS(node[key]);
+                  // safeNode[safeKey] = filterXSS(node[key]);
+                  safeNode[safeKey] =  (typeof node[key] === 'string')  ?   filterXSS(node[key]) : node[key]; //#173
+
                 });
                 m += MT.addNode(safeNode, check);
               },
