@@ -294,6 +294,13 @@ let uniq = a => {
 };
 
 MT.addNode = (newNode, check) => {
+  if ('id' in newNode){
+    if('_id' in newNode){
+      //This is here because the logic won't negate for some reason. I don't get it...
+    } else {
+      newNode._id = newNode.id;
+    }
+  }
   if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
   if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
   if (check) {
