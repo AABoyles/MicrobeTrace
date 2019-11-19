@@ -1584,7 +1584,9 @@ MT.launchView = (view, callback) => {
       let $id = $("#" + id);
       if ($id.length > 0) {
         if (["radio", "checkbox"].includes($id[0].type)) {
-          if (session.style.widgets[id]) $id.click();
+          if (session.style.widgets[id]) {
+            if($(contentItem.element[0]).find($id).length > 0)   $id.click();   // issue #182
+          }
         } else {
           $id.val(session.style.widgets[id]);
         }
