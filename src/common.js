@@ -944,6 +944,10 @@ MT.computeTree = () => {
       console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
       resolve();
     };
+    computer.onerror = (e) => {
+      console.log(e);
+      resolve(); //issue #183
+    };
     MT.getDM().then(dm => {
       computer.postMessage({
         labels: Object.keys(temp.matrix),
