@@ -524,9 +524,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           updateMetadata(file);
         }
 
-        $(`#file-${file.name}-field-1`).change(() => updateMetadata(file));
-        $(`#file-${file.name}-field-2`).change(() => updateMetadata(file));
-        $(`#file-${file.name}-field-3`).change(() => updateMetadata(file));
+        // $(`#file-${file.name}-field-1`).change(() => updateMetadata(file));
+        // $(`#file-${file.name}-field-2`).change(() => updateMetadata(file));
+        // $(`#file-${file.name}-field-3`).change(() => updateMetadata(file));
+        document.getElementById(`file-${file.name}-field-1`).addEventListener('change', (event) => {
+          updateMetadata(file)
+        });
+        document.getElementById(`file-${file.name}-field-2`).addEventListener('change', (event) => {
+          updateMetadata(file)
+        });
+        document.getElementById(`file-${file.name}-field-3`).addEventListener('change', (event) => {
+          updateMetadata(file)
+        });
+
         $(`[name="options-${file.name}"]`).change(refit);
         refit();
       }
@@ -804,7 +814,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#launch').on('click', () => {
       session.meta.startTime = Date.now();
       $('#launch').prop('disabled', true);
-      
+      document.getElementById('loading-information').innerHTML="<p>Processing file(s)...</p>";
       new Promise(function(resolve, reject) {
         $('#loading-information-modal').on('shown.bs.modal', function (e) {
           session.messages = [];
