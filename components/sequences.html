@@ -85,7 +85,7 @@ For large sets of sequences, this can take a long time.">
 
     function update() {
       if(!$('#sequences-panel').length) return;
-      alignmentViewer(session.data.nodes.filter(d => d.seq), {
+      alignmentViewer(session.data.nodes.filter(d => d.seq).map((node) => {node.id = node._id; return node;}), {
         width: 0 | $('#avwidth').val(),
         height: 0 | $('#avheight').val(),
         showChar: $('#showChar').is(':checked')
