@@ -1673,6 +1673,9 @@ MT.unparseSVG = svgNode => {
       if (rule.selectorText.includes(selectorTextArr)) {
         extractedCSSText += rule.cssText;
       }
+      if (rule.selectorText == 'body') {  // issue #110
+        extractedCSSText += rule.cssText.replace("body" , "text");;
+      }
     }
   }
 
