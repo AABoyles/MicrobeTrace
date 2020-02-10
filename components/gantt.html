@@ -109,8 +109,10 @@
     context.font = "1rem" + window.getComputedStyle(document.body).fontFamily;
     let measureText = 0;
     session.data.nodes.filter(d => d.visible).forEach(d => {
-      const _measureText = context.measureText(d.id.trim()).width;
-      _measureText > measureText && (measureText = Math.ceil(_measureText) )
+      if(d.id) {
+        const _measureText = context.measureText(d.id.trim()).width;
+        _measureText > measureText && (measureText = Math.ceil(_measureText) )
+      }
     });
     margin.left = measureText + 5;
 
