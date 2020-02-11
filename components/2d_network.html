@@ -1257,7 +1257,7 @@ Note that this may cause slow performance on larger networks.">
     $('#network-export-filetype').on('change', function () {
       if (this.value == 'svg') {
         $('#network-export-advanced-button').parent().parent().slideUp();
-        if ($('#network-export-advanced').hasClass("show")) $('#network-export-advanced-button').click()
+        if ($('#network-export-advanced').hasClass("show")) $('#network-export-advanced-button').click();
       } else {
         $('#network-export-advanced-button').parent().parent().slideDown();
       }
