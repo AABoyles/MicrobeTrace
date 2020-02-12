@@ -545,7 +545,8 @@ MT.applyGHOST = ghost => {
 		let newNode = JSON.parse(JSON.stringify(node));     
 		newNode.origin = ["GHOST Import"];     
 		newNode.genotypes = Object.keys(newNode.genotypes)[0];     
-		newNode.id = "" + newNode.id;     MT.addNode(newNode, false);   
+		newNode.id = "" + newNode.id;     
+		MT.addNode(newNode, false);   
 	});
 	
 	["genotypes", "group", "id", "name"].forEach(key => {     
@@ -558,11 +559,16 @@ MT.applyGHOST = ghost => {
 	let n = links.length;   
 	for (let i = 0; i < n; i++) {     
 		let link = links[i];     
-		let newLink = Object.assign({}, link, { source: "" + link.source, target: "" + link.target, distance: parseFloat(link.dist), origin: ["GHOST Import"], visible: true });     
+		let newLink = Object.assign({}, link, { 
+			source: "" + link.source, 
+			target: "" + link.target, 
+			distance: parseFloat(link.dist), 
+			origin: ["GHOST Import"], visible: true });     
 		MT.addLink(newLink, false);   
 	}
 	[ "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
-	MT.finishUp(); 
+//	MT.finishUp(); 
+	MT.runHamsters();
 }; 
 
 let decoder = new TextDecoder("utf-8");
