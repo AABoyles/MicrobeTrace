@@ -538,47 +538,32 @@ MT.applyHIVTrace = hivtrace => {
 };
 
 MT.applyGHOST = ghost => {
-  self.session = MT.sessionSkeleton();
-  session.meta.startTime = Date.now();
-  ghost["samples"].forEach(node => {
-    let newNode = JSON.parse(JSON.stringify(node));
-    newNode.origin = ["GHOST Import"];
-    newNode.genotypes = JSON.stringify(newNode.genotypes);
-    newNode._id = "" + newNode._id;
-    MT.addNode(newNode, false);
-  });
-  ["genotypes", "group", "_id", "name"].forEach(key => {
-    if (!session.data.nodeFields.includes(key)){
-      session.data.nodeFields.push(key);
-    }
-  });
-  let links = ghost["links"];
-  let n = links.length;
-  for (let i = 0; i < n; i++) {
-    let link = links[i];
-    let newLink = Object.assign({}, link, {
-      source: "" + link.source,
-      target: "" + link.target,
-      distance: parseFloat(link.dist),
-      origin: ["GHOST Import"],
-      visible: true
-    });
-    MT.addLink(newLink, false);
-  }
-  [
-    "density",
-    "dist",
-    "shared",
-    "src_genotype",
-    "src_haps",
-    "tgt_genotype",
-    "tgt_haps"
-  ].forEach(key => {
-    if (!session.data.linkFields.includes(key))
-      session.data.linkFields.push(key);
-  });
-  MT.runHamsters();
-};
+	self.session = MT.sessionSkeleton();   
+	session.meta.startTime = Date.now();
+	
+	ghost["samples"].forEach(node => {     
+		let newNode = JSON.parse(JSON.stringify(node));     
+		newNode.origin = ["GHOST Import"];     
+		newNode.genotypes = Object.keys(newNode.genotypes)[0];     
+		newNode.id = "" + newNode.id;     MT.addNode(newNode, false);   
+	});
+	
+	["genotypes", "group", "id", "name"].forEach(key => {     
+		if (!session.data.nodeFields.includes(key)){
+			session.data.nodeFields.push(key);     
+		}   
+	});
+		
+	let links = ghost["links"];   
+	let n = links.length;   
+	for (let i = 0; i < n; i++) {     
+		let link = links[i];     
+		let newLink = Object.assign({}, link, { source: "" + link.source, target: "" + link.target, distance: parseFloat(link.dist), origin: ["GHOST Import"], visible: true });     
+		MT.addLink(newLink, false);   
+	}
+	[ "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
+	MT.finishUp(); 
+}; 
 
 let decoder = new TextDecoder("utf-8");
 MT.decode = x => decoder.decode(x);
