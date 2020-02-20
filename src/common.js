@@ -1528,6 +1528,9 @@
       if (contentItem) {
         contentItem.parent.setActiveContentItem(contentItem);
       } else {
+        if (layout.root.contentItems[0] === undefined) {
+          layout.root.addChild({ type: 'stack' });
+        }
         let lastStack = peek(layout.root.contentItems[0].getItemsByType("stack"));
         if (!lastStack) lastStack = layout.root.contentItems[0];
         lastStack.addChild({
