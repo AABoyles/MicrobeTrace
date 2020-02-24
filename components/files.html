@@ -881,7 +881,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let safeLink = {};
             for (let i = 0; i < n; i++) {
               let key = filterXSS(keys[i]);
-              safeLink[key] = filterXSS(link[key]);
+              safeLink[key] =  (typeof link[key] === 'string')  ?   filterXSS(link[key]) : link[key];  // #195
               if (!session.data.linkFields.includes(key)) {
                 session.data.linkFields.push(key);
               }
