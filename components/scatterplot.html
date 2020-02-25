@@ -91,7 +91,7 @@
             <button id="scatterplot-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#scatterplot-export-advanced" aria-expanded="false" aria-controls="scatterplot-export-advanced">Advanced</button>
           </div>
         </div>
-        <div class="collapse" id="scatterplot-export-advanced">
+        <div class="collapse" id="scatterplot-export-advanced" style="margin-top: 10px;">
           <div class="card card-body">
             <div class="form-group row">
               <div class="col-3">
@@ -113,6 +113,14 @@
                 <input type="range" class="custom-range" id="scatterplot-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="col-3">
+            <label for="scatterplot-export-opacity">Watermark Opacity</label>
+          </div>
+          <div class="col-9">
+            <input type="range" id="scatterplot-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
           </div>
         </div>
       </div>
@@ -220,6 +228,7 @@
     $('#scatterplot-export-filetype').on('change', function (e) {
       if (e.target.value == 'svg') {
         $('#scatterplot-export-advanced-button').parent().parent().slideUp();
+        if ($('#scatterplot-export-advanced').hasClass("show")) $('#scatterplot-export-advanced-button').click();
       } else {
         $('#scatterplot-export-advanced-button').parent().parent().slideDown();
       }
@@ -238,11 +247,12 @@
       let $scatterplot = $('#scatterplot .main-svg');
       let scatterplot = $scatterplot[0];
       $scatterplot.find('.infolayer').appendTo(scatterplot);
-      let watermark = d3.select(scatterplot).append('text')
-        .text('MicrobeTrace')
-        .attr('x', $scatterplot.width() - 150)
-        .attr('y', $scatterplot.height() - 20)
-        .attr('class', 'watermark');
+      let watermark = d3.select(scatterplot).append('image')
+        .attr('xlink:href', MT.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#scatterplot-export-opacity').val());
       let filename = $('#scatterplot-export-filename').val(),
         filetype = $('#scatterplot-export-filetype').val();
       if (filetype == 'svg') {

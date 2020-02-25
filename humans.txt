@@ -13,3 +13,6 @@
   Doctype: HTML5
 	IDE: Atom, VSCode (When Atom chokes), Notepad++
   Browsers: Chrome, Firefox, Safari
+
+/* NOTES */
+  Build 1

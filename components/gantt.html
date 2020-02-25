@@ -56,7 +56,7 @@
             <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
           </div>
         </div>
-        <div class="collapse" id="gantt-export-advanced">
+        <div class="collapse" id="gantt-export-advanced" style="margin-top: 10px;">
           <div class="card card-body">
             <div class="form-group row">
               <div class="col-3">
@@ -78,6 +78,14 @@
                 <input type="range" class="custom-range" id="gantt-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="col-3">
+            <label for="gantt-export-opacity">Watermark Opacity</label>
+          </div>
+          <div class="col-9">
+            <input type="range" id="gantt-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
           </div>
         </div>
       </div>
@@ -102,6 +110,19 @@
     let x, y, height = 600, width = 800, rect;
     let tickFormat = d3.timeFormat("%Y-%m-%d");
     let clickCount = 0;
+
+    // issue: #124
+    const element = document.createElement('canvas');
+    let context = element.getContext("2d");
+    context.font = "1rem" + window.getComputedStyle(document.body).fontFamily;
+    let measureText = 0;
+    session.data.nodes.filter(d => d.visible).forEach(d => {
+      if(d.id) {
+        const _measureText = context.measureText(d.id.trim()).width;
+        _measureText > measureText && (measureText = Math.ceil(_measureText) )
+      }
+    });
+    margin.left = measureText + 5;
 
     svg.append("g")
       .attr("class", "gantt-chart")
@@ -304,6 +325,7 @@
     $('#gantt-export-filetype').on('change', function (e) {
       if (e.target.value == 'svg') {
         $('#gantt-export-advanced-button').slideUp();
+        if ($('#gantt-export-advanced').hasClass("show")) $('#gantt-export-advanced-button').click();
       } else {
         $('#gantt-export-advanced-button').slideDown();
       }
@@ -321,11 +343,12 @@
     $('#gantt-export').on('click', function () {
       let $gantt = $('#gantt svg');
       let gantt = $gantt.get(0);
-      let watermark = d3.select(gantt).append('text')
-        .text('MicrobeTrace')
-        .attr('x', $gantt.width() - 150)
-        .attr('y', 40)
-        .attr('class', 'watermark');
+      let watermark = d3.select(gantt).append('image')
+        .attr('xlink:href', MT.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 900)
+        .style('opacity', $('#gantt-export-opacity').val());
       let filename = $('#gantt-export-filename').val(),
         filetype = $('#gantt-export-filetype').val();
       if (filetype == 'svg') {
