@@ -571,8 +571,8 @@
       layers.links = L.featureGroup();
       links.forEach(function (d) {
         if (!d.visible) return;
-        var source = nodes.find(node => node.id == d.source);
-        var target = nodes.find(node => node.id == d.target);
+        var source = nodes.find(node => node._id == d.source);
+        var target = nodes.find(node => node._id == d.target);
         if (source && target) {
           if (source._jlat && source._jlon && target._jlat && target._jlon) {
             layers.links.addLayer(L.polyline([[
@@ -632,10 +632,10 @@
 
     function clickHandler(e) {
       var node = e.sourceTarget.feature.properties;
-      var d = session.data.nodes.find(d => d.id == node.id);
+      var d = session.data.nodes.find(d => d.id == node._id);
       if (!e.originalEvent.ctrlKey) {
         session.data.nodes
-          .filter(node => node.id !== d.id)
+          .filter(node => node._id !== d.id)
           .forEach(node => node.selected = false);
       }
       d.selected = !d.selected;
@@ -885,8 +885,8 @@
       });
       MT.getVisibleLinks().forEach(function (d) {
         if (!d.visible) return;
-        var source = nodes.find(node => node.id == d.source);
-        var target = nodes.find(node => node.id == d.target);
+        var source = nodes.find(node => node._id == d.source);
+        var target = nodes.find(node => node._id == d.target);
         if (source && target) {
           if (source._lat && source._lon && target._lat && target._lon) {
             features.push({
