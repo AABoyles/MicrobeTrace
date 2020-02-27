@@ -12,14 +12,14 @@ onmessage = function(e){
     let targets = [];
     const nodeid = labels[i];
     const row = dm[nodeid];
-    for(let j = 0; j < i; j++){
+    for(let j = 0; j < n; j++){
       let cell = row[labels[j]];
       if(!cell) continue;
       let value = cell[metric];
       if(typeof value != 'number' || isNaN(value)) continue;
       if(value < minDist) minDist = value;
     }
-    for(let h = 0; h < i; h++){
+    for(let h = 0; h < n; h++){
       let node = labels[h];
       let cell = row[node];
       if(!cell) continue;
