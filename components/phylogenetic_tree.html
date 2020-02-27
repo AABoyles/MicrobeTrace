@@ -413,7 +413,7 @@
         let ncm = temp.style.nodeColorMap;
         tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
           let id = data.data.id;
-          let match = session.data.nodes.find(node => node.id == id);
+          let match = session.data.nodes.find(node => node._id == id);
           if (match) {
             return ncm(match[ncv]);
           } else {
@@ -459,10 +459,10 @@
       let n = d[0].data;
       e.preventDefault();
       if (e.ctrlKey) {
-        session.data.nodes.find(node => node.id == n.id).selected = !n.selected;
+        session.data.nodes.find(node => node._id == n.id).selected = !n.selected;
       } else {
         session.data.nodes.forEach(node => {
-          if (node.id == n.id) {
+          if (node._id == n.id) {
             node.selected = !n.selected;
           } else {
             node.selected = false;

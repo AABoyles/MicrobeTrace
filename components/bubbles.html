@@ -165,7 +165,7 @@
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 2)
         .on('click', function (d) {
-          let c = session.data.nodes.find(node => d.id == node.id);
+          let c = session.data.nodes.find(node => d.id == node._id);
           c.selected = !c.selected;
           $window.trigger('node-selected');
         });

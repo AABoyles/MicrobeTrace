@@ -357,10 +357,10 @@
 
   function clickHandler(e) {
     var node = e.sourceTarget.feature.properties;
-    var d = session.data.nodes.find(d => d.id == node.id);
+    var d = session.data.nodes.find(d => d.id == node._id);
     if (!e.originalEvent.ctrlKey) {
       session.data.nodes
-        .filter(node => node.id !== d.id)
+        .filter(node => node._id !== d.id)
         .forEach(node => node.selected = false);
     }
     d.selected = !d.selected;
