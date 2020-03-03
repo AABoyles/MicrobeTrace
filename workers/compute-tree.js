@@ -1,4 +1,5 @@
-importScripts('../vendor/patristic.min.js');
+// importScripts('../vendor/patristic.min.js');
+importScripts('../vendor/patristic.js');
 
 onmessage = function(e){
   let start = Date.now();
