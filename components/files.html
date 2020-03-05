@@ -1043,6 +1043,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
             let nodeIDs = [], nn = 0, nl = 0;
+
+            if (data[0][0]) {  // triangle matrix
+              let topNodeIDs = [''];
+              data.forEach((row, i) => {
+                const nodeID = row[0];
+                topNodeIDs.push(nodeID);
+              })
+              data.unshift(topNodeIDs);
+            }
+
             data.forEach((row, i) => {
               if (i == 0) {
                 nodeIDs = row;

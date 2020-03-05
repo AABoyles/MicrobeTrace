@@ -12,7 +12,6 @@ onmessage = function(e) {
       let rowsInChunk = result.data.length;
 
       if (result.data[0][0]) {  // triangle matrix
-        // create new row with 
         let topNodeIDs = [''];
         for (let rowInChunk = 0; rowInChunk < rowsInChunk; rowInChunk++) {
           const nodeID = result.data[rowInChunk][0];
