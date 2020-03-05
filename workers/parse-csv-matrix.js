@@ -10,6 +10,17 @@ onmessage = function(e) {
     fastMode: true,
     chunk: function(result) {
       const rowsInChunk = result.data.length;
+
+      if (result.data[0][0]) {  // triangle matrix
+        // create new row with 
+        let topNodeIDs = [''];
+        for (let rowInChunk = 0; rowInChunk < rowsInChunk; rowInChunk++) {
+          const nodeID = result.data[rowInChunk][0];
+          topNodeIDs.push(nodeID);
+        }
+        result.data.unshift(topNodeIDs);
+      }
+
       for (let rowInChunk = 0; rowInChunk < rowsInChunk; rowInChunk++) {
         const row = result.data[rowInChunk];
         if (nodeIDs) {
