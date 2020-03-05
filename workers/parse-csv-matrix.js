@@ -9,7 +9,7 @@ onmessage = function(e) {
     skipEmptyLines: "greedy",
     fastMode: true,
     chunk: function(result) {
-      const rowsInChunk = result.data.length;
+      let rowsInChunk = result.data.length;
 
       if (result.data[0][0]) {  // triangle matrix
         // create new row with 
@@ -19,6 +19,7 @@ onmessage = function(e) {
           topNodeIDs.push(nodeID);
         }
         result.data.unshift(topNodeIDs);
+        rowsInChunk++;
       }
 
       for (let rowInChunk = 0; rowInChunk < rowsInChunk; rowInChunk++) {
