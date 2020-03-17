@@ -269,6 +269,22 @@
                   <input id="tree-leaf-label-size" type="range" class="custom-range" min="1" max="32" value="6" step="1">
                 </div>
               </div>
+              <div class="form-group row" title="What field should be displayed as a label for the node?">
+                <div class="col-4"><label for="phylogenetic-node-label-variable">Label</label></div>
+                <div class="col-8">
+                  <select id="phylogenetic-node-label-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
+                <div class="col-4"><label for="phylogenetic-node-tooltip-variable">Tooltip</label></div>
+                <div class="col-8">
+                  <select id="phylogenetic-node-tooltip-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -511,7 +527,7 @@
         let e = d3.event;
         e.preventDefault();
         d3.select('#tooltip')
-          .text(d[0].data.id)
+          .text(e.target.getAttribute('title'))
           .style('top', e.pageY + 'px')
           .style('left', (e.pageX + 5) + 'px')
           .style('z-index', 1000)
@@ -526,6 +542,26 @@
         .style('opacity', 0)
         .on('end', () => tooltip.style('z-index', -1));
     }
+
+    $('#phylogenetic-node-label-variable').on('change', function () {
+      let labelVar = this.value;
+      tree.eachLeafLabel(label => {
+        d3.select(label).text(data => {
+          let id = data.data.id;
+          let node = session.network.nodes.find(node => node._id == id);
+          return node[labelVar];
+        }).attr('dx', 8)
+      });
+    });
+
+    $('#phylogenetic-node-tooltip-variable').on('change', function () {
+      let labelVar = this.value;
+      tree.eachLeafNode((circle, data) => {
+        let node = session.data.nodes.find(d => d.id == data.data.id);
+        d3.select(circle)
+          .attr('title', node[labelVar]);
+      });
+    });
 
     $('#toggle-tree-settings').on('click', function () {
       let pane = $('#tree-settings-pane');
