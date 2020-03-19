@@ -558,6 +558,8 @@
       let labelVar = this.value;
       tree.eachLeafNode((circle, data) => {
         let node = session.data.nodes.find(d => d.id == data.data.id);
+        if (node === undefined) 
+          node = session.data.nodes.find(d => d._id == data.data.id);
         d3.select(circle)
           .attr('title', node[labelVar]);
       });
@@ -863,6 +865,8 @@
     function tagSelected() {
       tree.eachLeafNode((circle, data) => {
         let node = session.data.nodes.find(d => d.id == data.data.id);
+        if (node === undefined) 
+          node = session.data.nodes.find(d => d._id == data.data.id);
         if (node.selected) {
           d3.select(circle)
             .style('stroke', session.style.widgets['selected-color'])
