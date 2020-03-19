@@ -1671,12 +1671,14 @@
         if (rule.selectorText == 'body') {  // issue #110
           extractedCSSText += rule.cssText.replace("body" , "text");;
         }
-        if (rule.selectorText == '.nodes path.selected') {  // issue #156
-          extractedCSSText += rule.cssText;
-        }
+        // if (rule.selectorText == '.nodes path.selected') {  // issue #156
+        //   extractedCSSText += rule.cssText;
+        // }
       }
     }
-  
+    
+    extractedCSSText += ".nodes path.selected { stroke: rgb(255, 131, 0); stroke-width: 4px; }";  // issue #201
+
     let styleElement = document.createElement("style");
     styleElement.setAttribute("type", "text/css");
     styleElement.innerHTML = extractedCSSText;
