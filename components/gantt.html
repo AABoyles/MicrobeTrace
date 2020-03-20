@@ -117,6 +117,7 @@
     context.font = "1rem" + window.getComputedStyle(document.body).fontFamily;
     let measureText = 0;
     session.data.nodes.filter(d => d.visible).forEach(d => {
+      d.id = d.id === undefined ? d._id : d.id;
       if(d.id) {
         const _measureText = context.measureText(d.id.trim()).width;
         _measureText > measureText && (measureText = Math.ceil(_measureText) )
@@ -176,6 +177,7 @@
         let endField = $el.find(`#date-${dateid}-end`).val();
         if (endField == 'None') endField = startField;
         session.data.nodes.filter(d => d.visible).forEach(d => {
+          d.id = d.id === undefined ? d._id : d.id;
           let startDate, endDate;
           if (typeof d[startField] == 'number') {
             startDate = moment((d[startField] - 25567) * 24 * 60 * 60 * 1000);
