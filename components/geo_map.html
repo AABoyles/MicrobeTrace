@@ -539,6 +539,7 @@
         if (!d._jlat || !d._jlon) continue;
         features.push(L.circleMarker(L.latLng(d._jlat, d._jlon), {
           weight: 1,
+          opacity: opacity,
           color: d.selected ? selectedColor : '#000000',
           fillColor: colorVariable == 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
           fillOpacity: opacity,
