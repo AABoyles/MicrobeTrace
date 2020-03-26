@@ -976,6 +976,33 @@
     });
   };
   
+  MT.computeMST = () => {
+    return new Promise((resolve, reject) => {
+      let nnMachine = new Worker("workers/compute-mst.js");
+      nnMachine.onmessage = response => {
+        if (response.data == "Error") {
+          return reject("MST washed out");
+        }
+        let output = new Uint8Array(response.data.links);
+        console.log("MST Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+        const start = Date.now();
+        let links = session.data.links;
+        const numLinks = links.length;
+        for (let i = 0; i < numLinks; i++) {
+          links[i].nn = output[i] ? true : false;
+        }
+        console.log("MST Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+        resolve();
+      };
+      nnMachine.postMessage({
+        links: session.data.links,
+        matrix: temp.matrix,
+        epsilon: session.style.widgets["filtering-epsilon"],
+        metric: session.style.widgets['link-sort-variable']
+      });
+    });
+  };
+
   MT.computeNN = () => {
     return new Promise((resolve, reject) => {
       let nnMachine = new Worker("workers/compute-nn.js");
@@ -1043,7 +1070,8 @@
   
   MT.runHamsters = async () => {
     if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation();
-    MT.computeNN();
+    // MT.computeNN();
+    MT.computeMST();
     await MT.computeTree();
     if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
     MT.finishUp();

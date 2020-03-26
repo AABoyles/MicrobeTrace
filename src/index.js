@@ -218,7 +218,7 @@ $(function() {
       );
       $("#filtering-epsilon-row").css("display", "flex");
       session.style.widgets["link-show-nn"] = true;
-      updateNetwork();
+      MT.computeMST(session.style.widgets["default-distance-metric"]).then(updateNetwork);
     });
 
   $("#filtering-epsilon")
