@@ -218,7 +218,7 @@ $(function() {
       );
       $("#filtering-epsilon-row").css("display", "flex");
       session.style.widgets["link-show-nn"] = true;
-      MT.computeMST(session.style.widgets["default-distance-metric"]).then(updateNetwork);
+      updateNetwork();
     });
 
   $("#filtering-epsilon")
@@ -229,7 +229,11 @@ $(function() {
     })
     .on("change", function() {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
-      MT.computeNN(session.style.widgets["default-distance-metric"]).then(updateNetwork);
+      $("#filtering-epsilon-copy").val(
+        Math.pow(10, parseFloat(this.value)).toLocaleString()
+      );
+      // MT.computeNN(session.style.widgets["default-distance-metric"]).then(updateNetwork);
+      MT.computeMST(session.style.widgets["default-distance-metric"]).then(updateNetwork);
     });
 
   $("#cluster-minimum-size").on("change", function() {
