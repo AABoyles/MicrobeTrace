@@ -33,7 +33,7 @@ onmessage = function(e){
 
     for (let i = 0; i < n; i++) {
       const source = map[i];
-        nng[i].push(mst[i]);
+        // nng[i].push(mst[i]);
         Array.from(new Set(nng[i])).forEach((u, index) => {
           const target = map[u];
           for(let k = 0; k < m; k++){
