@@ -27,7 +27,7 @@ onmessage = function(e){
         matrix.push(targets);
         map.push(nodeid);
     }
-    const mst =  primMST(matrix);
+    const mst = primMST(matrix);
     for (let i = 0; i < n; i++) {
       const source = map[i];
       const target = map[mst[i]];
@@ -42,6 +42,7 @@ onmessage = function(e){
     postMessage({links: output.buffer, start: Date.now()}, [output.buffer]);
     close();
 };
+
 const minKey = (key, mstSet, V) => {
     let min = Number.MAX_VALUE;
     let min_index = -1;
@@ -52,6 +53,7 @@ const minKey = (key, mstSet, V) => {
         }
     return min_index;
 }
+
 const primMST = (graph) => {
     const V = graph.length;
     let parent = [];
@@ -66,6 +68,9 @@ const primMST = (graph) => {
     for (let count = 0; count < V-1; count++) {
         let u = minKey(key, mstSet, V);
         mstSet[u] = true;
+
+        if (graph[u].reduce((a, b) => a + b, 0) == 0) continue;
+
         for (let v = 0; v < V; v++) {
             if (graph[u][v] >= 0 && !mstSet[v] && graph[u][v] <  key[v]) {
                 parent[v]  = u;
