@@ -147,6 +147,7 @@
     "node-symbol-variable": "None",
     "node-tooltip-variable": "_id",
     "physics-tree-branch-type": "Straight",
+    "physics-tree-branch-length": 50,
     "physics-tree-charge": 30,
     "physics-tree-friction": 0.05,
     "physics-tree-gravity": 0.05,
