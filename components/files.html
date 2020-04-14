@@ -423,7 +423,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       } else {
         Papa.parse(file.contents, {
           delimiter: ",",
-          newline: "\r\n",
+          // newline: "\r\n",
           header: true,
           preview: 1,
           complete: output => addTableTile(output.meta.fields.map(filterXSS))
@@ -935,7 +935,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
             Papa.parse(file.contents, {
               delimiter: ",",
-              newline: "\r\n",
+              // newline: "\r\n",
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
@@ -1010,7 +1010,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
             Papa.parse(file.contents, {
               delimiter: ",",
-              newline: "\r\n",
+              // newline: "\r\n",
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
