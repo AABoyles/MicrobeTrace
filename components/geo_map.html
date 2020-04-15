@@ -717,6 +717,8 @@
       //Foreground Layers, in order:
       if (layers.links && session.style.widgets['map-link-show']) layers.links.bringToFront();
       if (layers.nodes && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
+
+      drawNodes();
     }
 
     $('#map-node-show').parent().on('click', function () {
@@ -777,7 +779,8 @@
     });
     $('#map-counties-hide').parent().on('click', function () {
       session.style.widgets['map-counties-show'] = false;
-      layers.counties.remove();
+      layers && layers.counties && layers.counties.remove();
+      // layers.counties.remove();
     });
 
     $('#map-basemap-show').parent().on('click', function () {
