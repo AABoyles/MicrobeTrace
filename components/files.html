@@ -484,7 +484,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         function matchHeaders(type) {
           const these = $(`[data-file='${file.name}'] select`);
           const a = type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-            b = type == 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+            b = type == 'node' ? ['SEQUENCE', 'SEQ', 'SEQS', 'Sequence', 'Seqs', 'sequence', 'seq', 'seqs'] : ['TARGET', 'Target', 'target'],
             c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
           [a, b, c].forEach((list, i) => {
             $(these.get(i)).val("None");
