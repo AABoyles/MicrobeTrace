@@ -92,21 +92,34 @@
       let data_type = $('input[name=table-dataset]:checked').data('value');
       let columns = $('#table-columns').val();
       table = new Tabulator("#table", {
-       	height: "calc(100% - 60px) !important",
-       	layout: "fitColumns",
-       	columns: columns.map(c => ({title: MT.titleize(c), field: c})),
-       	rowClick: function(e, row){
-       		let entity = row.getData();
+        height: "calc(100% - 60px) !important",
+        layout: "fitColumns",
+        columns: columns.map(c => ({title: MT.titleize(c), field: c})),
+        rowClick: function(e, row){
+          let entity = row.getData();
           entity.selected = !entity.selected;
           if(entity.selected){
             $(row.getElement()).css("background", session.style.widgets['selected-color']);
+            row.freeze();
+          } else {
+            $(row.getElement()).css("background", "");
+            row.unfreeze();
           }
-          $window.trigger('node-selected');
-       	},
+          $window.trigger('node-selected', 'table');
+        },
         rowFormatter: function(row){
           if(row.getData().selected){
             $(row.getElement()).css("background", session.style.widgets['selected-color']);
           }
+        },
+        dataLoaded: function(data) {
+          var rows = this.getRows();
+          rows.forEach(function(row){
+            let entity = row.getData();
+            if (entity.selected) {
+              row.freeze();
+            }
+          });
         }
       });
       table.setData(session.data[data_type]);
@@ -185,7 +198,12 @@
 
     $window
       .on('link-visibility', updateTable)
-      .on('node-selected', updateData)
+      // .on('node-selected', updateData)
+      .on('node-selected', function(event, view) {
+        if (view != 'table') {
+          updateTable();
+        } 
+      })
       .on('selected-color-change', updateTable);
 
     updateColumns();
