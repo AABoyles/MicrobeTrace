@@ -463,6 +463,8 @@
     $("#launch").prop("disabled", true);
     session.files = oldSession.files;
     session.state = oldSession.state;
+    session.style = oldSession.style;
+    session.layout = oldSession.layout;
     session.meta.startTime = Date.now();
     const nodes = oldSession.data.nodes,
           links = oldSession.data.links,
@@ -482,7 +484,7 @@
         session.style.widgets['link-sort-variable'] = 'snps';
       }
     }
-    MT.finishUp();
+    MT.finishUp(true);
   };
   
   MT.applyStyle = style => {
@@ -1078,7 +1080,7 @@
     MT.finishUp();
   };
   
-  MT.finishUp = async () => {
+  MT.finishUp = async (oldSession) => {
     clearTimeout(temp.messageTimeout);
     ["node", "link"].forEach(v => {
       let n = session.data[v + "s"].length;
@@ -1121,7 +1123,14 @@
     $("#SettingsTab").attr("data-target", "#global-settings-modal");
     session.meta.loadTime = Date.now() - session.meta.startTime;
     console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
-    MT.launchView(session.style.widgets['default-view']);
+    // MT.launchView(session.style.widgets['default-view']);
+    if (oldSession) {
+      layout.root.contentItems[0].remove();
+      console.log('session.layout', session.layout);
+      setTimeout(() => MT.loadLayout(session.layout), 80);
+    } else {
+      MT.launchView(session.style.widgets['default-view']);
+    }
     MT.tagClusters().then(() => {
       MT.setClusterVisibility(true);
       MT.setLinkVisibility(true);
