@@ -1,6 +1,6 @@
 (function(self){
   'use strict';
-  
+
   let MT = {};
   
   MT.dataSkeleton = () => ({
@@ -95,6 +95,8 @@
     "histogram-variable": "links-distance",
     "infer-directionality-false": true,
     "link-color": "#a6cee3",
+    "link-color-table-name-sort": "DESC",
+    "link-color-table-counts-sort": "DESC",
     "link-color-table-counts": true,
     "link-color-table-frequencies": false,
     "link-color-variable": "None",
@@ -133,6 +135,8 @@
     "network-gravity": 0.05,
     "node-charge": 200,
     "node-color": "#1f77b4",
+    "node-color-table-name-sort": "DESC",
+    "node-color-table-counts-sort": "DESC",
     "node-color-table-counts": true,
     "node-color-table-frequencies": false,
     "node-color-variable": "None",
