@@ -413,12 +413,12 @@ $(function() {
   });
 
   MT.tabulate = (data, columns, wrapper, container) => {
-    var foreignObj = d3.select(container).append("svg:foreignObject")
+    let foreignObj = d3.select(container).append("svg:foreignObject")
       .attr("x", wrapper.offsetLeft)
       .attr("y", wrapper.offsetTop-60)
       .attr("width", wrapper.offsetWidth)
       .attr("height", wrapper.offsetHeight);
-    var body = foreignObj 
+    let body = foreignObj 
       .append("xhtml:body")
       .append("table")
       .style('position', 'absolute')
@@ -428,30 +428,30 @@ $(function() {
       .attr('cellpadding', '1px')
       .attr("class", "table-bordered");
       // .html(nodeColorTable.innerHTML); SVG doesn't translate
-    var thead = body.append("thead"),
+    let thead = body.append("thead"),
         tbody = body.append("tbody");
     thead.append("tr")
       .selectAll("th")
       .data(columns)
       .enter()
       .append("th")
-          .text(function(column) { return column; });
-    var rows = tbody.selectAll("tr")
+      .text(function(column) { return column; });
+    let rows = tbody.selectAll("tr")
       .data(data)
       .enter()
       .append("tr");
-    var cells = rows.selectAll("td")
+    let cells = rows.selectAll("td")
       .data(function(row) {
-          return columns.map(function(column) {
-              return {column: column, value: row[column.split(" ")[0]]};
-          });
+        return columns.map(function(column) {
+            return {column: column, value: row[column.split(" ")[0]]};
+        });
       })
       .enter()
       .append("td")
-          .html(function(d) { return d.value; });
+      .html(function(d) { return d.value; });
     return foreignObj;
   }
-  
+
   $("#node-color-variable")
     .val(session.style.widgets["node-color-variable"])
     .on("change", function() {
