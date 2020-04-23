@@ -422,6 +422,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         addTableTile(headers);
       } else {
         Papa.parse(file.contents, {
+          delimiter: ",",
+          // newline: "\r\n",
           header: true,
           preview: 1,
           complete: output => addTableTile(output.meta.fields.map(filterXSS))
@@ -482,7 +484,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         function matchHeaders(type) {
           const these = $(`[data-file='${file.name}'] select`);
           const a = type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-            b = type == 'node' ? ['SEQUENCE', 'SEQ', 'Sequence', 'sequence', 'seq'] : ['TARGET', 'Target', 'target'],
+            b = type == 'node' ? ['SEQUENCE', 'SEQ', 'SEQS', 'Sequence', 'Seqs', 'sequence', 'seq', 'seqs'] : ['TARGET', 'Target', 'target'],
             c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
           [a, b, c].forEach((list, i) => {
             $(these.get(i)).val("None");
@@ -524,9 +526,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           updateMetadata(file);
         }
 
-        $(`#file-${file.name}-field-1`).change(() => updateMetadata(file));
-        $(`#file-${file.name}-field-2`).change(() => updateMetadata(file));
-        $(`#file-${file.name}-field-3`).change(() => updateMetadata(file));
+        // $(`#file-${file.name}-field-1`).change(() => updateMetadata(file));
+        // $(`#file-${file.name}-field-2`).change(() => updateMetadata(file));
+        // $(`#file-${file.name}-field-3`).change(() => updateMetadata(file));
+        document.getElementById(`file-${file.name}-field-1`).addEventListener('change', (event) => {
+          updateMetadata(file)
+        });
+        document.getElementById(`file-${file.name}-field-2`).addEventListener('change', (event) => {
+          updateMetadata(file)
+        });
+        document.getElementById(`file-${file.name}-field-3`).addEventListener('change', (event) => {
+          updateMetadata(file)
+        });
+
         $(`[name="options-${file.name}"]`).change(refit);
         refit();
       }
@@ -804,14 +816,25 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#launch').on('click', () => {
       session.meta.startTime = Date.now();
       $('#launch').prop('disabled', true);
-      session.messages = [];
-      $('#loading-information').html('');
+      document.getElementById('loading-information').innerHTML="<p>Processing file(s)...</p>";
+      new Promise(function(resolve, reject) {
+        $('#loading-information-modal').on('shown.bs.modal', function (e) {
+          session.messages = [];
+          $('#loading-information').html('');
+          resolve("done");
+        });
+        $('#loading-information-modal').modal({
+          backdrop: false,
+          keyboard: false
+        });
+        setTimeout(() => reject(new Error("Problem loading information modal!")), 5000);  
+      }).then(
+        result => launch(), // 
+        error => {alert(error); launch(); } // informational modal doesn't load
+      );
+    })
 
-      $('#loading-information-modal').modal({
-        backdrop: false,
-        keyboard: false
-      });
-
+    const launch = async () => {
       temp.messageTimeout = setTimeout(() => {
         $('#loadCancelButton').slideDown();
         alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
@@ -860,7 +883,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let safeLink = {};
             for (let i = 0; i < n; i++) {
               let key = filterXSS(keys[i]);
-              safeLink[key] = filterXSS(link[key]);
+              safeLink[key] =  (typeof link[key] === 'string')  ?   filterXSS(link[key]) : link[key];  // #195
               if (!session.data.linkFields.includes(key)) {
                 session.data.linkFields.push(key);
               }
@@ -911,6 +934,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           } else {
 
             Papa.parse(file.contents, {
+              delimiter: ",",
+              // newline: "\r\n",
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
@@ -984,6 +1009,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           } else {
 
             Papa.parse(file.contents, {
+              delimiter: ",",
+              // newline: "\r\n",
               header: true,
               dynamicTyping: true,
               skipEmptyLines: true,
@@ -999,7 +1026,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   if (!session.data.nodeFields.includes(safeKey)) {
                     session.data.nodeFields.push(safeKey);
                   }
-                  safeNode[safeKey] = filterXSS(node[key]);
+                  // safeNode[safeKey] = filterXSS(node[key]);
+                  safeNode[safeKey] =  (typeof node[key] === 'string')  ?   filterXSS(node[key]) : node[key]; //#173
+
                 });
                 m += MT.addNode(safeNode, check);
               },
@@ -1020,6 +1049,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
             let nodeIDs = [], nn = 0, nl = 0;
+
+            if (data[0][0]) {  // triangle matrix
+              let topNodeIDs = [''];
+              data.forEach((row, i) => {
+                const nodeID = row[0];
+                topNodeIDs.push(nodeID);
+              })
+              data.unshift(topNodeIDs);
+            }
+
             data.forEach((row, i) => {
               if (i == 0) {
                 nodeIDs = row;
@@ -1137,6 +1176,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         message(` - Found ${k} New Links from Genomic Proximity`);
         MT.runHamsters();
       };
-    });
+    };
   })();
 </script>

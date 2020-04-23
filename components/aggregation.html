@@ -89,6 +89,7 @@
       let n = rawdata.length;
       rawdata.forEach(row => {
         let val = row[column];
+        if (val === null) val = '_Unknown';
         if (values.includes(val)) {
           tabledata[values.indexOf(val)].n++;
         } else {

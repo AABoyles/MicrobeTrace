@@ -105,7 +105,8 @@
         .histogram()
         .value(d => d[field])
         .domain(x.domain())
-        .thresholds(d3.thresholdFreedmanDiaconis);
+        .thresholds(d3.thresholdScott); 
+        // .thresholds(d3.thresholdFreedmanDiaconis);  #205
 
       svg = d3
         .select("#timeline")
