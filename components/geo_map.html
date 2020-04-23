@@ -920,11 +920,14 @@
     $('#map-export').on('click', function () {
       var format = $('#map-export-file-format').val();
       if (['png', 'jpeg', 'webp'].includes(format)) {
-        leafletImage(map, function (err, canvas) {
-          canvas.toBlob(blob => {
-            saveAs(blob, $('#map-export-file-name').val() + '.' + format);
-          }, 'image/' + format);
-        });
+        document.getElementById('map-collapsing-off').click();
+        setTimeout(() => {
+          leafletImage(map, function (err, canvas) {
+            canvas.toBlob(blob => {
+              saveAs(blob, $('#map-export-file-name').val() + '.' + format);
+            }, 'image/' + format);
+          });
+        }, 500); 
       } else if (format == 'geojson') {
         saveAs(
           new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
