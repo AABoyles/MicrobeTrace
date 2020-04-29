@@ -1124,7 +1124,7 @@
         .ondismiss(() => window.location.reload());
     }
     MT.setLinkVisibility(true);
-    $("#SettingsTab").attr("data-target", "#global-settings-modal");
+    // $("#SettingsTab").attr("data-target", "#global-settings-modal");
     session.meta.loadTime = Date.now() - session.meta.startTime;
     console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
     // MT.launchView(session.style.widgets['default-view']);
@@ -1509,7 +1509,7 @@
   
   MT.reset = () => {
     $("#network-statistics-hide").parent().trigger("click");
-    $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
+    // $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
     self.session = MT.sessionSkeleton();
     layout.unbind("stateChanged");
     layout.root.replaceChild(layout.root.contentItems[0], {
