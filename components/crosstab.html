@@ -126,10 +126,11 @@
           data.push(newRow);
         }
       });
+      let sValues = xValues.map(String);
       var crosstab = new Tabulator("#crosstab", {
         layout: "fitColumns",
         data: data,
-        columns: [{ title: "", field: "col", cssClass: 'font-weight-bold' }].concat(xValues.map(x => ({ title: MT.titleize(x + ''), field: x })))
+        columns: [{ title: "", field: "col", cssClass: 'font-weight-bold' }].concat(sValues.map(x => ({ title: MT.titleize(x + ''), field: x })))
       });
     }
 
