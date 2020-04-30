@@ -329,6 +329,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
 <script>
   (function () {
+    ga('set', 'page', '/files');
+    ga('set', 'title', 'Files View');
+    ga('send', 'pageview');
+
     'use strict';
 
     $('#file-panel').parent().css('z-index', 1000);
@@ -723,6 +727,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     });
 
     $('#default-distance-metric').change(function () {
+      ga('send', 'event', 'default-distance-metric', 'update', this.value);
       const lsv = this.value;
       localStorage.setItem('default-distance-metric', lsv);
       $('#default-distance-metric').val(lsv);

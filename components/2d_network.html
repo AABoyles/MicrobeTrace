@@ -433,6 +433,9 @@ Note that this may cause slow performance on larger networks.">
 
 <script>
   (() => {
+    ga('set', 'page', '/2d_network');
+    ga('set', 'title', '2D View');
+    ga('send', 'pageview');
 
     let halfWidth = $('#network').parent().width() / 2,
       halfHeight = $('#network').parent().parent().parent().height() / 2,
@@ -1273,6 +1276,7 @@ Note that this may cause slow performance on larger networks.">
     }).trigger('input');
 
     $('#network-export').on('click', function () {
+      ga('send', 'event', '2D-network-export', 'trigger', 'on');
       let network = document.getElementById('network');
       let $network = $(network);
       let watermark = d3.select(network).append('image')

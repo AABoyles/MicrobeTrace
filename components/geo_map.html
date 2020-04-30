@@ -363,6 +363,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/geo_map');
+    ga('set', 'title', 'Geo Map View');
+    ga('send', 'pageview');
+
     if (navigator.onLine) {
       $('#map').parent().find('.ifOnline').css('display', 'flex');
     }

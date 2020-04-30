@@ -126,6 +126,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/histogram');
+    ga('set', 'title', 'Histogram View');
+    ga('send', 'pageview');
+
     let plot;
 
     function redrawHistogram() {

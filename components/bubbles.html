@@ -120,6 +120,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/bubbles');
+    ga('set', 'title', 'Bubbles View');
+    ga('send', 'pageview');
+    
     let width, height, center, simulation, vnodes,
       svg = d3.select('#bubbles');
 

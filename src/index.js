@@ -213,6 +213,7 @@ $(function() {
   $("#link-show-nn")
     .parent()
     .on("click", () => {
+      ga('send', 'event', 'nearest-neighbor', 'trigger', 'on');
       $("#filtering-epsilon-copy").val(
         Math.pow(10, parseFloat($("#filtering-epsilon").val())).toLocaleString()
       );
@@ -337,6 +338,7 @@ $(function() {
   });
 
   $("#link-threshold").on("change", function() {
+    ga('send', 'event', 'threshold', 'update', this.value);
     session.style.widgets["link-threshold"] = parseFloat(this.value);
     MT.setLinkVisibility(true);
     MT.tagClusters().then(() => {
