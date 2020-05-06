@@ -1149,7 +1149,7 @@
         interval: setInterval(() => {
           let newTime = Date.now();
           localStorage.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
-          localSorage.removeItem("stash-" + temp.autostash.time + "-autostash");
+          localStorage.removeItem("stash-" + temp.autostash.time + "-autostash");
           temp.autostash.time = newTime;
         }, 60000)
       };
@@ -1171,6 +1171,7 @@
     if (small == "2d network") return "2D Network";
     if (small == "3d network") return "3D Network";
     if (small == "geo map") return "Map";
+    if (small == "timeline") return "Epi Curve";
     if (small == "nn") return "Nearest Neighbor";
     return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
   };

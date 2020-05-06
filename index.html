@@ -24,6 +24,14 @@
   <link rel="stylesheet" type="text/css" href="dist/main.css">
   <link rel="preload" as="script" href="dist/bundle.primary.js">
   <link rel="preload" as="font" href="fonts/open-iconic.woff" crossorigin="anonymous">
+  <script>
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+  </script>
 </head>
 
 <body>
@@ -68,7 +76,7 @@
           <a href="#" class="dropdown-item viewbutton" data-href="choropleth">Choropleth</a>
           <a href="#" class="dropdown-item viewbutton" data-href="globe">Globe</a>
           <a href="#" class="dropdown-item viewbutton" data-href="gantt">Gantt</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="timeline">Timeline</a>
+          <a href="#" class="dropdown-item viewbutton" data-href="timeline">Epi Curve</a>
           <a href="#" class="dropdown-item viewbutton" data-href="heatmap">Heatmap</a>
           <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
           <a href="#" class="dropdown-item viewbutton" data-href="physics_tree">Physics Tree</a>
@@ -584,6 +592,7 @@ performance of this software.</pre>
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'UA-116308624-1');
+    window.ga('create', 'UA-116308624-1', 'auto');
   </script>
   <script src="dist/bundle.primary.js" charset="utf-8"></script>
   <script src="dist/common.js" async charset="utf-8"></script>

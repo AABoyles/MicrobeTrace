@@ -1,5 +1,8 @@
 <div id="file-panel" class="container-fluid">
   <div id="file-table" class="container">
+    <p id="warning-prompt" class="text-muted"> If you're having a problem with MicrobeTrace, please 
+      <a target="_blank" href="https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting---Caching" style="font-weight: bold;text-decoration:underline">troubleshoot caching</a>. 
+    </p>
     <p id="file-prompt" class="text-muted">Drag-and-Drop Files here, or click "Add File(s)" to load data.</p>
   </div>
 </div>
@@ -329,6 +332,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
 <script>
   (function () {
+    ga('set', 'page', '/files');
+    ga('set', 'title', 'Files View');
+    ga('send', 'pageview');
+
     'use strict';
 
     $('#file-panel').parent().css('z-index', 1000);
@@ -343,7 +350,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     });
 
     if (session.files.length > 0) {
-      $('#file-prompt').remove();
+      $('#file-prompt, #warning-prompt').remove();
       session.files.forEach(addToTable);
     }
 
@@ -363,7 +370,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function processFiles(files){
       const n = files.length;
-      $('#file-prompt').remove();
+      $('#file-prompt, #warning-prompt').remove();
       for (let i = 0; i < n; i++) processFile(files[i]);
       $('#launch').prop('disabled', false).focus();
     }
@@ -723,6 +730,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     });
 
     $('#default-distance-metric').change(function () {
+      ga('send', 'event', 'default-distance-metric', 'update', this.value);
       const lsv = this.value;
       localStorage.setItem('default-distance-metric', lsv);
       $('#default-distance-metric').val(lsv);
@@ -774,7 +782,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       .trigger('change');
 
     $('#generate-sequences').on('click', () => {
-      $('#file-prompt').remove();
+      $('#file-prompt, #warning-prompt').remove();
       $('#launch').prop('disabled', false).focus();
       processFile(new File([Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', parseFloat($('#generate-number').val()), 20))], 'generatedNodes.csv'));
     });
