@@ -1149,7 +1149,7 @@
         interval: setInterval(() => {
           let newTime = Date.now();
           localStorage.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
-          localSorage.removeItem("stash-" + temp.autostash.time + "-autostash");
+          localStorage.removeItem("stash-" + temp.autostash.time + "-autostash");
           temp.autostash.time = newTime;
         }, 60000)
       };
