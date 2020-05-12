@@ -1076,7 +1076,7 @@
   };
   
   MT.runHamsters = async () => {
-    if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation();
+    // if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation(); #236
     // MT.computeNN();
     MT.computeMST();
     await MT.computeTree();
