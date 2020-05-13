@@ -125,6 +125,8 @@
       if(d.id && isNaN(d.id)) {
         const _measureText = context.measureText(d.id.trim()).width;
         _measureText > measureText && (measureText = Math.ceil(_measureText) )
+      } else {
+        measureText = 25;
       }
     });
     margin.left = measureText + 5;
