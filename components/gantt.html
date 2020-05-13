@@ -122,7 +122,7 @@
     let measureText = 0;
     session.data.nodes.filter(d => d.visible).forEach(d => {
       d.id = d.id === undefined ? d._id : d.id;
-      if(d.id) {
+      if(d.id && isNaN(d.id)) {
         const _measureText = context.measureText(d.id.trim()).width;
         _measureText > measureText && (measureText = Math.ceil(_measureText) )
       }
