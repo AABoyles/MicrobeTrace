@@ -1521,7 +1521,8 @@ Note that this may cause slow performance on larger networks.">
       brush.extent(brush.extent());
     });
 
-    // if (session.files.length > 1) $('#link-color-variable').val('origin').change(); #222
+    let linkColorVariable = session.style.widgets["link-color-variable"] === 'None' ? 'origin' : session.style.widgets["link-color-variable"];
+    if (session.files.length > 1) $('#link-color-variable').val(linkColorVariable).change(); 
     if (settings['background-color']) $('#network').css('background-color', settings['background-color']);
     render();
 
