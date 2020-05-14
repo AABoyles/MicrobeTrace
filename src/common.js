@@ -985,8 +985,8 @@
   
   MT.computeMST = () => {
     return new Promise((resolve, reject) => {
-      let nnMachine = new Worker("workers/compute-mst.js");
-      nnMachine.onmessage = response => {
+      let mstMachine = new Worker("workers/compute-mst.js");
+      mstMachine.onmessage = response => {
         if (response.data == "Error") {
           return reject("MST washed out");
         }
@@ -1001,7 +1001,11 @@
         console.log("MST Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
-      nnMachine.postMessage({
+      mstMachine.onerror = (e) => {
+        console.log(e);
+        resolve();
+      };
+      mstMachine.postMessage({
         links: session.data.links,
         matrix: temp.matrix,
         epsilon: session.style.widgets["filtering-epsilon"],
@@ -1076,7 +1080,7 @@
   };
   
   MT.runHamsters = async () => {
-    if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation();
+    // if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation(); #236
     // MT.computeNN();
     MT.computeMST();
     await MT.computeTree();

@@ -135,7 +135,7 @@
           </div>
         </div>
       </div>
-      <div class="form-group row" title="Would you like to attempt to triangulate missing values in your distance matrices?">
+      <!-- <div class="form-group row" title="Would you like to attempt to triangulate missing values in your distance matrices?">
         <div class="col-4">Triangulation</div>
         <div class="col-8">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -147,7 +147,7 @@
             </label>
           </div>
         </div>
-      </div>
+      </div> -->
       <div class="form-group row"
         title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
 Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
@@ -418,7 +418,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const isNode = file.name.toLowerCase().includes('node');
       if (isXL) {
         let workbook = XLSX.read(file.contents, { type: 'array' });
-        let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
         let headers = [];
         data.forEach(row => {
           Object.keys(row).forEach(key => {
@@ -908,7 +908,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           if (file.extension == 'xls' || file.extension == 'xlsx') {
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
-            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
             data.map(forEachLink);
             message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
             let n = 0, t = 0;
@@ -994,7 +994,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           if (file.extension == 'xls' || file.extension == 'xlsx') {
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
-            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
             data.forEach(node => {
               let safeNode = {
                 _id: filterXSS('' + node[file.field1]),
@@ -1055,7 +1055,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           if (file.extension == 'xls' || file.extension == 'xlsx') {
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
-            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1, raw: false, dateNF: 'yyyy-mm-dd'});
             let nodeIDs = [], nn = 0, nl = 0;
 
             if (data[0][0]) {  // triangle matrix

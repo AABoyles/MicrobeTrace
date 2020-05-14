@@ -620,6 +620,7 @@ Note that this may cause slow performance on larger networks.">
         }
       });
       force.force('link').links(vlinks);
+      force.force('link').distance(settings['link-length']);
       force.alpha(0.3).alphaTarget(0).restart();
       $('#node-symbol-variable').trigger('change');
       console.log("Network render time:", (Date.now() - start).toLocaleString(), 'ms');
