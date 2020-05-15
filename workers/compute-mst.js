@@ -33,16 +33,16 @@ onmessage = function(e){
 
     for (let i = 0; i < n; i++) {
       const source = map[i];
-        nng[i].push(mst[i]);
-        Array.from(new Set(nng[i])).forEach((u, index) => {
-          const target = map[u];
-          for(let k = 0; k < m; k++){
-            let l = links[k];
-            if((l.source == source && l.target == target) || (l.source == target && l.target == source)) {
-              output[k] = 1;
-            }
+      nng[i].push(mst[i]);
+      Array.from(new Set(nng[i])).forEach((u, index) => {
+        const target = map[u];
+        for(let k = 0; k < m; k++){
+          let l = links[k];
+          if((l.source == source && l.target == target) || (l.source == target && l.target == source)) {
+            output[k] = 1;
           }
-        })
+        }
+      })
     }
     console.log('MST Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
     postMessage({links: output.buffer, start: Date.now()}, [output.buffer]);
@@ -50,44 +50,43 @@ onmessage = function(e){
 };
 
 const minKey = (key, mstSet, V) => {
-    let min = Number.MAX_VALUE;
-    let min_index = -1;
-    for (let v = 0; v < V; v++)
-        if (!mstSet[v] && key[v] < min) {
-            min = key[v];
-            min_index = v;
-        }
-    return min_index;
+  let min = Number.MAX_VALUE;
+  let min_index = -1;
+  for (let v = 0; v < V; v++)
+    if (!mstSet[v] && key[v] < min) {
+        min = key[v];
+        min_index = v;
+    }
+  return min_index;
 }
 
 const primMST = (graph) => {
-    const V = graph.length;
-    let parent = [];
-    let key = [];
-    let mstSet = [];
-    for (let i = 0; i < V; i++) {
-        key[i] = Number.MAX_VALUE;
-        mstSet[i] = false;
-    }
-    key[0] = 0.0; 
-    parent[0] = -1;
-    for (let count = 0; count < V-1; count++) {
-        let u = minKey(key, mstSet, V);
-        if (u < 0) continue;
-        mstSet[u] = true;
+  const V = graph.length;
+  let parent = [];
+  let key = [];
+  let mstSet = [];
+  for (let i = 0; i < V; i++) {
+      key[i] = Number.MAX_VALUE;
+      mstSet[i] = false;
+  }
+  key[0] = 0.0; 
+  parent[0] = -1;
+  for (let count = 0; count < V-1; count++) {
+      let u = minKey(key, mstSet, V);
+      if (u < 0) continue;
+      mstSet[u] = true;
 
-        if (graph[u].reduce((a, b) => a + b, 0) === 0 && u != 0) continue;
+      if (graph[u].reduce((a, b) => a + b, 0) === 0 && u != 0) continue;
 
-        for (let v = 0; v < V; v++) {
-            if (graph[u][v] >= 0 && !mstSet[v] && graph[u][v] <  key[v]) {
-                parent[v]  = u;
-                key[v] = graph[u][v];
-            }
-        }
-    }
-    return parent;
+      for (let v = 0; v < V; v++) {
+          if (graph[u][v] >= 0 && !mstSet[v] && graph[u][v] <  key[v]) {
+              parent[v]  = u;
+              key[v] = graph[u][v];
+          }
+      }
+  }
+  return parent;
 }
-
 
 const nearest_neighbour_graph = (graph, mst_parents, epsilon) => {
   const V = graph.length;
