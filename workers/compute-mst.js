@@ -73,9 +73,10 @@ const primMST = (graph) => {
     parent[0] = -1;
     for (let count = 0; count < V-1; count++) {
         let u = minKey(key, mstSet, V);
+        if (u < 0) continue;
         mstSet[u] = true;
 
-        if (graph[u].reduce((a, b) => a + b, 0) === 0) continue;
+        if (graph[u].reduce((a, b) => a + b, 0) === 0 && u != 0) continue;
 
         for (let v = 0; v < V; v++) {
             if (graph[u][v] >= 0 && !mstSet[v] && graph[u][v] <  key[v]) {
