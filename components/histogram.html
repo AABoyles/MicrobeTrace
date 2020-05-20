@@ -206,6 +206,9 @@
         title: 'Number of ' + MT.titleize(varSource),
         type: session.style.widgets['histogram-scale-log'] ? 'log' : ''
       };
+      traces.sort(function(a, b) { //#242
+        return a.x.length - b.x.length;
+      });
       plot = Plotly.newPlot('histogram', traces, layout, {
         displaylogo: false,
         displayModeBar: false,
