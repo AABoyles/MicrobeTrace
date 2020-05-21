@@ -624,6 +624,7 @@ $(function() {
       let aggregates = MT.createLinkColorMap();
       let vlinks = MT.getVisibleLinks();
       let values = Object.keys(aggregates);
+
       if (session.style.widgets["link-color-table-counts-sort"] == "ASC")
         values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
       else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
@@ -632,7 +633,10 @@ $(function() {
         values.sort(function(a, b) { return a - b });
       else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
         values.sort(function(a, b) { return b - a });
+      
       values.forEach((value, i) => {
+        session.style.linkColors.splice(i, 1, temp.style.linkColorMap(value));
+        session.style.linkAlphas.splice(i, 1, temp.style.linkAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.linkColorMap(value) + '">')
           .on("change", function(){
             session.style.linkColors.splice(i, 1, this.value);
@@ -671,6 +675,14 @@ $(function() {
         row.append($("<td></td>").append(colorinput).append(alphainput));
         linkColorTable.append(row);
       });
+      //#242
+      temp.style.linkColorMap = d3
+        .scaleOrdinal(session.style.linkColors)
+        .domain(values);
+      temp.style.linkAlphaMap = d3
+        .scaleOrdinal(session.style.linkAlphas)
+        .domain(values);
+
       linkColorTable
         .find("td")
         .on("dblclick", function() {
