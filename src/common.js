@@ -1446,12 +1446,15 @@
         new Array(values.length - session.style.nodeAlphas.length).fill(1)
       );
     }
-    temp.style.nodeColorMap = d3
-      .scaleOrdinal(session.style.nodeColors)
-      .domain(values);
-    temp.style.nodeAlphaMap = d3
-      .scaleOrdinal(session.style.nodeAlphas)
-      .domain(values);
+    if (temp.style.nodeColorMap.domain === undefined) //#242
+      temp.style.nodeColorMap = d3
+        .scaleOrdinal(session.style.nodeColors)
+        .domain(values);
+    if (temp.style.nodeAlphaMap.domain === undefined)
+      temp.style.nodeAlphaMap = d3
+        .scaleOrdinal(session.style.nodeAlphas)
+        .domain(values);
+      
     return aggregates;
   };
   

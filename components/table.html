@@ -1,4 +1,4 @@
-<div id="table" class="table-sm"></div>
+<div id="table" class="table-sm" style="overflow: auto"></div>
 
 <div class="view-controls">
   <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Table Settings">
@@ -96,7 +96,8 @@
       let data_type = $('input[name=table-dataset]:checked').data('value');
       let columns = $('#table-columns').val();
       table = new Tabulator("#table", {
-        height: "calc(100% - 60px) !important",
+        //height: "calc(100% - 60px) !important",
+        maxHeight: "100%",
         layout: "fitColumns",
         columns: columns.map(c => ({title: MT.titleize(c), field: c})),
         rowClick: function(e, row){

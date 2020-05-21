@@ -498,6 +498,7 @@ $(function() {
       let aggregates = MT.createNodeColorMap();
       let vnodes = MT.getVisibleNodes();
       let values = Object.keys(aggregates);
+
       if (session.style.widgets["node-color-table-counts-sort"] == "ASC")
         values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
       else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
@@ -506,7 +507,10 @@ $(function() {
         values.sort(function(a, b) { return a - b });
       else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
         values.sort(function(a, b) { return b - a });
+
       values.forEach((value, i) => {
+        session.style.nodeColors.splice(i, 1, temp.style.nodeColorMap(value));
+        session.style.nodeAlphas.splice(i, 1, temp.style.nodeAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.nodeColorMap(value) + '">')
           .on("change", function(){
             session.style.nodeColors.splice(i, 1, this.value);
@@ -547,6 +551,14 @@ $(function() {
         ).append(cell);
         nodeColorTable.append(row);
       });
+      //#242
+      temp.style.nodeColorMap = d3
+        .scaleOrdinal(session.style.nodeColors)
+        .domain(values);
+      temp.style.nodeAlphaMap = d3
+        .scaleOrdinal(session.style.nodeAlphas)
+        .domain(values);
+
       nodeColorTable
         .find("td")
         .on("dblclick", function() {
