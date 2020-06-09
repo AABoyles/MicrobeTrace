@@ -547,7 +547,6 @@
   MT.applyGHOST = ghost => {
     self.session = MT.sessionSkeleton();   
     session.meta.startTime = Date.now();
-    
     ghost["samples"].forEach(node => {     
       let newNode = JSON.parse(JSON.stringify(node));     
       newNode.origin = ["GHOST Import"];     
@@ -555,13 +554,11 @@
       newNode.id = "" + newNode.id;     
       MT.addNode(newNode, false);   
     });
-    
     ["genotypes", "group", "id", "name"].forEach(key => {     
       if (!session.data.nodeFields.includes(key)){
         session.data.nodeFields.push(key);     
       }   
     });
-      
     let links = ghost["links"];   
     let n = links.length;   
     for (let i = 0; i < n; i++) {     
