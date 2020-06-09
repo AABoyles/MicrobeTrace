@@ -79,6 +79,8 @@
     "papaparse": "^4.6.3",
     "patristic": "^0.5.5",
     "pdfmake": "^0.1.65",
+    "pixi-viewport": "^4.11.3",
+    "pixi.js": "^5.2.4",
     "plotly.js": "^1.54.1",
     "postcss-cli": "^7.1.1",
     "puppeteer": "^1.20.0",

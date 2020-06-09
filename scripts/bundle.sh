@@ -42,6 +42,8 @@ secondaryscripts=(
   "node_modules/save-svg-as-png/lib/saveSvgAsPng.js"
   "node_modules/pdfmake/build/pdfmake.min.js"
   "node_modules/pdfmake/build/vfs_fonts.js"
+  "node_modules/pixi.js/dist/pixi.min.js"
+  "node_modules/pixi-viewport/dist/viewport.js"
 )
 
 # primarystyles is where you put stylesheets that must be loaded immediately to
