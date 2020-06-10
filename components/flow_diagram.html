@@ -138,7 +138,7 @@
       $($('#flow-variables').find('select')).each(function (i) { order.push(this.value); });
       let variables = order.length;
 
-      let values = [], source_values = [], target_values = [], all_values = [], labels = [];
+      let values = [], source_values = [], target_values = [], all_values = [], labels = [], vars = [];
       for (let i = 0; i < variables; i++) {
         variable = order[i];
         let n = data.length;
@@ -148,7 +148,8 @@
         }
         n = values.length;
         for (let j = 0; j < n; j++) {
-          labels.push(MT.titleize(variable + ' ' + values[j]));
+          labels.push(MT.titleize(values[j]));
+          vars.push(MT.titleize(variable));
           let value = variable + '-' + values[j] + '-' + i;
           if (i < variables - 1) source_values.push(value);
           if (i > 0) target_values.push(value);
@@ -199,7 +200,9 @@
             width: 0.5
           },
           label: labels.map(MT.titleize),
-          color: session.style.widgets['flow-showNodes'] ? session.style.widgets['node-color'] : session.style.widgets['link-color']
+          color: session.style.widgets['flow-showNodes'] ? session.style.widgets['node-color'] : session.style.widgets['link-color'],
+          customdata: vars.map(MT.titleize),
+          hovertemplate: "<b> %{customdata}:  %{label} </b><br>Incoming flow count: %{targetLinks.length} <br>Outgoing flow count: %{sourceLinks.length}"+ "<extra>%{value}</extra>"
         },
         link: { source, target, value }
       }], {
