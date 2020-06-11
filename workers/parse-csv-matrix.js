@@ -11,7 +11,7 @@ onmessage = function(e) {
     chunk: function(result) {
       let rowsInChunk = result.data.length;
 
-      if (result.data[0][0]) {  // triangle matrix
+      if (result.data[0][0].replace(/\"/g, '').replace(/\'/g, '')) {  // triangle matrix
         let topNodeIDs = [''];
         for (let rowInChunk = 0; rowInChunk < rowsInChunk; rowInChunk++) {
           const nodeID = result.data[rowInChunk][0];

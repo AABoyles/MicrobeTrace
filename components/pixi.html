@@ -1,0 +1,890 @@
+<div id="pixi"></div>
+
+<div class="view-controls">
+  <button type="button" id="network-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Network Settings">
+    <span class="oi oi-cog"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#network-export-modal" title="Export Network">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
+  <button id="fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
+    <span class="oi oi-target"></span>
+  </button>
+  <button id="pinbutton" type="button" class="btn btn-light btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
+    <span class="oi oi-pin"></span>
+  </button>
+</div>
+
+<div id="network-settings-pane" class="left-pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#network-node-settings" role="tab" aria-controls="network-node-settings" aria-selected="true">Nodes</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="links-tab" data-toggle="tab" href="#network-link-settings" role="tab" aria-controls="network-link-settings" aria-selected="false">Links</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="network-tab" data-toggle="tab" href="#network-settings" role="tab" aria-controls="network-settings" aria-selected="false">Network</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="network-node-settings" role="tabpanel" aria-labelledby="nodes-tab">
+      <div class="accordion" id="node-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#node-controls-labels" aria-expanded="true" aria-controls="node-controls-labels" style="color:#495057">Labels and Tooltips</button>
+          </div>
+          <div id="node-controls-labels" class="collapse show" data-parent="#node-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="What field should be displayed as a label for the node?">
+                <div class="col-4"><label for="node-label-variable">Label</label></div>
+                <div class="col-8">
+                  <select id="node-label-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row node-label-row" title="How big should node labels be?">
+                <div class="col-4"><label for="node-label-size">Label Size</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="node-label-size" min="6" value="16" max="72"></div>
+              </div>
+              <div class="form-group row node-label-row" title="How should the labels be oriented relative to their nodes?">
+                <div class="col-4"><label for="node-label-orientation">Orientation</label></div>
+                <div class="col-8">
+                  <select id="node-label-orientation" class="form-control form-control-sm">
+                    <option selected>Right</option>
+                    <option>Left</option>
+                    <option>Top</option>
+                    <option>Bottom</option>
+                    <option>Middle</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
+                <div class="col-4"><label for="node-tooltip-variable">Tooltip</label></div>
+                <div class="col-8">
+                  <select id="node-tooltip-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#node-controls-shapes" aria-expanded="false" aria-controls="node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+          </div>
+          <div id="node-controls-shapes" class="collapse" data-parent="#node-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="Which variable should determine the shape of the node?">
+                <div class="col-4"><label for="node-symbol-variable">Shape By</label></div>
+                <div class="col-8">
+                  <select id="node-symbol-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div id="node-symbol-table-row" class="form-group row" title="What shape should the nodes be?">
+                <div class="col-4">Table</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light btn-sm col active" title="Show a table of symbols">
+                      <input type="radio" name="network-symbol-table-visibility" id="node-symbol-table-show" autocomplete="off" checked>
+                      Show
+                    </label>
+                    <label class="btn btn-light btn-sm col" title="Do not show a table of symbols">
+                      <input type="radio" name="network-symbol-table-visibility" id="node-symbol-table-hide" autocomplete="off"> Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div id="node-symbol-row" class="form-group row" title="What shape should the nodes be?">
+                <div class="col-4"><label for="node-symbol">Shape</label></div>
+                <div class="col-8">
+                  <select id="node-symbol" class="form-control form-control-sm">
+                    <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
+                    <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
+                    <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
+                    <option value="symbolTriangleLeft">&nbsp;&#9664; (Left Triangle)</option>
+                    <option value="symbolTriangleRight">&nbsp;&#9654; (Right Triangle)</option>
+                    <option value="symbolDiamond">&nbsp;&#10731; (Vertical Diamond)</option>
+                    <option value="symbolDiamondAlt">&nbsp;&#10731; (Horizontal Diamond)</option>
+                    <option value="symbolSquare">&nbsp;&#9632; (Square)</option>
+                    <option value="symbolDiamondSquare">&nbsp;&#9670; (Tilted Square)</option>
+                    <option value="symbolPentagon">&nbsp;&#11039; (Pentagon)</option>
+                    <option value="symbolHexagon">&nbsp;&#11042; (Hexagon)</option>
+                    <option value="symbolHexagonAlt">&nbsp;&#11043; (Tilted Hexagon)</option>
+                    <option value="symbolOctagon">&nbsp;&#11204; (Octagon)</option>
+                    <option value="symbolOctagonAlt">&nbsp;&#11203; (Tilted Octagon)</option>
+                    <option value="symbolCross">&nbsp;&#10010; (Addition Sign)</option>
+                    <option value="symbolX">&nbsp;&#10006; (Multiplication Sign)</option>
+                    <option value="symbolWye">&nbsp;&#120300; (Wye)</option>
+                    <option value="symbolStar">&nbsp;&#9733; (Star)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row" title="Which variable should determine the size of the node?">
+                <div class="col-4"><label for="node-radius-variable">Size By</label></div>
+                <div class="col-8">
+                  <select id="node-radius-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row" title="How big should the nodes be?">
+                <div class="col-4"><label for="node-radius">Size</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="node-radius" min="100" value="250" step="1" max="5000">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="network-link-settings" role="tabpanel" aria-labelledby="links-tab">
+      <div class="accordion" id="link-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#link-controls-labels" aria-expanded="true" aria-controls="link-controls-labels" style="color:#495057">Labels and Tooltips</button>
+          </div>
+          <div id="link-controls-labels" class="collapse show" data-parent="#link-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="What data should be displayed when you hover over a link?">
+                <div class="col-4"><label for="link-tooltip-variable">Tooltip</label></div>
+                <div class="col-8">
+                  <select id="link-tooltip-variable" class="form-control form-control-sm linkVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row" title="What data should be displayed when you hover over a link?">
+                <div class="col-4"><label for="link-label-variable">Label</label></div>
+                <div class="col-8">
+                  <select id="link-label-variable" class="form-control form-control-sm linkVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#link-controls-shapes" aria-expanded="false" aria-controls="link-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+          </div>
+          <div id="link-controls-shapes" class="collapse" data-parent="#link-controls-accordion">
+            <div class="card-body">
+              <div id="link-transparency-row" class="form-group row" title="How transparent should the links be?">
+                <div class="col-4"><label for="link-opacity">Transparency</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="link-opacity" min="0" max="1" value="0" step="0.01"></div>
+              </div>
+              <div class="form-group row" title="Which variable should determine the width of a link?">
+                <div class="col-4"><label for="link-width-variable">Width By</label></div>
+                <div class="col-8">
+                  <select id="link-width-variable" class="form-control form-control-sm linkVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div id="link-reciprocalthickness-row" class="form-group row" title="Should link widths be proportioned to the reciprocal of this variable?">
+                <div class="col-4">Reciprocal</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+                    <label class="btn btn-light active">
+                      <input type="radio" name="link-reciprocal-options" id="link-width-reciprocal" autocomplete="off" checked>
+                      Reciprocal
+                    </label>
+                    <label class="btn btn-light">
+                      <input type="radio" name="link-reciprocal-options" id="link-width-nonreciprocal" autocomplete="off">
+                      Non-reciprocal
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="How thick should the links be?">
+                <div class="col-4"><label for="link-width">Width</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="link-width" min="0.3" max="30" step=".3" value="3"></div>
+              </div>
+              <div class="form-group row" title="How long should links be?">
+                <div class="col-4"><label for="link-length">Length</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="link-length" min="0" max="200" value="50"></div>
+              </div>
+              <div class="form-group row hideForHIVTrace" title="Shoul arrowheads pointing to the">
+                <div class="col-4">Arrows</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="network-directionality" id="link-undirected" autocomplete="off" checked>
+                      Hide
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="network-directionality" id="link-directed" autocomplete="off">
+                      Show
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="network-settings" role="tabpanel" aria-labelledby="network-tab">
+      <div class="accordion" id="network-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#network-controls-labels" aria-expanded="true" aria-controls="network-controls-labels" style="color:#495057">Display</button>
+          </div>
+          <div id="network-controls-labels" class="collapse show" data-parent="#network-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
+                <div class="col-4">Neighbors</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col" title="Do not highlight anything.
+Recommended for performance reasons.">
+                      <input type="radio" name="network-highlight" id="dont-highlight-neighbors" autocomplete="off"
+                        checked> Normal
+                    </label>
+                    <label class="btn btn-light col" title="Highlight adjacent links and neighboring nodes when you hover over a node.
+Note that this may cause slow performance on larger networks.">
+                      <input type="radio" name="network-highlight" id="highlight-neighbors" autocomplete="off">
+                      Highlighted
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
+                <div class="col-4">Gridlines</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col" title="Show gridlines under the network.">
+                      <input type="radio" name="network-gridlines" id="network-gridlines-show" autocomplete="off">
+                      Show
+                    </label>
+                    <label class="btn btn-light col active" title="Do Not show gridlines under the network.">
+                      <input type="radio" name="network-gridlines" id="network-gridlines-hide" autocomplete="off" checked>
+                      Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#network-controls-physics" aria-expanded="false" aria-controls="network-controls-physics" style="color:#495057">Physics</button>
+          </div>
+          <div id="network-controls-physics" class="collapse" data-parent="#network-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
+                <div class="col-4"><label for="node-charge">Charge</label></div>
+                <div class="col-8">
+                  <input type="range" class="custom-range" id="node-charge" min="0" max="400" value="200">
+                </div>
+              </div>
+              <div class="form-group row" title="How attractive is the mass of the graph?">
+                <div class="col-4"><label for="network-gravity">Gravity</label></div>
+                <div class="col-8">
+                  <input type="range" class="custom-range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025">
+                </div>
+              </div>
+              <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
+                <div class="col-4"><label for="network-friction">Friction</label></div>
+                <div class="col-8">
+                  <input type="range" class="custom-range" id="network-friction" min="0" max="1" value="0.4" step="0.025">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script type="text/javascript">
+  ( async () => {
+    // config
+    const SCREEN_WIDTH = $('#pixi').parent().width();
+    const SCREEN_HEIGHT = $('#pixi').parent().parent().parent().height();
+    let halfWidth = $('#pixi').parent().width() / 2;
+    let halfHeight = $('#pixi').parent().parent().parent().height() / 2;
+    //const WORLD_WIDTH = SCREEN_WIDTH * 2;
+    //const WORLD_HEIGHT = SCREEN_HEIGHT * 2;
+    //const RESOLUTION = window.devicePixelRatio * 2;
+    const WORLD_WIDTH = SCREEN_WIDTH;
+    const WORLD_HEIGHT = SCREEN_HEIGHT;
+    const RESOLUTION = window.devicePixelRatio;
+    const FORCE_LAYOUT_NODE_REPULSION_STRENGTH = 250;
+    const FORCE_LAYOUT_ITERATIONS = 300;
+    const NODE_RADIUS = 15;
+    const NODE_HIT_RADIUS = NODE_RADIUS + 5;
+    const ICON_FONT_FAMILY = 'Material Icons';
+    const ICON_FONT_SIZE = NODE_RADIUS / Math.SQRT2 * 2;
+    const ICON_TEXT = 'person';
+    const LABEL_FONT_FAMILY = 'Helvetica';
+    const LABEL_FONT_SIZE = 12;
+    const LABEL_TEXT = nodeData => nodeData.id;
+    const LABEL_X_PADDING = 2;
+    const LABEL_Y_PADDING = 1;
+
+    let settings = session.style.widgets;
+
+    let data = {
+      nodes: [],
+      links: []
+    };
+
+
+    const forceLayout = (...args) => {
+    //   return new Promise(resolve => {
+    //     const workerCode = `
+
+    //       function forceLayout(data, options = {}) {
+    //         const nodes = data.nodes;
+    //         const links = data.links;
+
+    //         const iterations = options.iterations;
+    //         const nodeRepulsionStrength = options.nodeRepulsionStrength;
+
+    //         d3.forceSimulation(nodes)
+    //           .force("link", d3.forceLink(links).id(linkData => linkData.id))
+    //           .force("charge", d3.forceManyBody().strength(-nodeRepulsionStrength))
+    //           .force("center", d3.forceCenter())
+    //           .stop()
+    //           .tick(iterations);
+
+    //         return { nodes, links };
+    //       };
+
+    //       self.onmessage = event => {
+    //         const result = forceLayout.apply(undefined, event.data);
+    //         postMessage(result);
+    //       }
+    //     `;
+
+    //     const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
+    //     const workerUrl = URL.createObjectURL(workerBlob)
+    //     const worker = new Worker(workerUrl);
+
+    //     worker.onmessage = event => {
+    //       resolve(event.data);
+    //       worker.terminate();
+    //       URL.revokeObjectURL(workerUrl);
+    //     };
+    //     worker.postMessage(args);
+    //   });
+      
+      return new Promise((resolve) => {
+        const [data, { iterations, nodeRepulsionStrength }] = args
+
+        // console.log('data nodes', data.nodes)
+        d3.forceSimulation(data.nodes)
+          .force('link', d3.forceLink(data.links)
+            .id(d => d._id)
+            .distance(l => l.origin.length * settings['link-length'])
+            .strength(0.125)
+          )
+          .force('charge', d3.forceManyBody()
+            .strength(-settings['node-charge'])
+          )
+          .force('center', d3.forceCenter(halfWidth, halfHeight))
+          .force('gravity', d3.forceAttract()
+            .target([halfWidth, halfHeight])
+            .strength(settings['network-gravity'])
+          )
+          .stop()
+          .tick(iterations);
+        resolve(data)
+      })
+    }
+
+    function getVLinks() {
+      let vlinks = MT.getVisibleLinks(true);
+      let output = [];
+      let n = vlinks.length;
+      let nodes = session.network.nodes;
+      for (let i = 0; i < n; i++) {
+        if (vlinks[i].origin) {
+          if (typeof vlinks[i].origin == 'object') {
+            vlinks[i].origin.forEach((o, j, l) => {
+              output.push(Object.assign({}, vlinks[i], {
+                origin: o,
+                oNum: j,
+                origins: l.length,
+                source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
+                target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
+              }));
+            });
+          } else {
+            output.push(Object.assign({}, vlinks[i], {
+              oNum: 0,
+              origins: 1,
+              source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
+              target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
+            }));
+          }
+        } else {
+          output.push(Object.assign({}, vlinks[i], {
+            origin: 'Unknown',
+            oNum: 0,
+            origins: 1,
+            source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
+            target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
+          }));
+        }
+      }
+      return output;
+    }
+
+    
+    let newNodes = MT.getVisibleNodes(true);
+    let oldNodes = session.network.nodes;
+
+    newNodes.forEach((d, i) => {
+      let match = oldNodes.find(d2 => d2._id == d._id);
+      if (match) {
+        ['x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed'].forEach(v => {
+          if (typeof match[v] != "undefined") d[v] = match[v];
+        });
+      }
+    });
+
+    session.network.nodes = newNodes;
+
+    data.nodes = newNodes;
+    data.links = getVLinks();
+
+    // static force-directed layout, running in WebWorker thread
+    const { nodes, links } = await forceLayout(data, {
+      iterations: FORCE_LAYOUT_ITERATIONS,
+      nodeRepulsionStrength: FORCE_LAYOUT_NODE_REPULSION_STRENGTH
+    });
+
+    const app = new PIXI.Application({
+      width: SCREEN_WIDTH,
+      height: SCREEN_HEIGHT,
+      resolution: RESOLUTION,
+      transparent: true,
+      antialias: true,
+      autoStart: false // disable automatic rendering by ticker, render manually instead, only when needed
+    });
+    app.view.style.width = `${SCREEN_WIDTH}px`;
+
+    // manual rendering
+    // app.renderer.on('postrender', () => { console.log('render'); });
+    let renderRequestId = undefined;
+    const requestRender = () => {
+      if (renderRequestId) {
+        return;
+      }
+      renderRequestId = window.requestAnimationFrame(() => {
+        app.render();
+        renderRequestId = undefined;
+      });
+    }
+    
+    // create PIXI viewport
+    const viewport = new Viewport.Viewport({
+      screenWidth: SCREEN_WIDTH,
+      screenHeight: SCREEN_HEIGHT,
+      worldWidth: WORLD_WIDTH,
+      worldHeight: WORLD_HEIGHT,
+      interaction: app.renderer.plugins.interaction
+    });
+    const resetViewport = () => {
+      viewport.center = new PIXI.Point(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
+      viewport.setZoom(0.5, true);
+    };
+    app.stage.addChild(viewport);
+    viewport
+      .drag()
+      .pinch()
+      .wheel()
+      .decelerate();
+    viewport.on('frame-end', () => {
+      if (viewport.dirty) {
+        requestRender();
+        viewport.dirty = false;
+      }
+    });
+    
+    // create 4 layers: links, nodes, labels, front
+    const linksLayer = new PIXI.Graphics();
+    viewport.addChild(linksLayer);
+    const nodesLayer = new PIXI.Container();
+    viewport.addChild(nodesLayer);
+    const labelsLayer = new PIXI.Container();
+    viewport.addChild(labelsLayer);
+    const frontLayer = new PIXI.Container();
+    viewport.addChild(frontLayer);
+
+    // state
+    let nodeDataToNodeGfx = new WeakMap();
+    let nodeGfxToNodeData = new WeakMap();
+    let nodeDataToLabelGfx = new WeakMap();
+    let labelGfxToNodeData = new WeakMap();
+    let hoveredNodeData = undefined;
+    let hoveredNodeGfxOriginalChildren = undefined;
+    let hoveredLabelGfxOriginalChildren = undefined;
+    let clickedNodeData = undefined;
+
+    const updatePositions = () => {
+      linksLayer.clear();
+      linksLayer.alpha = 0.6;
+      let color = settings['link-color'];
+      let opacity = 1 - settings['link-opacity'];
+      let width = settings['link-width'];
+      for (const link of links) {
+        linksLayer.lineStyle(width, parseInt(color.replace(/^#/, ''), 16), opacity);
+        linksLayer.moveTo(link.source.x, link.source.y);
+        linksLayer.lineTo(link.target.x, link.target.y);
+      }
+      linksLayer.endFill();
+
+      for (const node of nodes) {
+        nodeDataToNodeGfx.get(node).position = new PIXI.Point(node.x, node.y)
+        nodeDataToLabelGfx.get(node).position = new PIXI.Point(node.x, node.y)
+      }
+      
+      requestRender();
+    };
+
+    // event handlers
+    const hoverNode = nodeData => {
+      if (clickedNodeData) {
+        return;
+      }
+      if (hoveredNodeData === nodeData) {
+        return;
+      }
+      
+      hoveredNodeData = nodeData;
+      
+      const nodeGfx = nodeDataToNodeGfx.get(nodeData);
+      const labelGfx = nodeDataToLabelGfx.get(nodeData);
+
+      // move to front layer
+      nodesLayer.removeChild(nodeGfx);
+      frontLayer.addChild(nodeGfx);
+      labelsLayer.removeChild(labelGfx);
+      frontLayer.addChild(labelGfx);
+      
+      // add hover effect
+      hoveredNodeGfxOriginalChildren = [...nodeGfx.children];
+      hoveredLabelGfxOriginalChildren = [...labelGfx.children];
+
+      // circle border
+      const circleBorder = new PIXI.Graphics();
+      circleBorder.x = 0;
+      circleBorder.y = 0;
+      circleBorder.lineStyle(1.5, 0x000000);
+      circleBorder.drawCircle(0, 0, NODE_RADIUS);
+      nodeGfx.addChild(circleBorder);
+
+      // text with background
+      const labelText = new PIXI.Text(LABEL_TEXT(nodeData), {
+        fontFamily: LABEL_FONT_FAMILY,
+        fontSize: LABEL_FONT_SIZE,
+        fill: 0x333333
+      });
+      labelText.x = 0;
+      labelText.y = NODE_HIT_RADIUS + LABEL_Y_PADDING;
+      labelText.anchor.set(0.5, 0);
+      const labelBackground = new PIXI.Sprite(PIXI.Texture.WHITE);
+      labelBackground.x = -(labelText.width + LABEL_X_PADDING * 2) / 2;
+      labelBackground.y = NODE_HIT_RADIUS;
+      labelBackground.width = labelText.width + LABEL_X_PADDING * 2;
+      labelBackground.height = labelText.height + LABEL_Y_PADDING * 2;
+      labelBackground.tint = 0xeeeeee;
+      labelGfx.addChild(labelBackground);
+      labelGfx.addChild(labelText);
+      
+      requestRender();
+    };
+    const unhoverNode = nodeData => {
+      if (clickedNodeData) {
+        return;
+      }
+      if (hoveredNodeData !== nodeData) {
+        return;
+      }
+      
+      hoveredNodeData = undefined;
+      
+      const nodeGfx = nodeDataToNodeGfx.get(nodeData);
+      const labelGfx = nodeDataToLabelGfx.get(nodeData);
+      
+      // move back from front layer
+      frontLayer.removeChild(nodeGfx);
+      nodesLayer.addChild(nodeGfx);
+      frontLayer.removeChild(labelGfx);
+      labelsLayer.addChild(labelGfx);
+
+      // clear hover effect
+      const nodeGfxChildren = [...nodeGfx.children];
+      for (let child of nodeGfxChildren) {
+        if (!hoveredNodeGfxOriginalChildren.includes(child)) {
+          nodeGfx.removeChild(child);
+        }
+      }
+      hoveredNodeGfxOriginalChildren = undefined;
+      const labelGfxChildren = [...labelGfx.children];
+      for (let child of labelGfxChildren) {
+        if (!hoveredLabelGfxOriginalChildren.includes(child)) {
+          labelGfx.removeChild(child);
+        }
+      }
+      hoveredLabelGfxOriginalChildren = undefined;
+      
+      requestRender();
+    };
+    const moveNode = (nodeData, point) => {
+      const nodeGfx = nodeDataToNodeGfx.get(nodeData);
+      
+      nodeData.x = point.x;
+      nodeData.y = point.y;
+      
+      updatePositions();
+    };
+    const appMouseMove = event => {
+      if (!clickedNodeData) {
+        return;
+      }
+      
+      moveNode(clickedNodeData, viewport.toWorld(event.data.global));
+    };
+    const clickNode = nodeData => {
+      clickedNodeData = nodeData;
+      
+      // enable node dragging
+      app.renderer.plugins.interaction.on('mousemove', appMouseMove);
+      // disable viewport dragging
+      viewport.pause = true;
+    };
+    const unclickNode = () => {
+      clickedNodeData = undefined;
+      
+      // disable node dragging
+      app.renderer.plugins.interaction.off('mousemove', appMouseMove);
+      // enable viewport dragging
+      viewport.pause = false;
+    };
+    
+
+    let defaultSize = settings['node-radius'];
+    let nodeSize = defaultSize, med = defaultSize, oldrng, min, max;
+    let sizeVariable = settings['node-radius-variable'];
+    if (sizeVariable !== 'None') {
+      let n = session.network.nodes.length;
+      min = Number.MAX_VALUE;
+      max = Number.MIN_VALUE;
+      for (let i = 0; i < n; i++) {
+        let nodeSize = session.network.nodes[i][sizeVariable];
+        if (typeof size == 'undefined') continue;
+        if (nodeSize < min) min = nodeSize;
+        if (nodeSize > max) max = nodeSize;
+      }
+      oldrng = max - min;
+      med = oldrng / 2;
+    }
+
+    // create node graphics
+    const nodeDataGfxPairs = nodes.map(nodeData => {
+      const nodeGfx = new PIXI.Container();
+      nodeGfx.x = nodeData.x;
+      nodeGfx.y = nodeData.y;
+      nodeGfx.interactive = true;
+      nodeGfx.buttonMode = true;
+      nodeGfx.hitArea = new PIXI.Circle(0, 0, NODE_HIT_RADIUS);
+      nodeGfx.on('mouseover', event => hoverNode(nodeGfxToNodeData.get(event.currentTarget)));
+      nodeGfx.on('mouseout', event => unhoverNode(nodeGfxToNodeData.get(event.currentTarget)));
+      nodeGfx.on('mousedown', event => clickNode(nodeGfxToNodeData.get(event.currentTarget)));
+      nodeGfx.on('mouseup', () => unclickNode());
+      nodeGfx.on('mouseupoutside', () => unclickNode());
+      
+      const circle = new PIXI.Graphics();
+      circle.x = 0;
+      circle.y = 0;
+      let variable = settings['node-color-variable'];
+      let fill = temp.style.nodeColorMap(nodeData[variable]);
+      let alpha = temp.style.nodeAlphaMap(nodeData[variable]);
+      circle.beginFill(parseInt(fill.replace(/^#/, ''), 16), parseInt(alpha));
+
+      if (sizeVariable !== 'None') {
+        nodeSize = d[sizeVariable];
+        if (!isNumber(nodeSize)) nodeSize = med;
+        nodeSize = (nodeSize - min) / oldrng;
+        nodeSize = nodeSize * nodeSize * defaultSize + 100;
+      }
+      let nodeRadius = nodeSize/20;
+
+      circle.drawCircle(0, 0, nodeRadius);
+      nodeGfx.addChild(circle);
+      
+      const circleBorder = new PIXI.Graphics();
+      circleBorder.lineStyle(1.5, 0xffffff);
+
+      circleBorder.drawCircle(0, 0, nodeRadius);
+      nodeGfx.addChild(circleBorder);
+
+      // const icon = new PIXI.Text(ICON_TEXT, {
+      //   fontFamily: ICON_FONT_FAMILY,
+      //   fontSize: ICON_FONT_SIZE,
+      //   fill: 0xffffff
+      // });
+      // icon.x = 0;
+      // icon.y = 0;
+      // icon.anchor.set(0.5);
+      // nodeGfx.addChild(icon);
+      
+      const labelGfx = new PIXI.Container();
+      labelGfx.x = nodeData.x;
+      labelGfx.y = nodeData.y;
+      labelGfx.interactive = true;
+      labelGfx.buttonMode = true;
+      labelGfx.on('mouseover', event => hoverNode(labelGfxToNodeData.get(event.currentTarget)));
+      labelGfx.on('mouseout', event => unhoverNode(labelGfxToNodeData.get(event.currentTarget)));
+      labelGfx.on('mousedown', event => clickNode(labelGfxToNodeData.get(event.currentTarget)));
+      labelGfx.on('mouseup', () => unclickNode());
+      labelGfx.on('mouseupoutside', () => unclickNode());
+      
+      const labelText = new PIXI.Text(LABEL_TEXT(nodeData), {
+        fontFamily: LABEL_FONT_FAMILY,
+        fontSize: LABEL_FONT_SIZE,
+        fill: 0x333333
+      });
+      labelText.x = 0;
+      labelText.y = NODE_HIT_RADIUS + LABEL_Y_PADDING;
+      labelText.anchor.set(0.5, 0);
+      const labelBackground = new PIXI.Sprite(PIXI.Texture.WHITE);
+      labelBackground.x = -(labelText.width + LABEL_X_PADDING * 2) / 2;
+      labelBackground.y = NODE_HIT_RADIUS;
+      labelBackground.width = labelText.width + LABEL_X_PADDING * 2;
+      labelBackground.height = labelText.height + LABEL_Y_PADDING * 2;
+      labelBackground.tint = 0xffffff;
+      labelBackground.alpha = 0.5;
+      labelGfx.addChild(labelBackground);
+      labelGfx.addChild(labelText);
+      
+      nodesLayer.addChild(nodeGfx);
+      labelsLayer.addChild(labelGfx);
+
+      return [nodeData, nodeGfx, labelGfx];
+    });
+
+    // create lookup tables
+    nodeDataToNodeGfx = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [nodeData, nodeGfx]));
+    nodeGfxToNodeData = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [nodeGfx, nodeData]));
+    nodeDataToLabelGfx = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [nodeData, labelGfx]));
+    labelGfxToNodeData = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [labelGfx, nodeData]));
+
+    // initial draw
+    resetViewport();
+    updatePositions();
+
+    
+
+    // prevent body scrolling
+    app.view.addEventListener('wheel', event => { event.preventDefault(); });
+
+    document.getElementById('pixi').appendChild(app.view);
+
+
+    $('#network-settings-toggle').on('click', function () {
+      let pane = $('#network-settings-pane');
+      if ($(this).hasClass('active')) {
+        pane.animate({ left: '-400px' }, function () { pane.hide(); });
+      } else {
+        pane.show(0, function () { pane.animate({ left: '0px' }); });
+      }
+    });
+
+
+    $('#node-radius-variable').on('change', function () {
+      settings['node-radius-variable'] = this.value;
+      updateNodes();
+    });
+
+    let isNumber = a => typeof a == "number";
+
+    function updateNodes() {
+      let defaultSize = settings['node-radius'];
+      let nodeSize = defaultSize, med = defaultSize, oldrng, min, max;
+      let sizeVariable = settings['node-radius-variable'];
+      if (sizeVariable !== 'None') {
+        let n = session.network.nodes.length;
+        min = Number.MAX_VALUE;
+        max = Number.MIN_VALUE;
+        for (let i = 0; i < n; i++) {
+          let nodeSize = session.network.nodes[i][sizeVariable];
+          if (typeof nodeSize == 'undefined') continue;
+          if (nodeSize < min) min = nodeSize;
+          if (nodeSize > max) max = nodeSize;
+        }
+        oldrng = max - min;
+        med = oldrng / 2;
+      }
+
+      let variable = settings['node-color-variable'];
+      for (const node of nodes) {
+        // console.log('node', node, 'GFX', nodeDataToNodeGfx.get(node))
+        nodeDataToNodeGfx.get(node).children[0].clear();
+        nodeDataToNodeGfx.get(node).children[1].clear();
+        if (variable == 'None') {
+            let fill = settings['node-color'];
+            // nodes.attr('fill', col).attr('opacity', 1);
+            nodeDataToNodeGfx.get(node).children[0].beginFill(parseInt(fill.replace(/^#/, ''), 16), 1);
+        } else {
+          let fill = temp.style.nodeColorMap(node[variable]);
+          let alpha = temp.style.nodeAlphaMap(node[variable]);
+          nodeDataToNodeGfx.get(node).children[0].beginFill(parseInt(fill.replace(/^#/, ''), 16), parseInt(alpha));
+        
+        }
+
+        if (sizeVariable !== 'None') {
+          nodeSize = node[sizeVariable];
+          if (!isNumber(nodeSize)) 
+            nodeSize = med;
+          nodeSize = (nodeSize - min) / oldrng;
+          nodeSize = nodeSize * nodeSize * nodeSize * defaultSize + 100;
+        }
+
+        let radius = nodeSize/20;
+        
+        nodeDataToNodeGfx.get(node).children[0].drawCircle(0, 0, radius);
+        nodeDataToNodeGfx.get(node).children[1].lineStyle(1.5, 0xffffff);
+        nodeDataToNodeGfx.get(node).children[1].drawCircle(0, 0, radius);
+      }
+      requestRender();
+    }
+
+
+
+
+    $window
+      .on('node-color-change', updateNodes)
+
+
+  })();
+</script>

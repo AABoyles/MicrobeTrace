@@ -36,6 +36,7 @@ self.addEventListener('install', function(event) {
         'workers/parse-csv-matrix.js',
         'workers/parse-fasta.js',
         'workers/README.md',
+        'components/pixi.html',
         'components/2d_network.html',
         'components/3d_network.html',
         'components/aggregation.html',
