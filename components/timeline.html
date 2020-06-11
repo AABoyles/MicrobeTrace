@@ -4,15 +4,15 @@
   <button type="button" id="timeline-toggle-settings" class="btn btn-light btn-sm" data-toggle="button">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" id="timeline-play" class="btn btn-light btn-sm">
+  <!-- <button type="button" id="timeline-play" class="btn btn-light btn-sm">
     <span class="oi oi-media-play"></span>
-  </button>
+  </button> -->
 </div>
 
 <div id="timeline-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a href="#timeline-configurations" id="timeline-nodes-tab" class="nav-link active" aria-controls="timeline-configurations" role="tab" data-toggle="tab">Timeline</a>
+      <a href="#timeline-configurations" id="timeline-nodes-tab" class="nav-link active" aria-controls="timeline-configurations" role="tab" data-toggle="tab">Epi Curve</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -40,18 +40,22 @@
           </div>
         </div>
       </div>
-      <div class="form-group row" title="How quickly would you like the timeline to advance?">
+      <!-- <div class="form-group row" title="How quickly would you like the timeline to advance?">
         <div class="col-4"><label for="timeline-speed">Play Speed</label></div>
         <div class="col-8">
           <input type="range" class="custom-range" id="timeline-speed" min="0" max="100" step="10">
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>
 
 <script>
   (function () {
+    ga('set', 'page', '/timeline');
+    ga('set', 'title', 'Timeline View');
+    ga('send', 'pageview');
+
     var width,
       height,
       middle,
@@ -105,7 +109,8 @@
         .histogram()
         .value(d => d[field])
         .domain(x.domain())
-        .thresholds(d3.thresholdFreedmanDiaconis);
+        .thresholds(d3.thresholdScott); 
+        // .thresholds(d3.thresholdFreedmanDiaconis);  #205
 
       svg = d3
         .select("#timeline")

@@ -188,6 +188,10 @@
 
 <script>
 (function () {
+  ga('set', 'page', '/choropleth');
+  ga('set', 'title', 'Choropleth View');
+  ga('send', 'pageview');
+  
   if (navigator.onLine) {
     $('#choropleth').parent().find('.ifOnline').css('display', 'flex');
   }
@@ -223,6 +227,7 @@
       var val = session.style.widgets['choropleth-aggregate-on'];
       temp.mapData.countries.features.forEach(c => c.properties.density = 0);
       nodes.forEach(n => {
+        if (n[val] === undefined) return;
         var country = temp.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
         if (country) country.properties.density++;
       });
@@ -357,10 +362,10 @@
 
   function clickHandler(e) {
     var node = e.sourceTarget.feature.properties;
-    var d = session.data.nodes.find(d => d.id == node.id);
+    var d = session.data.nodes.find(d => d.id == node._id);
     if (!e.originalEvent.ctrlKey) {
       session.data.nodes
-        .filter(node => node.id !== d.id)
+        .filter(node => node._id !== d.id)
         .forEach(node => node.selected = false);
     }
     d.selected = !d.selected;

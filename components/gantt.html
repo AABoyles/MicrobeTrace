@@ -99,6 +99,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/gantt');
+    ga('set', 'title', 'Gantt View');
+    ga('send', 'pageview');
+    
     let bars = [];
     let margin = {
       top: 40,
@@ -117,9 +121,12 @@
     context.font = "1rem" + window.getComputedStyle(document.body).fontFamily;
     let measureText = 0;
     session.data.nodes.filter(d => d.visible).forEach(d => {
-      if(d.id) {
+      d.id = d.id === undefined ? d._id : d.id;
+      if(d.id && isNaN(d.id)) {
         const _measureText = context.measureText(d.id.trim()).width;
         _measureText > measureText && (measureText = Math.ceil(_measureText) )
+      } else {
+        measureText = 25;
       }
     });
     margin.left = measureText + 5;
@@ -176,6 +183,7 @@
         let endField = $el.find(`#date-${dateid}-end`).val();
         if (endField == 'None') endField = startField;
         session.data.nodes.filter(d => d.visible).forEach(d => {
+          d.id = d.id === undefined ? d._id : d.id;
           let startDate, endDate;
           if (typeof d[startField] == 'number') {
             startDate = moment((d[startField] - 25567) * 24 * 60 * 60 * 1000);

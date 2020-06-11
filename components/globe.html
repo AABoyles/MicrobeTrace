@@ -288,6 +288,10 @@
 
 <script>
   (function(){
+    ga('set', 'page', '/globe');
+    ga('set', 'title', 'Globe View');
+    ga('send', 'pageview');
+
     var parent = $('#globe').parent();
     var height, width;
     var canvg = d3.select('#globe');
@@ -720,8 +724,8 @@
       while (n-- > 0) {
         let d = links[n];
         if (!d.visible) continue;
-        let source = nodes.find(node => node.id == d.source);
-        let target = nodes.find(node => node.id == d.target);
+        let source = nodes.find(node => node._id == d.source);
+        let target = nodes.find(node => node._id == d.target);
         if (source && target) {
           if (source._jlat && source._jlon && target._jlat && target._jlon) {
             var s = [source._jlon, source._jlat];
@@ -748,8 +752,8 @@
       let jitter = session.style.widgets['globe-node-jitter'] > 0;
       links.forEach(function (d) {
         if (!d.visible) return;
-        let source = nodes.find(node => node.id == d.source);
-        let target = nodes.find(node => node.id == d.target);
+        let source = nodes.find(node => node._id == d.source);
+        let target = nodes.find(node => node._id == d.target);
         if (source && target) {
           if (source._lat && source._lon && target._lat && target._lon) {
             features.push({

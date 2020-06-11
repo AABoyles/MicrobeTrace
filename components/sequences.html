@@ -80,6 +80,10 @@ For large sets of sequences, this can take a long time.">
 
 <script>
   (function () {
+    ga('set', 'page', '/sequences');
+    ga('set', 'title', 'Sequences View');
+    ga('send', 'pageview');
+
     let canvas, context, width, height;
     let av = $('#sequences-panel');
 
@@ -117,7 +121,7 @@ For large sets of sequences, this can take a long time.">
       update();
     });
 
-    $('#showChar').on('change', function () {
+    $("input[type='radio'][name='showChars']").on('change', function () {
       av.empty();
       update();
     });
@@ -128,14 +132,14 @@ For large sets of sequences, this can take a long time.">
         let blob = new Blob([
           session.data.nodes
             .filter(d => d.seq)
-            .map(node => ">" + node.id + "\r\n" + node.seq).join("\r\n")
+            .map(node => ">" + node._id + "\r\n" + node.seq).join("\r\n")
         ]);
         saveAs(blob, $('#export-sequences-file-name').val() + '.fasta');
       } else if (type == 'mega') {
         let blob = new Blob([
           session.data.nodes
             .filter(d => d.seq)
-            .map(node => "#" + node.id + "\r\n" + node.seq).join("\r\n")
+            .map(node => "#" + node._id + "\r\n" + node.seq).join("\r\n")
         ]);
         saveAs(blob, $('#export-sequences-file-name').val() + '.mega');
       } else if (type == 'png') {

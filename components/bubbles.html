@@ -120,6 +120,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/bubbles');
+    ga('set', 'title', 'Bubbles View');
+    ga('send', 'pageview');
+    
     let width, height, center, simulation, vnodes,
       svg = d3.select('#bubbles');
 
@@ -127,7 +131,7 @@
       let newnodes = MT.getVisibleNodes(true);
       if (!vnodes) vnodes = newnodes;
       newnodes.forEach(newNode => {
-        let old = vnodes.find(oldNode => oldNode.id == newNode.id);
+        let old = vnodes.find(oldNode => oldNode._id == newNode._id);
         if (old) {
           newNode.x = old.x;
           newNode.y = old.y;
@@ -165,7 +169,7 @@
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 2)
         .on('click', function (d) {
-          let c = session.data.nodes.find(node => d.id == node.id);
+          let c = session.data.nodes.find(node => d._id == node._id);
           c.selected = !c.selected;
           $window.trigger('node-selected');
         });

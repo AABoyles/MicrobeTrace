@@ -1,6 +1,6 @@
 (function(self){
   'use strict';
-  
+
   let MT = {};
   
   MT.dataSkeleton = () => ({
@@ -95,6 +95,8 @@
     "histogram-variable": "links-distance",
     "infer-directionality-false": true,
     "link-color": "#a6cee3",
+    "link-color-table-name-sort": "DESC",
+    "link-color-table-counts-sort": "DESC",
     "link-color-table-counts": true,
     "link-color-table-frequencies": false,
     "link-color-variable": "None",
@@ -133,6 +135,8 @@
     "network-gravity": 0.05,
     "node-charge": 200,
     "node-color": "#1f77b4",
+    "node-color-table-name-sort": "DESC",
+    "node-color-table-counts-sort": "DESC",
     "node-color-table-counts": true,
     "node-color-table-frequencies": false,
     "node-color-variable": "None",
@@ -147,6 +151,7 @@
     "node-symbol-variable": "None",
     "node-tooltip-variable": "_id",
     "physics-tree-branch-type": "Straight",
+    "physics-tree-branch-length": 50,
     "physics-tree-charge": 30,
     "physics-tree-friction": 0.05,
     "physics-tree-gravity": 0.05,
@@ -462,6 +467,8 @@
     $("#launch").prop("disabled", true);
     session.files = oldSession.files;
     session.state = oldSession.state;
+    session.style = oldSession.style;
+    session.layout = oldSession.layout;
     session.meta.startTime = Date.now();
     const nodes = oldSession.data.nodes,
           links = oldSession.data.links,
@@ -481,7 +488,7 @@
         session.style.widgets['link-sort-variable'] = 'snps';
       }
     }
-    MT.finishUp();
+    MT.finishUp(true);
   };
   
   MT.applyStyle = style => {
@@ -976,6 +983,37 @@
     });
   };
   
+  MT.computeMST = () => {
+    return new Promise((resolve, reject) => {
+      let mstMachine = new Worker("workers/compute-mst.js");
+      mstMachine.onmessage = response => {
+        if (response.data == "Error") {
+          return reject("MST washed out");
+        }
+        let output = new Uint8Array(response.data.links);
+        console.log("MST Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+        const start = Date.now();
+        let links = session.data.links;
+        const numLinks = links.length;
+        for (let i = 0; i < numLinks; i++) {
+          links[i].nn = output[i] ? true : false;
+        }
+        console.log("MST Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+        resolve();
+      };
+      mstMachine.onerror = (e) => {
+        console.log(e);
+        resolve();
+      };
+      mstMachine.postMessage({
+        links: session.data.links,
+        matrix: temp.matrix,
+        epsilon: session.style.widgets["filtering-epsilon"],
+        metric: session.style.widgets['link-sort-variable']
+      });
+    });
+  };
+
   MT.computeNN = () => {
     return new Promise((resolve, reject) => {
       let nnMachine = new Worker("workers/compute-nn.js");
@@ -1042,14 +1080,15 @@
   };
   
   MT.runHamsters = async () => {
-    if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation();
-    MT.computeNN();
+    // if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation(); #236
+    // MT.computeNN();
+    // MT.computeMST();
     await MT.computeTree();
     if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
     MT.finishUp();
   };
   
-  MT.finishUp = async () => {
+  MT.finishUp = async (oldSession) => {
     clearTimeout(temp.messageTimeout);
     ["node", "link"].forEach(v => {
       let n = session.data[v + "s"].length;
@@ -1089,10 +1128,17 @@
         .ondismiss(() => window.location.reload());
     }
     MT.setLinkVisibility(true);
-    $("#SettingsTab").attr("data-target", "#global-settings-modal");
+    // $("#SettingsTab").attr("data-target", "#global-settings-modal");
     session.meta.loadTime = Date.now() - session.meta.startTime;
     console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
-    MT.launchView(session.style.widgets['default-view']);
+    // MT.launchView(session.style.widgets['default-view']);
+    if (oldSession) {
+      layout.root.contentItems[0].remove();
+      console.log('session.layout', session.layout);
+      setTimeout(() => MT.loadLayout(session.layout), 80);
+    } else {
+      MT.launchView(session.style.widgets['default-view']);
+    }
     MT.tagClusters().then(() => {
       MT.setClusterVisibility(true);
       MT.setLinkVisibility(true);
@@ -1107,7 +1153,7 @@
         interval: setInterval(() => {
           let newTime = Date.now();
           localStorage.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
-          localSorage.removeItem("stash-" + temp.autostash.time + "-autostash");
+          localStorage.removeItem("stash-" + temp.autostash.time + "-autostash");
           temp.autostash.time = newTime;
         }, 60000)
       };
@@ -1129,6 +1175,7 @@
     if (small == "2d network") return "2D Network";
     if (small == "3d network") return "3D Network";
     if (small == "geo map") return "Map";
+    if (small == "timeline") return "Epi Curve";
     if (small == "nn") return "Nearest Neighbor";
     return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
   };
@@ -1399,12 +1446,15 @@
         new Array(values.length - session.style.nodeAlphas.length).fill(1)
       );
     }
-    temp.style.nodeColorMap = d3
-      .scaleOrdinal(session.style.nodeColors)
-      .domain(values);
-    temp.style.nodeAlphaMap = d3
-      .scaleOrdinal(session.style.nodeAlphas)
-      .domain(values);
+    if (temp.style.nodeColorMap.domain === undefined) //#242
+      temp.style.nodeColorMap = d3
+        .scaleOrdinal(session.style.nodeColors)
+        .domain(values);
+    if (temp.style.nodeAlphaMap.domain === undefined)
+      temp.style.nodeAlphaMap = d3
+        .scaleOrdinal(session.style.nodeAlphas)
+        .domain(values);
+      
     return aggregates;
   };
   
@@ -1456,18 +1506,21 @@
         new Array(values.length - session.style.linkAlphas.length).fill(1)
       );
     }
-    temp.style.linkColorMap = d3
-      .scaleOrdinal(session.style.linkColors)
-      .domain(values);
-    temp.style.linkAlphaMap = d3
-      .scaleOrdinal(session.style.linkAlphas)
-      .domain(values);
+    if (temp.style.linkColorMap.domain === undefined) //#242
+      temp.style.linkColorMap = d3
+        .scaleOrdinal(session.style.linkColors)
+        .domain(values);
+    if (temp.style.linkAlphaMap.domain === undefined)
+      temp.style.linkAlphaMap = d3
+        .scaleOrdinal(session.style.linkAlphas)
+        .domain(values);
+
     return aggregates;
   };
   
   MT.reset = () => {
     $("#network-statistics-hide").parent().trigger("click");
-    $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
+    // $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
     self.session = MT.sessionSkeleton();
     layout.unbind("stateChanged");
     layout.root.replaceChild(layout.root.contentItems[0], {
@@ -1671,12 +1724,14 @@
         if (rule.selectorText == 'body') {  // issue #110
           extractedCSSText += rule.cssText.replace("body" , "text");;
         }
-        if (rule.selectorText == '.nodes path.selected') {  // issue #156
-          extractedCSSText += rule.cssText;
-        }
+        // if (rule.selectorText == '.nodes path.selected') {  // issue #156
+        //   extractedCSSText += rule.cssText;
+        // }
       }
     }
-  
+    
+    extractedCSSText += ".nodes path.selected { stroke: rgb(255, 131, 0); stroke-width: 4px; }";  // issue #201
+
     let styleElement = document.createElement("style");
     styleElement.setAttribute("type", "text/css");
     styleElement.innerHTML = extractedCSSText;
