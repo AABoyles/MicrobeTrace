@@ -481,13 +481,13 @@
     });
     if(oldSession.network) session.network = oldSession.network;
     MT.applyStyle(session.style);
-    if(!links[0]['distance']){
-      if(links[0]['tn93']){
-        session.style.widgets['link-sort-variable'] = 'tn93';
-      } else {
-        session.style.widgets['link-sort-variable'] = 'snps';
-      }
-    }
+    // if(!links[0]['distance']){  #249
+    //   if(links[0]['tn93']){
+    //     session.style.widgets['link-sort-variable'] = 'tn93';
+    //   } else {
+    //     session.style.widgets['link-sort-variable'] = 'snps';
+    //   }
+    // }
     MT.finishUp(true);
   };
   
