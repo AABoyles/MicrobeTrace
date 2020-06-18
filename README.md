@@ -9,7 +9,7 @@ Developed By [Tony Boyles](http://github.com/aaboyles) and [Jay Kim](http://gith
 * **[Launch MicrobeTrace](https://microbetrace.cdc.gov/MicrobeTrace/)**
 * [Download Sample Data](https://github.com/CDCgov/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
 * [View the Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
-* [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.docx)
+* [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.pdf)
 * [Watch and follow along with the webinar](https://www.youtube.com/watch?v=5E-_Kb7yvHU)
 * [Watch how to use MicrobeTrace for COVID-19](https://www.youtube.com/watch?v=he0Yq5yvToc)
 
