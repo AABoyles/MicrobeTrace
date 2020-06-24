@@ -80,7 +80,6 @@ self.addEventListener('install', function(event) {
         'img/safari-pinned-tab.svg',
         'data/counties.json',
         'data/countries.json',
-        'data/land.json',
         'data/stars.json',
         'data/states.json',
         'data/tracts.csv',

@@ -320,10 +320,10 @@
     var k = 1;
 
     function init() {
-      if (!temp.mapData.land) {
-        MT.getMapData('land.json').then(init);
-        return;
-      }
+      // if (!temp.mapData.land) {
+      //   MT.getMapData('land.json').then(init);
+      //   return;
+      // }
       if (!temp.mapData.stars) {
         MT.getMapData('stars.json').then(init);
         return;
@@ -370,16 +370,22 @@
       context.fill();
 
       context.beginPath();
-      if (session.style.widgets['globe-countries-show']) {
-        path(temp.mapData.countries);
-      } else {
-        path(temp.mapData.land);
-      }
+      
+      path(temp.mapData.countries);
+
+      // if (session.style.widgets['globe-countries-show']) {
+      //   path(temp.mapData.countries);
+      // } else {
+      //   path(temp.mapData.land);
+      // }
+      
       context.fillStyle = "#6CCC00";
       context.fill();
       context.lineWidth = 1;
       context.strokeStyle = "#444444";
-      context.stroke();
+      if (session.style.widgets['globe-countries-show']) {
+        context.stroke();
+      }
 
       userLayers.forEach(layer => {
         context.beginPath();
