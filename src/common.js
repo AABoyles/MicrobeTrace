@@ -1080,7 +1080,7 @@
     // if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation(); #236
     // MT.computeNN();
     // MT.computeMST();
-    await MT.computeTree();
+    // await MT.computeTree();
     if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
     MT.finishUp();
   };
