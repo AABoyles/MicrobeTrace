@@ -698,6 +698,205 @@ $(function() {
     })
     .trigger("change");
 
+  $("#node-timeline-variable")
+    .val(session.style.widgets["node-timeline-variable"])
+    .on("change", function() {
+      d3.select('#global-timeline svg').remove();
+      console.log('node time line variable on change')
+      let variable = this.value;
+      session.style.widgets["node-timeline-variable"] = variable;
+      if (variable == "None") {
+        $("div[id='node-timeline-table-row']").slideUp();
+        $("#global-timeline-field").empty();
+        return;
+      }
+      $("div[id='node-timeline-table-row']").slideDown();
+      $("#global-timeline-field").html(MT.titleize(variable));
+      // $window.trigger("node-color-change");
+  
+      var formatDateIntoYear = d3.timeFormat("%Y");
+      var formatDate = d3.timeFormat("%b %Y");
+      var parseDate = d3.timeParse("%m/%d/%y");
+
+      let timeDomainStart, timeDomainEnd;
+      let field = variable;
+      let times = [],
+      vnodes = JSON.parse(JSON.stringify(session.data.nodes));
+      vnodes.forEach(d => {
+        let time = moment(d[field]);
+        if (time.isValid()) {
+          d[field] = time.toDate();
+          times.push(d[field]);
+        } else {
+          d[field] = null;
+        }
+      });
+      if (times.length < 2) {
+        times = [new Date(2000, 1, 1), new Date()];
+      }
+      timeDomainStart = Math.min(...times);
+      timeDomainEnd = Math.max(...times);
+      let startDate = timeDomainStart;
+      let endDate = timeDomainEnd;
+      var margin = {top:50, right:50, bottom:0, left:50},
+        width = 900 - margin.left - margin.right,
+        height = 200 - margin.top - margin.bottom;
+      var svgTimeline = d3.select("#global-timeline")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", 120);  
+      ////////// slider //////////
+      var moving = false;
+      var currentValue = 0;
+      var targetValue = width;
+      var playButton = d3.select("#timeline-play-button");
+      var x = d3.scaleTime()
+          .domain([startDate, endDate])
+          .range([0, targetValue])
+          .clamp(true);
+      var slider = svgTimeline.append("g")
+          .attr("class", "slider")
+          .attr("transform", "translate(" + "10" + "," + height/2 + ")");
+      slider.append("line")
+          .attr("class", "track")
+          .attr("x1", x.range()[0])
+          .attr("x2", x.range()[1])
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+          .attr("class", "track-inset")
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+          .attr("class", "track-overlay")
+          .call(d3.drag()
+              .on("start.interrupt", function() { slider.interrupt(); })
+              .on("start drag", function() {
+                currentValue = d3.event.x;
+                update(x.invert(currentValue)); 
+              })
+          );
+      slider.insert("g", ".track-overlay")
+        .attr("class", "ticks")
+        .attr("transform", "translate(0," + 18 + ")")
+        .selectAll("text")
+        .data(x.ticks(15))
+        .enter()
+        .append("text")
+        .attr("x", x)
+        .attr("y", 10)
+        .attr("text-anchor", "middle")
+        .text(function(d) { return formatDateIntoYear(d); });
+      var handle = slider.insert("circle", ".track-overlay")
+          .attr("class", "handle")
+          .attr("r", 9);
+      var label = slider.append("text")  
+          .attr("class", "label")
+          .attr("text-anchor", "middle")
+          .text(formatDate(startDate))
+          .attr("transform", "translate(25," + (-20) + ")")
+      playButton
+        .on("click", function() {
+          var button = d3.select(this);
+          if (button.text() == "Pause") {
+            button.text("Play");
+            moving = false;
+            clearInterval(session.timeline);
+            // timer = 0;
+          } else {
+            button.text("Pause");
+            moving = true;
+            session.timeline = setInterval(step, 200);
+          }
+        })
+      function step() {
+        update(x.invert(currentValue));
+        currentValue = currentValue + (targetValue/151);
+        if (currentValue > targetValue) {
+          moving = false;
+          currentValue = 0;
+          clearInterval(session.timeline);
+          // timer = 0;
+          playButton.text("Play");
+          console.log("Slider moving: " + moving);
+        }
+      }
+      session.style.widgets["timeline-date-field"] = field;
+      session.state.timeStart = startDate;
+      function update(h) {
+        handle.attr("cx", x(h));
+        label
+          .attr("x", x(h))
+          .text(formatDate(h));
+        session.state.timeEnd = moment(h).toDate();
+        let network = session.style.widgets["node-timeline-network"];
+        if (network === 'Normal') {
+          MT.setNodeVisibility(false);
+          return;
+        } else {
+          d3.select('#network g.clusters').html(null);
+          MT.setNodeVisibility(true);
+          let vlinks = getVLinks(); // TODO: move this to the component
+          let nodes = d3.select('svg#network').select('g.nodes').selectAll('g').data(session.data.nodes);
+          let links = d3.select('svg#network').select('g.links').selectAll('line').data(vlinks)
+          nodes.attr('visibility', d => {
+            if (d.visible)
+              return "visible"
+            else 
+            return "hidden";
+          });
+          links.attr('visibility', d => {
+            if (d.source.visible === false)
+              return "hidden";
+            if (d.target.visible === false)
+              return "hidden";  
+            return "visible";
+          });
+        }
+      }
+    })
+    .trigger("change");
+
+  // TEMP
+  function getVLinks() {
+    let vlinks = MT.getVisibleLinks(true);
+    let output = [];
+    let n = vlinks.length;
+    let nodes = session.data.nodes;
+    for (let i = 0; i < n; i++) {
+      if (vlinks[i].origin) {
+
+        if (typeof vlinks[i].origin == 'object') {
+          if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
+          vlinks[i].origin.forEach((o, j, l) => {
+            output.push(Object.assign({}, vlinks[i], {
+              origin: o,
+              oNum: j,
+              origins: l.length,
+              source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
+              target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
+            }));
+          });
+        } else {
+          if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
+            output.push(Object.assign({}, vlinks[i], {
+              oNum: 0,
+              origins: 1,
+              source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
+              target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
+            }));
+        }
+      } else {
+        if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
+          output.push(Object.assign({}, vlinks[i], {
+            origin: 'Unknown',
+            oNum: 0,
+            origins: 1,
+            source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
+            target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
+          }));
+      }
+    }
+    return output;
+  }
+
+
   $("#link-color").on("change", function() {
     session.style.widgets["link-color"] = this.value;
     $window.trigger("link-color-change");
@@ -717,6 +916,18 @@ $(function() {
     $window.trigger("background-color-change");
   });
 
+  $("#timeline-network-pinned")
+    .parent()
+    .on("click", () => {
+      session.style.widgets["node-timeline-network"] = "Pinned";
+    });
+
+  $("#timeline-network-normal")
+    .parent()
+    .on("click", () => {
+      session.style.widgets["node-timeline-network"] = "Normal";
+    });
+
   $("#link-color-table-show")
     .parent()
     .on("click", () => $("#link-color-table-wrapper").fadeIn());
@@ -732,6 +943,16 @@ $(function() {
   $("#node-color-table-hide")
     .parent()
     .on("click", () => $("#node-color-table-wrapper").fadeOut());
+
+  $("#timeline-show")
+    .parent()
+    .on("click", () => $("#global-timeline-wrapper").fadeIn());
+
+  $("#timeline-hide")
+    .parent()
+    .on("click", () => { 
+      $("#global-timeline-wrapper").fadeOut();
+    });
 
   $("#apply-style").on("change", function() {
     if (this.files.length > 0) {

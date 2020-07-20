@@ -67,6 +67,7 @@
     "choropleth-satellite-show": false,
     "choropleth-transparency": 0.3,
     "cluster-minimum-size": 1,
+    "convex-hull": "cluster",
     "default-view": "2d_network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
@@ -149,6 +150,8 @@
     "node-symbol-table-counts": true,
     "node-symbol-table-frequencies": false,
     "node-symbol-variable": "None",
+    "node-timeline-variable": "None",
+    "node-timeline-network": "Normal",
     "node-tooltip-variable": "_id",
     "physics-tree-branch-type": "Straight",
     "physics-tree-branch-length": 50,
@@ -253,6 +256,7 @@
       nodeValueNames: {},
       widgets: MT.defaultWidgets
     },
+    timeline: 0,
     warnings: []
   });
   
@@ -1109,6 +1113,11 @@
         "<option selected>None</option>" +
         session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
       .val(session.style.widgets["node-color-variable"]);
+    $("#node-timeline-variable")
+      .html(
+        "<option selected>None</option>" +
+        session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
+        .val(session.style.widgets["node-timeline-variable"]);
     $("#link-color-variable")
       .html(
         "<option>None</option>" +
@@ -1286,16 +1295,18 @@
       if (dateField != "None") {
         if (session.state.timeEnd) {
           node.visible =
-            node.visible &&
+            // node.visible &&
             session.state.timeEnd > moment(node[dateField]).toDate();
         }
         // if (session.state.timeStart) {
-        //   node.visible = node.visible && session.state.timeStart > moment(n[dateField]).toDate();
+        //   node.visible =  
+              // node.visible && 
+              // session.state.timeStart > moment(n[dateField]).toDate();
         // }
       }
     }
     if (!silent) $window.trigger("node-visibility");
-    console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
+    // console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
   
   MT.setLinkVisibility = silent => {

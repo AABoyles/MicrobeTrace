@@ -197,6 +197,12 @@ performance of this software.</pre>
         <p class="lead">MicrobeTrace requires Javascript to run. Please <a href="https://www.enable-javascript.com/">enable Javascript</a> and refresh MicrobeTrace.</p>
       </div>
     </noscript>
+    <div id="global-timeline-wrapper" style="display: none;">
+      <div id="global-timeline" align="center">
+        <div><button type="button" id="timeline-play-button" class="btn btn-light btn-sm">Play</button>
+        <span id="global-timeline-field" ></span></div>
+      </div>  
+    </div>
   </div>
 
   <div id="link-color-table-wrapper" class="floater">
@@ -277,6 +283,9 @@ performance of this software.</pre>
             </li>
             <li class="nav-item">
               <a class="nav-link" id="style-tab" data-toggle="tab" href="#style-config" role="tab" aria-controls="home" aria-selected="true">Styling</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="timeline-tab" data-toggle="tab" href="#timeline-config" role="tab" aria-controls="home" aria-selected="true">Timeline</a>
             </li>
           </ul>
           <div class="tab-content">
@@ -427,6 +436,46 @@ performance of this software.</pre>
                 <div class="col-8">
                   <input type="file" id="apply-style" class="d-none">
                   <label class="custom-file-label" for="apply-style">Choose MicrobeTrace Style File</label>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="timeline-config" role="tabpanel" aria-labelledby="timeline-tab">
+              <div class="form-group row" title="By what variable timeline applied?">
+                <div class="col-4"><label for="node-timeline-variable">Timeline By</label></div>
+                <div class="col-8">
+                  <select id="node-timeline-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div id="node-timeline-table-row" class="form-group row" title="Should MicrobeTrace display the timeline?">
+                <div class="col-4">Timeline</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="timelineShowHide" id="timeline-show" autocomplete="off" >
+                      Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="timelineShowHide" id="timeline-hide" autocomplete="off" checked>
+                      Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div id="node-timeline-table-row" class="form-group row" title="Should MicrobeTrace display the timeline?">
+                <div class="col-4">Network</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="timelineNetworkPinned" id="timeline-network-pinned" autocomplete="off" >
+                      Pinned
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="timelineNetworkNormal" id="timeline-network-normal" autocomplete="off" checked>
+                      Normal
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
