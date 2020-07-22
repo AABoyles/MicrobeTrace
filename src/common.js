@@ -68,7 +68,7 @@
     "choropleth-transparency": 0.3,
     "cluster-minimum-size": 1,
     "polygons-foci": "cluster",
-    "polygons-gather-force": .0001,
+    "polygons-gather-force": 0,
     "default-view": "2d_network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
