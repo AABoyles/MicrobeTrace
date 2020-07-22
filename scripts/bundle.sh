@@ -29,6 +29,7 @@ primaryscripts=(
 secondaryscripts=(
   "node_modules/d3-force-attract/dist/d3-force-attract.min.js"
   "node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"
+  "node_modules/d3-polygon/dist/d3-polygon.min.js"
   "node_modules/plotly.js/dist/plotly-cartesian.min.js"
   "node_modules/3d-force-graph/dist/3d-force-graph.min.js"
   "node_modules/moment/min/moment-with-locales.min.js"

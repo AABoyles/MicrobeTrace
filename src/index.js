@@ -702,7 +702,6 @@ $(function() {
     .val(session.style.widgets["node-timeline-variable"])
     .on("change", function() {
       d3.select('#global-timeline svg').remove();
-      console.log('node time line variable on change')
       let variable = this.value;
       session.style.widgets["node-timeline-variable"] = variable;
       if (variable == "None") {
@@ -814,7 +813,6 @@ $(function() {
           clearInterval(session.timeline);
           // timer = 0;
           playButton.text("Play");
-          console.log("Slider moving: " + moving);
         }
       }
       session.style.widgets["timeline-date-field"] = field;

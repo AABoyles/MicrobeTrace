@@ -26,6 +26,9 @@
     <li class="nav-item">
       <a class="nav-link" id="network-tab" data-toggle="tab" href="#network-settings" role="tab" aria-controls="network-settings" aria-selected="false">Network</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" id="polygons-tab" data-toggle="tab" href="#network-polygons-settings" role="tab" aria-controls="network-polygons-settings" aria-selected="false">Polygons</a>
+    </li>
   </ul>
   <div class="tab-content">
     <div class="tab-pane fade show active" id="network-node-settings" role="tabpanel" aria-labelledby="nodes-tab">
@@ -317,6 +320,50 @@ Note that this may cause slow performance on larger networks.">
         </div>
       </div>
     </div>
+    <div class="tab-pane fade" id="network-polygons-settings" role="tabpanel" aria-labelledby="polygons-tab">
+      <div class="accordion" id="polygons-controls-accordion">
+        <div class="card">
+          <div class="card-header p-0">
+            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#polygons-controls-labels" aria-expanded="true" aria-controls="polygons-controls-labels" style="color:#495057">Polygon controls</button>
+          </div>
+          <div id="polygons-controls-labels" class="collapse show" data-parent="#polygons-controls-accordion">
+            <div class="card-body">
+              <div class="form-group row" title="What data should be displayed when you hover over a link?">
+                <div class="col-4">Polygons</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col" title="Show convex hull under the network.">
+                      <input type="radio" name="polygons" id="polygons-show" autocomplete="off">
+                      Show
+                    </label>
+                    <label class="btn btn-light col active" title="Do Not show convex hull under the network.">
+                      <input type="radio" name="polygons" id="polygons-hide" autocomplete="off" checked>
+                      Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div id="polygons-settings-row" class="form-group row" title="What Foci should be used when creating convex hulls?">
+                <div class="col-4"><label for="link-label-variable">Foci</label></div>
+                <div class="col-8">
+                  <select id="node-foci-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div id="polygons-settings-row" class="form-group row" title="What amount of gather force should be used?">
+                <div class="col-3">
+                  <label for="network-foci-gather">Gather</label>
+                </div>
+                <div class="col-9">
+                  <input type="range" class="custom-range" id="polygons-foci-gather" min="0" max=".02" value="0" step="0.0001">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -501,6 +548,7 @@ Note that this may cause slow performance on larger networks.">
 
     let svg = d3.select('svg#network').append('g');
 
+    svg.append('g').attr('class', 'clusters');
     svg.append('g').attr('class', 'links');
     svg.append('g').attr('class', 'nodes');
 
@@ -537,7 +585,7 @@ Note that this may cause slow performance on larger networks.">
       const start = Date.now();
       let newNodes = MT.getVisibleNodes(true);
       let oldNodes = session.network.nodes;
-
+      if (newNodes.length === 0) return;
       newNodes.forEach((d, i) => {
         let match = oldNodes.find(d2 => d2._id == d._id);
         if (match) {
@@ -597,7 +645,7 @@ Note that this may cause slow performance on larger networks.">
         .attr('dy', settings['link-width'] + 2)
         .text(l => l[settings['link-label-variable']]);
 
-      force.nodes(session.network.nodes).on('tick', function () {
+      let layoutTick = () => {
         nodes
           .attr('transform', d => d.fixed ?
             `translate(${d.fx}, ${d.fy})` :
@@ -618,7 +666,71 @@ Note that this may cause slow performance on larger networks.">
               (l.source.y + l.target.y) / 2 + ')'
             );
         }
-      });
+      }
+
+      let foci = settings['polygons-foci'];
+      let gather = settings['polygons-gather-force'];
+      d3.select('#network g.clusters').html(null);
+      let groups = d3.nest().key(function(d) { return d[foci]; }).entries(newNodes).map(function(d) {
+            var key = d.key
+            var values = d.values.map(function(dd){
+              dd.foci = key;
+              return dd;
+            })
+            return {'key':key, 'values':values}
+        });
+      groups = groups.filter(group => group.values.length > 2)
+      let groupPath = function(d) {
+          return "M" + 
+          d3.polygonHull(d.values.map(function(i) { return [i.x, i.y]; }))
+              .join("L")
+          + "Z";
+      };    
+      let fill = d3.scaleOrdinal(d3.schemeCategory10);
+      let groupFill = function(d, i) { return fill(i & 3); };
+      let clusters = new Array(groups.length);  // The largest node for each cluster.
+      newNodes.forEach(d => {
+        let r =  d[foci];
+        let i = d.foci;
+        if (!clusters[i] || (r > clusters[i].radius)) 
+          clusters[i] = d;
+      })
+      let polygonsTick = () => {
+        newNodes.forEach(function(o, i) {
+          o.y += (clusters[o.foci].y - o.y) * gather;
+          o.x += (clusters[o.foci].x - o.x) * gather;
+        });
+        nodes.attr('transform', d => `translate(${d.x}, ${d.y})`);
+        links
+          .attr('x1', l => l.source.x)
+          .attr('y1', l => l.source.y)
+          .attr('x2', l => l.target.x)
+          .attr('y2', l => l.target.y);
+        if (settings['link-label-variable'] !== 'None') {
+          linklabels
+            .attr('x', l => (l.source.x + l.target.x) / 2)
+            .attr('y', l => (l.source.y + l.target.y) / 2)
+            .attr('transform', l => 'rotate(' +
+              calcAngle(l.source, l.target) + ' ' +
+              (l.source.x + l.target.x) / 2 + ' ' +
+              (l.source.y + l.target.y) / 2 + ')'
+            );
+        }
+        d3.select('#network g.clusters').selectAll('path')
+          .data(groups)
+            .attr("d", groupPath)
+          .enter().insert("path", "circle")
+            .style("fill", groupFill)
+            .style("stroke", groupFill)
+            .style("stroke-width", 40)
+            .style("stroke-linejoin", "round")
+            .style("opacity", .2)
+            .attr("d", groupPath);
+      }
+      const tickFns = [layoutTick, polygonsTick];
+      let tickFnIndex = 0;
+      if (settings['polygons-show']) tickFnIndex = 1;
+      force.nodes(session.network.nodes).on('tick', tickFns[tickFnIndex]);
       force.force('link').links(vlinks);
       force.force('link').distance(settings['link-length']);
       force.alpha(0.3).alphaTarget(0).restart();
@@ -634,7 +746,8 @@ Note that this may cause slow performance on larger networks.">
       for (let i = 0; i < n; i++) {
         if (vlinks[i].origin) {
           if (typeof vlinks[i].origin == 'object') {
-            vlinks[i].origin.forEach((o, j, l) => {
+            if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
+              vlinks[i].origin.forEach((o, j, l) => {
               output.push(Object.assign({}, vlinks[i], {
                 origin: o,
                 oNum: j,
@@ -644,21 +757,23 @@ Note that this may cause slow performance on larger networks.">
               }));
             });
           } else {
+            if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
+              output.push(Object.assign({}, vlinks[i], {
+                oNum: 0,
+                origins: 1,
+                source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
+                target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
+              }));
+          }
+        } else {
+          if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
             output.push(Object.assign({}, vlinks[i], {
+              origin: 'Unknown',
               oNum: 0,
               origins: 1,
               source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
               target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
             }));
-          }
-        } else {
-          output.push(Object.assign({}, vlinks[i], {
-            origin: 'Unknown',
-            oNum: 0,
-            origins: 1,
-            source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
-            target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
-          }));
         }
       }
       return output;
@@ -1084,6 +1199,11 @@ Note that this may cause slow performance on larger networks.">
       redrawNodes();
     });
 
+    $('#node-foci-variable').on('change', function () {
+      settings['polygons-foci'] = this.value;
+      render();
+    });
+
     function updateNodeColors() {
       let variable = settings['node-color-variable'];
       let nodes = svg.select('g.nodes').selectAll('g').select('path').data(session.network.nodes).classed('selected', d => d.selected);
@@ -1242,6 +1362,26 @@ Note that this may cause slow performance on larger networks.">
       settings['network-gridlines-show'] = false;
       d3.select('#network g.horizontal-gridlines').html(null);
       d3.select('#network g.vertical-gridlines').html(null);
+    });
+
+    $('#polygons-show').parent().on('click', function () {
+      settings['polygons-show'] = true;
+      $("div[id='polygons-settings-row']").slideDown();
+      render();
+    });
+
+    $('#polygons-hide').parent().on('click', function () {
+      settings['polygons-show'] = false;
+      $("div[id='polygons-settings-row']").slideUp();
+      $("#polygons-foci-gather").val(0);
+      settings['polygons-gather-force'] = 0;
+      render();
+    }).trigger('click');;
+
+    $('#polygons-foci-gather').on('input', function () {
+      let v = parseFloat(this.value);
+      settings['polygons-gather-force'] = v;
+      render();
     });
 
     $('#network-friction').on('input', function () {
