@@ -828,72 +828,24 @@ $(function() {
           MT.setNodeVisibility(false);
           return;
         } else {
-          d3.select('#network g.clusters').html(null);
           MT.setNodeVisibility(true);
-          let vlinks = getVLinks(); // TODO: move this to the component
           let nodes = d3.select('svg#network').select('g.nodes').selectAll('g').data(session.data.nodes);
-          let links = d3.select('svg#network').select('g.links').selectAll('line').data(vlinks)
+          let links = d3.select('svg#network').select('g.links').selectAll('line').data(MT.getVisibleLinks(true));
           nodes.attr('visibility', d => {
-            if (d.visible)
-              return "visible"
-            else 
-            return "hidden";
+            if (d.visible) return "visible"
+            else return "hidden";
           });
           links.attr('visibility', d => {
-            if (d.source.visible === false)
-              return "hidden";
-            if (d.target.visible === false)
-              return "hidden";  
+            let src = session.data.nodes.find(dd => dd._id == d.source || dd.id == d.source);
+            let tgt = session.data.nodes.find(dd => dd._id == d.target || dd.id == d.target);
+            if (src === undefined || src.visible === false) return "hidden";
+            if (tgt === undefined || tgt.visible === false) return "hidden";  
             return "visible";
           });
         }
       }
     })
     .trigger("change");
-
-  // TEMP
-  function getVLinks() {
-    let vlinks = MT.getVisibleLinks(true);
-    let output = [];
-    let n = vlinks.length;
-    let nodes = session.data.nodes;
-    for (let i = 0; i < n; i++) {
-      if (vlinks[i].origin) {
-
-        if (typeof vlinks[i].origin == 'object') {
-          if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
-          vlinks[i].origin.forEach((o, j, l) => {
-            output.push(Object.assign({}, vlinks[i], {
-              origin: o,
-              oNum: j,
-              origins: l.length,
-              source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
-              target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
-            }));
-          });
-        } else {
-          if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
-            output.push(Object.assign({}, vlinks[i], {
-              oNum: 0,
-              origins: 1,
-              source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
-              target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
-            }));
-        }
-      } else {
-        if (nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source) && nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target))
-          output.push(Object.assign({}, vlinks[i], {
-            origin: 'Unknown',
-            oNum: 0,
-            origins: 1,
-            source: nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source),
-            target: nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target)
-          }));
-      }
-    }
-    return output;
-  }
-
 
   $("#link-color").on("change", function() {
     session.style.widgets["link-color"] = this.value;
@@ -949,6 +901,8 @@ $(function() {
   $("#timeline-hide")
     .parent()
     .on("click", () => { 
+      session.style.widgets["timeline-date-field"] = "None";
+      MT.setNodeVisibility(false);
       $("#global-timeline-wrapper").fadeOut();
     });
 
