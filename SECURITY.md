@@ -18,10 +18,10 @@ using [MicrobeTrace](https://microbetrace.cdc.gov/MicrobeTrace/) instead.
 
 ## Reporting a Vulnerability
 
-If you discover a vulnerability in MicrobeTrace, please detail it in an email to microbetrace@cdc.gov. Please DO NOT file an
-issue report on Github. We'll get back to you within two business days. During those two days, we'll attempt to verify the
-vulnerability you're reporting, so we can respond to confirm or deny the validity of your report. If your report is confirmed,
-we'll write and release a patch as quickly as we possibly can.
+If you discover a vulnerability in MicrobeTrace, please [file a security advisory](https://github.com/CDCgov/MicrobeTrace/security/advisories)
+or detail it in an email to microbetrace@cdc.gov. Please **do not** file an
+issue report on Github. We'll get back to you as soon as we've attempted to verify the
+vulnerability you're reporting. If your report is confirmed, we'll write and release a patch as quickly as we possibly can.
 
 ## See Also
 
