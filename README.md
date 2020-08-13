@@ -1,8 +1,12 @@
-[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/android-chrome-512x512.png "MicrobeTrace")](https://microbetrace.cdc.gov/MicrobeTrace/)
+[![MicrobeTrace](https://raw.githubusercontent.com/CDCgov/MicrobeTrace/master/img/android-chrome-192x192.png "MicrobeTrace")](https://microbetrace.cdc.gov/MicrobeTrace/)
 
 # MicrobeTrace
 
-Developed By [Tony Boyles](http://github.com/aaboyles) and [Jay Kim](http://github.com/jaywokim)
+[![DOI](https://zenodo.org/badge/121793260.svg)](https://zenodo.org/badge/latestdoi/121793260)
+
+*The Visualization Multitool for Molecular Epidemiology and Bioinformatics*
+
+Developed By ([some folks](https://github.com/CDCgov/MicrobeTrace/blob/master/humans.txt) at) CDC.
 
 ## To Use MicrobeTrace:
 

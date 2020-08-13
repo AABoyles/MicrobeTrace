@@ -1,5 +1,5 @@
 /* TEAM */
-  Chef Developer: Tony Boyles <nsp3@cdc.gov>
+  Chief Developer: Tony Boyles <tony@ephemer.ai>
 
   Algorithms Guru: Sergey Kniazev
 
@@ -8,6 +8,8 @@
   Head Writer: Anupama Shankar
 
   Fearless Leader: Bill Switzer
+
+  Retired Developers: Jay Kim (Miss you, dude!)
 
 /* SITE */
   Doctype: HTML5
