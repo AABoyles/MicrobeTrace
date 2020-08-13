@@ -313,9 +313,12 @@ label[for="OpenTab"] {
 #file-table {
   height: calc(100% - 50px);
 }
+#warning-prompt {
+  text-align: center;
+}
 #file-prompt {
   text-align: center;
-  padding-top: 35%;
+  padding-top: 25%;
 }
 .file-table-row {
   border: 1px solid rgba(0, 0, 0, 0.1);

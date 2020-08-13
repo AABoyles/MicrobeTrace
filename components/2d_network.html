@@ -390,7 +390,7 @@ Note that this may cause slow performance on larger networks.">
             <button id="network-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#network-export-advanced" aria-expanded="false" aria-controls="network-export-advanced">Advanced</button>
           </div>
         </div>
-        <div class="collapse" id="network-export-advanced">
+        <div class="collapse" id="network-export-advanced" style="margin-top: 10px;">
           <div class="card card-body">
             <div class="form-group row">
               <div class="col-3">
@@ -414,6 +414,14 @@ Note that this may cause slow performance on larger networks.">
             </div>
           </div>
         </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="col-3">
+            <label for="network-export-opacity">Watermark Opacity</label>
+          </div>
+          <div class="col-9">
+            <input type="range" id="network-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
@@ -425,6 +433,9 @@ Note that this may cause slow performance on larger networks.">
 
 <script>
   (() => {
+    ga('set', 'page', '/2d_network');
+    ga('set', 'title', '2D View');
+    ga('send', 'pageview');
 
     let halfWidth = $('#network').parent().width() / 2,
       halfHeight = $('#network').parent().parent().parent().height() / 2,
@@ -434,26 +445,29 @@ Note that this may cause slow performance on larger networks.">
     let zoom = d3.zoom().on('zoom', () => svg.attr('transform', transform = d3.event.transform));
 
     let brush = d3.brush()
+      .filter(() => !d3.event.button)
       .on('start', function(){
         session.network.nodes.forEach(d => {
           if (d.visible) d._previouslySelected = d.selected;
         });
       })
       .on('brush', function(){
-        let e = d3.event;
-        if (e.sourceEvent.type == 'end') return;
-        let selection0 = transform.invert(e.selection[0]),
-            selection1 = transform.invert(e.selection[1]);
-        if (selection.includes(null)) return;
-        session.network.nodes.forEach(d => {
+        if(d3.event.sourceEvent.type === 'end') return;
+        let selection = [
+          transform.invert(d3.event.selection[0]),
+          transform.invert(d3.event.selection[1])
+        ];
+        if(selection.includes(null)) return;
+        session.network.nodes.forEach( function (d) {
           d.selected = (d._previouslySelected ^ (
-            selection0[0] <= d.x && d.x <= selection1[0] &&
-            selection0[1] <= d.y && d.y <= selection1[1]
-          )) == 1;
+            selection[0][0] <= d.x && d.x <= selection[1][0] &&
+            selection[0][1] <= d.y && d.y <= selection[1][1]
+          )) === 1;
         });
       })
       .on('end', function(){
         if (d3.event.selection == null) return;
+        d3.select(this).call(d3.event.target.move, null);
         session.network.nodes.forEach(d => delete d._previouslySelected);
         session.data.nodes.forEach(d => {
           let match = session.network.nodes.find(node => node._id == d._id);
@@ -606,6 +620,7 @@ Note that this may cause slow performance on larger networks.">
         }
       });
       force.force('link').links(vlinks);
+      force.force('link').distance(settings['link-length']);
       force.alpha(0.3).alphaTarget(0).restart();
       $('#node-symbol-variable').trigger('change');
       console.log("Network render time:", (Date.now() - start).toLocaleString(), 'ms');
@@ -1246,6 +1261,7 @@ Note that this may cause slow performance on larger networks.">
     $('#network-export-filetype').on('change', function () {
       if (this.value == 'svg') {
         $('#network-export-advanced-button').parent().parent().slideUp();
+        if ($('#network-export-advanced').hasClass("show")) $('#network-export-advanced-button').click();
       } else {
         $('#network-export-advanced-button').parent().parent().slideDown();
       }
@@ -1261,13 +1277,72 @@ Note that this may cause slow performance on larger networks.">
     }).trigger('input');
 
     $('#network-export').on('click', function () {
+      ga('send', 'event', '2D-network-export', 'trigger', 'on');
       let network = document.getElementById('network');
       let $network = $(network);
-      let watermark = d3.select(network).append('text')
-        .text('MicrobeTrace')
-        .attr('x', $network.width() - 150)
-        .attr('y', $network.height() - 20)
-        .attr('class', 'watermark');
+      let watermark = d3.select(network).append('image')
+        .attr('xlink:href', MT.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#network-export-opacity').val());
+      //
+      let vnodes = MT.getVisibleNodes();
+      let aggregates = MT.createNodeColorMap();
+      let values = Object.keys(aggregates);
+      var columns = [];
+      columns.push('Node ' + MT.titleize(session.style.widgets["node-color-variable"]));
+      if (session.style.widgets["node-color-table-counts"]) columns.push('Count');
+      if (session.style.widgets["node-color-table-frequencies"]) columns.push('Frequency');
+      columns.push('Color');
+      var data = [];
+      values.forEach((value, i) => {
+        let nodeValue =  (session.style.nodeValueNames[value] ? session.style.nodeValueNames[value] : MT.titleize("" + value));
+        let tableCounts = (session.style.widgets["node-color-table-counts"] ?  aggregates[value] : undefined);
+        let tableFreq = (session.style.widgets["node-color-table-frequencies"] ? (aggregates[value] / vnodes.length).toLocaleString() : undefined);
+        let line = {
+          Node: nodeValue,
+          Count: tableCounts, 
+          Frequency: tableFreq,
+          Color: '<div  style="margin-left:5px; width:40px;height:12px;background:' + temp.style.nodeColorMap(value)  +'"> </div>'
+        }
+        data.push(line);
+      })
+      let nodeWrapper = document.getElementById('node-color-table-wrapper');
+      let nodeLegend = MT.tabulate(data, columns, nodeWrapper, network);
+
+      let vlinks = MT.getVisibleLinks();
+      aggregates = MT.createLinkColorMap();
+      values = Object.keys(aggregates);
+      columns = [];
+      columns.push('Link ' + MT.titleize(session.style.widgets["link-color-variable"]));
+      if (session.style.widgets["link-color-table-counts"]) columns.push('Count');
+      if (session.style.widgets["link-color-table-frequencies"]) columns.push('Frequency');
+      columns.push('Color');
+      data = [];
+      values.forEach((value, i) => {
+        let nodeValue =  (session.style.linkValueNames[value] ? session.style.linkValueNames[value] : MT.titleize("" + value));
+        let tableCounts = (session.style.widgets["link-color-table-counts"] ?  aggregates[value] : undefined);
+        let tableFreq = (session.style.widgets["link-color-table-frequencies"] ? (aggregates[value] / vlinks.length).toLocaleString() : undefined);
+        let line = {
+          Link: nodeValue,
+          Count: tableCounts, 
+          Frequency: tableFreq,
+          Color: '<div  style="margin-left:5px; width:40px;height:12px;background:' + temp.style.linkColorMap(value)  +'"> </div>'
+        }
+        data.push(line);
+      })
+      let linkWrapper = document.getElementById('link-color-table-wrapper');
+      let linkLegend = MT.tabulate(data, columns, linkWrapper, network);
+
+      let statsDiv = document.getElementById('network-statistics-wrapper');
+      let foreignObjStats = d3.select(network).append("svg:foreignObject")
+      .attr("x", statsDiv.offsetLeft)
+      .attr("y", statsDiv.offsetTop-60)
+      .attr("width", statsDiv.offsetWidth)
+      .attr("height", statsDiv.offsetHeight);
+      foreignObjStats.append("xhtml:body").html(statsDiv.innerHTML);
+      //
       let filetype = $('#network-export-filetype').val(),
         filename = $('#network-export-filename').val();
       if (filetype == 'svg') {
@@ -1275,13 +1350,21 @@ Note that this may cause slow performance on larger networks.">
         let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);
         watermark.remove();
+        nodeLegend.remove();
+        linkLegend.remove();
+        foreignObjStats.remove();
       } else {
         saveSvgAsPng(network, filename + '.' + filetype, {
           scale: parseFloat($('#network-export-scale').val()),
           backgroundColor: settings['background-color'],
           encoderType: 'image/' + filetype,
           encoderOptions: parseFloat($('#network-export-quality').val())
-        }).then(() => watermark.remove());
+        }).then(() => {
+            watermark.remove(); 
+            nodeLegend.remove(); 
+            linkLegend.remove();
+            foreignObjStats.remove();
+          });
       }
     });
 
@@ -1438,7 +1521,8 @@ Note that this may cause slow performance on larger networks.">
       brush.extent(brush.extent());
     });
 
-    if (session.files.length > 1) $('#link-color-variable').val('origin').change();
+    let linkColorVariable = session.style.widgets["link-color-variable"] === 'None' ? 'origin' : session.style.widgets["link-color-variable"];
+    if (session.files.length > 1) $('#link-color-variable').val(linkColorVariable).change(); 
     if (settings['background-color']) $('#network').css('background-color', settings['background-color']);
     render();
 

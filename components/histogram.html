@@ -83,7 +83,7 @@
             <button id="histogram-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#histogram-export-advanced" aria-expanded="false" aria-controls="histogram-export-advanced">Advanced</button>
           </div>
         </div>
-        <div class="collapse" id="histogram-export-advanced">
+        <div class="collapse" id="histogram-export-advanced" style="margin-top: 10px;">
           <div class="card card-body">
             <div class="form-group row">
               <div class="col-3">
@@ -107,6 +107,14 @@
             </div>
           </div>
         </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="col-3">
+            <label for="histogram-export-opacity">Watermark Opacity</label>
+          </div>
+          <div class="col-9">
+            <input type="range" id="histogram-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
@@ -118,6 +126,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/histogram');
+    ga('set', 'title', 'Histogram View');
+    ga('send', 'pageview');
+
     let plot;
 
     function redrawHistogram() {
@@ -194,6 +206,9 @@
         title: 'Number of ' + MT.titleize(varSource),
         type: session.style.widgets['histogram-scale-log'] ? 'log' : ''
       };
+      traces.sort(function(a, b) { //#242
+        return a.x.length - b.x.length;
+      });
       plot = Plotly.newPlot('histogram', traces, layout, {
         displaylogo: false,
         displayModeBar: false,
@@ -250,6 +265,7 @@
     $('#histogram-export-filetype').on('change', function (e) {
       if (e.target.value == 'svg') {
         $('#histogram-export-advanced-button').slideUp();
+        if ($('#histogram-export-advanced').hasClass("show")) $('#histogram-export-advanced-button').click();
       } else {
         $('#histogram-export-advanced-button').slideDown();
       }
@@ -268,11 +284,12 @@
       let $histogram = $('#histogram .main-svg');
       let histogram = $histogram.get(0);
       $('#histogram .main-svg .infolayer').appendTo(histogram);
-      let watermark = d3.select(histogram).append('text')
-        .text('MicrobeTrace')
-        .attr('x', $histogram.width() - 150)
-        .attr('y', $histogram.height() - 20)
-        .attr('class', 'watermark');
+      let watermark = d3.select(histogram).append('image')
+        .attr('xlink:href', MT.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#histogram-export-opacity').val());
       let filename = $('#histogram-export-filename').val(),
         filetype = $('#histogram-export-filetype').val();
       if (filetype == 'svg') {

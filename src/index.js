@@ -213,12 +213,14 @@ $(function() {
   $("#link-show-nn")
     .parent()
     .on("click", () => {
+      ga('send', 'event', 'nearest-neighbor', 'trigger', 'on');
       $("#filtering-epsilon-copy").val(
         Math.pow(10, parseFloat($("#filtering-epsilon").val())).toLocaleString()
       );
       $("#filtering-epsilon-row").css("display", "flex");
       session.style.widgets["link-show-nn"] = true;
-      updateNetwork();
+      MT.computeMST(session.style.widgets["default-distance-metric"]).then(updateNetwork);
+      //updateNetwork();
     });
 
   $("#filtering-epsilon")
@@ -229,7 +231,11 @@ $(function() {
     })
     .on("change", function() {
       session.style.widgets["filtering-epsilon"] = parseFloat(this.value);
-      MT.computeNN(session.style.widgets["default-distance-metric"]).then(updateNetwork);
+      $("#filtering-epsilon-copy").val(
+        Math.pow(10, parseFloat(this.value)).toLocaleString()
+      );
+      // MT.computeNN(session.style.widgets["default-distance-metric"]).then(updateNetwork);
+      MT.computeMST(session.style.widgets["default-distance-metric"]).then(updateNetwork);
     });
 
   $("#cluster-minimum-size").on("change", function() {
@@ -333,6 +339,7 @@ $(function() {
   });
 
   $("#link-threshold").on("change", function() {
+    ga('send', 'event', 'threshold', 'update', this.value);
     session.style.widgets["link-threshold"] = parseFloat(this.value);
     MT.setLinkVisibility(true);
     MT.tagClusters().then(() => {
@@ -408,6 +415,46 @@ $(function() {
     MT.updateStatistics();
   });
 
+  MT.tabulate = (data, columns, wrapper, container) => {
+    let foreignObj = d3.select(container).append("svg:foreignObject")
+      .attr("x", wrapper.offsetLeft)
+      .attr("y", wrapper.offsetTop-60)
+      .attr("width", wrapper.offsetWidth)
+      .attr("height", wrapper.offsetHeight);
+    let body = foreignObj 
+      .append("xhtml:body")
+      .append("table")
+      .style('position', 'absolute')
+      .style('top', '0')
+      .style('width', '100%')
+      .style('height', '100%')
+      .attr('cellpadding', '1px')
+      .attr("class", "table-bordered");
+      // .html(nodeColorTable.innerHTML); SVG doesn't translate
+    let thead = body.append("thead"),
+        tbody = body.append("tbody");
+    thead.append("tr")
+      .selectAll("th")
+      .data(columns)
+      .enter()
+      .append("th")
+      .text(function(column) { return column; });
+    let rows = tbody.selectAll("tr")
+      .data(data)
+      .enter()
+      .append("tr");
+    let cells = rows.selectAll("td")
+      .data(function(row) {
+        return columns.map(function(column) {
+            return {column: column, value: row[column.split(" ")[0]]};
+        });
+      })
+      .enter()
+      .append("td")
+      .html(function(d) { return d.value; });
+    return foreignObj;
+  }
+
   $("#node-color-variable")
     .val(session.style.widgets["node-color-variable"])
     .on("change", function() {
@@ -422,21 +469,48 @@ $(function() {
       }
       $("#node-color-value-row").slideUp();
       $("#node-color-table-row").slideDown();
+      let nodeSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
+        session.style.widgets["node-color-table-counts-sort"] = "";
+        if (session.style.widgets["node-color-table-name-sort"] === "ASC")
+          session.style.widgets["node-color-table-name-sort"] = "DESC"
+        else
+          session.style.widgets["node-color-table-name-sort"] = "ASC"
+        $('#node-color-variable').trigger("change");
+      });
+      let nodeHeader = $("<th class='p-1' contenteditable>Node " + MT.titleize(variable) + "</th>").append(nodeSort);
+      let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
+        session.style.widgets["node-color-table-name-sort"] = "";
+        if (session.style.widgets["node-color-table-counts-sort"] === "ASC")
+          session.style.widgets["node-color-table-counts-sort"] = "DESC"
+        else
+          session.style.widgets["node-color-table-counts-sort"] = "ASC"
+        $('#node-color-variable').trigger("change");
+      });
+      let countHeader = $((session.style.widgets["node-color-table-counts"] ? "<th>Count</th>" : "")).append(countSort);
       let nodeColorTable = $("#node-color-table")
         .empty()
-        .append(
-          "<tr>" +
-            "<th class='p-1' contenteditable>Node " + MT.titleize(variable) + "</th>" +
-            (session.style.widgets["node-color-table-counts"     ] ? "<th>Count</th>"     : "") +
-            (session.style.widgets["node-color-table-frequencies"] ? "<th>Frequency</th>" : "") +
-            "<th>Color</th>" +
-          "<tr>"
-        );
+        .append($("<tr></tr>"))
+        .append(nodeHeader)
+        .append(countHeader)
+        .append((session.style.widgets["node-color-table-frequencies"] ? "<th>Frequency</th>" : ""))
+        .append("<th>Color</th>" );
       if (!session.style.nodeValueNames) session.style.nodeValueNames = {};
       let aggregates = MT.createNodeColorMap();
       let vnodes = MT.getVisibleNodes();
       let values = Object.keys(aggregates);
+
+      if (session.style.widgets["node-color-table-counts-sort"] == "ASC")
+        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+      else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
+        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
+      if (session.style.widgets["node-color-table-name-sort"] == "ASC")
+        values.sort(function(a, b) { return a - b });
+      else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
+        values.sort(function(a, b) { return b - a });
+
       values.forEach((value, i) => {
+        session.style.nodeColors.splice(i, 1, temp.style.nodeColorMap(value));
+        session.style.nodeAlphas.splice(i, 1, temp.style.nodeAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.nodeColorMap(value) + '">')
           .on("change", function(){
             session.style.nodeColors.splice(i, 1, this.value);
@@ -477,6 +551,14 @@ $(function() {
         ).append(cell);
         nodeColorTable.append(row);
       });
+      //#242
+      temp.style.nodeColorMap = d3
+        .scaleOrdinal(session.style.nodeColors)
+        .domain(values);
+      temp.style.nodeAlphaMap = d3
+        .scaleOrdinal(session.style.nodeAlphas)
+        .domain(values);
+
       nodeColorTable
         .find("td")
         .on("dblclick", function() {
@@ -513,21 +595,48 @@ $(function() {
       }
       $("#link-color-value-row").slideUp();
       $("#link-color-table-row").slideDown();
+      let linkSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
+        session.style.widgets["link-color-table-counts-sort"] = "";
+        if (session.style.widgets["link-color-table-name-sort"] === "ASC")
+          session.style.widgets["link-color-table-name-sort"] = "DESC"
+        else
+          session.style.widgets["link-color-table-name-sort"] = "ASC"
+        $('#link-color-variable').trigger("change");
+      });
+      let linkHeader = $("<th class='p-1' contenteditable>Link " + MT.titleize(variable) + "</th>").append(linkSort);
+      let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
+        session.style.widgets["link-color-table-name-sort"] = "";
+        if (session.style.widgets["link-color-table-counts-sort"] === "ASC")
+          session.style.widgets["link-color-table-counts-sort"] = "DESC"
+        else
+          session.style.widgets["link-color-table-counts-sort"] = "ASC"
+        $('#link-color-variable').trigger("change");
+      });
+      let countHeader = $((session.style.widgets["link-color-table-counts"] ? "<th>Count</th>" : "")).append(countSort);
       let linkColorTable = $("#link-color-table")
         .empty()
-        .append(
-          "<tr>" +
-            ("<th class='p-1' contenteditable>Link " + MT.titleize(variable) + "</th>") +
-            (session.style.widgets["link-color-table-counts"] ? "<th>Count</th>" : "") +
-            (session.style.widgets["link-color-table-frequencies"] ? "<th>Frequency</th>" : "") +
-            "<th>Color</th>" +
-          "</tr>"
-        );
+        .append($("<tr></tr>"))
+        .append(linkHeader)
+        .append(countHeader)
+        .append((session.style.widgets["link-color-table-frequencies"] ? "<th>Frequency</th>" : ""))
+        .append("<th>Color</th>" );
       if (!session.style.linkValueNames) session.style.linkValueNames = {};
       let aggregates = MT.createLinkColorMap();
       let vlinks = MT.getVisibleLinks();
       let values = Object.keys(aggregates);
+
+      if (session.style.widgets["link-color-table-counts-sort"] == "ASC")
+        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+      else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
+        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
+      if (session.style.widgets["link-color-table-name-sort"] == "ASC")
+        values.sort(function(a, b) { return a - b });
+      else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
+        values.sort(function(a, b) { return b - a });
+      
       values.forEach((value, i) => {
+        session.style.linkColors.splice(i, 1, temp.style.linkColorMap(value));
+        session.style.linkAlphas.splice(i, 1, temp.style.linkAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.linkColorMap(value) + '">')
           .on("change", function(){
             session.style.linkColors.splice(i, 1, this.value);
@@ -566,6 +675,14 @@ $(function() {
         row.append($("<td></td>").append(colorinput).append(alphainput));
         linkColorTable.append(row);
       });
+      //#242
+      temp.style.linkColorMap = d3
+        .scaleOrdinal(session.style.linkColors)
+        .domain(values);
+      temp.style.linkAlphaMap = d3
+        .scaleOrdinal(session.style.linkAlphas)
+        .domain(values);
+
       linkColorTable
         .find("td")
         .on("dblclick", function() {

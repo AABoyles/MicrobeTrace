@@ -269,6 +269,22 @@
                   <input id="tree-leaf-label-size" type="range" class="custom-range" min="1" max="32" value="6" step="1">
                 </div>
               </div>
+              <div class="form-group row" title="What field should be displayed as a label for the node?">
+                <div class="col-4"><label for="phylogenetic-node-label-variable">Label</label></div>
+                <div class="col-8">
+                  <select id="phylogenetic-node-label-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
+                <div class="col-4"><label for="phylogenetic-node-tooltip-variable">Tooltip</label></div>
+                <div class="col-8">
+                  <select id="phylogenetic-node-tooltip-variable" class="form-control form-control-sm nodeVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -352,8 +368,12 @@
             </select>
           </div>
         </div>
-        <button id="tree-export-advanced-button" class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#tree-export-advanced" aria-expanded="false" aria-controls="tree-export-advanced">Advanced</button>
-        <div class="collapse" id="tree-export-advanced">
+        <div class="form-group row mb-0">
+          <div class="col-3 offset-9">
+            <button id="tree-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#tree-export-advanced" aria-expanded="false" aria-controls="tree-export-advanced">Advanced</button>
+          </div>
+        </div>
+        <div class="collapse" id="tree-export-advanced" style="margin-top: 10px;">
           <div class="card card-body">
             <div class="form-group row">
               <div class="col-3">
@@ -377,6 +397,14 @@
             </div>
           </div>
         </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="col-3">
+            <label for="tree-export-opacity">Watermark Opacity</label>
+          </div>
+          <div class="col-9">
+            <input type="range" id="tree-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
@@ -388,6 +416,10 @@
 
 <script>
   (() => {
+    ga('set', 'page', '/phylogenetic_tree');
+    ga('set', 'title', 'Phylogenetic Tree View');
+    ga('send', 'pageview');
+
     let tree;
 
     let redrawTree = () => {
@@ -401,7 +433,7 @@
         let ncm = temp.style.nodeColorMap;
         tree.eachLeafNode(circle => d3.select(circle).attr('r', size).style('fill', data => {
           let id = data.data.id;
-          let match = session.data.nodes.find(node => node.id == id);
+          let match = session.data.nodes.find(node => node._id == id);
           if (match) {
             return ncm(match[ncv]);
           } else {
@@ -447,10 +479,10 @@
       let n = d[0].data;
       e.preventDefault();
       if (e.ctrlKey) {
-        session.data.nodes.find(node => node.id == n.id).selected = !n.selected;
+        session.data.nodes.find(node => node._id == n.id).selected = !n.selected;
       } else {
         session.data.nodes.forEach(node => {
-          if (node.id == n.id) {
+          if (node._id == n.id) {
             node.selected = !n.selected;
           } else {
             node.selected = false;
@@ -499,7 +531,7 @@
         let e = d3.event;
         e.preventDefault();
         d3.select('#tooltip')
-          .text(d[0].data.id)
+          .text(e.target.getAttribute('title'))
           .style('top', e.pageY + 'px')
           .style('left', (e.pageX + 5) + 'px')
           .style('z-index', 1000)
@@ -514,6 +546,28 @@
         .style('opacity', 0)
         .on('end', () => tooltip.style('z-index', -1));
     }
+
+    $('#phylogenetic-node-label-variable').on('change', function () {
+      let labelVar = this.value;
+      tree.eachLeafLabel(label => {
+        d3.select(label).text(data => {
+          let id = data.data.id;
+          let node = session.network.nodes.find(node => node._id == id);
+          return node[labelVar];
+        }).attr('dx', 8)
+      });
+    });
+
+    $('#phylogenetic-node-tooltip-variable').on('change', function () {
+      let labelVar = this.value;
+      tree.eachLeafNode((circle, data) => {
+        let node = session.data.nodes.find(d => d.id == data.data.id);
+        if (node === undefined) 
+          node = session.data.nodes.find(d => d._id == data.data.id);
+        d3.select(circle)
+          .attr('title', node[labelVar]);
+      });
+    });
 
     $('#toggle-tree-settings').on('click', function () {
       let pane = $('#tree-settings-pane');
@@ -767,6 +821,7 @@
     $('#tree-export-filetype').on('change', function () {
       if (this.value == 'svg' || this.value == 'nwk') {
         $('#tree-export-advanced-button').slideUp();
+        if ($('#tree-export-advanced').hasClass("show")) $('#tree-export-advanced-button').click();
       } else {
         $('#tree-export-advanced-button').slideDown();
       }
@@ -782,6 +837,14 @@
     }).trigger('input');
 
     $('#tree-export').on('click', () => {
+      let $root = $('#tree svg');
+      let root = $root[0];
+      let watermark = d3.select(root).append('image')
+        .attr('xlink:href', MT.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#tree-export-opacity').val());
       let filetype = $('#tree-export-file-type').val();
       let filename = $('#tree-export-file-name').val();
       if (filetype == 'nwk') {
@@ -790,14 +853,8 @@
       } else if (filetype == 'svg') {
         let blob = new Blob([MT.unparseSVG($('#tree svg')[0])], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, $('#tree-export-file-name').val() + '.svg');
+        watermark.remove();
       } else {
-        let $root = $('#tree svg');
-        let root = $root[0];
-        let watermark = d3.select(root).append('text')
-          .text('MicrobeTrace')
-          .attr('x', $root.width() - 150)
-          .attr('y', $root.height() - 20)
-          .attr('class', 'watermark');
         saveSvgAsPng(root, filename + '.' + filetype, {
           scale: parseFloat($('#tree-export-scale').val()),
           backgroundColor: session.style.widgets['background-color'],
@@ -812,6 +869,8 @@
     function tagSelected() {
       tree.eachLeafNode((circle, data) => {
         let node = session.data.nodes.find(d => d.id == data.data.id);
+        if (node === undefined) 
+          node = session.data.nodes.find(d => d._id == data.data.id);
         if (node.selected) {
           d3.select(circle)
             .style('stroke', session.style.widgets['selected-color'])

@@ -10,6 +10,9 @@
   <button type="button" id="reload-3DNet" class="btn btn-light btn-sm" title="Refresh Network">
     <span class="oi oi-reload"></span>
   </button>
+  <button id="3DNet-fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
+    <span class="oi oi-target"></span>
+  </button>
 </div>
 
 <div id="3DNet-settings-pane" class="left-pane">
@@ -124,6 +127,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/3d_network');
+    ga('set', 'title', '3D View');
+    ga('send', 'pageview');
+    
     let links = [];
     let nodes = [];
 
@@ -271,6 +278,12 @@
       });
       updateGraph();
     }
+
+    function fit(thing, bounds) {
+      graph.cameraPosition({ z: 1000 });
+    }
+
+    $('#3DNet-fitbutton').on('click', fit);
 
     $("#reload-3DNet").on("click", clearCoords);
 

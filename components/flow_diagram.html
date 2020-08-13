@@ -71,7 +71,7 @@
               aria-controls="flow-export-advanced">Advanced</button>
           </div>
         </div>
-        <div class="collapse" id="flow-export-advanced">
+        <div class="collapse" id="flow-export-advanced" style="margin-top: 10px;">
           <div class="card card-body">
             <div class="form-group row">
               <div class="col-3">
@@ -96,6 +96,14 @@
             </div>
           </div>
         </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="col-3">
+            <label for="flow-export-opacity">Watermark Opacity</label>
+          </div>
+          <div class="col-9">
+            <input type="range" id="flow-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
@@ -107,6 +115,9 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/flow_diagram');
+    ga('set', 'title', 'Flow Diagram View');
+    ga('send', 'pageview');
 
     let plot;
 
@@ -244,6 +255,7 @@
     $('#flow-export-filetype').on('change', function (e) {
       if (e.target.value == 'svg') {
         $('#flow-export-advanced-button').slideUp();
+        if ($('#flow-export-advanced').hasClass("show")) $('#flow-export-advanced-button').click();
       } else {
         $('#flow-export-advanced-button').slideDown();
       }
@@ -261,11 +273,12 @@
     $('#flow-export').on('click', function () {
       let $flow = $('#flow .main-svg');
       let flow = $flow.get(0);
-      let watermark = d3.select(flow).append('text')
-        .text('MicrobeTrace')
-        .attr('x', $flow.width() - 150)
-        .attr('y', $flow.height() - 20)
-        .attr('class', 'watermark');
+      let watermark = d3.select(flow).append('image')
+        .attr('xlink:href', MT.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', $('#flow-export-opacity').val());
       let filename = $('#flow-export-filename').val(),
         filetype = $('#flow-export-filetype').val();
       if (filetype == 'svg') {

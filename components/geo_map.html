@@ -363,6 +363,10 @@
 
 <script>
   (function () {
+    ga('set', 'page', '/geo_map');
+    ga('set', 'title', 'Geo Map View');
+    ga('send', 'pageview');
+
     if (navigator.onLine) {
       $('#map').parent().find('.ifOnline').css('display', 'flex');
     }
@@ -538,7 +542,9 @@
         var d = nodes[i];
         if (!d._jlat || !d._jlon) continue;
         features.push(L.circleMarker(L.latLng(d._jlat, d._jlon), {
-          color: d.selected ? selectedColor : '#ffffff',
+          weight: 1,
+          opacity: opacity,
+          color: d.selected ? selectedColor : '#000000',
           fillColor: colorVariable == 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
           fillOpacity: opacity,
           data: d
@@ -571,8 +577,8 @@
       layers.links = L.featureGroup();
       links.forEach(function (d) {
         if (!d.visible) return;
-        var source = nodes.find(node => node.id == d.source);
-        var target = nodes.find(node => node.id == d.target);
+        var source = nodes.find(node => node._id == d.source);
+        var target = nodes.find(node => node._id == d.target);
         if (source && target) {
           if (source._jlat && source._jlon && target._jlat && target._jlon) {
             layers.links.addLayer(L.polyline([[
@@ -632,10 +638,10 @@
 
     function clickHandler(e) {
       var node = e.sourceTarget.feature.properties;
-      var d = session.data.nodes.find(d => d.id == node.id);
+      var d = session.data.nodes.find(d => d.id == node._id);
       if (!e.originalEvent.ctrlKey) {
         session.data.nodes
-          .filter(node => node.id !== d.id)
+          .filter(node => node._id !== d.id)
           .forEach(node => node.selected = false);
       }
       d.selected = !d.selected;
@@ -715,6 +721,8 @@
       //Foreground Layers, in order:
       if (layers.links && session.style.widgets['map-link-show']) layers.links.bringToFront();
       if (layers.nodes && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
+
+      drawNodes();
     }
 
     $('#map-node-show').parent().on('click', function () {
@@ -775,7 +783,8 @@
     });
     $('#map-counties-hide').parent().on('click', function () {
       session.style.widgets['map-counties-show'] = false;
-      layers.counties.remove();
+      layers && layers.counties && layers.counties.remove();
+      // layers.counties.remove();
     });
 
     $('#map-basemap-show').parent().on('click', function () {
@@ -885,8 +894,8 @@
       });
       MT.getVisibleLinks().forEach(function (d) {
         if (!d.visible) return;
-        var source = nodes.find(node => node.id == d.source);
-        var target = nodes.find(node => node.id == d.target);
+        var source = nodes.find(node => node._id == d.source);
+        var target = nodes.find(node => node._id == d.target);
         if (source && target) {
           if (source._lat && source._lon && target._lat && target._lon) {
             features.push({
@@ -915,11 +924,14 @@
     $('#map-export').on('click', function () {
       var format = $('#map-export-file-format').val();
       if (['png', 'jpeg', 'webp'].includes(format)) {
-        leafletImage(map, function (err, canvas) {
-          canvas.toBlob(blob => {
-            saveAs(blob, $('#map-export-file-name').val() + '.' + format);
-          }, 'image/' + format);
-        });
+        document.getElementById('map-collapsing-off').click();
+        setTimeout(() => {
+          leafletImage(map, function (err, canvas) {
+            canvas.toBlob(blob => {
+              saveAs(blob, $('#map-export-file-name').val() + '.' + format);
+            }, 'image/' + format);
+          });
+        }, 500); 
       } else if (format == 'geojson') {
         saveAs(
           new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
