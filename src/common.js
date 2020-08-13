@@ -594,6 +594,18 @@
       computer.postMessage(text);
     });
   };
+
+  MT.parseMEGA = text => {
+    return new Promise(resolve => {
+        let computer = new Worker("workers/parse-mega.js");
+        computer.onmessage = response => {
+            let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
+            console.log("MEGA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+            resolve(nodes);
+        };
+        computer.postMessage(text);
+    });
+  };
   
   MT.parseCSVMatrix = file => {
     return new Promise(resolve => {
