@@ -9,15 +9,17 @@ $(function() {
   }
 
   // Before anything else gets done, ask the user to accept the legal agreement
-  if (!localStorage.getItem("licenseAccepted")) {
-    $("#acceptAgreement").on("click", () => {
-      localStorage.setItem("licenseAccepted", new Date());
-    });
-    $("#licenseAgreement").modal({
-      backdrop: "static",
-      keyboard: false
-    });
-  }
+  localforage.getItem("licenseAccepted").then(accepted => {
+    if (!accepted) {
+      $("#acceptAgreement").on("click", () => {
+        localforage.setItem("licenseAccepted", new Date());
+      });
+      $("#licenseAgreement").modal({
+        backdrop: "static",
+        keyboard: false
+      });
+    }  
+  })
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch(error => {
@@ -59,11 +61,10 @@ $(function() {
 
   // Let's set up the Nav Bar
   $("#stash-data").on("click", () => {
-    localStorage.setItem(
+    localforage.setItem(
       "stash-" + Date.now() + "-" + $("#stash-name").val(),
       JSON.stringify(session)
-    );
-    alertify.success("Session Stashed Successfully!");
+    ).then(() => alertify.success("Session Stashed Successfully!"));
   });
 
   let table = new Tabulator("#recall-stashes-available", {
@@ -78,15 +79,17 @@ $(function() {
 
   function updateTable() {
     let rows = [];
-    Object.keys(localStorage).forEach(k => {
-      if (k.substring(0, 5) !== "stash") return;
-      rows.push({
-        fullname: k,
-        name: k.substring(20),
-        date: new Date(parseFloat(k.substring(6, 19))).toISOString()
+    localforage.keys().then(keys => {
+      keys.forEach(k => {
+        if (k.substring(0, 5) !== "stash") return;
+        rows.push({
+          fullname: k,
+          name: k.substring(20),
+          date: new Date(parseFloat(k.substring(6, 19))).toISOString()
+        });
       });
+      table.setData(rows);
     });
-    table.setData(rows);
   }
 
   $("#RecallDataTab").on("click", e => {
@@ -97,16 +100,18 @@ $(function() {
 
   $("#recall-delete-stash").on("click", () => {
     let key = table.getSelectedData()[0].fullname;
-    localStorage.removeItem(key);
-    updateTable();
-    alertify.success("That stash has been deleted.");
+    localforage.removeItem(key).then(() => {
+      updateTable();
+      alertify.success("That stash has been deleted.");
+    });
   });
 
   $("#recall-load-stash").on("click", () => {
     let key = table.getSelectedData()[0].fullname;
-    let json = localStorage.getItem(key);
-    MT.applySession(JSON.parse(json));
-    $("#session-recall-modal").modal("hide");
+    localforage.getItem(key).then(json => {
+      MT.applySession(JSON.parse(json));
+      $("#session-recall-modal").modal("hide");
+    });
   });
 
   $("#save-data").on("click", () => {
@@ -829,7 +834,7 @@ $(function() {
           return;
         } else {
           MT.setNodeVisibility(true);
-          let nodes = d3.select('svg#network').select('g.nodes').selectAll('g').data(session.data.nodes);
+          let nodes = d3.select('svg#network').select('g.nodes').selectAll('g').data(MT.getVisibleNodes(true));
           let links = d3.select('svg#network').select('g.links').selectAll('line').data(MT.getVisibleLinks(true));
           nodes.attr('visibility', d => {
             if (d.visible) return "visible"

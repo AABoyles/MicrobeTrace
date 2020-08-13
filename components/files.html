@@ -733,7 +733,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     $('#default-distance-metric').change(function () {
       ga('send', 'event', 'default-distance-metric', 'update', this.value);
       const lsv = this.value;
-      localStorage.setItem('default-distance-metric', lsv);
+      localforage.setItem('default-distance-metric', lsv);
       $('#default-distance-metric').val(lsv);
       if (lsv == 'snps') {
         $('#ambiguities-row').slideUp();
@@ -751,10 +751,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['default-distance-metric'] = lsv;
     });
 
-    const cachedLSV = localStorage.getItem('default-distance-metric');
-    if (cachedLSV) {
-      $('#default-distance-metric').val(cachedLSV).trigger('change');
-    }
+    localforage.getItem('default-distance-metric').then(cachedLSV => {
+      if (cachedLSV) {
+        $('#default-distance-metric').val(cachedLSV).trigger('change');
+      }
+    });
 
     $('#ambiguity-resolution-strategy').on('change', function () {
       const v = this.value;
@@ -771,16 +772,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['ambiguity-threshold'] = v;
     });
 
-    const cachedView = localStorage.getItem('default-view');
-    $('#default-view')
-      .on('change', function () {
-        const v = this.value;
-        localStorage.setItem('default-view', v);
-        session.style.widgets['default-view'] = v;
-        session.layout.content[0].type = v;
-      })
-      .val(cachedView ? cachedView : session.style.widgets['default-view'])
-      .trigger('change');
+    localforage.getItem('default-view').then(cachedView => {
+      $('#default-view')
+        .on('change', function () {
+          const v = this.value;
+          localforage.setItem('default-view', v);
+          session.style.widgets['default-view'] = v;
+          session.layout.content[0].type = v;
+        })
+        .val(cachedView ? cachedView : session.style.widgets['default-view'])
+        .trigger('change');
+    });
 
     $('#generate-sequences').on('click', () => {
       $('#file-prompt, #warning-prompt').remove();
@@ -805,16 +807,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     });
 
     $('#stash-auto-yes').parent().on('click', () => {
-      localStorage.setItem('stash-auto', 'true');
+      localforage.setItem('stash-auto', 'true');
     });
 
-    if (localStorage.getItem('stash-auto') == 'true') {
-      $('#stash-auto-yes').parent().trigger('click');
-    }
+    localforage.getItem('stash-auto').then(autostash => {
+      if (autostash == 'true') {
+        $('#stash-auto-yes').parent().trigger('click');
+      }
+    });
 
     $('#stash-auto-no').parent().on('click', () => {
       if (temp.autostash) clearInterval(temp.autostash.interval);
-      localStorage.setItem('stash-auto', 'false');
+      localforage.setItem('stash-auto', 'false');
     });
 
     function message(msg) {
@@ -1024,7 +1028,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               dynamicTyping: true,
               skipEmptyLines: true,
               step: data => {
-                let node = data.data[0];
+                let node = data.data;
                 let safeNode = {
                   _id: filterXSS('' + node[file.field1]),
                   seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),

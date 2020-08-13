@@ -1166,17 +1166,19 @@
       MT.updateStatistics();
       $("#network-statistics-wrapper").fadeIn();
     });
-    if (localStorage.getItem("stash-auto") == "true") {
-      temp.autostash = {
-        time: Date.now(),
-        interval: setInterval(() => {
-          let newTime = Date.now();
-          localStorage.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
-          localStorage.removeItem("stash-" + temp.autostash.time + "-autostash");
-          temp.autostash.time = newTime;
-        }, 60000)
-      };
-    }
+    localforage.getItem("stash-auto").then(autostash => {
+      if (autostash == "true") {
+        temp.autostash = {
+          time: Date.now(),
+          interval: setInterval(() => {
+            let newTime = Date.now();
+            localforage.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
+            localforage.removeItem("stash-" + temp.autostash.time + "-autostash");
+            temp.autostash.time = newTime;
+          }, 60000)
+        };
+      }  
+    })
     $(".hideForHIVTrace").css("display", "flex");
     setTimeout(() => {
       let files = layout.contentItems.find(item => item.componentName == "files");

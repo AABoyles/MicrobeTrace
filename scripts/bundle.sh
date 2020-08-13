@@ -21,6 +21,7 @@ primaryscripts=(
   "node_modules/tabulator-tables/dist/js/tabulator.min.js"
   "node_modules/file-saver/dist/FileSaver.min.js"
   "node_modules/devtools-detect/index.js"
+  "node_modules/localforage/dist/localforage.min.js"
 )
 
 # secondaryscripts is where you put scripts that must be loaded before a
@@ -112,8 +113,6 @@ Plotly.register([
 module.exports = Plotly;
 """ > node_modules/plotly.js/lib/index-cartesian.js
 cd node_modules/plotly.js
-npm install
-npm run bundle
 cd ../..
 
 echo 'Assembling Javascript Bundle...'
