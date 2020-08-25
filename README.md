@@ -8,6 +8,12 @@
 
 Developed By ([some folks](https://github.com/CDCgov/MicrobeTrace/blob/master/humans.txt) at) CDC.
 
+## Citation:
+If you use this tool, please cite:
+Campbell et al. 2020
+MicrobeTrace: Retooling Molecular Epidemiology for Rapid Public Health Response
+doi:[10.1101/2020.07.22.216275](https://doi.org/10.1101/2020.07.22.216275)
+
 ## To Use MicrobeTrace:
 
 * **[Launch MicrobeTrace](https://microbetrace.cdc.gov/MicrobeTrace/)**
