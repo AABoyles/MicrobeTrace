@@ -2,17 +2,9 @@
 
 # MicrobeTrace
 
-[![DOI](https://zenodo.org/badge/121793260.svg)](https://zenodo.org/badge/latestdoi/121793260)
-
 *The Visualization Multitool for Molecular Epidemiology and Bioinformatics*
 
 Developed By ([some folks](https://github.com/CDCgov/MicrobeTrace/blob/master/humans.txt) at) CDC.
-
-## Citation:
-If you use this tool, please cite:
-Campbell et al. 2020
-MicrobeTrace: Retooling Molecular Epidemiology for Rapid Public Health Response
-doi:[10.1101/2020.07.22.216275](https://doi.org/10.1101/2020.07.22.216275)
 
 ## To Use MicrobeTrace:
 
@@ -23,6 +15,13 @@ doi:[10.1101/2020.07.22.216275](https://doi.org/10.1101/2020.07.22.216275)
 * [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.pdf)
 * [Watch and follow along with the webinar](https://www.youtube.com/watch?v=5E-_Kb7yvHU)
 * [Watch how to use MicrobeTrace for COVID-19](https://www.youtube.com/watch?v=he0Yq5yvToc)
+
+### To Cite MicrobeTrace:
+
+```
+Campbell et al. 2020. MicrobeTrace: Retooling Molecular Epidemiology for Rapid Public Health Response
+doi:[10.1101/2020.07.22.216275](https://doi.org/10.1101/2020.07.22.216275)
+```
 
 ## To Spread the Word:
 
