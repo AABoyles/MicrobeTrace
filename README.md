@@ -18,6 +18,7 @@ doi:[10.1101/2020.07.22.216275](https://doi.org/10.1101/2020.07.22.216275)
 
 * **[Launch MicrobeTrace](https://microbetrace.cdc.gov/MicrobeTrace/)**
 * [Download Sample Data](https://github.com/CDCgov/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
+* [Download Sample COVID Data](https://github.com/CDCgov/MicrobeTrace/raw/master/demo/COVID%20Dummy%20Data.zip)
 * [View the Help Wiki](https://github.com/CDCgov/MicrobeTrace/wiki)
 * [Read the Latest Manual](https://github.com/CDCgov/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.pdf)
 * [Watch and follow along with the webinar](https://www.youtube.com/watch?v=5E-_Kb7yvHU)
