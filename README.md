@@ -18,10 +18,8 @@ Developed By ([some folks](https://github.com/CDCgov/MicrobeTrace/blob/master/hu
 
 ### To Cite MicrobeTrace:
 
-```
-Campbell et al. 2020. MicrobeTrace: Retooling Molecular Epidemiology for Rapid Public Health Response
-doi:[10.1101/2020.07.22.216275](https://doi.org/10.1101/2020.07.22.216275)
-```
+`Campbell et al. 2020. MicrobeTrace: Retooling Molecular Epidemiology for Rapid Public Health Response
+doi:`[`10.1101/2020.07.22.216275`](https://doi.org/10.1101/2020.07.22.216275)
 
 ## To Spread the Word:
 
