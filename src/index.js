@@ -913,14 +913,6 @@ $(function() {
     }
   });
 
-  $("#HelpTab").on("click", () => {
-    if (navigator.onLine) {
-      window.open("https://github.com/CDCgov/MicrobeTrace/wiki");
-    } else {
-      MT.launchView("help");
-    }
-  });
-
   $.getJSON("package.json", r => {
     MT.manifest = r;
     $("#version").text(r.version);
