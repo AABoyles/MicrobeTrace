@@ -483,7 +483,9 @@ Note that this may cause slow performance on larger networks.">
     ga('set', 'page', '/2d_network');
     ga('set', 'title', '2D View');
     ga('send', 'pageview');
-
+    
+    if (session.network.allPinned && !$('#pinbutton').hasClass('active')) $('#pinbutton').button('toggle');
+    
     let halfWidth = $('#network').parent().width() / 2,
       halfHeight = $('#network').parent().parent().parent().height() / 2,
       transform = d3.zoomTransform(d3.select('svg#network').node()),
@@ -580,12 +582,18 @@ Note that this may cause slow performance on larger networks.">
 
     if (settings['network-friction']) force.velocityDecay(settings['network-friction']);
 
-    function render() {
+    function render() { 
       if(!$('#network').length) return;
       const start = Date.now();
       let newNodes = MT.getVisibleNodes(true);
-      let oldNodes = session.network.nodes;
-      if (newNodes.length === 0) return;
+      let oldNodes;
+      if(session.style.widgets["timeline-date-field"] != 'None')
+        oldNodes = session.network.timelineNodes;
+      else
+        oldNodes = session.network.nodes;
+      
+      if (newNodes.length === 0 && session.style.widgets["timeline-date-field"] == 'None') return;
+      
       newNodes.forEach((d, i) => {
         let match = oldNodes.find(d2 => d2._id == d._id);
         if (match) {
@@ -645,7 +653,7 @@ Note that this may cause slow performance on larger networks.">
         .attr('dy', settings['link-width'] + 2)
         .text(l => l[settings['link-label-variable']]);
 
-      let layoutTick = () => {
+      let layoutTick = () => {  
         nodes
           .attr('transform', d => d.fixed ?
             `translate(${d.fx}, ${d.fy})` :
@@ -837,6 +845,17 @@ Note that this may cause slow performance on larger networks.">
         if (!d.fixed) {
           d.fx = null;
           d.fy = null;
+        } else {
+          // save node location back to temp network for pinned network
+          if(session.style.widgets["timeline-date-field"] != 'None') {
+            let node = session.network.timelineNodes.find(d2 => d2._id == d._id);
+            if(node) {
+              node.x = d.x;
+              node.y = d.y;
+              node.fx = d.fx;
+              node.fy = d.fy;
+            }
+          }
         }
       }
       if (multidrag) {
@@ -1155,9 +1174,10 @@ Note that this may cause slow performance on larger networks.">
         session.style.nodeSymbols = symbols;
       }
       temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+      let nodeSymbolHeaderTitle =  (session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : "Node " + MT.titleize(variable));
       table.empty().append(
         '<tr>' +
-        '<th contenteditable>Node ' + MT.titleize(variable) + '</th>' +
+        '<th class="p-1" contenteditable>' + nodeSymbolHeaderTitle + '</th>' +
         (settings['node-symbol-table-counts'] ? '<th>Count</th>' : '') +
         (settings['node-symbol-table-frequencies'] ? '<th>Frequency</th>' : '') +
         '<th>Shape</th>' +
@@ -1181,6 +1201,13 @@ Note that this may cause slow performance on larger networks.">
         ).append(cell);
         table.append(row);
       });
+      
+      table
+        .find(".p-1")
+        .on("focusout", function() {
+          session.style.overwrite.nodeSymbolHeaderTitle = $(this).text();
+        });
+
       sortable('#node-symbol-table', { items: 'tr' });
       wrapper.fadeIn();
       redrawNodes();
@@ -1204,7 +1231,7 @@ Note that this may cause slow performance on larger networks.">
       redrawNodes();
     });
 
-    $('#node-foci-variable').on('change', function () {
+    $('#node-foci-variable').on('change', function () {  
       settings['polygons-foci'] = this.value;
       render();
     });
@@ -1530,13 +1557,13 @@ Note that this may cause slow performance on larger networks.">
 
     $('#fitbutton').on('click', fit);
 
-    $('#pinbutton').on('click', function () {
+    $('#pinbutton').on('click', function () { 
       let nodes = svg
         .select('g.nodes')
         .selectAll('g')
         .data(session.network.nodes)
         .select('path');
-      if (session.network.allPinned) {
+      if (session.network.allPinned) { 
         nodes.each(function (d) {
           delete d.fx;
           delete d.fy;
@@ -1669,8 +1696,11 @@ Note that this may cause slow performance on larger networks.">
     let linkColorVariable = session.style.widgets["link-color-variable"] === 'None' ? 'origin' : session.style.widgets["link-color-variable"];
     if (session.files.length > 1) $('#link-color-variable').val(linkColorVariable).change(); 
     if (settings['background-color']) $('#network').css('background-color', settings['background-color']);
-    render();
 
+    render();
+    if (session.style.widgets["node-timeline-variable"] != 'None') { 
+      $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
+    }
     //For some mysterious reason, this really needed a delay...
     setTimeout(function () {
       if (settings['node-symbol-variable'] !== 'None') {

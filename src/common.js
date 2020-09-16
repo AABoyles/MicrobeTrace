@@ -152,7 +152,6 @@
     "node-symbol-table-frequencies": false,
     "node-symbol-variable": "None",
     "node-timeline-variable": "None",
-    "node-timeline-network": "Normal",
     "node-tooltip-variable": "_id",
     "physics-tree-branch-type": "Straight",
     "physics-tree-branch-length": 50,
@@ -222,11 +221,14 @@
     },
     network: {
       allPinned: false,
-      nodes: []
+      timelinePinned: false,
+      nodes: [],
+      timelineNodes: []
     },
     state: {
       timeStart: 0,
-      timeEnd: Date.now()
+      timeEnd: Date.now(),
+      timeTarget: null
     },
     style: {
       linkAlphas: [1],
@@ -255,6 +257,7 @@
         "symbolX"
       ],
       nodeValueNames: {},
+      overwrite: {},
       widgets: MT.defaultWidgets
     },
     timeline: 0,
@@ -1102,7 +1105,7 @@
     MT.finishUp();
   };
   
-  MT.finishUp = async (oldSession) => {
+  MT.finishUp = async (oldSession) => { 
     clearTimeout(temp.messageTimeout);
     ["node", "link"].forEach(v => {
       let n = session.data[v + "s"].length;
@@ -1114,6 +1117,38 @@
         });
       }
     });
+    
+    // patch missing date fields to earliest date in the the data
+    let fields = session.data["nodeFields"];
+    let nodeSkeleton = MT.dataSkeleton();
+    let fieldsToCheck = fields.filter(f => !nodeSkeleton.nodeFields.includes(f) && f != '_ambiguity' && f != '_diff'); 
+    let n = session.data.nodes.length;
+    let k = fieldsToCheck.length;
+    outerloop:
+    for (let j = 0; j < k; j++) {
+      let field = fieldsToCheck[j];
+      let times = [];
+      for (let i = 0; i < n; i++) {
+        let node = session.data.nodes[i];
+        if (node[field] != null) {
+          let time = moment(node[field]); 
+          if (time.isValid())
+            times.push(time.toDate());
+          else
+            continue outerloop;
+        }
+      }      
+      if (times.length < n) {
+        let minTime = Math.min(...times);
+        let minTimeString = new Date(minTime).toString();
+        session.data.nodes.forEach(d => {
+          if (d[field] == null) {
+            d[field] = minTimeString;
+          } 
+        });
+      } 
+    };
+
     $("#search-field")
       .html(session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
       .val(session.style.widgets["search-field"]);
@@ -1293,7 +1328,7 @@
     });
   };
   
-  MT.setNodeVisibility = silent => {
+  MT.setNodeVisibility = silent => { 
     let start = Date.now();
     let dateField = session.style.widgets["timeline-date-field"];
     let nodes = session.data.nodes,
@@ -1304,19 +1339,17 @@
       node.visible = true;
       let cluster = clusters[node.cluster];
       if (cluster) {
-        node.visible = node.visible && cluster.visible;
+        node.visible = node.visible && cluster.visible; 
       }
       if (dateField != "None") {
-        if (session.state.timeEnd) {
-          node.visible = node.visible && session.state.timeEnd > moment(node[dateField]).toDate();
-        }
+        node.visible = node.visible && moment(session.state.timeEnd).toDate() >= moment(node[dateField]).toDate(); 
       }
     }
     if (!silent) $window.trigger("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
   
-  MT.setLinkVisibility = silent => {
+  MT.setLinkVisibility = silent => { 
     let start = Date.now();
     let metric = session.style.widgets["link-sort-variable"],
       threshold = session.style.widgets["link-threshold"],
@@ -1346,7 +1379,7 @@
     console.log("Link Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
   
-  MT.setClusterVisibility = silent => {
+  MT.setClusterVisibility = silent => { 
     let start = Date.now();
     let min = session.style.widgets["cluster-minimum-size"];
     let clusters = session.data.clusters;
@@ -1358,7 +1391,32 @@
     if (!silent) $window.trigger("cluster-visibility");
     console.log("Cluster Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
-  
+
+  MT.getNetworkNodes = () => {
+    let nodes = session.network.nodes;
+    let n = nodes.length;
+    let out = [];
+      for (let i = 0; i < n; i++) {
+        let node = nodes[i];
+        out.push(JSON.parse(JSON.stringify(node)));
+      }
+    return out;
+  };
+
+  MT.updatePinNodes = copy => {
+    let nodes = session.network.nodes;
+    let n = nodes.length;
+    for (let i = 0; i < n; i++) {
+      let node = nodes[i]; 
+      if (copy && node.fixed) node.preFixed = true;
+      if (!copy && session.network.timelineNodes[i].preFixed) {
+        node.fixed = true;
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+    }
+  };
+
   MT.getVisibleNodes = copy => {
     let nodes = session.data.nodes;
     let n = nodes.length;
@@ -1380,7 +1438,7 @@
     }
     return out;
   };
-  
+
   MT.getVisibleLinks = copy => {
     let links = session.data.links;
     let n = links.length;

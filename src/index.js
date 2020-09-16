@@ -462,7 +462,7 @@ $(function() {
 
   $("#node-color-variable")
     .val(session.style.widgets["node-color-variable"])
-    .on("change", function() {
+    .on("change", function() { 
       let variable = this.value;
       session.style.widgets["node-color-variable"] = variable;
       if (variable == "None") {
@@ -480,16 +480,17 @@ $(function() {
           session.style.widgets["node-color-table-name-sort"] = "DESC"
         else
           session.style.widgets["node-color-table-name-sort"] = "ASC"
-        $('#node-color-variable').trigger("change");
+          $('#node-color-variable').trigger("change");
       });
-      let nodeHeader = $("<th class='p-1' contenteditable>Node " + MT.titleize(variable) + "</th>").append(nodeSort);
+      let nodeColorHeaderTitle =  (session.style.overwrite.nodeColorHeaderTitle ? session.style.overwrite.nodeColorHeaderTitle : "Node " + MT.titleize(variable));
+      let nodeHeader = $("<th class='p-1' contenteditable>" + nodeColorHeaderTitle + "</th>").append(nodeSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["node-color-table-name-sort"] = "";
         if (session.style.widgets["node-color-table-counts-sort"] === "ASC")
           session.style.widgets["node-color-table-counts-sort"] = "DESC"
         else
           session.style.widgets["node-color-table-counts-sort"] = "ASC"
-        $('#node-color-variable').trigger("change");
+          $('#node-color-variable').trigger("change");
       });
       let countHeader = $((session.style.widgets["node-color-table-counts"] ? "<th>Count</th>" : "")).append(countSort);
       let nodeColorTable = $("#node-color-table")
@@ -574,6 +575,13 @@ $(function() {
           $this.attr("contenteditable", false);
           session.style.nodeValueNames[$this.data("value")] = $this.text();
         });
+        
+      nodeColorTable
+        .find(".p-1")
+        .on("focusout", function() {
+          session.style.overwrite.nodeColorHeaderTitle = $($(this).contents()[0]).text();
+        });
+
       sortable("#node-color-table", { items: "tr" });
       $window.trigger("node-color-change");
     })
@@ -608,7 +616,8 @@ $(function() {
           session.style.widgets["link-color-table-name-sort"] = "ASC"
         $('#link-color-variable').trigger("change");
       });
-      let linkHeader = $("<th class='p-1' contenteditable>Link " + MT.titleize(variable) + "</th>").append(linkSort);
+     let linkColorHeaderTitle =  (session.style.overwrite.linkColorHeaderTitle ? session.style.overwrite.linkColorHeaderTitle : "Link " + MT.titleize(variable));
+     let linkHeader = $("<th class='p-1' contenteditable>" + linkColorHeaderTitle + "</th>").append(linkSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["link-color-table-name-sort"] = "";
         if (session.style.widgets["link-color-table-counts-sort"] === "ASC")
@@ -698,6 +707,13 @@ $(function() {
           $this.attr("contenteditable", false);
           session.style.linkValueNames[$this.data("value")] = $this.text();
         });
+      
+        linkColorTable
+        .find(".p-1")
+        .on("focusout", function() {
+          session.style.overwrite.linkColorHeaderTitle = $($(this).contents()[0]).text();
+        });
+
       sortable("#link-color-table", { items: "tr" });
       $window.trigger("link-color-change");
     })
@@ -705,21 +721,55 @@ $(function() {
 
   $("#node-timeline-variable")
     .val(session.style.widgets["node-timeline-variable"])
-    .on("change", function() {
+    .on("change", function() {  
       d3.select('#global-timeline svg').remove();
-      let variable = this.value;
+      clearInterval(session.timeline);
+      let variable = this.value;  
+      let loadingJsonFile = session.style.widgets["node-timeline-variable"] == variable;
+      if (session.style.widgets["node-timeline-variable"] != 'None' && !loadingJsonFile) {
+        // change timeline variable when end time not reaching target time - redraw netwrok to start fresh
+        if (moment(session.state.timeEnd).toDate() < moment(session.state.timeTarget).toDate()) {
+          session.state.timeEnd = session.state.timeTarget;
+          MT.setNodeVisibility(false);
+          MT.updateStatistics();
+        }
+      }
       session.style.widgets["node-timeline-variable"] = variable;
       if (variable == "None") {
-        $("div[id='node-timeline-table-row']").slideUp();
         $("#global-timeline-field").empty();
+        session.style.widgets["timeline-date-field"] = 'None'  
+        $("#global-timeline-wrapper").fadeOut();
+        $('#pinbutton').prop("disabled", false);
+        if(!session.network.timelinePinned) {
+          $('#pinbutton').trigger('click');
+          MT.updatePinNodes(false);
+        }
+        session.network.timelineNodes = [];
+        MT.setNodeVisibility(false);
+        MT.updateStatistics();
         return;
       }
-      $("div[id='node-timeline-table-row']").slideDown();
+      if (!$('#pinbutton').prop('disabled')){
+        if (!loadingJsonFile) {
+          session.network.timelinePinned= session.network.allPinned;
+          if(!session.network.allPinned) {
+            MT.updatePinNodes(true);
+            $('#pinbutton').trigger('click');
+          }
+          session.network.timelineNodes = MT.getNetworkNodes();
+        }
+        $('#pinbutton').prop("disabled", true);
+      }
       $("#global-timeline-field").html(MT.titleize(variable));
       // $window.trigger("node-color-change");
   
       var formatDateIntoYear = d3.timeFormat("%Y");
-      var formatDate = d3.timeFormat("%b %Y");
+      var formatDateIntoMonthYear = d3.timeFormat("%b %y");
+      var formatDateIntoMonth = d3.timeFormat("%b");
+      var formatDateIntoDate = d3.timeFormat("%_d");
+      var formatDateMonthYear = d3.timeFormat("%b %Y");
+      var formatDateDateMonth = d3.timeFormat("%b %_d");
+      var formatDateDate = d3.timeFormat("%_d");
       var parseDate = d3.timeParse("%m/%d/%y");
 
       let timeDomainStart, timeDomainEnd;
@@ -727,7 +777,7 @@ $(function() {
       let times = [],
       vnodes = JSON.parse(JSON.stringify(session.data.nodes));
       vnodes.forEach(d => {
-        let time = moment(d[field]);
+        let time = moment(d[field]); 
         if (time.isValid()) {
           d[field] = time.toDate();
           times.push(d[field]);
@@ -740,6 +790,19 @@ $(function() {
       }
       timeDomainStart = Math.min(...times);
       timeDomainEnd = Math.max(...times);
+
+      var days = moment(timeDomainEnd).diff(moment(timeDomainStart), 'days');
+      var tickDateFormat = d => {
+        if (days<32) return formatDateIntoDate(d);
+        else if (days<367) return formatDateIntoMonth(d);
+        else if (days<367*5) return formatDateIntoMonthYear(d);
+        else return formatDateIntoYear(d);		
+      }
+      var handleDateFormat = d => {
+        if (days<32) return formatDateDate(d);
+        else if (days<367) return formatDateDateMonth(d);
+        else return formatDateMonthYear(d);		
+      }
       let startDate = timeDomainStart;
       let endDate = timeDomainEnd;
       var margin = {top:50, right:50, bottom:0, left:50},
@@ -749,17 +812,21 @@ $(function() {
           .append("svg")
           .attr("width", width + margin.left + margin.right)
           .attr("height", 120);  
-      ////////// slider //////////
+      
+      console.log('////////////////  build slider');
+          ////////// slider //////////
       var currentValue = 0;
       var targetValue = width;
       var playButton = d3.select("#timeline-play-button");
+      if (playButton.text() == "Pause") playButton.text("Play");
       var x = d3.scaleTime()
           .domain([startDate, endDate])
           .range([0, targetValue])
-          .clamp(true);
+          .clamp(true)
+          .nice();
       var slider = svgTimeline.append("g")
           .attr("class", "slider")
-          .attr("transform", "translate(10," + height/2 + ")");
+          .attr("transform", "translate(30," + height/2 + ")");
       slider.append("line")
           .attr("class", "track")
           .attr("x1", x.range()[0])
@@ -779,69 +846,62 @@ $(function() {
         .attr("class", "ticks")
         .attr("transform", "translate(0," + 18 + ")")
         .selectAll("text")
-        .data(x.ticks(15))
+        .data(x.ticks(10))
         .enter()
         .append("text")
         .attr("x", x)
         .attr("y", 10)
         .attr("text-anchor", "middle")
-        .text(function(d) { return formatDateIntoYear(d); });
+        .text(function(d) { return tickDateFormat(d); });
       var handle = slider.insert("circle", ".track-overlay")
           .attr("class", "handle")
           .attr("r", 9);
       var label = slider.append("text")  
           .attr("class", "label")
           .attr("text-anchor", "middle")
-          .text(formatDate(startDate))
+          .text(handleDateFormat(startDate))
           .attr("transform", "translate(25," + (-20) + ")")
       playButton
         .on("click", function() {
-          var button = d3.select(this);
+          var button = d3.select(this);  
           if (button.text() == "Pause") {
-            button.text("Play");
+            button.text("Play"); 
             clearInterval(session.timeline);
           } else {
             button.text("Pause");
             session.timeline = setInterval(step, 200);
           }
         })
-      function step() {
+      function step() { 
         update(x.invert(currentValue));
-        currentValue = currentValue + (targetValue/151);
-        if (currentValue > targetValue) {
+        if (currentValue > targetValue) { 
           currentValue = 0;
           clearInterval(session.timeline);
           playButton.text("Play");
+          return;
         }
+        currentValue = currentValue + (targetValue/151);
       }
       session.style.widgets["timeline-date-field"] = field;
       session.state.timeStart = startDate;
+      session.state.timeTarget = x.invert(targetValue);
+      if (loadingJsonFile && moment(session.state.timeEnd).toDate() < moment(session.state.timeTarget).toDate()) {
+        let t = moment(session.state.timeEnd).toDate();
+        currentValue = x(t);
+        handle.attr("cx", x(t));
+        label
+          .attr("x", x(t))
+          .text(handleDateFormat(t));
+      }
+      $("#global-timeline-wrapper").fadeIn();
       function update(h) {
         handle.attr("cx", x(h));
         label
           .attr("x", x(h))
-          .text(formatDate(h));
-        session.state.timeEnd = moment(h).toDate();
-        let network = session.style.widgets["node-timeline-network"];
-        if (network === 'Normal') {
-          MT.setNodeVisibility(false);
-          return;
-        } else {
-          MT.setNodeVisibility(true);
-          let nodes = d3.select('svg#network').select('g.nodes').selectAll('g').data(MT.getVisibleNodes(true));
-          let links = d3.select('svg#network').select('g.links').selectAll('line').data(MT.getVisibleLinks(true));
-          nodes.attr('visibility', d => {
-            if (d.visible) return "visible"
-            else return "hidden";
-          });
-          links.attr('visibility', d => {
-            let src = session.data.nodes.find(dd => dd._id == d.source || dd.id == d.source);
-            let tgt = session.data.nodes.find(dd => dd._id == d.target || dd.id == d.target);
-            if (src === undefined || src.visible === false) return "hidden";
-            if (tgt === undefined || tgt.visible === false) return "hidden";  
-            return "visible";
-          });
-        }
+          .text(handleDateFormat(h));
+        session.state.timeEnd = h;
+        MT.setNodeVisibility(false);
+        MT.updateStatistics();
       }
     })
     .trigger("change");
@@ -892,18 +952,6 @@ $(function() {
   $("#node-color-table-hide")
     .parent()
     .on("click", () => $("#node-color-table-wrapper").fadeOut());
-
-  $("#timeline-show")
-    .parent()
-    .on("click", () => $("#global-timeline-wrapper").fadeIn());
-
-  $("#timeline-hide")
-    .parent()
-    .on("click", () => { 
-      session.style.widgets["timeline-date-field"] = "None";
-      MT.setNodeVisibility(false);
-      $("#global-timeline-wrapper").fadeOut();
-    });
 
   $("#apply-style").on("change", function() {
     if (this.files.length > 0) {
@@ -1133,8 +1181,8 @@ $(function() {
   $window
     .on("node-selected", () => $("#numberOfSelectedNodes").text(session.data.nodes.filter(d => d.selected).length.toLocaleString()))
     .on("click", () => $("#network-statistics-context, #link-color-table-context, #node-color-table-context").hide())
-    .on("node-visibility", () => {
-      if (session.style.widgets["node-color-variable"] !== "None") {
+    .on("node-visibility", () => {  
+      if (session.style.widgets["node-color-variable"] !== "None") { 
         $("#node-color-variable").trigger("change");
       }
     })
