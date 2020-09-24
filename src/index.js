@@ -482,7 +482,7 @@ $(function() {
           session.style.widgets["node-color-table-name-sort"] = "ASC"
           $('#node-color-variable').trigger("change");
       });
-      let nodeColorHeaderTitle =  (session.style.overwrite.nodeColorHeaderTitle ? session.style.overwrite.nodeColorHeaderTitle : "Node " + MT.titleize(variable));
+      let nodeColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeColorHeaderTitle ? session.style.overwrite.nodeColorHeaderTitle : "Node " + MT.titleize(variable));
       let nodeHeader = $("<th class='p-1' contenteditable>" + nodeColorHeaderTitle + "</th>").append(nodeSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["node-color-table-name-sort"] = "";
@@ -616,7 +616,7 @@ $(function() {
           session.style.widgets["link-color-table-name-sort"] = "ASC"
         $('#link-color-variable').trigger("change");
       });
-     let linkColorHeaderTitle =  (session.style.overwrite.linkColorHeaderTitle ? session.style.overwrite.linkColorHeaderTitle : "Link " + MT.titleize(variable));
+     let linkColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.linkColorHeaderTitle ? session.style.overwrite.linkColorHeaderTitle : "Link " + MT.titleize(variable));
      let linkHeader = $("<th class='p-1' contenteditable>" + linkColorHeaderTitle + "</th>").append(linkSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["link-color-table-name-sort"] = "";
@@ -806,7 +806,7 @@ $(function() {
       let startDate = timeDomainStart;
       let endDate = timeDomainEnd;
       var margin = {top:50, right:50, bottom:0, left:50},
-        width = 900 - margin.left - margin.right,
+        width = ($('#network').parent().width() * 4 / 5) - margin.left - margin.right,
         height = 200 - margin.top - margin.bottom;
       var svgTimeline = d3.select("#global-timeline")
           .append("svg")
@@ -839,14 +839,18 @@ $(function() {
               .on("start.interrupt", function() { slider.interrupt(); })
               .on("start drag", function() {
                 currentValue = d3.event.x;
-                update(x.invert(currentValue)); 
+                update(x.invert(currentValue));
+                if (playButton.text() == "Pause") {
+                  playButton.text("Play"); 
+                  clearInterval(session.timeline);
+                }
               })
           );
       slider.insert("g", ".track-overlay")
         .attr("class", "ticks")
         .attr("transform", "translate(0," + 18 + ")")
         .selectAll("text")
-        .data(x.ticks(10))
+        .data(x.ticks(12))
         .enter()
         .append("text")
         .attr("x", x)

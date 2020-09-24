@@ -69,6 +69,7 @@
     "cluster-minimum-size": 1,
     "polygons-foci": "cluster",
     "polygons-gather-force": 0,
+    "polygons-group-color": "#1f77b4",
     "default-view": "2d_network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
@@ -113,6 +114,8 @@
     "link-width": 3,
     "link-width-variable": "None",
     "link-width-reciprocal": true,
+    "link-width-max": 27,
+    "link-width-min": 3,
     "map-basemap-show": false,
     "map-collapsing-on": true,
     "map-counties-show": false,
@@ -1487,13 +1490,35 @@
     if ($("#network-statistics-hide").is(":checked")) return;
     let vnodes = MT.getVisibleNodes();
     let vlinks = MT.getVisibleLinks();
+    let linkCount = 0;
+    let clusterCount = 0;
+    if (session.style.widgets["timeline-date-field"]== 'None') {
+      linkCount = vlinks.length;
+      clusterCount = session.data.clusters.filter(cluster => cluster.visible && cluster.nodes > 1).length;
+    } else {
+      let n = vlinks.length;
+      for (let i = 0; i < n; i++) {
+        let src = vnodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source);
+        let tgt = vnodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target);
+        if (src && tgt) linkCount++;
+      }
+	  
+      n = vnodes.length;
+      let clusters = {};
+      for (let i = 0; i < n; i++) {
+        let id = vnodes[i].cluster;
+        if (clusters[id]) clusters[id]++;
+        else clusters[id] = 1;
+      }
+      clusterCount = session.data.clusters.filter(cluster => clusters[cluster.id] && clusters[cluster.id]>2 && cluster.visible && cluster.nodes > 1).length;
+    }
     let singletons = vnodes.filter(d => d.degree == 0).length;
     $("#numberOfSelectedNodes").text(vnodes.filter(d => d.selected).length.toLocaleString());
     $("#numberOfNodes").text(vnodes.length.toLocaleString());
-    $("#numberOfVisibleLinks").text(vlinks.length.toLocaleString());
+    $("#numberOfVisibleLinks").text(linkCount.toLocaleString());
     $("#numberOfSingletonNodes").text(singletons.toLocaleString());
     //$("#numberOfDisjointComponents").text(session.data.clusters.length - singletons);
-    $("#numberOfDisjointComponents").text(session.data.clusters.filter(cluster => cluster.visible && cluster.nodes > 1).length); // #187
+    $("#numberOfDisjointComponents").text(clusterCount.toLocaleString()); // #187
   };
   
   MT.createNodeColorMap = () => {

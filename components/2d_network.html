@@ -210,7 +210,15 @@
                   </div>
                 </div>
               </div>
-              <div class="form-group row" title="How thick should the links be?">
+              <div id="link-max-width-row" class="form-group row" title="Should link max widths to this variable?">
+                <div class="col-4"><label for="link-width-max">Max Width</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="link-width-max" min="0.3" max="30" step=".3" value="27"></div>
+              </div>
+              <div id="link-min-width-row" class="form-group row" title="Should link min widths to this variable?">
+                <div class="col-4"><label for="link-width-min">Min Width</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="link-width-min" min="0.3" max="30" step=".3" value="3"></div>
+              </div>
+              <div id="link-width-row" class="form-group row" title="How thick should the links be?">
                 <div class="col-4"><label for="link-width">Width</label></div>
                 <div class="col-8"><input type="range" class="custom-range" id="link-width" min="0.3" max="30" step=".3" value="3"></div>
               </div>
@@ -678,6 +686,7 @@ Note that this may cause slow performance on larger networks.">
 
       let foci = settings['polygons-foci'];
       let gather = settings['polygons-gather-force'];
+      let fill = settings['polygons-group-color'];
       d3.select('#network g.clusters').html(null);
       let groups = d3.nest().key(function(d) { return d[foci]; }).entries(newNodes).map(function(d) {
             var key = d.key
@@ -694,8 +703,6 @@ Note that this may cause slow performance on larger networks.">
               .join("L")
           + "Z";
       };    
-      let fill = d3.scaleOrdinal(d3.schemeCategory10);
-      let groupFill = function(d, i) { return fill(i & 3); };
       let clusters = new Array(groups.length);  // The largest node for each cluster.
       newNodes.forEach(d => {
         let r =  d[foci];
@@ -728,8 +735,8 @@ Note that this may cause slow performance on larger networks.">
           .data(groups)
             .attr("d", groupPath)
           .enter().insert("path", "circle")
-            .style("fill", groupFill)
-            .style("stroke", groupFill)
+            .style("fill", fill)
+            .style("stroke", fill)
             .style("stroke-width", 40)
             .style("stroke-linejoin", "round")
             .style("opacity", .2)
@@ -1174,7 +1181,7 @@ Note that this may cause slow performance on larger networks.">
         session.style.nodeSymbols = symbols;
       }
       temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
-      let nodeSymbolHeaderTitle =  (session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : "Node " + MT.titleize(variable));
+      let nodeSymbolHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : "Node " + MT.titleize(variable));
       table.empty().append(
         '<tr>' +
         '<th class="p-1" contenteditable>' + nodeSymbolHeaderTitle + '</th>' +
@@ -1327,6 +1334,9 @@ Note that this may cause slow performance on larger networks.">
       let vlinks = getVLinks();
       let links = svg.select('g.links').selectAll('line').data(vlinks);
       if (variable == 'None') return links.attr('stroke-width', scalar);
+      let maxWidth = settings['link-width-max'];
+      let minWidth = settings['link-width-min'];
+
       let n = vlinks.length;
       let max = -Infinity;
       let min = Infinity;
@@ -1339,7 +1349,7 @@ Note that this may cause slow performance on larger networks.">
       let mid = (max - min) / 2 + min;
       let scale = d3.scaleLinear()
         .domain(settings['link-width-reciprocal'] ? [max, min] : [min, max])
-        .range([1, scalar]);
+        .range([minWidth, maxWidth]);
       links.attr('stroke-width', d => {
         let v = d[variable];
         if (!isNumber(v)) v = mid;
@@ -1352,11 +1362,25 @@ Note that this may cause slow performance on larger networks.">
       scaleLinkWidth();
     });
 
+    $('#link-width-max').on('input', function () {
+      settings['link-width-max'] = parseFloat(this.value);
+      scaleLinkWidth();
+    });
+
+    $('#link-width-min').on('input', function () {
+      settings['link-width-min'] = parseFloat(this.value);
+      scaleLinkWidth();
+    });
+
     $('#link-width-variable').on('change', function () {
       if (this.value == 'None') {
-        $('#link-reciprocalthickness-row').slideUp();
+        $('#link-max-width-row').slideUp();
+        $('#link-min-width-row').slideUp();
+        $('#link-width-row').slideDown();
       } else {
-        $('#link-reciprocalthickness-row').css('display', 'flex');
+        $('#link-max-width-row').css('display', 'flex');
+        $('#link-min-width-row').css('display', 'flex');
+        $('#link-width-row').slideUp();
       }
       settings['link-width-variable'] = this.value;
       scaleLinkWidth();
@@ -1684,7 +1708,13 @@ Note that this may cause slow performance on larger networks.">
       .on('background-color-change', function () {
         $('#network').css('background-color', settings['background-color']);
       })
-      .on('node-visibility link-visibility cluster-visibility node-selected', render);
+      .on('node-visibility link-visibility cluster-visibility node-selected', render)
+      .on('resize', function () {
+        if (session.style.widgets["node-timeline-variable"] != 'None') { 
+          $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
+          setTimeout(fit, 0);
+        }
+      });
 
     layout.on('stateChanged', function () {
       let wrapper = $('#network').parent();
