@@ -524,6 +524,10 @@ button.btn,
   cursor: pointer;
   height: 30px;
 }
+#global-timeline-field {
+  padding: 4px;
+  font-size: 1.25em;
+}
 #timeline-play:hover {
   background-color: #696969;
 }    
@@ -618,6 +622,9 @@ button.btn,
   margin: 0;
 }
 #node-label-row {
+  display: none;
+}
+#node-max-radius-row, #node-min-radius-row {
   display: none;
 }
 #link-reciprocalthickness-row {

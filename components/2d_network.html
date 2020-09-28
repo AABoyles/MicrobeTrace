@@ -135,7 +135,15 @@
                   </select>
                 </div>
               </div>
-              <div class="form-group row" title="How big should the nodes be?">
+              <div id="node-max-radius-row" class="form-group row" title="Should node max radius to this variable?">
+                <div class="col-4"><label for="node-radius-max">Max Size</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="node-radius-max" min="100" value="4500" step="1" max="5000"></div>
+              </div>
+              <div id="node-min-radius-row" class="form-group row" title="Should node min radius to this variable?">
+                <div class="col-4"><label for="node-radius-min">Min Size</label></div>
+                <div class="col-8"><input type="range" class="custom-range" id="node-radius-min" min="100" value="250" step="1" max="5000"></div>
+              </div>
+              <div id="node-radius-row" class="form-group row" title="How big should the nodes be?">
                 <div class="col-4"><label for="node-radius">Size</label></div>
                 <div class="col-8"><input type="range" class="custom-range" id="node-radius" min="100" value="250" step="1" max="5000">
                 </div>
@@ -193,21 +201,6 @@
                   <select id="link-width-variable" class="form-control form-control-sm linkVariables">
                     <option>None</option>
                   </select>
-                </div>
-              </div>
-              <div id="link-reciprocalthickness-row" class="form-group row" title="Should link widths be proportioned to the reciprocal of this variable?">
-                <div class="col-4">Reciprocal</div>
-                <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-                    <label class="btn btn-light active">
-                      <input type="radio" name="link-reciprocal-options" id="link-width-reciprocal" autocomplete="off" checked>
-                      Reciprocal
-                    </label>
-                    <label class="btn btn-light">
-                      <input type="radio" name="link-reciprocal-options" id="link-width-nonreciprocal" autocomplete="off">
-                      Non-reciprocal
-                    </label>
-                  </div>
                 </div>
               </div>
               <div id="link-max-width-row" class="form-group row" title="Should link max widths to this variable?">
@@ -316,6 +309,12 @@ Note that this may cause slow performance on larger networks.">
                 <div class="col-4"><label for="network-friction">Friction</label></div>
                 <div class="col-8">
                   <input type="range" class="custom-range" id="network-friction" min="0" max="1" value="0.4" step="0.025">
+                </div>
+              </div>
+              <div class="form-group row" title="How strong is the link?">
+                <div class="col-4"><label for="network-link-strength">Link Strength</label></div>
+                <div class="col-8">
+                  <input type="range" class="custom-range" id="network-link-strength" min="0" max="1" value="0.125" step="0.025">
                 </div>
               </div>
             </div>
@@ -577,7 +576,7 @@ Note that this may cause slow performance on larger networks.">
       .force('link', d3.forceLink()
         .id(d => d._id)
         .distance(l => l.origin.length * settings['link-length'])
-        .strength(0.125)
+        .strength(settings['network-link-strength'])
       )
       .force('charge', d3.forceManyBody()
         .strength(-settings['node-charge'])
@@ -1031,27 +1030,34 @@ Note that this may cause slow performance on larger networks.">
       let defaultSize = settings['node-radius'];
       let size = defaultSize, med = defaultSize, oldrng, min, max;
       let sizeVariable = settings['node-radius-variable'];
+      let scale;
+	    let nodes;
       if (sizeVariable !== 'None') {
-        let n = session.network.nodes.length;
+        if (session.style.widgets["timeline-date-field"] == 'None') nodes = session.network.nodes;
+        else nodes = session.network.timelineNodes;
+        let n = nodes.length;
         min = Number.MAX_VALUE;
         max = Number.MIN_VALUE;
         for (let i = 0; i < n; i++) {
-          let size = session.network.nodes[i][sizeVariable];
+          let size = nodes[i][sizeVariable];
           if (typeof size == 'undefined') continue;
           if (size < min) min = size;
           if (size > max) max = size;
         }
-        oldrng = max - min;
-        med = oldrng / 2;
+        med = (max - min) / 2;
+        let maxWidth = settings['node-radius-max'];
+        let minWidth = settings['node-radius-min'];
+        scale = d3.scaleLinear()
+          .domain([min, max])
+          .range([minWidth, maxWidth]);
       }
-      let nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
+      nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
       nodes.selectAll('path').each(function (d) {
         if (symbolVariable !== 'None') type = d3[temp.style.nodeSymbolMap(d[symbolVariable])];
         if (sizeVariable !== 'None') {
           size = d[sizeVariable];
           if (!isNumber(size)) size = med;
-          size = (size + (oldrng/10) - min) / oldrng;
-          size = size * size * defaultSize + 100;
+          size = scale(size);
         }
         d3.select(this).attr('d', d3.symbol().size(size).type(type));
       });
@@ -1233,8 +1239,28 @@ Note that this may cause slow performance on larger networks.">
       redrawNodes();
     });
 
+    $('#node-radius-max').on('input', function () {
+      settings['node-radius-max'] = parseFloat(this.value);
+      redrawNodes();
+    });
+
+    $('#node-radius-min').on('input', function () {
+      settings['node-radius-min'] = parseFloat(this.value);
+      redrawNodes();
+    });
+	
     $('#node-radius-variable').on('change', function () {
-      settings['node-radius-variable'] = this.value;
+      if (this.value == 'None') {
+        $('#node-max-radius-row').slideUp();
+        $('#node-min-radius-row').slideUp();
+        $('#node-radius-row').slideDown();
+      } else {
+        $('#node-max-radius-row').css('display', 'flex');
+        $('#node-min-radius-row').css('display', 'flex');
+        $('#node-radius-row').slideUp();
+      }
+	  
+	  settings['node-radius-variable'] = this.value;
       redrawNodes();
     });
 
@@ -1336,6 +1362,7 @@ Note that this may cause slow performance on larger networks.">
       if (variable == 'None') return links.attr('stroke-width', scalar);
       let maxWidth = settings['link-width-max'];
       let minWidth = settings['link-width-min'];
+      vlinks = MT.getVisibleLinks();
 
       let n = vlinks.length;
       let max = -Infinity;
@@ -1348,7 +1375,7 @@ Note that this may cause slow performance on larger networks.">
       }
       let mid = (max - min) / 2 + min;
       let scale = d3.scaleLinear()
-        .domain(settings['link-width-reciprocal'] ? [max, min] : [min, max])
+        .domain([min, max])
         .range([minWidth, maxWidth]);
       links.attr('stroke-width', d => {
         let v = d[variable];
@@ -1383,16 +1410,6 @@ Note that this may cause slow performance on larger networks.">
         $('#link-width-row').slideUp();
       }
       settings['link-width-variable'] = this.value;
-      scaleLinkWidth();
-    });
-
-    $('#link-width-reciprocal').parent().on('click', function () {
-      settings['link-width-reciprocal'] = true;
-      scaleLinkWidth();
-    });
-
-    $('#link-width-nonreciprocal').parent().on('click', function () {
-      settings['link-width-reciprocal'] = false;
       scaleLinkWidth();
     });
 
@@ -1452,6 +1469,13 @@ Note that this may cause slow performance on larger networks.">
       force.force('gravity').strength(v);
       force.alpha(0.3).alphaTarget(0).restart();
       settings['network-gravity'] = v;
+    });
+
+    $('#network-link-strength').on('input', function () {
+      let v = parseFloat(this.value);
+      force.force('link').strength(v);
+      force.alpha(0.3).alphaTarget(0).restart();
+      settings['network-link-strength'] = v;
     });
 
     $('#network-export-filetype').on('change', function () {

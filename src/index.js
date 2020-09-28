@@ -760,8 +760,8 @@ $(function() {
         }
         $('#pinbutton').prop("disabled", true);
       }
-      $("#global-timeline-field").html(MT.titleize(variable));
-      // $window.trigger("node-color-change");
+      let globalTimelineField =  (session.style.overwrite && session.style.overwrite.globalTimelineField ? session.style.overwrite.globalTimelineField : MT.titleize(variable));
+      $("#global-timeline-field").html(globalTimelineField); 
   
       var formatDateIntoYear = d3.timeFormat("%Y");
       var formatDateIntoMonthYear = d3.timeFormat("%b %y");
@@ -909,6 +909,10 @@ $(function() {
       }
     })
     .trigger("change");
+
+  $("#global-timeline-field").on("focusout", function() {
+      session.style.overwrite.globalTimelineField = $(this).text();
+    });
 
   $("#link-color").on("change", function() {
     session.style.widgets["link-color"] = this.value;
