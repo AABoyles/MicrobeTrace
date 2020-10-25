@@ -766,11 +766,8 @@ $(function() {
       var formatDateIntoYear = d3.timeFormat("%Y");
       var formatDateIntoMonthYear = d3.timeFormat("%b %y");
       var formatDateIntoMonth = d3.timeFormat("%b");
-      var formatDateIntoDate = d3.timeFormat("%_d");
       var formatDateMonthYear = d3.timeFormat("%b %Y");
       var formatDateDateMonth = d3.timeFormat("%b %_d");
-      var formatDateDate = d3.timeFormat("%_d");
-      var parseDate = d3.timeParse("%m/%d/%y");
 
       let timeDomainStart, timeDomainEnd;
       let field = variable;
@@ -793,14 +790,13 @@ $(function() {
 
       var days = moment(timeDomainEnd).diff(moment(timeDomainStart), 'days');
       var tickDateFormat = d => {
-        if (days<32) return formatDateIntoDate(d);
+        if (days<184) return formatDateDateMonth(d);
         else if (days<367) return formatDateIntoMonth(d);
         else if (days<367*5) return formatDateIntoMonthYear(d);
         else return formatDateIntoYear(d);		
       }
       var handleDateFormat = d => {
-        if (days<32) return formatDateDate(d);
-        else if (days<367) return formatDateDateMonth(d);
+        if (days<367) return formatDateDateMonth(d);
         else return formatDateMonthYear(d);		
       }
       let startDate = timeDomainStart;
