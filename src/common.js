@@ -479,7 +479,12 @@
     //If anything here seems eccentric, assume it's to maintain compatibility with
     //session files from older versions of MicrobeTrace.
     
-    $window.trigger("stop-force-simulation"); // stop previous network ticks
+    $window.trigger("stop-force-simulation"); // stop previous network ticks so previous polygon won't show up
+    
+    // when using recall function several times, window remembers every registered event function of each recall which all registered functions will be fired when triggered
+    // since an event is registered in both 2d_network.html and index.js, add namespace to events in 2d_network so they can be removed without affecting events in index
+    $window.off('.2d');
+    
     MT.reset();
     $("#launch").prop("disabled", true);
     session.files = oldSession.files;

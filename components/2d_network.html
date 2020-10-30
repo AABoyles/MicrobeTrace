@@ -611,7 +611,7 @@ Note that this may cause slow performance on larger networks.">
       });
 
       session.network.nodes = newNodes;
-
+      
       let nodes = svg.select('g.nodes').selectAll('g').data(newNodes, d => d._id)
         .join(
           enter => {
@@ -1726,25 +1726,22 @@ Note that this may cause slow performance on larger networks.">
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
     });
 
-    let stopSimulation = () => {
-      force.stop(); 
-      d3.selectAll("svg#network > *").remove();
-    }
+    let stopSimulation = () => force.stop();
 
     $window
-    .on('stop-force-simulation', stopSimulation)
-    .on('node-color-change', updateNodeColors)
-      .on('link-color-change', updateLinkColor)
-      .on('background-color-change', function () {
-        $('#network').css('background-color', settings['background-color']);
-      })
-      .on('node-visibility link-visibility cluster-visibility node-selected', render)
-      .on('resize', function () {
+      .on('background-color-change.2d', function () {
+          $('#network').css('background-color', settings['background-color']);
+        })  
+      .on('node-color-change.2d', updateNodeColors)
+      .on('node-visibility.2d link-visibility.2d cluster-visibility.2d node-selected.2d', render)
+      .on('link-color-change.2d', updateLinkColor)
+      .on('resize.2d', function () {
         if (session.style.widgets["node-timeline-variable"] != 'None') { 
           $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
           setTimeout(fit, 0);
         }
-      });
+      })
+      .on('stop-force-simulation.2d', stopSimulation);
 
     layout.on('stateChanged', function () {
       let wrapper = $('#network').parent();
