@@ -67,9 +67,6 @@
     "choropleth-satellite-show": false,
     "choropleth-transparency": 0.3,
     "cluster-minimum-size": 1,
-    "polygons-foci": "cluster",
-    "polygons-gather-force": 0,
-    "polygons-group-color": "#1f77b4",
     "default-view": "2d_network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
@@ -168,6 +165,10 @@
     "physics-tree-node-label-variable": "None",
     "physics-tree-tooltip": "id",
     "physics-tree-type": "tree",
+    "polygons-foci": "cluster",
+    "polygons-gather-force": 0,
+    "polygons-group-color": "#1f77b4",
+    "polygons-show" : false,
     "reference-source-file": true,
     "reference-source-first": false,
     "reference-source-consensus": false,
@@ -477,6 +478,9 @@
   MT.applySession = oldSession => {
     //If anything here seems eccentric, assume it's to maintain compatibility with
     //session files from older versions of MicrobeTrace.
+    
+    $window.trigger("stop-force-simulation"); // stop previous network ticks
+    MT.reset();
     $("#launch").prop("disabled", true);
     session.files = oldSession.files;
     session.state = oldSession.state;
@@ -502,6 +506,7 @@
     //   }
     // }
     MT.finishUp(true);
+    $("#network-statistics-show").parent().trigger("click");
   };
   
   MT.applyStyle = style => {
@@ -1632,6 +1637,14 @@
   MT.reset = () => {
     $("#network-statistics-hide").parent().trigger("click");
     // $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
+ 
+    // temp variables is affecting the recall file's link visibility when recalling the same file
+    // reset temp causing register component error since file view has been registered and 2nd_network view via ansyc call also causing register error
+    // reset temp but retain componentCache
+    let tempComp = self.temp.componentCache;
+    self.temp = MT.tempSkeleton();
+    self.temp.componentCache = tempComp;
+    
     self.session = MT.sessionSkeleton();
     layout.unbind("stateChanged");
     layout.root.replaceChild(layout.root.contentItems[0], {

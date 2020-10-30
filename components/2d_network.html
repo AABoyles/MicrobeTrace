@@ -350,20 +350,20 @@ Note that this may cause slow performance on larger networks.">
                   </div>
                 </div>
               </div>
-              <div id="polygons-settings-row" class="form-group row" title="What Foci should be used when creating convex hulls?">
-                <div class="col-4"><label for="link-label-variable">Foci</label></div>
+              <div class="form-group row polygons-settings-row" title="What Foci should be used when creating convex hulls?">
+                <div class="col-4"><label for="polygons-foci">Center</label></div>
                 <div class="col-8">
-                  <select id="node-foci-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="polygons-foci" class="form-control form-control-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
-              <div id="polygons-settings-row" class="form-group row" title="What amount of gather force should be used?">
+              <div class="form-group row polygons-settings-row" title="What amount of gather force should be used?">
                 <div class="col-3">
-                  <label for="network-foci-gather">Gather</label>
+                  <label for="polygons-gather-force">Gather</label>
                 </div>
                 <div class="col-9">
-                  <input type="range" class="custom-range" id="polygons-foci-gather" min="0" max=".02" value="0" step="0.0001">
+                  <input type="range" class="custom-range" id="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
                 </div>
               </div>
             </div>
@@ -740,11 +740,12 @@ Note that this may cause slow performance on larger networks.">
             .style("stroke-linejoin", "round")
             .style("opacity", .2)
             .attr("d", groupPath);
+      }      
+      let handleTick = d => {
+        if(d) return polygonsTick;
+        else return layoutTick;		
       }
-      const tickFns = [layoutTick, polygonsTick];
-      let tickFnIndex = 0;
-      if (settings['polygons-show']) tickFnIndex = 1;
-      force.nodes(session.network.nodes).on('tick', tickFns[tickFnIndex]);
+      force.nodes(session.network.nodes).on('tick', handleTick(settings['polygons-show']));
       force.force('link').links(vlinks);
       force.force('link').distance(settings['link-length']);
       force.alpha(0.3).alphaTarget(0).restart();
@@ -1264,7 +1265,7 @@ Note that this may cause slow performance on larger networks.">
       redrawNodes();
     });
 
-    $('#node-foci-variable').on('change', function () {  
+    $('#polygons-foci').on('change', function () {  
       settings['polygons-foci'] = this.value;
       render();
     });
@@ -1329,8 +1330,9 @@ Note that this may cause slow performance on larger networks.">
       } else {
         links
           .data(getVLinks())
-          .attr('stroke', l => temp.style.linkColorMap(l[variable]))
-          .attr('opacity', l => temp.style.linkAlphaMap(l[variable]))
+          // fix link color mismatched for source and target variables
+          .attr('stroke', l => ('source' == variable || 'target' == variable) ? temp.style.linkColorMap(l[variable]._id) : temp.style.linkColorMap(l[variable]))
+          .attr('opacity', l => ('source' == variable || 'target' == variable) ? temp.style.linkAlphaMap(l[variable]._id) : temp.style.linkAlphaMap(l[variable]))
           .attr('stroke-dasharray', l => {
             //This quirky little algorithm creates the dasharray code necessary to make dash-y links.
             let length = 15;
@@ -1439,19 +1441,17 @@ Note that this may cause slow performance on larger networks.">
 
     $('#polygons-show').parent().on('click', function () {
       settings['polygons-show'] = true;
-      $("div[id='polygons-settings-row']").slideDown();
+      $(".polygons-settings-row").slideDown();
       render();
     });
 
     $('#polygons-hide').parent().on('click', function () {
       settings['polygons-show'] = false;
-      $("div[id='polygons-settings-row']").slideUp();
-      $("#polygons-foci-gather").val(0);
-      settings['polygons-gather-force'] = 0;
+      $(".polygons-settings-row").slideUp();
       render();
-    }).trigger('click');;
+    });
 
-    $('#polygons-foci-gather').on('input', function () {
+    $('#polygons-gather-force').on('input', function () {
       let v = parseFloat(this.value);
       settings['polygons-gather-force'] = v;
       render();
@@ -1726,8 +1726,14 @@ Note that this may cause slow performance on larger networks.">
         .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
     });
 
+    let stopSimulation = () => {
+      force.stop(); 
+      d3.selectAll("svg#network > *").remove();
+    }
+
     $window
-      .on('node-color-change', updateNodeColors)
+    .on('stop-force-simulation', stopSimulation)
+    .on('node-color-change', updateNodeColors)
       .on('link-color-change', updateLinkColor)
       .on('background-color-change', function () {
         $('#network').css('background-color', settings['background-color']);
@@ -1755,11 +1761,14 @@ Note that this may cause slow performance on larger networks.">
     if (session.style.widgets["node-timeline-variable"] != 'None') { 
       $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
     }
+
     //For some mysterious reason, this really needed a delay...
     setTimeout(function () {
-      if (settings['node-symbol-variable'] !== 'None') {
-        $('#node-symbol-variable').trigger('change');
-      }
+      if (settings['node-symbol-variable'] !== 'None') $('#node-symbol-variable').trigger('change');
+      if (settings["node-radius-variable"] != 'None') $('#node-radius-variable').trigger('change');
+      if (settings["link-width-variable"] != 'None') $('#link-width-variable').trigger('change');
+      if (settings["polygons-show"]) $(".polygons-settings-row").slideDown();
+      else $(".polygons-settings-row").slideUp();
     }, 1);
 
     setTimeout(fit, 1200);
