@@ -1148,6 +1148,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#node-symbol-variable').on('change', function () {
+      if($(this).find("option").length <= 1) return false;
       let variable = this.value;
       settings['node-symbol-variable'] = variable;
       let wrapper = $('#node-symbol-table-wrapper');
@@ -1761,7 +1762,7 @@ Note that this may cause slow performance on larger networks.">
 
     //For some mysterious reason, this really needed a delay...
     setTimeout(function () {
-      if (settings['node-symbol-variable'] !== 'None') $('#node-symbol-variable').trigger('change');
+      $('#node-symbol-variable').trigger('change');
       if (settings["node-radius-variable"] != 'None') $('#node-radius-variable').trigger('change');
       if (settings["link-width-variable"] != 'None') $('#link-width-variable').trigger('change');
       if (settings["polygons-show"]) $(".polygons-settings-row").slideDown();
