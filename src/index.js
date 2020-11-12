@@ -482,7 +482,7 @@ $(function() {
           session.style.widgets["node-color-table-name-sort"] = "ASC"
           $('#node-color-variable').trigger("change");
       });
-      let nodeColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeColorHeaderTitle ? session.style.overwrite.nodeColorHeaderTitle : "Node " + MT.titleize(variable));
+      let nodeColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeColorHeaderVariable == variable ? session.style.overwrite.nodeColorHeaderTitle : "Node " + MT.titleize(variable));
       let nodeHeader = $("<th class='p-1' contenteditable>" + nodeColorHeaderTitle + "</th>").append(nodeSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["node-color-table-name-sort"] = "";
@@ -579,6 +579,8 @@ $(function() {
       nodeColorTable
         .find(".p-1")
         .on("focusout", function() {
+          //#295
+          session.style.overwrite.nodeColorHeaderVariable = session.style.widgets["node-color-variable"];
           session.style.overwrite.nodeColorHeaderTitle = $($(this).contents()[0]).text();
         });
 
@@ -616,7 +618,7 @@ $(function() {
           session.style.widgets["link-color-table-name-sort"] = "ASC"
         $('#link-color-variable').trigger("change");
       });
-     let linkColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.linkColorHeaderTitle ? session.style.overwrite.linkColorHeaderTitle : "Link " + MT.titleize(variable));
+     let linkColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.linkColorHeaderVariable == variable ? session.style.overwrite.linkColorHeaderTitle : "Link " + MT.titleize(variable));
      let linkHeader = $("<th class='p-1' contenteditable>" + linkColorHeaderTitle + "</th>").append(linkSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["link-color-table-name-sort"] = "";
@@ -711,6 +713,8 @@ $(function() {
         linkColorTable
         .find(".p-1")
         .on("focusout", function() {
+          //#295
+          session.style.overwrite.linkColorHeaderVariable = session.style.widgets["link-color-variable"];
           session.style.overwrite.linkColorHeaderTitle = $($(this).contents()[0]).text();
         });
 
