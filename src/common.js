@@ -1616,6 +1616,16 @@
       }
     }
     let values = Object.keys(aggregates);
+    // #292
+    if (session.style.widgets["link-color-table-counts-sort"] == "ASC")
+      values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+    else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
+      values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
+    if (session.style.widgets["link-color-table-name-sort"] == "ASC")
+      values.sort(function(a, b) { return a - b });
+    else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
+      values.sort(function(a, b) { return b - a });
+    
     if (values.length > session.style.linkColors.length) {
       let colors = [];
       let cycles = Math.ceil(values.length / session.style.linkColors.length);
