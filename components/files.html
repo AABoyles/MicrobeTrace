@@ -413,10 +413,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function addToTable(file) {
       const extension = file.extension ? file.extension : filterXSS(file.name).split('.').pop().toLowerCase();
-      const isFasta = extension.indexOf('fas') > -1;
-      const isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
+      //#291
+      const isFasta = 'fasta' == file.format || extension.indexOf('fas') > -1;
+      const isNewick = 'newick' == file.format ||extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
       const isXL = (extension == 'xlsx' || extension == 'xls');
-      const isNode = file.name.toLowerCase().includes('node');
+      const isNode = 'node' == file.format || file.name.toLowerCase().includes('node');
       if (isXL) {
         let workbook = XLSX.read(file.contents, { type: 'array' });
         let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
