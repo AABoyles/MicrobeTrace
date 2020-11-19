@@ -359,11 +359,47 @@ Note that this may cause slow performance on larger networks.">
                 </div>
               </div>
               <div class="form-group row polygons-settings-row" title="What amount of gather force should be used?">
-                <div class="col-3">
+                <div class="col-4">
                   <label for="polygons-gather-force">Gather</label>
                 </div>
-                <div class="col-9">
+                <div class="col-8">
                   <input type="range" class="custom-range" id="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
+                </div>
+              </div>
+              <div class="form-group row polygons-settings-row" title="Show polygons colored?">
+                <div class="col-4">Color Polygons</label></div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light col" title="Show convex hull under the network.">
+                      <input type="radio" name="polygons" id="polygons-color-show" autocomplete="off">
+                      Show
+                    </label>
+                    <label class="btn btn-light col active" title="Do Not show convex hull under the network.">
+                      <input type="radio" name="polygons" id="polygons-color-hide" autocomplete="off" checked>
+                      Hide
+                    </label>
+                  </div>                  
+                </div>
+              </div>
+              <div id="polygon-color-table-row" class="form-group row" title="Should MicrobeTrace display the table of colors?">
+                <div class="col-4">Polygon Color Table</div>
+                <div class="col-8">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                    <label class="btn btn-light active col">
+                      <input type="radio" name="polygonColorTableShowHide" id="polygon-color-table-show" autocomplete="off" checked>
+                      Show
+                    </label>
+                    <label class="btn btn-light col">
+                      <input type="radio" name="polygonColorTableShowHide" id="polygon-color-table-hide" autocomplete="off">
+                      Hide
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div id="polygon-color-value-row" class="form-group row" title="What color should the polygons be?">
+                <div class="col-4"><label for="polygon-color">Polygons</label></div>
+                <div class="col-8">
+                  <input type="color" id="polygon-color" class="form-control form-control-sm" value="#1f77b4">
                 </div>
               </div>
             </div>
@@ -385,7 +421,19 @@ Note that this may cause slow performance on larger networks.">
   <a href="#" id="node-symbol-table-expand" class="dropdown-item">Expand</a>
   <a href="#" id="node-symbol-table-counts" class="dropdown-item">Toggle Counts</a>
   <a href="#" id="node-symbol-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
+</div>
 
+<div id="polygon-color-table-wrapper" class="floater">
+  <div id="polygon-color-table-draghandle"><span class="oi oi-move"></span></div>
+  <table id="polygon-color-table"></table>
+</div>
+
+<div id="polygon-color-table-context" class="dropdown-menu">
+  <a href="#" id="polygon-color-table-drag" class="dropdown-item">Drag</a>
+  <a href="#" id="polygon-color-table-context-hide" class="dropdown-item">Hide</a>
+  <a href="#" id="polygon-color-table-expand" class="dropdown-item">Expand</a>
+  <a href="#" id="polygon-color-table-counts" class="dropdown-item">Toggle Counts</a>
+  <a href="#" id="polygon-color-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
 </div>
 
 <div id="context-menu" class="dropdown-menu">
@@ -685,7 +733,13 @@ Note that this may cause slow performance on larger networks.">
 
       let foci = settings['polygons-foci'];
       let gather = settings['polygons-gather-force'];
-      let fill = settings['polygons-group-color'];
+      let fill = settings['polygon-color'];
+      let opacity = 0.4;
+      
+      if (settings['polygons-color-show']) {
+        fill = d => temp.style.polygonColorMap(d.key);
+        opacity = d => temp.style.polygonAlphaMap(d.key);
+      }
       d3.select('#network g.clusters').html(null);
       let groups = d3.nest().key(function(d) { return d[foci]; }).entries(newNodes).map(function(d) {
             var key = d.key
@@ -695,7 +749,7 @@ Note that this may cause slow performance on larger networks.">
             })
             return {'key':key, 'values':values}
         });
-      groups = groups.filter(group => group.values.length > 2)
+      groups = groups.filter(group => group.values.length > 2);     
       let groupPath = function(d) {
           return "M" + 
           d3.polygonHull(d.values.map(function(i) { return [i.x, i.y]; }))
@@ -738,9 +792,13 @@ Note that this may cause slow performance on larger networks.">
             .style("stroke", fill)
             .style("stroke-width", 40)
             .style("stroke-linejoin", "round")
-            .style("opacity", .2)
+            .style("opacity", opacity)
             .attr("d", groupPath);
       }      
+      
+      if(settings['polygons-show']) temp.polygonGroups = groups;
+      else delete temp.polygonGroups;
+
       let handleTick = d => {
         if(d) return polygonsTick;
         else return layoutTick;		
@@ -1148,7 +1206,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     $('#node-symbol-variable').on('change', function () {
-      if($(this).find("option").length <= 1) return false;
+      if($(this).find("option").length <= 1) return false;    
       let variable = this.value;
       settings['node-symbol-variable'] = variable;
       let wrapper = $('#node-symbol-table-wrapper');
@@ -1265,11 +1323,6 @@ Note that this may cause slow performance on larger networks.">
 	  
 	  settings['node-radius-variable'] = this.value;
       redrawNodes();
-    });
-
-    $('#polygons-foci').on('change', function () {  
-      settings['polygons-foci'] = this.value;
-      render();
     });
 
     function updateNodeColors() {
@@ -1444,13 +1497,31 @@ Note that this may cause slow performance on larger networks.">
     $('#polygons-show').parent().on('click', function () {
       settings['polygons-show'] = true;
       $(".polygons-settings-row").slideDown();
+      if(settings['polygons-color-show'] == true){
+        $('#polygons-color-show').click();
+      } else {
+        $('#polygons-color-hide').click();
+      }
+
       render();
     });
 
     $('#polygons-hide').parent().on('click', function () {
       settings['polygons-show'] = false;
       $(".polygons-settings-row").slideUp();
+      $("#polygon-color-table-row").slideUp();
+      $("#polygon-color-value-row").slideUp();
+      $("#polygon-color-table").empty();
       render();
+    });
+
+    $('#polygons-foci').on('change', function () {
+      settings['polygons-foci'] = this.value;
+      render();
+      if(settings['polygons-color-show'] == true) {
+        $("#polygon-color-table").empty();
+        updatePolygonColors();
+      }
     });
 
     $('#polygons-gather-force').on('input', function () {
@@ -1459,6 +1530,228 @@ Note that this may cause slow performance on larger networks.">
       render();
     });
 
+    $('#polygons-color-hide').parent().on('click', function () {
+      settings['polygons-color-show'] = false;
+      $("#polygon-color-value-row").slideDown();
+      $("#polygon-color-table-row").slideUp();
+      $("#polygon-color-table").empty();
+      render();
+    });
+
+    $("#polygons-color-show").parent().on("click", function() { 
+      settings['polygons-color-show'] = true;
+      $("#polygon-color-value-row").slideUp();
+      $("#polygon-color-table-row").slideDown();
+      updatePolygonColors();
+    });
+
+    function updatePolygonColors() {
+      let polygonSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
+        session.style.widgets["polygon-color-table-counts-sort"] = "";
+        if (session.style.widgets["polygon-color-table-name-sort"] === "ASC")
+          session.style.widgets["polygon-color-table-name-sort"] = "DESC"
+        else
+          session.style.widgets["polygon-color-table-name-sort"] = "ASC"
+          updatePolygonColors();
+      });
+      let polygonColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.polygonColorHeaderVariable == settings['polygons-foci'] ? session.style.overwrite.polygonColorHeaderTitle : "Polygon " + MT.titleize(settings['polygons-foci']));
+      let polygonHeader = $("<th class='p-1' contenteditable>" + polygonColorHeaderTitle + "</th>").append(polygonSort);
+      let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
+
+        session.style.widgets["polygon-color-table-name-sort"] = "";
+        if (session.style.widgets["polygon-color-table-counts-sort"] === "ASC")
+          session.style.widgets["polygon-color-table-counts-sort"] = "DESC"
+        else
+          session.style.widgets["polygon-color-table-counts-sort"] = "ASC"
+          updatePolygonColors();
+      });
+      let countHeader = $((session.style.widgets["polygon-color-table-counts"] ? "<th>Count</th>" : "")).append(countSort);
+      let polygonColorTable = $("#polygon-color-table")
+        .empty()
+        .append($("<tr></tr>"))
+        .append(polygonHeader)
+        .append(countHeader)
+        .append((session.style.widgets["polygon-color-table-frequencies"] ? "<th>Frequency</th>" : ""))
+        .append("<th>Color</th>" );
+      if (!session.style.polygonValueNames) session.style.polygonValueNames = {};
+      let aggregates = MT.createPolygonColorMap();
+      let values = Object.keys(aggregates);
+
+      if (session.style.widgets["polygon-color-table-counts-sort"] == "ASC")
+        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+      else if (session.style.widgets["polygon-color-table-counts-sort"] == "DESC")
+        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
+      if (session.style.widgets["polygon-color-table-name-sort"] == "ASC")
+        values.sort(function(a, b) { return a - b });
+      else if (session.style.widgets["polygon-color-table-name-sort"] == "DESC")
+        values.sort(function(a, b) { return b - a });
+
+      let total = 0;
+      values.forEach(d => total += aggregates[d] );
+
+      values.forEach((value, i) => {
+        session.style.polygonColors.splice(i, 1, temp.style.polygonColorMap(value));
+        session.style.polygonAlphas.splice(i, 1, temp.style.polygonAlphaMap(value));
+        let colorinput = $('<input type="color" value="' + temp.style.polygonColorMap(value) + '">')
+          .on("change", function(){
+            session.style.polygonColors.splice(i, 1, this.value);
+            temp.style.polygonColorMap = d3
+              .scaleOrdinal(session.style.polygonColors)
+              .domain(values);
+            render();
+          });
+        let alphainput = $("<a>⇳</a>").on("click", e => {
+          $("#color-transparency-wrapper").css({
+            top: e.clientY + 129,
+            left: e.clientX,
+            display: "block"
+          });
+          $("#color-transparency")
+            .val(session.style.polygonAlphas[i])
+            .one("change", function() {
+              session.style.polygonAlphas.splice(i, 1, parseFloat(this.value));
+              temp.style.polygonAlphaMap = d3
+                .scaleOrdinal(session.style.polygonAlphas)
+                .domain(values);
+              $("#color-transparency-wrapper").fadeOut();
+              render();
+            });
+        });
+        let cell = $("<td></td>")
+          .append(colorinput)
+          .append(alphainput);
+
+        let row = $(
+          "<tr>" +
+            "<td data-value='" + value + "'>" +
+              (session.style.polygonValueNames[value] ? session.style.polygonValueNames[value] : MT.titleize("" + value)) +
+            "</td>" +
+            (session.style.widgets["polygon-color-table-counts"] ? "<td>" + aggregates[value] + "</td>" : "") +
+            (session.style.widgets["polygon-color-table-frequencies"] ? "<td>" + (aggregates[value] / total).toLocaleString() + "</td>" : "") +
+          "</tr>"
+        ).append(cell);
+        polygonColorTable.append(row);
+      });
+      
+      temp.style.polygonColorMap = d3
+        .scaleOrdinal(session.style.polygonColors)
+        .domain(values);
+      temp.style.polygonAlphaMap = d3
+        .scaleOrdinal(session.style.polygonAlphas)
+        .domain(values);
+
+      polygonColorTable
+        .find("td")
+        .on("dblclick", function() {
+          $(this).attr("contenteditable", true).focus();
+        })
+        .on("focusout", function() {
+          let $this = $(this);
+          $this.attr("contenteditable", false);
+          session.style.polygonValueNames[$this.data("value")] = $this.text();
+        });
+        
+      polygonColorTable
+        .find(".p-1")
+        .on("focusout", function() {
+          session.style.overwrite.polygonColorHeaderVariable = session.style.widgets["polygons-foci"];
+          session.style.overwrite.polygonColorHeaderTitle = $($(this).contents()[0]).text();
+        });
+
+      sortable("#polygon-color-table", { items: "tr" });
+      render();
+    }
+
+    $("#polygon-color")
+      .on("change", function() {
+        session.style.widgets["polygon-color"] = this.value;
+        render();
+      })
+      .val(session.style.widgets["polygon-color"]);
+
+    $("#polygon-color-table-wrapper").on("contextmenu", e => {
+      e.preventDefault();
+      $("#polygon-color-table-context").css({
+          top: e.clientY,
+          left: e.clientX,
+          display: "block"
+        });
+      });
+
+    $("#polygon-color-table-drag").on("click", function() {
+      let $this = $(this);
+      $this.parent().hide();
+      if ($this.text() == "Drag") {
+        $("#polygon-color-table-draghandle").slideDown();
+        $this.text("Pin");
+      } else {
+        $("#polygon-color-table-draghandle").slideUp();
+        $this.text("Drag");
+      }
+    });
+
+    $("#polygon-color-table-draghandle").on("mousedown", function() {
+      let body = $("body");
+      let parent = $(this).parent();
+      body.on("mousemove", e => {
+        parent
+          .css("top"  , parseFloat(parent.css("top"  )) + e.originalEvent.movementY + "px")
+          .css("right", parseFloat(parent.css("right")) - e.originalEvent.movementX + "px");
+      });
+      body.on("mouseup", () => body.off("mousemove").off("mouseup"));
+    });
+
+    $("#polygon-color-table-context-hide").on("click", () => $("#polygon-color-table-hide").parent().trigger('click'));
+
+    $("#polygon-color-table-expand").on("click", function() {
+      let $this = $(this);
+      if ($this.text() == "Expand") {
+        $("#polygon-color-table-wrapper").css({
+          "max-height": "none",
+          "overflow-y": "auto"
+        });
+        $this.text("Contract");
+      } else {
+        $("#polygon-color-table-wrapper").css({
+          "max-height": "400px",
+          "overflow-y": "scroll"
+        });
+        $this.text("Expand");
+      }
+    });
+
+    $("#polygon-color-table-counts").on("click", function() {
+      let $this = $(this);
+      if (session.style.widgets["polygon-color-table-counts"]) {
+        session.style.widgets["polygon-color-table-counts"] = false;
+        $this.text("Show Counts");
+      } else {
+        session.style.widgets["polygon-color-table-counts"] = true;
+        $this.text("Hide Counts");
+      }
+      $("#polygons-color-show").click();
+    });
+
+    $("#polygon-color-table-frequencies").on("click", function() {
+      let $this = $(this);
+      if (session.style.widgets["polygon-color-table-frequencies"]) {
+        session.style.widgets["polygon-color-table-frequencies"] = false;
+        $this.text("Show Frequencies");
+      } else {
+        session.style.widgets["polygon-color-table-frequencies"] = true;
+        $this.text("Hide Frequencies");
+      }
+      $("#polygons-color-show").click();
+    });
+
+    $("#polygon-color-table-show")
+      .parent()
+      .on("click", () => $("#polygon-color-table-wrapper").fadeIn());
+
+    $("#polygon-color-table-hide")
+      .parent()
+      .on("click", () => $("#polygon-color-table-wrapper").fadeOut());
+    
     $('#network-friction').on('input', function () {
       let v = parseFloat(this.value);
       force.velocityDecay(v);
@@ -1767,7 +2060,11 @@ Note that this may cause slow performance on larger networks.">
       if (settings["node-radius-variable"] != 'None') $('#node-radius-variable').trigger('change');
       if (settings["link-width-variable"] != 'None') $('#link-width-variable').trigger('change');
       if (settings["polygons-show"]) $(".polygons-settings-row").slideDown();
-      else $(".polygons-settings-row").slideUp();
+      else {
+        $(".polygons-settings-row").slideUp();
+        $("#polygon-color-table-row").slideUp();
+        $("#polygon-color-value-row").slideUp();
+      }
     }, 1);
 
     setTimeout(fit, 1200);

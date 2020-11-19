@@ -165,9 +165,14 @@
     "physics-tree-node-label-variable": "None",
     "physics-tree-tooltip": "id",
     "physics-tree-type": "tree",
+    "polygon-color": "#bbccee",
+    "polygon-color-table-name-sort": "DESC",
+    "polygon-color-table-counts-sort": "DESC",
+    "polygon-color-table-counts": true,
+    "polygon-color-table-frequencies": false,
+    "polygons-color-show": false,
     "polygons-foci": "cluster",
     "polygons-gather-force": 0,
-    "polygons-group-color": "#1f77b4",
     "polygons-show" : false,
     "reference-source-file": true,
     "reference-source-first": false,
@@ -263,6 +268,9 @@
         "symbolX"
       ],
       nodeValueNames: {},
+      polygonAlphas: [0.5],
+      polygonColors: ['#bbccee','#cceeff','#ccddaa','#eeeebb','#ffcccc','#dddddd'],
+      polygonValueNames: {},
       overwrite: {},
       widgets: MT.defaultWidgets
     },
@@ -280,7 +288,9 @@
       linkColorMap: () => session.style.widgets["link-color"],
       nodeAlphaMap: () => 1,
       nodeColorMap: () => session.style.widgets["node-color"],
-      nodeSymbolMap: () => session.style.widgets["node-symbol"]
+      nodeSymbolMap: () => session.style.widgets["node-symbol"],
+      polygonAlphaMap: () => 0.5,
+      polygonColorMap: () => session.style.widgets["polygon-color"]
     },
     trees: {}
   });
@@ -478,18 +488,21 @@
   MT.applySession = oldSession => {
     //If anything here seems eccentric, assume it's to maintain compatibility with
     //session files from older versions of MicrobeTrace.
-    
+  
     $window.trigger("stop-force-simulation"); // stop previous network ticks so previous polygon won't show up
     
     // when using recall function several times, window remembers every registered event function of each recall which all registered functions will be fired when triggered
     // since an event is registered in both 2d_network.html and index.js, add namespace to events in 2d_network so they can be removed without affecting events in index
     $window.off('.2d');
-    
+
     MT.reset();
     $("#launch").prop("disabled", true);
     session.files = oldSession.files;
     session.state = oldSession.state;
-    session.style = oldSession.style;
+    session.style = Object.assign({},
+      session.style,
+      oldSession.style
+    );
     session.layout = oldSession.layout;
     session.meta.startTime = Date.now();
     const nodes = oldSession.data.nodes,
@@ -522,6 +535,7 @@
     );
     MT.createLinkColorMap();
     MT.createNodeColorMap();
+    MT.createPolygonColorMap();
     let $id = null;
     for (let id in session.style.widgets) {
       $id = $("#" + id);
@@ -1625,7 +1639,7 @@
       values.sort(function(a, b) { return a - b });
     else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
       values.sort(function(a, b) { return b - a });
-    
+      
     if (values.length > session.style.linkColors.length) {
       let colors = [];
       let cycles = Math.ceil(values.length / session.style.linkColors.length);
@@ -1648,7 +1662,53 @@
 
     return aggregates;
   };
-  
+
+  MT.createPolygonColorMap = () => {
+    if (!temp.polygonGroups || !session.style.widgets["polygons-color-show"]) {
+      temp.style.polygonColorMap = () => session.style.widgets["polygon-color"];
+      return [];
+    }
+
+    let aggregates = {};
+    let groups = temp.polygonGroups;
+    groups.forEach(d => aggregates[d.key] = d.values.length);
+    let values = Object.keys(aggregates);
+
+    if (session.style.widgets["polygon-color-table-counts-sort"] == "ASC")
+      values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+    else if (session.style.widgets["polygon-color-table-counts-sort"] == "DESC")
+      values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
+    if (session.style.widgets["polygon-color-table-name-sort"] == "ASC")
+      values.sort(function(a, b) { return a - b });
+    else if (session.style.widgets["polygon-color-table-name-sort"] == "DESC")
+      values.sort(function(a, b) { return b - a });
+
+    if (values.length > session.style.polygonColors.length) {
+      let colors = [];
+      let m = Math.ceil(values.length / session.style.polygonColors.length);
+      while (m-- > 0) {
+        colors = colors.concat(session.style.polygonColors);
+      }
+      session.style.polygonColors = colors;
+    }
+    if(!session.style.polygonAlphas) session.style.polygonAlphas = new Array(values.length).fill(1);
+    if (values.length > session.style.polygonAlphas.length) {
+      session.style.polygonAlphas = session.style.polygonAlphas.concat(
+        new Array(values.length - session.style.polygonAlphas.length).fill(0.5)
+      );
+    }
+    if (temp.style.polygonColorMap.domain === undefined)
+      temp.style.polygonColorMap = d3
+        .scaleOrdinal(session.style.polygonColors)
+        .domain(values);
+    if (temp.style.polygonAlphaMap.domain === undefined)
+      temp.style.polygonAlphaMap = d3
+        .scaleOrdinal(session.style.polygonAlphas)
+        .domain(values);
+      
+    return aggregates;
+  };
+
   MT.reset = () => {
     $("#network-statistics-hide").parent().trigger("click");
     // $("#SettingsTab").attr("data-target", "#sequence-controls-modal");

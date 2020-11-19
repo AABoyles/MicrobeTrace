@@ -217,6 +217,37 @@ svg#link-threshold-sparkline {
   text-indent: 1px;
   text-overflow: "";
 }
+#polygon-color-table-wrapper {
+  position: absolute;
+  top: 893px;
+  right: 10px;
+  z-index: 999;
+  max-height: 400px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border-radius: 0.25rem;
+  color: #303030;
+  background-color: #f8f9fa !important;
+}
+#polygon-color-table-draghandle {
+  display: none;
+  width: 100%;
+  text-align: center;
+}
+#polygon-color-table th {
+  text-align: center;
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#polygon-color-table td {
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#polygon-color-table input[type="color"] {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
 #color-transparency-wrapper {
   display: none;
   position: absolute;
