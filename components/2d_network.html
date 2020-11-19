@@ -1188,6 +1188,7 @@ Note that this may cause slow performance on larger networks.">
         }
         session.style.nodeSymbols = symbols;
       }
+      values.sort(function (a, b) {return aggregates[b] - aggregates[a];}); //#297
       temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
       let nodeSymbolHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : "Node " + MT.titleize(variable));
       table.empty().append(
