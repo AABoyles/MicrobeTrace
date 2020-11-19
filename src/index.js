@@ -764,7 +764,7 @@ $(function() {
         }
         $('#pinbutton').prop("disabled", true);
       }
-      let globalTimelineField =  (session.style.overwrite && session.style.overwrite.globalTimelineField ? session.style.overwrite.globalTimelineField : MT.titleize(variable));
+      let globalTimelineField =  (session.style.overwrite && variable == session.style.overwrite.globalTimelineFieldVariable ? session.style.overwrite.globalTimelineField : MT.titleize(variable));
       $("#global-timeline-field").html(globalTimelineField); 
   
       var formatDateIntoYear = d3.timeFormat("%Y");
@@ -812,8 +812,7 @@ $(function() {
           .append("svg")
           .attr("width", width + margin.left + margin.right)
           .attr("height", 120);  
-      
-      console.log('////////////////  build slider');
+
           ////////// slider //////////
       var currentValue = 0;
       var targetValue = width;
@@ -911,6 +910,7 @@ $(function() {
     .trigger("change");
 
   $("#global-timeline-field").on("focusout", function() {
+      session.style.overwrite.globalTimelineFieldVariable = session.style.widgets["node-timeline-variable"];
       session.style.overwrite.globalTimelineField = $(this).text();
     });
 
