@@ -33,7 +33,7 @@
   <div class="tab-content">
     <div class="tab-pane fade show active" id="network-node-settings" role="tabpanel" aria-labelledby="nodes-tab">
       <div class="accordion" id="node-controls-accordion">
-        <div class="card">
+        <div class="card" style="overflow:visible">
           <div class="card-header p-0">
             <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#node-controls-labels" aria-expanded="true" aria-controls="node-controls-labels" style="color:#495057">Labels and Tooltips</button>
           </div>
@@ -66,7 +66,7 @@
               <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
                 <div class="col-4"><label for="node-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
-                  <select id="node-tooltip-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="node-tooltip-variable"  class="form-control form-control-sm chosen-select" multiple title="What node data should be displayed as a tooltip for the node?">
                     <option>None</option>
                   </select>
                 </div>
@@ -637,6 +637,22 @@ Note that this may cause slow performance on larger networks.">
 
     if (settings['network-friction']) force.velocityDecay(settings['network-friction']);
 
+    //#299
+    function updateColumns(){
+      if(!$('#network').length) return;
+      let variables = settings['node-tooltip-variable'];
+      if ('None' != variables) {
+        $('#node-tooltip-variable')
+          .chosen('destroy')
+          .html(
+            session.data['nodeFields'].map((d, i) => {
+              return `<option value="${d}"${variables.includes(d) ? " selected" : ""}>${MT.titleize(d)}</option>`
+            }).join('\n')
+          )
+          .chosen({'width': 'inherit', 'max_selected_options': 3});
+      }
+    }
+
     function render() { 
       if(!$('#network').length) return;
       const start = Date.now();
@@ -997,13 +1013,47 @@ Note that this may cause slow performance on larger networks.">
     function showNodeTooltip(d) {
       if (settings['node-highlight']) highlightNeighbors(d);
       if ($('#node-tooltip-variable').val() == 'None') return;
-      d3.select('#tooltip')
-        .html(d[$('#node-tooltip-variable').val()])
+      //#299
+      let variables = settings['node-tooltip-variable'];
+      if(Array.isArray(variables) && variables.length > 1) {
+        let data = [];
+        for(let item of variables){
+          if('' == item) continue;
+          let arrayItem = [];
+          arrayItem.push(MT.titleize(item));
+          arrayItem.push(d[item]);
+          data.push(arrayItem);
+        }        
+        tabulate(data);
+        d3.select('#tooltip')
         .style('left', (d3.event.pageX + 8) + 'px')
         .style('top', (d3.event.pageY - 28) + 'px')
         .style('z-index', 1000)
         .transition().duration(100)
         .style('opacity', 1);
+      } else {
+        d3.select('#tooltip')
+        .html(d[variables])
+        .style('left', (d3.event.pageX + 8) + 'px')
+        .style('top', (d3.event.pageY - 28) + 'px')
+        .style('z-index', 1000)
+        .transition().duration(100)
+        .style('opacity', 1);
+      }
+    }
+
+    function tabulate(data) {
+      let table = d3.select("#tooltip").append("table"),
+          tbody = table.append("tbody");
+      let rows = tbody.selectAll("tr")
+          .data(data)
+          .enter()
+          .append("tr");
+      let cells = rows.selectAll("td")
+          .data(function(d) {return d;})
+          .enter()
+          .append("td")
+          .text(function(d) {return d;});
     }
 
     function highlightNeighbors(node) {
@@ -1076,6 +1126,8 @@ Note that this may cause slow performance on larger networks.">
         .transition().duration(100)
         .style('opacity', 0)
         .on('end', () => tooltip.style('z-index', -1));
+      tooltip.select('table').remove();
+      tooltip.html('');
     }
 
     let isNumber = a => typeof a == "number";
@@ -1196,8 +1248,8 @@ Note that this may cause slow performance on larger networks.">
       redrawLabels();
     });
 
-    $('#node-tooltip-variable').on('change', function () {
-      settings['node-tooltip-variable'] = this.value;
+    $('#node-tooltip-variable').on('change', function (e) {
+      settings['node-tooltip-variable'] = $('#node-tooltip-variable').val();
     });
 
     $('#node-symbol').on('input', function () {
@@ -2056,6 +2108,7 @@ Note that this may cause slow performance on larger networks.">
 
     //For some mysterious reason, this really needed a delay...
     setTimeout(function () {
+      updateColumns();
       $('#node-symbol-variable').trigger('change');
       if (settings["node-radius-variable"] != 'None') $('#node-radius-variable').trigger('change');
       if (settings["link-width-variable"] != 'None') $('#link-width-variable').trigger('change');

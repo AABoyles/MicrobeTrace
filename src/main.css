@@ -904,3 +904,7 @@ button.btn,
 #physics-tree g.nodes g circle {
   cursor: grab;
 }
+#tooltip table, td {
+  border:1px solid #cccccc;
+  border-radius:.25rem;
+}
