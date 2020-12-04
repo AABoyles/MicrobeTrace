@@ -1975,6 +1975,26 @@ Note that this may cause slow performance on larger networks.">
       session.network.allPinned = !session.network.allPinned;
     });
 
+    //#298
+    $('#casesensitivebutton').on('click', function () { 
+      if (session.style.widgets["search-case-sensitive"]) { 
+        session.style.widgets["search-case-sensitive"] = false;
+      } else {
+        session.style.widgets["search-case-sensitive"] = true;
+      }
+      $("#search").trigger("input");
+    });
+
+    //#298
+    $('#wholewordbutton').on('click', function () { 
+      if (session.style.widgets["search-whole-word"]) { 
+        session.style.widgets["search-whole-word"] = false;
+      } else {
+        session.style.widgets["search-whole-word"] = true;
+      }
+      $("#search").trigger("input");
+    });
+
     $("#node-symbol-table-wrapper").on("contextmenu", function (e) {
       e.preventDefault();
       $("#node-symbol-table-context").css({

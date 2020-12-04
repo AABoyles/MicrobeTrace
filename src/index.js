@@ -1127,14 +1127,19 @@ $(function() {
   $("#search").on("input", function() {
     let nodes = session.data.nodes
     const n = nodes.length
-    const v = this.value;
+    //#298
+    let v = this.value;   
     if (v == "") {
       for(let i = 0; i < n; i++){
         nodes[i].selected = false;
       }
     } else {
       const field = session.style.widgets["search-field"];
-      const vre = new RegExp(v);
+      //#298
+      if (session.style.widgets["search-whole-word"])  v = '\\b' + v + '\\b';
+      let vre;
+      if (session.style.widgets["search-case-sensitive"])  vre = new RegExp(v);
+      else  vre = new RegExp(v, 'i');
       for(let i = 0; i < n; i++){
         let node = nodes[i];
         if (!node[field]) {

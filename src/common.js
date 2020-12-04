@@ -182,6 +182,9 @@
     "scatterplot-logScale": false,
     "scatterplot-showNodes": false,
     "search-field": "_id",
+    //#298
+    "search-case-sensitive": false,
+    "search-whole-word" : false,
     "selected-color": "#ff8300",
     "selected-color-contrast": "#000000",
     "timeline-date-field": "None",
