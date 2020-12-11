@@ -694,7 +694,7 @@ Note that this may cause slow performance on larger networks.">
                 if (d3.event.shiftKey && d3.event.key == 'F10') showContextMenu(n);
               });
             g.append('path')
-              .attr('stroke', '#ffffff')
+            .attr('stroke', '#ffffff')
               .attr('stroke-width', '2px');
             g.append('text')
               .attr('dy', 5)
@@ -1170,7 +1170,7 @@ Note that this may cause slow performance on larger networks.">
           if (!isNumber(size)) size = med;
           size = scale(size);
         }
-        d3.select(this).attr('d', d3.symbol().size(size).type(type));
+        d3.select(this).attr('d', d3.symbol().size(size).type(type));          
       });
     }
 
@@ -1983,6 +1983,7 @@ Note that this may cause slow performance on larger networks.">
         session.style.widgets["search-case-sensitive"] = true;
       }
       $("#search").trigger("input");
+      $('#search-results').html("").hide();
     });
 
     //#298
@@ -1993,6 +1994,7 @@ Note that this may cause slow performance on larger networks.">
         session.style.widgets["search-whole-word"] = true;
       }
       $("#search").trigger("input");
+      $('#search-results').html("").hide();
     });
 
     $("#node-symbol-table-wrapper").on("contextmenu", function (e) {

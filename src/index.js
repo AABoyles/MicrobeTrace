@@ -1124,37 +1124,92 @@ $(function() {
     $("#node-color-variable").change();
   });
 
-  $("#search").on("input", function() {
-    let nodes = session.data.nodes
-    const n = nodes.length
-    //#298
-    let v = this.value;   
-    if (v == "") {
-      for(let i = 0; i < n; i++){
-        nodes[i].selected = false;
-      }
-    } else {
-      const field = session.style.widgets["search-field"];
+  $("#search")
+    .on({"blur": function() {
+      setTimeout(function () {
+        $('#search-results').html("").hide();
+      }, 300);
+    },"input": function() {
+      let nodes = session.data.nodes
+      const n = nodes.length
       //#298
-      if (session.style.widgets["search-whole-word"])  v = '\\b' + v + '\\b';
-      let vre;
-      if (session.style.widgets["search-case-sensitive"])  vre = new RegExp(v);
-      else  vre = new RegExp(v, 'i');
-      for(let i = 0; i < n; i++){
-        let node = nodes[i];
-        if (!node[field]) {
-          node.selected = false;
+      let v = this.value;
+      const val = v;
+      if (v == "") {
+        $('#search-results').html("").hide();
+        for(let i = 0; i < n; i++){
+          nodes[i].selected = false;
         }
-        if (typeof node[field] == "string") {
-          node.selected = vre.test(node[field]);
+      } else {
+        $('#search-results').html("").hide();
+        const field = session.style.widgets["search-field"];
+        
+        let dataSet = new Set();
+        for(let i = 0; i < n; i++){
+          let node = nodes[i];
+          if (node[field]) {
+            dataSet.add(`${node[field]}`);
+          }
         }
-        if (typeof node[field] == "number") {
-          node.selected = (node[field] + "" == v);
+        let dataArray = Array.from(dataSet).sort();
+        //#298
+        if (session.style.widgets["search-whole-word"])  v = '\\b' + v + '\\b';
+        let vre;
+        if (session.style.widgets["search-case-sensitive"])  vre = new RegExp(v);
+        else  vre = new RegExp(v, 'i');
+
+        $.each(dataArray, function(i) {
+          if (dataArray[i].match(vre)) {
+            let $li = $('<li/>')
+                .html(dataArray[i])
+                .attr('data-value', dataArray[i]);
+            $('#search-results').append($li).show();
+          }
+        });
+        
+        $('.autocomplete-wrapper li').on('click', function() {
+          let ac_v = $(this).attr('data-value');
+          const ac_val = ac_v;
+          let ac_vre;
+          $('#search').val(ac_v);
+          $('#search-results').html("").hide();
+        
+          if (session.style.widgets["search-whole-word"])  ac_v = '\\b' + ac_v + '\\b';
+          if (session.style.widgets["search-case-sensitive"])  ac_vre = new RegExp(ac_v);
+          else ac_vre = new RegExp(ac_v, 'i');
+
+          for(let i = 0; i < n; i++){
+            let node = nodes[i];
+            if (!node[field]) {
+              node.selected = false;
+            }
+            if (typeof node[field] == "string") {
+              node.selected = ac_vre.test(node[field]);
+            }
+            if (typeof node[field] == "number") {
+              node.selected = (node[field] + "" == ac_val);
+            }
+          }        
+          $window.trigger("node-selected");
+        });
+
+        for(let i = 0; i < n; i++){
+          let node = nodes[i];
+          if (!node[field]) {
+            node.selected = false;
+          }
+          if (typeof node[field] == "string") {
+            node.selected = vre.test(node[field]);
+          }
+          if (typeof node[field] == "number") {
+            node.selected = (node[field] + "" == val);
+          }
         }
+
+        if (!nodes.some(node => node.selected)) alertify.warning("No matches!");
       }
-      if (!nodes.some(node => node.selected)) alertify.warning("No matches!");
+      $window.trigger("node-selected");
     }
-    $window.trigger("node-selected");
   });
 
   $("#search-field").on("change", function() {
