@@ -694,7 +694,7 @@ Note that this may cause slow performance on larger networks.">
                 if (d3.event.shiftKey && d3.event.key == 'F10') showContextMenu(n);
               });
             g.append('path')
-            .attr('stroke', '#ffffff')
+              .attr('stroke', settings['node-color-border'])
               .attr('stroke-width', '2px');
             g.append('text')
               .attr('dy', 5)
@@ -1172,6 +1172,13 @@ Note that this may cause slow performance on larger networks.">
         }
         d3.select(this).attr('d', d3.symbol().size(size).type(type));          
       });
+    }
+
+    function redrawNodeBorder(){
+      let nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
+      nodes
+        .selectAll('path')
+        .attr('stroke', settings['node-color-border']);
     }
 
     function redrawLabels() {
@@ -2102,6 +2109,7 @@ Note that this may cause slow performance on larger networks.">
           $('#network').css('background-color', settings['background-color']);
         })  
       .on('node-color-change.2d', updateNodeColors)
+      .on('node-color-border-change.2d', redrawNodeBorder)
       .on('node-visibility.2d link-visibility.2d cluster-visibility.2d node-selected.2d', render)
       .on('link-color-change.2d', updateLinkColor)
       .on('resize.2d', function () {

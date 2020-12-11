@@ -137,6 +137,7 @@
     "network-link-strength": 0.125,
     "node-charge": 200,
     "node-color": "#1f77b4",
+    "node-color-border": "#000000",
     "node-color-table-name-sort": "DESC",
     "node-color-table-counts-sort": "DESC",
     "node-color-table-counts": true,

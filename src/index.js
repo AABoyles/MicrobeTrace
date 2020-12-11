@@ -596,6 +596,12 @@ $(function() {
     })
     .val(session.style.widgets["node-color"]);
 
+  $("#node-color-border")
+    .on("change", function() {
+      session.style.widgets["node-color-border"] = this.value;
+      $window.trigger("node-color-border-change");
+    });
+
   $("#link-color-variable")
     .val(session.style.widgets["link-color-variable"])
     .on("change", function() {
