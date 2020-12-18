@@ -759,6 +759,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       session.style.widgets['default-distance-metric'] = lsv;
     });
 
+    $('#default-distance-threshold').change(function () {
+      session.style.widgets["link-threshold"] = this.value;
+    });
+
     localforage.getItem('default-distance-metric').then(cachedLSV => {
       if (cachedLSV) {
         $('#default-distance-metric').val(cachedLSV).trigger('change');
