@@ -135,6 +135,7 @@
     "network-friction": 0.4,
     "network-gravity": 0.05,
     "network-link-strength": 0.125,
+    "node-border-width": 2,
     "node-charge": 200,
     "node-color": "#1f77b4",
     "node-color-border": "#000000",

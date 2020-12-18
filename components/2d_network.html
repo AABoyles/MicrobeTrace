@@ -148,6 +148,11 @@
                 <div class="col-8"><input type="range" class="custom-range" id="node-radius" min="100" value="250" step="1" max="5000">
                 </div>
               </div>
+              <div class="form-group row" title="How wide should the node border be?">
+                <div class="col-4"><label for="node-border-width">Border Width</label></div>
+                <div class="col-8"><input type="number" class="form-control form-control-sm" id="node-border-width" min="0" step="0.1" value="2">
+                </div>
+              </div>            
             </div>
           </div>
         </div>
@@ -695,7 +700,7 @@ Note that this may cause slow performance on larger networks.">
               });
             g.append('path')
               .attr('stroke', settings['node-color-border'])
-              .attr('stroke-width', '2px');
+              .attr('stroke-width', settings['node-border-width'])
             g.append('text')
               .attr('dy', 5)
               .attr('dx', 8);
@@ -1178,7 +1183,8 @@ Note that this may cause slow performance on larger networks.">
       let nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
       nodes
         .selectAll('path')
-        .attr('stroke', settings['node-color-border']);
+        .attr('stroke', settings['node-color-border'])
+        .attr('stroke-width', settings['node-border-width']);
     }
 
     function redrawLabels() {
@@ -1380,8 +1386,13 @@ Note that this may cause slow performance on larger networks.">
         $('#node-radius-row').slideUp();
       }
 	  
-	  settings['node-radius-variable'] = this.value;
+	    settings['node-radius-variable'] = this.value;
       redrawNodes();
+    });
+
+    $("#node-border-width").on("change", function() {
+      session.style.widgets["node-border-width"] = this.value;
+      $window.trigger("node-border-change");
     });
 
     function updateNodeColors() {
@@ -2108,8 +2119,8 @@ Note that this may cause slow performance on larger networks.">
       .on('background-color-change.2d', function () {
           $('#network').css('background-color', settings['background-color']);
         })  
+      .on('node-border-change.2d', redrawNodeBorder)
       .on('node-color-change.2d', updateNodeColors)
-      .on('node-color-border-change.2d', redrawNodeBorder)
       .on('node-visibility.2d link-visibility.2d cluster-visibility.2d node-selected.2d', render)
       .on('link-color-change.2d', updateLinkColor)
       .on('resize.2d', function () {

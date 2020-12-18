@@ -599,7 +599,7 @@ $(function() {
   $("#node-color-border")
     .on("change", function() {
       session.style.widgets["node-color-border"] = this.value;
-      $window.trigger("node-color-border-change");
+      $window.trigger("node-border-change");
     });
 
   $("#link-color-variable")
