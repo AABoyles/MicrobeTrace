@@ -20,6 +20,7 @@ onmessage = function(e){
       currentSeq.seq += line.toUpperCase();
     }
   }
+  currentSeq.seq = currentSeq.seq.replace(/N/g, "-");   // replace all "N" with "-"
   seqs.push(currentSeq);
   console.log('FASTA Parse time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
