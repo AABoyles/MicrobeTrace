@@ -1586,10 +1586,22 @@
         new Array(values.length - session.style.nodeAlphas.length).fill(1)
       );
     }
-    if (temp.style.nodeColorMap.domain === undefined) //#242
+    if (temp.style.nodeColorMap.domain === undefined) {//#242
+
+      //#312
+      if (session.style.widgets["node-color-table-counts-sort"] == "ASC")
+        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+      else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
+        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
+      if (session.style.widgets["node-color-table-name-sort"] == "ASC")
+        values.sort(function(a, b) { return a - b });
+      else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
+        values.sort(function(a, b) { return b - a });
+
       temp.style.nodeColorMap = d3
-        .scaleOrdinal(session.style.nodeColors)
-        .domain(values);
+          .scaleOrdinal(session.style.nodeColors)
+          .domain(values);
+    }
     if (temp.style.nodeAlphaMap.domain === undefined)
       temp.style.nodeAlphaMap = d3
         .scaleOrdinal(session.style.nodeAlphas)
