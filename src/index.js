@@ -169,7 +169,7 @@ $(function() {
 
   $("#AddDataTab").on("click", e => {
     e.preventDefault();
-    $("#network-statistics-hide").trigger("click");
+    //$("#network-statistics-hide").trigger("click");
     MT.launchView("files");
   });
 
