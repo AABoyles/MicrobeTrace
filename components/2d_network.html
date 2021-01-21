@@ -708,7 +708,7 @@ Note that this may cause slow performance on larger networks.">
           }
         );
 
-      redrawNodes();
+      $('#node-symbol-variable').trigger('change');
       updateNodeColors();
       redrawLabels();
 
@@ -828,7 +828,6 @@ Note that this may cause slow performance on larger networks.">
       force.force('link').links(vlinks);
       force.force('link').distance(settings['link-length']);
       force.alpha(0.3).alphaTarget(0).restart();
-      $('#node-symbol-variable').trigger('change');
       console.log("Network render time:", (Date.now() - start).toLocaleString(), 'ms');
     }
 
@@ -1139,7 +1138,7 @@ Note that this may cause slow performance on larger networks.">
 
     function redrawNodes() {
       //Things to track in the function:
-      //* Shapes:
+      //* Shapes:     
       let type = d3[settings['node-symbol']];
       let symbolVariable = settings['node-symbol-variable'];
       //* Sizes:
@@ -1284,6 +1283,14 @@ Note that this may cause slow performance on larger networks.">
         redrawNodes();
         return;
       }
+
+      let nodeSymbols;
+      if(session.style.nodeSymbolsTable[variable]) {
+        nodeSymbols = session.style.nodeSymbolsTable[variable];
+      } else {
+        nodeSymbols = session.style.nodeSymbolsTable[variable] = [...session.style.nodeSymbols];
+      }
+      
       $('#node-symbol-row').slideUp();
       $('#node-symbol-table-row').slideDown();
       let values = [];
@@ -1303,16 +1310,31 @@ Note that this may cause slow performance on larger networks.">
           aggregates[dv] = 1;
         }
       }
-      if (values.length > session.style.nodeSymbols.length) {
+      if (values.length > nodeSymbols.length) {
         let symbols = [];
-        let m = Math.ceil(values.length / session.style.nodeSymbols.length);
+        let m = Math.ceil(values.length / nodeSymbols.length);
         while (m-- > 0) {
-          symbols = symbols.concat(session.style.nodeSymbols);
+          symbols = symbols.concat(nodeSymbols);
         }
-        session.style.nodeSymbols = symbols;
+        nodeSymbols = symbols;
       }
       values.sort(function (a, b) {return aggregates[b] - aggregates[a];}); //#297
-      temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+
+      if (session.style.widgets["node-timeline-variable"] == 'None') {
+        session.style.nodeSymbolsTableKeys[variable] = values;
+        session.style.nodeSymbolsTable[variable] = nodeSymbols;
+      } else {
+        let key;
+        let tempNodeSymbols=[];
+        for(let v of values) {
+          let table = session.style.nodeSymbolsTableKeys[variable];
+          key = table.findIndex( k => k === v);
+          tempNodeSymbols.push(nodeSymbols[key]);
+        }
+        nodeSymbols = tempNodeSymbols;
+      }
+      
+      temp.style.nodeSymbolMap = d3.scaleOrdinal(nodeSymbols).domain(values);
       let nodeSymbolHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : "Node " + MT.titleize(variable));
       table.empty().append(
         '<tr>' +
@@ -1322,12 +1344,16 @@ Note that this may cause slow performance on larger networks.">
         '<th>Shape</th>' +
         '</tr>');
       let options = $('#node-symbol').html();
-      values.sort(function (a, b) {
-        return aggregates[b] - aggregates[a];
-      }).forEach(function (v, i) {
+      values.forEach(function (v, i) {
         let selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function (e) {
-          session.style.nodeSymbols.splice(i, 1, this.value);
-          temp.style.nodeSymbolMap = d3.scaleOrdinal(session.style.nodeSymbols).domain(values);
+          nodeSymbols.splice(i, 1, this.value);
+          temp.style.nodeSymbolMap = d3.scaleOrdinal(nodeSymbols).domain(values);
+
+          // make update during timeline - also need to update saved nodeSymbols
+          if (session.style.widgets["node-timeline-variable"] != 'None') {
+            let key = session.style.nodeSymbolsTableKeys[variable].findIndex( k => k === v);
+            session.style.nodeSymbolsTable[variable].splice(key, 1, this.value);
+          }
           redrawNodes();
         });
         let cell = $('<td></td>').append(selector);

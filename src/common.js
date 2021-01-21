@@ -272,6 +272,8 @@
         "symbolOctagonAlt",
         "symbolX"
       ],
+      nodeSymbolsTable: {},
+      nodeSymbolsTableKeys: {},
       nodeValueNames: {},
       polygonAlphas: [0.5],
       polygonColors: ['#bbccee','#cceeff','#ccddaa','#eeeebb','#ffcccc','#dddddd'],
