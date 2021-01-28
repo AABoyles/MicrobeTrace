@@ -1324,6 +1324,40 @@ Note that this may cause slow performance on larger networks.">
         session.style.nodeSymbolsTableKeys[variable] = values;
         session.style.nodeSymbolsTable[variable] = nodeSymbols;
       } else {
+        
+        // During timeline mode, user Pause and switch to a different Node Symbol but nodeSymbolsTableKeys[variable] is not available
+        if(!session.style.nodeSymbolsTableKeys[variable]) {
+          let valuesTL = [];
+          let aggregatesTL = {};
+          let nodesTL = session.network.timelineNodes;
+          let n = nodesTL.length;
+          let vnodesTL = 0;
+          let nodeSymbolsTL = [...session.style.nodeSymbols];
+          for (let i = 0; i < n; i++) {
+            let d = nodesTL[i];
+            if (!d.visible) continue;
+            vnodesTL++;
+            let dv = d[variable];
+            if (valuesTL.indexOf(dv) == -1) valuesTL.push(dv);
+            if (dv in aggregatesTL) {
+              aggregatesTL[dv]++;
+            } else {
+              aggregatesTL[dv] = 1;
+            }
+          }
+          if (valuesTL.length > nodeSymbolsTL.length) {
+            let symbols = [];
+            let m = Math.ceil(valuesTL.length / nodeSymbolsTL.length);
+            while (m-- > 0) {
+              symbols = symbols.concat(nodeSymbolsTL);
+            }
+            nodeSymbolsTL = symbols;
+          }
+          valuesTL.sort(function (a, b) {return aggregatesTL[b] - aggregatesTL[a];});
+          session.style.nodeSymbolsTableKeys[variable] = valuesTL;
+          session.style.nodeSymbolsTable[variable] = nodeSymbolsTL;
+        }        
+
         let key;
         let tempNodeSymbols=[];
         for(let v of values) {

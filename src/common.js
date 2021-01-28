@@ -1227,7 +1227,6 @@
     console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
     if (oldSession) {
       layout.root.contentItems[0].remove();
-      console.log('session.layout', session.layout);
       setTimeout(() => MT.loadLayout(session.layout), 80);
     } else {
       MT.launchView(session.style.widgets['default-view']);
@@ -1608,7 +1607,6 @@
       
       // During timeline mode, user Pause and switch to a different Node varaible but nodeColorsTableKeys[variable] is not available
       if(!session.style.nodeColorsTableKeys[variable]) {
-        console.log('During timeline mode, user Pause and switch to a different Node varaible');
         let aggregatesTL = {};
         let nodesTL = session.network.timelineNodes;
         let n = nodesTL.length;

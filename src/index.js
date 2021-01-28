@@ -504,11 +504,6 @@ $(function() {
       let aggregates = MT.createNodeColorMap();
       let vnodes = MT.getVisibleNodes();
       let values = Object.keys(aggregates);
-
-      if (session.style.widgets["node-color-table-counts-sort"] == "ASC")
-        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
-      else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
-        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
       
       if (isNaN(values[0])) { // String sorting
         if (session.style.widgets["node-color-table-name-sort"] == "ASC")
@@ -521,6 +516,11 @@ $(function() {
         else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
           values.sort(function(a, b) { return b - a });
       }
+
+      if (session.style.widgets["node-color-table-counts-sort"] == "ASC")
+        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+      else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
+        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
 
       values.forEach((value, i) => {
         let colorinput = $('<input type="color" value="' + temp.style.nodeColorMap(value) + '">')
@@ -657,11 +657,6 @@ $(function() {
       let aggregates = MT.createLinkColorMap();
       let vlinks = MT.getVisibleLinks();
       let values = Object.keys(aggregates);
-
-      if (session.style.widgets["link-color-table-counts-sort"] == "ASC")
-        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
-      else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
-        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
       
       if (isNaN(values[0])) { // String sorting
         if (session.style.widgets["link-color-table-name-sort"] == "ASC")
@@ -674,6 +669,11 @@ $(function() {
         else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
           values.sort(function(a, b) { return b - a });        
       }
+      
+      if (session.style.widgets["link-color-table-counts-sort"] == "ASC")
+        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+      else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
+        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
 
       values.forEach((value, i) => {
         let colorinput = $('<input type="color" value="' + temp.style.linkColorMap(value) + '">')
