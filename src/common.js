@@ -254,6 +254,8 @@
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
       nodeColorsTable: {},
       nodeColorsTableKeys: {},
+      linkColorsTable: {},
+      linkColorsTableKeys: {},
       nodeSymbols: [
         "symbolCircle",
         "symbolCross",
@@ -1603,6 +1605,37 @@
       session.style.nodeColorsTableKeys[variable] = values;
       session.style.nodeColorsTable[variable] = nodeColors;
     } else {
+      
+      // During timeline mode, user Pause and switch to a different Node varaible but nodeColorsTableKeys[variable] is not available
+      if(!session.style.nodeColorsTableKeys[variable]) {
+        console.log('During timeline mode, user Pause and switch to a different Node varaible');
+        let aggregatesTL = {};
+        let nodesTL = session.network.timelineNodes;
+        let n = nodesTL.length;
+        let nodeColorsTL = [...session.style.nodeColors];
+        for (let i = 0; i < n; i++) {
+          let d = nodesTL[i];
+          if (!d.visible) continue;
+          let dv = d[variable];
+          if (dv in aggregatesTL) {
+            aggregatesTL[dv]++;
+          } else {
+            aggregatesTL[dv] = 1;
+          }
+        }
+        let valuesTL = Object.keys(aggregatesTL);
+        if (valuesTL.length > nodeColorsTL.length) {
+          let colors = [];
+          let m = Math.ceil(valuesTL.length / nodeColorsTL.length);
+          while (m-- > 0) {
+            colors = colors.concat(nodeColorsTL);
+          }
+          nodeColorsTL = colors;
+        }
+        session.style.nodeColorsTableKeys[variable] = valuesTL;
+        session.style.nodeColorsTable[variable] = nodeColorsTL;
+      }
+          
       let key;
       let tempNodeColors=[];
       for(let v of values) {
@@ -1632,6 +1665,14 @@
       temp.style.linkAlphaMap = () => 1 - session.style.widgets["link-opacity"];
       return [];
     }
+
+    let linkColors;
+    if(session.style.linkColorsTable[variable]) {
+      linkColors = session.style.linkColorsTable[variable];
+    } else {
+      linkColors = session.style.linkColorsTable[variable] = [...session.style.linkColors];
+    }
+
     let aggregates = {};
     let links = MT.getVisibleLinks();
     let i = 0,
@@ -1641,6 +1682,12 @@
       while (i < n) {
         l = links[i++];
         if (!l.visible) continue;
+
+        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
+        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        if (src === undefined || src.visible === false) continue;
+        if (tgt === undefined || tgt.visible === false) continue;
+        
         l.origin.forEach(o => {
           if (o in aggregates) {
             aggregates[o]++;
@@ -1653,6 +1700,12 @@
       while (i < n) {
         l = links[i++];
         if (!l.visible) continue;
+        
+        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
+        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        if (src === undefined || src.visible === false) continue;
+        if (tgt === undefined || tgt.visible === false) continue;  
+
         let lv = l[variable];
         if (lv in aggregates) {
           aggregates[lv]++;
@@ -1661,36 +1714,94 @@
         }
       }
     }
-    let values = Object.keys(aggregates);
-    // #292
-    if (session.style.widgets["link-color-table-counts-sort"] == "ASC")
-      values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
-    else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
-      values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-    if (session.style.widgets["link-color-table-name-sort"] == "ASC")
-      values.sort(function(a, b) { return a - b });
-    else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
-      values.sort(function(a, b) { return b - a });
-      
-    if (values.length > session.style.linkColors.length) {
+    let values = Object.keys(aggregates);      
+    if (values.length > linkColors.length) {
       let colors = [];
-      let cycles = Math.ceil(values.length / session.style.linkColors.length);
-      while (cycles-- > 0) colors = colors.concat(session.style.linkColors);
-      session.style.linkColors = colors;
+      let cycles = Math.ceil(values.length / linkColors.length);
+      while (cycles-- > 0) colors = colors.concat(linkColors);
+      linkColors = colors;
     }
+    if(!session.style.linkAlphas) session.style.linkAlphas = new Array(values.length).fill(1);
     if (values.length > session.style.linkAlphas.length) {
       session.style.linkAlphas = session.style.linkAlphas.concat(
         new Array(values.length - session.style.linkAlphas.length).fill(1)
       );
     }
-    if (temp.style.linkColorMap.domain === undefined) //#242
-      temp.style.linkColorMap = d3
-        .scaleOrdinal(session.style.linkColors)
-        .domain(values);
-    if (temp.style.linkAlphaMap.domain === undefined)
-      temp.style.linkAlphaMap = d3
-        .scaleOrdinal(session.style.linkAlphas)
-        .domain(values);
+
+    if (session.style.widgets["node-timeline-variable"] == 'None') {
+      session.style.linkColorsTableKeys[variable] = values;
+      session.style.linkColorsTable[variable] = linkColors;
+    } else {
+
+      // During timeline mode, user Pause and switch to a different link varaible but linkColorsTableKeys[variable] is not available
+      if(!session.style.linkColorsTableKeys[variable]) {
+        let aggregatesTL = {};
+        let linksTL = MT.getVisibleLinks();
+        let linkColorsTL = [...session.style.linkColors];
+        let i = 0,
+          n = linksTL.length,
+          l;
+        if (variable == "origin") {
+          while (i < n) {
+            l = linksTL[i++];
+            if (!l.visible) continue;
+            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
+            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            if (src === undefined || src.visible === false) continue;
+            if (tgt === undefined || tgt.visible === false) continue;
+            l.origin.forEach(o => {
+              if (o in aggregatesTL) {
+                aggregatesTL[o]++;
+              } else {
+                aggregatesTL[o] = 1;
+              }
+            });
+          }
+        } else {
+          while (i < n) {
+            l = linksTL[i++];
+            if (!l.visible) continue;
+            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
+            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            if (src === undefined || src.visible === false) continue;
+            if (tgt === undefined || tgt.visible === false) continue;  
+            let lv = l[variable];
+            if (lv in aggregatesTL) {
+              aggregatesTL[lv]++;
+            } else {
+              aggregatesTL[lv] = 1;
+            }
+          }
+        }       
+        let valuesTL = Object.keys(aggregatesTL);      
+        if (valuesTL.length > linkColorsTL.length) {
+          let colors = [];
+          let cycles = Math.ceil(valuesTL.length / linkColorsTL.length);
+          while (cycles-- > 0) colors = colors.concat(linkColorsTL);
+          linkColorsTL = colors;
+        }
+        session.style.linkColorsTableKeys[variable] = valuesTL;
+        session.style.linkColorsTable[variable] = linkColorsTL;
+      }
+
+      let key;
+      let tempLinkColors=[];
+      for(let v of values) {
+        let table = session.style.linkColorsTableKeys[variable];
+        key = table.findIndex( k => k === v);
+        tempLinkColors.push(linkColors[key]);
+      }
+      linkColors = temp.style.linkColor = tempLinkColors; // temp link color maps saved only under timeline
+      temp.style.linkColorsKeys = [...values];
+    }
+
+    temp.style.linkColorMap = d3
+      .scaleOrdinal(linkColors)
+      .domain(values);
+  
+    temp.style.linkAlphaMap = d3
+      .scaleOrdinal(session.style.linkAlphas)
+      .domain(values);
 
     return aggregates;
   };

@@ -662,20 +662,38 @@ $(function() {
         values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
       else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
         values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-      if (session.style.widgets["link-color-table-name-sort"] == "ASC")
-        values.sort(function(a, b) { return a - b });
-      else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
-        values.sort(function(a, b) { return b - a });
       
+      if (isNaN(values[0])) { // String sorting
+        if (session.style.widgets["link-color-table-name-sort"] == "ASC")
+          values.sort();
+        else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { if (a > b) return -1; if (b > a) return 1; return 0; }); 
+      } else {
+        if (session.style.widgets["link-color-table-name-sort"] == "ASC")
+          values.sort(function(a, b) { return a - b });
+        else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { return b - a });        
+      }
+
       values.forEach((value, i) => {
-        session.style.linkColors.splice(i, 1, temp.style.linkColorMap(value));
-        session.style.linkAlphas.splice(i, 1, temp.style.linkAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.linkColorMap(value) + '">')
           .on("change", function(){
-            session.style.linkColors.splice(i, 1, this.value);
-            temp.style.linkColorMap = d3
-              .scaleOrdinal(session.style.linkColors)
-              .domain(values);
+
+            let key = session.style.linkColorsTableKeys[variable].findIndex( k => k === value);
+            session.style.linkColorsTable[variable].splice(key, 1, this.value);
+            
+            if (session.style.widgets["node-timeline-variable"] == 'None') {
+              temp.style.linkColorMap = d3
+                .scaleOrdinal(session.style.linkColorsTable[variable])
+                .domain(session.style.linkColorsTableKeys[variable]);
+            } else {
+              let temKey = temp.style.linkColorsKeys.findIndex( k => k === value);
+              temp.style.linkColor.splice(temKey, 1, this.value);
+              temp.style.linkColorMap = d3
+                .scaleOrdinal(temp.style.linkColor)
+                .domain(temp.style.linkColorsKeys);
+            }
+
             $window.trigger("link-color-change");
           });
         let alphainput = $("<a>⇳</a>")
@@ -708,13 +726,6 @@ $(function() {
         row.append($("<td></td>").append(colorinput).append(alphainput));
         linkColorTable.append(row);
       });
-      //#242
-      temp.style.linkColorMap = d3
-        .scaleOrdinal(session.style.linkColors)
-        .domain(values);
-      temp.style.linkAlphaMap = d3
-        .scaleOrdinal(session.style.linkAlphas)
-        .domain(values);
 
       linkColorTable
         .find("td")
@@ -922,6 +933,7 @@ $(function() {
           .text(handleDateFormat(h));
         session.state.timeEnd = h;
         MT.setNodeVisibility(false);
+        MT.setLinkVisibility(false);
         MT.updateStatistics();
       }
     })
