@@ -252,6 +252,8 @@
       linkValueNames: {},
       nodeAlphas: [1],
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
+      nodeColorsTable: {},
+      nodeColorsTableKeys: {},
       nodeSymbols: [
         "symbolCircle",
         "symbolCross",
@@ -1560,6 +1562,14 @@
       temp.style.nodeColorMap = () => session.style.widgets["node-color"];
       return [];
     }
+    
+    let nodeColors;
+    if(session.style.nodeColorsTable[variable]) {
+      nodeColors = session.style.nodeColorsTable[variable];
+    } else {
+      nodeColors = session.style.nodeColorsTable[variable] = [...session.style.nodeColors];
+    }
+    
     let aggregates = {};
     let nodes = session.data.nodes;
     let n = nodes.length;
@@ -1574,13 +1584,13 @@
       }
     }
     let values = Object.keys(aggregates);
-    if (values.length > session.style.nodeColors.length) {
+    if (values.length > nodeColors.length) {
       let colors = [];
-      let m = Math.ceil(values.length / session.style.nodeColors.length);
+      let m = Math.ceil(values.length / nodeColors.length);
       while (m-- > 0) {
-        colors = colors.concat(session.style.nodeColors);
+        colors = colors.concat(nodeColors);
       }
-      session.style.nodeColors = colors;
+      nodeColors = colors;
     }
     if(!session.style.nodeAlphas) session.style.nodeAlphas = new Array(values.length).fill(1);
     if (values.length > session.style.nodeAlphas.length) {
@@ -1588,27 +1598,30 @@
         new Array(values.length - session.style.nodeAlphas.length).fill(1)
       );
     }
-    if (temp.style.nodeColorMap.domain === undefined) {//#242
 
-      //#312
-      if (session.style.widgets["node-color-table-counts-sort"] == "ASC")
-        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
-      else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
-        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-      if (session.style.widgets["node-color-table-name-sort"] == "ASC")
-        values.sort(function(a, b) { return a - b });
-      else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
-        values.sort(function(a, b) { return b - a });
-
-      temp.style.nodeColorMap = d3
-          .scaleOrdinal(session.style.nodeColors)
-          .domain(values);
+    if (session.style.widgets["node-timeline-variable"] == 'None') {
+      session.style.nodeColorsTableKeys[variable] = values;
+      session.style.nodeColorsTable[variable] = nodeColors;
+    } else {
+      let key;
+      let tempNodeColors=[];
+      for(let v of values) {
+        let table = session.style.nodeColorsTableKeys[variable];
+        key = table.findIndex( k => k === v);
+        tempNodeColors.push(nodeColors[key]);
+      }
+      nodeColors = temp.style.nodeColor = tempNodeColors; // temp node color maps saved only under timeline
+      temp.style.nodeColorKeys = [...values];
     }
-    if (temp.style.nodeAlphaMap.domain === undefined)
-      temp.style.nodeAlphaMap = d3
-        .scaleOrdinal(session.style.nodeAlphas)
-        .domain(values);
       
+    temp.style.nodeColorMap = d3
+      .scaleOrdinal(nodeColors)
+      .domain(values);
+  
+    temp.style.nodeAlphaMap = d3
+      .scaleOrdinal(session.style.nodeAlphas)
+      .domain(values);
+
     return aggregates;
   };
   

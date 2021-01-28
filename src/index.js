@@ -509,20 +509,38 @@ $(function() {
         values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
       else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
         values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-      if (session.style.widgets["node-color-table-name-sort"] == "ASC")
-        values.sort(function(a, b) { return a - b });
-      else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
-        values.sort(function(a, b) { return b - a });
+      
+      if (isNaN(values[0])) { // String sorting
+        if (session.style.widgets["node-color-table-name-sort"] == "ASC")
+          values.sort();
+        else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { if (a > b) return -1; if (b > a) return 1; return 0; });        
+      } else {  // Number sorting
+        if (session.style.widgets["node-color-table-name-sort"] == "ASC")
+          values.sort(function(a, b) { return a - b });
+        else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { return b - a });
+      }
 
       values.forEach((value, i) => {
-        session.style.nodeColors.splice(i, 1, temp.style.nodeColorMap(value));
-        session.style.nodeAlphas.splice(i, 1, temp.style.nodeAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.nodeColorMap(value) + '">')
           .on("change", function(){
-            session.style.nodeColors.splice(i, 1, this.value);
-            temp.style.nodeColorMap = d3
-              .scaleOrdinal(session.style.nodeColors)
-              .domain(values);
+            
+            let key = session.style.nodeColorsTableKeys[variable].findIndex( k => k === value);
+            session.style.nodeColorsTable[variable].splice(key, 1, this.value);
+            
+            if (session.style.widgets["node-timeline-variable"] == 'None') {
+              temp.style.nodeColorMap = d3
+                .scaleOrdinal(session.style.nodeColorsTable[variable])
+                .domain(session.style.nodeColorsTableKeys[variable]);
+            } else {
+              let temKey = temp.style.nodeColorKeys.findIndex( k => k === value);
+              temp.style.nodeColor.splice(temKey, 1, this.value);
+              temp.style.nodeColorMap = d3
+                .scaleOrdinal(temp.style.nodeColor)
+                .domain(temp.style.nodeColorKeys);
+            }
+            
             $window.trigger("node-color-change");
           });
         let alphainput = $("<a>⇳</a>").on("click", e => {
@@ -557,13 +575,6 @@ $(function() {
         ).append(cell);
         nodeColorTable.append(row);
       });
-      //#242
-      temp.style.nodeColorMap = d3
-        .scaleOrdinal(session.style.nodeColors)
-        .domain(values);
-      temp.style.nodeAlphaMap = d3
-        .scaleOrdinal(session.style.nodeAlphas)
-        .domain(values);
 
       nodeColorTable
         .find("td")
@@ -759,6 +770,7 @@ $(function() {
         MT.updateStatistics();
         return;
       }
+      if(!temp.style.nodeColor) $("#node-color-variable").trigger("change");
       if (!$('#pinbutton').prop('disabled')){
         if (!loadingJsonFile) {
           session.network.timelinePinned= session.network.allPinned;
