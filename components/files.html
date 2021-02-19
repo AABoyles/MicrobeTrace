@@ -546,16 +546,23 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         // $(`#file-${file.name}-field-2`).change(() => updateMetadata(file));
         // $(`#file-${file.name}-field-3`).change(() => updateMetadata(file));
         document.getElementById(`file-${file.name}-field-1`).addEventListener('change', (event) => {
-          updateMetadata(file)
+          updateMetadata(file);
+          $('#launch').prop('disabled', false);
         });
         document.getElementById(`file-${file.name}-field-2`).addEventListener('change', (event) => {
-          updateMetadata(file)
+          updateMetadata(file);
+          $('#launch').prop('disabled', false);
         });
         document.getElementById(`file-${file.name}-field-3`).addEventListener('change', (event) => {
-          updateMetadata(file)
+          updateMetadata(file);
+          $('#launch').prop('disabled', false);
         });
 
-        $(`[name="options-${file.name}"]`).change(refit);
+        $(`[name="options-${file.name}"]`).change(() => {
+          refit();
+          $('#launch').prop('disabled', false);
+        });
+
         refit();
       }
     }
