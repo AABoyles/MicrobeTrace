@@ -763,6 +763,7 @@ $(function() {
         if (moment(session.state.timeEnd).toDate() < moment(session.state.timeTarget).toDate()) {
           session.state.timeEnd = session.state.timeTarget;
           MT.setNodeVisibility(false);
+          MT.setLinkVisibility(false);
           MT.updateStatistics();
         }
       }
@@ -778,6 +779,7 @@ $(function() {
         }
         session.network.timelineNodes = [];
         MT.setNodeVisibility(false);
+        MT.setLinkVisibility(false);
         MT.updateStatistics();
         return;
       }
