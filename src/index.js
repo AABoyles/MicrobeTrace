@@ -169,7 +169,7 @@ $(function() {
 
   $("#AddDataTab").on("click", e => {
     e.preventDefault();
-    $("#network-statistics-hide").trigger("click");
+    //$("#network-statistics-hide").trigger("click");
     MT.launchView("files");
   });
 
@@ -482,7 +482,7 @@ $(function() {
           session.style.widgets["node-color-table-name-sort"] = "ASC"
           $('#node-color-variable').trigger("change");
       });
-      let nodeColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeColorHeaderTitle ? session.style.overwrite.nodeColorHeaderTitle : "Node " + MT.titleize(variable));
+      let nodeColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeColorHeaderVariable == variable ? session.style.overwrite.nodeColorHeaderTitle : "Node " + MT.titleize(variable));
       let nodeHeader = $("<th class='p-1' contenteditable>" + nodeColorHeaderTitle + "</th>").append(nodeSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["node-color-table-name-sort"] = "";
@@ -504,25 +504,43 @@ $(function() {
       let aggregates = MT.createNodeColorMap();
       let vnodes = MT.getVisibleNodes();
       let values = Object.keys(aggregates);
+      
+      if (isNaN(values[0])) { // String sorting
+        if (session.style.widgets["node-color-table-name-sort"] == "ASC")
+          values.sort();
+        else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { if (a > b) return -1; if (b > a) return 1; return 0; });        
+      } else {  // Number sorting
+        if (session.style.widgets["node-color-table-name-sort"] == "ASC")
+          values.sort(function(a, b) { return a - b });
+        else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { return b - a });
+      }
 
       if (session.style.widgets["node-color-table-counts-sort"] == "ASC")
         values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
       else if (session.style.widgets["node-color-table-counts-sort"] == "DESC")
         values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-      if (session.style.widgets["node-color-table-name-sort"] == "ASC")
-        values.sort(function(a, b) { return a - b });
-      else if (session.style.widgets["node-color-table-name-sort"] == "DESC")
-        values.sort(function(a, b) { return b - a });
 
       values.forEach((value, i) => {
-        session.style.nodeColors.splice(i, 1, temp.style.nodeColorMap(value));
-        session.style.nodeAlphas.splice(i, 1, temp.style.nodeAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.nodeColorMap(value) + '">')
           .on("change", function(){
-            session.style.nodeColors.splice(i, 1, this.value);
-            temp.style.nodeColorMap = d3
-              .scaleOrdinal(session.style.nodeColors)
-              .domain(values);
+            
+            let key = session.style.nodeColorsTableKeys[variable].findIndex( k => k === value);
+            session.style.nodeColorsTable[variable].splice(key, 1, this.value);
+            
+            if (session.style.widgets["node-timeline-variable"] == 'None') {
+              temp.style.nodeColorMap = d3
+                .scaleOrdinal(session.style.nodeColorsTable[variable])
+                .domain(session.style.nodeColorsTableKeys[variable]);
+            } else {
+              let temKey = temp.style.nodeColorKeys.findIndex( k => k === value);
+              temp.style.nodeColor.splice(temKey, 1, this.value);
+              temp.style.nodeColorMap = d3
+                .scaleOrdinal(temp.style.nodeColor)
+                .domain(temp.style.nodeColorKeys);
+            }
+            
             $window.trigger("node-color-change");
           });
         let alphainput = $("<a>⇳</a>").on("click", e => {
@@ -557,13 +575,6 @@ $(function() {
         ).append(cell);
         nodeColorTable.append(row);
       });
-      //#242
-      temp.style.nodeColorMap = d3
-        .scaleOrdinal(session.style.nodeColors)
-        .domain(values);
-      temp.style.nodeAlphaMap = d3
-        .scaleOrdinal(session.style.nodeAlphas)
-        .domain(values);
 
       nodeColorTable
         .find("td")
@@ -579,6 +590,8 @@ $(function() {
       nodeColorTable
         .find(".p-1")
         .on("focusout", function() {
+          //#295
+          session.style.overwrite.nodeColorHeaderVariable = session.style.widgets["node-color-variable"];
           session.style.overwrite.nodeColorHeaderTitle = $($(this).contents()[0]).text();
         });
 
@@ -593,6 +606,12 @@ $(function() {
       $window.trigger("node-color-change");
     })
     .val(session.style.widgets["node-color"]);
+
+  $("#node-color-border")
+    .on("change", function() {
+      session.style.widgets["node-color-border"] = this.value;
+      $window.trigger("node-border-change");
+    });
 
   $("#link-color-variable")
     .val(session.style.widgets["link-color-variable"])
@@ -616,7 +635,7 @@ $(function() {
           session.style.widgets["link-color-table-name-sort"] = "ASC"
         $('#link-color-variable').trigger("change");
       });
-     let linkColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.linkColorHeaderTitle ? session.style.overwrite.linkColorHeaderTitle : "Link " + MT.titleize(variable));
+     let linkColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.linkColorHeaderVariable == variable ? session.style.overwrite.linkColorHeaderTitle : "Link " + MT.titleize(variable));
      let linkHeader = $("<th class='p-1' contenteditable>" + linkColorHeaderTitle + "</th>").append(linkSort);
       let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
         session.style.widgets["link-color-table-name-sort"] = "";
@@ -638,25 +657,43 @@ $(function() {
       let aggregates = MT.createLinkColorMap();
       let vlinks = MT.getVisibleLinks();
       let values = Object.keys(aggregates);
-
+      
+      if (isNaN(values[0])) { // String sorting
+        if (session.style.widgets["link-color-table-name-sort"] == "ASC")
+          values.sort();
+        else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { if (a > b) return -1; if (b > a) return 1; return 0; }); 
+      } else {
+        if (session.style.widgets["link-color-table-name-sort"] == "ASC")
+          values.sort(function(a, b) { return a - b });
+        else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
+          values.sort(function(a, b) { return b - a });        
+      }
+      
       if (session.style.widgets["link-color-table-counts-sort"] == "ASC")
         values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
       else if (session.style.widgets["link-color-table-counts-sort"] == "DESC")
         values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-      if (session.style.widgets["link-color-table-name-sort"] == "ASC")
-        values.sort(function(a, b) { return a - b });
-      else if (session.style.widgets["link-color-table-name-sort"] == "DESC")
-        values.sort(function(a, b) { return b - a });
-      
+
       values.forEach((value, i) => {
-        session.style.linkColors.splice(i, 1, temp.style.linkColorMap(value));
-        session.style.linkAlphas.splice(i, 1, temp.style.linkAlphaMap(value));
         let colorinput = $('<input type="color" value="' + temp.style.linkColorMap(value) + '">')
           .on("change", function(){
-            session.style.linkColors.splice(i, 1, this.value);
-            temp.style.linkColorMap = d3
-              .scaleOrdinal(session.style.linkColors)
-              .domain(values);
+
+            let key = session.style.linkColorsTableKeys[variable].findIndex( k => k === value);
+            session.style.linkColorsTable[variable].splice(key, 1, this.value);
+            
+            if (session.style.widgets["node-timeline-variable"] == 'None') {
+              temp.style.linkColorMap = d3
+                .scaleOrdinal(session.style.linkColorsTable[variable])
+                .domain(session.style.linkColorsTableKeys[variable]);
+            } else {
+              let temKey = temp.style.linkColorsKeys.findIndex( k => k === value);
+              temp.style.linkColor.splice(temKey, 1, this.value);
+              temp.style.linkColorMap = d3
+                .scaleOrdinal(temp.style.linkColor)
+                .domain(temp.style.linkColorsKeys);
+            }
+
             $window.trigger("link-color-change");
           });
         let alphainput = $("<a>⇳</a>")
@@ -689,13 +726,6 @@ $(function() {
         row.append($("<td></td>").append(colorinput).append(alphainput));
         linkColorTable.append(row);
       });
-      //#242
-      temp.style.linkColorMap = d3
-        .scaleOrdinal(session.style.linkColors)
-        .domain(values);
-      temp.style.linkAlphaMap = d3
-        .scaleOrdinal(session.style.linkAlphas)
-        .domain(values);
 
       linkColorTable
         .find("td")
@@ -711,6 +741,8 @@ $(function() {
         linkColorTable
         .find(".p-1")
         .on("focusout", function() {
+          //#295
+          session.style.overwrite.linkColorHeaderVariable = session.style.widgets["link-color-variable"];
           session.style.overwrite.linkColorHeaderTitle = $($(this).contents()[0]).text();
         });
 
@@ -731,6 +763,7 @@ $(function() {
         if (moment(session.state.timeEnd).toDate() < moment(session.state.timeTarget).toDate()) {
           session.state.timeEnd = session.state.timeTarget;
           MT.setNodeVisibility(false);
+          MT.setLinkVisibility(false);
           MT.updateStatistics();
         }
       }
@@ -746,9 +779,11 @@ $(function() {
         }
         session.network.timelineNodes = [];
         MT.setNodeVisibility(false);
+        MT.setLinkVisibility(false);
         MT.updateStatistics();
         return;
       }
+      if(!temp.style.nodeColor) $("#node-color-variable").trigger("change");
       if (!$('#pinbutton').prop('disabled')){
         if (!loadingJsonFile) {
           session.network.timelinePinned= session.network.allPinned;
@@ -760,17 +795,14 @@ $(function() {
         }
         $('#pinbutton').prop("disabled", true);
       }
-      let globalTimelineField =  (session.style.overwrite && session.style.overwrite.globalTimelineField ? session.style.overwrite.globalTimelineField : MT.titleize(variable));
+      let globalTimelineField =  (session.style.overwrite && variable == session.style.overwrite.globalTimelineFieldVariable ? session.style.overwrite.globalTimelineField : MT.titleize(variable));
       $("#global-timeline-field").html(globalTimelineField); 
   
       var formatDateIntoYear = d3.timeFormat("%Y");
       var formatDateIntoMonthYear = d3.timeFormat("%b %y");
       var formatDateIntoMonth = d3.timeFormat("%b");
-      var formatDateIntoDate = d3.timeFormat("%_d");
       var formatDateMonthYear = d3.timeFormat("%b %Y");
       var formatDateDateMonth = d3.timeFormat("%b %_d");
-      var formatDateDate = d3.timeFormat("%_d");
-      var parseDate = d3.timeParse("%m/%d/%y");
 
       let timeDomainStart, timeDomainEnd;
       let field = variable;
@@ -793,14 +825,13 @@ $(function() {
 
       var days = moment(timeDomainEnd).diff(moment(timeDomainStart), 'days');
       var tickDateFormat = d => {
-        if (days<32) return formatDateIntoDate(d);
+        if (days<184) return formatDateDateMonth(d);
         else if (days<367) return formatDateIntoMonth(d);
         else if (days<367*5) return formatDateIntoMonthYear(d);
         else return formatDateIntoYear(d);		
       }
       var handleDateFormat = d => {
-        if (days<32) return formatDateDate(d);
-        else if (days<367) return formatDateDateMonth(d);
+        if (days<367) return formatDateDateMonth(d);
         else return formatDateMonthYear(d);		
       }
       let startDate = timeDomainStart;
@@ -812,8 +843,7 @@ $(function() {
           .append("svg")
           .attr("width", width + margin.left + margin.right)
           .attr("height", 120);  
-      
-      console.log('////////////////  build slider');
+
           ////////// slider //////////
       var currentValue = 0;
       var targetValue = width;
@@ -905,12 +935,14 @@ $(function() {
           .text(handleDateFormat(h));
         session.state.timeEnd = h;
         MT.setNodeVisibility(false);
+        MT.setLinkVisibility(false);
         MT.updateStatistics();
       }
     })
     .trigger("change");
 
   $("#global-timeline-field").on("focusout", function() {
+      session.style.overwrite.globalTimelineFieldVariable = session.style.widgets["node-timeline-variable"];
       session.style.overwrite.globalTimelineField = $(this).text();
     });
 
@@ -1124,32 +1156,92 @@ $(function() {
     $("#node-color-variable").change();
   });
 
-  $("#search").on("input", function() {
-    let nodes = session.data.nodes
-    const n = nodes.length
-    const v = this.value;
-    if (v == "") {
-      for(let i = 0; i < n; i++){
-        nodes[i].selected = false;
+  $("#search")
+    .on({"blur": function() {
+      setTimeout(function () {
+        $('#search-results').html("").hide();
+      }, 300);
+    },"input": function() {
+      let nodes = session.data.nodes
+      const n = nodes.length
+      //#298
+      let v = this.value;
+      const val = v;
+      if (v == "") {
+        $('#search-results').html("").hide();
+        for(let i = 0; i < n; i++){
+          nodes[i].selected = false;
+        }
+      } else {
+        $('#search-results').html("").hide();
+        const field = session.style.widgets["search-field"];
+        
+        let dataSet = new Set();
+        for(let i = 0; i < n; i++){
+          let node = nodes[i];
+          if (node[field]) {
+            dataSet.add(`${node[field]}`);
+          }
+        }
+        let dataArray = Array.from(dataSet).sort();
+        //#298
+        if (session.style.widgets["search-whole-word"])  v = '\\b' + v + '\\b';
+        let vre;
+        if (session.style.widgets["search-case-sensitive"])  vre = new RegExp(v);
+        else  vre = new RegExp(v, 'i');
+
+        $.each(dataArray, function(i) {
+          if (dataArray[i].match(vre)) {
+            let $li = $('<li/>')
+                .html(dataArray[i])
+                .attr('data-value', dataArray[i]);
+            $('#search-results').append($li).show();
+          }
+        });
+        
+        $('.autocomplete-wrapper li').on('click', function() {
+          let ac_v = $(this).attr('data-value');
+          const ac_val = ac_v;
+          let ac_vre;
+          $('#search').val(ac_v);
+          $('#search-results').html("").hide();
+        
+          if (session.style.widgets["search-whole-word"])  ac_v = '\\b' + ac_v + '\\b';
+          if (session.style.widgets["search-case-sensitive"])  ac_vre = new RegExp(ac_v);
+          else ac_vre = new RegExp(ac_v, 'i');
+
+          for(let i = 0; i < n; i++){
+            let node = nodes[i];
+            if (!node[field]) {
+              node.selected = false;
+            }
+            if (typeof node[field] == "string") {
+              node.selected = ac_vre.test(node[field]);
+            }
+            if (typeof node[field] == "number") {
+              node.selected = (node[field] + "" == ac_val);
+            }
+          }        
+          $window.trigger("node-selected");
+        });
+
+        for(let i = 0; i < n; i++){
+          let node = nodes[i];
+          if (!node[field]) {
+            node.selected = false;
+          }
+          if (typeof node[field] == "string") {
+            node.selected = vre.test(node[field]);
+          }
+          if (typeof node[field] == "number") {
+            node.selected = (node[field] + "" == val);
+          }
+        }
+
+        if (!nodes.some(node => node.selected)) alertify.warning("No matches!");
       }
-    } else {
-      const field = session.style.widgets["search-field"];
-      const vre = new RegExp(v);
-      for(let i = 0; i < n; i++){
-        let node = nodes[i];
-        if (!node[field]) {
-          node.selected = false;
-        }
-        if (typeof node[field] == "string") {
-          node.selected = vre.test(node[field]);
-        }
-        if (typeof node[field] == "number") {
-          node.selected = (node[field] + "" == v);
-        }
-      }
-      if (!nodes.some(node => node.selected)) alertify.warning("No matches!");
+      $window.trigger("node-selected");
     }
-    $window.trigger("node-selected");
   });
 
   $("#search-field").on("change", function() {

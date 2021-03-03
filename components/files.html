@@ -413,10 +413,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     function addToTable(file) {
       const extension = file.extension ? file.extension : filterXSS(file.name).split('.').pop().toLowerCase();
-      const isFasta = extension.indexOf('fas') > -1;
-      const isNewick = extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
+      //#291 restore to previous filetype selection if available
+      const isFasta = 'fasta' == file.format || extension.indexOf('fas') > -1;
+      const isNewick = 'newick' == file.format ||extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
       const isXL = (extension == 'xlsx' || extension == 'xls');
-      const isNode = file.name.toLowerCase().includes('node');
+      const isNode = 'node' == file.format || file.name.toLowerCase().includes('node');
       if (isXL) {
         let workbook = XLSX.read(file.contents, { type: 'array' });
         let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
@@ -491,22 +492,29 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         function matchHeaders(type) {
           const these = $(`[data-file='${file.name}'] select`);
-          const a = type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-            b = type == 'node' ? ['SEQUENCE', 'SEQ', 'SEQS', 'Sequence', 'Seqs', 'sequence', 'seq', 'seqs'] : ['TARGET', 'Target', 'target'],
-            c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
-          [a, b, c].forEach((list, i) => {
-            $(these.get(i)).val("None");
-            list.forEach(title => {
-              if (headers.includes(title)) $(these.get(i)).val(title);
+          if(file.field1) {
+            //#291 restore to previous variable selection if available
+            $(these.get(0)).val(file.field1);
+            $(these.get(1)).val(file.field2);
+            $(these.get(2)).val(file.field3);
+          } else {
+            const a = type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+              b = type == 'node' ? ['SEQUENCE', 'SEQ', 'SEQS', 'Sequence', 'Seqs', 'sequence', 'seq', 'seqs'] : ['TARGET', 'Target', 'target'],
+              c = ['length', 'Length', 'distance', 'Distance', 'snps', 'SNPs', 'tn93', 'TN93'];
+            [a, b, c].forEach((list, i) => {
+              $(these.get(i)).val("None");
+              list.forEach(title => {
+                if (headers.includes(title)) $(these.get(i)).val(title);
+              });
+              if ($(these.get(i)).val() == 'None' &&
+                !(i == 1 && type == 'node') && //If Node Sequence...
+                !(i == 2 && type == 'link')) { //...or Link distance...
+                  //...don't match to a variable in the dataset, leave them as "None".
+                $(these.get(i)).val(headers[i]);
+                  //Everything else, just guess the next ordinal column.
+              }
             });
-            if ($(these.get(i)).val() == 'None' &&
-              !(i == 1 && type == 'node') && //If Node Sequence...
-              !(i == 2 && type == 'link')) { //...or Link distance...
-                //...don't match to a variable in the dataset, leave them as "None".
-              $(these.get(i)).val(headers[i]);
-                //Everything else, just guess the next ordinal column.
-            }
-          });
+          }
         }
 
         root.appendTo('#file-table');
@@ -538,16 +546,23 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         // $(`#file-${file.name}-field-2`).change(() => updateMetadata(file));
         // $(`#file-${file.name}-field-3`).change(() => updateMetadata(file));
         document.getElementById(`file-${file.name}-field-1`).addEventListener('change', (event) => {
-          updateMetadata(file)
+          updateMetadata(file);
+          $('#launch').prop('disabled', false);
         });
         document.getElementById(`file-${file.name}-field-2`).addEventListener('change', (event) => {
-          updateMetadata(file)
+          updateMetadata(file);
+          $('#launch').prop('disabled', false);
         });
         document.getElementById(`file-${file.name}-field-3`).addEventListener('change', (event) => {
-          updateMetadata(file)
+          updateMetadata(file);
+          $('#launch').prop('disabled', false);
         });
 
-        $(`[name="options-${file.name}"]`).change(refit);
+        $(`[name="options-${file.name}"]`).change(() => {
+          refit();
+          $('#launch').prop('disabled', false);
+        });
+
         refit();
       }
     }
@@ -749,6 +764,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         session.style.widgets["link-threshold"] = 0.015;
       }
       session.style.widgets['default-distance-metric'] = lsv;
+    });
+
+    $('#default-distance-threshold').change(function () {
+      session.style.widgets["link-threshold"] = this.value;
     });
 
     localforage.getItem('default-distance-metric').then(cachedLSV => {

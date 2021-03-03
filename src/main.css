@@ -217,6 +217,37 @@ svg#link-threshold-sparkline {
   text-indent: 1px;
   text-overflow: "";
 }
+#polygon-color-table-wrapper {
+  position: absolute;
+  top: 893px;
+  right: 10px;
+  z-index: 999;
+  max-height: 400px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border-radius: 0.25rem;
+  color: #303030;
+  background-color: #f8f9fa !important;
+}
+#polygon-color-table-draghandle {
+  display: none;
+  width: 100%;
+  text-align: center;
+}
+#polygon-color-table th {
+  text-align: center;
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#polygon-color-table td {
+  border: 1px solid lightgray;
+  padding: 4px;
+}
+#polygon-color-table input[type="color"] {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
 #color-transparency-wrapper {
   display: none;
   position: absolute;
@@ -872,4 +903,47 @@ button.btn,
 }
 #physics-tree g.nodes g circle {
   cursor: grab;
+}
+#tooltip table, td {
+  border:1px solid #cccccc;
+  border-radius:.25rem;
+}
+/* Search */
+.autocomplete-wrapper {
+  position: relative;
+  border: solid 1px #EEE;
+  padding: 1px 2px;
+  font-family: 'Verdana', sans-serif;
+}
+.autocomplete-wrapper #search {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    font-size: 13px;
+}
+.autocomplete-wrapper #search:focus {
+    outline: 0;
+}
+.autocomplete-wrapper #search-results {
+    display: none;
+    position: absolute;
+    top: 36px;
+    left: -1px;
+    right: -1px;
+    border: solid 1px #CCC;
+    min-height: 50px;
+    max-height: 200px;
+    overflow: scroll;
+    list-style: none;
+    padding: 2px;
+    background: white;
+}
+.autocomplete-wrapper #search-results li {
+      padding: 5px;
+      margin: 0;
+      font-size: 13px;
+}
+.autocomplete-wrapper #search-results li:hover {
+        background: #EEE;
+        cursor: pointer;
 }

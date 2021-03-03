@@ -67,9 +67,6 @@
     "choropleth-satellite-show": false,
     "choropleth-transparency": 0.3,
     "cluster-minimum-size": 1,
-    "polygons-foci": "cluster",
-    "polygons-gather-force": 0,
-    "polygons-group-color": "#1f77b4",
     "default-view": "2d_network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
@@ -138,8 +135,10 @@
     "network-friction": 0.4,
     "network-gravity": 0.05,
     "network-link-strength": 0.125,
+    "node-border-width": 2,
     "node-charge": 200,
     "node-color": "#1f77b4",
+    "node-color-border": "#000000",
     "node-color-table-name-sort": "DESC",
     "node-color-table-counts-sort": "DESC",
     "node-color-table-counts": true,
@@ -168,6 +167,15 @@
     "physics-tree-node-label-variable": "None",
     "physics-tree-tooltip": "id",
     "physics-tree-type": "tree",
+    "polygon-color": "#bbccee",
+    "polygon-color-table-name-sort": "DESC",
+    "polygon-color-table-counts-sort": "DESC",
+    "polygon-color-table-counts": true,
+    "polygon-color-table-frequencies": false,
+    "polygons-color-show": false,
+    "polygons-foci": "cluster",
+    "polygons-gather-force": 0,
+    "polygons-show" : false,
     "reference-source-file": true,
     "reference-source-first": false,
     "reference-source-consensus": false,
@@ -176,6 +184,9 @@
     "scatterplot-logScale": false,
     "scatterplot-showNodes": false,
     "search-field": "_id",
+    //#298
+    "search-case-sensitive": false,
+    "search-whole-word" : false,
     "selected-color": "#ff8300",
     "selected-color-contrast": "#000000",
     "timeline-date-field": "None",
@@ -241,6 +252,10 @@
       linkValueNames: {},
       nodeAlphas: [1],
       nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
+      nodeColorsTable: {},
+      nodeColorsTableKeys: {},
+      linkColorsTable: {},
+      linkColorsTableKeys: {},
       nodeSymbols: [
         "symbolCircle",
         "symbolCross",
@@ -261,7 +276,12 @@
         "symbolOctagonAlt",
         "symbolX"
       ],
+      nodeSymbolsTable: {},
+      nodeSymbolsTableKeys: {},
       nodeValueNames: {},
+      polygonAlphas: [0.5],
+      polygonColors: ['#bbccee','#cceeff','#ccddaa','#eeeebb','#ffcccc','#dddddd'],
+      polygonValueNames: {},
       overwrite: {},
       widgets: MT.defaultWidgets
     },
@@ -279,7 +299,9 @@
       linkColorMap: () => session.style.widgets["link-color"],
       nodeAlphaMap: () => 1,
       nodeColorMap: () => session.style.widgets["node-color"],
-      nodeSymbolMap: () => session.style.widgets["node-symbol"]
+      nodeSymbolMap: () => session.style.widgets["node-symbol"],
+      polygonAlphaMap: () => 0.5,
+      polygonColorMap: () => session.style.widgets["polygon-color"]
     },
     trees: {}
   });
@@ -477,10 +499,21 @@
   MT.applySession = oldSession => {
     //If anything here seems eccentric, assume it's to maintain compatibility with
     //session files from older versions of MicrobeTrace.
+  
+    $window.trigger("stop-force-simulation"); // stop previous network ticks so previous polygon won't show up
+    
+    // when using recall function several times, window remembers every registered event function of each recall which all registered functions will be fired when triggered
+    // since an event is registered in both 2d_network.html and index.js, add namespace to events in 2d_network so they can be removed without affecting events in index
+    $window.off('.2d');
+
+    MT.reset();
     $("#launch").prop("disabled", true);
     session.files = oldSession.files;
     session.state = oldSession.state;
-    session.style = oldSession.style;
+    session.style = Object.assign({},
+      session.style,
+      oldSession.style
+    );
     session.layout = oldSession.layout;
     session.meta.startTime = Date.now();
     const nodes = oldSession.data.nodes,
@@ -502,6 +535,7 @@
     //   }
     // }
     MT.finishUp(true);
+    $("#network-statistics-show").parent().trigger("click");
   };
   
   MT.applyStyle = style => {
@@ -512,6 +546,7 @@
     );
     MT.createLinkColorMap();
     MT.createNodeColorMap();
+    MT.createPolygonColorMap();
     let $id = null;
     for (let id in session.style.widgets) {
       $id = $("#" + id);
@@ -1192,7 +1227,6 @@
     console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
     if (oldSession) {
       layout.root.contentItems[0].remove();
-      console.log('session.layout', session.layout);
       setTimeout(() => MT.loadLayout(session.layout), 80);
     } else {
       MT.launchView(session.style.widgets['default-view']);
@@ -1529,6 +1563,14 @@
       temp.style.nodeColorMap = () => session.style.widgets["node-color"];
       return [];
     }
+    
+    let nodeColors;
+    if(session.style.nodeColorsTable[variable]) {
+      nodeColors = session.style.nodeColorsTable[variable];
+    } else {
+      nodeColors = session.style.nodeColorsTable[variable] = [...session.style.nodeColors];
+    }
+    
     let aggregates = {};
     let nodes = session.data.nodes;
     let n = nodes.length;
@@ -1543,13 +1585,13 @@
       }
     }
     let values = Object.keys(aggregates);
-    if (values.length > session.style.nodeColors.length) {
+    if (values.length > nodeColors.length) {
       let colors = [];
-      let m = Math.ceil(values.length / session.style.nodeColors.length);
+      let m = Math.ceil(values.length / nodeColors.length);
       while (m-- > 0) {
-        colors = colors.concat(session.style.nodeColors);
+        colors = colors.concat(nodeColors);
       }
-      session.style.nodeColors = colors;
+      nodeColors = colors;
     }
     if(!session.style.nodeAlphas) session.style.nodeAlphas = new Array(values.length).fill(1);
     if (values.length > session.style.nodeAlphas.length) {
@@ -1557,15 +1599,60 @@
         new Array(values.length - session.style.nodeAlphas.length).fill(1)
       );
     }
-    if (temp.style.nodeColorMap.domain === undefined) //#242
-      temp.style.nodeColorMap = d3
-        .scaleOrdinal(session.style.nodeColors)
-        .domain(values);
-    if (temp.style.nodeAlphaMap.domain === undefined)
-      temp.style.nodeAlphaMap = d3
-        .scaleOrdinal(session.style.nodeAlphas)
-        .domain(values);
+
+    if (session.style.widgets["node-timeline-variable"] == 'None') {
+      session.style.nodeColorsTableKeys[variable] = values;
+      session.style.nodeColorsTable[variable] = nodeColors;
+    } else {
       
+      // During timeline mode, user Pause and switch to a different Node varaible but nodeColorsTableKeys[variable] is not available
+      if(!session.style.nodeColorsTableKeys[variable]) {
+        let aggregatesTL = {};
+        let nodesTL = session.network.timelineNodes;
+        let n = nodesTL.length;
+        let nodeColorsTL = [...session.style.nodeColors];
+        for (let i = 0; i < n; i++) {
+          let d = nodesTL[i];
+          if (!d.visible) continue;
+          let dv = d[variable];
+          if (dv in aggregatesTL) {
+            aggregatesTL[dv]++;
+          } else {
+            aggregatesTL[dv] = 1;
+          }
+        }
+        let valuesTL = Object.keys(aggregatesTL);
+        if (valuesTL.length > nodeColorsTL.length) {
+          let colors = [];
+          let m = Math.ceil(valuesTL.length / nodeColorsTL.length);
+          while (m-- > 0) {
+            colors = colors.concat(nodeColorsTL);
+          }
+          nodeColorsTL = colors;
+        }
+        session.style.nodeColorsTableKeys[variable] = valuesTL;
+        session.style.nodeColorsTable[variable] = nodeColorsTL;
+      }
+          
+      let key;
+      let tempNodeColors=[];
+      for(let v of values) {
+        let table = session.style.nodeColorsTableKeys[variable];
+        key = table.findIndex( k => k === v);
+        tempNodeColors.push(nodeColors[key]);
+      }
+      nodeColors = temp.style.nodeColor = tempNodeColors; // temp node color maps saved only under timeline
+      temp.style.nodeColorKeys = [...values];
+    }
+      
+    temp.style.nodeColorMap = d3
+      .scaleOrdinal(nodeColors)
+      .domain(values);
+  
+    temp.style.nodeAlphaMap = d3
+      .scaleOrdinal(session.style.nodeAlphas)
+      .domain(values);
+
     return aggregates;
   };
   
@@ -1576,6 +1663,14 @@
       temp.style.linkAlphaMap = () => 1 - session.style.widgets["link-opacity"];
       return [];
     }
+
+    let linkColors;
+    if(session.style.linkColorsTable[variable]) {
+      linkColors = session.style.linkColorsTable[variable];
+    } else {
+      linkColors = session.style.linkColorsTable[variable] = [...session.style.linkColors];
+    }
+
     let aggregates = {};
     let links = MT.getVisibleLinks();
     let i = 0,
@@ -1585,6 +1680,12 @@
       while (i < n) {
         l = links[i++];
         if (!l.visible) continue;
+
+        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
+        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        if (src === undefined || src.visible === false) continue;
+        if (tgt === undefined || tgt.visible === false) continue;
+        
         l.origin.forEach(o => {
           if (o in aggregates) {
             aggregates[o]++;
@@ -1597,6 +1698,12 @@
       while (i < n) {
         l = links[i++];
         if (!l.visible) continue;
+        
+        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
+        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        if (src === undefined || src.visible === false) continue;
+        if (tgt === undefined || tgt.visible === false) continue;  
+
         let lv = l[variable];
         if (lv in aggregates) {
           aggregates[lv]++;
@@ -1605,33 +1712,155 @@
         }
       }
     }
-    let values = Object.keys(aggregates);
-    if (values.length > session.style.linkColors.length) {
+    let values = Object.keys(aggregates);      
+    if (values.length > linkColors.length) {
       let colors = [];
-      let cycles = Math.ceil(values.length / session.style.linkColors.length);
-      while (cycles-- > 0) colors = colors.concat(session.style.linkColors);
-      session.style.linkColors = colors;
+      let cycles = Math.ceil(values.length / linkColors.length);
+      while (cycles-- > 0) colors = colors.concat(linkColors);
+      linkColors = colors;
     }
+    if(!session.style.linkAlphas) session.style.linkAlphas = new Array(values.length).fill(1);
     if (values.length > session.style.linkAlphas.length) {
       session.style.linkAlphas = session.style.linkAlphas.concat(
         new Array(values.length - session.style.linkAlphas.length).fill(1)
       );
     }
-    if (temp.style.linkColorMap.domain === undefined) //#242
-      temp.style.linkColorMap = d3
-        .scaleOrdinal(session.style.linkColors)
-        .domain(values);
-    if (temp.style.linkAlphaMap.domain === undefined)
-      temp.style.linkAlphaMap = d3
-        .scaleOrdinal(session.style.linkAlphas)
-        .domain(values);
+
+    if (session.style.widgets["node-timeline-variable"] == 'None') {
+      session.style.linkColorsTableKeys[variable] = values;
+      session.style.linkColorsTable[variable] = linkColors;
+    } else {
+
+      // During timeline mode, user Pause and switch to a different link varaible but linkColorsTableKeys[variable] is not available
+      if(!session.style.linkColorsTableKeys[variable]) {
+        let aggregatesTL = {};
+        let linksTL = MT.getVisibleLinks();
+        let linkColorsTL = [...session.style.linkColors];
+        let i = 0,
+          n = linksTL.length,
+          l;
+        if (variable == "origin") {
+          while (i < n) {
+            l = linksTL[i++];
+            if (!l.visible) continue;
+            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
+            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            if (src === undefined || src.visible === false) continue;
+            if (tgt === undefined || tgt.visible === false) continue;
+            l.origin.forEach(o => {
+              if (o in aggregatesTL) {
+                aggregatesTL[o]++;
+              } else {
+                aggregatesTL[o] = 1;
+              }
+            });
+          }
+        } else {
+          while (i < n) {
+            l = linksTL[i++];
+            if (!l.visible) continue;
+            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
+            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            if (src === undefined || src.visible === false) continue;
+            if (tgt === undefined || tgt.visible === false) continue;  
+            let lv = l[variable];
+            if (lv in aggregatesTL) {
+              aggregatesTL[lv]++;
+            } else {
+              aggregatesTL[lv] = 1;
+            }
+          }
+        }       
+        let valuesTL = Object.keys(aggregatesTL);      
+        if (valuesTL.length > linkColorsTL.length) {
+          let colors = [];
+          let cycles = Math.ceil(valuesTL.length / linkColorsTL.length);
+          while (cycles-- > 0) colors = colors.concat(linkColorsTL);
+          linkColorsTL = colors;
+        }
+        session.style.linkColorsTableKeys[variable] = valuesTL;
+        session.style.linkColorsTable[variable] = linkColorsTL;
+      }
+
+      let key;
+      let tempLinkColors=[];
+      for(let v of values) {
+        let table = session.style.linkColorsTableKeys[variable];
+        key = table.findIndex( k => k === v);
+        tempLinkColors.push(linkColors[key]);
+      }
+      linkColors = temp.style.linkColor = tempLinkColors; // temp link color maps saved only under timeline
+      temp.style.linkColorsKeys = [...values];
+    }
+
+    temp.style.linkColorMap = d3
+      .scaleOrdinal(linkColors)
+      .domain(values);
+  
+    temp.style.linkAlphaMap = d3
+      .scaleOrdinal(session.style.linkAlphas)
+      .domain(values);
 
     return aggregates;
   };
-  
+
+  MT.createPolygonColorMap = () => {
+    if (!temp.polygonGroups || !session.style.widgets["polygons-color-show"]) {
+      temp.style.polygonColorMap = () => session.style.widgets["polygon-color"];
+      return [];
+    }
+
+    let aggregates = {};
+    let groups = temp.polygonGroups;
+    groups.forEach(d => aggregates[d.key] = d.values.length);
+    let values = Object.keys(aggregates);
+
+    if (session.style.widgets["polygon-color-table-counts-sort"] == "ASC")
+      values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
+    else if (session.style.widgets["polygon-color-table-counts-sort"] == "DESC")
+      values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
+    if (session.style.widgets["polygon-color-table-name-sort"] == "ASC")
+      values.sort(function(a, b) { return a - b });
+    else if (session.style.widgets["polygon-color-table-name-sort"] == "DESC")
+      values.sort(function(a, b) { return b - a });
+
+    if (values.length > session.style.polygonColors.length) {
+      let colors = [];
+      let m = Math.ceil(values.length / session.style.polygonColors.length);
+      while (m-- > 0) {
+        colors = colors.concat(session.style.polygonColors);
+      }
+      session.style.polygonColors = colors;
+    }
+    if(!session.style.polygonAlphas) session.style.polygonAlphas = new Array(values.length).fill(1);
+    if (values.length > session.style.polygonAlphas.length) {
+      session.style.polygonAlphas = session.style.polygonAlphas.concat(
+        new Array(values.length - session.style.polygonAlphas.length).fill(0.5)
+      );
+    }
+    if (temp.style.polygonColorMap.domain === undefined)
+      temp.style.polygonColorMap = d3
+        .scaleOrdinal(session.style.polygonColors)
+        .domain(values);
+    if (temp.style.polygonAlphaMap.domain === undefined)
+      temp.style.polygonAlphaMap = d3
+        .scaleOrdinal(session.style.polygonAlphas)
+        .domain(values);
+      
+    return aggregates;
+  };
+
   MT.reset = () => {
     $("#network-statistics-hide").parent().trigger("click");
     // $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
+ 
+    // temp variables is affecting the recall file's link visibility when recalling the same file
+    // reset temp causing register component error since file view has been registered and 2nd_network view via ansyc call also causing register error
+    // reset temp but retain componentCache
+    let tempComp = self.temp.componentCache;
+    self.temp = MT.tempSkeleton();
+    self.temp.componentCache = tempComp;
+    
     self.session = MT.sessionSkeleton();
     layout.unbind("stateChanged");
     layout.root.replaceChild(layout.root.contentItems[0], {

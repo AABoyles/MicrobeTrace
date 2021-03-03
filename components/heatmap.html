@@ -263,6 +263,7 @@
       let filename = $('#heatmap-export-filename').val(),
         filetype = $('#heatmap-export-filetype').val();
       if (filetype == 'csv' || filetype == 'xlsx') {
+        let labels = Object.keys(temp.matrix);
         let data = [[''].concat(labels)].concat(matrix.map((l, i) => [labels[i]].concat(l)));
         if (filetype == 'csv') {
           let blob = new Blob([Papa.unparse(data)], { type: 'text/csv;charset=utf-8' });
