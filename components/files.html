@@ -1137,6 +1137,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           let newLinks = 0;
           let newNodes = 0;
           const tree = patristic.parseNewick(file.contents);
+          temp.tree = tree;
           let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
           for (let i = 0; i < n; i++) {
             const source = labels[i];

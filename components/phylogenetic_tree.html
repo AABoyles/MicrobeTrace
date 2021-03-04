@@ -449,7 +449,16 @@
     let drawTree = () => {
       let panel = $('#tree').parent();
       if (!panel.length) return;
-      if (!temp.tree) return MT.computeTree().then(drawTree);
+
+      // only one input newick file, use original tree
+      if (session.files.length == 1 && session.files[0].format == 'newick') {
+        if (!temp.tree) {
+          // no temp.tree when recall stash or loading microbetrace file
+          temp.tree = patristic.parseNewick(session.files[0].contents);
+        } 
+      } else {
+        if (!temp.tree) return MT.computeTree().then(drawTree);
+      }
 
       tree = new TidyTree(temp.tree.clone(), {
         parent: '#tree',
