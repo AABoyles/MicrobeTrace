@@ -91,7 +91,7 @@
     "save-svg-as-png": "^1.4.17",
     "screenfull": "^3.3.2",
     "tabulator-tables": "^4.9.3",
-    "tidytree": "^0.5.6",
+    "tidytree": "^0.5.8",
     "tn93": "^0.3.2",
     "xlsx": "^0.14.5",
     "xss": "^1.0.8"
