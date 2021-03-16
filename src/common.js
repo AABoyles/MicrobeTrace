@@ -175,6 +175,8 @@
     "polygons-color-show": false,
     "polygons-foci": "cluster",
     "polygons-gather-force": 0,
+    "polygons-label-show" : false,
+    "polygons-label-size" : 16,
     "polygons-show" : false,
     "reference-source-file": true,
     "reference-source-first": false,

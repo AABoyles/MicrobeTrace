@@ -248,6 +248,9 @@ svg#link-threshold-sparkline {
   border: none;
   padding: 0;
 }
+.polygonText {
+  stroke: red;
+}
 #color-transparency-wrapper {
   display: none;
   position: absolute;
