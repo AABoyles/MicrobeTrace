@@ -816,7 +816,7 @@ Note that this may cause slow performance on larger networks.">
             })
             return {'key':key, 'values':values}
         });
-      groups = groups.filter(group => group.values.length > 2);
+      groups = groups.filter(group => group.values.length > 2 && group.key != 'null');  // remove group by empty
       let groupPath = function(d) {
           return "M" + 
           d3.polygonHull(d.values.map(function(i) { return [i.x, i.y]; }))
@@ -1982,7 +1982,7 @@ Note that this may cause slow performance on larger networks.">
         .click();
       $(this).parent().hide();
     });
-
+    
     $("#polygon-color-table-expand").on("click", function() {
       let $this = $(this);
       if ($this.text() == "Expand") {
