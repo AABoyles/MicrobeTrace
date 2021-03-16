@@ -1172,12 +1172,12 @@
         let node = session.data.nodes[i];
         if (node[field] != null) {
           let time = moment(node[field]); 
-          if (time.isValid())
+          if (time.isValid() && isNaN(node[field])) //#315
             times.push(time.toDate());
           else
             continue outerloop;
         }
-      }      
+      }     
       if (times.length < n) {
         let minTime = Math.min(...times);
         let minTimeString = new Date(minTime).toString();
