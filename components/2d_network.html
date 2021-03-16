@@ -1799,10 +1799,10 @@ Note that this may cause slow performance on larger networks.">
       })
       .val(session.style.widgets["polygon-color"]);
 
-    $("#polygon-color-table-wrapper").on("contextmenu", e => {
+      $("#polygon-color-table-wrapper").on("contextmenu", e => {
       e.preventDefault();
       $("#polygon-color-table-context").css({
-          top: e.clientY,
+          top: e.clientY - 55,
           left: e.clientX,
           display: "block"
         });
@@ -1826,12 +1826,17 @@ Note that this may cause slow performance on larger networks.">
       body.on("mousemove", e => {
         parent
           .css("top"  , parseFloat(parent.css("top"  )) + e.originalEvent.movementY + "px")
-          .css("right", parseFloat(parent.css("right")) - e.originalEvent.movementX + "px");
+          .css("left" , parseFloat(parent.css("left"))  + e.originalEvent.movementX + "px");
       });
       body.on("mouseup", () => body.off("mousemove").off("mouseup"));
     });
 
-    $("#polygon-color-table-context-hide").on("click", () => $("#polygon-color-table-hide").parent().trigger('click'));
+    $("#polygon-color-table-context-hide").on("click", function () {
+      $("#polygon-color-table-hide")
+        .parent()
+        .click();
+      $(this).parent().hide();
+    });
 
     $("#polygon-color-table-expand").on("click", function() {
       let $this = $(this);

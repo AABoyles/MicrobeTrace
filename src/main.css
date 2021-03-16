@@ -219,8 +219,8 @@ svg#link-threshold-sparkline {
 }
 #polygon-color-table-wrapper {
   position: absolute;
-  top: 893px;
-  right: 10px;
+  top: 73px;
+  left: 10px;
   z-index: 999;
   max-height: 400px;
   overflow-y: scroll;
