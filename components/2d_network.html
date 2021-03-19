@@ -2130,6 +2130,45 @@ Note that this may cause slow performance on larger networks.">
       let linkWrapper = document.getElementById('link-color-table-wrapper');
       let linkLegend = MT.tabulate(data, columns, linkWrapper, network);
 
+      let variable = session.style.widgets['node-symbol-variable'];
+	    values = [];
+      aggregates = {};
+      let nodes = session.data.nodes;
+      let n = nodes.length;
+      vnodes = 0;
+      for (let i = 0; i < n; i++) {
+        let d = nodes[i];
+        if (!d.visible) continue;
+        vnodes++;
+        let dv = d[variable];
+        if (values.indexOf(dv) == -1) values.push(dv);
+        if (dv in aggregates) {
+          aggregates[dv]++;
+        } else {
+          aggregates[dv] = 1;
+        }
+      }
+	    columns = [];
+      columns.push('Node ' + MT.titleize(variable));
+      if (session.style.widgets["node-symbol-table-counts"]) columns.push('Count');
+      if (session.style.widgets["node-symbol-table-frequencies"]) columns.push('Frequency');
+      columns.push('Shape');
+      data = [];
+      values.forEach((value, i) => {
+        let nodeValue =  MT.titleize("" + value);
+        let tableCounts = (session.style.widgets["node-symbol-table-counts"] ?  aggregates[value] : undefined);
+        let tableFreq = (session.style.widgets["node-symbol-table-frequencies"] ? (aggregates[value] / vnodes.length).toLocaleString() : undefined);        
+        let line = {
+          Node: nodeValue,
+          Count: tableCounts, 
+          Frequency: tableFreq,
+          Shape: $("#node-symbol option[value='" + temp.style.nodeSymbolMap(value) + "']").text()
+        }
+        data.push(line);
+      })
+      let symbolWrapper = document.getElementById('node-symbol-table-wrapper');
+      let symbolLegend = MT.tabulate(data, columns, symbolWrapper, network);
+
       let statsDiv = document.getElementById('network-statistics-wrapper');
       let foreignObjStats = d3.select(network).append("svg:foreignObject")
       .attr("x", statsDiv.offsetLeft)
@@ -2147,6 +2186,7 @@ Note that this may cause slow performance on larger networks.">
         watermark.remove();
         nodeLegend.remove();
         linkLegend.remove();
+        symbolLegend.remove();
         foreignObjStats.remove();
       } else {
         saveSvgAsPng(network, filename + '.' + filetype, {
@@ -2158,6 +2198,7 @@ Note that this may cause slow performance on larger networks.">
             watermark.remove(); 
             nodeLegend.remove(); 
             linkLegend.remove();
+            symbolLegend.remove();
             foreignObjStats.remove();
           });
       }
