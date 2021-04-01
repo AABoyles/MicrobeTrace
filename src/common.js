@@ -1179,7 +1179,16 @@
           else
             continue outerloop;
         }
-      }     243357
+      }
+      if (times.length < n) {
+        let minTime = Math.min(...times);
+        let minTimeString = new Date(minTime).toString();
+        session.data.nodes.forEach(d => {
+          if (d[field] == null) {
+            d[field] = minTimeString;
+          } 
+        });
+      }
     };
 
     $("#search-field")
