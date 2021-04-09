@@ -2039,6 +2039,10 @@ Note that this may cause slow performance on larger networks.">
       settings['network-friction'] = v;
     });
 
+    // Hack to expand network quickly and then bring back to avg friction
+    $('#network-friction').val(0.05).trigger("input");
+    setTimeout(function(){ $('#network-friction').val(0.3).trigger("input"); }, 5000);
+
     $('#network-gravity').on('input', function () {
       let v = parseFloat(this.value);
       force.force('gravity').strength(v);
