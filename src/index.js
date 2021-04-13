@@ -1,6 +1,10 @@
 $(function() {
   "use strict";
 
+  let linkKeyboardPositionEnabled = false;
+  let nodeKeyboardPositionEnabled = false;
+  let statsKeyboardPositionEnabled = false;
+
   if (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.appName.indexOf("Microsoft Internet Explorer") >= 0) {
     $("#ie-warning").show();
     throw new Error("MicrobeTrace does not work on Internet Explorer.");
@@ -392,11 +396,14 @@ $(function() {
     $this.parent().hide();
     if ($this.text() == "Drag") {
       $("#network-statistics-draghandle").slideDown();
+      statsKeyboardPositionEnabled = true;
       $this.text("Pin");
     } else {
       $("#network-statistics-draghandle").slideUp();
+      statsKeyboardPositionEnabled = false;
       $this.text("Drag");
     }
+
   });
 
   $("#network-statistics-draghandle").on("mousedown", function() {
@@ -1019,13 +1026,80 @@ $(function() {
     let $this = $(this);
     $this.parent().hide();
     if ($this.text() == "Drag") {
+      linkKeyboardPositionEnabled = true;
       $("#link-color-table-draghandle").slideDown();
       $this.text("Pin");
     } else {
+      linkKeyboardPositionEnabled = false;
       $("#link-color-table-draghandle").slideUp();
       $this.text("Drag");
     }
   });
+
+
+  // Move any draggable color menus on keydown
+  $(document).keydown(function(event) {
+  
+    if(linkKeyboardPositionEnabled || nodeKeyboardPositionEnabled || statsKeyboardPositionEnabled) {
+
+      switch(event.key) {
+        case 'ArrowRight':
+
+          if(linkKeyboardPositionEnabled) {
+            $("#link-color-table-wrapper").css("right", parseFloat($("#link-color-table-wrapper").css("right")) - 1 + "px");
+          }
+          if(nodeKeyboardPositionEnabled) {
+            $("#node-color-table-wrapper").css("right", parseFloat($("#node-color-table-wrapper").css("right")) - 1 + "px");
+          }
+          if(statsKeyboardPositionEnabled) {
+            $("#network-statistics-wrapper").css("right", parseFloat($("#network-statistics-wrapper").css("right")) - 1 + "px");
+          }
+         
+          break;
+        case 'ArrowLeft':
+
+          if(linkKeyboardPositionEnabled) {
+            $("#link-color-table-wrapper").css("right", parseFloat($("#link-color-table-wrapper").css("right")) + 1 + "px");
+          }
+          if(nodeKeyboardPositionEnabled) {
+            $("#node-color-table-wrapper").css("right", parseFloat($("#node-color-table-wrapper").css("right")) + 1 + "px");
+          }
+          if(statsKeyboardPositionEnabled) {
+            $("#network-statistics-wrapper").css("right", parseFloat($("#network-statistics-wrapper").css("right")) + 1 + "px");
+          }
+
+          break;
+        case 'ArrowUp':
+
+          if(linkKeyboardPositionEnabled) {
+            $("#link-color-table-wrapper").css("top", parseFloat($("#link-color-table-wrapper").css("top")) - 1 + "px");
+          }
+          if(nodeKeyboardPositionEnabled) {
+            $("#node-color-table-wrapper").css("top", parseFloat($("#node-color-table-wrapper").css("top")) - 1 + "px");
+          }
+          if(statsKeyboardPositionEnabled) {
+            $("#network-statistics-wrapper").css("bottom", parseFloat($("#network-statistics-wrapper").css("bottom")) + 1 + "px");
+          }
+
+          break;
+        case 'ArrowDown':
+
+          if(linkKeyboardPositionEnabled) {
+            $("#link-color-table-wrapper").css("top", parseFloat($("#link-color-table-wrapper").css("top")) + 1 + "px");
+          }
+          if(nodeKeyboardPositionEnabled) {
+            $("#node-color-table-wrapper").css("top", parseFloat($("#node-color-table-wrapper").css("top")) + 1 + "px");
+          }
+          if(statsKeyboardPositionEnabled) {
+            $("#network-statistics-wrapper").css("bottom", parseFloat($("#network-statistics-wrapper").css("bottom")) - 1 + "px");
+          }
+
+          break;
+        default:
+          break;
+      }
+    }
+});
 
   $("#link-color-table-draghandle").on("mousedown", function() {
     let body = $("body");
@@ -1095,9 +1169,11 @@ $(function() {
     $this.parent().hide();
     if ($this.text() == "Drag") {
       $("#node-color-table-draghandle").slideDown();
+      nodeKeyboardPositionEnabled = true;
       $this.text("Pin");
     } else {
       $("#node-color-table-draghandle").slideUp();
+      nodeKeyboardPositionEnabled = false;
       $this.text("Drag");
     }
   });

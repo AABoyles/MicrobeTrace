@@ -1086,6 +1086,39 @@ Note that this may cause slow performance on larger networks.">
       }).animate({ 'opacity': 1 }, 80);
     }
 
+    let polygonKeyboardPositionEnabled = false;
+
+    // Move draggable polygon menu on keydown
+    $(document).keydown(function(event) {
+      if(polygonKeyboardPositionEnabled) {
+        switch(event.key) {
+          case 'ArrowRight':
+  
+            $("#polygon-color-table-wrapper").css("left", parseFloat($("#polygon-color-table-wrapper").css("left")) + 1 + "px");
+            
+            break;
+          case 'ArrowLeft':
+
+            $("#polygon-color-table-wrapper").css("left", parseFloat($("#polygon-color-table-wrapper").css("left")) - 1 + "px");
+
+            break;
+          case 'ArrowUp':
+
+            $("#polygon-color-table-wrapper").css("top", parseFloat($("#polygon-color-table-wrapper").css("top")) - 1 + "px");
+
+            break;
+          case 'ArrowDown':
+
+            $("#polygon-color-table-wrapper").css("top", parseFloat($("#polygon-color-table-wrapper").css("top")) + 1 + "px");
+
+            break;
+          default:
+            break;
+        }
+      }
+        
+    });
+
     function hideContextMenu() {
       $('#context-menu').animate({ 'opacity': 0 }, 80, function () {
         $(this).css('z-index', -1);
@@ -1958,9 +1991,11 @@ Note that this may cause slow performance on larger networks.">
       $this.parent().hide();
       if ($this.text() == "Drag") {
         $("#polygon-color-table-draghandle").slideDown();
+        polygonKeyboardPositionEnabled = true;
         $this.text("Pin");
       } else {
         $("#polygon-color-table-draghandle").slideUp();
+        polygonKeyboardPositionEnabled = true;
         $this.text("Drag");
       }
     });
