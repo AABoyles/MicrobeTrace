@@ -478,7 +478,7 @@ Note that this may cause slow performance on larger networks.">
 </div>
 
 <div id="polygon-color-table-context" class="dropdown-menu">
-  <a href="#" id="polygon-color-table-drag" class="dropdown-item">Drag</a>
+  <a href="#" id="polygon-color-table-drag" class="dropdown-item">Drag/Arrow Keys</a>
   <a href="#" id="polygon-color-table-context-hide" class="dropdown-item">Hide</a>
   <a href="#" id="polygon-color-table-expand" class="dropdown-item">Expand</a>
   <a href="#" id="polygon-color-table-counts" class="dropdown-item">Toggle Counts</a>
@@ -1989,14 +1989,14 @@ Note that this may cause slow performance on larger networks.">
     $("#polygon-color-table-drag").on("click", function() {
       let $this = $(this);
       $this.parent().hide();
-      if ($this.text() == "Drag") {
+      if ($this.text() == "Drag/Arrow Keys") {
         $("#polygon-color-table-draghandle").slideDown();
         polygonKeyboardPositionEnabled = true;
         $this.text("Pin");
       } else {
         $("#polygon-color-table-draghandle").slideUp();
         polygonKeyboardPositionEnabled = true;
-        $this.text("Drag");
+        $this.text("Drag/Arrow Keys");
       }
     });
 

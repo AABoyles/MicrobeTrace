@@ -394,14 +394,14 @@ $(function() {
   $("#moveStats").on("click", function() {
     let $this = $(this);
     $this.parent().hide();
-    if ($this.text() == "Drag") {
+    if ($this.text() == "Drag/Arrow Keys") {
       $("#network-statistics-draghandle").slideDown();
       statsKeyboardPositionEnabled = true;
       $this.text("Pin");
     } else {
       $("#network-statistics-draghandle").slideUp();
       statsKeyboardPositionEnabled = false;
-      $this.text("Drag");
+      $this.text("Drag/Arrow Keys");
     }
 
   });
@@ -1025,14 +1025,14 @@ $(function() {
   $("#link-color-table-drag").on("click", function() {
     let $this = $(this);
     $this.parent().hide();
-    if ($this.text() == "Drag") {
+    if ($this.text() == "Drag/Arrow Keys") {
       linkKeyboardPositionEnabled = true;
       $("#link-color-table-draghandle").slideDown();
       $this.text("Pin");
     } else {
       linkKeyboardPositionEnabled = false;
       $("#link-color-table-draghandle").slideUp();
-      $this.text("Drag");
+      $this.text("Drag/Arrow Keys");
     }
   });
 
@@ -1167,14 +1167,14 @@ $(function() {
   $("#node-color-table-drag").on("click", function() {
     let $this = $(this);
     $this.parent().hide();
-    if ($this.text() == "Drag") {
+    if ($this.text() == "Drag/Arrow Keys") {
       $("#node-color-table-draghandle").slideDown();
       nodeKeyboardPositionEnabled = true;
       $this.text("Pin");
     } else {
       $("#node-color-table-draghandle").slideUp();
       nodeKeyboardPositionEnabled = false;
-      $this.text("Drag");
+      $this.text("Drag/Arrow Keys");
     }
   });
 
