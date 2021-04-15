@@ -1606,6 +1606,7 @@ Note that this may cause slow performance on larger networks.">
     });
 
     function updateNodeColors() {
+      settings = session.style.widgets;
       let variable = settings['node-color-variable'];
       let nodes = svg.select('g.nodes').selectAll('g').select('path').data(session.network.nodes).classed('selected', d => d.selected);
       if (variable == 'None') {
