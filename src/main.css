@@ -610,6 +610,7 @@ button.btn,
   background-color: #f8f9fa !important;
 }
 #node-symbol-table-draghandle {
+  display: none;
   width: 100%;
   text-align: center;
 }
@@ -629,6 +630,11 @@ button.btn,
 .nodes path {
   cursor: -webkit-grab;
 }
+
+.clusters path {
+  cursor: -webkit-grab;
+}
+
 .nodes path.selected {
   stroke: #ff8300;
   stroke-width: 4px;

@@ -465,7 +465,7 @@ Note that this may cause slow performance on larger networks.">
 </div>
 
 <div id="node-symbol-table-context" class="dropdown-menu">
-  <a href="#" id="node-symbol-table-move" class="dropdown-item">Pin</a>
+  <a href="#" id="node-symbol-table-move" class="dropdown-item">Drag/Arrow Keys</a>
   <a href="#" id="node-symbol-table-context-hide" class="dropdown-item">Hide</a>
   <a href="#" id="node-symbol-table-expand" class="dropdown-item">Expand</a>
   <a href="#" id="node-symbol-table-counts" class="dropdown-item">Toggle Counts</a>
@@ -856,7 +856,7 @@ Note that this may cause slow performance on larger networks.">
         }
         d3.select('#network g.clusters').selectAll('path')
           .data(groups)
-          .attr("d", groupPath)
+          .attr("d", groupPath) 
           .enter()
           .insert("path", "circle")
           .style("fill", fill)
@@ -865,6 +865,11 @@ Note that this may cause slow performance on larger networks.">
           .style("stroke-linejoin", "round")
           .style("opacity", opacity)
           .attr("d", groupPath);
+          d3.select('#network g.clusters').selectAll('path')
+           .call(d3.drag() //A bunch of mouse handlers.
+                .on('start', polygonDragStarted)
+                .on('drag', polygonDragged)
+                .on('end', polygonDragEnded))
 
         if (settings['polygons-label-show']) {
 
@@ -877,9 +882,9 @@ Note that this may cause slow performance on larger networks.">
             
             d3.select('#network g.clustersLabels').selectAll('text').attr("class","WashingT")
               .call(d3.drag()
-              .on("start", polygondragstarted)
-              .on("drag", polygondragged)
-              .on("end", polygondragended));
+              .on("start", polygonLabelDragStarted)
+              .on("drag", polygonLabelDragged)
+              .on("end", polygonLabelDragEnded));
 
           redrawPolygonLabels();
         }
@@ -899,13 +904,14 @@ Note that this may cause slow performance on larger networks.">
       console.log("Network render time:", (Date.now() - start).toLocaleString(), 'ms');
     }
 
-    function polygondragstarted(d) {
+    function polygonLabelDragStarted(d) {
       d3.select(this).raise().attr("class", "polygonText");
     }
-    function polygondragged(d) {
+    function polygonLabelDragged(d) {
+      console.log('select Label this: ', d3.select(this));
       d3.select(this).attr("transform", "translate(" + d3.event.x + "," + d3.event.y + ")");
     }
-    function polygondragended(d) {
+    function polygonLabelDragEnded(d) {
       d3.select(this).attr("class", "");
     }
 
@@ -968,6 +974,59 @@ Note that this may cause slow performance on larger networks.">
     const radToDeg = 180 / Math.PI;
     function calcAngle(source, target) {
       return Math.atan((source.y - target.y) / (source.x - target.x)) * radToDeg;
+    }
+
+    let polygonNodeSelected = null;
+
+    function polygonDragStarted(n) {
+
+      session.data.nodes.forEach(sessionNode => {
+
+        let tempAry = n.values.filter(node => node._id == sessionNode._id);
+
+        if (tempAry.length > 0) {
+          sessionNode.selected = true
+          if(!polygonNodeSelected) {
+            polygonNodeSelected = sessionNode;
+          }
+        } else {
+          sessionNode.selected = false
+        }
+
+      });
+
+      $window.trigger('node-selected');
+
+      
+      if(polygonNodeSelected) {
+        dragstarted(polygonNodeSelected);
+      }
+
+    }
+
+    function polygonDragged(n) {
+
+      if(polygonNodeSelected) {
+        dragged(polygonNodeSelected);
+      }
+
+    }
+
+
+    function polygonDragEnded(n) {
+
+      if(polygonNodeSelected) {
+        dragended(polygonNodeSelected);
+      }
+
+      polygonNodeSelected = null;
+
+      session.data.nodes.forEach(sessionNode => {
+        sessionNode.selected = false
+      });
+
+      $window.trigger('node-selected');
+
     }
 
     let selected, multidrag = false;
@@ -1087,29 +1146,50 @@ Note that this may cause slow performance on larger networks.">
     }
 
     let polygonKeyboardPositionEnabled = false;
+    let nodeShapeKeyboardPositionEnabled = false;
 
     // Move draggable polygon menu on keydown
     $(document).keydown(function(event) {
-      if(polygonKeyboardPositionEnabled) {
+      if(polygonKeyboardPositionEnabled || nodeShapeKeyboardPositionEnabled) {
         switch(event.key) {
           case 'ArrowRight':
   
-            $("#polygon-color-table-wrapper").css("left", parseFloat($("#polygon-color-table-wrapper").css("left")) + 1 + "px");
-            
+            if(polygonKeyboardPositionEnabled) {
+              $("#polygon-color-table-wrapper").css("left", parseFloat($("#polygon-color-table-wrapper").css("left")) + 1 + "px");
+            }
+            if(nodeShapeKeyboardPositionEnabled) {
+              $("#node-symbol-table-wrapper").css("left", parseFloat($("#node-symbol-table-wrapper").css("left")) + 1 + "px");
+            }
+
             break;
           case 'ArrowLeft':
 
-            $("#polygon-color-table-wrapper").css("left", parseFloat($("#polygon-color-table-wrapper").css("left")) - 1 + "px");
+            if(polygonKeyboardPositionEnabled) {
+              $("#polygon-color-table-wrapper").css("left", parseFloat($("#polygon-color-table-wrapper").css("left")) - 1 + "px");
+            }
+            if(nodeShapeKeyboardPositionEnabled) {
+              $("#node-symbol-table-wrapper").css("left", parseFloat($("#node-symbol-table-wrapper").css("left")) - 1 + "px");
+            }
 
             break;
           case 'ArrowUp':
 
-            $("#polygon-color-table-wrapper").css("top", parseFloat($("#polygon-color-table-wrapper").css("top")) - 1 + "px");
+            if(polygonKeyboardPositionEnabled) {
+              $("#polygon-color-table-wrapper").css("top", parseFloat($("#polygon-color-table-wrapper").css("top")) - 1 + "px");
+            }
+            if(nodeShapeKeyboardPositionEnabled) {
+              $("#node-symbol-table-wrapper").css("top", parseFloat($("#node-symbol-table-wrapper").css("top")) - 1 + "px");
+            }
 
             break;
           case 'ArrowDown':
 
-            $("#polygon-color-table-wrapper").css("top", parseFloat($("#polygon-color-table-wrapper").css("top")) + 1 + "px");
+            if(polygonKeyboardPositionEnabled) {
+              $("#polygon-color-table-wrapper").css("top", parseFloat($("#polygon-color-table-wrapper").css("top")) + 1 + "px");
+            }
+            if(nodeShapeKeyboardPositionEnabled) {
+              $("#node-symbol-table-wrapper").css("top", parseFloat($("#node-symbol-table-wrapper").css("top")) + 1 + "px");
+            }
 
             break;
           default:
@@ -1996,7 +2076,7 @@ Note that this may cause slow performance on larger networks.">
         $this.text("Pin");
       } else {
         $("#polygon-color-table-draghandle").slideUp();
-        polygonKeyboardPositionEnabled = true;
+        polygonKeyboardPositionEnabled = false;
         $this.text("Drag/Arrow Keys");
       }
     });
@@ -2318,12 +2398,14 @@ Note that this may cause slow performance on larger networks.">
     $("#node-symbol-table-move").on("click", function () {
       let $this = $(this);
       $this.parent().hide();
-      if ($this.text() == "Drag") {
+      if ($this.text() == "Drag/Arrow Keys") {
+        nodeShapeKeyboardPositionEnabled = true;
         $("#node-symbol-table-draghandle").slideDown();
         $this.text("Pin");
       } else {
+        nodeShapeKeyboardPositionEnabled = false;
         $("#node-symbol-table-draghandle").slideUp();
-        $this.text("Drag");
+        $this.text("Drag/Arrow Keys");
       }
     });
 
