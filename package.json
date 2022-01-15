@@ -76,7 +76,7 @@
     "leaflet-image": "^0.4.0",
     "leaflet.markercluster": "^1.4.1",
     "localforage": "^1.9.0",
-    "marked": "^0.7.0",
+    "marked": "^4.0.10",
     "moment": "^2.29.1",
     "open-iconic": "^1.1.1",
     "papaparse": "^5.3.0",
