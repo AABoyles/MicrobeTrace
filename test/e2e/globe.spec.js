@@ -85,10 +85,17 @@ test('redraws when nodes are hidden', async () => {
 test('dragging turns the globe, and autorotation spins it', async () => {
   const rotation = () => page.evaluate(() => temp.globe.projection.rotate()[0]);
   const before = await rotation();
-  const box = await view().locator('canvas').boundingBox();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  // A point on the canvas that nothing floats over (the color tables can)
+  const [x, y] = await view().locator('canvas').evaluate(canvas => {
+    const box = canvas.getBoundingClientRect();
+    for (let fy = 0.5; fy < 0.95; fy += 0.1) for (let fx = 0.5; fx < 0.9; fx += 0.1) {
+      const x = box.x + box.width * fx, y = box.y + box.height * fy;
+      if (document.elementFromPoint(x, y) === canvas && document.elementFromPoint(x - 100, y) === canvas) return [x, y];
+    }
+  });
+  await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2 + 100, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.move(x - 100, y, { steps: 5 });
   await page.mouse.up();
   await expect.poll(rotation).not.toBe(before);
   const dragged = await rotation();
