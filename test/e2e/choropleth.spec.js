@@ -23,7 +23,7 @@ const view = () => page.locator('.lm_content:has(.leaflet-container)').first();
 const pane = () => view().locator('.left-pane');
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 // The aggregate layer: each region's name, count and fill
-const regions = () => page.evaluate(() => temp.choropleth.layers.aggregates.getLayers().map(l => ({
+const regions = () => page.evaluate(() => (temp.choropleth && temp.choropleth.layers.aggregates ? temp.choropleth.layers.aggregates.getLayers() : []).map(l => ({
   name: l.feature.properties.name, density: l.feature.properties.density,
   fill: d3.rgb(l.options.fillColor).formatHex(), opacity: l.options.fillOpacity
 })));
