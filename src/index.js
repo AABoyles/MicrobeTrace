@@ -70,10 +70,11 @@ $(function() {
   let table = new Tabulator("#recall-stashes-available", {
     height: "100%",
     layout: "fitColumns",
-    selectable: 1,
+    selectableRows: 1,
     columns: [
       { title: "Name", field: "name" },
-      { title: "Date", field: "date", align: "right", sorter: "date" }
+      // ISO dates sort correctly as strings (Tabulator's date sorter needs luxon)
+      { title: "Date", field: "date", hozAlign: "right", sorter: "string" }
     ]
   });
 
@@ -316,19 +317,19 @@ $(function() {
       .attr("width", 6)
       .attr("height", d => height - y(d.length));
 
-    function updateThreshold() {
-      let xc = d3.mouse(svg.node())[0];
+    function updateThreshold(event) {
+      let xc = d3.pointer(event, svg.node())[0];
       session.style.widgets["link-threshold"] = (xc / width) * range * 1.05 + min;
       $("#link-threshold").val(parseFloat(session.style.widgets["link-threshold"].toLocaleString()));
     }
 
-    svg.on("click", () => {
-      updateThreshold();
+    svg.on("click", event => {
+      updateThreshold(event);
       updateNetwork();
     });
 
-    svg.on("mousedown", () => {
-      d3.event.preventDefault();
+    svg.on("mousedown", event => {
+      event.preventDefault();
       svg.on("mousemove", updateThreshold);
       svg.on("mouseup mouseleave", () => {
         updateNetwork();
@@ -870,8 +871,8 @@ $(function() {
           .attr("class", "track-overlay")
           .call(d3.drag()
               .on("start.interrupt", function() { slider.interrupt(); })
-              .on("start drag", function() {
-                currentValue = d3.event.x;
+              .on("start drag", function(event) {
+                currentValue = event.x;
                 update(x.invert(currentValue));
                 if (playButton.text() == "Pause") {
                   playButton.text("Play"); 

@@ -157,11 +157,11 @@
         }
       }], {
           yaxis: {
-            title: MT.titleize(yVar),
+            title: { text: MT.titleize(yVar) },
             type: session.style.widgets['scatterplot-logScale']
           },
           xaxis: {
-            title: MT.titleize(xVar)
+            title: { text: MT.titleize(xVar) }
           },
           width: $('#scatterplot').parent().width(),
           height: $('#scatterplot').parent().height()

@@ -483,9 +483,15 @@
       redrawTree();
     };
 
+    // TidyTree hands its handlers the first argument of its d3 listener: the tree
+    // node under d3 v5, the event under d3 v6+ (then the node is the target's datum).
+    function treeNode(d) {
+      return d[0] instanceof Event ? d3.select(d[0].currentTarget).datum() : d[0];
+    }
+
     function select(d) {
       let e = d3.event;
-      let n = d[0].data;
+      let n = treeNode(d).data;
       e.preventDefault();
       if (e.ctrlKey) {
         session.data.nodes.find(node => node._id == n.id).selected = !n.selected;
@@ -503,20 +509,21 @@
 
     function contextMenu(d) {
       let e = d3.event;
+      let node = treeNode(d);
       e.preventDefault();
       hideTooltip();
       let menu = d3.select('#tree-context-menu');
       d3.select('#tree-reroot').on('click', () => {
-        tree.setData(d[0].data.reroot());
+        tree.setData(node.data.reroot());
         $('#tree-branch-distance-size').trigger('input');
         menu.style('z-index', -1).style('display', 'none');
       });
       d3.select('#tree-rotate').on('click', () => {
-        tree.setData(d[0].data.rotate().getRoot());
+        tree.setData(node.data.rotate().getRoot());
         menu.style('z-index', -1).style('display', 'none');
       });
       d3.select('#tree-flip').on('click', () => {
-        tree.setData(d[0].data.flip().getRoot());
+        tree.setData(node.data.flip().getRoot());
         menu.style('z-index', -1).style('display', 'none');
       });
       menu

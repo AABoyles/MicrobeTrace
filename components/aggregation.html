@@ -77,9 +77,6 @@
     let data = [];
 
     function updateTable(i, variable) {
-      let aggregation = new Tabulator("#aggregation-table-" + i, {
-        layout: "fitColumns"
-      });
       let values = [];
       let tabledata = [];
       let dataset = variable.split(" ")[0];
@@ -107,19 +104,22 @@
       tabledata.forEach(
         row => (row.percent = ((row.n / n) * 100).toLocaleString() + "%")
       );
-      aggregation.setColumns([
-        {
-          title: MT.titleize(dataset) + " " + MT.titleize(column),
-          field: column
-        },
-        { title: `Number of ${MT.titleize(dataset)}s`, field: "n" },
-        { title: "Percentage", field: "percent", headerSort: false }
-      ]);
-      aggregation.setData(tabledata);
-      aggregation.setSort([
-        { column: "n", dir: "desc" },
-        { column: column, dir: "asc" }
-      ]);
+      new Tabulator("#aggregation-table-" + i, {
+        layout: "fitColumns",
+        columns: [
+          {
+            title: MT.titleize(dataset) + " " + MT.titleize(column),
+            field: column
+          },
+          { title: `Number of ${MT.titleize(dataset)}s`, field: "n" },
+          { title: "Percentage", field: "percent", headerSort: false }
+        ],
+        data: tabledata,
+        initialSort: [
+          { column: "n", dir: "desc" },
+          { column: column, dir: "asc" }
+        ]
+      });
       data[i - 1] = {
         dataset: dataset,
         column: column,

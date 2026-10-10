@@ -99,8 +99,15 @@
         //height: "calc(100% - 60px) !important",
         maxHeight: "100%",
         layout: "fitColumns",
+        data: session.data[data_type],
         columns: columns.map(c => ({title: MT.titleize(c), field: c})),
-        rowClick: function(e, row){
+        rowFormatter: function(row){
+          if(row.getData().selected){
+            $(row.getElement()).css("background", session.style.widgets['selected-color']);
+          }
+        }
+      });
+      table.on("rowClick", function(e, row){
           let entity = row.getData();
           entity.selected = !entity.selected;
           if(entity.selected){
@@ -111,23 +118,12 @@
             row.unfreeze();
           }
           $window.trigger('node-selected', 'table');
-        },
-        rowFormatter: function(row){
-          if(row.getData().selected){
-            $(row.getElement()).css("background", session.style.widgets['selected-color']);
-          }
-        },
-        dataLoaded: function(data) {
-          var rows = this.getRows();
-          rows.forEach(function(row){
-            let entity = row.getData();
-            if (entity.selected) {
-              row.freeze();
-            }
-          });
-        }
       });
-      table.setData(session.data[data_type]);
+      table.on("tableBuilt", function(){
+        table.getRows().forEach(function(row){
+          if (row.getData().selected) row.freeze();
+        });
+      });
       addColDelTarget();
       resetTextsize();
     }

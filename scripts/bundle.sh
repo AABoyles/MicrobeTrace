@@ -10,7 +10,7 @@ primaryscripts=(
   "node_modules/golden-layout/dist/goldenlayout.min.js"
   "node_modules/chosen-js/chosen.jquery.min.js"
   "node_modules/fileto/fileto.js"
-  "node_modules/screenfull/dist/screenfull.js"
+  "temp.screenfull.js"
   "node_modules/clipboard/dist/clipboard.min.js"
   "node_modules/papaparse/papaparse.min.js"
   "node_modules/jszip/dist/jszip.min.js"
@@ -20,7 +20,7 @@ primaryscripts=(
   "node_modules/d3/dist/d3.min.js"
   "node_modules/tabulator-tables/dist/js/tabulator.min.js"
   "node_modules/file-saver/dist/FileSaver.min.js"
-  "node_modules/devtools-detect/index.js"
+  "temp.devtools-detect.js"
   "node_modules/localforage/dist/localforage.min.js"
 )
 
@@ -31,21 +31,22 @@ secondaryscripts=(
   "node_modules/d3-force-attract/dist/d3-force-attract.min.js"
   "node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"
   "node_modules/d3-polygon/dist/d3-polygon.min.js"
-  "node_modules/plotly.js/dist/plotly-cartesian.min.js"
+  "temp.plotly.js"
   "node_modules/3d-force-graph/dist/3d-force-graph.min.js"
   "node_modules/moment/min/moment-with-locales.min.js"
   "node_modules/tidytree/dist/tidytree.min.js"
   "node_modules/leaflet/dist/leaflet.js"
   "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
   "node_modules/leaflet-image/leaflet-image.js"
-  "node_modules/marked/marked.min.js"
+  "node_modules/marked/lib/marked.umd.js"
   "node_modules/html5sortable/dist/html5sortable.min.js"
   "node_modules/alignment-viewer/dist/alignment-viewer.min.js"
   "node_modules/save-svg-as-png/lib/saveSvgAsPng.js"
   "node_modules/pdfmake/build/pdfmake.min.js"
   "node_modules/pdfmake/build/vfs_fonts.js"
   "node_modules/pixi.js/dist/pixi.min.js"
-  "node_modules/pixi-viewport/dist/viewport.js"
+  "temp.pixi-alias.js"
+  "node_modules/pixi-viewport/dist/pixi_viewport.umd.cjs"
 )
 
 # primarystyles is where you put stylesheets that must be loaded immediately to
@@ -56,7 +57,7 @@ primarystyles=(
   "node_modules/golden-layout/src/css/goldenlayout-light-theme.css"
   "node_modules/alertifyjs/build/css/alertify.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator.min.css"
-  "node_modules/tabulator-tables/dist/css/bootstrap/tabulator_bootstrap4.min.css"
+  "node_modules/tabulator-tables/dist/css/tabulator_bootstrap4.min.css"
   "node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css"
 )
 
@@ -100,21 +101,20 @@ cp -r node_modules/open-iconic/font/fonts/ .
 
 echo 'Building Dependencies...'
 
-# This little nightmare is a hack to add the Sankey diagram logic to Plotly's
-# Cartesian build
-rm node_modules/plotly.js/lib/index-cartesian.js
-echo """'use strict';
-var Plotly = require('./core');
-Plotly.register([
-    require('./heatmap'),
-    require('./histogram'),
-    require('./scatterternary'),
-    require('./sankey')
-]);
-module.exports = Plotly;
-""" > node_modules/plotly.js/lib/index-cartesian.js
-cd node_modules/plotly.js
-cd ../..
+# screenfull and devtools-detect are ES modules (a single `export default`), so they
+# are wrapped to set the same globals their older versions did.
+for module in screenfull devtools-detect; do
+  name=$( [ $module = screenfull ] && echo screenfull || echo devtools )
+  { echo "{"; sed "s/^export default $name;$/window.$name = $name;/" node_modules/$module/index.js; echo "}"; } > temp.$module.js
+done
+
+# Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
+# The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.
+npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-name=Plotly \
+  --target=es2019 --define:global=globalThis --loader:.css=empty --log-level=warning --outfile=temp.plotly.js
+
+# pixi-viewport's UMD build looks for Pixi under the global name pixi_js
+echo "window.pixi_js = window.PIXI;" > temp.pixi-alias.js
 
 echo 'Assembling Javascript Bundle...'
 
@@ -132,4 +132,4 @@ done
 
 echo "Cleaning up..."
 
-rm temp.*.css
+rm temp.*.css temp.*.js
