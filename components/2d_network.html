@@ -1,4 +1,11 @@
-<svg id="network"></svg>
+<div id="network" style="position: relative; overflow: hidden;">
+  <canvas id="network-underlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+  <div id="network-cosmos" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+  <canvas id="network-overlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+  <div id="network-brush" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; cursor: crosshair;">
+    <div id="network-brush-rect" style="position: absolute; display: none; border: 1px solid #808080; background: rgba(128, 128, 128, 0.1);"></div>
+  </div>
+</div>
 
 <div class="view-controls">
   <button type="button" id="network-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Network Settings">
@@ -545,102 +552,164 @@ Note that this may cause slow performance on larger networks.">
     ga('send', 'pageview');
     
     if (session.network.allPinned && !$('#pinbutton').hasClass('active')) $('#pinbutton').button('toggle');
-    
-    let halfWidth = $('#network').parent().width() / 2,
-      halfHeight = $('#network').parent().parent().parent().height() / 2,
-      transform = d3.zoomTransform(d3.select('svg#network').node()),
-      settings = session.style.widgets;
 
-    let zoom = d3.zoom().on('zoom', () => svg.attr('transform', transform = d3.event.transform));
+    // The network is drawn and laid out on the GPU by cosmos.gl
+    // (vendor/cosmos.min.js, loaded the first time this view opens). Point i of
+    // the graph is points[i] (= session.network.nodes) and link i is links[i].
+    // Two 2D canvases sit under and over it: polygons and gridlines below, node
+    // and link labels above.
 
-    let brush = d3.brush()
-      .filter(() => !d3.event.button)
-      .on('start', function(){
-        session.network.nodes.forEach(d => {
-          if (d.visible) d._previouslySelected = d.selected;
-        });
-      })
-      .on('brush', function(){
-        if(d3.event.sourceEvent.type === 'end') return;
-        let selection = [
-          transform.invert(d3.event.selection[0]),
-          transform.invert(d3.event.selection[1])
-        ];
-        if(selection.includes(null)) return;
-        session.network.nodes.forEach( function (d) {
-          d.selected = (d._previouslySelected ^ (
-            selection[0][0] <= d.x && d.x <= selection[1][0] &&
-            selection[0][1] <= d.y && d.y <= selection[1][1]
-          )) === 1;
-        });
-      })
-      .on('end', function(){
-        if (d3.event.selection == null) return;
-        d3.select(this).call(d3.event.target.move, null);
-        session.network.nodes.forEach(d => delete d._previouslySelected);
-        session.data.nodes.forEach(d => {
-          let match = session.network.nodes.find(node => node._id == d._id);
-          if (match) d.selected = match.selected;
-        });
-        $window.trigger('node-selected');
+    let settings = session.style.widgets;
+    const container = document.getElementById('network');
+    const cosmosDiv = document.getElementById('network-cosmos');
+    const underlay = document.getElementById('network-underlay');
+    const overlay = document.getElementById('network-overlay');
+    const brushLayer = document.getElementById('network-brush');
+    const instance = '.c' + Date.now();
+    const SPACE = 4096;
+
+    let graph = null;
+    let points = [];
+    let pointIndex = new Map();
+    let links = [];
+    let mouse = { pageX: 0, pageY: 0 };
+    let lastSync = 0;
+    let diameters = new Float32Array(0), maxDiameter = 0;
+    let autoFit = true;
+    let isNumber = a => typeof a == "number";
+
+    self.cosmosLoading = self.cosmosLoading || new Promise((resolve, reject) => {
+      if (self.Cosmos) return resolve();
+      const script = document.createElement('script');
+      script.src = 'vendor/cosmos.min.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+
+    // MicrobeTrace stores d3 symbol names. cosmos.gl has fewer shapes, so some
+    // share one; exports draw the real d3 symbol.
+    let shapeOf = () => 0;
+    function initShapes() {
+      const S = Cosmos.PointShape;
+      const shapes = {
+        symbolCircle: S.Circle, symbolSquare: S.Square, symbolDiamondSquare: S.Diamond,
+        symbolDiamond: S.Diamond, symbolDiamondAlt: S.Diamond,
+        symbolTriangle: S.Triangle, symbolTriangleDown: S.Triangle, symbolTriangleLeft: S.Triangle, symbolTriangleRight: S.Triangle,
+        symbolPentagon: S.Pentagon, symbolHexagon: S.Hexagon, symbolHexagonAlt: S.Hexagon,
+        symbolOctagon: S.Hexagon, symbolOctagonAlt: S.Hexagon,
+        symbolStar: S.Star, symbolWye: S.Star, symbolCross: S.Cross, symbolX: S.Cross
+      };
+      shapeOf = symbol => symbol in shapes ? shapes[symbol] : S.Circle;
+    }
+
+    // d3 symbol sizes are areas in px²; cosmos.gl sizes are diameters
+    const diameter = area => 2 * Math.sqrt(Math.max(area, 0) / Math.PI);
+
+    function rgba(color, alpha) {
+      const c = d3.rgb(color);
+      return [c.r / 255, c.g / 255, c.b / 255, (alpha == null ? 1 : alpha) * c.opacity];
+    }
+
+    // The settings were made for d3-force. These scales give about the same
+    // layout at their defaults (spread, link lengths) with cosmos.gl's forces.
+    const physics = () => ({
+      simulationRepulsion: settings['node-charge'] * 0.08,
+      simulationGravity: settings['network-gravity'],
+      simulationFriction: 1 - settings['network-friction'] * 0.375,
+      simulationLinkSpring: settings['network-link-strength'] * 2.4,
+      simulationLinkDistance: 50 + 1.4 * parseFloat(settings['link-length']),
+      simulationCluster: settings['polygons-show'] ? settings['polygons-gather-force'] * 50 : 0
+    });
+
+    function createGraph() {
+      initShapes();
+      graph = new Cosmos.Graph(cosmosDiv, Object.assign({
+        spaceSize: SPACE,
+        backgroundColor: [0, 0, 0, 0],
+        rescalePositions: false,
+        fitViewOnInit: false,
+        enableDrag: true,
+        scalePointsOnZoom: true,
+        scaleLinksOnZoom: true,
+        linkVisibilityMinTransparency: 1,
+        linkOpacity: 1 - settings['link-opacity'],
+        linkDefaultArrows: false,
+        outlinedPointRingColor: '#ff8300',
+        focusedPointRingColor: '#808080',
+        pointGreyoutOpacity: 0.1,
+        linkGreyoutOpacity: 0.1,
+        onSimulationTick: () => {
+          if (Date.now() - lastSync > 5000) syncPositions();
+          drawOverlays();
+        },
+        onSimulationEnd: () => {
+          syncPositions();
+          // The layout keeps spreading after the first fit
+          if (autoFit) fit();
+          autoFit = false;
+          drawOverlays();
+        },
+        onZoomStart: (e, userDriven) => {
+          if (userDriven) autoFit = false;
+        },
+        onZoom: drawOverlays,
+        onLinkMouseOver: showLinkTooltip,
+        onLinkMouseOut: hideTooltip,
+        onPointClick: clickHandler,
+        onBackgroundClick: hideContextMenu,
+        onPointContextMenu: showContextMenu,
+        onDragEnd: () => {
+          syncPositions();
+          drawOverlays();
+        }
+      }, physics()));
+    }
+
+    let refreshQueued = null;
+    // Applies the pending data changes once, after the current batch of updates.
+    function refresh() {
+      if (!refreshQueued) refreshQueued = Promise.resolve().then(() => {
+        refreshQueued = null;
+        if (graph) graph.render();
+        drawOverlays();
       });
+      return refreshQueued;
+    }
 
-    d3.select('svg#network')
-      .html(null) //Let's make sure the canvas is blank.
-      .attr('height', halfHeight * 2)
-      .attr('width', halfWidth * 2)
-      .on('click', hideContextMenu)
-      .call(zoom);
+    function reheat(alpha) {
+      if (!graph) return;
+      graph.setConfigPartial(physics());
+      graph.start(alpha || 0.3);
+    }
 
-    d3.select('svg#network')
-      .append('g')
-      .attr('class', 'brush')
-      .call(brush)
-      .attr('pointer-events', 'none')
-      .select('rect.overlay')
-      .attr('pointer-events', 'none');
+    // Copies the current layout into session.network.nodes, which the timeline,
+    // other views and saved sessions read.
+    function syncPositions() {
+      lastSync = Date.now();
+      if (!graph || !points.length) return;
+      const p = graph.getPointPositions();
+      if (p.length < 2 * points.length) return;
+      points.forEach((d, i) => {
+        const x = p[2 * i], y = p[2 * i + 1];
+        if (x != x) return;
+        d.x = x;
+        d.y = y;
+        if (d.fixed) {
+          d.fx = x;
+          d.fy = y;
+        }
+      });
+    }
 
-    d3.select('svg#network')
-      .append('g')
-      .attr('class', 'horizontal-gridlines');
-
-    d3.select('svg#network')
-      .append('g')
-      .attr('class', 'vertical-gridlines');
-
-    let svg = d3.select('svg#network').append('g');
-
-    svg.append('g').attr('class', 'clusters');
-    svg.append('g').attr('class', 'links');
-    svg.append('g').attr('class', 'nodes');
-
-    svg.append('svg:defs').append('marker')
-      .attr('id', 'end-arrow')
-      .attr('viewBox', '0 0 10 10')
-      .attr('refX', 20)
-      .attr('refY', 5)
-      .attr('markerWidth', 4)
-      .attr('markerHeight', 4)
-      .attr('orient', 'auto')
-      .append('svg:path')
-      .attr('d', 'M0,0 L0,10 L10,5 z');
-
-    let force = d3.forceSimulation()
-      .force('link', d3.forceLink()
-        .id(d => d._id)
-        .distance(l => l.origin.length * settings['link-length'])
-        .strength(settings['network-link-strength'])
-      )
-      .force('charge', d3.forceManyBody()
-        .strength(-settings['node-charge'])
-      )
-      .force('gravity', d3.forceAttract()
-        .target([halfWidth, halfHeight])
-        .strength(settings['network-gravity'])
-      )
-      .force('center', d3.forceCenter(halfWidth, halfHeight));
-
-    if (settings['network-friction']) force.velocityDecay(settings['network-friction']);
+    function destroy() {
+      if (!graph) return;
+      graph.destroy();
+      graph = null;
+      if (temp.network2d && temp.network2d.render === render) delete temp.network2d;
+      $window.off(instance);
+      $(window).off(instance);
+    }
 
     //#299
     function updateColumns(){
@@ -659,8 +728,10 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function render() { 
-      if(!$('#network').length) return;
+      if (!document.body.contains(container)) return destroy();
+      if (!graph) return;
       const start = Date.now();
+      syncPositions();
       let newNodes = MT.getVisibleNodes(true);
       let oldNodes;
       if(session.style.widgets["timeline-date-field"] != 'None')
@@ -669,9 +740,10 @@ Note that this may cause slow performance on larger networks.">
         oldNodes = session.network.nodes;
       
       if (newNodes.length === 0 && session.style.widgets["timeline-date-field"] == 'None') return;
-      
-      newNodes.forEach((d, i) => {
-        let match = oldNodes.find(d2 => d2._id == d._id);
+
+      const previous = new Map(oldNodes.map(d => [d._id, d]));
+      newNodes.forEach(d => {
+        let match = previous.get(d._id);
         if (match) {
           ['x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed'].forEach(v => {
             if (typeof match[v] != "undefined") d[v] = match[v];
@@ -679,279 +751,65 @@ Note that this may cause slow performance on larger networks.">
         }
       });
 
-      session.network.nodes = newNodes;
-      
-      let nodes = svg.select('g.nodes').selectAll('g').data(newNodes, d => d._id)
-        .join(
-          enter => {
-            let g = enter.append('g')
-              .attr('tabindex', '0')
-              .call(d3.drag() //A bunch of mouse handlers.
-                .on('start', dragstarted)
-                .on('drag', dragged)
-                .on('end', dragended))
-              .on('mouseenter focusin', showNodeTooltip)
-              .on('mouseout focusout', hideTooltip)
-              .on('contextmenu', showContextMenu)
-              .on('click', clickHandler)
-              .on('keydown', n => {
-                if (d3.event.code == 'Space') clickHandler(n);
-                if (d3.event.shiftKey && d3.event.key == 'F10') showContextMenu(n);
-              });
-            g.append('path')
-              .attr('stroke', settings['node-color-border'])
-              .attr('stroke-width', settings['node-border-width'])
-            g.append('text')
-              .attr('dy', 5)
-              .attr('dx', 8);
-            return g;
-          }
-        );
+      session.network.nodes = points = newNodes;
+      pointIndex = new Map(points.map((d, i) => [d._id, i]));
 
-      $('#node-symbol-variable').trigger('change');
+      links = MT.getVisibleLinks().filter(l => pointIndex.has(l.source) && pointIndex.has(l.target));
+      const pairs = new Float32Array(links.length * 2);
+      links.forEach((l, i) => {
+        pairs[2 * i] = pointIndex.get(l.source);
+        pairs[2 * i + 1] = pointIndex.get(l.target);
+      });
+
+      graph.setPointPositions(initialPositions());
+      graph.setLinks(pairs);
+      redrawNodes();
       updateNodeColors();
-      redrawLabels();
-
-      let vlinks = getVLinks();
-      let links = svg.select('g.links').selectAll('line').data(vlinks)
-        .join('line')
-        .attr('stroke-width', settings['link-width'])
-        .attr('opacity', 1 - settings['link-opacity'])
-        .on('mouseenter', showLinkTooltip)
-        .on('mouseout', hideTooltip);
-
       updateLinkColor();
       scaleLinkWidth();
-
-      let linklabels = svg.select('g.links').selectAll('text').data(getLLinks())
-        .join('text')
-        .attr('text-anchor', 'middle')
-        .attr('dy', settings['link-width'] + 2)
-        .text(l => l[settings['link-label-variable']]);
-
-      let layoutTick = () => {  
-        nodes
-          .attr('transform', d => d.fixed ?
-            `translate(${d.fx}, ${d.fy})` :
-            `translate(${d.x}, ${d.y})`
-          );
-        links
-          .attr('x1', l => l.source.x)
-          .attr('y1', l => l.source.y)
-          .attr('x2', l => l.target.x)
-          .attr('y2', l => l.target.y);
-        if (settings['link-label-variable'] !== 'None') {
-          linklabels
-            .attr('x', l => (l.source.x + l.target.x) / 2)
-            .attr('y', l => (l.source.y + l.target.y) / 2)
-            .attr('transform', l => 'rotate(' +
-              calcAngle(l.source, l.target) + ' ' +
-              (l.source.x + l.target.x) / 2 + ' ' +
-              (l.source.y + l.target.y) / 2 + ')'
-            );
-        }
-      }
-
-      let foci = settings['polygons-foci'];
-      let gather = settings['polygons-gather-force'];
-      let fill = settings['polygon-color'];
-      let opacity = 0.4;
-      
-      if (settings['polygons-color-show']) {
-        fill = d => temp.style.polygonColorMap(d.key);
-        opacity = d => temp.style.polygonAlphaMap(d.key);
-      }
-      d3.select('#network g.clusters').html(null);
-      let groups = d3.nest().key(function(d) { return d[foci]; }).entries(newNodes).map(function(d) {
-            var key = d.key
-            var values = d.values.map(function(dd){
-              dd.foci = key;
-              return dd;
-            })
-            return {'key':key, 'values':values}
-        });
-      groups = groups.filter(group => group.values.length > 2);     
-      let groupPath = function(d) {
-          return "M" + 
-          d3.polygonHull(d.values.map(function(i) { return [i.x, i.y]; }))
-              .join("L")
-          + "Z";
-      };    
-      let clusters = new Array(groups.length);  // The largest node for each cluster.
-      newNodes.forEach(d => {
-        let r =  d[foci];
-        let i = d.foci;
-        if (!clusters[i] || (r > clusters[i].radius)) 
-          clusters[i] = d;
-      })
-      let polygonsTick = () => {
-        newNodes.forEach(function(o, i) {
-          o.y += (clusters[o.foci].y - o.y) * gather;
-          o.x += (clusters[o.foci].x - o.x) * gather;
-        });
-        nodes.attr('transform', d => `translate(${d.x}, ${d.y})`);
-        links
-          .attr('x1', l => l.source.x)
-          .attr('y1', l => l.source.y)
-          .attr('x2', l => l.target.x)
-          .attr('y2', l => l.target.y);
-        if (settings['link-label-variable'] !== 'None') {
-          linklabels
-            .attr('x', l => (l.source.x + l.target.x) / 2)
-            .attr('y', l => (l.source.y + l.target.y) / 2)
-            .attr('transform', l => 'rotate(' +
-              calcAngle(l.source, l.target) + ' ' +
-              (l.source.x + l.target.x) / 2 + ' ' +
-              (l.source.y + l.target.y) / 2 + ')'
-            );
-        }
-        d3.select('#network g.clusters').selectAll('path')
-          .data(groups)
-            .attr("d", groupPath)
-          .enter().insert("path", "circle")
-            .style("fill", fill)
-            .style("stroke", fill)
-            .style("stroke-width", 40)
-            .style("stroke-linejoin", "round")
-            .style("opacity", opacity)
-            .attr("d", groupPath);
-      }      
-      
-      if(settings['polygons-show']) temp.polygonGroups = groups;
-      else delete temp.polygonGroups;
-
-      let handleTick = d => {
-        if(d) return polygonsTick;
-        else return layoutTick;		
-      }
-      force.nodes(session.network.nodes).on('tick', handleTick(settings['polygons-show']));
-      force.force('link').links(vlinks);
-      force.force('link').distance(settings['link-length']);
-      force.alpha(0.3).alphaTarget(0).restart();
+      updateArrows();
+      updatePins();
+      updateGroups();
+      updateTracking();
+      refresh().then(() => graph && graph.start(0.3));
       console.log("Network render time:", (Date.now() - start).toLocaleString(), 'ms');
     }
 
-    function getVLinks() {
-      let vlinks = MT.getVisibleLinks(true);
-      let output = [];
-      let n = vlinks.length;
-      let nodes = session.network.nodes;
-      for (let i = 0; i < n; i++) {
-        let src = nodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source);
-        let tgt = nodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target);
-        if (vlinks[i].origin) {
-          if (typeof vlinks[i].origin == 'object') {
-            if (src && tgt) {
-              vlinks[i].origin.forEach((o, j, l) => {
-                output.push(Object.assign({}, vlinks[i], {
-                  origin: o,
-                  oNum: j,
-                  origins: l.length,
-                  source: src,
-                  target: tgt
-                }));
-              });
-            } 
-          } else {
-            if (src && tgt) {
-              output.push(Object.assign({}, vlinks[i], {
-                oNum: 0,
-                origins: 1,
-                source: src,
-                target: tgt
-              }));
-            }
-          }
-        } else {
-          if (src && tgt) {
-            output.push(Object.assign({}, vlinks[i], {
-              origin: 'Unknown',
-              oNum: 0,
-              origins: 1,
-              source: src,
-              target: tgt
-            }));
-          }
+    // Known positions are kept; a new node starts next to a placed neighbor, or
+    // near the middle.
+    function initialPositions() {
+      const n = points.length;
+      const pos = new Float32Array(2 * n);
+      const placed = new Uint8Array(n);
+      const spread = 10 * Math.sqrt(n) + 50;
+      points.forEach((d, i) => {
+        const x = d.fixed && isNumber(d.fx) ? d.fx : d.x, y = d.fixed && isNumber(d.fy) ? d.fy : d.y;
+        if (isNumber(x) && isNumber(y) && x == x && y == y) {
+          pos[2 * i] = x;
+          pos[2 * i + 1] = y;
+          placed[i] = 1;
         }
+      });
+      for (let i = 0; i < links.length; i++) {
+        const s = pointIndex.get(links[i].source), t = pointIndex.get(links[i].target);
+        if (placed[s] == placed[t]) continue;
+        const [from, to] = placed[s] ? [s, t] : [t, s];
+        pos[2 * to] = pos[2 * from] + (Math.random() - 0.5) * 20;
+        pos[2 * to + 1] = pos[2 * from + 1] + (Math.random() - 0.5) * 20;
+        placed[to] = 1;
       }
-      return output;
-    }
-
-    function getLLinks() {
-      let vlinks = MT.getVisibleLinks(true);
-      let n = vlinks.length;
       for (let i = 0; i < n; i++) {
-        vlinks[i].source = session.network.nodes.find(d => d._id == vlinks[i].source);
-        vlinks[i].target = session.network.nodes.find(d => d._id == vlinks[i].target);
+        if (placed[i]) continue;
+        const r = spread * Math.sqrt(Math.random()), a = 2 * Math.PI * Math.random();
+        pos[2 * i] = SPACE / 2 + r * Math.cos(a);
+        pos[2 * i + 1] = SPACE / 2 + r * Math.sin(a);
       }
-      return vlinks;
+      return pos;
     }
 
-    const radToDeg = 180 / Math.PI;
-    function calcAngle(source, target) {
-      return Math.atan((source.y - target.y) / (source.x - target.x)) * radToDeg;
-    }
-
-    let selected, multidrag = false;
-
-    function dragstarted(n) {
-      if (!d3.event.active) force.alphaTarget(0.3).restart();
-      function setNode(d) {
-        d.fx = d.x;
-        d.fy = d.y;
-      }
-      multidrag = n.selected;
-      selected = svg.select('g.nodes')
-        .selectAll('g')
-        .data(session.network.nodes)
-        .filter(d => d.selected);
-      if (multidrag) {
-        selected.each(setNode);
-      } else {
-        setNode(n);
-      }
-    }
-
-    function dragged(n) {
-      function updateNode(d) {
-        d.fx += d3.event.dx;
-        d.fy += d3.event.dy;
-      }
-      if (multidrag) {
-        selected.each(updateNode);
-      } else {
-        updateNode(n);
-      }
-    }
-
-    function dragended(n) {
-      if (!d3.event.active) force.alphaTarget(0);
-      function unsetNode(d) {
-        if (!d.fixed) {
-          d.fx = null;
-          d.fy = null;
-        } else {
-          // save node location back to temp network for pinned network
-          if(session.style.widgets["timeline-date-field"] != 'None') {
-            let node = session.network.timelineNodes.find(d2 => d2._id == d._id);
-            if(node) {
-              node.x = d.x;
-              node.y = d.y;
-              node.fx = d.fx;
-              node.fy = d.fy;
-            }
-          }
-        }
-      }
-      if (multidrag) {
-        selected.each(unsetNode);
-      } else {
-        unsetNode(n);
-      }
-    }
-
-    function clickHandler(n) {
-      if (d3.event.ctrlKey) {
+    function clickHandler(index, position, event) {
+      const n = points[index];
+      if (event && event.ctrlKey) {
         session.data.nodes.find(node => node._id == n._id).selected = !n.selected;
       } else {
         session.data.nodes.forEach(node => {
@@ -969,9 +827,10 @@ Note that this may cause slow performance on larger networks.">
 
     clipboard.on('success', hideContextMenu);
 
-    function showContextMenu(d) {
-      d3.event.preventDefault();
+    function showContextMenu(index, position, event) {
+      event.preventDefault();
       hideTooltip();
+      let d = points[index];
       $('#copyID').attr('data-clipboard-text', d._id);
       $('#copySeq').attr('data-clipboard-text', d.seq);
       d3.select('#viewAttributes').on('click', function () {
@@ -984,27 +843,32 @@ Note that this may cause slow performance on larger networks.">
         }
         $('#network-attribute-modal').modal('show');
       }).node().focus();
+      $('#pinNode').off('click');
       if (d.fixed) {
         $('#pinNode').text('Unpin Node').on('click', function () {
           d.fx = null;
           d.fy = null;
           d.fixed = false;
-          force.alpha(0.3).alphaTarget(0).restart();
+          updatePins();
+          refresh().then(() => reheat());
           hideContextMenu();
         });
       } else {
         $('#pinNode').text('Pin Node').on('click', function () {
+          syncPositions();
           d.fx = d.x;
           d.fy = d.y;
           d.fixed = true;
+          updatePins();
+          refresh();
           hideContextMenu();
         });
       }
       $('#context-menu').css({
         'z-index': 1000,
         'display': 'block',
-        'left': (d3.event.pageX) + 'px',
-        'top': (d3.event.pageY - 56) + 'px',
+        'left': (event.pageX) + 'px',
+        'top': (event.pageY - 56) + 'px',
       }).animate({ 'opacity': 1 }, 80);
     }
 
@@ -1014,8 +878,21 @@ Note that this may cause slow performance on larger networks.">
       });
     }
 
-    function showNodeTooltip(d) {
-      if (settings['node-highlight']) highlightNeighbors(d);
+    function showTooltip(html, event) {
+      const at = event && 'pageX' in event ? event : mouse;
+      d3.select('#tooltip')
+        .html(html)
+        .style('left', (at.pageX + 8) + 'px')
+        .style('top', (at.pageY - 28) + 'px')
+        .style('z-index', 1000)
+        .transition().duration(100)
+        .style('opacity', 1);
+    }
+
+    function showNodeTooltip(index, position, event) {
+      let d = points[index];
+      if (!d) return;
+      if (settings['node-highlight']) highlightNeighbors(index);
       if ($('#node-tooltip-variable').val() == 'None') return;
       //#299
       let variables = settings['node-tooltip-variable'];
@@ -1028,21 +905,10 @@ Note that this may cause slow performance on larger networks.">
           arrayItem.push(d[item]);
           data.push(arrayItem);
         }        
+        showTooltip('', event);
         tabulate(data);
-        d3.select('#tooltip')
-        .style('left', (d3.event.pageX + 8) + 'px')
-        .style('top', (d3.event.pageY - 28) + 'px')
-        .style('z-index', 1000)
-        .transition().duration(100)
-        .style('opacity', 1);
       } else {
-        d3.select('#tooltip')
-        .html(d[variables])
-        .style('left', (d3.event.pageX + 8) + 'px')
-        .style('top', (d3.event.pageY - 28) + 'px')
-        .style('z-index', 1000)
-        .transition().duration(100)
-        .style('opacity', 1);
+        showTooltip(d[variables], event);
       }
     }
 
@@ -1060,48 +926,22 @@ Note that this may cause slow performance on larger networks.">
           .text(function(d) {return d;});
     }
 
-    function highlightNeighbors(node) {
-      let links = getVLinks();
-      let lindices = [], neighbors = [node._id];
-      let n = links.length;
-      for (let i = 0; i < n; i++) {
-        let l = links[i];
-        if (l.source._id !== node._id && l.target._id !== node._id) {
-          lindices.push(l.index);
-        } else {
-          if (l.source._id == node._id) {
-            neighbors.push(l.target._id);
-          } else {
-            neighbors.push(l.source._id);
-          }
-        }
-      }
-      svg
-        .select('g.nodes')
-        .selectAll('g')
-        .selectAll('path')
-        .attr('opacity', d => neighbors.includes(d._id) ? 1 : .1);
-      svg
-        .select('g.links')
-        .selectAll('line')
-        .data(links)
-        .attr('opacity', l => lindices.includes(l.index) ? .1 : 1);
+    function highlightNeighbors(index) {
+      graph.setConfigPartial({
+        highlightedPointIndices: [index].concat(graph.getNeighboringPointIndices(index)),
+        highlightedLinkIndices: graph.getConnectedLinkIndices(index)
+      });
     }
 
     $('#link-tooltip-variable').on('change', function () {
       settings['link-tooltip-variable'] = this.value;
     });
 
-    function showLinkTooltip(d) {
+    function showLinkTooltip(index) {
       let v = settings['link-tooltip-variable'];
-      if (v == 'None') return;
-      d3.select('#tooltip')
-        .html((v == 'source' || v == 'target') ? d[v]._id : d[v])
-        .style('left', (d3.event.pageX + 8) + 'px')
-        .style('top', (d3.event.pageY - 28) + 'px')
-        .style('z-index', 1000)
-        .transition().duration(100)
-        .style('opacity', 1);
+      let d = links[index];
+      if (v == 'None' || !d) return;
+      showTooltip(d[v]);
     }
 
     $('#highlight-neighbors').parent().on('click', function () {
@@ -1113,17 +953,8 @@ Note that this may cause slow performance on larger networks.">
     });
 
     function hideTooltip() {
-      if (settings['node-highlight']) {
-        svg
-          .select('g.nodes')
-          .selectAll('g')
-          .selectAll('path')
-          .attr('opacity', 1);
-        let linkOpacity = 1 - settings['link-opacity'];
-        svg
-          .select('g.links')
-          .selectAll('line')
-          .attr('opacity', linkOpacity);
+      if (graph && settings['node-highlight']) {
+        graph.setConfigPartial({ highlightedPointIndices: undefined, highlightedLinkIndices: undefined });
       }
       let tooltip = d3.select('#tooltip');
       tooltip
@@ -1134,21 +965,20 @@ Note that this may cause slow performance on larger networks.">
       tooltip.html('');
     }
 
-    let isNumber = a => typeof a == "number";
-
-    function redrawNodes() {
-      //Things to track in the function:
-      //* Shapes:     
-      let type = d3[settings['node-symbol']];
+    function nodeSymbol(d) {
       let symbolVariable = settings['node-symbol-variable'];
-      //* Sizes:
+      return symbolVariable !== 'None' ? temp.style.nodeSymbolMap(d[symbolVariable]) : settings['node-symbol'];
+    }
+
+    // The d3 symbol area of each point, as the SVG view drew it
+    function nodeAreas() {
       let defaultSize = settings['node-radius'];
-      let size = defaultSize, med = defaultSize, oldrng, min, max;
+      let med = defaultSize, min, max;
       let sizeVariable = settings['node-radius-variable'];
       let scale;
-	    let nodes;
       if (sizeVariable !== 'None') {
-        if (session.style.widgets["timeline-date-field"] == 'None') nodes = session.network.nodes;
+        let nodes;
+        if (session.style.widgets["timeline-date-field"] == 'None') nodes = points;
         else nodes = session.network.timelineNodes;
         let n = nodes.length;
         min = Number.MAX_VALUE;
@@ -1160,75 +990,35 @@ Note that this may cause slow performance on larger networks.">
           if (size > max) max = size;
         }
         med = (max - min) / 2;
-        let maxWidth = settings['node-radius-max'];
-        let minWidth = settings['node-radius-min'];
         scale = d3.scaleLinear()
           .domain([min, max])
-          .range([minWidth, maxWidth]);
+          .range([settings['node-radius-min'], settings['node-radius-max']]);
       }
-      nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
-      nodes.selectAll('path').each(function (d) {
-        if (symbolVariable !== 'None') type = d3[temp.style.nodeSymbolMap(d[symbolVariable])];
-        if (sizeVariable !== 'None') {
-          size = d[sizeVariable];
-          if (!isNumber(size)) size = med;
-          size = scale(size);
-        }
-        d3.select(this).attr('d', d3.symbol().size(size).type(type));          
+      return points.map(d => {
+        if (sizeVariable === 'None') return defaultSize;
+        let size = d[sizeVariable];
+        if (!isNumber(size)) size = med;
+        return scale(size);
       });
     }
 
-    function redrawNodeBorder(){
-      let nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes);
-      nodes
-        .selectAll('path')
-        .attr('stroke', settings['node-color-border'])
-        .attr('stroke-width', settings['node-border-width']);
+    function redrawNodes() {
+      if (!graph) return;
+      const areas = nodeAreas();
+      diameters = Float32Array.from(areas, diameter);
+      maxDiameter = diameters.reduce((a, b) => Math.max(a, b), 0);
+      graph.setPointShapes(Float32Array.from(points, d => shapeOf(nodeSymbol(d))));
+      graph.setPointSizes(diameters);
+      refresh();
     }
 
+    // Node borders aren't drawn on screen (cosmos.gl 3.4 has no point strokes);
+    // exports include them.
+    function redrawNodeBorder(){}
+
     function redrawLabels() {
-      let nodes = svg.select('g.nodes').selectAll('g').data(session.network.nodes).select('text'),
-        labelVar = settings['node-label-variable'];
-      if (labelVar == 'None') {
-        nodes.text('');
-      } else {
-        let size = settings['node-label-size'],
-          orientation = settings['node-label-orientation'];
-        nodes
-          .text(n => n[labelVar])
-          .style('font-size', size + 'px');
-        switch (orientation) {
-          case 'Left':
-            nodes
-              .attr('text-anchor', 'end')
-              .attr('dx', -8)
-              .attr('dy', (size - 4) / 2);
-            break;
-          case 'Top':
-            nodes
-              .attr('text-anchor', 'middle')
-              .attr('dx', 0)
-              .attr('dy', 4 - size);
-            break;
-          case 'Bottom':
-            nodes
-              .attr('text-anchor', 'middle')
-              .attr('dx', 0)
-              .attr('dy', size + 4);
-            break;
-          case 'Middle':
-            nodes
-              .attr('text-anchor', 'middle')
-              .attr('dx', 0)
-              .attr('dy', (size - 4) / 2);
-            break;
-          default: //'right'
-            nodes
-              .attr('text-anchor', 'start')
-              .attr('dx', 8)
-              .attr('dy', (size - 4) / 2);
-        }
-      }
+      updateTracking();
+      drawOverlays();
     }
 
     $('#network-settings-toggle').on('click', function () {
@@ -1455,108 +1245,108 @@ Note that this may cause slow performance on larger networks.">
       $window.trigger("node-border-change");
     });
 
-    function updateNodeColors() {
+    function nodeColor(d) {
       let variable = settings['node-color-variable'];
-      let nodes = svg.select('g.nodes').selectAll('g').select('path').data(session.network.nodes).classed('selected', d => d.selected);
-      if (variable == 'None') {
-        let col = settings['node-color'];
-        nodes.attr('fill', col).attr('opacity', 1);
-      } else {
-        nodes
-          .attr('fill', d => temp.style.nodeColorMap(d[variable]))
-          .attr('opacity', d => temp.style.nodeAlphaMap(d[variable]));
-      }
+      if (variable == 'None') return rgba(settings['node-color'], 1);
+      return rgba(temp.style.nodeColorMap(d[variable]), temp.style.nodeAlphaMap(d[variable]));
+    }
+
+    function updateNodeColors() {
+      if (!graph) return;
+      const colors = new Float32Array(points.length * 4);
+      points.forEach((d, i) => colors.set(nodeColor(d), 4 * i));
+      graph.setPointColors(colors);
+      updateSelection();
+    }
+
+    function updateSelection() {
+      if (!graph) return;
+      const selected = new Set(session.data.nodes.filter(d => d.selected).map(d => d._id));
+      points.forEach(d => { d.selected = selected.has(d._id); });
+      const outlined = [];
+      points.forEach((d, i) => { if (d.selected) outlined.push(i); });
+      graph.setConfigPartial({ outlinedPointIndices: outlined.length ? outlined : undefined });
+      refresh();
     }
 
     $('#node-charge').on('input', function () {
       let v = parseFloat(this.value);
-      force.force('charge').strength(-v);
-      force.alpha(0.3).alphaTarget(0).restart();
       settings['node-charge'] = v;
+      reheat();
     });
 
+    function updateArrows() {
+      if (!graph) return;
+      graph.setLinkArrows(new Array(links.length).fill(!!settings['link-directed']));
+    }
+
     $('#link-directed').parent().on('click', function () {
-      svg.select('g.links').selectAll('line').attr('marker-end', 'url(#end-arrow)');
       settings['link-directed'] = true;
+      updateArrows();
+      refresh();
     });
 
     $('#link-undirected').parent().on('click', function () {
-      svg.select('g.links').selectAll('line').attr('marker-end', null);
       settings['link-directed'] = false;
+      updateArrows();
+      refresh();
     });
 
     $('#link-label-variable').on('change', function () {
-      let label = this.value;
-      settings['link-label-variable'] = label;
-      if (label == 'None') {
-        svg.select('g.links').selectAll('text').text('');
-      } else {
-        svg.select('g.links').selectAll('text').data(getLLinks()).text(l => l[label]);
-        force.alpha(0.01).alphaTarget(0).restart();
-      }
+      settings['link-label-variable'] = this.value;
+      drawOverlays();
     });
 
     $('#link-length').on('input', function () {
       let v = parseFloat(this.value);
-      force.force('link').distance(this.value);
-      force.alpha(0.3).alphaTarget(0).restart();
       settings['link-length'] = v;
+      reheat();
     });
 
-    function updateLinkColor() {
+    // A link's color value; links with several origins are dashed and colored by
+    // their first origin.
+    function linkValue(l, variable) {
+      return variable == 'origin' ? l.origin[0] : l[variable];
+    }
+
+    function linkColor(l) {
       let variable = settings['link-color-variable'];
-      let links = svg.select('g.links').selectAll('line');
-      if (variable == 'None') {
-        let color = settings['link-color'],
-          opacity = 1 - settings['link-opacity'];
-        links
-          .attr('stroke', color)
-          .attr('opacity', opacity);
-      } else {
-        links
-          .data(getVLinks())
-          // fix link color mismatched for source and target variables
-          .attr('stroke', l => ('source' == variable || 'target' == variable) ? temp.style.linkColorMap(l[variable]._id) : temp.style.linkColorMap(l[variable]))
-          .attr('opacity', l => ('source' == variable || 'target' == variable) ? temp.style.linkAlphaMap(l[variable]._id) : temp.style.linkAlphaMap(l[variable]))
-          .attr('stroke-dasharray', l => {
-            //This quirky little algorithm creates the dasharray code necessary to make dash-y links.
-            let length = 15;
-            let out = new Array(l.origins * 2);
-            let ofs = new Array(l.origins).fill(1);
-            let ons = new Array(l.origins).fill(0);
-            ons[l.oNum] = 1;
-            ofs[l.oNum] = 0;
-            for (let i = 0; i < l.origins; i++) {
-              out[2 * i] = ons[i] * length;
-              out[2 * i + 1] = ofs[i] * length;
-            }
-            return out.join(', ');
-          });
-      }
+      if (variable == 'None') return rgba(settings['link-color'], 1);
+      let v = linkValue(l, variable);
+      return rgba(temp.style.linkColorMap(v), temp.style.linkAlphaMap(v));
+    }
+
+    function updateLinkColor() {
+      if (!graph) return;
+      let variable = settings['link-color-variable'];
+      const colors = new Float32Array(links.length * 4), styles = new Float32Array(links.length);
+      links.forEach((l, i) => {
+        colors.set(linkColor(l), 4 * i);
+        styles[i] = variable != 'None' && l.origin.length > 1 ? Cosmos.LinkStyle.Dashed : Cosmos.LinkStyle.Solid;
+      });
+      graph.setLinkColors(colors);
+      graph.setLinkStyles(styles);
+      refresh();
     }
 
     $('#link-opacity').on('input', function () {
       settings['link-opacity'] = parseFloat(this.value);
-      let opacity = 1 - parseFloat(this.value);
-      svg.select('g.links').selectAll('line').attr('opacity', opacity);
+      if (graph) graph.setConfigPartial({ linkOpacity: 1 - settings['link-opacity'] });
+      refresh();
     });
 
-    function scaleLinkWidth() {
+    function linkWidths() {
       let scalar = settings['link-width'];
       let variable = settings['link-width-variable'];
-      let vlinks = getVLinks();
-      let links = svg.select('g.links').selectAll('line').data(vlinks);
-      if (variable == 'None') return links.attr('stroke-width', scalar);
+      if (variable == 'None') return links.map(() => scalar);
       let maxWidth = settings['link-width-max'];
       let minWidth = settings['link-width-min'];
-      vlinks = MT.getVisibleLinks();
-
-      let n = vlinks.length;
+      let n = links.length;
       let max = -Infinity;
       let min = Infinity;
       for (let i = 0; i < n; i++) {
-        let l = vlinks[i][variable];
-        if (!isNumber(l)) return;
+        let l = links[i][variable];
+        if (!isNumber(l)) return null;
         if (l > max) max = l;
         if (l < min) min = l;
       }
@@ -1564,11 +1354,19 @@ Note that this may cause slow performance on larger networks.">
       let scale = d3.scaleLinear()
         .domain([min, max])
         .range([minWidth, maxWidth]);
-      links.attr('stroke-width', d => {
+      return links.map(d => {
         let v = d[variable];
         if (!isNumber(v)) v = mid;
         return scale(v);
       });
+    }
+
+    function scaleLinkWidth() {
+      if (!graph) return;
+      const widths = linkWidths();
+      if (!widths) return;
+      graph.setLinkWidths(Float32Array.from(widths));
+      refresh();
     }
 
     $('#link-width').on('input', function () {
@@ -1602,27 +1400,42 @@ Note that this may cause slow performance on larger networks.">
 
     $('#network-gridlines-show').parent().on('click', function () {
       settings['network-gridlines-show'] = true;
-      let range = Math.ceil(Math.max(halfWidth, halfHeight) / 50);
-      let ords = Object.keys(new Array(range).fill(null)).map(parseFloat);
-      d3.select('#network g.horizontal-gridlines').selectAll('line').data(ords).enter().append('line')
-        .attr('x1', 0)
-        .attr('x2', halfWidth * 2)
-        .attr('y1', function (d) { return d * 100; })
-        .attr('y2', function (d) { return d * 100; })
-        .attr('stroke', 'lightgray');
-      d3.select('#network g.vertical-gridlines').selectAll('line').data(ords).enter().append('line')
-        .attr('x1', function (d) { return d * 100; })
-        .attr('x2', function (d) { return d * 100; })
-        .attr('y1', 0)
-        .attr('y2', halfHeight * 2)
-        .attr('stroke', 'lightgray');
+      drawOverlays();
     });
 
     $('#network-gridlines-hide').parent().on('click', function () {
       settings['network-gridlines-show'] = false;
-      d3.select('#network g.horizontal-gridlines').html(null);
-      d3.select('#network g.vertical-gridlines').html(null);
+      drawOverlays();
     });
+
+    // Polygons group points by the foci variable (groups of 3 or more). The
+    // gather force pulls each group together with cosmos.gl's cluster force.
+    let groups = [];
+    function updateGroups() {
+      if (!graph) return;
+      groups = [];
+      if (settings['polygons-show']) {
+        let foci = settings['polygons-foci'];
+        let byKey = new Map();
+        points.forEach((d, i) => {
+          let key = '' + d[foci];
+          d.foci = key;
+          if (!byKey.has(key)) byKey.set(key, { key: key, values: [], indices: [] });
+          byKey.get(key).values.push(d);
+          byKey.get(key).indices.push(i);
+        });
+        groups = Array.from(byKey.values()).filter(group => group.values.length > 2);
+        temp.polygonGroups = groups;
+      } else {
+        delete temp.polygonGroups;
+      }
+      const clusters = new Array(points.length).fill(undefined);
+      if (settings['polygons-show'] && settings['polygons-gather-force'] > 0) {
+        groups.forEach((group, c) => group.indices.forEach(i => { clusters[i] = c; }));
+      }
+      graph.setPointClusters(clusters);
+      graph.setConfigPartial({ simulationCluster: physics().simulationCluster });
+    }
 
     $('#polygons-show').parent().on('click', function () {
       settings['polygons-show'] = true;
@@ -1883,24 +1696,18 @@ Note that this may cause slow performance on larger networks.">
       .on("click", () => $("#polygon-color-table-wrapper").fadeOut());
     
     $('#network-friction').on('input', function () {
-      let v = parseFloat(this.value);
-      force.velocityDecay(v);
-      force.alpha(0.3).alphaTarget(0).restart();
-      settings['network-friction'] = v;
+      settings['network-friction'] = parseFloat(this.value);
+      reheat();
     });
 
     $('#network-gravity').on('input', function () {
-      let v = parseFloat(this.value);
-      force.force('gravity').strength(v);
-      force.alpha(0.3).alphaTarget(0).restart();
-      settings['network-gravity'] = v;
+      settings['network-gravity'] = parseFloat(this.value);
+      reheat();
     });
 
     $('#network-link-strength').on('input', function () {
-      let v = parseFloat(this.value);
-      force.force('link').strength(v);
-      force.alpha(0.3).alphaTarget(0).restart();
-      settings['network-link-strength'] = v;
+      settings['network-link-strength'] = parseFloat(this.value);
+      reheat();
     });
 
     $('#network-export-filetype').on('change', function () {
@@ -1921,17 +1728,99 @@ Note that this may cause slow performance on larger networks.">
       );
     }).trigger('input');
 
+    // Screen pixels per unit of simulation space
+    const zoomScale = () => graph ? graph.spaceToScreenRadius(1) : 1;
+
+    // An SVG copy of what's on screen, with real d3 symbols and node borders,
+    // for export.
+    function buildExportSVG() {
+      syncPositions();
+      const width = container.clientWidth, height = container.clientHeight, k = zoomScale();
+      const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const svg = d3.select(svgNode)
+        .attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('width', width)
+        .attr('height', height);
+      // Off screen while it's being saved (the SVG itself must stay unstyled,
+      // since its computed styles are copied into the file)
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'position: absolute; left: -100000px; top: 0;';
+      wrapper.appendChild(svgNode);
+      container.appendChild(wrapper);
+      svg.append('rect').attr('width', width).attr('height', height).attr('fill', settings['background-color']);
+      const screen = points.map(d => graph.spaceToScreenPosition([d.x, d.y]));
+
+      svg.append('defs').append('marker')
+        .attr('id', 'export-end-arrow')
+        .attr('viewBox', '0 0 10 10')
+        .attr('refX', 20)
+        .attr('refY', 5)
+        .attr('markerWidth', 4)
+        .attr('markerHeight', 4)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,0 L0,10 L10,5 z');
+
+      if (settings['polygons-show']) {
+        let polygons = svg.append('g').attr('class', 'clusters');
+        groups.forEach(group => {
+          const hull = d3.polygonHull(group.indices.map(i => screen[i]));
+          if (!hull) return;
+          const fill = settings['polygons-color-show'] ? temp.style.polygonColorMap(group.key) : settings['polygon-color'];
+          const opacity = settings['polygons-color-show'] ? temp.style.polygonAlphaMap(group.key) : 0.4;
+          polygons.append('path')
+            .attr('d', 'M' + hull.join('L') + 'Z')
+            .style('fill', fill).style('stroke', fill)
+            .style('stroke-width', 40 * k).style('stroke-linejoin', 'round')
+            .style('opacity', opacity);
+        });
+      }
+
+      const widths = linkWidths() || links.map(() => settings['link-width']);
+      const linkOpacity = 1 - settings['link-opacity'];
+      let linkGroup = svg.append('g').attr('class', 'links');
+      links.forEach((l, i) => {
+        const a = screen[pointIndex.get(l.source)], b = screen[pointIndex.get(l.target)];
+        const [r, g, bl, alpha] = linkColor(l);
+        let line = linkGroup.append('line')
+          .attr('x1', a[0]).attr('y1', a[1]).attr('x2', b[0]).attr('y2', b[1])
+          .attr('stroke', d3.rgb(r * 255, g * 255, bl * 255).toString())
+          .attr('opacity', alpha * linkOpacity)
+          .attr('stroke-width', widths[i] * k);
+        if (settings['link-color-variable'] != 'None' && l.origin.length > 1) line.attr('stroke-dasharray', '15, 15');
+        if (settings['link-directed']) line.attr('marker-end', 'url(#export-end-arrow)');
+      });
+
+      const areas = nodeAreas();
+      let nodeGroup = svg.append('g').attr('class', 'nodes');
+      points.forEach((d, i) => {
+        const [r, g, b, alpha] = nodeColor(d);
+        nodeGroup.append('path')
+          .attr('d', d3.symbol().size(areas[i] * k * k).type(d3[nodeSymbol(d)] || d3.symbolCircle)())
+          .attr('transform', `translate(${screen[i][0]}, ${screen[i][1]})`)
+          .attr('fill', d3.rgb(r * 255, g * 255, b * 255).toString())
+          .attr('opacity', alpha)
+          .attr('stroke', d.selected ? '#ff8300' : settings['node-color-border'])
+          .attr('stroke-width', d.selected ? 4 : settings['node-border-width'] * k);
+      });
+
+      labelPositions().forEach(({ text, x, y, anchor, size }) => {
+        svg.append('text').attr('x', x).attr('y', y).attr('text-anchor', anchor)
+          .style('font-size', size + 'px').style('font-family', 'sans-serif').text(text);
+      });
+      return svgNode;
+    }
+
     $('#network-export').on('click', function () {
       ga('send', 'event', '2D-network-export', 'trigger', 'on');
-      let network = document.getElementById('network');
-      let $network = $(network);
+      if (!graph) return;
+      let network = buildExportSVG();
       let watermark = d3.select(network).append('image')
         .attr('xlink:href', MT.watermark)
         .attr('height', 128)
         .attr('width', 128)
         .attr('x', 10)
         .style('opacity', $('#network-export-opacity').val());
-      //
       let vnodes = MT.getVisibleNodes();
       let aggregates = MT.createNodeColorMap();
       let values = Object.keys(aggregates);
@@ -1994,7 +1883,7 @@ Note that this may cause slow performance on larger networks.">
         let content = MT.unparseSVG(network);
         let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
         saveAs(blob, filename + '.' + filetype);
-        watermark.remove();
+        network.parentNode.remove();
         nodeLegend.remove();
         linkLegend.remove();
         foreignObjStats.remove();
@@ -2005,7 +1894,7 @@ Note that this may cause slow performance on larger networks.">
           encoderType: 'image/' + filetype,
           encoderOptions: parseFloat($('#network-export-quality').val())
         }).then(() => {
-            watermark.remove(); 
+            network.parentNode.remove(); 
             nodeLegend.remove(); 
             linkLegend.remove();
             foreignObjStats.remove();
@@ -2013,45 +1902,40 @@ Note that this may cause slow performance on larger networks.">
       }
     });
 
-    function fit(thing, bounds) {
-      if (!bounds) bounds = svg.node().getBBox();
-      if (bounds.width == 0 || bounds.height == 0) return; // nothing to fit
-      let parent = svg.node().parentElement.parentElement,
-        midX = bounds.x + bounds.width / 2,
-        midY = bounds.y + bounds.height / 2;
-      let scale = 0.95 / Math.max(bounds.width / parent.clientWidth, bounds.height / parent.clientHeight);
-      d3.select('svg#network')
-        .transition()
-        .duration(750)
-        .call(zoom.transform, d3.zoomIdentity
-          .translate(parent.clientWidth / 2 - scale * midX, parent.clientHeight / 2 - scale * midY)
-          .scale(scale));
+    function fit() {
+      if (graph && points.length) graph.fitView(750, 0.05);
     }
 
     $('#fitbutton').on('click', fit);
 
     $('#pinbutton').on('click', function () { 
-      let nodes = svg
-        .select('g.nodes')
-        .selectAll('g')
-        .data(session.network.nodes)
-        .select('path');
+      syncPositions();
       if (session.network.allPinned) { 
-        nodes.each(function (d) {
+        points.forEach(d => {
           delete d.fx;
           delete d.fy;
           d.fixed = false;
         });
-        force.alpha(0.3).alphaTarget(0).restart();
+        updatePins();
+        refresh().then(() => reheat());
       } else {
-        nodes.each(function (d) {
+        points.forEach(d => {
           d.fx = d.x;
           d.fy = d.y;
           d.fixed = true;
         });
+        updatePins();
+        refresh();
       }
       session.network.allPinned = !session.network.allPinned;
     });
+
+    function updatePins() {
+      if (!graph) return;
+      const pinned = [];
+      points.forEach((d, i) => { if (d.fixed) pinned.push(i); });
+      graph.setPinnedPoints(pinned.length ? pinned : null);
+    }
 
     //#298
     $('#casesensitivebutton').on('click', function () { 
@@ -2166,46 +2050,270 @@ Note that this may cause slow performance on larger networks.">
       $this.parent().hide();
     });
 
-    d3.select(window).on('keydown keyup', function () {
-      d3.select('g.brush')
-        .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none')
-        .select('rect.overlay')
-        .attr('pointer-events', d3.event.ctrlKey ? 'all' : 'none');
+    // Ctrl + drag selects the nodes in a rectangle (toggling any already
+    // selected), as the SVG view's brush did.
+    let brushStart = null;
+    $(window).on('keydown' + instance + ' keyup' + instance, e => {
+      brushLayer.style.pointerEvents = e.ctrlKey ? 'all' : 'none';
     });
+    $(brushLayer)
+      .on('mousedown', e => {
+        const box = container.getBoundingClientRect();
+        brushStart = [e.clientX - box.left, e.clientY - box.top];
+        $('#network-brush-rect').css({ display: 'block', left: brushStart[0], top: brushStart[1], width: 0, height: 0 });
+      })
+      .on('mousemove', e => {
+        if (!brushStart) return;
+        const box = container.getBoundingClientRect();
+        const x = e.clientX - box.left, y = e.clientY - box.top;
+        $('#network-brush-rect').css({
+          left: Math.min(x, brushStart[0]), top: Math.min(y, brushStart[1]),
+          width: Math.abs(x - brushStart[0]), height: Math.abs(y - brushStart[1])
+        });
+      })
+      .on('mouseup mouseleave', e => {
+        if (!brushStart || !graph) return;
+        const box = container.getBoundingClientRect();
+        const x = e.clientX - box.left, y = e.clientY - box.top;
+        const rect = [[Math.min(x, brushStart[0]), Math.min(y, brushStart[1])], [Math.max(x, brushStart[0]), Math.max(y, brushStart[1])]];
+        brushStart = null;
+        $('#network-brush-rect').css('display', 'none');
+        if (rect[1][0] - rect[0][0] < 2 && rect[1][1] - rect[0][1] < 2) return;
+        const inside = new Set(graph.findPointsInRect(rect).map(i => points[i]._id));
+        session.data.nodes.forEach(d => {
+          if (inside.has(d._id)) d.selected = !d.selected;
+        });
+        $window.trigger('node-selected');
+      });
 
-    let stopSimulation = () => force.stop();
+    // Overlays ----------------------------------------------------------------
+
+    // Points whose positions the overlays need every frame (labels, polygons)
+    function updateTracking() {
+      if (!graph) return;
+      const needAll = settings['polygons-show'] || (settings['node-label-variable'] != 'None' && points.length <= 2000);
+      graph.trackPointPositionsByIndices(needAll ? points.map((d, i) => i) : []);
+    }
+
+    function spacePosition(i, tracked) {
+      const p = tracked.get(i);
+      if (p) return p;
+      return [points[i].x, points[i].y];
+    }
+
+    // Node labels to draw: every point while there are few, otherwise the
+    // evenly spaced sample of on-screen points cosmos.gl provides.
+    function labelPositions() {
+      const labelVar = settings['node-label-variable'];
+      if (labelVar == 'None' || !graph || !points.length) return [];
+      const k = zoomScale(), size = settings['node-label-size'] * k;
+      if (size < 4) return [];
+      const tracked = graph.getTrackedPointPositionsMap();
+      const indices = points.length <= 2000 ? points.map((d, i) => i) : Array.from(graph.getSampledPointPositionsMap().keys());
+      const sample = points.length <= 2000 ? null : graph.getSampledPointPositionsMap();
+      let anchor = 'start', dx = 8, dy = (size - 4 * k) / 2;
+      switch (settings['node-label-orientation']) {
+        case 'Left': anchor = 'end'; dx = -8; break;
+        case 'Top': anchor = 'middle'; dx = 0; dy = 4 * k - size; break;
+        case 'Bottom': anchor = 'middle'; dx = 0; dy = size + 4 * k; break;
+        case 'Middle': anchor = 'middle'; dx = 0; break;
+      }
+      return indices.map(i => {
+        const [x, y] = graph.spaceToScreenPosition(sample ? sample.get(i) : spacePosition(i, tracked));
+        return { text: points[i][labelVar], x: x + dx * k, y: y + dy, anchor, size };
+      }).filter(l => l.text != null && l.text !== '');
+    }
+
+    let overlayQueued = false;
+    function drawOverlays() {
+      if (overlayQueued) return;
+      overlayQueued = true;
+      requestAnimationFrame(() => {
+        overlayQueued = false;
+        paintOverlays();
+      });
+    }
+
+    function sizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const w = container.clientWidth, h = container.clientHeight;
+      if (canvas.width != Math.round(w * ratio) || canvas.height != Math.round(h * ratio)) {
+        canvas.width = Math.round(w * ratio);
+        canvas.height = Math.round(h * ratio);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      return ctx;
+    }
+
+    function paintOverlays() {
+      if (!graph) return;
+      if (!document.body.contains(container)) return destroy();
+      const w = container.clientWidth, h = container.clientHeight, k = zoomScale();
+      const under = sizeCanvas(underlay), over = sizeCanvas(overlay);
+      const tracked = graph.getTrackedPointPositionsMap();
+
+      if (settings['network-gridlines-show']) {
+        under.strokeStyle = 'lightgray';
+        under.lineWidth = 1;
+        under.beginPath();
+        for (let d = 0; d * 100 <= Math.max(w, h); d++) {
+          under.moveTo(0, d * 100); under.lineTo(w, d * 100);
+          under.moveTo(d * 100, 0); under.lineTo(d * 100, h);
+        }
+        under.stroke();
+      }
+
+      if (settings['polygons-show']) {
+        groups.forEach(group => {
+          const hull = d3.polygonHull(group.indices.map(i => graph.spaceToScreenPosition(spacePosition(i, tracked))));
+          if (!hull) return;
+          const fill = settings['polygons-color-show'] ? temp.style.polygonColorMap(group.key) : settings['polygon-color'];
+          under.globalAlpha = settings['polygons-color-show'] ? temp.style.polygonAlphaMap(group.key) : 0.4;
+          under.fillStyle = under.strokeStyle = fill;
+          under.lineWidth = 40 * k;
+          under.lineJoin = 'round';
+          under.beginPath();
+          hull.forEach(([x, y], i) => i ? under.lineTo(x, y) : under.moveTo(x, y));
+          under.closePath();
+          under.fill();
+          under.stroke();
+        });
+        under.globalAlpha = 1;
+      }
+
+      over.fillStyle = d3.hsl(settings['background-color']).l < 0.5 ? '#ffffff' : '#000000';
+      labelPositions().forEach(({ text, x, y, anchor, size }) => {
+        over.font = size + 'px sans-serif';
+        over.textAlign = anchor == 'middle' ? 'center' : anchor == 'end' ? 'right' : 'left';
+        over.fillText(text, x, y);
+      });
+
+      const linkLabel = settings['link-label-variable'];
+      if (linkLabel && linkLabel != 'None' && links.length) {
+        const size = 16 * k;
+        if (size >= 4) {
+          const { indices, positions, angles } = graph.getSampledLinks();
+          over.font = size + 'px sans-serif';
+          over.textAlign = 'center';
+          indices.forEach((l, i) => {
+            const text = links[l] && links[l][linkLabel];
+            if (text == null) return;
+            const [x, y] = graph.spaceToScreenPosition([positions[2 * i], positions[2 * i + 1]]);
+            let angle = angles[i];
+            if (angle > Math.PI / 2) angle -= Math.PI;
+            if (angle < -Math.PI / 2) angle += Math.PI;
+            over.save();
+            over.translate(x, y);
+            over.rotate(angle);
+            over.fillText(text, 0, settings['link-width'] * k + 2 + size);
+            over.restore();
+          });
+        }
+      }
+    }
+
+    let stopSimulation = () => { if (graph) graph.pause(); };
+
+    // Node hover is found here with cosmos.gl's synchronous point query: its own
+    // hover detection reads the GPU back asynchronously, and that read can stall
+    // once the layout stops moving.
+    let hovered, hoverQueued = false;
+    $(container)
+      .on('mousemove', e => {
+        mouse = { pageX: e.pageX, pageY: e.pageY, clientX: e.clientX, clientY: e.clientY, buttons: e.buttons };
+        if (hoverQueued) return;
+        hoverQueued = true;
+        requestAnimationFrame(() => {
+          hoverQueued = false;
+          detectHover();
+        });
+      })
+      .on('mouseleave', () => setHovered(undefined));
+
+    function detectHover() {
+      if (!graph || !points.length || brushStart || mouse.buttons) return;
+      const box = container.getBoundingClientRect();
+      const k = zoomScale();
+      const x = mouse.clientX - box.left, y = mouse.clientY - box.top, r = Math.max(8, maxDiameter * k / 2);
+      const hits = graph.findPointsInRect([[x - r, y - r], [x + r, y + r]]);
+      let best, bestDistance = Infinity;
+      if (hits.length) {
+        const p = graph.getPointPositions();
+        hits.forEach(i => {
+          const [sx, sy] = graph.spaceToScreenPosition([p[2 * i], p[2 * i + 1]]);
+          const distance = Math.hypot(sx - x, sy - y);
+          if (distance <= Math.max(4, diameters[i] * k / 2 + 2) && distance < bestDistance) {
+            best = i;
+            bestDistance = distance;
+          }
+        });
+      }
+      setHovered(best);
+    }
+
+    function setHovered(index) {
+      if (index === hovered) return;
+      if (hovered !== undefined) hideTooltip();
+      hovered = index;
+      if (!graph) return;
+      graph.setConfigPartial({ focusedPointIndex: index });
+      cosmosDiv.style.cursor = index === undefined ? '' : 'pointer';
+      if (index !== undefined) showNodeTooltip(index, null, mouse);
+    }
 
     $window
-      .on('background-color-change.2d', function () {
+      .on('background-color-change.2d' + instance, function () {
           $('#network').css('background-color', settings['background-color']);
+          drawOverlays();
         })  
-      .on('node-border-change.2d', redrawNodeBorder)
-      .on('node-color-change.2d', updateNodeColors)
-      .on('node-visibility.2d link-visibility.2d cluster-visibility.2d node-selected.2d', render)
-      .on('link-color-change.2d', updateLinkColor)
-      .on('resize.2d', function () {
+      .on('node-border-change.2d' + instance, redrawNodeBorder)
+      .on('node-color-change.2d' + instance, updateNodeColors)
+      .on('node-visibility.2d' + instance + ' link-visibility.2d' + instance + ' cluster-visibility.2d' + instance, render)
+      .on('node-selected.2d' + instance, updateSelection)
+      .on('link-color-change.2d' + instance, updateLinkColor)
+      .on('resize.2d' + instance, function () {
         if (session.style.widgets["node-timeline-variable"] != 'None') { 
           $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
           setTimeout(fit, 0);
         }
       })
-      .on('stop-force-simulation.2d', stopSimulation);
+      .on('stop-force-simulation.2d' + instance, stopSimulation);
 
     layout.on('stateChanged', function () {
       let wrapper = $('#network').parent();
       $('#network-export-width').val(wrapper.width());
       $('#network-export-height').val(wrapper.height());
-      brush.extent(brush.extent());
+      drawOverlays();
     });
+
+    // Release the GPU context when the view is closed
+    setTimeout(() => {
+      const item = layout.contentItems.find(item => item.element && item.element[0].contains(container));
+      if (item) item.on('itemDestroyed', destroy);
+    }, 0);
 
     let linkColorVariable = session.style.widgets["link-color-variable"] === 'None' ? 'origin' : session.style.widgets["link-color-variable"];
     if (session.files.length > 1) $('#link-color-variable').val(linkColorVariable).change(); 
     if (settings['background-color']) $('#network').css('background-color', settings['background-color']);
 
-    render();
-    if (session.style.widgets["node-timeline-variable"] != 'None') { 
-      $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
-    }
+    self.cosmosLoading.then(() => {
+      if (!document.body.contains(container)) return;
+      createGraph();
+      // For other code and tests: the live graph and what its indices mean
+      temp.network2d = { graph, get points() { return points; }, get links() { return links; }, render, fit, syncPositions };
+      render();
+      if (session.style.widgets["node-timeline-variable"] != 'None') { 
+        $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
+      }
+      setTimeout(fit, 1200);
+    }).catch(e => {
+      console.error(e);
+      alertify.error('The 2D network needs WebGL, which this browser could not start.');
+    });
 
     //For some mysterious reason, this really needed a delay...
     setTimeout(function () {
@@ -2220,8 +2328,6 @@ Note that this may cause slow performance on larger networks.">
         $("#polygon-color-value-row").slideUp();
       }
     }, 1);
-
-    setTimeout(fit, 1200);
 
   })();
 </script>

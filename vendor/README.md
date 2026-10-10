@@ -16,3 +16,9 @@ the `wasm32-unknown-unknown` target and `wasm-pack`). The committed build is fro
 `tn93.min.js` is still used to encode sequences (`_seqInt`) and by
 `workers/compute-links-legacy.js`, which handles the GapMM ambiguity strategy that
 bx-distance-models doesn't implement.
+
+## cosmos.gl
+
+`cosmos.min.js` is the UMD build of [cosmos.gl](https://github.com/cosmosgl/graph) (`@cosmos.gl/graph`
+3.4.2, MIT), which lays out and draws the 2D network on the GPU. `components/2d_network.html` loads
+it the first time that view opens. `scripts/bundle.sh` copies it from `node_modules`.
