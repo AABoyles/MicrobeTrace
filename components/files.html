@@ -818,7 +818,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           const v = this.value;
           localforage.setItem('default-view', v);
           session.style.widgets['default-view'] = v;
-          session.layout.content[0].type = v;
+          // The saved layout may not include this view yet (golden-layout saves it
+          // shortly after each change)
+          const first = session.layout.content && session.layout.content[0];
+          if (first) first.type = v;
         })
         .val(cachedView ? cachedView : session.style.widgets['default-view'])
         .trigger('change');

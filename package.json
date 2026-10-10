@@ -39,6 +39,7 @@
     "clean": "scripts/cleanup.sh",
     "compress": "scripts/compress.sh",
     "test": "node --test test/unit/*.test.js",
+    "test:e2e": "playwright test",
     "update": "npm update && npm run bundle"
   },
   "directories": {
@@ -53,6 +54,7 @@
   },
   "devDependencies": {
     "@cosmos.gl/graph": "^3.4.2",
+    "@playwright/test": "^1.63.0",
     "3d-force-graph": "^1.80.0",
     "acorn": "^8.18.0",
     "alertifyjs": "^1.14.0",
