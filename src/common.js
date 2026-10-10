@@ -67,7 +67,7 @@
     "choropleth-transparency": 0.3,
     "cluster-minimum-size": 1,
     "default-distance-metric": "tn93",
-    "default-view": "2d_network",
+    "default-view": "network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
     "globe-countries-show": false,
@@ -544,7 +544,7 @@
     $window.trigger("stop-force-simulation"); // stop previous network ticks so previous polygon won't show up
     
     // when using recall function several times, window remembers every registered event function of each recall which all registered functions will be fired when triggered
-    // since an event is registered in both 2d_network.html and index.js, add namespace to events in 2d_network so they can be removed without affecting events in index
+    // since an event is registered in both network.html and index.js, add namespace to events in network.html so they can be removed without affecting events in index
     $window.off('.2d');
 
     MT.reset();
@@ -1394,8 +1394,6 @@
     for (const key in MT.distanceMetrics) {
       if (small == key.replace(/_/g, " ")) return MT.distanceMetrics[key].label;
     }
-    if (small == "2d network") return "2D Network";
-    if (small == "3d network") return "3D Network";
     if (small == "geo map") return "Map";
     if (small == "timeline") return "Epi Curve";
     if (small == "nn") return "Nearest Neighbor";
@@ -2159,7 +2157,13 @@
     container.on('destroy', () => handle.destroy && handle.destroy());
   };
 
+  // Views that were renamed or removed, and the view that opens in their place
+  // (in saved sessions, layouts and settings)
+  MT.viewAliases = { '2d_network': 'network', 'pixi': 'network', '3d_network': 'network' };
+  MT.viewName = view => MT.viewAliases[view] || view;
+
   MT.launchView = (view, callback) => {
+    view = MT.viewName(view);
     if (!temp.componentCache[view]) {
       fetchView(view).then(() => MT.launchView(view, callback));
     } else {
@@ -2245,14 +2249,17 @@
 
   // Replaces the layout with one saved by MT.cacheLayout
   MT.loadLayout = component => {
+    // A layout saved with several views that now open the same one gets it once
     const views = [], toConfig = c => {
       if (["stack", "row", "column"].includes(c.type)) {
-        const content = c.content.map(toConfig);
+        const content = c.content.map(toConfig).filter(Boolean);
         // As launching them one by one did, the last view in each stack is active
         return c.type == "stack" ? { type: c.type, content, activeItemIndex: Math.max(content.length - 1, 0) } : { type: c.type, content };
       }
-      views.push(c.type);
-      return { type: "component", componentType: c.type, title: MT.titleize(c.type) };
+      const view = MT.viewName(c.type);
+      if (views.includes(view)) return null;
+      views.push(view);
+      return { type: "component", componentType: view, title: MT.titleize(view) };
     };
     const root = toConfig(component || emptyLayout.root);
     return Promise.all(views.map(fetchView)).then(() => {

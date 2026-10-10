@@ -680,18 +680,6 @@ button.btn,
   font: bold 20px sans-serif;
 }
 
-/* 3D Network */
-.graph-nav-info {
-  display: none;
-}
-.three-dee-node-tooltip {
-  color:#333333;
-  background:#f5f5f5;
-  border:1px solid #cccccc;
-  border-radius:.25rem;
-  padding:.25rem;
-}
-
 /* FLOW DIAGRAM */
 .flow-plot {
   margin: 15px;

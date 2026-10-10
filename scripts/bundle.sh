@@ -32,7 +32,6 @@ secondaryscripts=(
   "node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"
   "node_modules/d3-polygon/dist/d3-polygon.min.js"
   "temp.plotly.js"
-  "node_modules/3d-force-graph/dist/3d-force-graph.min.js"
   "node_modules/moment/min/moment-with-locales.min.js"
   "node_modules/tidytree/dist/tidytree.min.js"
   "node_modules/leaflet/dist/leaflet.js"
@@ -44,9 +43,6 @@ secondaryscripts=(
   "node_modules/save-svg-as-png/lib/saveSvgAsPng.js"
   "node_modules/pdfmake/build/pdfmake.min.js"
   "node_modules/pdfmake/build/vfs_fonts.js"
-  "node_modules/pixi.js/dist/pixi.min.js"
-  "temp.pixi-alias.js"
-  "node_modules/pixi-viewport/dist/pixi_viewport.umd.cjs"
 )
 
 # primarystyles is where you put stylesheets that must be loaded immediately to
@@ -124,9 +120,6 @@ npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-na
 # golden-layout 2 ships only ES and CommonJS modules
 npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --format=iife --global-name=goldenLayout \
   --target=es2019 --log-level=warning --outfile=temp.golden-layout.js
-
-# pixi-viewport's UMD build looks for Pixi under the global name pixi_js
-echo "window.pixi_js = window.PIXI;" > temp.pixi-alias.js
 
 echo 'Assembling Javascript Bundle...'
 

@@ -543,7 +543,7 @@ Note that this may cause slow performance on larger networks.">
 
 <script>
   (() => {
-    ga('set', 'page', '/2d_network');
+    ga('set', 'page', '/network');
     ga('set', 'title', '2D View');
     ga('send', 'pageview');
     
@@ -703,7 +703,7 @@ Note that this may cause slow performance on larger networks.">
       if (tooltipMenu) tooltipMenu.destroy();
       graph.destroy();
       graph = null;
-      if (temp.network2d && temp.network2d.render === render) delete temp.network2d;
+      if (temp.network && temp.network.render === render) delete temp.network;
       $window.off(instance);
       $(window).off(instance);
     }
@@ -2302,7 +2302,7 @@ Note that this may cause slow performance on larger networks.">
       if (!document.body.contains(container)) return;
       createGraph();
       // For other code and tests: the live graph and what its indices mean
-      temp.network2d = { graph, get points() { return points; }, get links() { return links; }, render, fit, syncPositions };
+      temp.network = { graph, get points() { return points; }, get links() { return links; }, render, fit, syncPositions };
       render();
       if (session.style.widgets["node-timeline-variable"] != 'None') { 
         $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();

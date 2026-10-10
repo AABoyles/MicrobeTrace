@@ -21,7 +21,7 @@ test('network statistics', async () => {
 
 // What each view draws, in its own element
 const content = {
-  '2d_network': 'canvas',
+  network: 'canvas',
   table: '.tabulator-row',
   heatmap: '.main-svg',
   histogram: '.main-svg',
@@ -30,8 +30,6 @@ const content = {
   crosstab: '#crosstab-field-x option', // the table waits for two fields to be chosen
   aggregation: '.tabulator-row',
   phylogenetic_tree: 'svg circle',
-  pixi: 'canvas',
-  '3d_network': 'canvas',
   geo_map: '.leaflet-container',
   globe: 'canvas',
   bubbles: 'svg circle',
@@ -53,6 +51,6 @@ for (const [view, selector] of Object.entries(content)) {
     await expect.poll(() => item.evaluate((el, selector) => el.querySelectorAll(selector).length, selector), { timeout: 30000 }).toBeGreaterThan(0);
     await page.waitForTimeout(500);
     expect(errors).toEqual([]);
-    if (view != '2d_network') await closeView(page, view);
+    if (view != 'network') await closeView(page, view);
   });
 }

@@ -56,7 +56,6 @@
   "devDependencies": {
     "@cosmos.gl/graph": "^3.4.2",
     "@playwright/test": "^1.63.0",
-    "3d-force-graph": "^1.80.0",
     "acorn": "^8.18.0",
     "alertifyjs": "^1.14.0",
     "alignment-viewer": "^0.3.4",
@@ -86,8 +85,6 @@
     "papaparse": "^5.7.0",
     "patristic": "^0.6.0",
     "pdfmake": "^0.3.11",
-    "pixi-viewport": "^6.0.3",
-    "pixi.js": "^8.21.0",
     "plotly.js": "^4.1.1",
     "postcss": "^8.5.28",
     "postcss-cli": "^12.0.0",
