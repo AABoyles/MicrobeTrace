@@ -20,6 +20,9 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `ui.spec.js` | The license dialog, menus, the settings dialog, toggle buttons |
 | `binder.spec.js` | `src/binder.js` on every control type |
 | `histogram.spec.js` | The histogram's settings, drawing, restoring and export |
+| `heatmap.spec.js` | The heatmap's settings, drawing, restoring, and PNG and CSV export |
+| `scatterplot.spec.js` | The scatterplot's datasets, variables, scale, restoring and export |
+| `flow_diagram.spec.js` | The flow diagram's variables, datasets, redraws, restoring and export |
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.

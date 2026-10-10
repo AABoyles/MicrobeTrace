@@ -2043,6 +2043,72 @@
     };
   };
 
+  // Makes a view's settings button slide its pane in and out
+  MT.paneToggle = (button, pane) => {
+    let open = false;
+    button.addEventListener('click', () => {
+      open = !open;
+      button.classList.toggle('active', open);
+      MT.slidePane(pane, open);
+    });
+  };
+
+  // Plotly layout colors for the current background
+  MT.plotColors = settings => {
+    const background = settings.get('background-color'), contrast = settings.get('background-color-contrast');
+    return { paper_bgcolor: background, plot_bgcolor: background, font: { color: contrast } };
+  };
+
+  // Wires the export dialog of a view drawn with Plotly. The dialog (inside
+  // root) has fields named export-filename, -filetype, -scale, -quality and
+  // -opacity, an .export-advanced-button, an .export-dimensions readout and an
+  // .export-button. Image formats save the plot with a watermark; `formats` maps
+  // other file types to functions that save them, given the filename.
+  MT.plotExport = (root, plot, settings, formats = {}) => {
+    const $ = selector => root.querySelector(selector);
+    const field = name => $(`[name="${name}"]`);
+    const modal = $('.export-button').closest('.modal');
+    const advancedButton = $('.export-advanced-button');
+    const advanced = $(advancedButton.dataset.bsTarget);
+    field('export-filetype').addEventListener('change', e => {
+      const image = ['png', 'jpeg', 'webp'].includes(e.target.value);
+      advancedButton.hidden = !image;
+      if (!image) bootstrap.Collapse.getOrCreateInstance(advanced, { toggle: false }).hide();
+    });
+    const showDimensions = () => {
+      const scale = parseFloat(field('export-scale').value);
+      $('.export-dimensions').textContent = Math.round(root.clientWidth * scale) + 'x' + Math.round(root.clientHeight * scale) + 'px';
+    };
+    field('export-scale').addEventListener('input', showDimensions);
+    modal.addEventListener('show.bs.modal', showDimensions);
+
+    $('.export-button').addEventListener('click', () => {
+      const filename = field('export-filename').value, filetype = field('export-filetype').value;
+      if (formats[filetype]) return formats[filetype](filename);
+      const svg = plot.querySelector('.main-svg');
+      // Plotly draws axis titles in a second SVG layer; bring them into this one
+      const titles = plot.querySelector('.main-svg .infolayer');
+      if (titles) svg.appendChild(titles);
+      const watermark = d3.select(svg).append('image')
+        .attr('xlink:href', MT.watermark)
+        .attr('height', 128)
+        .attr('width', 128)
+        .attr('x', 10)
+        .style('opacity', field('export-opacity').value);
+      if (filetype == 'svg') {
+        saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), filename + '.' + filetype);
+        watermark.remove();
+      } else {
+        saveSvgAsPng(svg, filename + '.' + filetype, {
+          scale: parseFloat(field('export-scale').value),
+          backgroundColor: settings.get('background-color'),
+          encoderType: 'image/' + filetype,
+          encoderOptions: parseFloat(field('export-quality').value)
+        }).then(() => watermark.remove());
+      }
+    });
+  };
+
   const mountView = contentItem => {
     const mount = MT.views[contentItem.componentType];
     if (!mount) return;
