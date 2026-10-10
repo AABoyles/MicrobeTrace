@@ -57,7 +57,7 @@ primarystyles=(
   "node_modules/golden-layout/src/css/goldenlayout-light-theme.css"
   "node_modules/alertifyjs/build/css/alertify.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator.min.css"
-  "node_modules/tabulator-tables/dist/css/tabulator_bootstrap4.min.css"
+  "node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css"
   "node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css"
 )
 

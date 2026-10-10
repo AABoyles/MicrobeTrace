@@ -13,9 +13,9 @@
       <div class="col">
         <input type="file" id="data-files" class="d-none" multiple="true">
         <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
-        <button type="button" id="sequenceControlsButton" class="btn btn-default btn-nr floater" data-toggle="modal" data-target="#sequence-controls-modal">Sequence Controls</button>
+        <button type="button" id="sequenceControlsButton" class="btn btn-default btn-nr floater" data-bs-toggle="modal" data-bs-target="#sequence-controls-modal">Sequence Controls</button>
       </div>
-      <div class="col text-right">
+      <div class="col text-end">
         <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Launch</button>
       </div>
     </div>
@@ -31,22 +31,22 @@
 <div id="file-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a class="nav-link active" id="files-tab" data-toggle="tab" href="#file-settings" role="tab" aria-controls="file-settings" aria-selected="true">Files</a>
+      <a class="nav-link active" id="files-tab" data-bs-toggle="tab" href="#file-settings" role="tab" aria-controls="file-settings" aria-selected="true">Files</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="experimental-tab" data-toggle="tab" href="#experimental-settings" role="tab" aria-controls="experimental-settings" aria-selected="false">Experimental</a>
+      <a class="nav-link" id="experimental-tab" data-bs-toggle="tab" href="#experimental-settings" role="tab" aria-controls="experimental-settings" aria-selected="false">Experimental</a>
     </li>
   </ul>
   <div class="tab-content">
     <div id="file-settings" class="tab-pane fade active show" role="tabpanel">
       <div class="form-group row">
         <div class="col-5">
-          <label for="default-distance-metric" class="mr-2" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
+          <label for="default-distance-metric" class="me-2" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
             Distance Metric
           </label>
         </div>
         <div class="col-7">
-          <select id="default-distance-metric" class="form-control form-control-sm mr-5">
+          <select id="default-distance-metric" class="form-select form-select-sm me-5">
             <optgroup label="Evolutionary Models">
               <option value="tn93" selected>TN93 (Tamura-Nei 1993)</option>
               <option value="tn92">TN92 (Tamura-Nei 1992)</option>
@@ -68,12 +68,12 @@
       </div>
       <div id="ambiguities-row" class="form-group row">
         <div class="col-5">
-          <label for="ambiguity-resolution-strategy" class="mr-2" title="What Strategy should MicrobeTrace use to handle ambiguities?">
+          <label for="ambiguity-resolution-strategy" class="me-2" title="What Strategy should MicrobeTrace use to handle ambiguities?">
             Ambiguities
           </label>
         </div>
         <div class="col-7">
-          <select id="ambiguity-resolution-strategy" class="form-control form-control-sm mr-5">
+          <select id="ambiguity-resolution-strategy" class="form-select form-select-sm me-5">
             <option value="AVERAGE">Average</option>
             <option value="RESOLVE">Resolve</option>
             <option value="SKIP">Skip</option>
@@ -84,7 +84,7 @@
       </div>
       <div id="ambiguity-threshold-row" class="form-group row">
         <div class="col-5">
-          <label for="ambiguity-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+          <label for="ambiguity-threshold" class="me-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
             Ambiguity Threshold
           </label>
         </div>
@@ -94,7 +94,7 @@
       </div>
       <div class="form-group row">
         <div class="col-5">
-          <label for="default-distance-threshold" class="mr-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+          <label for="default-distance-threshold" class="me-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
             Link Threshold
           </label>
         </div>
@@ -104,12 +104,12 @@
       </div>
       <div class="form-group row">
         <div class="col-5">
-          <label for="link-storage" class="mr-2" title="Which pairs of sequences should become links? Keeping only links within the Link Threshold uses far less memory, but raising the threshold later will not reveal more links.">
+          <label for="link-storage" class="me-2" title="Which pairs of sequences should become links? Keeping only links within the Link Threshold uses far less memory, but raising the threshold later will not reveal more links.">
             Keep Links
           </label>
         </div>
         <div class="col-7">
-          <select id="link-storage" class="form-control form-control-sm mr-5">
+          <select id="link-storage" class="form-select form-select-sm me-5">
             <option value="auto" selected>Automatic</option>
             <option value="all">All Pairs</option>
             <option value="threshold">Within Link Threshold</option>
@@ -121,7 +121,7 @@
           <label for="default-view">View to Launch</label>
         </div>
         <div class="col-7">
-          <select id="default-view" class="form-control form-control-sm" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
+          <select id="default-view" class="form-select form-select-sm" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
             <option value="2d_network" selected>2D Network</option>
             <option value="pixi">Pixi</option>
             <option value="3d_network">3D Network</option>
@@ -136,9 +136,7 @@
         <div class="col-12">
           <div class="alert alert-warning alert-dismissible" role="alert">
             <p>The following settings are experimental! Use at your own risk!</p>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         </div>
       </div>
@@ -196,22 +194,20 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   </div>
 </div>
 
-<div id="sequence-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#sequence-controls-title" aria-hidden="true" data-backdrop="false">
+<div id="sequence-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#sequence-controls-title" aria-hidden="true" data-bs-backdrop="false">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 id="sequence-controls-title" class="modal-title">Sequence Settings</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <ul class="nav nav-tabs" id="sequence-controls-tab" role="tablist">
           <li class="nav-item">
-            <a class="nav-link active" id="sequence-alignment-tab" data-toggle="tab" href="#sequence-alignment" role="tab" aria-controls="sequence-alignment" aria-selected="true">Alignment</a>
+            <a class="nav-link active" id="sequence-alignment-tab" data-bs-toggle="tab" href="#sequence-alignment" role="tab" aria-controls="sequence-alignment" aria-selected="true">Alignment</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" id="sequence-auditor-tab" data-toggle="tab" href="#sequence-auditor" role="tab" aria-controls="sequence-auditor" aria-selected="false">Audit</a>
+            <a class="nav-link" id="sequence-auditor-tab" data-bs-toggle="tab" href="#sequence-auditor" role="tab" aria-controls="sequence-auditor" aria-selected="false">Audit</a>
           </li>
         </ul>
         <div class="tab-content">
@@ -226,9 +222,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     before loading them into MicrobeTrace.
                     <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank" rel="noreferrer noopener">Click here for additional information.</a>
                   </p>
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               </div>
             </div>
@@ -269,13 +263,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <div class="form-group row" id="reference-file-row">
               <div class="col-2" title="Against what sequence should MicrobeTrace align your sequences?">Reference</div>
               <div class="col-5">
-                <div class="custom-file">
-                  <input type="file" class="custom-file-input" id="refSeqFileLoad">
-                  <label class="custom-file-label" for="refSeqFileLoad" style="overflow:hidden">HXB2</label>
-                </div>
+                <label class="form-label small mb-1" for="refSeqFileLoad" style="overflow:hidden">HXB2</label>
+                <input type="file" class="form-control form-control-sm" id="refSeqFileLoad">
               </div>
               <div class="col-5">
-                <select id="refSeqID" class="form-control"></select>
+                <select id="refSeqID" class="form-select"></select>
               </div>
             </div>
             <div class="row alignConfigRow">
@@ -352,7 +344,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         </div>
       </div>
       <div class="modal-footer clearfix">
-        <button type="submit" class="btn btn-success pull-right" data-dismiss="modal"
+        <button type="submit" class="btn btn-success pull-right" data-bs-dismiss="modal"
           title="Confirm Load Settings are All Properly Set">Confirm</button>
       </div>
     </div>
@@ -481,7 +473,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           }))
           .append('<span class="p-1">' + file.name + '</span>')
           .append(`
-        <div class="btn-group btn-group-toggle btn-group-sm float-right" data-toggle="buttons">
+        <div class="btn-group btn-group-toggle btn-group-sm float-end" data-toggle="buttons">
           <label class="btn btn-light${!isFasta & !isNewick & !isNode ? ' active' : ''}">
             <input type="radio" name="options-${file.name}" data-type="link" autocomplete="off"${!isFasta & !isNewick & !isNode ? ' checked' : ''}>Link
           </label>
@@ -505,15 +497,15 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         optionsrow.append(`
       <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-1">${isNode ? 'ID' : 'Source'}</label>
-        <select id="file-${file.name}-field-1" class="form-control form-control-sm">${options}</select>
+        <select id="file-${file.name}-field-1" class="form-select form-select-sm">${options}</select>
       </div>
       <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-2">${isNode ? 'Sequence' : 'Target'}</label>
-        <select id="file-${file.name}-field-2" class="form-control form-control-sm">${options}</select>
+        <select id="file-${file.name}-field-2" class="form-select form-select-sm">${options}</select>
       </div>
       <div class='col-4 '${isFasta || isNewick ? ' style="display: none;"' : ''} data-file='${file.name}'>
         <label for="file-${file.name}-field-3">Distance</label>
-        <select id="file-${file.name}-field-3" class="form-control form-control-sm">${options}</select>
+        <select id="file-${file.name}-field-3" class="form-select form-select-sm">${options}</select>
       </div>
       `);
         optionsrow.appendTo(root);
@@ -629,7 +621,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
 
     async function updatePreview(data) {
-      $('#alignment-preview').empty().append('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+      $('#alignment-preview').empty().append('<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>');
       if ($('#align-sw').is(':checked')) {
         data = await MT.align({
           nodes: data,
@@ -887,7 +879,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         $('#loading-information-modal').modal({
           backdrop: false,
           keyboard: false
-        });
+        }).modal('show');
         setTimeout(() => reject(new Error("Problem loading information modal!")), 5000);  
       }).then(
         result => launch(), // 

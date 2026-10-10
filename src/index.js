@@ -17,7 +17,7 @@ $(function() {
       $("#licenseAgreement").modal({
         backdrop: "static",
         keyboard: false
-      });
+      }).modal("show");
     }  
   })
 
@@ -176,7 +176,7 @@ $(function() {
 
   $("#NewTab").on("click", e => {
     e.preventDefault();
-    $("#exit-modal").modal();
+    $("#exit-modal").modal('show');
   });
 
   $("#exit-button").on("click", MT.reset);
@@ -189,7 +189,7 @@ $(function() {
   $("#ReloadTab").on("click", e => {
     e.preventDefault();
     $("#exit-button").on("click", () => window.location.reload());
-    $("#exit-modal").modal();
+    $("#exit-modal").modal('show');
   });
 
   $("#FullScreenTab").on("click", e => {
@@ -1268,7 +1268,7 @@ $(function() {
     }
     if (e.ctrlKey && e.key == "s") {
       e.preventDefault();
-      $("#session-save-modal").modal();
+      $("#session-save-modal").modal('show');
     }
   });
 

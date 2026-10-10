@@ -4,7 +4,7 @@
   <button type="button" id="crosstab-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle crosstab Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#crosstab-export-modal"
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#crosstab-export-modal"
     title="Export crosstab data">
     <span class="oi oi-data-transfer-download"></span>
   </button>
@@ -17,7 +17,7 @@
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
       <a href="#crosstab-settings" id="crosstab-tab" class="nav-link active" aria-controls="crosstab" role="tab"
-        data-toggle="tab">Crosstab</a>
+        data-bs-toggle="tab">Crosstab</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -41,27 +41,25 @@
       <div class="form-group row" title="What data fields would you like to aggregate on?">
         <div class="col-3">X Variable</div>
         <div class="col-9">
-          <select id="crosstab-field-x" class="form-control form-control-sm"></select>
+          <select id="crosstab-field-x" class="form-select form-select-sm"></select>
         </div>
       </div>
       <div class="form-group row" title="What data fields would you like to aggregate on?">
         <div class="col-3">Y Variable</div>
         <div class="col-9">
-          <select id="crosstab-field-y" class="form-control form-control-sm"></select>
+          <select id="crosstab-field-y" class="form-select form-select-sm"></select>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div id="crosstab-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+<div id="crosstab-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Export crosstab</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
@@ -70,7 +68,7 @@
               placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="export-crosstab-file-type" class="form-control form-control-sm">
+            <select id="export-crosstab-file-type" class="form-select form-select-sm">
               <option selected>csv</option>
               <option>xlsx</option>
               <option>pdf</option>
@@ -80,10 +78,10 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-error" data-dismiss="modal">
+        <button type="button" class="btn btn-error" data-bs-dismiss="modal">
           Cancel
         </button>
-        <button type="button" id="crosstab-export" class="btn btn-primary" data-dismiss="modal">
+        <button type="button" id="crosstab-export" class="btn btn-primary" data-bs-dismiss="modal">
           Export
         </button>
       </div>
@@ -134,7 +132,7 @@
       var crosstab = new Tabulator("#crosstab", {
         layout: "fitColumns",
         data: data,
-        columns: [{ title: "", field: "col", cssClass: 'font-weight-bold' }].concat(sValues.map(x => ({ title: MT.titleize(x + ''), field: x })))
+        columns: [{ title: "", field: "col", cssClass: 'fw-bold' }].concat(sValues.map(x => ({ title: MT.titleize(x + ''), field: x })))
       });
     }
 
