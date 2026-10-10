@@ -73,7 +73,7 @@
               <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
                 <div class="col-4"><label for="node-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
-                  <select id="node-tooltip-variable"  class="form-select form-select-sm chosen-select" multiple title="What node data should be displayed as a tooltip for the node?">
+                  <select id="node-tooltip-variable"  multiple title="What node data should be displayed as a tooltip for the node?">
                     <option>None</option>
                   </select>
                 </div>
@@ -700,6 +700,7 @@ Note that this may cause slow performance on larger networks.">
 
     function destroy() {
       if (!graph) return;
+      if (tooltipMenu) tooltipMenu.destroy();
       graph.destroy();
       graph = null;
       if (temp.network2d && temp.network2d.render === render) delete temp.network2d;
@@ -708,18 +709,19 @@ Note that this may cause slow performance on larger networks.">
     }
 
     //#299
+    let tooltipMenu;
     function updateColumns(){
       if(!$('#network').length) return;
       let variables = settings['node-tooltip-variable'];
       if ('None' != variables) {
-        $('#node-tooltip-variable')
-          .chosen('destroy')
-          .html(
-            session.data['nodeFields'].map((d, i) => {
-              return `<option value="${d}"${variables.includes(d) ? " selected" : ""}>${MT.titleize(d)}</option>`
-            }).join('\n')
-          )
-          .chosen({'width': 'inherit', 'max_selected_options': 3});
+        const select = document.getElementById('node-tooltip-variable');
+        if (tooltipMenu) tooltipMenu.destroy();
+        // The setting is a field name, or a list of them once chosen here
+        const chosen = [].concat(variables);
+        select.innerHTML = session.data['nodeFields'].map(d =>
+          `<option value="${d}"${chosen.includes(d) ? " selected" : ""}>${MT.titleize(d)}</option>`
+        ).join('\n');
+        tooltipMenu = MT.multiSelect(select, { max: 3 });
       }
     }
 

@@ -1,7 +1,7 @@
-<div id="aggregation" class="table-sm"></div>
+<div class="table-sm aggregation-grid"></div>
 
 <div class="view-controls">
-  <button type="button" id="aggregation-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Aggregation Settings">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Toggle Aggregation Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#aggregation-export-modal" title="Export Aggregation data">
@@ -9,7 +9,7 @@
   </button>
 </div>
 
-<div id="aggregation-settings-pane" class="left-pane">
+<div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
       <a href="#aggregation-settings" id="aggregation-tab" class="nav-link active" aria-controls="aggregation" role="tab" data-bs-toggle="tab">
@@ -22,8 +22,8 @@
       <div class="form-group row" title="What data field would you like to aggregate on?">
         <div class="col-3">Tables</div>
         <div class="col-9">
-          <ul id="aggregation-variables"></ul>
-          <button type="button" class="btn btn-primary btn-sm w-100" id="aggregation-add-variable">
+          <ul class="aggregation-variables"></ul>
+          <button type="button" class="btn btn-primary btn-sm w-100 aggregation-add-variable">
             Add Variable
           </button>
         </div>
@@ -42,10 +42,10 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="export-aggregation-file-name" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="export-aggregation-file-type" class="form-select form-select-sm">
+            <select name="export-filetype" class="form-select form-select-sm">
               <option selected>csv.zip</option>
               <option>xlsx</option>
               <option>pdf</option>
@@ -55,249 +55,127 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-error" data-bs-dismiss="modal">
-          Cancel
-        </button>
-        <button type="button" id="aggregation-export" class="btn btn-primary" data-bs-dismiss="modal">
-          Export
-        </button>
+        <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
       </div>
-    </div> <!-- /.modal-content -->
-  </div> <!-- /.modal-dialog -->
-</div> <!-- /.modal -->
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 <script>
-  (function() {
+  MT.registerView('aggregation', (root, { events }) => {
     ga('set', 'page', '/aggregation');
     ga('set', 'title', 'Aggregation View');
     ga('send', 'pageview');
 
-    let data = [];
+    const $ = selector => root.querySelector(selector);
+    const grid = $('.aggregation-grid'), list = $('.aggregation-variables');
+    // One Tabulator per variable, and the counts they show (for export)
+    let tables = [], data = [];
 
-    function updateTable(i, variable) {
-      let values = [];
-      let tabledata = [];
-      let dataset = variable.split(" ")[0];
-      let column = variable
-        .split(" ")
-        .slice(1)
-        .join(" ");
-      let rawdata = MT[
-        "getVisible" + dataset[0].toUpperCase() + dataset.slice(1) + "s"
-      ]();
-      let n = rawdata.length;
-      rawdata.forEach(row => {
-        let val = row[column];
-        if (val === null) val = '_Unknown';
-        if (values.includes(val)) {
-          tabledata[values.indexOf(val)].n++;
-        } else {
-          values.push(val);
-          let newRow = {};
-          newRow[column] = val;
-          newRow.n = 1;
-          tabledata.push(newRow);
-        }
-      });
-      tabledata.forEach(
-        row => (row.percent = ((row.n / n) * 100).toLocaleString() + "%")
-      );
-      new Tabulator("#aggregation-table-" + i, {
-        layout: "fitColumns",
-        columns: [
-          {
-            title: MT.titleize(dataset) + " " + MT.titleize(column),
-            field: column
-          },
-          { title: `Number of ${MT.titleize(dataset)}s`, field: "n" },
-          { title: "Percentage", field: "percent", headerSort: false }
-        ],
-        data: tabledata,
-        initialSort: [
-          { column: "n", dir: "desc" },
-          { column: column, dir: "asc" }
-        ]
-      });
-      data[i - 1] = {
-        dataset: dataset,
-        column: column,
-        data: tabledata
-      };
+    const datasets = { node: 'nodeFields', link: 'linkFields', cluster: 'clusterFields' };
+    const options = value => Object.entries(datasets).map(([dataset, fields]) =>
+      session.data[fields].map(f => {
+        const v = dataset + ' ' + f;
+        return `<option value="${v}"${v == value ? ' selected' : ''}>${MT.titleize(dataset)} ${MT.titleize(f)}</option>`;
+      }).join('')
+    ).join('');
+
+    function addVariable(value) {
+      const item = document.createElement('li');
+      item.className = 'd-inline-flex aggregation-items';
+      item.innerHTML = `<span class="oi oi-x pt-2 aggregation-remove" title="Remove this table"></span>
+        <select class="flex-grow-1 form-select form-select-sm aggregation-variable">${options(value)}</select>
+        <span class="pt-2 oi oi-elevator" title="Drag to reorder"></span>`;
+      list.appendChild(item);
+      sortable(list, 'reload');
     }
 
-    function updateTables() {
-      let variables = $("#aggregation-variables li select");
-      variables.each(function(i) {
-        updateTable(i + 1, this.value);
+    // How many of the visible items have each value of a variable
+    function count(dataset, column) {
+      const items = MT['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
+      const counts = new Map();
+      items.forEach(d => {
+        const value = d[column] === null ? '_Unknown' : d[column];
+        counts.set(value, (counts.get(value) || 0) + 1);
       });
-      if (variables.length < $(".aggregation-tables").length) {
-        $(".aggregation-tables").each(function(i) {
-          if (i > variables.length) {
-            $(this).slideUp(() => $(this).remove());
-          }
-        });
-      }
+      return Array.from(counts, ([value, n]) => ({ [column]: value, n, percent: (n / items.length * 100).toLocaleString() + '%' }));
     }
 
-    $("#aggregation-settings-toggle").click(function() {
-      let pane = $("#aggregation-settings-pane");
-      if ($(this).hasClass('active')) {
-        pane.animate({ left: "-400px" }, function() {
-          pane.hide();
-        });
-      } else {
-        pane.show(0, function() {
-          pane.animate({ left: "0px" });
-        });
-      }
+    function update() {
+      tables.forEach(table => table.destroy());
+      grid.innerHTML = '';
+      tables = [];
+      data = Array.from(list.querySelectorAll('select'), select => {
+        const [dataset, ...rest] = select.value.split(' ');
+        const column = rest.join(' ');
+        const rows = count(dataset, column);
+        const element = document.createElement('div');
+        element.className = 'aggregation-tables table-sm';
+        grid.appendChild(element);
+        tables.push(new Tabulator(element, {
+          layout: 'fitColumns',
+          columns: [
+            { title: MT.titleize(dataset) + ' ' + MT.titleize(column), field: column },
+            { title: `Number of ${MT.titleize(dataset)}s`, field: 'n' },
+            { title: 'Percentage', field: 'percent', headerSort: false }
+          ],
+          data: rows,
+          initialSort: [{ column: 'n', dir: 'desc' }, { column, dir: 'asc' }]
+        }));
+        return { dataset, column, data: rows };
+      });
+    }
+
+    $('.aggregation-add-variable').addEventListener('click', () => {
+      addVariable('node cluster');
+      update();
+    });
+    list.addEventListener('change', update);
+    list.addEventListener('click', e => {
+      if (!e.target.classList.contains('aggregation-remove')) return;
+      e.target.closest('li').remove();
+      update();
+    });
+    sortable(list, { forcePlaceholderSize: true });
+    list.addEventListener('sortupdate', update);
+
+    MT.paneToggle($('.settings-toggle'), $('.left-pane'));
+
+    const title = t => MT.titleize(t.dataset) + ' ' + MT.titleize(t.column);
+    MT.tableExport(root, {
+      'csv.zip': name => {
+        const zip = new JSZip();
+        data.forEach(t => zip.file(t.dataset + '_' + t.column + '.csv', Papa.unparse(t.data)));
+        zip.generateAsync({ type: 'blob' }).then(content => saveAs(content, name + '.zip'));
+      },
+      xlsx: name => {
+        const workbook = XLSX.utils.book_new();
+        // Sheet names must be unique and at most 31 characters
+        data.forEach((t, i) => XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(t.data), (i + 1) + ' ' + title(t).slice(0, 27)));
+        XLSX.writeFile(workbook, name + '.xlsx');
+      },
+      pdf: name => MT.tablesPDF('Aggregation', data.map(t => ({
+        headers: [title(t), `Number of ${MT.titleize(t.dataset)}s`, 'Percentage'],
+        rows: t.data.map(row => [row[t.column] + '', row.n + '', row.percent])
+      })), name),
+      json: name => saveAs(new Blob([JSON.stringify(data)], { type: 'application/json;charset=utf-8' }), name + '.json')
     });
 
-    $("#aggregation-add-variable")
-      .on("click", function() {
-        let i = $("#aggregation-variables li").length + 1;
-        $("#aggregation-variables").append(`
-            <li class='d-inline-flex aggregation-items'>
-              <span class="oi oi-x pt-2 aggregation-remove"></span>
-              <select class='flex-grow-1 form-control form-control-sm aggregation-variable' data-i="${i}">
-                ${session.data.nodeFields
-                  .map(
-                    v =>
-                      `<option value="node ${v}" ${
-                        v == "cluster" ? "selected" : ""
-                      }>Node ${MT.titleize(v)}</option>`
-                  )
-                  .join("\n")}
-                ${session.data.linkFields
-                  .map(
-                    v =>
-                      `<option value="link ${v}">Link ${MT.titleize(
-                        v
-                      )}</option>`
-                  )
-                  .join("\n")}
-                ${session.data.clusterFields
-                  .map(
-                    v =>
-                      `<option value="cluster ${v}">Cluster ${MT.titleize(
-                        v
-                      )}</option>`
-                  )
-                  .join("\n")}
-              </select>
-              <span class="pt-2 oi oi-elevator"></span>
-            </li>`);
+    root.style.overflowY = 'scroll';
+    root.style.zIndex = 1000;
 
-        $("#aggregation").append(
-          `<div class="aggregation-tables table-sm" id="aggregation-table-${i}"></div>`
-        );
+    addVariable('node cluster');
+    update();
+    const stop = ['link-visibility', 'node-visibility'].map(type => events.on(type, update));
 
-        sortable("#aggregation-variables")[0].addEventListener(
-          "sortupdate",
-          updateTables
-        );
-
-        $(".aggregation-selector").on("change", updateTables);
-
-        $(".aggregation-remove").on("click", function() {
-          $(this)
-            .parent()
-            .slideUp(function() {
-              $(this).remove();
-              updateTables();
-            });
-        });
-
-        $(".aggregation-variable").on("change", function() {
-          updateTable($(this).data("i"), this.value);
-        });
-
-        updateTable(i, "node cluster");
-      })
-      .trigger("click");
-
-    $("#aggregation-export").click(function() {
-      let format = $("#export-aggregation-file-type").val();
-      let name = $("#export-aggregation-file-name").val();
-      if (format == "csv.zip") {
-        var zip = new JSZip();
-        data.forEach(t => {
-          zip.file(t.dataset + "_" + t.column + ".csv", Papa.unparse(t.data));
-        });
-        zip
-          .generateAsync({ type: "blob" })
-          .then(content => saveAs(content, name + ".zip"));
-      } else if (format == "xlsx") {
-        let wb = XLSX.utils.book_new();
-        data.forEach(t => {
-          let ws = XLSX.utils.json_to_sheet(t.data);
-          XLSX.utils.book_append_sheet(
-            wb,
-            ws,
-            MT.titleize(t.dataset) + " " + MT.titleize(t.column)
-          );
-        });
-        XLSX.writeFile(wb, name + "." + format);
-      } else if (format == "pdf") {
-        pdfMake
-          .createPdf({
-            content: [
-              {
-                image: MT.watermark
-              },
-              {
-                text: "Cluster Aggregation Snapshot",
-                style: "header",
-                alignment: "center"
-              },
-              ...data.map(t => ({
-                style: "paddedTable",
-                table: {
-                  headerRows: 1,
-                  widths: ["*", "*", "*"],
-                  body: [
-                    [
-                      MT.titleize(t.dataset) + " " + MT.titleize(t.column),
-                      `Number of ${MT.titleize(t.dataset)}s`,
-                      "Percentage"
-                    ]
-                  ].concat(t.data.map(Object.values))
-                }
-              }))
-            ],
-            footer: function(currentPage, pageCount) {
-              return [
-                {
-                  text: `Page ${currentPage.toString()} of ${pageCount}`,
-                  alignment: "center"
-                }
-              ];
-            },
-            styles: {
-              header: {
-                fontSize: 22,
-                bold: true
-              },
-              paddedTable: {
-                margin: [10, 10, 10, 10]
-              }
-            }
-          })
-          .download(name + ".pdf");
-      } else {
-        let blob = new Blob([JSON.stringify(data)], {
-          type: "application/json;charset=utf-8"
-        });
-        saveAs(blob, name + "." + format);
+    return {
+      resize: () => tables.forEach(table => table.redraw()),
+      destroy() {
+        stop.forEach(fn => fn());
+        sortable(list, 'destroy');
+        tables.forEach(table => table.destroy());
       }
-    });
-
-    $("#aggregation")
-      .parent()
-      .css("overflow-y", "scroll")
-      .css("z-index", 1000);
-
-    $window
-      .on("link-visibility", updateTables)
-      .on("node-visibility", updateTables);
-  })();
+    };
+  });
 </script>

@@ -17,7 +17,7 @@
     'background-color-change': 'the background color changed',
     'selected-color-change': 'the color of selected nodes changed',
     'node-border-change': 'node border color or width changed',
-    'node-selected': 'the selected nodes changed',
+    'node-selected': 'the selected nodes changed (detail: the view that changed them, if one did)',
     'node-visibility': 'which nodes are visible changed',
     'link-visibility': 'which links are visible changed',
     'cluster-visibility': 'which clusters are visible changed'
@@ -29,8 +29,10 @@
       this.jQuery = jQuery;
       this.relaying = false;
       if (jQuery) {
-        jQuery(self).on(Object.keys(EVENTS).join(' '), e => {
-          if (!this.relaying) this.dispatch(e.type);
+        // An older sender's extra argument (as in $window.trigger(type, 'table'))
+        // becomes the event's detail
+        jQuery(self).on(Object.keys(EVENTS).join(' '), (e, detail) => {
+          if (!this.relaying) this.dispatch(e.type, detail);
         });
       }
     }
@@ -38,7 +40,7 @@
     // Calls fn(detail) on each event of this type. Returns a function that stops.
     on(type, fn) {
       if (!(type in EVENTS)) throw new Error('Unknown MicrobeTrace event: ' + type);
-      const listener = e => fn(e.detail);
+      const listener = e => fn(e.detail === null ? undefined : e.detail);
       this.target.addEventListener(type, listener);
       return () => this.target.removeEventListener(type, listener);
     }
@@ -49,7 +51,7 @@
       if (this.jQuery) {
         this.relaying = true;
         try {
-          this.jQuery(self).trigger(type);
+          this.jQuery(self).trigger(type, detail === undefined ? [] : [detail]);
         } finally {
           this.relaying = false;
         }

@@ -5,11 +5,10 @@
 # index.html, components/files.html, or scripts/index.js
 primaryscripts=(
   "node_modules/jquery/dist/jquery.min.js"
-  "temp.jquery-trim.js"
   "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
   "node_modules/alertifyjs/build/alertify.min.js"
   "temp.golden-layout.js"
-  "node_modules/chosen-js/chosen.jquery.min.js"
+  "node_modules/tom-select/dist/js/tom-select.complete.min.js"
   "node_modules/fileto/fileto.js"
   "temp.screenfull.js"
   "node_modules/clipboard/dist/clipboard.min.js"
@@ -66,7 +65,7 @@ primarystyles=(
 # specific view (or views) are loaded. You should probably put your new
 # stylesheet here.
 secondarystyles=(
-  "node_modules/chosen-js/chosen.css"
+  "node_modules/tom-select/dist/css/tom-select.bootstrap5.min.css"
   "node_modules/leaflet/dist/leaflet.css"
   "node_modules/leaflet.markercluster/dist/MarkerCluster.css"
   "node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css"
@@ -126,24 +125,23 @@ npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-na
 npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --format=iife --global-name=goldenLayout \
   --target=es2019 --log-level=warning --outfile=temp.golden-layout.js
 
-# chosen-js calls jQuery.trim, which jQuery 4 removed
-echo "jQuery.trim = jQuery.trim || (text => text == null ? \"\" : String(text).trim());" > temp.jquery-trim.js
-
 # pixi-viewport's UMD build looks for Pixi under the global name pixi_js
 echo "window.pixi_js = window.PIXI;" > temp.pixi-alias.js
 
 echo 'Assembling Javascript Bundle...'
 
 rm dist/bundle.primary.js && touch dist/bundle.primary.js
+# A semicolon after each script, so one ending without its own can't run into
+# the next (a script starting with "(" would call the previous one's last value)
 for i in ${primaryscripts[@]}; do
   cat $i >> dist/bundle.primary.js
-  printf "\n" >> dist/bundle.primary.js
+  printf "\n;\n" >> dist/bundle.primary.js
 done
 
 rm dist/bundle.secondary.js && touch dist/bundle.secondary.js
 for i in ${secondaryscripts[@]}; do
   cat $i >> dist/bundle.secondary.js
-  printf "\n" >> dist/bundle.secondary.js
+  printf "\n;\n" >> dist/bundle.secondary.js
 done
 
 echo "Cleaning up..."
