@@ -67,6 +67,7 @@
     "choropleth-satellite-show": false,
     "choropleth-transparency": 0.3,
     "cluster-minimum-size": 1,
+    "default-distance-metric": "tn93",
     "default-view": "2d_network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
@@ -106,6 +107,7 @@
     "link-opacity": 0,
     "link-show-nn": false,
     "link-sort-variable": "distance",
+    "link-storage": "auto",
     "link-threshold": 0.015,
     "link-tooltip-variable": "None",
     "link-width": 3,
@@ -666,7 +668,7 @@
         for (let i = 0; i < tn; i++) {
           nn += MT.addNode({
             _id: filterXSS(nodes[i]),
-            origin: origin
+            origin: ['Genetic Distance']
           }, check);
         }
         const links = data.links;
@@ -924,41 +926,116 @@
     });
   };
   
-  MT.computeLinks = subset => {
-    return new Promise(resolve => {
-      let k = 0;
-      let computer = new Worker("workers/compute-links.js");
-      computer.onmessage = response => {
-        let dists = session.style.widgets['default-distance-metric'] == 'snps' ?
-          new Uint16Array(response.data.links) :
-          new Float32Array(response.data.links);
-        console.log("Links Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-        let start = Date.now();
-        let check = session.files.length > 1;
-        let n = subset.length;
+  // Distance metrics computed by bx-distance-models (workers/compute-links.js).
+  // count: the metric counts sites rather than measuring a proportion, which sets
+  // the default link threshold.
+  MT.distanceMetrics = {
+    tn93: { label: 'TN93', threshold: 0.015 },
+    snps: { label: 'SNPs', threshold: 16, count: true },
+    hamming: { label: 'Hamming', threshold: 0.015 },
+    p_distance: { label: 'P-Distance', threshold: 0.015 },
+    jc69: { label: 'JC69', threshold: 0.015 },
+    k2p: { label: 'K2P', threshold: 0.015 },
+    tn92: { label: 'TN92', threshold: 0.015 },
+    transitions: { label: 'Transitions', threshold: 16, count: true },
+    transversions: { label: 'Transversions', threshold: 16, count: true },
+    ts_tv_ratio: { label: 'Ts/Tv Ratio', threshold: 2 }
+  };
+
+  // Above this many pairs, 'auto' link storage keeps only the links within the
+  // link threshold: every stored link costs a few hundred bytes of memory.
+  MT.maxDenseLinks = 5e6;
+
+  // parts + 1 row boundaries splitting the upper triangle of an n x n matrix into
+  // runs of rows with nearly equal numbers of pairs.
+  MT.rowSplits = (n, parts) => {
+    const total = n * (n - 1) / 2;
+    let splits = [0], pairs = 0, row = 0;
+    for (let p = 1; p < parts; p++) {
+      while (row < n && pairs < total * p / parts) pairs += n - 1 - row++;
+      splits.push(row);
+    }
+    splits.push(n);
+    return splits;
+  };
+
+  MT.computeLinks = async subset => {
+    const widgets = session.style.widgets;
+    const metric = widgets['default-distance-metric'];
+    const strategy = (widgets['ambiguity-resolution-strategy'] || 'SKIP').toUpperCase();
+    const legacy = strategy == 'GAPMM';
+    if (legacy && metric != 'tn93') {
+      throw new Error('The GapMM ambiguity strategy is only available for TN93.');
+    }
+
+    // HIV-TRACE -g averages ambiguities for pairs with a too-ambiguous sequence:
+    // putting those sequences first makes those pairs the first rows.
+    let order = subset, averageRows = 0;
+    if (strategy == 'HIVTRACE-G') {
+      const t = parseFloat(widgets['ambiguity-threshold']);
+      const high = subset.filter(d => !(d['_ambiguity'] < t));
+      order = high.concat(subset.filter(d => d['_ambiguity'] < t));
+      averageRows = high.length;
+    }
+
+    const n = order.length;
+    const pairs = n * (n - 1) / 2;
+    const storage = widgets['link-storage'];
+    const sparse = storage == 'threshold' || (storage != 'all' && pairs > MT.maxDenseLinks);
+    const threshold = sparse ? parseFloat(widgets['link-threshold']) : null;
+    if (sparse) console.log(`Keeping only links with ${metric} <= ${threshold} (${pairs.toLocaleString()} pairs)`);
+
+    const seqs = order.map(d => d.seq);
+    const cores = Math.min(navigator.hardwareConcurrency || 4, 8);
+    const workers = Math.max(1, Math.min(cores, Math.ceil(pairs / 1e5)));
+    const splits = MT.rowSplits(n, workers);
+    const message = {
+      seqs,
+      metric,
+      mode: strategy == 'HIVTRACE-G' ? 'hivtrace-g' : strategy.toLowerCase(),
+      averageRows,
+      threshold
+    };
+    const parts = await Promise.all(splits.slice(1).map((rowEnd, w) => new Promise((resolve, reject) => {
+      const computer = new Worker(legacy ? 'workers/compute-links-legacy.js' : 'workers/compute-links.js');
+      computer.onmessage = response => resolve(response.data);
+      computer.onerror = reject;
+      computer.postMessage(Object.assign({ rowStart: splits[w], rowEnd }, message));
+    })));
+
+    console.log('Links Transit time: ', (Date.now() - Math.min(...parts.map(p => p.start))).toLocaleString(), 'ms');
+    let start = Date.now();
+    let k = 0;
+    parts.forEach((part, w) => {
+      if (sparse) {
+        const { source, target, distance } = part;
+        const m = distance.length;
+        for (let l = 0; l < m; l++) {
+          k += MT.addLink({
+            source: order[target[l]]._id,
+            target: order[source[l]]._id,
+            distance: distance[l],
+            origin: ['Genetic Distance']
+          });
+        }
+      } else {
+        const dists = part.distances;
         let l = 0;
-        for (let i = 0; i < n; i++) {
-          let sourceID = subset[i]._id;
-          for (let j = 0; j < i; j++) {
-            let targetID = subset[j]._id;
+        for (let i = splits[w]; i < splits[w + 1]; i++) {
+          const targetID = order[i]._id;
+          for (let j = i + 1; j < n; j++) {
             k += MT.addLink({
-              source: sourceID,
+              source: order[j]._id,
               target: targetID,
               distance: dists[l++],
               origin: ['Genetic Distance']
-            }, check);
+            });
           }
         }
-        console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-        resolve(k);
-      };
-      computer.postMessage({
-        nodes: subset,
-        metric: session.style.widgets['default-distance-metric'],
-        strategy: session.style.widgets["ambiguity-resolution-strategy"],
-        threshold: session.style.widgets["ambiguity-threshold"]
-      });
+      }
     });
+    console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+    return k;
   };
   
   MT.getDM = () => {
@@ -1264,8 +1341,9 @@
     let small = title.toLowerCase().replace(/_/g, " ");
     if (small == "null") return "(Empty)";
     if (small == "id" || small == " id") return "ID";
-    if (small == "tn93") return "TN93";
-    if (small == "snps") return "SNPs";
+    for (const key in MT.distanceMetrics) {
+      if (small == key.replace(/_/g, " ")) return MT.distanceMetrics[key].label;
+    }
     if (small == "2d network") return "2D Network";
     if (small == "3d network") return "3D Network";
     if (small == "geo map") return "Map";

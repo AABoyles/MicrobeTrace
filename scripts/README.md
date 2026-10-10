@@ -26,3 +26,8 @@ _A directory for shell scripts_
   Deletes everything MicrobeTrace doesn't need in order to run. **Don't use this
   unless you're deploying to a system with very little free space, or other
   weird constraints.**
+
+- [`build-bx.sh`](https://github.com/CDCgov/MicrobeTrace/blob/dev/scripts/build-bx.sh) -
+  Rebuilds the [bx-distance-models](https://github.com/AABoyles/bx-distance-models)
+  WebAssembly distance engine from a local checkout and copies it into
+  [`vendor/`](https://github.com/CDCgov/MicrobeTrace/tree/dev/vendor).

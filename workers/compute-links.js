@@ -1,68 +1,69 @@
-importScripts('../vendor/tn93.min.js');
+importScripts('../vendor/bx_distance_models.js');
 
-const snps = (s1, s2) => {
-  let n = Math.min(s1.length, s2.length);
-  let sum = 0;
-  for (let i = 0; i < n; i++) {
-    let c1 = s1[i];
-    let c2 = s2[i];
-    sum += (c1 != c2) && (c1 != 17) && (c2 != 17);
-  }
-  return sum;
-};
+// Computes genetic distances with bx-distance-models (WebAssembly) for rows
+// [rowStart, rowEnd) of the upper triangle of the pairwise matrix: pairs (i, j),
+// i < j, row by row. MT.computeLinks splits the rows across several of these
+// workers and concatenates their results.
+//
+// mode is 'skip', 'resolve' or 'average'. 'hivtrace-g' resolves ambiguities
+// unless either sequence is too ambiguous, in which case it averages them: the
+// caller puts the too-ambiguous sequences first, so the first averageRows rows
+// hold exactly the pairs that must be averaged.
+//
+// With a threshold, only pairs at or under it are returned (as source, target and
+// distance arrays). Without one, every pair's distance is returned.
 
-onmessage = function(e) {
-  let start = Date.now(),
-    t = 0,
-    output;
-  const subset = e.data.nodes,
-    n = subset.length,
-    threshold = parseFloat(e.data.threshold),
-    strategy = e.data.strategy.toUpperCase(),
-    metric = e.data.metric;
+const ready = wasm_bindgen({ module_or_path: '../vendor/bx_distance_models_bg.wasm' });
 
-  if(metric == 'snps'){
+onmessage = async function(e) {
+  await ready;
+  let start = Date.now();
+  const { seqs, metric, mode, averageRows, rowStart, rowEnd } = e.data;
+  const threshold = e.data.threshold == null ? null : parseFloat(e.data.threshold);
 
-    output = new Uint16Array((n * n - n) / 2);
-    for (let i = 0; i < n; i++) {
-      let source = subset[i];
-      for (let j = 0; j < i; j++) {
-        output[t++] = snps(source['_seqInt'], subset[j]['_seqInt'])
-      }
-    }
+  const ranges = mode == 'hivtrace-g' ? [
+    ['average', rowStart, Math.min(rowEnd, averageRows)],
+    ['resolve', Math.max(rowStart, averageRows), rowEnd]
+  ] : [[mode, rowStart, rowEnd]];
 
-  } else {
-
-    output = new Float32Array((n * n - n) / 2);
-    let onInts = tn93.onInts;
-
-    if(strategy != "HIVTRACE-G"){
-      for (let i = 0; i < n; i++) {
-        let source = subset[i]['_seqInt'];
-        for (let j = 0; j < i; j++) {
-          output[t++] = onInts(source, subset[j]['_seqInt'], strategy);
-        }
-      }
+  const parts = [];
+  ranges.forEach(([ambiguity, a, b]) => {
+    if (a >= b) return;
+    const set = new wasm_bindgen.SequenceSet(seqs, ambiguity);
+    if (threshold == null) {
+      parts.push(set.distances(metric, a, b));
     } else {
-      for (let i = 0; i < n; i++) {
-        let source = subset[i];
-        let sourceInThreshold = source['_ambiguity'] < threshold;
-        let sourceSeq = source['_seqInt'];
-        for (let j = 0; j < i; j++) {
-          let target = subset[j];
-          output[t++] = onInts(sourceSeq, target['_seqInt'],
-            ((sourceInThreshold && target['_ambiguity'] < threshold) ?
-              "RESOLVE" : "AVERAGE"
-            )
-          );
-        }
-      }
+      const links = set.links(metric, threshold, a, b);
+      parts.push({ source: links.source, target: links.target, distance: links.distance });
+      links.free();
     }
+    set.free();
+  });
 
+  let output;
+  if (threshold == null) {
+    output = { distances: concat(Float64Array, parts) };
+  } else {
+    output = {
+      source: concat(Uint32Array, parts.map(p => p.source)),
+      target: concat(Uint32Array, parts.map(p => p.target)),
+      distance: concat(Float64Array, parts.map(p => p.distance))
+    };
   }
 
-  console.log('Links Compute time: ', (Date.now() - start).toLocaleString(), 'ms');
-  start = Date.now();
-  postMessage({ links: output.buffer, start }, [output.buffer]);
+  console.log('Links Compute time (rows ' + rowStart + '-' + rowEnd + '): ', (Date.now() - start).toLocaleString(), 'ms');
+  output.start = Date.now();
+  postMessage(output, Object.values(output).filter(v => v.buffer).map(v => v.buffer));
   close();
 };
+
+function concat(Type, arrays) {
+  if (arrays.length == 1) return arrays[0];
+  const out = new Type(arrays.reduce((sum, a) => sum + a.length, 0));
+  let offset = 0;
+  arrays.forEach(a => {
+    out.set(a, offset);
+    offset += a.length;
+  });
+  return out;
+}

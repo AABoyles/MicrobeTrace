@@ -1,4 +1,4 @@
-var CACHE = 'MicrobeTraceD2020-08-12R1840';
+var CACHE = 'MicrobeTraceD2026-10-10R0000';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -13,6 +13,8 @@ self.addEventListener('install', function(event) {
         'LICENSE',
         'vendor/README.md',
         'vendor/bioseq.min.js',
+        'vendor/bx_distance_models.js',
+        'vendor/bx_distance_models_bg.wasm',
         'vendor/papaparse.min.js',
         'vendor/patristic.min.js',
         'vendor/tn93.min.js',
@@ -30,6 +32,7 @@ self.addEventListener('install', function(event) {
         'workers/compute-consensus.js',
         'workers/compute-directionality.js',
         'workers/compute-links.js',
+        'workers/compute-links-legacy.js',
         'workers/compute-mst.js',
         'workers/compute-nn.js',
         'workers/compute-patristic-matrix.js',
