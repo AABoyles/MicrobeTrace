@@ -19,6 +19,8 @@ bx-distance-models doesn't implement.
 
 ## cosmos.gl
 
-`cosmos.min.js` is the UMD build of [cosmos.gl](https://github.com/cosmosgl/graph) (`@cosmos.gl/graph`
+`cosmos.min.js` is a build of [cosmos.gl](https://github.com/cosmosgl/graph) (`@cosmos.gl/graph`
 3.4.2, MIT), which lays out and draws the 2D network on the GPU. `components/2d_network.html` loads
-it the first time that view opens. `scripts/bundle.sh` copies it from `node_modules`.
+it the first time that view opens. `scripts/bundle.sh` builds it from `node_modules` with one patch,
+`scripts/patch-cosmos.js`, which shifts the many-body force's grid every tick so large networks
+don't settle onto its cell boundaries.
