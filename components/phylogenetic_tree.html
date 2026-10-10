@@ -4,7 +4,7 @@
   <button id="toggle-tree-settings" type="button" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Tree Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#tree-export-modal" title="Export Tree">
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#tree-export-modal" title="Export Tree">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button id="tree-fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Phylogenetic Tree">
@@ -15,13 +15,13 @@
 <div id="tree-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a href="#tree-configurations" id="tree-tab" class="nav-link active" aria-controls="tree" role="tab" data-toggle="tab">Tree</a>
+      <a href="#tree-configurations" id="tree-tab" class="nav-link active" aria-controls="tree" role="tab" data-bs-toggle="tab">Tree</a>
     </li>
     <li class="nav-item">
-      <a href="#tree-branch-configurations" id="tree-branch-tab" class="nav-link" aria-controls="tree" role="tab" data-toggle="tab">Branches</a>
+      <a href="#tree-branch-configurations" id="tree-branch-tab" class="nav-link" aria-controls="tree" role="tab" data-bs-toggle="tab">Branches</a>
     </li>
     <li class="nav-item">
-      <a href="#tree-leaf-configurations" id="tree-leaf-tab" class="nav-link" aria-controls="tree" role="tab" data-toggle="tab">Leaves</a>
+      <a href="#tree-leaf-configurations" id="tree-leaf-tab" class="nav-link" aria-controls="tree" role="tab" data-bs-toggle="tab">Leaves</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -29,18 +29,18 @@
       <div class="accordion" id="tree-layout-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#tree-layout-controls-labels" aria-expanded="true" aria-controls="tree-layout-controls-labels" style="color:#495057">
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#tree-layout-controls-labels" aria-expanded="true" aria-controls="tree-layout-controls-labels" style="color:#495057">
               Layout
             </button>
           </div>
-          <div id="tree-layout-controls-labels" class="collapse show" data-parent="#tree-layout-controls-accordion">
+          <div id="tree-layout-controls-labels" class="collapse show" data-bs-parent="#tree-layout-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="What kind of layout would you like to use for this tree?">
                 <div class="col-3">
                   <label for="tree-type">Type</label>
                 </div>
                 <div class="col-9">
-                  <select id="tree-type" class="form-control form-control-sm">
+                  <select id="tree-type" class="form-select form-select-sm">
                     <option value="tree">Tree</option>
                     <option value="weighted" selected="selected">Weighted Dendrogram</option>
                     <option value="dendrogram">Unweighted Dendrogram</option>
@@ -71,7 +71,7 @@
                   <label for="tree-vertical-stretch">Vertical Stretch</label>
                 </div>
                 <div class="col-9">
-                  <input id="tree-vertical-stretch" type="range" class="custom-range" min="0.1" max="10" value="1" step="0.1">
+                  <input id="tree-vertical-stretch" type="range" class="form-range" min="0.1" max="10" value="1" step="0.1">
                 </div>
               </div>
               <div class="form-group row" title="Would you like to horizontally stretch (or squish) the Tree?">
@@ -79,7 +79,7 @@
                   <label for="tree-horizontal-stretch">Horizontal Stretch</label>
                 </div>
                 <div class="col-9">
-                  <input id="tree-horizontal-stretch" type="range" class="custom-range" min="0.1" max="10" value="1" step="0.1">
+                  <input id="tree-horizontal-stretch" type="range" class="form-range" min="0.1" max="10" value="1" step="0.1">
                 </div>
               </div>
             </div>
@@ -87,11 +87,11 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#tree-actions-controls-labels" aria-expanded="false" aria-controls="tree-actions-controls-labels" style="color:#495057">
+            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tree-actions-controls-labels" aria-expanded="false" aria-controls="tree-actions-controls-labels" style="color:#495057">
               Actions
             </button>
           </div>
-          <div id="tree-actions-controls-labels" class="collapse" data-parent="#tree-layout-controls-accordion">
+          <div id="tree-actions-controls-labels" class="collapse" data-bs-parent="#tree-layout-controls-accordion">
             <div class="card-body">
               <div class="form-group row">
                 <div class="col-6">
@@ -106,11 +106,11 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#tree-meta-controls-labels" aria-expanded="false" aria-controls="tree-meta-controls-labels" style="color:#495057">
+            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tree-meta-controls-labels" aria-expanded="false" aria-controls="tree-meta-controls-labels" style="color:#495057">
               Meta
             </button>
           </div>
-          <div id="tree-meta-controls-labels" class="collapse" data-parent="#tree-layout-controls-accordion">
+          <div id="tree-meta-controls-labels" class="collapse" data-bs-parent="#tree-layout-controls-accordion">
             <div class="card-body">
               <div class="form-group row hideForCircular" title="Would you like to see a ruler indicating patristic distances next to your tree?">
                 <div class="col-3">Ruler</div>
@@ -217,7 +217,7 @@
           <label for="tree-branch-distance-size">Label Size</label>
         </div>
         <div class="col-9">
-          <input id="tree-branch-distance-size" type="range" class="custom-range" min="1" max="32" value="6" step="1">
+          <input id="tree-branch-distance-size" type="range" class="form-range" min="1" max="32" value="6" step="1">
         </div>
       </div>
     </div>
@@ -225,9 +225,9 @@
       <div class="accordion" id="tree-leaf-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#tree-leaf-controls-labels" aria-expanded="true" aria-controls="tree-leaf-controls-labels" style="color:#495057">Labels and Tooltips</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#tree-leaf-controls-labels" aria-expanded="true" aria-controls="tree-leaf-controls-labels" style="color:#495057">Labels and Tooltips</button>
           </div>
-          <div id="tree-leaf-controls-labels" class="collapse show" data-parent="#tree-leaf-controls-accordion">
+          <div id="tree-leaf-controls-labels" class="collapse show" data-bs-parent="#tree-leaf-controls-accordion">
             <div class="card-body">
               <div class="form-group row tree-leaf-node-row">
                 <div class="col-3">
@@ -266,13 +266,13 @@
                   <label for="tree-leaf-label-size">Label Size</label>
                 </div>
                 <div class="col-9">
-                  <input id="tree-leaf-label-size" type="range" class="custom-range" min="1" max="32" value="6" step="1">
+                  <input id="tree-leaf-label-size" type="range" class="form-range" min="1" max="32" value="6" step="1">
                 </div>
               </div>
               <div class="form-group row" title="What field should be displayed as a label for the node?">
                 <div class="col-4"><label for="phylogenetic-node-label-variable">Label</label></div>
                 <div class="col-8">
-                  <select id="phylogenetic-node-label-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="phylogenetic-node-label-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -280,7 +280,7 @@
               <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
                 <div class="col-4"><label for="phylogenetic-node-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
-                  <select id="phylogenetic-node-tooltip-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="phylogenetic-node-tooltip-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -290,9 +290,9 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#tree-leaf-controls-geometry" aria-expanded="false" aria-controls="tree-leaf-controls-geometry" style="color:#495057">Shapes and Sizes</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#tree-leaf-controls-geometry" aria-expanded="false" aria-controls="tree-leaf-controls-geometry" style="color:#495057">Shapes and Sizes</button>
           </div>
-          <div id="tree-leaf-controls-geometry" class="collapse" data-parent="#tree-leaf-controls-accordion">
+          <div id="tree-leaf-controls-geometry" class="collapse" data-bs-parent="#tree-leaf-controls-accordion">
             <div class="card-body">
               <div class="form-group row">
                 <div class="col-3">Nodes</div>
@@ -312,7 +312,7 @@
               <div class="form-group row tree-leaf-node-row" title="Which variable should determine the size of the node?">
                 <div class="col-3"><label for="tree-leaf-node-radius-variable">Size By</label></div>
                 <div class="col-9">
-                  <select id="tree-leaf-node-radius-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="tree-leaf-node-radius-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -322,7 +322,7 @@
                   <label for="tree-leaf-node-size">Node Size</label>
                 </div>
                 <div class="col-9">
-                  <input id="tree-leaf-node-size" type="range" class="custom-range" min="1" max="32" value="9" step="1">
+                  <input id="tree-leaf-node-size" type="range" class="form-range" min="1" max="32" value="9" step="1">
                 </div>
               </div>
             </div>
@@ -330,7 +330,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-bs-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
@@ -344,14 +344,12 @@
   <a href="#" id="tree-reroot" class="dropdown-item">Set As Root</a>
 </div>
 
-<div id="tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+<div id="tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Export Phylogenetic Tree</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
@@ -359,7 +357,7 @@
             <input type="text" id="tree-export-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="tree-export-file-type" class="form-control form-control-sm">
+            <select id="tree-export-file-type" class="form-select form-select-sm">
               <option selected="selected">png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -370,7 +368,7 @@
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="tree-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#tree-export-advanced" aria-expanded="false" aria-controls="tree-export-advanced">Advanced</button>
+            <button id="tree-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#tree-export-advanced" aria-expanded="false" aria-controls="tree-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="tree-export-advanced" style="margin-top: 10px;">
@@ -385,14 +383,14 @@
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div id="tree-export-dimensions" class="col-9 text-right"></div>
+              <div id="tree-export-dimensions" class="col-9 text-end"></div>
             </div>
             <div class="row">
               <div class="col-3">
                 <label for="tree-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" class="custom-range" id="tree-export-quality" min="0" max="1.0" value="0.92" step="0.01">
+                <input type="range" class="form-range" id="tree-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>
@@ -407,8 +405,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-        <button type="button" id="tree-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="tree-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->

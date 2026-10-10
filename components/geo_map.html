@@ -4,7 +4,7 @@
   <button type="button" id="toggle-map-settings" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#map-export-modal"
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#map-export-modal"
     title="Export Map Data">
     <span class="oi oi-data-transfer-download"></span>
   </button>
@@ -17,19 +17,19 @@
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
       <a href="#map-data-configurations" class="nav-link active" aria-controls="map-data-configurations" role="tab"
-        data-toggle="tab">Data</a>
+        data-bs-toggle="tab">Data</a>
     </li>
     <li role="presentation" class="nav-item">
       <a href="#map-layer-configurations" class="nav-link" aria-controls="map-layer-configurations" role="tab"
-        data-toggle="tab">Components</a>
+        data-bs-toggle="tab">Components</a>
     </li>
     <li role="presentation" class="nav-item">
       <a href="#map-node-configurations" class="nav-link" aria-controls="map-node-configurations" role="tab"
-        data-toggle="tab">Nodes</a>
+        data-bs-toggle="tab">Nodes</a>
     </li>
     <li role="presentation" class="nav-item">
       <a href="#map-link-configurations" class="nav-link" aria-controls="map-link-configurations" role="tab"
-        data-toggle="tab">Links</a>
+        data-bs-toggle="tab">Links</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -38,16 +38,14 @@
         <div class="col-12">
           <div class="alert alert-info alert-dismissible" role="alert">
             Please select the most precise geographic data your inputs have.
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         </div>
       </div>
       <div class="form-group row" title="If your data have a latitude variable, select that here.">
         <div class="col-4"><label for="map-field-lat">Latitude</label></div>
         <div class="col-8">
-          <select id="map-field-lat" class="nodeVariables form-control form-control-sm">
+          <select id="map-field-lat" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -55,7 +53,7 @@
       <div class="form-group row" title="If your data have a longitude variable, select that here.">
         <div class="col-4"><label for="map-field-lon">Longitude</label></div>
         <div class="col-8">
-          <select id="map-field-lon" class="nodeVariables form-control form-control-sm">
+          <select id="map-field-lon" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -63,7 +61,7 @@
       <div class="form-group row" title="If your data have a Census Tract variable, select that here.">
         <div class="col-4"><label for="map-field-tract">Census Tract</label></div>
         <div class="col-8">
-          <select id="map-field-tract" class="nodeVariables form-control form-control-sm">
+          <select id="map-field-tract" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -71,7 +69,7 @@
       <div class="form-group row" title="If your data have a zipcode variable, select that here.">
         <div class="col-4"><label for="map-field-zipcode">Zipcode</label></div>
         <div class="col-8">
-          <select id="map-field-zipcode" class="nodeVariables form-control form-control-sm">
+          <select id="map-field-zipcode" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -79,7 +77,7 @@
       <div class="form-group row" title="If your data have a County variable, select that here.">
         <div class="col-4"><label for="map-field-county">County</label></div>
         <div class="col-8">
-          <select id="map-field-county" class="nodeVariables form-control form-control-sm">
+          <select id="map-field-county" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -87,7 +85,7 @@
       <div class="form-group row" title="If your data have a (US) State variable, select that here.">
         <div class="col-4"><label for="map-field-state">State</label></div>
         <div class="col-8">
-          <select id="map-field-state" class="nodeVariables form-control form-control-sm">
+          <select id="map-field-state" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -95,7 +93,7 @@
       <div class="form-group row" title="If your data have a Country variable, select that here.">
         <div class="col-4"><label for="map-field-country">Country</label></div>
         <div class="col-8">
-          <select id="map-field-country" class="nodeVariables form-control form-control-sm">
+          <select id="map-field-country" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -105,11 +103,11 @@
       <div class="accordion" id="map-layers-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#map-layers-network" aria-expanded="false" aria-controls="map-layers-network"
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse"
+              data-bs-target="#map-layers-network" aria-expanded="false" aria-controls="map-layers-network"
               style="color:#495057">Network</button>
           </div>
-          <div id="map-layers-network" class="collapse" data-parent="#map-layers-accordion">
+          <div id="map-layers-network" class="collapse" data-bs-parent="#map-layers-accordion">
             <div class="card-body">
               <div class="form-group row" title="Would you like to see Nodes on the map?">
                 <div class="col-4">Nodes</div>
@@ -142,9 +140,9 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-vectors" aria-expanded="true" aria-controls="map-layers-vectors" style="color:#495057">Offline</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#map-layers-vectors" aria-expanded="true" aria-controls="map-layers-vectors" style="color:#495057">Offline</button>
           </div>
-          <div id="map-layers-vectors" class="collapse show" data-parent="#map-layers-accordion">
+          <div id="map-layers-vectors" class="collapse show" data-bs-parent="#map-layers-accordion">
             <div class="card-body">
               <div class="form-group row" title="Would you like to see Countries on the map?">
                 <div class="col-4">Countries</div>
@@ -192,20 +190,18 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse"
-              data-target="#map-layers-tiles" aria-expanded="true" aria-controls="map-layers-tiles"
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse"
+              data-bs-target="#map-layers-tiles" aria-expanded="true" aria-controls="map-layers-tiles"
               style="color:#495057">Online</button>
           </div>
-          <div id="map-layers-tiles" class="collapse" data-parent="#map-layers-accordion">
+          <div id="map-layers-tiles" class="collapse" data-bs-parent="#map-layers-accordion">
             <div class="card-body">
               <div class="row">
                 <div class="col-12">
                   <div class="alert alert-warning alert-dismissible" role="alert">
                     Enabling any of the layers below will download tiles from the Internet. <a
                       href="https://github.com/CDCgov/MicrobeTrace/wiki/Tile-Maps">Read More.</a>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                 </div>
               </div>
@@ -242,26 +238,21 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#map-layers-user" aria-expanded="true" aria-controls="map-layers-user" style="color:#495057">User-Provided</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#map-layers-user" aria-expanded="true" aria-controls="map-layers-user" style="color:#495057">User-Provided</button>
           </div>
-          <div id="map-layers-user" class="collapse" data-parent="#map-layers-accordion">
+          <div id="map-layers-user" class="collapse" data-bs-parent="#map-layers-accordion">
             <div class="card-body">
               <div class="row">
                 <div class="col-12">
                   <div class="alert alert-info alert-dismissible" role="alert">
                     Load a GeoJSON file below to add it to the map.
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                 </div>
               </div>
               <div class="form-group row" title="Import GeoJSON Map Data here">
                 <div class="col-12">
-                  <div class="custom-file">
-                    <input type="file" id="map-file-input" class="custom-file-input" multiple>
-                    <label for="map-file-input" class="custom-file-label">Choose File</label>
-                  </div>
+                  <input type="file" id="map-file-input" class="form-control form-control-sm" multiple>
                 </div>
               </div>
               <div id="map-geojson-layers" class="form-group row" title="GeoJSON Layers"></div>
@@ -290,19 +281,19 @@
       </div>
       <div class="form-group row" title="How transparent would you like the nodes to be?">
         <div class="col-4"><label for="map-node-transparency">Transparency</label></div>
-        <div class="col-8"><input type="range" class="custom-range" id="map-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
+        <div class="col-8"><input type="range" class="form-range" id="map-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
       </div>
       <div class="form-group row" title="How much randomness do you want to add to node locations?">
         <div class="col-4">
           <label for="map-node-jitter">Jitter</label>
           <button id="map-node-jitter-reroll" class="btn btn-light btn-sm">Reroll</button>
         </div>
-        <div class="col-8"><input type="range" class="custom-range" id="map-node-jitter" min="-2" max="4" step="0.01" value="-2"></div>
+        <div class="col-8"><input type="range" class="form-range" id="map-node-jitter" min="-2" max="4" step="0.01" value="-2"></div>
       </div>
       <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
         <div class="col-4"><label for="map-node-tooltip-variable">Tooltip</label></div>
         <div class="col-8">
-          <select id="map-node-tooltip-variable" class="form-control form-control-sm nodeVariables">
+          <select id="map-node-tooltip-variable" class="form-select form-select-sm nodeVariables">
             <option selected>None</option>
           </select>
         </div>
@@ -315,12 +306,12 @@
       </div>
       <div class="form-group row" title="How transparent would you like links to be?">
         <div class="col-4"><label for="map-link-transparency">Transparency</label></div>
-        <div class="col-8"><input type="range" class="custom-range" id="map-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
+        <div class="col-8"><input type="range" class="form-range" id="map-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
       </div>
       <div class="form-group row" title="What link data would you like displayed as a tooltip for the link?">
         <div class="col-4"><label for="map-link-tooltip-variable">Tooltip</label></div>
         <div class="col-8">
-          <select id="map-link-tooltip-variable" class="linkVariables form-control form-control-sm">
+          <select id="map-link-tooltip-variable" class="linkVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -329,14 +320,12 @@
   </div>
 </div>
 
-<div id="map-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+<div id="map-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Export Geospatial Data</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
@@ -344,7 +333,7 @@
             <input type="text" id="map-export-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-4">
-            <select id="map-export-file-format" class="form-control form-control-sm">
+            <select id="map-export-file-format" class="form-select form-select-sm">
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -354,8 +343,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-        <button type="button" id="map-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="map-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->

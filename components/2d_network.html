@@ -11,7 +11,7 @@
   <button type="button" id="network-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Network Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#network-export-modal" title="Export Network">
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#network-export-modal" title="Export Network">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button id="fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
@@ -25,16 +25,16 @@
 <div id="network-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-      <a class="nav-link active" id="nodes-tab" data-toggle="tab" href="#network-node-settings" role="tab" aria-controls="network-node-settings" aria-selected="true">Nodes</a>
+      <a class="nav-link active" id="nodes-tab" data-bs-toggle="tab" href="#network-node-settings" role="tab" aria-controls="network-node-settings" aria-selected="true">Nodes</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="links-tab" data-toggle="tab" href="#network-link-settings" role="tab" aria-controls="network-link-settings" aria-selected="false">Links</a>
+      <a class="nav-link" id="links-tab" data-bs-toggle="tab" href="#network-link-settings" role="tab" aria-controls="network-link-settings" aria-selected="false">Links</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="network-tab" data-toggle="tab" href="#network-settings" role="tab" aria-controls="network-settings" aria-selected="false">Network</a>
+      <a class="nav-link" id="network-tab" data-bs-toggle="tab" href="#network-settings" role="tab" aria-controls="network-settings" aria-selected="false">Network</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="polygons-tab" data-toggle="tab" href="#network-polygons-settings" role="tab" aria-controls="network-polygons-settings" aria-selected="false">Polygons</a>
+      <a class="nav-link" id="polygons-tab" data-bs-toggle="tab" href="#network-polygons-settings" role="tab" aria-controls="network-polygons-settings" aria-selected="false">Polygons</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -42,26 +42,26 @@
       <div class="accordion" id="node-controls-accordion">
         <div class="card" style="overflow:visible">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#node-controls-labels" aria-expanded="true" aria-controls="node-controls-labels" style="color:#495057">Labels and Tooltips</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#node-controls-labels" aria-expanded="true" aria-controls="node-controls-labels" style="color:#495057">Labels and Tooltips</button>
           </div>
-          <div id="node-controls-labels" class="collapse show" data-parent="#node-controls-accordion">
+          <div id="node-controls-labels" class="collapse show" data-bs-parent="#node-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="What field should be displayed as a label for the node?">
                 <div class="col-4"><label for="node-label-variable">Label</label></div>
                 <div class="col-8">
-                  <select id="node-label-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="node-label-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
               <div class="form-group row node-label-row" title="How big should node labels be?">
                 <div class="col-4"><label for="node-label-size">Label Size</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="node-label-size" min="6" value="16" max="72"></div>
+                <div class="col-8"><input type="range" class="form-range" id="node-label-size" min="6" value="16" max="72"></div>
               </div>
               <div class="form-group row node-label-row" title="How should the labels be oriented relative to their nodes?">
                 <div class="col-4"><label for="node-label-orientation">Orientation</label></div>
                 <div class="col-8">
-                  <select id="node-label-orientation" class="form-control form-control-sm">
+                  <select id="node-label-orientation" class="form-select form-select-sm">
                     <option selected>Right</option>
                     <option>Left</option>
                     <option>Top</option>
@@ -73,7 +73,7 @@
               <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
                 <div class="col-4"><label for="node-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
-                  <select id="node-tooltip-variable"  class="form-control form-control-sm chosen-select" multiple title="What node data should be displayed as a tooltip for the node?">
+                  <select id="node-tooltip-variable"  class="form-select form-select-sm chosen-select" multiple title="What node data should be displayed as a tooltip for the node?">
                     <option>None</option>
                   </select>
                 </div>
@@ -83,14 +83,14 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-toggle="collapse" data-target="#node-controls-shapes" aria-expanded="false" aria-controls="node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+            <button class="bg-transparent border-0 w-100 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#node-controls-shapes" aria-expanded="false" aria-controls="node-controls-shapes" style="color:#495057">Shapes and Sizes</button>
           </div>
-          <div id="node-controls-shapes" class="collapse" data-parent="#node-controls-accordion">
+          <div id="node-controls-shapes" class="collapse" data-bs-parent="#node-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="Which variable should determine the shape of the node?">
                 <div class="col-4"><label for="node-symbol-variable">Shape By</label></div>
                 <div class="col-8">
-                  <select id="node-symbol-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="node-symbol-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -112,7 +112,7 @@
               <div id="node-symbol-row" class="form-group row" title="What shape should the nodes be?">
                 <div class="col-4"><label for="node-symbol">Shape</label></div>
                 <div class="col-8">
-                  <select id="node-symbol" class="form-control form-control-sm">
+                  <select id="node-symbol" class="form-select form-select-sm">
                     <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
                     <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
                     <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
@@ -137,22 +137,22 @@
               <div class="form-group row" title="Which variable should determine the size of the node?">
                 <div class="col-4"><label for="node-radius-variable">Size By</label></div>
                 <div class="col-8">
-                  <select id="node-radius-variable" class="form-control form-control-sm nodeVariables">
+                  <select id="node-radius-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
               <div id="node-max-radius-row" class="form-group row" title="Should node max radius to this variable?">
                 <div class="col-4"><label for="node-radius-max">Max Size</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="node-radius-max" min="100" value="4500" step="1" max="5000"></div>
+                <div class="col-8"><input type="range" class="form-range" id="node-radius-max" min="100" value="4500" step="1" max="5000"></div>
               </div>
               <div id="node-min-radius-row" class="form-group row" title="Should node min radius to this variable?">
                 <div class="col-4"><label for="node-radius-min">Min Size</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="node-radius-min" min="100" value="250" step="1" max="5000"></div>
+                <div class="col-8"><input type="range" class="form-range" id="node-radius-min" min="100" value="250" step="1" max="5000"></div>
               </div>
               <div id="node-radius-row" class="form-group row" title="How big should the nodes be?">
                 <div class="col-4"><label for="node-radius">Size</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="node-radius" min="100" value="250" step="1" max="5000">
+                <div class="col-8"><input type="range" class="form-range" id="node-radius" min="100" value="250" step="1" max="5000">
                 </div>
               </div>
               <div class="form-group row" title="How wide should the node border be?">
@@ -165,7 +165,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-bs-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
@@ -174,14 +174,14 @@
       <div class="accordion" id="link-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#link-controls-labels" aria-expanded="true" aria-controls="link-controls-labels" style="color:#495057">Labels and Tooltips</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#link-controls-labels" aria-expanded="true" aria-controls="link-controls-labels" style="color:#495057">Labels and Tooltips</button>
           </div>
-          <div id="link-controls-labels" class="collapse show" data-parent="#link-controls-accordion">
+          <div id="link-controls-labels" class="collapse show" data-bs-parent="#link-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="What data should be displayed when you hover over a link?">
                 <div class="col-4"><label for="link-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
-                  <select id="link-tooltip-variable" class="form-control form-control-sm linkVariables">
+                  <select id="link-tooltip-variable" class="form-select form-select-sm linkVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -189,7 +189,7 @@
               <div class="form-group row" title="What data should be displayed when you hover over a link?">
                 <div class="col-4"><label for="link-label-variable">Label</label></div>
                 <div class="col-8">
-                  <select id="link-label-variable" class="form-control form-control-sm linkVariables">
+                  <select id="link-label-variable" class="form-select form-select-sm linkVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -199,37 +199,37 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#link-controls-shapes" aria-expanded="false" aria-controls="link-controls-shapes" style="color:#495057">Shapes and Sizes</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#link-controls-shapes" aria-expanded="false" aria-controls="link-controls-shapes" style="color:#495057">Shapes and Sizes</button>
           </div>
-          <div id="link-controls-shapes" class="collapse" data-parent="#link-controls-accordion">
+          <div id="link-controls-shapes" class="collapse" data-bs-parent="#link-controls-accordion">
             <div class="card-body">
               <div id="link-transparency-row" class="form-group row" title="How transparent should the links be?">
                 <div class="col-4"><label for="link-opacity">Transparency</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="link-opacity" min="0" max="1" value="0" step="0.01"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-opacity" min="0" max="1" value="0" step="0.01"></div>
               </div>
               <div class="form-group row" title="Which variable should determine the width of a link?">
                 <div class="col-4"><label for="link-width-variable">Width By</label></div>
                 <div class="col-8">
-                  <select id="link-width-variable" class="form-control form-control-sm linkVariables">
+                  <select id="link-width-variable" class="form-select form-select-sm linkVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
               <div id="link-max-width-row" class="form-group row" title="Should link max widths to this variable?">
                 <div class="col-4"><label for="link-width-max">Max Width</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="link-width-max" min="0.3" max="30" step=".3" value="27"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-width-max" min="0.3" max="30" step=".3" value="27"></div>
               </div>
               <div id="link-min-width-row" class="form-group row" title="Should link min widths to this variable?">
                 <div class="col-4"><label for="link-width-min">Min Width</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="link-width-min" min="0.3" max="30" step=".3" value="3"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-width-min" min="0.3" max="30" step=".3" value="3"></div>
               </div>
               <div id="link-width-row" class="form-group row" title="How thick should the links be?">
                 <div class="col-4"><label for="link-width">Width</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="link-width" min="0.3" max="30" step=".3" value="3"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-width" min="0.3" max="30" step=".3" value="3"></div>
               </div>
               <div class="form-group row" title="How long should links be?">
                 <div class="col-4"><label for="link-length">Length</label></div>
-                <div class="col-8"><input type="range" class="custom-range" id="link-length" min="0" max="200" value="50"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-length" min="0" max="200" value="50"></div>
               </div>
               <div class="form-group row hideForHIVTrace" title="Shoul arrowheads pointing to the">
                 <div class="col-4">Arrows</div>
@@ -251,7 +251,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" data-bs-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
@@ -260,9 +260,9 @@
       <div class="accordion" id="network-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#network-controls-labels" aria-expanded="true" aria-controls="network-controls-labels" style="color:#495057">Display</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#network-controls-labels" aria-expanded="true" aria-controls="network-controls-labels" style="color:#495057">Display</button>
           </div>
-          <div id="network-controls-labels" class="collapse show" data-parent="#network-controls-accordion">
+          <div id="network-controls-labels" class="collapse show" data-bs-parent="#network-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
                 <div class="col-4">Neighbors</div>
@@ -301,32 +301,32 @@ Note that this may cause slow performance on larger networks.">
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#network-controls-physics" aria-expanded="false" aria-controls="network-controls-physics" style="color:#495057">Physics</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#network-controls-physics" aria-expanded="false" aria-controls="network-controls-physics" style="color:#495057">Physics</button>
           </div>
-          <div id="network-controls-physics" class="collapse" data-parent="#network-controls-accordion">
+          <div id="network-controls-physics" class="collapse" data-bs-parent="#network-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
                 <div class="col-4"><label for="node-charge">Charge</label></div>
                 <div class="col-8">
-                  <input type="range" class="custom-range" id="node-charge" min="0" max="400" value="200">
+                  <input type="range" class="form-range" id="node-charge" min="0" max="400" value="200">
                 </div>
               </div>
               <div class="form-group row" title="How attractive is the mass of the graph?">
                 <div class="col-4"><label for="network-gravity">Gravity</label></div>
                 <div class="col-8">
-                  <input type="range" class="custom-range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025">
+                  <input type="range" class="form-range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025">
                 </div>
               </div>
               <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
                 <div class="col-4"><label for="network-friction">Friction</label></div>
                 <div class="col-8">
-                  <input type="range" class="custom-range" id="network-friction" min="0" max="1" value="0.4" step="0.025">
+                  <input type="range" class="form-range" id="network-friction" min="0" max="1" value="0.4" step="0.025">
                 </div>
               </div>
               <div class="form-group row" title="How strong is the link?">
                 <div class="col-4"><label for="network-link-strength">Link Strength</label></div>
                 <div class="col-8">
-                  <input type="range" class="custom-range" id="network-link-strength" min="0" max="1" value="0.125" step="0.025">
+                  <input type="range" class="form-range" id="network-link-strength" min="0" max="1" value="0.125" step="0.025">
                 </div>
               </div>
             </div>
@@ -334,7 +334,7 @@ Note that this may cause slow performance on larger networks.">
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options collapsed" type="button" data-bs-toggle="collapse" aria-expanded="false" style="color:#495057">Colors</button>
           </div>
         </div>
       </div>
@@ -343,9 +343,9 @@ Note that this may cause slow performance on larger networks.">
       <div class="accordion" id="polygons-controls-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#polygons-controls-labels" aria-expanded="true" aria-controls="polygons-controls-labels" style="color:#495057">Polygon controls</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#polygons-controls-labels" aria-expanded="true" aria-controls="polygons-controls-labels" style="color:#495057">Polygon controls</button>
           </div>
-          <div id="polygons-controls-labels" class="collapse show" data-parent="#polygons-controls-accordion">
+          <div id="polygons-controls-labels" class="collapse show" data-bs-parent="#polygons-controls-accordion">
             <div class="card-body">
               <div class="form-group row" title="What data should be displayed when you hover over a link?">
                 <div class="col-4">Polygons</div>
@@ -365,7 +365,7 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row polygons-settings-row" title="What Foci should be used when creating convex hulls?">
                 <div class="col-4"><label for="polygons-foci">Center</label></div>
                 <div class="col-8">
-                  <select id="polygons-foci" class="form-control form-control-sm nodeVariables">
+                  <select id="polygons-foci" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -375,7 +375,7 @@ Note that this may cause slow performance on larger networks.">
                   <label for="polygons-gather-force">Gather</label>
                 </div>
                 <div class="col-8">
-                  <input type="range" class="custom-range" id="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
+                  <input type="range" class="form-range" id="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
                 </div>
               </div>
               <div class="form-group row polygons-settings-row" title="Show polygons colored?">
@@ -460,9 +460,7 @@ Note that this may cause slow performance on larger networks.">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Node Attributes</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="overflow: auto">
         <table class="table table-striped">
@@ -470,20 +468,18 @@ Note that this may cause slow performance on larger networks.">
         </table>
       </div>
       <div class="modal-footer">
-        <button type="submit" class="btn btn-primary" data-dismiss="modal" title="">OK</button>
+        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal" title="">OK</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="network-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+<div id="network-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Export Network Image</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
@@ -491,7 +487,7 @@ Note that this may cause slow performance on larger networks.">
             <input type="text" id="network-export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="network-export-filetype" class="form-control form-control-sm">
+            <select id="network-export-filetype" class="form-select form-select-sm">
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -501,7 +497,7 @@ Note that this may cause slow performance on larger networks.">
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="network-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-toggle="collapse" data-target="#network-export-advanced" aria-expanded="false" aria-controls="network-export-advanced">Advanced</button>
+            <button id="network-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#network-export-advanced" aria-expanded="false" aria-controls="network-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="network-export-advanced" style="margin-top: 10px;">
@@ -516,14 +512,14 @@ Note that this may cause slow performance on larger networks.">
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div id="network-export-dimensions" class="col-9 text-right"></div>
+              <div id="network-export-dimensions" class="col-9 text-end"></div>
             </div>
             <div class="row">
               <div class="col-3">
                 <label for="network-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" class="custom-range" id="network-export-quality" min="0" max="1.0" value="0.92" step="0.01">
+                <input type="range" class="form-range" id="network-export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>
@@ -538,8 +534,8 @@ Note that this may cause slow performance on larger networks.">
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-        <button type="button" id="network-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="network-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->

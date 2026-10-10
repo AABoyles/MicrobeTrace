@@ -4,7 +4,7 @@
   <button type="button" id="toggle-globe-settings" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#globe-export-modal" title="Export Map Data">
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#globe-export-modal" title="Export Map Data">
     <span class="oi oi-data-transfer-download"></span>
   </button>
   <button type="button" id="toggle-globe-autorotate" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Autorotation">
@@ -15,16 +15,16 @@
 <div id="globe-settings-pane" class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
-      <a href="#globe-data-configurations" class="nav-link active" aria-controls="globe-data-configurations" role="tab" data-toggle="tab">Data</a>
+      <a href="#globe-data-configurations" class="nav-link active" aria-controls="globe-data-configurations" role="tab" data-bs-toggle="tab">Data</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#globe-layer-configurations" class="nav-link" aria-controls="globe-layer-configurations" role="tab" data-toggle="tab">Layers</a>
+      <a href="#globe-layer-configurations" class="nav-link" aria-controls="globe-layer-configurations" role="tab" data-bs-toggle="tab">Layers</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#globe-node-configurations" class="nav-link" aria-controls="globe-node-configurations" role="tab" data-toggle="tab">Nodes</a>
+      <a href="#globe-node-configurations" class="nav-link" aria-controls="globe-node-configurations" role="tab" data-bs-toggle="tab">Nodes</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#globe-link-configurations" class="nav-link" aria-controls="globe-link-configurations" role="tab" data-toggle="tab">Links</a>
+      <a href="#globe-link-configurations" class="nav-link" aria-controls="globe-link-configurations" role="tab" data-bs-toggle="tab">Links</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -33,16 +33,14 @@
         <div class="col-12">
           <div class="alert alert-info alert-dismissible" role="alert">
             Please select the most precise geographic data your inputs have.
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         </div>
       </div>
       <div class="form-group row" title="If your data have a latitude variable, select that here.">
         <div class="col-4"><label for="globe-field-lat">Latitude</label></div>
         <div class="col-8">
-          <select id="globe-field-lat" class="nodeVariables form-control form-control-sm">
+          <select id="globe-field-lat" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -50,7 +48,7 @@
       <div class="form-group row" title="If your data have a longitude variable, select that here.">
         <div class="col-4"><label for="globe-field-lon">Longitude</label></div>
         <div class="col-8">
-          <select id="globe-field-lon" class="nodeVariables form-control form-control-sm">
+          <select id="globe-field-lon" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -58,7 +56,7 @@
       <div class="form-group row" title="If your data have a Census Tract variable, select that here.">
         <div class="col-4"><label for="globe-field-tract">Census Tract</label></div>
         <div class="col-8">
-          <select id="globe-field-tract" class="nodeVariables form-control form-control-sm">
+          <select id="globe-field-tract" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -66,7 +64,7 @@
       <div class="form-group row" title="If your data have a zipcode variable, select that here.">
         <div class="col-4"><label for="globe-field-zipcode">Zipcode</label></div>
         <div class="col-8">
-          <select id="globe-field-zipcode" class="nodeVariables form-control form-control-sm">
+          <select id="globe-field-zipcode" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -74,7 +72,7 @@
       <div class="form-group row" title="If your data have a County variable, select that here.">
         <div class="col-4"><label for="globe-field-county">County</label></div>
         <div class="col-8">
-          <select id="globe-field-county" class="nodeVariables form-control form-control-sm">
+          <select id="globe-field-county" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -82,7 +80,7 @@
       <div class="form-group row" title="If your data have a (US) State variable, select that here.">
         <div class="col-4"><label for="globe-field-state">State</label></div>
         <div class="col-8">
-          <select id="globe-field-state" class="nodeVariables form-control form-control-sm">
+          <select id="globe-field-state" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -90,7 +88,7 @@
       <div class="form-group row" title="If your data have a Country variable, select that here.">
         <div class="col-4"><label for="globe-field-country">Country</label></div>
         <div class="col-8">
-          <select id="globe-field-country" class="nodeVariables form-control form-control-sm">
+          <select id="globe-field-country" class="nodeVariables form-select form-select-sm">
             <option selected>None</option>
           </select>
         </div>
@@ -100,9 +98,9 @@
       <div class="accordion" id="globe-layers-accordion">
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-network" aria-expanded="false" aria-controls="globe-layers-network" style="color:#495057">Network</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#globe-layers-network" aria-expanded="false" aria-controls="globe-layers-network" style="color:#495057">Network</button>
           </div>
-          <div id="globe-layers-network" class="collapse" data-parent="#globe-layers-accordion">
+          <div id="globe-layers-network" class="collapse" data-bs-parent="#globe-layers-accordion">
             <div class="card-body">
               <div class="form-group row" title="Would you like to see Nodes on the globe?">
                 <div class="col-4">Nodes</div>
@@ -137,9 +135,9 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-vectors" aria-expanded="true" aria-controls="globe-layers-vectors" style="color:#495057">Geospatial</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#globe-layers-vectors" aria-expanded="true" aria-controls="globe-layers-vectors" style="color:#495057">Geospatial</button>
           </div>
-          <div id="globe-layers-vectors" class="collapse show" data-parent="#globe-layers-accordion">
+          <div id="globe-layers-vectors" class="collapse show" data-bs-parent="#globe-layers-accordion">
             <div class="card-body">
               <div class="form-group row" title="Would you like to see links on the globe?">
                 <div class="col-4">Stars</div>
@@ -190,26 +188,21 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100" type="button" data-toggle="collapse" data-target="#globe-layers-user" aria-expanded="true" aria-controls="globe-layers-user" style="color:#495057">User-Provided</button>
+            <button class="bg-transparent border-0 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#globe-layers-user" aria-expanded="true" aria-controls="globe-layers-user" style="color:#495057">User-Provided</button>
           </div>
-          <div id="globe-layers-user" class="collapse" data-parent="#globe-layers-accordion">
+          <div id="globe-layers-user" class="collapse" data-bs-parent="#globe-layers-accordion">
             <div class="card-body">
               <div class="row">
                 <div class="col-12">
                   <div class="alert alert-info alert-dismissible" role="alert">
                     Load a GeoJSON file below to add it to the globe.
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                 </div>
               </div>
               <div class="form-group row" title="Import GeoJSON Map Data here">
                 <div class="col-12">
-                  <div class="custom-file">
-                    <input type="file" id="globe-file-input" class="custom-file-input" multiple>
-                    <label for="globe-file-input" class="custom-file-label">Choose File</label>
-                  </div>
+                  <input type="file" id="globe-file-input" class="form-control form-control-sm" multiple>
                 </div>
               </div>
               <div id="globe-geojson-layers" class="form-group row" title="GeoJSON Layers"></div>
@@ -226,7 +219,7 @@
       <div class="form-group row" title="How transparent would you like the nodes to be?">
         <div class="col-4"><label for="globe-node-transparency">Transparency</label></div>
         <div class="col-8">
-          <input type="range" class="custom-range" id="globe-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00">
+          <input type="range" class="form-range" id="globe-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00">
         </div>
       </div>
       <div class="form-group row" title="How much randomness do you want to add to node locations?">
@@ -235,7 +228,7 @@
           <button id="globe-node-jitter-reroll" class="btn btn-light btn-sm">Reroll</button>
         </div>
         <div class="col-8">
-          <input type="range" class="custom-range" id="globe-node-jitter" min="-2" max="4" step="0.01" value="-2">
+          <input type="range" class="form-range" id="globe-node-jitter" min="-2" max="4" step="0.01" value="-2">
         </div>
       </div>
     </div>
@@ -247,21 +240,19 @@
       <div class="form-group row" title="How transparent would you like links to be?">
         <div class="col-4"><label for="globe-link-transparency">Transparency</label></div>
         <div class="col-8">
-          <input type="range" class="custom-range" id="globe-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00">
+          <input type="range" class="form-range" id="globe-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00">
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div id="globe-export-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="false">
+<div id="globe-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Export Geospatial Data</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
@@ -269,7 +260,7 @@
             <input type="text" id="globe-export-file-name" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-4">
-            <select id="globe-export-file-format" class="form-control form-control-sm">
+            <select id="globe-export-file-format" class="form-select form-select-sm">
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -279,8 +270,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-error" data-dismiss="modal">Cancel</button>
-        <button type="button" id="globe-export" class="btn btn-primary" data-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="globe-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
