@@ -698,13 +698,13 @@ button.btn,
 }
 
 /* MAP */
-#map {
+.map-canvas {
   width: 100%;
   height: 100%;
   background: #d3d9db;
   cursor: -webkit-grab;
 }
-#map:hover:active {
+.map-canvas:hover:active {
   cursor: hold;
 }
 #map-nodes circle.selected {

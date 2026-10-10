@@ -6,7 +6,6 @@ const fixtures = ['seqs.fasta', 'links.csv', 'nodes.csv'].map(f => path.join(__d
 // fix; remove its pattern when it is.
 const KNOWN_ERRORS = [
   /reading 'setAnimation'/, // phylogenetic tree: TidyTree before its first draw
-  /reading 'lat'/,          // geo map: nodes without coordinates
   /reading 'checked'/,      // files view: a radio read before the view exists
   /ga is not defined/,      // Google Analytics, blocked or offline
   /googletagmanager|google-analytics|doubleclick/
