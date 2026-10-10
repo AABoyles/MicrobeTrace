@@ -1,43 +1,28 @@
+// Flags each node's nearest neighbors (every link within epsilon of its shortest
+// link). Takes the condensed distance matrix (NaN where there's no link) of n
+// nodes and returns the flagged links as pairs of node positions.
 onmessage = function(e){
   const start = Date.now();
-  const links = e.data.links,
-      dm = e.data.matrix,
-      labels = Object.keys(dm),
-      epsilon = Math.pow(10, e.data.epsilon),
-      metric = e.data.metric;
-  const n = labels.length, m = links.length;
-  let output = new Uint8Array(m);
+  const n = e.data.n,
+      tri = e.data.matrix,
+      epsilon = Math.pow(10, e.data.epsilon);
+  const value = (i, j) => i < j ? tri[i * n - i * (i + 1) / 2 + j - i - 1] : tri[j * n - j * (j + 1) / 2 + i - j - 1];
+  let pairs = [];
   for(let i = 0; i < n; i++){
     let minDist = Number.MAX_VALUE;
-    let targets = [];
-    const nodeid = labels[i];
-    const row = dm[nodeid];
     for(let j = 0; j < n; j++){
-      let cell = row[labels[j]];
-      if(!cell) continue;
-      let value = cell[metric];
-      if(typeof value != 'number' || isNaN(value)) continue;
-      if(value < minDist) minDist = value;
+      if(j == i) continue;
+      const v = value(i, j);
+      if(v < minDist) minDist = v;
     }
     for(let h = 0; h < n; h++){
-      let node = labels[h];
-      let cell = row[node];
-      if(!cell) continue;
-      let value = cell[metric];
-      if(typeof value != 'number' || isNaN(value)) continue;
-      if(Math.abs(value - minDist) < epsilon){
-        targets.push(node);
-      }
-    }
-    for(let k = 0; k < m; k++){
-      let l = links[k];
-      if((l.source == nodeid && targets.includes(l.target)) ||
-         (l.target == nodeid && targets.includes(l.source))){
-        output[k] = 1;
-      }
+      if(h == i) continue;
+      const v = value(i, h);
+      if(v == v && Math.abs(v - minDist) < epsilon) pairs.push(i, h);
     }
   }
+  const output = Uint32Array.from(pairs);
   console.log('NN Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
-  postMessage({links: output.buffer, start: Date.now()}, [output.buffer]);
+  postMessage({pairs: output.buffer, start: Date.now()}, [output.buffer]);
   close();
 };

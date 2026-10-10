@@ -269,18 +269,16 @@ $(function() {
         .attr("width", width)
         .attr("height", height);
 
+    // Binned straight from the graph: there can be tens of millions of links
     let lsv = session.style.widgets["link-sort-variable"],
-      n = session.data.links.length,
+      g = session.data.graph,
       max = Number.MIN_SAFE_INTEGER,
-      min = Number.MAX_SAFE_INTEGER,
-      data = Array(n),
-      dist = null;
-    for (let i = 0; i < n; i++) {
-      dist = parseFloat(session.data.links[i][lsv]);
-      data[i] = dist;
-      if (dist < min) min = dist;
-      if (dist > max) max = dist;
-    }
+      min = Number.MAX_SAFE_INTEGER;
+    g.forEachValue(lsv, v => {
+      v = parseFloat(v);
+      if (v < min) min = v;
+      if (v > max) max = v;
+    });
     let range = max - min;
     let ticks = 40;
 
@@ -289,10 +287,15 @@ $(function() {
       .domain([min, max])
       .range([0, width]);
 
-    let bins = d3
-      .histogram()
-      .domain(x.domain())
-      .thresholds(x.ticks(ticks))(data);
+    // Same bins as d3.histogram with these thresholds
+    let thresholds = x.ticks(ticks).filter(t => t > min && t < max);
+    let edges = [min].concat(thresholds, [max]);
+    let bins = edges.slice(1).map((x1, i) => ({ x0: edges[i], x1: x1, length: 0 }));
+    g.forEachValue(lsv, v => {
+      v = parseFloat(v);
+      if (!(v >= min && v <= max)) return;
+      bins[Math.min(d3.bisectRight(thresholds, v), bins.length - 1)].length++;
+    });
 
     let y = d3
       .scaleLinear()
