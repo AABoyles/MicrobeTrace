@@ -34,6 +34,8 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `timeline.spec.js` | The epi curve: the date field, cumulation, brushing to hide nodes, colors, resizing and restoring |
 | `gantt.spec.js` | The Gantt chart: adding, changing and removing dates, colors, redraws, restoring and export |
 | `bubbles.spec.js` | The bubbles: grouping, size, selection, colors, redraws, restoring and export |
+| `phylogenetic_tree.spec.js` | The tree: layout, type and branch settings, leaf sizes, colors, labels and tooltips, selection, the context menu, restoring and export |
+| `globe.spec.js` | The globe: placing nodes, links, layers, transparency, jitter, turning, redraws, restoring and export |
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.

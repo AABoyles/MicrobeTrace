@@ -33,7 +33,7 @@ secondaryscripts=(
   "node_modules/d3-polygon/dist/d3-polygon.min.js"
   "temp.plotly.js"
   "node_modules/moment/min/moment-with-locales.min.js"
-  "node_modules/tidytree/dist/tidytree.min.js"
+  "temp.tidytree.js"
   "node_modules/leaflet/dist/leaflet.js"
   "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
   "node_modules/leaflet-image/leaflet-image.js"
@@ -111,6 +111,9 @@ for module in screenfull devtools-detect; do
   name=$( [ $module = screenfull ] && echo screenfull || echo devtools )
   { echo "{"; sed "s/^export default $name;$/window.$name = $name;/" node_modules/$module/index.js; echo "}"; } > temp.$module.js
 done
+
+# TidyTree, with interrupted redraws no longer rejecting (see scripts/patch-tidytree.js)
+node scripts/patch-tidytree.js temp.tidytree.js || exit 1
 
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.

@@ -2173,18 +2173,17 @@
     if (!show && map.hasLayer(layer)) layer.remove();
   };
 
-  // Lets the user add GeoJSON files to a map: each file chosen with `input`
-  // becomes a layer, listed in `list` with a color picker and a remove button.
-  // Returns the set of these layers.
-  MT.geoJSONUpload = (input, list, map) => {
-    const added = new Set();
+  // Lets the user add GeoJSON files to a map: each file chosen with `input` is
+  // given to add(data, color), which draws it and returns { setColor(color),
+  // remove() }. Each is listed in `list` with a color picker and a remove
+  // button.
+  MT.geoJSONUpload = (input, list, add, color = '#000000') => {
     input.addEventListener('change', () => {
       Array.from(input.files).forEach(file => {
         if (!file.name.endsWith('json')) return alert('Only GeoJSON Files are currently Supported.');
         file.text().then(text => {
-          const layer = L.geoJSON(JSON.parse(text), { color: '#000', weight: 0.75, fillColor: '#fafaf8', fillOpacity: 0.5 }).addTo(map);
-          added.add(layer);
-          const name = document.createElement('div'), remove = document.createElement('a'), colorCell = document.createElement('div'), color = document.createElement('input');
+          const layer = add(JSON.parse(text), color);
+          const name = document.createElement('div'), remove = document.createElement('a'), colorCell = document.createElement('div'), picker = document.createElement('input');
           name.className = 'col-9';
           name.textContent = file.name.split('.').slice(0, -1).join('.');
           remove.href = '#';
@@ -2192,23 +2191,151 @@
           remove.title = 'Remove this file';
           name.prepend(remove);
           colorCell.className = 'col-3';
-          color.type = 'color';
-          color.className = 'w-100';
-          colorCell.append(color);
-          color.addEventListener('change', () => layer.setStyle({ color: color.value }));
+          picker.type = 'color';
+          picker.className = 'w-100';
+          picker.value = color;
+          colorCell.append(picker);
+          picker.addEventListener('change', () => layer.setColor(picker.value));
           remove.addEventListener('click', e => {
             e.preventDefault();
             name.remove();
             colorCell.remove();
             layer.remove();
-            added.delete(layer);
           });
           list.append(name, colorCell);
         });
       });
       input.value = '';
     });
+  };
+
+  // MT.geoJSONUpload onto a Leaflet map. Returns the set of the added layers.
+  MT.leafletGeoJSONUpload = (input, list, map) => {
+    const added = new Set();
+    MT.geoJSONUpload(input, list, (data, color) => {
+      const layer = L.geoJSON(data, { color, weight: 0.75, fillColor: '#fafaf8', fillOpacity: 0.5 }).addTo(map);
+      added.add(layer);
+      return {
+        setColor: color => layer.setStyle({ color }),
+        remove: () => { layer.remove(); added.delete(layer); }
+      };
+    });
     return added;
+  };
+
+  // Placing nodes on a map. The kinds of location field, from the least
+  // precise to the most: a node takes the most precise location it has.
+  MT.locationKinds = ['country', 'state', 'county', 'zipcode', 'tract'];
+
+  // With none of a view's location fields (prefix + kind) chosen, node fields
+  // named for them are used
+  MT.pickLocationFields = (settings, prefix) => {
+    const kinds = [...MT.locationKinds, 'lat', 'lon'];
+    if (kinds.some(kind => ![undefined, null, 'None'].includes(settings.get(prefix + kind)))) return;
+    kinds.forEach(kind => {
+      if (session.data.nodeFields.includes(kind)) settings.set(prefix + kind, kind);
+    });
+  };
+
+  // Where each of `nodes` is, as a Map of _id to [lat, lon]. field(kind) is
+  // the node field holding that kind of location (or a latitude, 'lat', or
+  // longitude, 'lon'), or null.
+  MT.locateNodes = async (nodes, field) => {
+    const files = {
+      countries: field('country') && 'countries.json',
+      states: (field('state') || field('county')) && 'states.json',
+      counties: field('county') && 'counties.json',
+      zipcodes: field('zipcode') && 'zipcodes.csv',
+      tracts: field('tract') && 'tracts.csv'
+    };
+    const data = {};
+    await Promise.all(Object.entries(files).filter(([, file]) => file).map(([name, file]) => MT.getMapData(file).then(rows => data[name] = rows)));
+
+    // Each map file, indexed by the values that match its places
+    const index = (rows, keys) => {
+      const index = new Map();
+      rows.forEach(row => keys(row).forEach(k => {
+        if (k != null && k === k && k !== '') index.set(String(k), row);
+      }));
+      return index;
+    };
+    const lookup = (index, value) => {
+      if (value == null || value === '') return;
+      const number = parseFloat(value);
+      return index.get(String(value)) || (isFinite(number) && index.get(String(number))) || undefined;
+    };
+    const at = place => place && [parseFloat(place._lat), parseFloat(place._lon)];
+    const coordinate = (value, negative) => typeof value == 'string' ? (value.toUpperCase().includes(negative) ? -1 : 1) * parseFloat(value) : value;
+
+    const places = {};
+    if (data.countries) {
+      const i = index(data.countries.features, f => [f.id, f.properties.name]);
+      places.country = d => { const c = lookup(i, d[field('country')]); return c && at(c.properties); };
+    }
+    let stateOf = () => undefined;
+    if (data.states) {
+      const i = index(data.states.features, f => [f.properties.usps, f.properties.name, f.properties.name.toLowerCase()]);
+      stateOf = d => {
+        const v = field('state') && d[field('state')];
+        if (v == null || v === '') return;
+        return lookup(i, v) || lookup(i, String(v).toUpperCase()) || lookup(i, String(v).toLowerCase());
+      };
+      if (field('state')) places.state = d => { const s = stateOf(d); return s && at(s.properties); };
+    }
+    if (data.counties) {
+      const i = index(data.counties.features, f => [f.properties.fips]);
+      places.county = d => {
+        const v = d[field('county')];
+        let county = lookup(i, v);
+        // Otherwise by name, within the node's state
+        if (!county && typeof v == 'string' && v) {
+          const state = stateOf(d), name = v.toLowerCase();
+          if (state) county = data.counties.features.find(c => c.properties.state == state.properties.usps &&
+            (c.properties.name.includes(name) || name.includes(c.properties.name)));
+        }
+        return county && at(county.properties);
+      };
+    }
+    if (data.zipcodes) {
+      const i = index(data.zipcodes, z => [z.zipcode]);
+      places.zipcode = d => at(lookup(i, d[field('zipcode')]));
+    }
+    if (data.tracts) {
+      const i = index(data.tracts, t => [t.tract]);
+      places.tract = d => at(lookup(i, d[field('tract')]));
+    }
+    const lat = field('lat'), lon = field('lon');
+    const positions = new Map();
+    nodes.forEach(d => {
+      let position;
+      MT.locationKinds.forEach(kind => {
+        const p = places[kind] && places[kind](d);
+        if (p && isFinite(p[0]) && isFinite(p[1])) position = p;
+      });
+      if (lat && lon) {
+        const p = [coordinate(d[lat], 'S'), coordinate(d[lon], 'W')];
+        if (typeof p[0] == 'number' && typeof p[1] == 'number' && isFinite(p[0]) && isFinite(p[1])) position = p;
+      }
+      if (position) positions.set(d._id, position);
+    });
+    return positions;
+  };
+
+  // Random offsets for map positions, as the jitter setting (a power of 2, or
+  // -2 for none) says. at(id, [lat, lon]) moves a position; reroll() picks new
+  // offsets.
+  MT.jitterer = amount => {
+    const offsets = new Map();
+    return {
+      at(id, [lat, lon]) {
+        const scale = amount() == -2 ? 0 : Math.pow(2, amount());
+        if (!scale) return [lat, lon];
+        if (!offsets.has(id)) offsets.set(id, [MT.r01() * Math.PI * 2, MT.r01()]);
+        const [theta, j] = offsets.get(id);
+        return [lat + scale * j * Math.sin(theta), lon + scale * j * Math.cos(theta)];
+      },
+      reroll: () => offsets.clear()
+    };
   };
 
   // Saves an image of a Leaflet map. draw(context, canvas), if given, adds to
