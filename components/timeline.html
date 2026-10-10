@@ -1,28 +1,28 @@
-<div id="timeline"></div>
+<div class="timeline-chart"></div>
 
 <div class="view-controls">
-  <button type="button" id="timeline-toggle-settings" class="btn btn-light btn-sm" data-toggle="button">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Epi Curve Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <!-- <button type="button" id="timeline-play" class="btn btn-light btn-sm">
-    <span class="oi oi-media-play"></span>
-  </button> -->
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#timeline-export-modal" title="Export Epi Curve">
+    <span class="oi oi-data-transfer-download"></span>
+  </button>
 </div>
 
-<div id="timeline-settings-pane" class="left-pane">
+<div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a href="#timeline-configurations" id="timeline-nodes-tab" class="nav-link active" aria-controls="timeline-configurations" role="tab" data-bs-toggle="tab">Epi Curve</a>
+      <a href="#timeline-configurations" class="nav-link active" aria-controls="timeline-configurations" role="tab" data-bs-toggle="tab">Epi Curve</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel" aria-labelledby="timeline-nodes-tab">
+    <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel">
       <div class="form-group row" title="Which variable in your data contains the date?">
         <div class="col-4">
           <label for="timeline-date-field">Date Field</label>
         </div>
         <div class="col-8">
-          <select id="timeline-date-field" class="form-select form-select-sm w-100 nodeVariables"></select>
+          <select id="timeline-date-field" class="form-select form-select-sm nodeVariables" data-setting="timeline-date-field"></select>
         </div>
       </div>
       <div class="form-group row" title="Should the Epi Curve be cumulative, or not?">
@@ -30,244 +30,193 @@
         <div class="col-8">
           <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="timeline-cumulation" id="timeline-noncumulative" autocomplete="off" checked>
+              <input type="radio" name="timeline-cumulation" data-setting="timeline-noncumulative" value="true" autocomplete="off" checked>
               Noncumulative
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="timeline-cumulation" id="timeline-cumulative" autocomplete="off">
+              <input type="radio" name="timeline-cumulation" data-setting="timeline-noncumulative" value="false" autocomplete="off">
               Cumulative
             </label>
           </div>
         </div>
       </div>
-      <!-- <div class="form-group row" title="How quickly would you like the timeline to advance?">
-        <div class="col-4"><label for="timeline-speed">Play Speed</label></div>
-        <div class="col-8">
-          <input type="range" class="form-range" id="timeline-speed" min="0" max="100" step="10">
-        </div>
-      </div> -->
     </div>
   </div>
 </div>
 
+<div id="timeline-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Export Epi Curve</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-9">
+            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+          </div>
+          <div class="col-3">
+            <select name="export-filetype" class="form-select form-select-sm">
+              <option selected>png</option>
+              <option>jpeg</option>
+              <option>webp</option>
+              <option>svg</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row mb-0">
+          <div class="col-3 offset-9">
+            <button class="btn btn-primary btn-sm w-100 export-advanced-button" type="button" data-bs-toggle="collapse" data-bs-target="#timeline-export-advanced" aria-expanded="false" aria-controls="timeline-export-advanced">Advanced</button>
+          </div>
+        </div>
+        <div class="collapse" id="timeline-export-advanced" style="margin-top: 10px;">
+          <div class="card card-body">
+            <div class="form-group row">
+              <div class="col-3">
+                <label for="timeline-export-scale">Scale</label>
+              </div>
+              <div class="col-9">
+                <input type="number" id="timeline-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-3">Resolution</div>
+              <div class="col-9 text-end export-dimensions"></div>
+            </div>
+            <div class="row">
+              <div class="col-3">
+                <label for="timeline-export-quality">Quality</label>
+              </div>
+              <div class="col-9">
+                <input type="range" class="form-range" id="timeline-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="col-3">
+            <label for="timeline-export-opacity">Watermark Opacity</label>
+          </div>
+          <div class="col-9">
+            <input type="range" id="timeline-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <script>
-  (function () {
+  MT.registerView('timeline', (root, { settings, events }) => {
     ga('set', 'page', '/timeline');
     ga('set', 'title', 'Timeline View');
     ga('send', 'pageview');
 
-    var width,
-      height,
-      middle,
-      svg,
-      timeDomainStart,
-      timeDomainEnd,
-      x,
-      y,
-      histogram,
-      brush,
-      brushG,
-      selection,
-      timer,
-      tick = 0,
-      isPlaying = false,
-      margin = { top: 50, left: 20, right: 20, bottom: 30 };
+    const $ = selector => root.querySelector(selector);
+    const chart = $('.timeline-chart');
+    const pane = $('.left-pane');
+    const margin = { top: 50, left: 20, right: 20, bottom: 30 };
+    const tickFormat = d3.timeFormat('%Y-%m-%d');
+    const svg = d3.select(chart).append('svg');
+    const curve = svg.append('g').attr('class', 'timeline-epi-curve').attr('transform', `translate(${margin.left},0)`);
+    const axis = svg.append('g').attr('class', 'axis axis--x');
+    const brushG = svg.append('g').attr('class', 'brush').attr('transform', `translate(${margin.left},0)`);
+    let x;
 
-    function refresh() {
-      var wrapper = $("#timeline").empty().parent();
-      var tickFormat = d3.timeFormat("%Y-%m-%d");
-      width = wrapper.width() - margin.left - margin.right;
-      height = wrapper.height() - margin.top - margin.bottom;
-      middle = height / 2;
+    // A node's date, or null
+    const dateOf = value => {
+      if (value == null || value === '') return null;
+      const time = moment(value);
+      return time.isValid() ? time.toDate() : null;
+    };
 
-      var field = $("#timeline-date-field").val();
-      var times = [],
-        vnodes = JSON.parse(JSON.stringify(session.data.nodes));
-      vnodes.forEach(d => {
-        var time = moment(d[field]);
-        if (time.isValid()) {
-          d[field] = time.toDate();
-          times.push(d[field]);
-        } else {
-          d[field] = null;
-        }
-      });
-      if (times.length < 2) {
-        times = [new Date(2000, 1, 1), new Date()];
-      }
-      timeDomainStart = Math.min(...times);
-      timeDomainEnd = Math.max(...times);
+    function draw() {
+      const width = root.clientWidth - margin.left - margin.right;
+      const height = root.clientHeight - margin.top - margin.bottom;
+      // A view in a background tab has no size; it draws when it's shown
+      if (width <= 0 || height <= 0) return;
+      // The chart's padding is the top margin
+      svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.bottom);
 
-      x = d3
-        .scaleTime()
-        .domain([timeDomainStart, timeDomainEnd])
-        .rangeRound([0, width]);
+      const field = settings.get('timeline-date-field');
+      const dates = field && field != 'None' ? session.data.nodes.map(d => dateOf(d[field])).filter(d => d) : [];
+      const domain = dates.length > 1 ? d3.extent(dates) : [new Date(2000, 1, 1), new Date()];
+      x = d3.scaleTime().domain(domain).rangeRound([0, width]);
+      const bins = d3.bin().domain(x.domain()).thresholds(d3.thresholdScott)(dates);
+      const counts = bins.map(b => b.length);
+      if (!settings.get('timeline-noncumulative')) counts.forEach((c, i) => { if (i) counts[i] += counts[i - 1]; });
+      const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(counts) || 1]);
 
-      y = d3.scaleLinear().range([height, 0]);
-
-      histogram = d3
-        .histogram()
-        .value(d => d[field])
-        .domain(x.domain())
-        .thresholds(d3.thresholdScott); 
-        // .thresholds(d3.thresholdFreedmanDiaconis);  #205
-
-      svg = d3
-        .select("#timeline")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom);
-
-      var epiCurve = svg
-        .append("g")
-        .classed("timeline-epi-curve", true)
-        .attr("transform", "translate(" + margin.left + ",0)");
-
-      var bins = histogram(vnodes);
-
-      if (!session.style.widgets["timeline-noncumulative"]) {
-        var sum = 0;
-        bins.forEach(bin => {
-          sum += bin.length;
-          bin.length = sum;
-        });
-      }
-
-      // Scale the range of the data in the y domain
-      y.domain([0, d3.max(bins, d => d.length)]);
-
-      // append the bar rectangles to the svg element
-      epiCurve
-        .selectAll("rect")
+      curve.selectAll('rect.bar')
         .data(bins)
-        .enter()
-        .append("rect")
-        .attr("transform", d => `translate(${x(d.x0)},${y(d.length)})`)
-        .attr("width", d => x(d.x1) - x(d.x0))
-        .attr("height", d => height - y(d.length))
-        .attr("fill", session.style.widgets["node-color"]);
+        .join('rect')
+        .attr('class', 'bar')
+        .attr('data-count', (d, i) => counts[i])
+        .attr('transform', (d, i) => `translate(${x(d.x0)},${y(counts[i])})`)
+        .attr('width', d => Math.max(0, x(d.x1) - x(d.x0)))
+        .attr('height', (d, i) => height - y(counts[i]))
+        .attr('fill', settings.get('node-color'));
 
-      svg
-        .append("g")
-        .attr("class", "axis axis--x")
-        .attr("transform", "translate(" + margin.left + "," + height + ")")
-        .call(
-          d3
-            .axisBottom(x)
-            .tickSize(8)
-            .tickPadding(8)
-            .tickFormat(tickFormat)
-        )
-        .attr("text-anchor", null)
-        .selectAll("text")
-        .attr("x", 6);
+      axis
+        .attr('transform', `translate(${margin.left},${height})`)
+        .call(d3.axisBottom(x).tickSize(8).tickPadding(8).tickFormat(tickFormat))
+        .attr('text-anchor', null)
+        .selectAll('text')
+        .attr('x', 6);
 
-      brush = d3
-        .brushX()
-        .extent([[0, 0], [width, height]])
-        .on("start brush", function () {
-          selection = d3.brushSelection(brushG.node());
-          if (!selection) return;
-          if (selection[0] > 0) {
-            selection[0] = 0;
-            brushG.call(brush.move, selection);
-          }
-        })
-        .on("end", function () {
-          selection = d3.brushSelection(brushG.node());
-          if (!selection) return;
-          if (selection[0] > 0) {
-            selection[0] = 0;
-            brushG.call(brush.move, selection);
-            propagate();
-          }
-        });
-
-      brushG = svg
-        .append("g")
-        .attr("class", "brush")
-        .attr("transform", "translate(" + margin.left + ",0)")
-        .call(brush);
+      brush.extent([[0, 0], [width, height]]);
+      brushG.call(brush);
+      // Keep the brushed range, if it's in view
+      const end = session.state.timeEnd;
+      brushG.call(brush.move, end && end < domain[1] && end > domain[0] ? [0, x(end)] : null);
     }
 
-    $("#timeline-play").click(function () {
-      var $this = $(this);
-      if (isPlaying) {
-        $this.html('<span class="oi oi-media-play"></span>');
-        timer.stop();
-        isPlaying = false;
-      } else {
-        $this.html('<span class="oi oi-media-pause"></span>');
-        isPlaying = true;
-        setTimer();
-      }
+    // Brushing hides the nodes after the brushed range. The range always starts
+    // at the beginning.
+    const brush = d3.brushX().on('brush end', event => {
+      if (!event.sourceEvent) return;
+      const selection = event.selection;
+      if (selection && selection[0] > 0) brushG.call(brush.move, [0, selection[1]]);
+      if (event.type == 'end') filter(selection ? x.invert(selection[1]) : null);
     });
 
-    function setTimer() {
-      if (timer) {
-        timer.stop();
-        d3.timerFlush();
-      }
-      timer = d3.interval(function () {
-        var selection = d3.brushSelection(brushG.node());
-        if (!selection) return timer.stop(); // Ignore empty selections
-        if (selection[1] >= width) {
-          $("#timeline-play").click();
-          return;
-        }
-        brushG.call(brush.move, selection.map(s => s + 1));
-        if(++tick % 5 == 0) propagate();
-      }, 110 - parseInt($("#timeline-speed").val()));
-      if (!isPlaying) timer.stop();
-    }
-
-    function propagate(){
-      session.state.timeStart = x.invert(selection[0]);
-      session.state.timeEnd = x.invert(selection[1]);
+    function filter(end) {
+      // With no range, nothing is hidden
+      session.state.timeEnd = end ? end.getTime() : Date.now();
       MT.setNodeVisibility(true);
       MT.setLinkVisibility(true);
       MT.tagClusters().then(() => {
-        ["node", "link"].forEach(function (thing) {
-          $window.trigger(thing + "-visibility");
-        });
+        events.emit('node-visibility');
+        events.emit('link-visibility');
       });
     }
 
-    $("#timeline-toggle-settings")
-      .click(function () {
-        var pane = $("#timeline-settings-pane");
-        if ($(this).hasClass('active')) {
-          pane.animate({ left: "-400px" }, function () {
-            pane.hide();
-          });
-        } else {
-          pane.show(0, function () {
-            pane.animate({ left: "0px" });
-          });
-        }
-      })
-      .trigger("click");
+    const setColor = () => curve.selectAll('rect.bar').attr('fill', settings.get('node-color'));
+    const setBackground = () => {
+      chart.style.background = settings.get('background-color');
+      axis.style('color', settings.get('background-color-contrast'));
+    };
 
-    $("#timeline-date-field").on("change", function () {
-      session.style.widgets["timeline-date-field"] = this.value;
-      refresh();
-    });
+    MT.paneToggle($('.settings-toggle'), pane, true);
+    MT.svgExport(root, () => svg.node(), settings);
 
-    $('[name="timeline-cumulation"]').on("change", function () {
-      session.style.widgets["timeline-noncumulative"] =
-        $("#timeline-noncumulative").is(":checked");
-      refresh();
-    });
+    const stop = [
+      MTBind(pane, settings),
+      settings.subscribe(['timeline-date-field', 'timeline-noncumulative'], draw),
+      events.on('node-color-change', setColor),
+      events.on('background-color-change', setBackground)
+    ];
+    draw();
+    setBackground();
 
-    $window.on("node-color-change", function () {
-      svg
-        .select(".timeline-epi-curve")
-        .selectAll("rect")
-        .attr("fill", session.style.widgets["node-color"]);
-    });
-
-    $("#timeline-speed").on("change", setTimer);
-
-    layout.on("stateChanged", refresh);
-  })();
+    return {
+      resize: draw,
+      destroy: () => stop.forEach(fn => fn())
+    };
+  });
 </script>

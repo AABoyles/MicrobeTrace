@@ -1,28 +1,25 @@
-<div id="gantt"></div>
+<div class="gantt"></div>
 
 <div class="view-controls">
-  <button type="button" id="toggle-gantt-settings" data-toggle="button" class="btn btn-light btn-sm">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Gantt Settings">
     <span class="oi oi-cog"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#gantt-export-modal"
-    title="Export Gantt">
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#gantt-export-modal" title="Export Gantt">
     <span class="oi oi-data-transfer-download"></span>
   </button>
 </div>
 
-<div id="gantt-settings-pane" class="left-pane">
-  <!-- Nav tabs -->
+<div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
-      <a href="#ganttConfigurations" id="gantt-tab" class="nav-link active" aria-controls="gantt" role="tab"
-        data-bs-toggle="tab">Gantt</a>
+      <a href="#gantt-configurations" class="nav-link active" aria-controls="gantt-configurations" role="tab" data-bs-toggle="tab">Gantt</a>
     </li>
   </ul>
-  <!-- Tab panes -->
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="ganttConfigurations" style="max-height: 900px; overflow-y: auto;" role="tabpanel" aria-labelledby="gantt-tab">
+    <div class="tab-pane fade show active" id="gantt-configurations" style="max-height: 900px; overflow-y: auto;" role="tabpanel">
+      <div class="gantt-dates"></div>
       <div class="form-group row">
-        <div class="col"><button id="addDate" type="button" class="btn btn-light w-100">Add Date</button></div>
+        <div class="col"><button type="button" class="btn btn-light w-100 add-date">Add Date</button></div>
       </div>
     </div>
   </div>
@@ -32,16 +29,16 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Gantt Diagram</h5>
+        <h5 class="modal-title">Export Gantt</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="gantt-export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="gantt-export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" class="form-select form-select-sm">
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -51,7 +48,7 @@
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="gantt-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
+            <button class="btn btn-primary btn-sm w-100 export-advanced-button" type="button" data-bs-toggle="collapse" data-bs-target="#gantt-export-advanced" aria-expanded="false" aria-controls="gantt-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="gantt-export-advanced" style="margin-top: 10px;">
@@ -61,19 +58,19 @@
                 <label for="gantt-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="gantt-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <input type="number" id="gantt-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
               </div>
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div id="gantt-export-dimensions" class="col-9 text-end"></div>
+              <div class="col-9 text-end export-dimensions"></div>
             </div>
             <div class="row">
               <div class="col-3">
                 <label for="gantt-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" class="form-range" id="gantt-export-quality" min="0" max="1.0" value="0.92" step="0.01">
+                <input type="range" class="form-range" id="gantt-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>
@@ -83,315 +80,185 @@
             <label for="gantt-export-opacity">Watermark Opacity</label>
           </div>
           <div class="col-9">
-            <input type="range" id="gantt-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
+            <input type="range" id="gantt-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="gantt-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
 <script>
-  (function () {
+  MT.registerView('gantt', (root, { settings, events }) => {
     ga('set', 'page', '/gantt');
     ga('set', 'title', 'Gantt View');
     ga('send', 'pageview');
-    
-    let bars = [];
-    let margin = {
-      top: 40,
-      right: 20,
-      bottom: 0,
-      left: 80
+
+    const $ = selector => root.querySelector(selector);
+    const pane = $('.left-pane');
+    const list = $('.gantt-dates');
+    const tickFormat = d3.timeFormat('%Y-%m-%d');
+    const margin = { top: 40, right: 20, bottom: 30, left: 80 };
+    const svg = d3.select($('.gantt')).append('svg');
+    const chart = svg.append('g').attr('class', 'gantt-chart');
+    const xAxis = svg.append('g').attr('class', 'x-axis');
+    const yAxis = svg.append('g').attr('class', 'y-axis');
+    const hover = svg.append('g').attr('class', 'mouse-over-effects').style('opacity', 0);
+    const hoverLine = hover.append('path').attr('class', 'mouse-line').style('stroke', 'black').style('stroke-width', '1px');
+    const hoverDate = hover.append('text').attr('y', margin.top - 5).attr('text-anchor', 'middle');
+    const hoverBox = svg.append('rect').attr('fill', 'none').attr('pointer-events', 'all');
+
+    // The dates drawn: each a start field, an end field (or None), a color and
+    // a transparency
+    const dates = () => settings.get('gantt-dates') || [];
+    const setDates = value => settings.set('gantt-dates', value);
+    const update = (i, change) => setDates(dates().map((d, j) => j == i ? { ...d, ...change } : d));
+
+    // A node's date: spreadsheet day numbers or anything moment reads
+    const dateOf = value => {
+      if (value == null || value === '') return null;
+      const time = typeof value == 'number' ? moment((value - 25567) * 24 * 60 * 60 * 1000) : moment(value);
+      return time.isValid() ? time.toDate() : null;
     };
-    let svg = d3.select('#gantt').append("svg");
-    let x, y, height = 600, width = 800, rect;
-    let tickFormat = d3.timeFormat("%Y-%m-%d");
-    let clickCount = 0;
 
-    // issue: #124
-    const element = document.createElement('canvas');
-    let context = element.getContext("2d");
-    context.font = "1rem" + window.getComputedStyle(document.body).fontFamily;
-    let measureText = 0;
-    session.data.nodes.filter(d => d.visible).forEach(d => {
-      d.id = d.id === undefined ? d._id : d.id;
-      if(d.id && isNaN(d.id)) {
-        const _measureText = context.measureText(d.id.trim()).width;
-        _measureText > measureText && (measureText = Math.ceil(_measureText) )
-      } else {
-        measureText = 25;
-      }
-    });
-    margin.left = measureText + 5;
-
-    svg.append("g")
-      .attr("class", "gantt-chart")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-
-    svg.append("g").attr("class", "x-axis");
-
-    svg.append("g")
-      .attr("class", "y-axis")
-      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-
-    let mouseG = svg.append("g").attr("class", "mouse-over-effects")
-
-    let mouseLine = mouseG.append("path")
-      .attr("class", "mouse-line")
-      .style("stroke", "black")
-      .style("stroke-width", "1px")
-      .style("opacity", "0");
-
-    let timestamp = mouseG.append('text').attr('y', margin.top).attr('text-anchor', 'middle');
-
-    let mousebox = mouseG.append('rect')
-      .attr('fill', 'none')
-      .attr('pointer-events', 'all')
-      .on('mouseout', function () {
-        mouseLine.style("opacity", "0");
-        timestamp.style("opacity", "0");
-      })
-      .on('mouseover', function () {
-        mouseLine.style("opacity", "1");
-        timestamp.style("opacity", "1");
-      });
-
-    function refresh() {
-      let wrapper = $('#gantt').parent().css('z-index', 1000);
-      if (!wrapper.length) return;
-      height = wrapper.height() - margin.top - margin.bottom - 5;
-      width = wrapper.width() - margin.left - margin.right - 5;
-
-      bars = [];
-
-      svg.attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom);
-
-      $('.date-table-row').each((i, el) => {
-        let $el = $(el);
-        let dateid = $el.data('dateid');
-        let startField = $el.find(`#date-${dateid}-start`).val();
-        let endField = $el.find(`#date-${dateid}-end`).val();
-        if (endField == 'None') endField = startField;
-        session.data.nodes.filter(d => d.visible).forEach(d => {
-          d.id = d.id === undefined ? d._id : d.id;
-          let startDate, endDate;
-          if (typeof d[startField] == 'number') {
-            startDate = moment((d[startField] - 25567) * 24 * 60 * 60 * 1000);
-          } else {
-            startDate = moment(d[startField]);
-          }
-          if (typeof d[endField] == 'number') {
-            endDate = moment((d[endField] - 25567) * 24 * 60 * 60 * 1000);
-          } else {
-            endDate = moment(d[endField]);
-          }
-          if (startDate.isValid() || endDate.isValid()) {
-            bars.push({
-              "startDate": startDate.isValid() ? startDate.toDate() : endDate.toDate(),
-              "endDate": endDate.isValid() ? endDate.toDate() : startDate.toDate(),
-              "barID": `${d.id}-${dateid}`,
-              "barClass": `date-${dateid}`,
-              "row": d.id
-            });
-          }
+    function bars() {
+      const nodes = session.data.nodes.filter(d => d.visible);
+      const out = [];
+      dates().forEach((date, i) => {
+        if (!date.start || date.start == 'None') return;
+        const endField = date.end && date.end != 'None' ? date.end : date.start;
+        nodes.forEach(d => {
+          const start = dateOf(d[date.start]), end = dateOf(d[endField]);
+          if (!start && !end) return;
+          out.push({ start: start || end, end: end || start, row: '' + d._id, date: i, id: `${d._id}-${i}` });
         });
       });
+      return out;
+    }
 
-      if (bars.length == 0) return;
+    function draw() {
+      const all = bars();
+      // Room for the longest label
+      const context = document.createElement('canvas').getContext('2d');
+      context.font = '10px ' + getComputedStyle(document.body).fontFamily;
+      margin.left = Math.max(30, ...all.map(b => Math.ceil(context.measureText(b.row).width))) + 15;
+      const width = root.clientWidth - margin.left - margin.right - 5;
+      const height = root.clientHeight - margin.top - margin.bottom - 5;
+      // A view in a background tab has no size; it draws when it's shown
+      if (width <= 0 || height <= 0) return;
+      svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
+      [chart, yAxis, hoverBox].forEach(g => g.attr('transform', `translate(${margin.left},${margin.top})`));
 
-      bars.sort((a, b) => b.endDate - a.endDate);
-      let timeDomainEnd = bars[0].endDate;
+      const x = d3.scaleTime().range([0, width]).clamp(true)
+        .domain(all.length ? [d3.min(all, b => b.start), d3.max(all, b => b.end)] : [new Date(2000, 0, 1), new Date()]);
+      const y = d3.scaleBand().domain(Array.from(new Set(all.map(b => b.row)))).range([0, height]).padding(0.1);
 
-      bars.sort((a, b) => a.startDate - b.startDate);
-      let timeDomainStart = bars[0].startDate;
+      xAxis.attr('transform', `translate(${margin.left},${margin.top + height})`)
+        .call(d3.axisBottom(x).tickFormat(tickFormat).tickSize(8).tickPadding(8));
+      yAxis.call(d3.axisLeft(y).tickSize(0));
 
-      x = d3.scaleTime()
-        .domain([timeDomainStart, timeDomainEnd])
-        .range([0, width])
-        .clamp(true);
+      const list = dates();
+      chart.selectAll('rect')
+        .data(all, b => b.id)
+        .join('rect')
+        .attr('rx', 5)
+        .attr('ry', 5)
+        .attr('class', b => 'date-' + b.date)
+        .attr('x', b => x(b.start))
+        .attr('y', b => y(b.row))
+        .attr('height', y.bandwidth())
+        .attr('width', b => Math.max(x(b.end) - x(b.start), 5))
+        .attr('fill', b => list[b.date].color)
+        .attr('fill-opacity', b => 1 - list[b.date].transparency);
 
-      y = d3.scaleBand()
-        .domain(Array.from(new Set(bars.map(t => t.row))))
-        .range([0, height - margin.top - margin.bottom])
-        .padding(0.1);
-
-      svg.select('.x-axis')
-        .transition()
-        .attr("transform", "translate(" + margin.left + ", " + height + ")")
-        .call(d3.axisBottom()
-          .scale(x)
-          .tickFormat(tickFormat)
-          .tickSize(8)
-          .tickPadding(8));
-
-      svg.select('.y-axis')
-        .transition()
-        .call(d3.axisLeft()
-          .scale(y)
-          .tickSize(0));
-
-      rect = svg.select(".gantt-chart").selectAll("rect").data(bars, d => d.barID);
-
-      rect.exit().remove();
-
-      rect.enter().append("rect")
-        .attr("rx", 5)
-        .attr("ry", 5)
-        .attr('fill-opacity', .6)
-        .attr("class", d => d.barClass)
-        .transition()
-        .attr("y", 0)
-        .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
-        .attr("height", d => y.bandwidth())
-        .attr("width", d => {
-          return Math.max(x(d.endDate) - x(d.startDate), 5);
+      hoverBox.attr('width', width).attr('height', height)
+        .on('mouseover', () => hover.style('opacity', 1))
+        .on('mouseout', () => hover.style('opacity', 0))
+        .on('mousemove', event => {
+          const px = d3.pointer(event)[0];
+          const sx = px + margin.left;
+          hoverLine.attr('d', `M${sx},${margin.top + height} ${sx},${margin.top}`);
+          hoverDate.attr('x', Math.min(Math.max(sx, 60), width + margin.left - 40)).text(tickFormat(x.invert(px)));
         });
-
-      rect = rect.merge(rect)
-        .transition()
-        .attr("transform", d => "translate(" + x(d.startDate) + "," + y(d.row) + ")")
-        .attr("height", d => y.bandwidth())
-        .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 5));
-
-      mousebox
-        .attr('width', width)
-        .attr('height', height - margin.top - margin.bottom)
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .on('mousemove', function (event) {
-          let xc = d3.pointer(event, this)[0] + margin.left;
-          let h = height - margin.bottom;
-          mouseLine.attr("d", function () {
-            return "M" + xc + "," + h + " " + xc + "," + margin.top;
-          });
-          timestamp.attr('x', Math.min(Math.max(xc, 125), width)).text(tickFormat(x.invert(xc - margin.left)));
-        });
-
       setBackground();
     }
 
-    $('#addDate').click(function () {
-      clickCount++;
-      let root = $(`<div class="form-group date-table-row" data-dateid='${clickCount}'></div>`);
-      $('<a href="#"><span class="oi oi-circle-x"></span></a>').css({
-        position: 'relative',
-        top: '2px',
-        left: '2px'
-      }).click(function (e) {
-        root.slideUp(function () {
-          root.remove();
-          refresh();
+    // The settings for each date
+    function showDates() {
+      const options = '<option>None</option>' + session.data.nodeFields.map(f => `<option value="${f}">${MT.titleize(f)}</option>`).join('');
+      list.innerHTML = '';
+      dates().forEach((date, i) => {
+        const row = document.createElement('div');
+        row.className = 'form-group gantt-date';
+        row.innerHTML = `
+          <a href="#" title="Remove this date" style="position: relative; top: 2px; left: 2px;"><span class="oi oi-circle-x"></span></a>
+          <div class="row">
+            <div class="col-3 offset-1">Start</div>
+            <div class="col-8"><select class="form-select form-select-sm" name="start">${options}</select></div>
+          </div>
+          <div class="row">
+            <div class="col-3 offset-1">End</div>
+            <div class="col-8"><select class="form-select form-select-sm" name="end">${options}</select></div>
+          </div>
+          <div class="row">
+            <div class="col-3 offset-1">Color</div>
+            <div class="col-8"><input class="form-control form-control-sm" type="color" name="color"></div>
+          </div>
+          <div class="row">
+            <div class="col-3 offset-1">Transparency</div>
+            <div class="col-8"><input type="range" class="form-range" name="transparency" min="0" max="1" step="0.01"></div>
+          </div>`;
+        const field = name => row.querySelector(`[name="${name}"]`);
+        field('start').value = date.start;
+        field('end').value = date.end;
+        field('color').value = date.color;
+        field('transparency').value = date.transparency;
+        field('start').addEventListener('change', e => update(i, { start: e.target.value }));
+        field('end').addEventListener('change', e => update(i, { end: e.target.value }));
+        field('color').addEventListener('input', e => update(i, { color: e.target.value }));
+        field('transparency').addEventListener('input', e => update(i, { transparency: parseFloat(e.target.value) }));
+        row.querySelector('a').addEventListener('click', e => {
+          e.preventDefault();
+          setDates(dates().filter((d, j) => j != i));
+          showDates();
         });
-      }).appendTo(root);
-      let options = '<option>None</option>' + session.data.nodeFields.map(function (h) { return '<option value="' + h + '">' + MT.titleize(h) + '</option>'; }).join('\n');
-      root.append(`
-      <div class="row">
-        <div class='col-3 offset-1'><label for="date-${clickCount}-start">Start</label></div>
-        <div class='col-8'><select id="date-${clickCount}-start" data-dateid="${clickCount}" class="form-select form-select-sm">${options}</select></div>
-      </div>
-      <div class="row">
-        <div class='col-3 offset-1'><label for="date-${clickCount}-end">End</label></div>
-        <div class='col-8'><select id="date-${clickCount}-end" data-dateid="${clickCount}" class="form-select form-select-sm">${options}</select></div>
-      </div>
-      <div class="row">
-        <div class='col-3 offset-1'><label for="date-${clickCount}-color">Color</label></div>
-        <div class='col-8'><input id="date-${clickCount}-color" data-dateid="${clickCount}" class="form-control form-control-sm" type="color"></div>
-      </div>
-      <div class="row">
-        <div class='col-3 offset-1'><label for="date-${clickCount}-transparency">Transparency</label></div>
-        <div class='col-8'><input id="date-${clickCount}-transparency" data-dateid="${clickCount}" type="range" class="form-range" min="0" max="1" step="0.01" value="0.5"></div>
-      </div>
-    </div>`);
-      root.appendTo('#ganttConfigurations');
-      $('#date-' + clickCount + '-start, #date-' + clickCount + '-end').on('change', refresh);
-      $('#date-' + clickCount + '-color').on('change', function (e) {
-        svg.selectAll('.date-' + $(this).data('dateid')).attr('fill', e.target.value);
+        list.append(row);
       });
-      $('#date-' + clickCount + '-transparency').on('change', function (e) {
-        svg.selectAll('.date-' + $(this).data('dateid')).attr('fill-opacity', 1 - e.target.value);
-      });
-    });
+    }
 
-    $('#toggle-gantt-settings').click(function () {
-      let pane = $('#gantt-settings-pane');
-      if ($(this).hasClass('active')) {
-        pane.animate({ left: '-400px' }, function () { pane.hide(); });
-      } else {
-        pane.show(0, function () { pane.animate({ left: '0px' }); });
-      }
-    });
-
-    $('#gantt-export-filetype').on('change', function (e) {
-      if (e.target.value == 'svg') {
-        $('#gantt-export-advanced-button').slideUp();
-        if ($('#gantt-export-advanced').hasClass("show")) $('#gantt-export-advanced-button').click();
-      } else {
-        $('#gantt-export-advanced-button').slideDown();
-      }
-    });
-
-    $('#gantt-export-scale').on('input', function (e) {
-      let scale = parseFloat(e.target.value);
-      let wrapper = $('#gantt').parent();
-      $('#gantt-export-dimensions').text(
-        Math.round(wrapper.width() * scale) + 'x' +
-        Math.round(wrapper.height() * scale) + 'px'
-      );
-    }).trigger('input');
-
-    $('#gantt-export').on('click', function () {
-      let $gantt = $('#gantt svg');
-      let gantt = $gantt.get(0);
-      let watermark = d3.select(gantt).append('image')
-        .attr('xlink:href', MT.watermark)
-        .attr('height', 128)
-        .attr('width', 128)
-        .attr('x', 900)
-        .style('opacity', $('#gantt-export-opacity').val());
-      let filename = $('#gantt-export-filename').val(),
-        filetype = $('#gantt-export-filetype').val();
-      if (filetype == 'svg') {
-        let content = MT.unparseSVG(gantt);
-        let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
-        saveAs(blob, filename + '.' + filetype);
-        watermark.remove();
-      } else {
-        saveSvgAsPng(gantt, filename + '.' + filetype, {
-          scale: parseFloat($('#gantt-export-scale').val()),
-          backgroundColor: session.style.widgets['background-color'],
-          encoderType: 'image/' + filetype,
-          encoderOptions: parseFloat($('#gantt-export-quality').val())
-        }).then(() => watermark.remove());
-      }
+    $('.add-date').addEventListener('click', () => {
+      const colors = d3.schemeCategory10;
+      setDates(dates().concat([{ start: 'None', end: 'None', color: colors[dates().length % colors.length], transparency: 0.4 }]));
+      showDates();
     });
 
     function setBackground() {
-      let col = session.style.widgets['background-color'];
-      $('#gantt').css('background', col);
-
-      let contrast = session.style.widgets['background-color-contrast'];
-      $('#gantt .x-axis, .y-axis').css('color', contrast);
+      $('.gantt').style.background = settings.get('background-color');
+      const contrast = settings.get('background-color-contrast');
+      xAxis.style('color', contrast);
+      yAxis.style('color', contrast);
+      hoverDate.attr('fill', contrast);
+      hoverLine.style('stroke', contrast);
     }
 
-    $window.on('background-color-change', setBackground);
+    MT.paneToggle($('.settings-toggle'), pane, true);
+    MT.svgExport(root, () => svg.node(), settings);
 
-    layout.on('stateChanged', function () {
-      refresh();
-      let wrapper = $('#gantt').parent();
-      $('#gantt-export-width').val(wrapper.width());
-      $('#gantt-export-height').val(wrapper.height());
-    });
+    const stop = [
+      settings.subscribe('gantt-dates', draw),
+      events.on('background-color-change', setBackground),
+      ...['node-visibility', 'cluster-visibility'].map(type => events.on(type, draw))
+    ];
+    showDates();
+    draw();
 
-    setTimeout(function () {
-      refresh();
-      setBackground();
-    }, 80);
-  })();
+    return {
+      resize: draw,
+      destroy: () => stop.forEach(fn => fn())
+    };
+  });
 </script>

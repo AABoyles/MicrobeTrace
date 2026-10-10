@@ -1473,7 +1473,8 @@
       if (cluster) {
         node.visible = node.visible && cluster.visible; 
       }
-      if (dateField != "None") {
+      // Nodes after the epi curve's brushed range are hidden; undated ones stay
+      if (dateField != "None" && node[dateField] != null && node[dateField] !== "") {
         node.visible = node.visible && moment(session.state.timeEnd).toDate() >= moment(node[dateField]).toDate(); 
       }
     }
@@ -2096,12 +2097,12 @@
     return { paper_bgcolor: background, plot_bgcolor: background, font: { color: contrast } };
   };
 
-  // Wires the export dialog of a view drawn with Plotly. The dialog (inside
-  // root) has fields named export-filename, -filetype, -scale, -quality and
+  // Wires the export dialog of a view drawn as an SVG. The dialog (inside root)
+  // has fields named export-filename, -filetype, -scale, -quality and
   // -opacity, an .export-advanced-button, an .export-dimensions readout and an
-  // .export-button. Image formats save the plot with a watermark; `formats` maps
-  // other file types to functions that save them, given the filename.
-  MT.plotExport = (root, plot, settings, formats = {}) => {
+  // .export-button. Image formats save getSVG() with a watermark; `formats`
+  // maps other file types to functions that save them, given the filename.
+  MT.svgExport = (root, getSVG, settings, formats = {}) => {
     const $ = selector => root.querySelector(selector);
     const field = name => $(`[name="${name}"]`);
     const modal = $('.export-button').closest('.modal');
@@ -2122,10 +2123,7 @@
     $('.export-button').addEventListener('click', () => {
       const filename = field('export-filename').value, filetype = field('export-filetype').value;
       if (formats[filetype]) return formats[filetype](filename);
-      const svg = plot.querySelector('.main-svg');
-      // Plotly draws axis titles in a second SVG layer; bring them into this one
-      const titles = plot.querySelector('.main-svg .infolayer');
-      if (titles) svg.appendChild(titles);
+      const svg = getSVG();
       const watermark = d3.select(svg).append('image')
         .attr('xlink:href', MT.watermark)
         .attr('height', 128)
@@ -2145,6 +2143,15 @@
       }
     });
   };
+
+  // The export dialog of a view drawn with Plotly (see MT.svgExport)
+  MT.plotExport = (root, plot, settings, formats = {}) => MT.svgExport(root, () => {
+    const svg = plot.querySelector('.main-svg');
+    // Plotly draws axis titles in a second SVG layer; bring them into this one
+    const titles = plot.querySelector('.main-svg .infolayer');
+    if (titles) svg.appendChild(titles);
+    return svg;
+  }, settings, formats);
 
   // The online tile layers the map views offer
   MT.tileLayers = () => ({
