@@ -98,7 +98,11 @@ npx postcss temp.secondary.css > dist/bundle.secondary.css
 echo 'Copying Unbundlable Dependencies...'
 
 cp node_modules/bioseq/dist/bioseq.min.js vendor/
-cp node_modules/@cosmos.gl/graph/dist/index.min.js vendor/cosmos.min.js
+# cosmos.gl, with its many-body grid shifted every tick (see scripts/patch-cosmos.js)
+node scripts/patch-cosmos.js temp.cosmos.mjs || exit 1
+npx esbuild temp.cosmos.mjs --bundle --minify --format=iife --global-name=Cosmos \
+  --target=es2020 --log-level=warning --outfile=vendor/cosmos.min.js
+rm temp.cosmos.mjs
 cp node_modules/patristic/dist/patristic.min.js vendor/
 cp node_modules/tn93/dist/tn93.min.js vendor/
 cp node_modules/papaparse/papaparse.min.js vendor/
