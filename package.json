@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "3d-force-graph": "^1.67.8",
+    "@cosmos.gl/graph": "3.4.2",
     "acorn": "^6.4.2",
     "alertifyjs": "^1.13.1",
     "alignment-viewer": "^0.3.4",

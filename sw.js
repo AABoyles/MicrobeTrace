@@ -13,6 +13,7 @@ self.addEventListener('install', function(event) {
         'LICENSE',
         'vendor/README.md',
         'vendor/bioseq.min.js',
+        'vendor/cosmos.min.js',
         'vendor/bx_distance_models.js',
         'vendor/bx_distance_models_bg.wasm',
         'vendor/papaparse.min.js',
