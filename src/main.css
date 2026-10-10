@@ -217,7 +217,7 @@ svg#link-threshold-sparkline {
   text-indent: 1px;
   text-overflow: "";
 }
-#polygon-color-table-wrapper {
+.polygon-color-table-wrapper {
   position: absolute;
   top: 893px;
   right: 10px;
@@ -229,21 +229,20 @@ svg#link-threshold-sparkline {
   color: #303030;
   background-color: #f8f9fa !important;
 }
-#polygon-color-table-draghandle {
-  display: none;
+.polygon-color-table-wrapper .draghandle {
   width: 100%;
   text-align: center;
 }
-#polygon-color-table th {
+.polygon-color-table th {
   text-align: center;
   border: 1px solid lightgray;
   padding: 4px;
 }
-#polygon-color-table td {
+.polygon-color-table td {
   border: 1px solid lightgray;
   padding: 4px;
 }
-#polygon-color-table input[type="color"] {
+.polygon-color-table input[type="color"] {
   background: transparent;
   border: none;
   padding: 0;
@@ -602,11 +601,11 @@ button.btn,
 }
 
 /* 2D NETWORK */
-#network {
+.network-view {
   width: 100%;
   height: 100%;
 }
-#node-symbol-table-wrapper {
+.node-symbol-table-wrapper {
   position: absolute;
   top: 457px;
   left: 10px;
@@ -618,20 +617,20 @@ button.btn,
   color: #303030;
   background-color: #f8f9fa !important;
 }
-#node-symbol-table-draghandle {
+.node-symbol-table-wrapper .draghandle {
   width: 100%;
   text-align: center;
 }
-#node-symbol-table th {
+.node-symbol-table th {
   border: 1px solid lightgray;
   padding: 4px;
   text-align: center;
 }
-#node-symbol-table td {
+.node-symbol-table td {
   border: 1px solid lightgray;
   padding: 4px;
 }
-#node-symbol-table select {
+.node-symbol-table select {
   border: none;
   background: transparent;
 }

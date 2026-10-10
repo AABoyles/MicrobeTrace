@@ -1,28 +1,28 @@
-<div id="network" style="position: relative; overflow: hidden;">
-  <canvas id="network-underlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
-  <div id="network-cosmos" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-  <canvas id="network-overlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
-  <div id="network-brush" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; cursor: crosshair;">
-    <div id="network-brush-rect" style="position: absolute; display: none; border: 1px solid #808080; background: rgba(128, 128, 128, 0.1);"></div>
+<div class="network-view" style="position: relative; overflow: hidden;">
+  <canvas class="network-underlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+  <div class="network-cosmos" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+  <canvas class="network-overlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+  <div class="network-brush" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; cursor: crosshair;">
+    <div class="network-brush-rect" style="position: absolute; display: none; border: 1px solid #808080; background: rgba(128, 128, 128, 0.1);"></div>
   </div>
 </div>
 
 <div class="view-controls">
-  <button type="button" id="network-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Network Settings">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Network Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#network-export-modal" title="Export Network">
     <span class="oi oi-data-transfer-download"></span>
   </button>
-  <button id="fitbutton" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
+  <button type="button" class="btn btn-light btn-sm fit-button" title="Center and Scale Network">
     <span class="oi oi-target"></span>
   </button>
-  <button id="pinbutton" type="button" class="btn btn-light btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
+  <button id="pinbutton" type="button" class="btn btn-light btn-sm pin-button" data-toggle="button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
     <span class="oi oi-pin"></span>
   </button>
 </div>
 
-<div id="network-settings-pane" class="left-pane">
+<div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
       <a class="nav-link active" id="nodes-tab" data-bs-toggle="tab" href="#network-node-settings" role="tab" aria-controls="network-node-settings" aria-selected="true">Nodes</a>
@@ -49,19 +49,19 @@
               <div class="form-group row" title="What field should be displayed as a label for the node?">
                 <div class="col-4"><label for="node-label-variable">Label</label></div>
                 <div class="col-8">
-                  <select id="node-label-variable" class="form-select form-select-sm nodeVariables">
+                  <select id="node-label-variable" data-setting="node-label-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
               <div class="form-group row node-label-row" title="How big should node labels be?">
                 <div class="col-4"><label for="node-label-size">Label Size</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="node-label-size" min="6" value="16" max="72"></div>
+                <div class="col-8"><input type="range" class="form-range" id="node-label-size" data-setting="node-label-size" min="6" value="16" max="72"></div>
               </div>
               <div class="form-group row node-label-row" title="How should the labels be oriented relative to their nodes?">
                 <div class="col-4"><label for="node-label-orientation">Orientation</label></div>
                 <div class="col-8">
-                  <select id="node-label-orientation" class="form-select form-select-sm">
+                  <select id="node-label-orientation" data-setting="node-label-orientation" class="form-select form-select-sm">
                     <option selected>Right</option>
                     <option>Left</option>
                     <option>Top</option>
@@ -73,7 +73,7 @@
               <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
                 <div class="col-4"><label for="node-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
-                  <select id="node-tooltip-variable"  multiple title="What node data should be displayed as a tooltip for the node?">
+                  <select id="node-tooltip-variable" class="node-tooltip-variable" multiple title="What node data should be displayed as a tooltip for the node?">
                     <option>None</option>
                   </select>
                 </div>
@@ -90,29 +90,29 @@
               <div class="form-group row" title="Which variable should determine the shape of the node?">
                 <div class="col-4"><label for="node-symbol-variable">Shape By</label></div>
                 <div class="col-8">
-                  <select id="node-symbol-variable" class="form-select form-select-sm nodeVariables">
+                  <select id="node-symbol-variable" data-setting="node-symbol-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
-              <div id="node-symbol-table-row" class="form-group row" title="What shape should the nodes be?">
+              <div class="form-group row node-symbol-table-row" title="What shape should the nodes be?">
                 <div class="col-4">Table</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light btn-sm col active" title="Show a table of symbols">
-                      <input type="radio" name="network-symbol-table-visibility" id="node-symbol-table-show" autocomplete="off" checked>
+                      <input type="radio" name="network-symbol-table-visibility" data-setting="node-symbol-table-show" value="true" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light btn-sm col" title="Do not show a table of symbols">
-                      <input type="radio" name="network-symbol-table-visibility" id="node-symbol-table-hide" autocomplete="off"> Hide
+                      <input type="radio" name="network-symbol-table-visibility" data-setting="node-symbol-table-show" value="false" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
               </div>
-              <div id="node-symbol-row" class="form-group row" title="What shape should the nodes be?">
+              <div class="form-group row node-symbol-row" title="What shape should the nodes be?">
                 <div class="col-4"><label for="node-symbol">Shape</label></div>
                 <div class="col-8">
-                  <select id="node-symbol" class="form-select form-select-sm">
+                  <select id="node-symbol" data-setting="node-symbol" class="form-select form-select-sm">
                     <option value="symbolCircle" selected>&nbsp;&#11044; (Circle)</option>
                     <option value="symbolTriangle">&nbsp;&#9650; (Up Triangle)</option>
                     <option value="symbolTriangleDown">&nbsp;&#9660; (Down Triangle)</option>
@@ -137,27 +137,27 @@
               <div class="form-group row" title="Which variable should determine the size of the node?">
                 <div class="col-4"><label for="node-radius-variable">Size By</label></div>
                 <div class="col-8">
-                  <select id="node-radius-variable" class="form-select form-select-sm nodeVariables">
+                  <select id="node-radius-variable" data-setting="node-radius-variable" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
-              <div id="node-max-radius-row" class="form-group row" title="Should node max radius to this variable?">
+              <div class="form-group row node-max-radius-row" title="Should node max radius to this variable?">
                 <div class="col-4"><label for="node-radius-max">Max Size</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="node-radius-max" min="100" value="4500" step="1" max="5000"></div>
+                <div class="col-8"><input type="range" class="form-range" id="node-radius-max" data-setting="node-radius-max" min="100" value="4500" step="1" max="5000"></div>
               </div>
-              <div id="node-min-radius-row" class="form-group row" title="Should node min radius to this variable?">
+              <div class="form-group row node-min-radius-row" title="Should node min radius to this variable?">
                 <div class="col-4"><label for="node-radius-min">Min Size</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="node-radius-min" min="100" value="250" step="1" max="5000"></div>
+                <div class="col-8"><input type="range" class="form-range" id="node-radius-min" data-setting="node-radius-min" min="100" value="250" step="1" max="5000"></div>
               </div>
-              <div id="node-radius-row" class="form-group row" title="How big should the nodes be?">
+              <div class="form-group row node-radius-row" title="How big should the nodes be?">
                 <div class="col-4"><label for="node-radius">Size</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="node-radius" min="100" value="250" step="1" max="5000">
+                <div class="col-8"><input type="range" class="form-range" id="node-radius" data-setting="node-radius" min="100" value="250" step="1" max="5000">
                 </div>
               </div>
               <div class="form-group row" title="How wide should the node border be?">
                 <div class="col-4"><label for="node-border-width">Border Width</label></div>
-                <div class="col-8"><input type="number" class="form-control form-control-sm" id="node-border-width" min="0" step="0.1" value="2">
+                <div class="col-8"><input type="number" class="form-control form-control-sm" id="node-border-width" data-setting="node-border-width" min="0" step="0.1" value="2">
                 </div>
               </div>            
             </div>
@@ -181,7 +181,7 @@
               <div class="form-group row" title="What data should be displayed when you hover over a link?">
                 <div class="col-4"><label for="link-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
-                  <select id="link-tooltip-variable" class="form-select form-select-sm linkVariables">
+                  <select id="link-tooltip-variable" data-setting="link-tooltip-variable" class="form-select form-select-sm linkVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -189,7 +189,7 @@
               <div class="form-group row" title="What data should be displayed when you hover over a link?">
                 <div class="col-4"><label for="link-label-variable">Label</label></div>
                 <div class="col-8">
-                  <select id="link-label-variable" class="form-select form-select-sm linkVariables">
+                  <select id="link-label-variable" data-setting="link-label-variable" class="form-select form-select-sm linkVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -203,44 +203,44 @@
           </div>
           <div id="link-controls-shapes" class="collapse" data-bs-parent="#link-controls-accordion">
             <div class="card-body">
-              <div id="link-transparency-row" class="form-group row" title="How transparent should the links be?">
+              <div class="form-group row" title="How transparent should the links be?">
                 <div class="col-4"><label for="link-opacity">Transparency</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="link-opacity" min="0" max="1" value="0" step="0.01"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-opacity" data-setting="link-opacity" min="0" max="1" value="0" step="0.01"></div>
               </div>
               <div class="form-group row" title="Which variable should determine the width of a link?">
                 <div class="col-4"><label for="link-width-variable">Width By</label></div>
                 <div class="col-8">
-                  <select id="link-width-variable" class="form-select form-select-sm linkVariables">
+                  <select id="link-width-variable" data-setting="link-width-variable" class="form-select form-select-sm linkVariables">
                     <option>None</option>
                   </select>
                 </div>
               </div>
-              <div id="link-max-width-row" class="form-group row" title="Should link max widths to this variable?">
+              <div class="form-group row link-max-width-row" title="Should link max widths to this variable?">
                 <div class="col-4"><label for="link-width-max">Max Width</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="link-width-max" min="0.3" max="30" step=".3" value="27"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-width-max" data-setting="link-width-max" min="0.3" max="30" step=".3" value="27"></div>
               </div>
-              <div id="link-min-width-row" class="form-group row" title="Should link min widths to this variable?">
+              <div class="form-group row link-min-width-row" title="Should link min widths to this variable?">
                 <div class="col-4"><label for="link-width-min">Min Width</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="link-width-min" min="0.3" max="30" step=".3" value="3"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-width-min" data-setting="link-width-min" min="0.3" max="30" step=".3" value="3"></div>
               </div>
-              <div id="link-width-row" class="form-group row" title="How thick should the links be?">
+              <div class="form-group row link-width-row" title="How thick should the links be?">
                 <div class="col-4"><label for="link-width">Width</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="link-width" min="0.3" max="30" step=".3" value="3"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-width" data-setting="link-width" min="0.3" max="30" step=".3" value="3"></div>
               </div>
               <div class="form-group row" title="How long should links be?">
                 <div class="col-4"><label for="link-length">Length</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="link-length" min="0" max="200" value="50"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-length" data-setting="link-length" min="0" max="200" value="50"></div>
               </div>
               <div class="form-group row hideForHIVTrace" title="Shoul arrowheads pointing to the">
                 <div class="col-4">Arrows</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="network-directionality" id="link-undirected" autocomplete="off" checked>
+                      <input type="radio" name="network-directionality" data-setting="link-directed" value="false" autocomplete="off" checked>
                       Hide
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="network-directionality" id="link-directed" autocomplete="off">
+                      <input type="radio" name="network-directionality" data-setting="link-directed" value="true" autocomplete="off">
                       Show
                     </label>
                   </div>
@@ -270,12 +270,12 @@
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col" title="Do not highlight anything.
 Recommended for performance reasons.">
-                      <input type="radio" name="network-highlight" id="dont-highlight-neighbors" autocomplete="off"
+                      <input type="radio" name="network-highlight" data-setting="node-highlight" value="false" autocomplete="off"
                         checked> Normal
                     </label>
                     <label class="btn btn-light col" title="Highlight adjacent links and neighboring nodes when you hover over a node.
 Note that this may cause slow performance on larger networks.">
-                      <input type="radio" name="network-highlight" id="highlight-neighbors" autocomplete="off">
+                      <input type="radio" name="network-highlight" data-setting="node-highlight" value="true" autocomplete="off">
                       Highlighted
                     </label>
                   </div>
@@ -286,11 +286,11 @@ Note that this may cause slow performance on larger networks.">
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col" title="Show gridlines under the network.">
-                      <input type="radio" name="network-gridlines" id="network-gridlines-show" autocomplete="off">
+                      <input type="radio" name="network-gridlines" data-setting="network-gridlines-show" value="true" autocomplete="off">
                       Show
                     </label>
                     <label class="btn btn-light col active" title="Do Not show gridlines under the network.">
-                      <input type="radio" name="network-gridlines" id="network-gridlines-hide" autocomplete="off" checked>
+                      <input type="radio" name="network-gridlines" data-setting="network-gridlines-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
                   </div>
@@ -308,25 +308,25 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
                 <div class="col-4"><label for="node-charge">Charge</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="node-charge" min="0" max="400" value="200">
+                  <input type="range" class="form-range" id="node-charge" data-setting="node-charge" min="0" max="400" value="200">
                 </div>
               </div>
               <div class="form-group row" title="How attractive is the mass of the graph?">
                 <div class="col-4"><label for="network-gravity">Gravity</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-gravity" min="0.025" max="1" value="0.05" step="0.025">
+                  <input type="range" class="form-range" id="network-gravity" data-setting="network-gravity" min="0.025" max="1" value="0.05" step="0.025">
                 </div>
               </div>
               <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
                 <div class="col-4"><label for="network-friction">Friction</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-friction" min="0" max="1" value="0.4" step="0.025">
+                  <input type="range" class="form-range" id="network-friction" data-setting="network-friction" min="0" max="1" value="0.4" step="0.025">
                 </div>
               </div>
               <div class="form-group row" title="How strong is the link?">
                 <div class="col-4"><label for="network-link-strength">Link Strength</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-link-strength" min="0" max="1" value="0.125" step="0.025">
+                  <input type="range" class="form-range" id="network-link-strength" data-setting="network-link-strength" min="0" max="1" value="0.125" step="0.025">
                 </div>
               </div>
             </div>
@@ -352,11 +352,11 @@ Note that this may cause slow performance on larger networks.">
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col" title="Show convex hull under the network.">
-                      <input type="radio" name="polygons" id="polygons-show" autocomplete="off">
+                      <input type="radio" name="polygons" data-setting="polygons-show" value="true" autocomplete="off">
                       Show
                     </label>
                     <label class="btn btn-light col active" title="Do Not show convex hull under the network.">
-                      <input type="radio" name="polygons" id="polygons-hide" autocomplete="off" checked>
+                      <input type="radio" name="polygons" data-setting="polygons-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
                   </div>
@@ -365,7 +365,7 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row polygons-settings-row" title="What Foci should be used when creating convex hulls?">
                 <div class="col-4"><label for="polygons-foci">Center</label></div>
                 <div class="col-8">
-                  <select id="polygons-foci" class="form-select form-select-sm nodeVariables">
+                  <select id="polygons-foci" data-setting="polygons-foci" class="form-select form-select-sm nodeVariables">
                     <option>None</option>
                   </select>
                 </div>
@@ -375,7 +375,7 @@ Note that this may cause slow performance on larger networks.">
                   <label for="polygons-gather-force">Gather</label>
                 </div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
+                  <input type="range" class="form-range" id="polygons-gather-force" data-setting="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
                 </div>
               </div>
               <div class="form-group row polygons-settings-row" title="Show polygons colored?">
@@ -383,35 +383,35 @@ Note that this may cause slow performance on larger networks.">
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col" title="Show convex hull under the network.">
-                      <input type="radio" name="polygons" id="polygons-color-show" autocomplete="off">
+                      <input type="radio" name="polygons-color" data-setting="polygons-color-show" value="true" autocomplete="off">
                       Show
                     </label>
                     <label class="btn btn-light col active" title="Do Not show convex hull under the network.">
-                      <input type="radio" name="polygons" id="polygons-color-hide" autocomplete="off" checked>
+                      <input type="radio" name="polygons-color" data-setting="polygons-color-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
                   </div>                  
                 </div>
               </div>
-              <div id="polygon-color-table-row" class="form-group row" title="Should MicrobeTrace display the table of colors?">
+              <div class="form-group row polygon-color-table-row" title="Should MicrobeTrace display the table of colors?">
                 <div class="col-4">Polygon Color Table</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="polygonColorTableShowHide" id="polygon-color-table-show" autocomplete="off" checked>
+                      <input type="radio" name="polygonColorTableShowHide" data-setting="polygon-color-table-show" value="true" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="polygonColorTableShowHide" id="polygon-color-table-hide" autocomplete="off">
+                      <input type="radio" name="polygonColorTableShowHide" data-setting="polygon-color-table-show" value="false" autocomplete="off">
                       Hide
                     </label>
                   </div>
                 </div>
               </div>
-              <div id="polygon-color-value-row" class="form-group row" title="What color should the polygons be?">
+              <div class="form-group row polygon-color-value-row" title="What color should the polygons be?">
                 <div class="col-4"><label for="polygon-color">Polygons</label></div>
                 <div class="col-8">
-                  <input type="color" id="polygon-color" class="form-control form-control-sm" value="#1f77b4">
+                  <input type="color" id="polygon-color" data-setting="polygon-color" class="form-control form-control-sm" value="#1f77b4">
                 </div>
               </div>
             </div>
@@ -422,40 +422,40 @@ Note that this may cause slow performance on larger networks.">
   </div>
 </div>
 
-<div id="node-symbol-table-wrapper" class="floater">
-  <div id="node-symbol-table-draghandle"><span class="oi oi-move"></span></div>
-  <table id="node-symbol-table"></table>
+<div class="floater node-symbol-table-wrapper" hidden>
+  <div class="draghandle"><span class="oi oi-move"></span></div>
+  <table class="node-symbol-table"></table>
 </div>
 
-<div id="node-symbol-table-context" class="dropdown-menu">
-  <a href="#" id="node-symbol-table-move" class="dropdown-item">Pin</a>
-  <a href="#" id="node-symbol-table-context-hide" class="dropdown-item">Hide</a>
-  <a href="#" id="node-symbol-table-expand" class="dropdown-item">Expand</a>
-  <a href="#" id="node-symbol-table-counts" class="dropdown-item">Toggle Counts</a>
-  <a href="#" id="node-symbol-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
+<div class="dropdown-menu floater-menu node-symbol-table-menu">
+  <a href="#" class="dropdown-item" data-action="drag">Pin</a>
+  <a href="#" class="dropdown-item" data-action="hide">Hide</a>
+  <a href="#" class="dropdown-item" data-action="expand">Expand</a>
+  <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
+  <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
 </div>
 
-<div id="polygon-color-table-wrapper" class="floater">
-  <div id="polygon-color-table-draghandle"><span class="oi oi-move"></span></div>
-  <table id="polygon-color-table"></table>
+<div class="floater polygon-color-table-wrapper" hidden>
+  <div class="draghandle" hidden><span class="oi oi-move"></span></div>
+  <table class="polygon-color-table"></table>
 </div>
 
-<div id="polygon-color-table-context" class="dropdown-menu">
-  <a href="#" id="polygon-color-table-drag" class="dropdown-item">Drag</a>
-  <a href="#" id="polygon-color-table-context-hide" class="dropdown-item">Hide</a>
-  <a href="#" id="polygon-color-table-expand" class="dropdown-item">Expand</a>
-  <a href="#" id="polygon-color-table-counts" class="dropdown-item">Toggle Counts</a>
-  <a href="#" id="polygon-color-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
+<div class="dropdown-menu floater-menu polygon-color-table-menu">
+  <a href="#" class="dropdown-item" data-action="drag">Drag</a>
+  <a href="#" class="dropdown-item" data-action="hide">Hide</a>
+  <a href="#" class="dropdown-item" data-action="expand">Expand</a>
+  <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
+  <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
 </div>
 
-<div id="context-menu" class="dropdown-menu">
-  <a href="#" id="pinNode" class="dropdown-item">Pin Node</a>
-  <a href="#" id="copyID" class="dropdown-item">Copy ID</a>
-  <a href="#" id="copySeq" class="dropdown-item">Copy Sequence</a>
-  <a href="#" id="viewAttributes" class="dropdown-item">View Attributes</a>
+<div class="dropdown-menu network-context-menu">
+  <a href="#" class="dropdown-item pin-node">Pin Node</a>
+  <a href="#" class="dropdown-item copy-id">Copy ID</a>
+  <a href="#" class="dropdown-item copy-sequence">Copy Sequence</a>
+  <a href="#" class="dropdown-item view-attributes">View Attributes</a>
 </div>
 
-<div id="network-attribute-modal" class="modal fade selectable" tabindex="-1" role="dialog">
+<div class="modal fade selectable network-attribute-modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -478,16 +478,16 @@ Note that this may cause slow performance on larger networks.">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Network Image</h5>
+        <h5 class="modal-title">Export Network</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="network-export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="network-export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" class="form-select form-select-sm">
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -497,7 +497,7 @@ Note that this may cause slow performance on larger networks.">
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="network-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#network-export-advanced" aria-expanded="false" aria-controls="network-export-advanced">Advanced</button>
+            <button class="btn btn-primary btn-sm w-100 export-advanced-button" type="button" data-bs-toggle="collapse" data-bs-target="#network-export-advanced" aria-expanded="false" aria-controls="network-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="network-export-advanced" style="margin-top: 10px;">
@@ -507,19 +507,19 @@ Note that this may cause slow performance on larger networks.">
                 <label for="network-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="network-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <input type="number" id="network-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
               </div>
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div id="network-export-dimensions" class="col-9 text-end"></div>
+              <div class="col-9 text-end export-dimensions"></div>
             </div>
             <div class="row">
               <div class="col-3">
                 <label for="network-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" class="form-range" id="network-export-quality" min="0" max="1.0" value="0.92" step="0.01">
+                <input type="range" class="form-range" id="network-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>
@@ -529,25 +529,23 @@ Note that this may cause slow performance on larger networks.">
             <label for="network-export-opacity">Watermark Opacity</label>
           </div>
           <div class="col-9">
-            <input type="range" id="network-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
+            <input type="range" id="network-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="network-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
 <script>
-  (() => {
+  MT.registerView('network', (root, { settings, events }) => {
     ga('set', 'page', '/network');
     ga('set', 'title', '2D View');
     ga('send', 'pageview');
-    
-    if (session.network.allPinned && !$('#pinbutton').hasClass('active')) $('#pinbutton').button('toggle');
 
     // The network is drawn and laid out on the GPU by cosmos.gl
     // (vendor/cosmos.min.js, loaded the first time this view opens). Point i of
@@ -555,24 +553,33 @@ Note that this may cause slow performance on larger networks.">
     // Two 2D canvases sit under and over it: polygons and gridlines below, node
     // and link labels above.
 
-    let settings = session.style.widgets;
-    const container = document.getElementById('network');
-    const cosmosDiv = document.getElementById('network-cosmos');
-    const underlay = document.getElementById('network-underlay');
-    const overlay = document.getElementById('network-overlay');
-    const brushLayer = document.getElementById('network-brush');
-    const instance = '.c' + Date.now();
+    const $ = selector => root.querySelector(selector);
+    const get = key => settings.get(key);
+    const pane = $('.left-pane');
+    const container = $('.network-view');
+    const cosmosDiv = $('.network-cosmos');
+    const underlay = $('.network-underlay');
+    const overlay = $('.network-overlay');
+    const brushLayer = $('.network-brush');
+    const brushRect = $('.network-brush-rect');
+    const menu = $('.network-context-menu');
+    const symbolWrapper = $('.node-symbol-table-wrapper'), symbolTable = $('.node-symbol-table');
+    const polygonWrapper = $('.polygon-color-table-wrapper'), polygonTable = $('.polygon-color-table');
     const SPACE = 4096;
+    const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
     let graph = null;
     let points = [];
     let pointIndex = new Map();
     let links = [];
-    let mouse = { pageX: 0, pageY: 0 };
+    let mouse = { clientX: 0, clientY: 0 };
     let lastSync = 0;
     let diameters = new Float32Array(0), maxDiameter = 0;
     let autoFit = true;
-    let isNumber = a => typeof a == "number";
+    let destroyed = false;
+    // What the last overlay frame drew (for tests)
+    const drawn = { labels: 0, polygons: 0 };
+    const isNumber = a => typeof a == 'number';
 
     self.cosmosLoading = self.cosmosLoading || new Promise((resolve, reject) => {
       if (self.Cosmos) return resolve();
@@ -610,12 +617,12 @@ Note that this may cause slow performance on larger networks.">
     // The settings were made for d3-force. These scales give about the same
     // layout at their defaults (spread, link lengths) with cosmos.gl's forces.
     const physics = () => ({
-      simulationRepulsion: settings['node-charge'] * 0.08,
-      simulationGravity: settings['network-gravity'],
-      simulationFriction: 1 - settings['network-friction'] * 0.375,
-      simulationLinkSpring: settings['network-link-strength'] * 2.4,
-      simulationLinkDistance: 50 + 1.4 * parseFloat(settings['link-length']),
-      simulationCluster: settings['polygons-show'] ? settings['polygons-gather-force'] * 50 : 0
+      simulationRepulsion: get('node-charge') * 0.08,
+      simulationGravity: get('network-gravity'),
+      simulationFriction: 1 - get('network-friction') * 0.375,
+      simulationLinkSpring: get('network-link-strength') * 2.4,
+      simulationLinkDistance: 50 + 1.4 * parseFloat(get('link-length')),
+      simulationCluster: get('polygons-show') ? get('polygons-gather-force') * 50 : 0
     });
 
     function createGraph() {
@@ -629,7 +636,7 @@ Note that this may cause slow performance on larger networks.">
         scalePointsOnZoom: true,
         scaleLinksOnZoom: true,
         linkVisibilityMinTransparency: 1,
-        linkOpacity: 1 - settings['link-opacity'],
+        linkOpacity: 1 - get('link-opacity'),
         linkDefaultArrows: false,
         outlinedPointRingColor: '#ff8300',
         focusedPointRingColor: '#808080',
@@ -698,53 +705,21 @@ Note that this may cause slow performance on larger networks.">
       });
     }
 
-    function destroy() {
-      if (!graph) return;
-      if (tooltipMenu) tooltipMenu.destroy();
-      graph.destroy();
-      graph = null;
-      if (temp.network && temp.network.render === render) delete temp.network;
-      $window.off(instance);
-      $(window).off(instance);
-    }
-
-    //#299
-    let tooltipMenu;
-    function updateColumns(){
-      if(!$('#network').length) return;
-      let variables = settings['node-tooltip-variable'];
-      if ('None' != variables) {
-        const select = document.getElementById('node-tooltip-variable');
-        if (tooltipMenu) tooltipMenu.destroy();
-        // The setting is a field name, or a list of them once chosen here
-        const chosen = [].concat(variables);
-        select.innerHTML = session.data['nodeFields'].map(d =>
-          `<option value="${d}"${chosen.includes(d) ? " selected" : ""}>${MT.titleize(d)}</option>`
-        ).join('\n');
-        tooltipMenu = MT.multiSelect(select, { max: 3 });
-      }
-    }
-
-    function render() { 
-      if (!document.body.contains(container)) return destroy();
+    function render() {
       if (!graph) return;
       const start = Date.now();
       syncPositions();
-      let newNodes = MT.getVisibleNodes(true);
-      let oldNodes;
-      if(session.style.widgets["timeline-date-field"] != 'None')
-        oldNodes = session.network.timelineNodes;
-      else
-        oldNodes = session.network.nodes;
-      
-      if (newNodes.length === 0 && session.style.widgets["timeline-date-field"] == 'None') return;
+      const timeline = get('timeline-date-field') != 'None';
+      const newNodes = MT.getVisibleNodes(true);
+      const oldNodes = timeline ? session.network.timelineNodes : session.network.nodes;
+      if (newNodes.length === 0 && !timeline) return;
 
       const previous = new Map(oldNodes.map(d => [d._id, d]));
       newNodes.forEach(d => {
-        let match = previous.get(d._id);
+        const match = previous.get(d._id);
         if (match) {
           ['x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed'].forEach(v => {
-            if (typeof match[v] != "undefined") d[v] = match[v];
+            if (typeof match[v] != 'undefined') d[v] = match[v];
           });
         }
       });
@@ -770,7 +745,7 @@ Note that this may cause slow performance on larger networks.">
       updateGroups();
       updateTracking();
       refresh().then(() => graph && graph.start(0.3));
-      console.log("Network render time:", (Date.now() - start).toLocaleString(), 'ms');
+      console.log('Network render time:', (Date.now() - start).toLocaleString(), 'ms');
     }
 
     // Known positions are kept; a new node starts next to a placed neighbor, or
@@ -805,123 +780,89 @@ Note that this may cause slow performance on larger networks.">
       return pos;
     }
 
+    // Clicking a node selects it alone (with Ctrl, adds or removes it)
     function clickHandler(index, position, event) {
       const n = points[index];
-      if (event && event.ctrlKey) {
-        session.data.nodes.find(node => node._id == n._id).selected = !n.selected;
-      } else {
-        session.data.nodes.forEach(node => {
-          if (node._id == n._id) {
-            node.selected = !n.selected;
-          } else {
-            node.selected = false;
-          }
-        });
-      }
-      $window.trigger('node-selected');
+      if (!n) return;
+      const node = session.data.nodes.find(d => d._id == n._id);
+      if (!node) return;
+      const was = node.selected;
+      if (!(event && event.ctrlKey)) session.data.nodes.forEach(d => d.selected = false);
+      node.selected = !was;
+      events.emit('node-selected', 'network');
     }
 
-    let clipboard = new ClipboardJS('#copyID, #copySeq');
-
+    // The node menu: pin or unpin it, copy its ID or sequence, see its attributes
+    const clipboard = new ClipboardJS(menu.querySelectorAll('.copy-id, .copy-sequence'));
     clipboard.on('success', hideContextMenu);
+    let menuNode = null;
 
     function showContextMenu(index, position, event) {
-      event.preventDefault();
+      if (event) event.preventDefault();
       hideTooltip();
-      let d = points[index];
-      $('#copyID').attr('data-clipboard-text', d._id);
-      $('#copySeq').attr('data-clipboard-text', d.seq);
-      d3.select('#viewAttributes').on('click', function () {
-        hideContextMenu();
-        let target = $('#network-attribute-modal tbody').empty();
-        let nd = session.data.nodes.find(nd => nd._id == d._id);
-        for (let attribute in nd) {
-          if (attribute[0] == '_') continue;
-          target.append(`<tr><td><strong>${MT.titleize(attribute)}</strong></td><td>${d[attribute]}</td></tr>`);
-        }
-        $('#network-attribute-modal').modal('show');
-      }).node().focus();
-      $('#pinNode').off('click');
-      if (d.fixed) {
-        $('#pinNode').text('Unpin Node').on('click', function () {
-          d.fx = null;
-          d.fy = null;
-          d.fixed = false;
-          updatePins();
-          refresh().then(() => reheat());
-          hideContextMenu();
-        });
-      } else {
-        $('#pinNode').text('Pin Node').on('click', function () {
-          syncPositions();
-          d.fx = d.x;
-          d.fy = d.y;
-          d.fixed = true;
-          updatePins();
-          refresh();
-          hideContextMenu();
-        });
-      }
-      $('#context-menu').css({
-        'z-index': 1000,
-        'display': 'block',
-        'left': (event.pageX) + 'px',
-        'top': (event.pageY - 56) + 'px',
-      }).animate({ 'opacity': 1 }, 80);
+      menuNode = points[index];
+      if (!menuNode) return;
+      menu.querySelector('.copy-id').dataset.clipboardText = menuNode._id;
+      menu.querySelector('.copy-sequence').dataset.clipboardText = menuNode.seq;
+      menu.querySelector('.pin-node').textContent = menuNode.fixed ? 'Unpin Node' : 'Pin Node';
+      const box = root.getBoundingClientRect();
+      Object.assign(menu.style, { display: 'block', zIndex: 1000, opacity: 1, left: (event.clientX - box.left) + 'px', top: (event.clientY - box.top) + 'px' });
     }
 
     function hideContextMenu() {
-      $('#context-menu').animate({ 'opacity': 0 }, 80, function () {
-        $(this).css('z-index', -1);
-      });
+      menu.style.display = 'none';
     }
 
-    function showTooltip(html, event) {
-      const at = event && 'pageX' in event ? event : mouse;
-      d3.select('#tooltip')
-        .html(html)
-        .style('left', (at.pageX + 8) + 'px')
-        .style('top', (at.pageY - 28) + 'px')
-        .style('z-index', 1000)
-        .transition().duration(100)
-        .style('opacity', 1);
+    menu.querySelector('.pin-node').addEventListener('click', e => {
+      e.preventDefault();
+      const d = menuNode;
+      hideContextMenu();
+      if (!d) return;
+      if (d.fixed) {
+        d.fx = null;
+        d.fy = null;
+        d.fixed = false;
+        updatePins();
+        refresh().then(() => reheat());
+      } else {
+        syncPositions();
+        d.fx = d.x;
+        d.fy = d.y;
+        d.fixed = true;
+        updatePins();
+        refresh();
+      }
+    });
+
+    menu.querySelector('.view-attributes').addEventListener('click', e => {
+      e.preventDefault();
+      hideContextMenu();
+      if (!menuNode) return;
+      const node = session.data.nodes.find(d => d._id == menuNode._id) || menuNode;
+      const modal = $('.network-attribute-modal');
+      modal.querySelector('tbody').innerHTML = Object.keys(node)
+        .filter(attribute => attribute[0] != '_')
+        .map(attribute => `<tr><td><strong>${escape(MT.titleize(attribute))}</strong></td><td>${escape(node[attribute])}</td></tr>`)
+        .join('');
+      bootstrap.Modal.getOrCreateInstance(modal).show();
+    });
+    menu.querySelectorAll('.copy-id, .copy-sequence').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+
+    // Tooltips: a node's tooltip variables (a table when there are several),
+    // a link's tooltip variable
+    function tooltipVariables() {
+      return [].concat(get('node-tooltip-variable')).filter(v => v && v != 'None');
     }
 
     function showNodeTooltip(index, position, event) {
-      let d = points[index];
+      const d = points[index];
       if (!d) return;
-      if (settings['node-highlight']) highlightNeighbors(index);
-      if ($('#node-tooltip-variable').val() == 'None') return;
-      //#299
-      let variables = settings['node-tooltip-variable'];
-      if(Array.isArray(variables) && variables.length > 1) {
-        let data = [];
-        for(let item of variables){
-          if('' == item) continue;
-          let arrayItem = [];
-          arrayItem.push(MT.titleize(item));
-          arrayItem.push(d[item]);
-          data.push(arrayItem);
-        }        
-        showTooltip('', event);
-        tabulate(data);
-      } else {
-        showTooltip(d[variables], event);
-      }
-    }
-
-    function tabulate(data) {
-      let table = d3.select("#tooltip").append("table"),
-          tbody = table.append("tbody");
-      let rows = tbody.selectAll("tr")
-          .data(data)
-          .enter()
-          .append("tr");
-      let cells = rows.selectAll("td")
-          .data(function(d) {return d;})
-          .enter()
-          .append("td")
-          .text(function(d) {return d;});
+      if (get('node-highlight')) highlightNeighbors(index);
+      const variables = tooltipVariables();
+      if (!variables.length) return;
+      const html = variables.length == 1 ? escape(d[variables[0]] == null ? '' : d[variables[0]]) :
+        '<table><tbody>' + variables.map(v => `<tr><td>${escape(MT.titleize(v))}</td><td>${escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
+      MT.tooltip(html, event || mouse);
     }
 
     function highlightNeighbors(index) {
@@ -931,69 +872,40 @@ Note that this may cause slow performance on larger networks.">
       });
     }
 
-    $('#link-tooltip-variable').on('change', function () {
-      settings['link-tooltip-variable'] = this.value;
-    });
-
     function showLinkTooltip(index) {
-      let v = settings['link-tooltip-variable'];
-      let d = links[index];
-      if (v == 'None' || !d) return;
-      showTooltip(d[v]);
+      const v = get('link-tooltip-variable'), d = links[index];
+      if (!v || v == 'None' || !d) return;
+      MT.tooltip(escape(d[v] == null ? '' : d[v]), mouse);
     }
 
-    $('#highlight-neighbors').parent().on('click', function () {
-      settings['node-highlight'] = true;
-    });
-
-    $('#dont-highlight-neighbors').parent().on('click', function () {
-      settings['node-highlight'] = false;
-    });
-
     function hideTooltip() {
-      if (graph && settings['node-highlight']) {
+      if (graph && get('node-highlight')) {
         graph.setConfigPartial({ highlightedPointIndices: undefined, highlightedLinkIndices: undefined });
       }
-      let tooltip = d3.select('#tooltip');
-      tooltip
-        .transition().duration(100)
-        .style('opacity', 0)
-        .on('end', () => tooltip.style('z-index', -1));
-      tooltip.select('table').remove();
-      tooltip.html('');
+      MT.tooltip(null);
     }
 
     function nodeSymbol(d) {
-      let symbolVariable = settings['node-symbol-variable'];
-      return symbolVariable !== 'None' ? temp.style.nodeSymbolMap(d[symbolVariable]) : settings['node-symbol'];
+      const symbolVariable = get('node-symbol-variable');
+      return symbolVariable !== 'None' ? temp.style.nodeSymbolMap(d[symbolVariable]) : get('node-symbol');
     }
 
     // The d3 symbol area of each point, as the SVG view drew it
     function nodeAreas() {
-      let defaultSize = settings['node-radius'];
-      let med = defaultSize, min, max;
-      let sizeVariable = settings['node-radius-variable'];
-      let scale;
-      if (sizeVariable !== 'None') {
-        let nodes;
-        if (session.style.widgets["timeline-date-field"] == 'None') nodes = points;
-        else nodes = session.network.timelineNodes;
-        let n = nodes.length;
-        min = Number.MAX_VALUE;
-        max = Number.MIN_VALUE;
-        for (let i = 0; i < n; i++) {
-          let size = nodes[i][sizeVariable];
-          if (typeof size == 'undefined') continue;
-          if (size < min) min = size;
-          if (size > max) max = size;
-        }
-        med = (max - min) / 2;
-        scale = d3.scaleLinear()
-          .domain([min, max])
-          .range([settings['node-radius-min'], settings['node-radius-max']]);
-      }
+      const defaultSize = get('node-radius');
+      const sizeVariable = get('node-radius-variable');
+      if (sizeVariable === 'None') return points.map(() => defaultSize);
+      const nodes = get('timeline-date-field') == 'None' ? points : session.network.timelineNodes;
+      let min = Number.MAX_VALUE, max = Number.MIN_VALUE;
+      nodes.forEach(d => {
+        const size = d[sizeVariable];
+        if (typeof size == 'undefined') return;
+        if (size < min) min = size;
+        if (size > max) max = size;
+      });
+      const med = (max - min) / 2;
+      const scale = d3.scaleLinear().domain([min, max]).range([get('node-radius-min'), get('node-radius-max')]);
       return points.map(d => {
-        if (sizeVariable === 'None') return defaultSize;
         let size = d[sizeVariable];
         if (!isNumber(size)) size = med;
         return scale(size);
@@ -1010,242 +922,104 @@ Note that this may cause slow performance on larger networks.">
       refresh();
     }
 
-    // Node borders aren't drawn on screen (cosmos.gl 3.4 has no point strokes);
-    // exports include them.
-    function redrawNodeBorder(){}
-
     function redrawLabels() {
       updateTracking();
       drawOverlays();
     }
 
-    $('#network-settings-toggle').on('click', function () {
-      let pane = $('#network-settings-pane');
-      if ($(this).hasClass('active')) {
-        pane.animate({ left: '-400px' }, function () { pane.hide(); });
-      } else {
-        pane.show(0, function () { pane.animate({ left: '0px' }); });
-      }
-    });
-
-    $('#node-label-variable').on('change', function () {
-      settings['node-label-variable'] = this.value;
-      if (this.value == 'None') {
-        $('.node-label-row').slideUp();
-      } else {
-        $('.node-label-row').css('display', 'flex');
-      }
-      redrawLabels();
-    });
-
-    $('#node-label-size').on('input', function () {
-      settings['node-label-size'] = parseFloat(this.value);
-      redrawLabels();
-    });
-
-    $('#node-label-orientation').on('change', function () {
-      settings['node-label-orientation'] = this.value;
-      redrawLabels();
-    });
-
-    $('#node-tooltip-variable').on('change', function (e) {
-      settings['node-tooltip-variable'] = $('#node-tooltip-variable').val();
-    });
-
-    $('#node-symbol').on('input', function () {
-      settings['node-symbol'] = this.value;
-      redrawNodes();
-    });
-
-    $('#node-symbol-variable').on('change', function () {
-      if($(this).find("option").length <= 1) return false;    
-      let variable = this.value;
-      settings['node-symbol-variable'] = variable;
-      let wrapper = $('#node-symbol-table-wrapper');
-      let table = wrapper.find('table');
-      if (variable == 'None') {
-        temp.style.nodeSymbolMap = function () { return settings['node-symbol']; };
-        $('#node-symbol-table-row').slideUp();
-        $('#node-symbol-row').slideDown();
-        wrapper.fadeOut(function () { table.empty(); });
+    // Shapes by a node variable: the symbol for each value, listed in a table
+    // where each can be changed
+    function showSymbolTable() {
+      const variable = get('node-symbol-variable');
+      if (!variable || variable == 'None') {
+        temp.style.nodeSymbolMap = () => get('node-symbol');
+        symbolWrapper.hidden = true;
+        symbolTable.innerHTML = '';
         redrawNodes();
         return;
       }
 
-      let nodeSymbols;
-      if(session.style.nodeSymbolsTable[variable]) {
-        nodeSymbols = session.style.nodeSymbolsTable[variable];
-      } else {
-        nodeSymbols = session.style.nodeSymbolsTable[variable] = [...session.style.nodeSymbols];
-      }
-      
-      $('#node-symbol-row').slideUp();
-      $('#node-symbol-table-row').slideDown();
-      let values = [];
-      let aggregates = {};
-      let nodes = session.data.nodes;
-      let n = nodes.length;
-      let vnodes = 0;
-      for (let i = 0; i < n; i++) {
-        let d = nodes[i];
-        if (!d.visible) continue;
-        vnodes++;
-        let dv = d[variable];
-        if (values.indexOf(dv) == -1) values.push(dv);
-        if (dv in aggregates) {
+      let nodeSymbols = session.style.nodeSymbolsTable[variable] = session.style.nodeSymbolsTable[variable] || [...session.style.nodeSymbols];
+      // Each visible value, the most common first
+      const tally = nodes => {
+        const aggregates = {}, values = [];
+        let count = 0;
+        nodes.forEach(d => {
+          if (!d.visible) return;
+          count++;
+          const dv = d[variable];
+          if (!(dv in aggregates)) {
+            aggregates[dv] = 0;
+            values.push(dv);
+          }
           aggregates[dv]++;
-        } else {
-          aggregates[dv] = 1;
-        }
-      }
-      if (values.length > nodeSymbols.length) {
-        let symbols = [];
-        let m = Math.ceil(values.length / nodeSymbols.length);
-        while (m-- > 0) {
-          symbols = symbols.concat(nodeSymbols);
-        }
-        nodeSymbols = symbols;
-      }
-      values.sort(function (a, b) {return aggregates[b] - aggregates[a];}); //#297
+        });
+        values.sort((a, b) => aggregates[b] - aggregates[a]); //#297
+        return { aggregates, values, count };
+      };
+      const repeat = (symbols, n) => {
+        let out = [];
+        while (out.length < n) out = out.concat(symbols);
+        return out.length ? out : symbols;
+      };
+      const { aggregates, values, count } = tally(session.data.nodes);
+      if (values.length > nodeSymbols.length) nodeSymbols = repeat(nodeSymbols, values.length);
 
-      if (session.style.widgets["node-timeline-variable"] == 'None') {
+      if (get('node-timeline-variable') == 'None') {
         session.style.nodeSymbolsTableKeys[variable] = values;
         session.style.nodeSymbolsTable[variable] = nodeSymbols;
       } else {
-        
-        // During timeline mode, user Pause and switch to a different Node Symbol but nodeSymbolsTableKeys[variable] is not available
-        if(!session.style.nodeSymbolsTableKeys[variable]) {
-          let valuesTL = [];
-          let aggregatesTL = {};
-          let nodesTL = session.network.timelineNodes;
-          let n = nodesTL.length;
-          let vnodesTL = 0;
-          let nodeSymbolsTL = [...session.style.nodeSymbols];
-          for (let i = 0; i < n; i++) {
-            let d = nodesTL[i];
-            if (!d.visible) continue;
-            vnodesTL++;
-            let dv = d[variable];
-            if (valuesTL.indexOf(dv) == -1) valuesTL.push(dv);
-            if (dv in aggregatesTL) {
-              aggregatesTL[dv]++;
-            } else {
-              aggregatesTL[dv] = 1;
-            }
-          }
-          if (valuesTL.length > nodeSymbolsTL.length) {
-            let symbols = [];
-            let m = Math.ceil(valuesTL.length / nodeSymbolsTL.length);
-            while (m-- > 0) {
-              symbols = symbols.concat(nodeSymbolsTL);
-            }
-            nodeSymbolsTL = symbols;
-          }
-          valuesTL.sort(function (a, b) {return aggregatesTL[b] - aggregatesTL[a];});
-          session.style.nodeSymbolsTableKeys[variable] = valuesTL;
-          session.style.nodeSymbolsTable[variable] = nodeSymbolsTL;
-        }        
-
-        let key;
-        let tempNodeSymbols=[];
-        for(let v of values) {
-          let table = session.style.nodeSymbolsTableKeys[variable];
-          key = table.findIndex( k => k === v);
-          tempNodeSymbols.push(nodeSymbols[key]);
+        // During the timeline the shapes stay with the values they had when it
+        // started (keys from the timeline's nodes, if the variable has none yet)
+        if (!session.style.nodeSymbolsTableKeys[variable]) {
+          const timeline = tally(session.network.timelineNodes);
+          session.style.nodeSymbolsTableKeys[variable] = timeline.values;
+          session.style.nodeSymbolsTable[variable] = repeat([...session.style.nodeSymbols], timeline.values.length);
         }
-        nodeSymbols = tempNodeSymbols;
+        const keys = session.style.nodeSymbolsTableKeys[variable];
+        nodeSymbols = values.map(v => nodeSymbols[keys.findIndex(k => k === v)]);
       }
-      
-      temp.style.nodeSymbolMap = d3.scaleOrdinal(nodeSymbols).domain(values);
-      let nodeSymbolHeaderTitle =  (session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : "Node " + MT.titleize(variable));
-      table.empty().append(
-        '<tr>' +
-        '<th class="p-1" contenteditable>' + nodeSymbolHeaderTitle + '</th>' +
-        (settings['node-symbol-table-counts'] ? '<th>Count</th>' : '') +
-        (settings['node-symbol-table-frequencies'] ? '<th>Frequency</th>' : '') +
-        '<th>Shape</th>' +
-        '</tr>');
-      let options = $('#node-symbol').html();
-      values.forEach(function (v, i) {
-        let selector = $('<select></select>').append(options).val(temp.style.nodeSymbolMap(v)).on('change', function (e) {
-          nodeSymbols.splice(i, 1, this.value);
-          temp.style.nodeSymbolMap = d3.scaleOrdinal(nodeSymbols).domain(values);
 
-          // make update during timeline - also need to update saved nodeSymbols
-          if (session.style.widgets["node-timeline-variable"] != 'None') {
-            let key = session.style.nodeSymbolsTableKeys[variable].findIndex( k => k === v);
-            session.style.nodeSymbolsTable[variable].splice(key, 1, this.value);
+      temp.style.nodeSymbolMap = d3.scaleOrdinal(nodeSymbols).domain(values);
+      const title = session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : 'Node ' + MT.titleize(variable);
+      const counts = get('node-symbol-table-counts'), frequencies = get('node-symbol-table-frequencies');
+      symbolTable.innerHTML = '<tr>' +
+        `<th class="p-1" contenteditable>${escape(title)}</th>` +
+        (counts ? '<th>Count</th>' : '') +
+        (frequencies ? '<th>Frequency</th>' : '') +
+        '<th>Shape</th></tr>';
+      const options = $('[data-setting="node-symbol"]').innerHTML;
+      values.forEach((v, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td contenteditable>${escape(MT.titleize('' + v))}</td>` +
+          (counts ? `<td>${aggregates[v]}</td>` : '') +
+          (frequencies ? `<td>${(aggregates[v] / count).toLocaleString()}</td>` : '') +
+          `<td><select>${options}</select></td>`;
+        const select = row.querySelector('select');
+        select.value = temp.style.nodeSymbolMap(v);
+        select.addEventListener('change', () => {
+          nodeSymbols.splice(i, 1, select.value);
+          temp.style.nodeSymbolMap = d3.scaleOrdinal(nodeSymbols).domain(values);
+          // During the timeline, the saved shapes change too
+          if (get('node-timeline-variable') != 'None') {
+            const key = session.style.nodeSymbolsTableKeys[variable].findIndex(k => k === v);
+            session.style.nodeSymbolsTable[variable].splice(key, 1, select.value);
           }
           redrawNodes();
         });
-        let cell = $('<td></td>').append(selector);
-        let row = $(
-          '<tr>' +
-          '<td contenteditable>' + MT.titleize('' + v) + '</td>' +
-          (settings['node-symbol-table-counts'] ? ('<td>' + aggregates[v] + '</td>') : '') +
-          (settings['node-symbol-table-frequencies'] ? ('<td>' + (aggregates[v] / vnodes).toLocaleString() + '</td>') : '') +
-          '</tr>'
-        ).append(cell);
-        table.append(row);
+        symbolTable.append(row);
       });
-      
-      table
-        .find(".p-1")
-        .on("focusout", function() {
-          session.style.overwrite.nodeSymbolHeaderTitle = $(this).text();
-        });
-
-      sortable('#node-symbol-table', { items: 'tr' });
-      wrapper.fadeIn();
+      symbolTable.querySelector('.p-1').addEventListener('focusout', e => {
+        session.style.overwrite.nodeSymbolHeaderTitle = e.target.textContent;
+      });
+      sortable(symbolTable, { items: 'tr' });
+      symbolWrapper.hidden = !get('node-symbol-table-show');
       redrawNodes();
-    });
-
-    $('#node-symbol-table-show').parent().on('click', function () {
-      $('#node-symbol-table-wrapper').fadeIn();
-    });
-
-    $('#node-symbol-table-hide').parent().on('click', function () {
-      $('#node-symbol-table-wrapper').fadeOut();
-    });
-
-    $('#node-radius').on('input', function () {
-      settings['node-radius'] = parseFloat(this.value);
-      redrawNodes();
-    });
-
-    $('#node-radius-max').on('input', function () {
-      settings['node-radius-max'] = parseFloat(this.value);
-      redrawNodes();
-    });
-
-    $('#node-radius-min').on('input', function () {
-      settings['node-radius-min'] = parseFloat(this.value);
-      redrawNodes();
-    });
-	
-    $('#node-radius-variable').on('change', function () {
-      if (this.value == 'None') {
-        $('#node-max-radius-row').slideUp();
-        $('#node-min-radius-row').slideUp();
-        $('#node-radius-row').slideDown();
-      } else {
-        $('#node-max-radius-row').css('display', 'flex');
-        $('#node-min-radius-row').css('display', 'flex');
-        $('#node-radius-row').slideUp();
-      }
-	  
-	    settings['node-radius-variable'] = this.value;
-      redrawNodes();
-    });
-
-    $("#node-border-width").on("change", function() {
-      session.style.widgets["node-border-width"] = this.value;
-      $window.trigger("node-border-change");
-    });
+    }
 
     function nodeColor(d) {
-      let variable = settings['node-color-variable'];
-      if (variable == 'None') return rgba(settings['node-color'], 1);
+      const variable = get('node-color-variable');
+      if (variable == 'None') return rgba(get('node-color'), 1);
       return rgba(temp.style.nodeColorMap(d[variable]), temp.style.nodeAlphaMap(d[variable]));
     }
 
@@ -1267,39 +1041,11 @@ Note that this may cause slow performance on larger networks.">
       refresh();
     }
 
-    $('#node-charge').on('input', function () {
-      let v = parseFloat(this.value);
-      settings['node-charge'] = v;
-      reheat();
-    });
-
     function updateArrows() {
       if (!graph) return;
-      graph.setLinkArrows(new Array(links.length).fill(!!settings['link-directed']));
+      graph.setLinkArrows(new Array(links.length).fill(!!get('link-directed')));
+      refresh();
     }
-
-    $('#link-directed').parent().on('click', function () {
-      settings['link-directed'] = true;
-      updateArrows();
-      refresh();
-    });
-
-    $('#link-undirected').parent().on('click', function () {
-      settings['link-directed'] = false;
-      updateArrows();
-      refresh();
-    });
-
-    $('#link-label-variable').on('change', function () {
-      settings['link-label-variable'] = this.value;
-      drawOverlays();
-    });
-
-    $('#link-length').on('input', function () {
-      let v = parseFloat(this.value);
-      settings['link-length'] = v;
-      reheat();
-    });
 
     // A link's color value; links with several origins are dashed and colored by
     // their first origin.
@@ -1308,15 +1054,15 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function linkColor(l) {
-      let variable = settings['link-color-variable'];
-      if (variable == 'None') return rgba(settings['link-color'], 1);
-      let v = linkValue(l, variable);
+      const variable = get('link-color-variable');
+      if (variable == 'None') return rgba(get('link-color'), 1);
+      const v = linkValue(l, variable);
       return rgba(temp.style.linkColorMap(v), temp.style.linkAlphaMap(v));
     }
 
     function updateLinkColor() {
       if (!graph) return;
-      let variable = settings['link-color-variable'];
+      const variable = get('link-color-variable');
       const colors = new Float32Array(links.length * 4), styles = new Float32Array(links.length);
       links.forEach((l, i) => {
         colors.set(linkColor(l), 4 * i);
@@ -1327,36 +1073,25 @@ Note that this may cause slow performance on larger networks.">
       refresh();
     }
 
-    $('#link-opacity').on('input', function () {
-      settings['link-opacity'] = parseFloat(this.value);
-      if (graph) graph.setConfigPartial({ linkOpacity: 1 - settings['link-opacity'] });
+    function setLinkOpacity() {
+      if (graph) graph.setConfigPartial({ linkOpacity: 1 - get('link-opacity') });
       refresh();
-    });
+    }
 
     function linkWidths() {
-      let scalar = settings['link-width'];
-      let variable = settings['link-width-variable'];
+      const scalar = get('link-width');
+      const variable = get('link-width-variable');
       if (variable == 'None') return links.map(() => scalar);
-      let maxWidth = settings['link-width-max'];
-      let minWidth = settings['link-width-min'];
-      let n = links.length;
-      let max = -Infinity;
-      let min = Infinity;
-      for (let i = 0; i < n; i++) {
-        let l = links[i][variable];
+      let max = -Infinity, min = Infinity;
+      for (const link of links) {
+        const l = link[variable];
         if (!isNumber(l)) return null;
         if (l > max) max = l;
         if (l < min) min = l;
       }
-      let mid = (max - min) / 2 + min;
-      let scale = d3.scaleLinear()
-        .domain([min, max])
-        .range([minWidth, maxWidth]);
-      return links.map(d => {
-        let v = d[variable];
-        if (!isNumber(v)) v = mid;
-        return scale(v);
-      });
+      const mid = (max - min) / 2 + min;
+      const scale = d3.scaleLinear().domain([min, max]).range([get('link-width-min'), get('link-width-max')]);
+      return links.map(d => scale(isNumber(d[variable]) ? d[variable] : mid));
     }
 
     function scaleLinkWidth() {
@@ -1367,58 +1102,19 @@ Note that this may cause slow performance on larger networks.">
       refresh();
     }
 
-    $('#link-width').on('input', function () {
-      settings['link-width'] = parseFloat(this.value);
-      scaleLinkWidth();
-    });
-
-    $('#link-width-max').on('input', function () {
-      settings['link-width-max'] = parseFloat(this.value);
-      scaleLinkWidth();
-    });
-
-    $('#link-width-min').on('input', function () {
-      settings['link-width-min'] = parseFloat(this.value);
-      scaleLinkWidth();
-    });
-
-    $('#link-width-variable').on('change', function () {
-      if (this.value == 'None') {
-        $('#link-max-width-row').slideUp();
-        $('#link-min-width-row').slideUp();
-        $('#link-width-row').slideDown();
-      } else {
-        $('#link-max-width-row').css('display', 'flex');
-        $('#link-min-width-row').css('display', 'flex');
-        $('#link-width-row').slideUp();
-      }
-      settings['link-width-variable'] = this.value;
-      scaleLinkWidth();
-    });
-
-    $('#network-gridlines-show').parent().on('click', function () {
-      settings['network-gridlines-show'] = true;
-      drawOverlays();
-    });
-
-    $('#network-gridlines-hide').parent().on('click', function () {
-      settings['network-gridlines-show'] = false;
-      drawOverlays();
-    });
-
     // Polygons group points by the foci variable (groups of 3 or more). The
     // gather force pulls each group together with cosmos.gl's cluster force.
     let groups = [];
     function updateGroups() {
       if (!graph) return;
       groups = [];
-      if (settings['polygons-show']) {
-        let foci = settings['polygons-foci'];
-        let byKey = new Map();
+      if (get('polygons-show')) {
+        const foci = get('polygons-foci');
+        const byKey = new Map();
         points.forEach((d, i) => {
-          let key = '' + d[foci];
+          const key = '' + d[foci];
           d.foci = key;
-          if (!byKey.has(key)) byKey.set(key, { key: key, values: [], indices: [] });
+          if (!byKey.has(key)) byKey.set(key, { key, values: [], indices: [] });
           byKey.get(key).values.push(d);
           byKey.get(key).indices.push(i);
         });
@@ -1428,310 +1124,136 @@ Note that this may cause slow performance on larger networks.">
         delete temp.polygonGroups;
       }
       const clusters = new Array(points.length).fill(undefined);
-      if (settings['polygons-show'] && settings['polygons-gather-force'] > 0) {
+      if (get('polygons-show') && get('polygons-gather-force') > 0) {
         groups.forEach((group, c) => group.indices.forEach(i => { clusters[i] = c; }));
       }
       graph.setPointClusters(clusters);
       graph.setConfigPartial({ simulationCluster: physics().simulationCluster });
     }
 
-    $('#polygons-show').parent().on('click', function () {
-      settings['polygons-show'] = true;
-      $(".polygons-settings-row").slideDown();
-      if(settings['polygons-color-show'] == true){
-        $('#polygons-color-show').click();
-      } else {
-        $('#polygons-color-hide').click();
+    function regroup() {
+      updateGroups();
+      updateTracking();
+      if (get('polygons-show') && get('polygons-color-show')) showPolygonTable();
+      reheat();
+      drawOverlays();
+    }
+
+    // Polygon colors by group, listed in a table where each can be changed
+    function showPolygonTable() {
+      if (!get('polygons-show') || !get('polygons-color-show')) {
+        polygonTable.innerHTML = '';
+        polygonWrapper.hidden = true;
+        return;
       }
-
-      render();
-    });
-
-    $('#polygons-hide').parent().on('click', function () {
-      settings['polygons-show'] = false;
-      $(".polygons-settings-row").slideUp();
-      $("#polygon-color-table-row").slideUp();
-      $("#polygon-color-value-row").slideUp();
-      $("#polygon-color-table").empty();
-      render();
-    });
-
-    $('#polygons-foci').on('change', function () {
-      settings['polygons-foci'] = this.value;
-      render();
-      if(settings['polygons-color-show'] == true) {
-        $("#polygon-color-table").empty();
-        updatePolygonColors();
+      const sortLink = () => {
+        const a = document.createElement('a');
+        a.style.cursor = 'pointer';
+        a.innerHTML = '&#8645;';
+        return a;
+      };
+      const flip = key => settings.set(key, get(key) === 'ASC' ? 'DESC' : 'ASC');
+      const foci = get('polygons-foci');
+      const title = session.style.overwrite && session.style.overwrite.polygonColorHeaderVariable == foci ? session.style.overwrite.polygonColorHeaderTitle : 'Polygon ' + MT.titleize(foci);
+      const counts = get('polygon-color-table-counts'), frequencies = get('polygon-color-table-frequencies');
+      polygonTable.innerHTML = '<tr></tr>';
+      const header = polygonTable.querySelector('tr');
+      const nameHeader = document.createElement('th');
+      nameHeader.className = 'p-1';
+      nameHeader.contentEditable = true;
+      nameHeader.textContent = title;
+      const nameSort = sortLink();
+      nameSort.addEventListener('click', () => {
+        settings.set('polygon-color-table-counts-sort', '');
+        flip('polygon-color-table-name-sort');
+        showPolygonTable();
+      });
+      nameHeader.append(nameSort);
+      header.append(nameHeader);
+      if (counts) {
+        const countHeader = document.createElement('th');
+        countHeader.textContent = 'Count';
+        const countSort = sortLink();
+        countSort.addEventListener('click', () => {
+          settings.set('polygon-color-table-name-sort', '');
+          flip('polygon-color-table-counts-sort');
+          showPolygonTable();
+        });
+        countHeader.append(countSort);
+        header.append(countHeader);
       }
-    });
-
-    $('#polygons-gather-force').on('input', function () {
-      let v = parseFloat(this.value);
-      settings['polygons-gather-force'] = v;
-      render();
-    });
-
-    $('#polygons-color-hide').parent().on('click', function () {
-      settings['polygons-color-show'] = false;
-      $("#polygon-color-value-row").slideDown();
-      $("#polygon-color-table-row").slideUp();
-      $("#polygon-color-table").empty();
-      render();
-    });
-
-    $("#polygons-color-show").parent().on("click", function() { 
-      settings['polygons-color-show'] = true;
-      $("#polygon-color-value-row").slideUp();
-      $("#polygon-color-table-row").slideDown();
-      updatePolygonColors();
-    });
-
-    function updatePolygonColors() {
-      let polygonSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
-        session.style.widgets["polygon-color-table-counts-sort"] = "";
-        if (session.style.widgets["polygon-color-table-name-sort"] === "ASC")
-          session.style.widgets["polygon-color-table-name-sort"] = "DESC"
-        else
-          session.style.widgets["polygon-color-table-name-sort"] = "ASC"
-          updatePolygonColors();
+      if (frequencies) header.insertAdjacentHTML('beforeend', '<th>Frequency</th>');
+      header.insertAdjacentHTML('beforeend', '<th>Color</th>');
+      nameHeader.addEventListener('focusout', () => {
+        session.style.overwrite.polygonColorHeaderVariable = get('polygons-foci');
+        session.style.overwrite.polygonColorHeaderTitle = nameHeader.firstChild.textContent;
       });
-      let polygonColorHeaderTitle =  (session.style.overwrite && session.style.overwrite.polygonColorHeaderVariable == settings['polygons-foci'] ? session.style.overwrite.polygonColorHeaderTitle : "Polygon " + MT.titleize(settings['polygons-foci']));
-      let polygonHeader = $("<th class='p-1' contenteditable>" + polygonColorHeaderTitle + "</th>").append(polygonSort);
-      let countSort = $("<a style='cursor: pointer;'>&#8645;</a>").on("click", e => {
 
-        session.style.widgets["polygon-color-table-name-sort"] = "";
-        if (session.style.widgets["polygon-color-table-counts-sort"] === "ASC")
-          session.style.widgets["polygon-color-table-counts-sort"] = "DESC"
-        else
-          session.style.widgets["polygon-color-table-counts-sort"] = "ASC"
-          updatePolygonColors();
-      });
-      let countHeader = $((session.style.widgets["polygon-color-table-counts"] ? "<th>Count</th>" : "")).append(countSort);
-      let polygonColorTable = $("#polygon-color-table")
-        .empty()
-        .append($("<tr></tr>"))
-        .append(polygonHeader)
-        .append(countHeader)
-        .append((session.style.widgets["polygon-color-table-frequencies"] ? "<th>Frequency</th>" : ""))
-        .append("<th>Color</th>" );
       if (!session.style.polygonValueNames) session.style.polygonValueNames = {};
-      let aggregates = MT.createPolygonColorMap();
-      let values = Object.keys(aggregates);
-
-      if (session.style.widgets["polygon-color-table-counts-sort"] == "ASC")
-        values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
-      else if (session.style.widgets["polygon-color-table-counts-sort"] == "DESC")
-        values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-      if (session.style.widgets["polygon-color-table-name-sort"] == "ASC")
-        values.sort(function(a, b) { return a - b });
-      else if (session.style.widgets["polygon-color-table-name-sort"] == "DESC")
-        values.sort(function(a, b) { return b - a });
-
-      let total = 0;
-      values.forEach(d => total += aggregates[d] );
+      const aggregates = MT.createPolygonColorMap();
+      const values = Object.keys(aggregates);
+      if (get('polygon-color-table-counts-sort') == 'ASC') values.sort((a, b) => aggregates[a] - aggregates[b]);
+      else if (get('polygon-color-table-counts-sort') == 'DESC') values.sort((a, b) => aggregates[b] - aggregates[a]);
+      if (get('polygon-color-table-name-sort') == 'ASC') values.sort((a, b) => a - b);
+      else if (get('polygon-color-table-name-sort') == 'DESC') values.sort((a, b) => b - a);
+      const total = values.reduce((sum, v) => sum + aggregates[v], 0);
+      const remap = () => {
+        temp.style.polygonColorMap = d3.scaleOrdinal(session.style.polygonColors).domain(values);
+        temp.style.polygonAlphaMap = d3.scaleOrdinal(session.style.polygonAlphas).domain(values);
+      };
 
       values.forEach((value, i) => {
         session.style.polygonColors.splice(i, 1, temp.style.polygonColorMap(value));
         session.style.polygonAlphas.splice(i, 1, temp.style.polygonAlphaMap(value));
-        let colorinput = $('<input type="color" value="' + temp.style.polygonColorMap(value) + '">')
-          .on("change", function(){
-            session.style.polygonColors.splice(i, 1, this.value);
-            temp.style.polygonColorMap = d3
-              .scaleOrdinal(session.style.polygonColors)
-              .domain(values);
-            render();
-          });
-        let alphainput = $("<a>⇳</a>").on("click", e => {
-          $("#color-transparency-wrapper").css({
-            top: e.clientY + 129,
-            left: e.clientX,
-            display: "block"
-          });
-          $("#color-transparency")
-            .val(session.style.polygonAlphas[i])
-            .one("change", function() {
-              session.style.polygonAlphas.splice(i, 1, parseFloat(this.value));
-              temp.style.polygonAlphaMap = d3
-                .scaleOrdinal(session.style.polygonAlphas)
-                .domain(values);
-              $("#color-transparency-wrapper").fadeOut();
-              render();
-            });
+        const row = document.createElement('tr');
+        row.innerHTML = `<td data-value="${escape(value)}">${escape(session.style.polygonValueNames[value] || MT.titleize('' + value))}</td>` +
+          (counts ? `<td>${aggregates[value]}</td>` : '') +
+          (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
+          `<td><input type="color" value="${temp.style.polygonColorMap(value)}"><a>⇳</a></td>`;
+        row.querySelector('input').addEventListener('change', e => {
+          session.style.polygonColors.splice(i, 1, e.target.value);
+          remap();
+          drawOverlays();
         });
-        let cell = $("<td></td>")
-          .append(colorinput)
-          .append(alphainput);
-
-        let row = $(
-          "<tr>" +
-            "<td data-value='" + value + "'>" +
-              (session.style.polygonValueNames[value] ? session.style.polygonValueNames[value] : MT.titleize("" + value)) +
-            "</td>" +
-            (session.style.widgets["polygon-color-table-counts"] ? "<td>" + aggregates[value] + "</td>" : "") +
-            (session.style.widgets["polygon-color-table-frequencies"] ? "<td>" + (aggregates[value] / total).toLocaleString() + "</td>" : "") +
-          "</tr>"
-        ).append(cell);
-        polygonColorTable.append(row);
+        // Transparency, with the shared slider
+        row.querySelector('a').addEventListener('click', e => {
+          const wrapper = document.getElementById('color-transparency-wrapper');
+          const slider = document.getElementById('color-transparency');
+          Object.assign(wrapper.style, { top: (e.clientY + 129) + 'px', left: e.clientX + 'px', display: 'block' });
+          slider.value = session.style.polygonAlphas[i];
+          slider.addEventListener('change', () => {
+            session.style.polygonAlphas.splice(i, 1, parseFloat(slider.value));
+            remap();
+            wrapper.style.display = 'none';
+            drawOverlays();
+          }, { once: true });
+        });
+        // Double-click a value to rename it
+        const name = row.querySelector('td');
+        name.addEventListener('dblclick', () => {
+          name.contentEditable = true;
+          name.focus();
+        });
+        name.addEventListener('focusout', () => {
+          name.contentEditable = false;
+          session.style.polygonValueNames[value] = name.textContent;
+        });
+        polygonTable.append(row);
       });
-      
-      temp.style.polygonColorMap = d3
-        .scaleOrdinal(session.style.polygonColors)
-        .domain(values);
-      temp.style.polygonAlphaMap = d3
-        .scaleOrdinal(session.style.polygonAlphas)
-        .domain(values);
-
-      polygonColorTable
-        .find("td")
-        .on("dblclick", function() {
-          $(this).attr("contenteditable", true).focus();
-        })
-        .on("focusout", function() {
-          let $this = $(this);
-          $this.attr("contenteditable", false);
-          session.style.polygonValueNames[$this.data("value")] = $this.text();
-        });
-        
-      polygonColorTable
-        .find(".p-1")
-        .on("focusout", function() {
-          session.style.overwrite.polygonColorHeaderVariable = session.style.widgets["polygons-foci"];
-          session.style.overwrite.polygonColorHeaderTitle = $($(this).contents()[0]).text();
-        });
-
-      sortable("#polygon-color-table", { items: "tr" });
-      render();
+      remap();
+      sortable(polygonTable, { items: 'tr' });
+      polygonWrapper.hidden = !get('polygon-color-table-show');
+      drawOverlays();
     }
-
-    $("#polygon-color")
-      .on("change", function() {
-        session.style.widgets["polygon-color"] = this.value;
-        render();
-      })
-      .val(session.style.widgets["polygon-color"]);
-
-    $("#polygon-color-table-wrapper").on("contextmenu", e => {
-      e.preventDefault();
-      $("#polygon-color-table-context").css({
-          top: e.clientY,
-          left: e.clientX,
-          display: "block"
-        });
-      });
-
-    $("#polygon-color-table-drag").on("click", function() {
-      let $this = $(this);
-      $this.parent().hide();
-      if ($this.text() == "Drag") {
-        $("#polygon-color-table-draghandle").slideDown();
-        $this.text("Pin");
-      } else {
-        $("#polygon-color-table-draghandle").slideUp();
-        $this.text("Drag");
-      }
-    });
-
-    $("#polygon-color-table-draghandle").on("mousedown", function() {
-      let body = $("body");
-      let parent = $(this).parent();
-      body.on("mousemove", e => {
-        parent
-          .css("top"  , parseFloat(parent.css("top"  )) + e.originalEvent.movementY + "px")
-          .css("right", parseFloat(parent.css("right")) - e.originalEvent.movementX + "px");
-      });
-      body.on("mouseup", () => body.off("mousemove").off("mouseup"));
-    });
-
-    $("#polygon-color-table-context-hide").on("click", () => $("#polygon-color-table-hide").parent().trigger('click'));
-
-    $("#polygon-color-table-expand").on("click", function() {
-      let $this = $(this);
-      if ($this.text() == "Expand") {
-        $("#polygon-color-table-wrapper").css({
-          "max-height": "none",
-          "overflow-y": "auto"
-        });
-        $this.text("Contract");
-      } else {
-        $("#polygon-color-table-wrapper").css({
-          "max-height": "400px",
-          "overflow-y": "scroll"
-        });
-        $this.text("Expand");
-      }
-    });
-
-    $("#polygon-color-table-counts").on("click", function() {
-      let $this = $(this);
-      if (session.style.widgets["polygon-color-table-counts"]) {
-        session.style.widgets["polygon-color-table-counts"] = false;
-        $this.text("Show Counts");
-      } else {
-        session.style.widgets["polygon-color-table-counts"] = true;
-        $this.text("Hide Counts");
-      }
-      $("#polygons-color-show").click();
-    });
-
-    $("#polygon-color-table-frequencies").on("click", function() {
-      let $this = $(this);
-      if (session.style.widgets["polygon-color-table-frequencies"]) {
-        session.style.widgets["polygon-color-table-frequencies"] = false;
-        $this.text("Show Frequencies");
-      } else {
-        session.style.widgets["polygon-color-table-frequencies"] = true;
-        $this.text("Hide Frequencies");
-      }
-      $("#polygons-color-show").click();
-    });
-
-    $("#polygon-color-table-show")
-      .parent()
-      .on("click", () => $("#polygon-color-table-wrapper").fadeIn());
-
-    $("#polygon-color-table-hide")
-      .parent()
-      .on("click", () => $("#polygon-color-table-wrapper").fadeOut());
-    
-    $('#network-friction').on('input', function () {
-      settings['network-friction'] = parseFloat(this.value);
-      reheat();
-    });
-
-    $('#network-gravity').on('input', function () {
-      settings['network-gravity'] = parseFloat(this.value);
-      reheat();
-    });
-
-    $('#network-link-strength').on('input', function () {
-      settings['network-link-strength'] = parseFloat(this.value);
-      reheat();
-    });
-
-    $('#network-export-filetype').on('change', function () {
-      if (this.value == 'svg') {
-        $('#network-export-advanced-button').parent().parent().slideUp();
-        if ($('#network-export-advanced').hasClass("show")) $('#network-export-advanced-button').click();
-      } else {
-        $('#network-export-advanced-button').parent().parent().slideDown();
-      }
-    });
-
-    $('#network-export-scale').on('input', function () {
-      let scale = parseFloat(this.value);
-      let wrapper = $('#network').parent();
-      $('#network-export-dimensions').text(
-        Math.round(wrapper.width() * scale) + 'x' +
-        Math.round(wrapper.height() * scale) + 'px'
-      );
-    }).trigger('input');
 
     // Screen pixels per unit of simulation space
     const zoomScale = () => graph ? graph.spaceToScreenRadius(1) : 1;
 
     // An SVG copy of what's on screen, with real d3 symbols and node borders,
-    // for export.
+    // the color legends and the network statistics, for export.
+    let exportExtras = [];
     function buildExportSVG() {
+      ga('send', 'event', '2D-network-export', 'trigger', 'on');
       syncPositions();
       const width = container.clientWidth, height = container.clientHeight, k = zoomScale();
       const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -1745,7 +1267,7 @@ Note that this may cause slow performance on larger networks.">
       wrapper.style.cssText = 'position: absolute; left: -100000px; top: 0;';
       wrapper.appendChild(svgNode);
       container.appendChild(wrapper);
-      svg.append('rect').attr('width', width).attr('height', height).attr('fill', settings['background-color']);
+      svg.append('rect').attr('width', width).attr('height', height).attr('fill', get('background-color'));
       const screen = points.map(d => graph.spaceToScreenPosition([d.x, d.y]));
 
       svg.append('defs').append('marker')
@@ -1759,13 +1281,13 @@ Note that this may cause slow performance on larger networks.">
         .append('path')
         .attr('d', 'M0,0 L0,10 L10,5 z');
 
-      if (settings['polygons-show']) {
-        let polygons = svg.append('g').attr('class', 'clusters');
+      if (get('polygons-show')) {
+        const polygons = svg.append('g').attr('class', 'clusters');
         groups.forEach(group => {
           const hull = d3.polygonHull(group.indices.map(i => screen[i]));
           if (!hull) return;
-          const fill = settings['polygons-color-show'] ? temp.style.polygonColorMap(group.key) : settings['polygon-color'];
-          const opacity = settings['polygons-color-show'] ? temp.style.polygonAlphaMap(group.key) : 0.4;
+          const fill = get('polygons-color-show') ? temp.style.polygonColorMap(group.key) : get('polygon-color');
+          const opacity = get('polygons-color-show') ? temp.style.polygonAlphaMap(group.key) : 0.4;
           polygons.append('path')
             .attr('d', 'M' + hull.join('L') + 'Z')
             .style('fill', fill).style('stroke', fill)
@@ -1774,23 +1296,23 @@ Note that this may cause slow performance on larger networks.">
         });
       }
 
-      const widths = linkWidths() || links.map(() => settings['link-width']);
-      const linkOpacity = 1 - settings['link-opacity'];
-      let linkGroup = svg.append('g').attr('class', 'links');
+      const widths = linkWidths() || links.map(() => get('link-width'));
+      const linkOpacity = 1 - get('link-opacity');
+      const linkGroup = svg.append('g').attr('class', 'links');
       links.forEach((l, i) => {
         const a = screen[pointIndex.get(l.source)], b = screen[pointIndex.get(l.target)];
         const [r, g, bl, alpha] = linkColor(l);
-        let line = linkGroup.append('line')
+        const line = linkGroup.append('line')
           .attr('x1', a[0]).attr('y1', a[1]).attr('x2', b[0]).attr('y2', b[1])
           .attr('stroke', d3.rgb(r * 255, g * 255, bl * 255).toString())
           .attr('opacity', alpha * linkOpacity)
           .attr('stroke-width', widths[i] * k);
-        if (settings['link-color-variable'] != 'None' && l.origin.length > 1) line.attr('stroke-dasharray', '15, 15');
-        if (settings['link-directed']) line.attr('marker-end', 'url(#export-end-arrow)');
+        if (get('link-color-variable') != 'None' && l.origin.length > 1) line.attr('stroke-dasharray', '15, 15');
+        if (get('link-directed')) line.attr('marker-end', 'url(#export-end-arrow)');
       });
 
       const areas = nodeAreas();
-      let nodeGroup = svg.append('g').attr('class', 'nodes');
+      const nodeGroup = svg.append('g').attr('class', 'nodes');
       points.forEach((d, i) => {
         const [r, g, b, alpha] = nodeColor(d);
         nodeGroup.append('path')
@@ -1798,117 +1320,52 @@ Note that this may cause slow performance on larger networks.">
           .attr('transform', `translate(${screen[i][0]}, ${screen[i][1]})`)
           .attr('fill', d3.rgb(r * 255, g * 255, b * 255).toString())
           .attr('opacity', alpha)
-          .attr('stroke', d.selected ? '#ff8300' : settings['node-color-border'])
-          .attr('stroke-width', d.selected ? 4 : settings['node-border-width'] * k);
+          .attr('stroke', d.selected ? '#ff8300' : get('node-color-border'))
+          .attr('stroke-width', d.selected ? 4 : get('node-border-width') * k);
       });
 
       labelPositions().forEach(({ text, x, y, anchor, size }) => {
         svg.append('text').attr('x', x).attr('y', y).attr('text-anchor', anchor)
           .style('font-size', size + 'px').style('font-family', 'sans-serif').text(text);
       });
+
+      // The color legends, as their tables show them
+      const legend = (kind, aggregates, total) => {
+        const variable = get(kind + '-color-variable');
+        const columns = [(kind == 'node' ? 'Node ' : 'Link ') + MT.titleize(variable)];
+        if (get(kind + '-color-table-counts')) columns.push('Count');
+        if (get(kind + '-color-table-frequencies')) columns.push('Frequency');
+        columns.push('Color');
+        const names = session.style[kind + 'ValueNames'], colorMap = temp.style[kind + 'ColorMap'];
+        const data = Object.keys(aggregates).map(value => ({
+          [kind == 'node' ? 'Node' : 'Link']: names[value] ? names[value] : MT.titleize('' + value),
+          Count: get(kind + '-color-table-counts') ? aggregates[value] : undefined,
+          Frequency: get(kind + '-color-table-frequencies') ? (aggregates[value] / total).toLocaleString() : undefined,
+          Color: '<div style="margin-left:5px; width:40px;height:12px;background:' + colorMap(value) + '"> </div>'
+        }));
+        return MT.tabulate(data, columns, document.getElementById(kind + '-color-table-wrapper'), svgNode);
+      };
+      const nodeLegend = legend('node', MT.createNodeColorMap(), MT.getVisibleNodes().length);
+      const linkLegend = legend('link', MT.createLinkColorMap(), MT.getVisibleLinks().length);
+
+      const statsDiv = document.getElementById('network-statistics-wrapper');
+      const stats = svg.append('svg:foreignObject')
+        .attr('x', statsDiv.offsetLeft)
+        .attr('y', statsDiv.offsetTop - 60)
+        .attr('width', statsDiv.offsetWidth)
+        .attr('height', statsDiv.offsetHeight);
+      stats.append('xhtml:body').html(statsDiv.innerHTML);
+      exportExtras = [wrapper, nodeLegend, linkLegend, stats];
       return svgNode;
     }
-
-    $('#network-export').on('click', function () {
-      ga('send', 'event', '2D-network-export', 'trigger', 'on');
-      if (!graph) return;
-      let network = buildExportSVG();
-      let watermark = d3.select(network).append('image')
-        .attr('xlink:href', MT.watermark)
-        .attr('height', 128)
-        .attr('width', 128)
-        .attr('x', 10)
-        .style('opacity', $('#network-export-opacity').val());
-      let vnodes = MT.getVisibleNodes();
-      let aggregates = MT.createNodeColorMap();
-      let values = Object.keys(aggregates);
-      var columns = [];
-      columns.push('Node ' + MT.titleize(session.style.widgets["node-color-variable"]));
-      if (session.style.widgets["node-color-table-counts"]) columns.push('Count');
-      if (session.style.widgets["node-color-table-frequencies"]) columns.push('Frequency');
-      columns.push('Color');
-      var data = [];
-      values.forEach((value, i) => {
-        let nodeValue =  (session.style.nodeValueNames[value] ? session.style.nodeValueNames[value] : MT.titleize("" + value));
-        let tableCounts = (session.style.widgets["node-color-table-counts"] ?  aggregates[value] : undefined);
-        let tableFreq = (session.style.widgets["node-color-table-frequencies"] ? (aggregates[value] / vnodes.length).toLocaleString() : undefined);
-        let line = {
-          Node: nodeValue,
-          Count: tableCounts, 
-          Frequency: tableFreq,
-          Color: '<div  style="margin-left:5px; width:40px;height:12px;background:' + temp.style.nodeColorMap(value)  +'"> </div>'
-        }
-        data.push(line);
-      })
-      let nodeWrapper = document.getElementById('node-color-table-wrapper');
-      let nodeLegend = MT.tabulate(data, columns, nodeWrapper, network);
-
-      let vlinks = MT.getVisibleLinks();
-      aggregates = MT.createLinkColorMap();
-      values = Object.keys(aggregates);
-      columns = [];
-      columns.push('Link ' + MT.titleize(session.style.widgets["link-color-variable"]));
-      if (session.style.widgets["link-color-table-counts"]) columns.push('Count');
-      if (session.style.widgets["link-color-table-frequencies"]) columns.push('Frequency');
-      columns.push('Color');
-      data = [];
-      values.forEach((value, i) => {
-        let nodeValue =  (session.style.linkValueNames[value] ? session.style.linkValueNames[value] : MT.titleize("" + value));
-        let tableCounts = (session.style.widgets["link-color-table-counts"] ?  aggregates[value] : undefined);
-        let tableFreq = (session.style.widgets["link-color-table-frequencies"] ? (aggregates[value] / vlinks.length).toLocaleString() : undefined);
-        let line = {
-          Link: nodeValue,
-          Count: tableCounts, 
-          Frequency: tableFreq,
-          Color: '<div  style="margin-left:5px; width:40px;height:12px;background:' + temp.style.linkColorMap(value)  +'"> </div>'
-        }
-        data.push(line);
-      })
-      let linkWrapper = document.getElementById('link-color-table-wrapper');
-      let linkLegend = MT.tabulate(data, columns, linkWrapper, network);
-
-      let statsDiv = document.getElementById('network-statistics-wrapper');
-      let foreignObjStats = d3.select(network).append("svg:foreignObject")
-      .attr("x", statsDiv.offsetLeft)
-      .attr("y", statsDiv.offsetTop-60)
-      .attr("width", statsDiv.offsetWidth)
-      .attr("height", statsDiv.offsetHeight);
-      foreignObjStats.append("xhtml:body").html(statsDiv.innerHTML);
-      //
-      let filetype = $('#network-export-filetype').val(),
-        filename = $('#network-export-filename').val();
-      if (filetype == 'svg') {
-        let content = MT.unparseSVG(network);
-        let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
-        saveAs(blob, filename + '.' + filetype);
-        network.parentNode.remove();
-        nodeLegend.remove();
-        linkLegend.remove();
-        foreignObjStats.remove();
-      } else {
-        saveSvgAsPng(network, filename + '.' + filetype, {
-          scale: parseFloat($('#network-export-scale').val()),
-          backgroundColor: settings['background-color'],
-          encoderType: 'image/' + filetype,
-          encoderOptions: parseFloat($('#network-export-quality').val())
-        }).then(() => {
-            network.parentNode.remove(); 
-            nodeLegend.remove(); 
-            linkLegend.remove();
-            foreignObjStats.remove();
-          });
-      }
-    });
 
     function fit() {
       if (graph && points.length) graph.fitView(750, 0.05);
     }
 
-    $('#fitbutton').on('click', fit);
-
-    $('#pinbutton').on('click', function () { 
+    function pinAll() {
       syncPositions();
-      if (session.network.allPinned) { 
+      if (session.network.allPinned) {
         points.forEach(d => {
           delete d.fx;
           delete d.fy;
@@ -1926,7 +1383,7 @@ Note that this may cause slow performance on larger networks.">
         refresh();
       }
       session.network.allPinned = !session.network.allPinned;
-    });
+    }
 
     function updatePins() {
       if (!graph) return;
@@ -1935,161 +1392,50 @@ Note that this may cause slow performance on larger networks.">
       graph.setPinnedPoints(pinned.length ? pinned : null);
     }
 
-    //#298
-    $('#casesensitivebutton').on('click', function () { 
-      if (session.style.widgets["search-case-sensitive"]) { 
-        session.style.widgets["search-case-sensitive"] = false;
-      } else {
-        session.style.widgets["search-case-sensitive"] = true;
-      }
-      $("#search").trigger("input");
-      $('#search-results').html("").hide();
-    });
-
-    //#298
-    $('#wholewordbutton').on('click', function () { 
-      if (session.style.widgets["search-whole-word"]) { 
-        session.style.widgets["search-whole-word"] = false;
-      } else {
-        session.style.widgets["search-whole-word"] = true;
-      }
-      $("#search").trigger("input");
-      $('#search-results').html("").hide();
-    });
-
-    $("#node-symbol-table-wrapper").on("contextmenu", function (e) {
-      e.preventDefault();
-      $("#node-symbol-table-context").css({
-        top: e.clientY - 55,
-        left: e.clientX,
-        display: "block"
-      });
-    });
-
-    $("#node-symbol-table-move").on("click", function () {
-      let $this = $(this);
-      $this.parent().hide();
-      if ($this.text() == "Drag") {
-        $("#node-symbol-table-draghandle").slideDown();
-        $this.text("Pin");
-      } else {
-        $("#node-symbol-table-draghandle").slideUp();
-        $this.text("Drag");
-      }
-    });
-
-    $("#node-symbol-table-draghandle").on("mousedown", function () {
-      let body = $("body");
-      let parent = $(this).parent();
-      body.on("mousemove", function (e2) {
-        parent
-          .css(
-            "top",
-            (parseFloat(parent.css("top")) + e2.originalEvent.movementY) + "px"
-          )
-          .css(
-            "left",
-            (parseFloat(parent.css("left")) + e2.originalEvent.movementX) + "px"
-          );
-      });
-      body.on("mouseup", function (e3) {
-        body.off("mousemove").off("mouseup");
-      });
-    });
-
-    $("#node-symbol-table-context-hide").on("click", function () {
-      $("#node-symbol-table-hide")
-        .parent()
-        .click();
-      $(this).parent().hide();
-    });
-
-    $("#node-symbol-table-expand").on("click", function () {
-      let $this = $(this);
-      if ($this.text() == "Expand") {
-        $("#node-symbol-table-wrapper").css({
-          "max-height": "none",
-          "overflow-y": "auto"
-        });
-        $this.text("Contract");
-      } else {
-        $("#node-symbol-table-wrapper").css({
-          "max-height": "400px",
-          "overflow-y": "scroll"
-        });
-        $this.text("Expand");
-      }
-      $this.parent().hide();
-    });
-
-    $('#node-symbol-table-counts').on('click', function () {
-      let $this = $(this);
-      if (settings['node-symbol-table-counts']) {
-        settings['node-symbol-table-counts'] = false;
-        $this.text("Show Counts");
-      } else {
-        settings['node-symbol-table-counts'] = true;
-        $this.text("Hide Counts");
-      }
-      $("#node-symbol-variable").trigger('change');
-      $this.parent().hide();
-    });
-
-    $('#node-symbol-table-frequencies').on('click', function () {
-      let $this = $(this);
-      if (settings['node-symbol-table-frequencies']) {
-        settings['node-symbol-table-frequencies'] = false;
-        $this.text("Show Frequencies");
-      } else {
-        settings['node-symbol-table-frequencies'] = true;
-        $this.text("Hide Frequencies");
-      }
-      $("#node-symbol-variable").change();
-      $this.parent().hide();
-    });
-
     // Ctrl + drag selects the nodes in a rectangle (toggling any already
     // selected), as the SVG view's brush did.
     let brushStart = null;
-    $(window).on('keydown' + instance + ' keyup' + instance, e => {
-      brushLayer.style.pointerEvents = e.ctrlKey ? 'all' : 'none';
+    const brushPointer = e => { brushLayer.style.pointerEvents = e.ctrlKey ? 'all' : 'none'; };
+    window.addEventListener('keydown', brushPointer);
+    window.addEventListener('keyup', brushPointer);
+    const brushPoint = e => {
+      const box = container.getBoundingClientRect();
+      return [e.clientX - box.left, e.clientY - box.top];
+    };
+    brushLayer.addEventListener('mousedown', e => {
+      brushStart = brushPoint(e);
+      Object.assign(brushRect.style, { display: 'block', left: brushStart[0] + 'px', top: brushStart[1] + 'px', width: 0, height: 0 });
     });
-    $(brushLayer)
-      .on('mousedown', e => {
-        const box = container.getBoundingClientRect();
-        brushStart = [e.clientX - box.left, e.clientY - box.top];
-        $('#network-brush-rect').css({ display: 'block', left: brushStart[0], top: brushStart[1], width: 0, height: 0 });
-      })
-      .on('mousemove', e => {
-        if (!brushStart) return;
-        const box = container.getBoundingClientRect();
-        const x = e.clientX - box.left, y = e.clientY - box.top;
-        $('#network-brush-rect').css({
-          left: Math.min(x, brushStart[0]), top: Math.min(y, brushStart[1]),
-          width: Math.abs(x - brushStart[0]), height: Math.abs(y - brushStart[1])
-        });
-      })
-      .on('mouseup mouseleave', e => {
-        if (!brushStart || !graph) return;
-        const box = container.getBoundingClientRect();
-        const x = e.clientX - box.left, y = e.clientY - box.top;
-        const rect = [[Math.min(x, brushStart[0]), Math.min(y, brushStart[1])], [Math.max(x, brushStart[0]), Math.max(y, brushStart[1])]];
-        brushStart = null;
-        $('#network-brush-rect').css('display', 'none');
-        if (rect[1][0] - rect[0][0] < 2 && rect[1][1] - rect[0][1] < 2) return;
-        const inside = new Set(graph.findPointsInRect(rect).map(i => points[i]._id));
-        session.data.nodes.forEach(d => {
-          if (inside.has(d._id)) d.selected = !d.selected;
-        });
-        $window.trigger('node-selected');
+    brushLayer.addEventListener('mousemove', e => {
+      if (!brushStart) return;
+      const [x, y] = brushPoint(e);
+      Object.assign(brushRect.style, {
+        left: Math.min(x, brushStart[0]) + 'px', top: Math.min(y, brushStart[1]) + 'px',
+        width: Math.abs(x - brushStart[0]) + 'px', height: Math.abs(y - brushStart[1]) + 'px'
       });
+    });
+    const endBrush = e => {
+      if (!brushStart || !graph) return;
+      const [x, y] = brushPoint(e);
+      const rect = [[Math.min(x, brushStart[0]), Math.min(y, brushStart[1])], [Math.max(x, brushStart[0]), Math.max(y, brushStart[1])]];
+      brushStart = null;
+      brushRect.style.display = 'none';
+      if (rect[1][0] - rect[0][0] < 2 && rect[1][1] - rect[0][1] < 2) return;
+      const inside = new Set(graph.findPointsInRect(rect).map(i => points[i]._id));
+      session.data.nodes.forEach(d => {
+        if (inside.has(d._id)) d.selected = !d.selected;
+      });
+      events.emit('node-selected', 'network');
+    };
+    brushLayer.addEventListener('mouseup', endBrush);
+    brushLayer.addEventListener('mouseleave', endBrush);
 
     // Overlays ----------------------------------------------------------------
 
     // Points whose positions the overlays need every frame (labels, polygons)
     function updateTracking() {
       if (!graph) return;
-      const needAll = settings['polygons-show'] || (settings['node-label-variable'] != 'None' && points.length <= 2000);
+      const needAll = get('polygons-show') || (get('node-label-variable') != 'None' && points.length <= 2000);
       graph.trackPointPositionsByIndices(needAll ? points.map((d, i) => i) : []);
     }
 
@@ -2102,15 +1448,15 @@ Note that this may cause slow performance on larger networks.">
     // Node labels to draw: every point while there are few, otherwise the
     // evenly spaced sample of on-screen points cosmos.gl provides.
     function labelPositions() {
-      const labelVar = settings['node-label-variable'];
-      if (labelVar == 'None' || !graph || !points.length) return [];
-      const k = zoomScale(), size = settings['node-label-size'] * k;
+      const labelVar = get('node-label-variable');
+      if (!labelVar || labelVar == 'None' || !graph || !points.length) return [];
+      const k = zoomScale(), size = get('node-label-size') * k;
       if (size < 4) return [];
       const tracked = graph.getTrackedPointPositionsMap();
-      const indices = points.length <= 2000 ? points.map((d, i) => i) : Array.from(graph.getSampledPointPositionsMap().keys());
       const sample = points.length <= 2000 ? null : graph.getSampledPointPositionsMap();
+      const indices = sample ? Array.from(sample.keys()) : points.map((d, i) => i);
       let anchor = 'start', dx = 8, dy = (size - 4 * k) / 2;
-      switch (settings['node-label-orientation']) {
+      switch (get('node-label-orientation')) {
         case 'Left': anchor = 'end'; dx = -8; break;
         case 'Top': anchor = 'middle'; dx = 0; dy = 4 * k - size; break;
         case 'Bottom': anchor = 'middle'; dx = 0; dy = size + 4 * k; break;
@@ -2149,12 +1495,12 @@ Note that this may cause slow performance on larger networks.">
 
     function paintOverlays() {
       if (!graph) return;
-      if (!document.body.contains(container)) return destroy();
       const w = container.clientWidth, h = container.clientHeight, k = zoomScale();
       const under = sizeCanvas(underlay), over = sizeCanvas(overlay);
       const tracked = graph.getTrackedPointPositionsMap();
+      drawn.labels = drawn.polygons = 0;
 
-      if (settings['network-gridlines-show']) {
+      if (get('network-gridlines-show')) {
         under.strokeStyle = 'lightgray';
         under.lineWidth = 1;
         under.beginPath();
@@ -2165,12 +1511,12 @@ Note that this may cause slow performance on larger networks.">
         under.stroke();
       }
 
-      if (settings['polygons-show']) {
+      if (get('polygons-show')) {
         groups.forEach(group => {
           const hull = d3.polygonHull(group.indices.map(i => graph.spaceToScreenPosition(spacePosition(i, tracked))));
           if (!hull) return;
-          const fill = settings['polygons-color-show'] ? temp.style.polygonColorMap(group.key) : settings['polygon-color'];
-          under.globalAlpha = settings['polygons-color-show'] ? temp.style.polygonAlphaMap(group.key) : 0.4;
+          const fill = get('polygons-color-show') ? temp.style.polygonColorMap(group.key) : get('polygon-color');
+          under.globalAlpha = get('polygons-color-show') ? temp.style.polygonAlphaMap(group.key) : 0.4;
           under.fillStyle = under.strokeStyle = fill;
           under.lineWidth = 40 * k;
           under.lineJoin = 'round';
@@ -2179,18 +1525,20 @@ Note that this may cause slow performance on larger networks.">
           under.closePath();
           under.fill();
           under.stroke();
+          drawn.polygons++;
         });
         under.globalAlpha = 1;
       }
 
-      over.fillStyle = d3.hsl(settings['background-color']).l < 0.5 ? '#ffffff' : '#000000';
+      over.fillStyle = d3.hsl(get('background-color')).l < 0.5 ? '#ffffff' : '#000000';
       labelPositions().forEach(({ text, x, y, anchor, size }) => {
         over.font = size + 'px sans-serif';
         over.textAlign = anchor == 'middle' ? 'center' : anchor == 'end' ? 'right' : 'left';
         over.fillText(text, x, y);
+        drawn.labels++;
       });
 
-      const linkLabel = settings['link-label-variable'];
+      const linkLabel = get('link-label-variable');
       if (linkLabel && linkLabel != 'None' && links.length) {
         const size = 16 * k;
         if (size >= 4) {
@@ -2207,30 +1555,27 @@ Note that this may cause slow performance on larger networks.">
             over.save();
             over.translate(x, y);
             over.rotate(angle);
-            over.fillText(text, 0, settings['link-width'] * k + 2 + size);
+            over.fillText(text, 0, get('link-width') * k + 2 + size);
             over.restore();
           });
         }
       }
     }
 
-    let stopSimulation = () => { if (graph) graph.pause(); };
-
     // Node hover is found here with cosmos.gl's synchronous point query: its own
     // hover detection reads the GPU back asynchronously, and that read can stall
     // once the layout stops moving.
     let hovered, hoverQueued = false;
-    $(container)
-      .on('mousemove', e => {
-        mouse = { pageX: e.pageX, pageY: e.pageY, clientX: e.clientX, clientY: e.clientY, buttons: e.buttons };
-        if (hoverQueued) return;
-        hoverQueued = true;
-        requestAnimationFrame(() => {
-          hoverQueued = false;
-          detectHover();
-        });
-      })
-      .on('mouseleave', () => setHovered(undefined));
+    container.addEventListener('mousemove', e => {
+      mouse = { clientX: e.clientX, clientY: e.clientY, buttons: e.buttons };
+      if (hoverQueued) return;
+      hoverQueued = true;
+      requestAnimationFrame(() => {
+        hoverQueued = false;
+        detectHover();
+      });
+    });
+    container.addEventListener('mouseleave', () => setHovered(undefined));
 
     function detectHover() {
       if (!graph || !points.length || brushStart || mouse.buttons) return;
@@ -2263,69 +1608,141 @@ Note that this may cause slow performance on larger networks.">
       if (index !== undefined) showNodeTooltip(index, null, mouse);
     }
 
-    $window
-      .on('background-color-change.2d' + instance, function () {
-          $('#network').css('background-color', settings['background-color']);
-          drawOverlays();
-        })  
-      .on('node-border-change.2d' + instance, redrawNodeBorder)
-      .on('node-color-change.2d' + instance, updateNodeColors)
-      .on('node-visibility.2d' + instance + ' link-visibility.2d' + instance + ' cluster-visibility.2d' + instance, render)
-      .on('node-selected.2d' + instance, updateSelection)
-      .on('link-color-change.2d' + instance, updateLinkColor)
-      .on('resize.2d' + instance, function () {
-        if (session.style.widgets["node-timeline-variable"] != 'None') { 
-          $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
-          setTimeout(fit, 0);
-        }
-      })
-      .on('stop-force-simulation.2d' + instance, stopSimulation);
+    // Controls -----------------------------------------------------------------
 
-    layout.on('stateChanged', function () {
-      let wrapper = $('#network').parent();
-      $('#network-export-width').val(wrapper.width());
-      $('#network-export-height').val(wrapper.height());
-      drawOverlays();
+    // Rows that only apply with some settings
+    function showRows() {
+      const rows = (selector, show) => root.querySelectorAll(selector).forEach(row => row.hidden = !show);
+      const none = key => !get(key) || get(key) == 'None';
+      rows('.node-label-row', !none('node-label-variable'));
+      rows('.node-symbol-table-row', !none('node-symbol-variable'));
+      rows('.node-symbol-row', none('node-symbol-variable'));
+      rows('.node-max-radius-row, .node-min-radius-row', !none('node-radius-variable'));
+      rows('.node-radius-row', none('node-radius-variable'));
+      rows('.link-max-width-row, .link-min-width-row', !none('link-width-variable'));
+      rows('.link-width-row', none('link-width-variable'));
+      rows('.polygons-settings-row', get('polygons-show'));
+      rows('.polygon-color-table-row', get('polygons-show') && get('polygons-color-show'));
+      rows('.polygon-color-value-row', get('polygons-show') && !get('polygons-color-show'));
+    }
+
+    // The tooltip variables menu: up to three node variables
+    const tooltipSelect = $('.node-tooltip-variable');
+    const chosen = tooltipVariables();
+    tooltipSelect.innerHTML = session.data.nodeFields.map(f => `<option value="${escape(f)}">${escape(MT.titleize(f))}</option>`).join('');
+    const tooltipMenu = MT.multiSelect(tooltipSelect, { max: 3 });
+    tooltipMenu.setValue(chosen, true);
+    tooltipMenu.on('change', () => settings.set('node-tooltip-variable', tooltipMenu.getValue()));
+
+    const pinButton = $('.pin-button');
+    pinButton.classList.toggle('active', !!session.network.allPinned);
+    pinButton.addEventListener('click', pinAll);
+    $('.fit-button').addEventListener('click', fit);
+    MT.paneToggle($('.settings-toggle'), pane);
+    MT.svgExport(root, buildExportSVG, settings, {}, () => {
+      exportExtras.forEach(element => element.remove());
+      exportExtras = [];
     });
 
-    // Release the GPU context when the view is closed
-    setTimeout(() => {
-      const item = layout.contentItems.find(item => item.element && item.element.contains(container));
-      if (item) item.on('itemDestroyed', destroy);
-    }, 0);
+    // The floating tables
+    const toggle = key => () => settings.set(key, !get(key));
+    const floaters = [
+      MT.floatingTable(symbolWrapper, $('.node-symbol-table-menu'), {
+        onHide: () => settings.set('node-symbol-table-show', false),
+        onCounts: toggle('node-symbol-table-counts'),
+        onFrequencies: toggle('node-symbol-table-frequencies')
+      }),
+      MT.floatingTable(polygonWrapper, $('.polygon-color-table-menu'), {
+        edge: 'right',
+        onHide: () => settings.set('polygon-color-table-show', false),
+        onCounts: toggle('polygon-color-table-counts'),
+        onFrequencies: toggle('polygon-color-table-frequencies')
+      })
+    ];
 
-    let linkColorVariable = session.style.widgets["link-color-variable"] === 'None' ? 'origin' : session.style.widgets["link-color-variable"];
-    if (session.files.length > 1) $('#link-color-variable').val(linkColorVariable).change(); 
-    if (settings['background-color']) $('#network').css('background-color', settings['background-color']);
+    const setBackground = () => {
+      container.style.backgroundColor = get('background-color');
+      drawOverlays();
+    };
 
+    // The global timeline replays itself when the window changes size
+    const onWindowResize = () => {
+      if (get('node-timeline-variable') == 'None') return;
+      const select = document.getElementById('node-timeline-variable');
+      select.value = get('node-timeline-variable');
+      select.dispatchEvent(new Event('change'));
+      setTimeout(fit, 0);
+    };
+    window.addEventListener('resize', onWindowResize);
+
+    const stop = [
+      MTBind(pane, settings),
+      settings.subscribe(['node-label-variable', 'node-symbol-variable', 'node-radius-variable', 'link-width-variable',
+        'polygons-show', 'polygons-color-show'], showRows),
+      settings.subscribe(['node-label-variable', 'node-label-size', 'node-label-orientation'], redrawLabels),
+      settings.subscribe(['node-symbol', 'node-radius', 'node-radius-max', 'node-radius-min', 'node-radius-variable'], redrawNodes),
+      settings.subscribe(['node-symbol-variable', 'node-symbol-table-counts', 'node-symbol-table-frequencies'], showSymbolTable),
+      settings.subscribe('node-symbol-table-show', show => { symbolWrapper.hidden = !show || get('node-symbol-variable') == 'None'; }),
+      settings.subscribe('node-border-width', () => events.emit('node-border-change')),
+      settings.subscribe(['node-charge', 'network-gravity', 'network-friction', 'network-link-strength', 'link-length'], () => reheat()),
+      settings.subscribe('link-directed', updateArrows),
+      settings.subscribe('link-label-variable', drawOverlays),
+      settings.subscribe('link-opacity', setLinkOpacity),
+      settings.subscribe(['link-width', 'link-width-max', 'link-width-min', 'link-width-variable'], scaleLinkWidth),
+      settings.subscribe(['network-gridlines-show', 'polygon-color'], drawOverlays),
+      settings.subscribe(['polygons-show', 'polygons-foci', 'polygons-gather-force'], regroup),
+      settings.subscribe(['polygons-show', 'polygons-color-show', 'polygon-color-table-counts', 'polygon-color-table-frequencies'], showPolygonTable),
+      settings.subscribe('polygon-color-table-show', show => { polygonWrapper.hidden = !show || !get('polygons-show') || !get('polygons-color-show'); }),
+      events.on('background-color-change', setBackground),
+      events.on('node-color-change', updateNodeColors),
+      events.on('link-color-change', updateLinkColor),
+      events.on('node-selected', updateSelection),
+      ...['node-visibility', 'link-visibility', 'cluster-visibility'].map(type => events.on(type, render)),
+      events.on('stop-force-simulation', () => { if (graph) graph.pause(); }),
+      ...floaters
+    ];
+    showRows();
+    setBackground();
+    showSymbolTable();
+    showPolygonTable();
+
+    // With links from several files, the links are colored by their file
+    if (session.files.length > 1 && get('link-color-variable') == 'None') {
+      const select = document.getElementById('link-color-variable');
+      select.value = 'origin';
+      select.dispatchEvent(new Event('change'));
+    }
+
+    const handle = { graph: null, get points() { return points; }, get links() { return links; }, drawn, render, fit, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
     self.cosmosLoading.then(() => {
-      if (!document.body.contains(container)) return;
+      if (destroyed) return;
       createGraph();
       // For other code and tests: the live graph and what its indices mean
-      temp.network = { graph, get points() { return points; }, get links() { return links; }, render, fit, syncPositions };
+      handle.graph = graph;
+      temp.network = handle;
       render();
-      if (session.style.widgets["node-timeline-variable"] != 'None') { 
-        $('#node-timeline-variable').val(session.style.widgets["node-timeline-variable"]).change();
-      }
+      if (get('node-timeline-variable') != 'None') onWindowResize();
       setTimeout(fit, 1200);
     }).catch(e => {
       console.error(e);
       alertify.error('The 2D network needs WebGL, which this browser could not start.');
     });
 
-    //For some mysterious reason, this really needed a delay...
-    setTimeout(function () {
-      updateColumns();
-      $('#node-symbol-variable').trigger('change');
-      if (settings["node-radius-variable"] != 'None') $('#node-radius-variable').trigger('change');
-      if (settings["link-width-variable"] != 'None') $('#link-width-variable').trigger('change');
-      if (settings["polygons-show"]) $(".polygons-settings-row").slideDown();
-      else {
-        $(".polygons-settings-row").slideUp();
-        $("#polygon-color-table-row").slideUp();
-        $("#polygon-color-value-row").slideUp();
+    return {
+      resize: drawOverlays,
+      destroy() {
+        destroyed = true;
+        stop.forEach(fn => fn());
+        window.removeEventListener('keydown', brushPointer);
+        window.removeEventListener('keyup', brushPointer);
+        window.removeEventListener('resize', onWindowResize);
+        tooltipMenu.destroy();
+        clipboard.destroy();
+        hideTooltip();
+        if (graph) graph.destroy();
+        graph = null;
+        if (temp.network === handle) delete temp.network;
       }
-    }, 1);
-
-  })();
+    };
+  });
 </script>
