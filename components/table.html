@@ -1,7 +1,7 @@
-<div id="table" class="table-sm" style="overflow: auto"></div>
+<div class="table-sm table-grid" style="overflow: auto"></div>
 
 <div class="view-controls">
-  <button type="button" id="table-settings-toggle" class="btn btn-light btn-sm" data-toggle="button" title="Toggle Table Settings">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Toggle Table Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#table-export-modal" title="Export table data">
@@ -9,19 +9,19 @@
   </button>
   <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" title="What dataset would you like to view?">
     <label class="btn btn-light active">
-      <input type="radio" name="table-dataset" data-value="nodes" autocomplete="off" checked> Nodes
+      <input type="radio" name="table-dataset" value="nodes" autocomplete="off" checked> Nodes
     </label>
     <label class="btn btn-light">
-      <input type="radio" name="table-dataset" data-value="links" autocomplete="off"> Links
+      <input type="radio" name="table-dataset" value="links" autocomplete="off"> Links
     </label>
     <label class="btn btn-light">
-      <input type="radio" name="table-dataset" data-value="clusters" autocomplete="off"> Clusters
+      <input type="radio" name="table-dataset" value="clusters" autocomplete="off"> Clusters
     </label>
   </div>
-  <select id="table-columns" class="chosen-select" multiple title="What columns would you like to see?"></select>
+  <select class="table-columns" multiple title="What columns would you like to see?"></select>
 </div>
 
-<div id="table-settings-pane" class="left-pane">
+<div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
       <a href="#table-settings" id="table-tab" class="nav-link active" aria-controls="table" role="tab" data-bs-toggle="tab">Table</a>
@@ -31,7 +31,7 @@
     <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="table-tab">
       <div class="form-group row" title="What size would you like the Table's font to be?">
         <div class="col-4"><label for="table-font-size">Text Size</label></div>
-        <div class="col-8"><input type="range" class="form-range" id="table-font-size" min="6" value="14" max="72" step="1"></div>
+        <div class="col-8"><input type="range" class="form-range table-font-size" id="table-font-size" min="6" value="14" max="72" step="1"></div>
       </div>
     </div>
   </div>
@@ -47,10 +47,10 @@
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="export-table-file-name" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="export-table-file-type" class="form-select form-select-sm">
+            <select name="export-filetype" class="form-select form-select-sm">
               <option selected>csv</option>
               <option>xlsx</option>
               <option>json</option>
@@ -60,152 +60,130 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="table-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
 <script>
-  (function(){
+  MT.registerView('table', (root, { settings, events }) => {
     ga('set', 'page', '/table');
     ga('set', 'title', 'Table View');
     ga('send', 'pageview');
 
-    let table, meta = ['selected', 'visible', 'nn'];
+    const $ = selector => root.querySelector(selector);
+    const grid = $('.table-grid');
+    const columnsSelect = $('.table-columns');
+    // Bookkeeping fields that aren't worth a column
+    const hidden = ['selected', 'visible', 'nn'];
+    let dataset = 'nodes', columnsMenu;
 
-    function updateColumns(){
-      if(!$('#table').length) return;
-      let type = $('input[name=table-dataset]:checked').data('value').slice(0,-1);
-      $('#table-columns')
-        .chosen('destroy')
-        .html(
-          session.data[type+'Fields'].map((d, i) => {
-            if(meta.includes(d)) return;
-            return `<option value="${d}"${(i < 7) ? " selected" : ""}>${MT.titleize(d)}</option>`
-          }).join('\n')
-        )
-        .chosen({'width': 'auto'})
-        .on('change', updateTable);
-    }
+    const highlight = row => {
+      row.getElement().style.background = row.getData().selected ? settings.get('selected-color') : '';
+    };
+    const table = new Tabulator(grid, {
+      maxHeight: '100%',
+      layout: 'fitColumns',
+      data: [],
+      columns: [],
+      rowFormatter: highlight
+    });
+    const built = new Promise(resolve => table.on('tableBuilt', resolve));
 
-    function updateTable(){
-      if(!$('#table').length) return;
-      let data_type = $('input[name=table-dataset]:checked').data('value');
-      let columns = $('#table-columns').val();
-      table = new Tabulator("#table", {
-        //height: "calc(100% - 60px) !important",
-        maxHeight: "100%",
-        layout: "fitColumns",
-        data: session.data[data_type],
-        columns: columns.map(c => ({title: MT.titleize(c), field: c})),
-        rowFormatter: function(row){
-          if(row.getData().selected){
-            $(row.getElement()).css("background", session.style.widgets['selected-color']);
-          }
-        }
-      });
-      table.on("rowClick", function(e, row){
-          let entity = row.getData();
-          entity.selected = !entity.selected;
-          if(entity.selected){
-            $(row.getElement()).css("background", session.style.widgets['selected-color']);
-            row.freeze();
-          } else {
-            $(row.getElement()).css("background", "");
-            row.unfreeze();
-          }
-          $window.trigger('node-selected', 'table');
-      });
-      table.on("tableBuilt", function(){
-        table.getRows().forEach(function(row){
-          if (row.getData().selected) row.freeze();
-        });
-      });
-      addColDelTarget();
-      resetTextsize();
-    }
-
-    function updateData(){
-      let type = $('input[name=table-dataset]:checked').data('value');
-      table.replaceData(session.data[type]);
-    }
-
-    $('#table-settings-toggle').click(function(){
-      let pane = $('#table-settings-pane');
-      if($(this).hasClass('active')){
-        pane.animate({left: '-400px'}, function(){ pane.hide(); });
-      } else {
-        pane.show(0, function(){ pane.animate({left: '0px'}); });
-      }
+    // Clicking a row selects it (or deselects it), keeping selected rows on top
+    table.on('rowClick', (e, row) => {
+      const item = row.getData();
+      item.selected = !item.selected;
+      highlight(row);
+      if (item.selected) row.freeze();
+      else row.unfreeze();
+      events.emit('node-selected', 'table');
     });
 
-    function resetTextsize(){
-      let s = $('#table-font-size').val();
-      $('#table').css({
-        'font-size': s + 'px',
-        'line-height': s/10
+    function showColumns() {
+      const fields = session.data[dataset.slice(0, -1) + 'Fields'].filter(f => !hidden.includes(f));
+      if (columnsMenu) columnsMenu.destroy();
+      columnsSelect.innerHTML = fields.map((f, i) => `<option value="${f}"${i < 5 ? ' selected' : ''}>${MT.titleize(f)}</option>`).join('');
+      columnsMenu = MT.multiSelect(columnsSelect);
+      columnsMenu.on('change', showData);
+    }
+
+    // Every node and cluster, but only the links that are visible: the full
+    // set includes every computed distance (n² of them).
+    const items = () => dataset == 'links' ? MT.getVisibleLinks() : session.data[dataset];
+
+    async function showData() {
+      await built;
+      // In the order they were chosen
+      const columns = columnsMenu.getValue();
+      table.setColumns(columns.map(c => ({ title: MT.titleize(c), field: c })));
+      await table.replaceData(items());
+      table.getRows().forEach(row => { if (row.getData().selected) row.freeze(); });
+    }
+
+    // Selections and colors changed elsewhere
+    function restyle() {
+      table.getRows().forEach(row => {
+        highlight(row);
+        if (row.getData().selected) row.freeze();
+        else if (row.isFrozen()) row.unfreeze();
       });
     }
 
-    function addColDelTarget () {
-      $('.search-choice-close').each(function(i, obj) {
-        obj.innerHTML = '&#x232B';
-        obj.style.fontSize = 'x-small';
-        obj.title = 'Remove column';
-      });
-    }
+    root.querySelectorAll('[name="table-dataset"]').forEach(input => input.addEventListener('change', () => {
+      if (!input.checked) return;
+      dataset = input.value;
+      showColumns();
+      showData();
+    }));
 
-    $('input[name=table-dataset]').on('change', e => {
-      updateColumns();
-      updateTable();
+    const fontSize = $('.table-font-size');
+    fontSize.addEventListener('input', () => {
+      grid.style.fontSize = fontSize.value + 'px';
+      grid.style.lineHeight = fontSize.value / 10;
     });
 
-    $('#table-columns').on('change', updateTable);
+    MT.paneToggle($('.settings-toggle'), $('.left-pane'));
 
-    $('#table-font-size').on('input', resetTextsize);
-
-    $('#table-export').click(function(){
-      let format = $('#export-table-file-type').val();
-      let data = JSON.parse(JSON.stringify(session.data[$('input[name=table-dataset]:checked').data('value')]));
-      let name = $('#export-table-file-name').val();
-      if(format == 'csv'){
-        let blob = new Blob([Papa.unparse(data)], {type: 'text/csv;charset=utf-8'});
-        saveAs(blob, name + '.' + format);
-      } else if(format == 'xlsx'){
-        let headers = session.data[$('input[name=table-dataset]:checked').data('value').slice(0,-1) + 'Fields'];
-        data.forEach(thing => {
-          Object.keys(thing).forEach(field => {
-            if(!headers.includes(field)){
-              delete thing[field];
-            } else if(Array.isArray(thing[field])){
-              thing[field] = thing[field].join('; ');
-            }
+    // Exports every row shown, with all its fields, not just the columns shown
+    const rows = () => JSON.parse(JSON.stringify(items()));
+    MT.tableExport(root, {
+      csv: name => saveAs(new Blob([Papa.unparse(rows())], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
+      xlsx: name => {
+        const headers = session.data[dataset.slice(0, -1) + 'Fields'];
+        const data = rows().map(item => {
+          const row = {};
+          headers.forEach(field => {
+            if (field in item) row[field] = Array.isArray(item[field]) ? item[field].join('; ') : item[field];
           });
+          return row;
         });
-        let wb = XLSX.utils.book_new();
-        let ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, name);
-        XLSX.writeFile(wb, name + '.' + format);
-      } else {
-        let blob = new Blob([JSON.stringify(data)], {type: 'application/json;charset=utf-8'});
-        saveAs(blob, name + '.' + format);
-      }
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(data), MT.titleize(dataset));
+        XLSX.writeFile(workbook, name + '.xlsx');
+      },
+      json: name => saveAs(new Blob([JSON.stringify(rows())], { type: 'application/json;charset=utf-8' }), name + '.json')
     });
 
-    $('#table').parent().css('z-index', 1000);
+    // The column menu opens over the panel's neighbors
+    root.style.zIndex = 1000;
 
-    $window
-      .on('link-visibility', updateTable)
-      // .on('node-selected', updateData)
-      .on('node-selected', function(event, view) {
-        if (view != 'table') {
-          updateTable();
-        } 
-      })
-      .on('selected-color-change', updateTable);
+    const stop = [
+      events.on('link-visibility', showData),
+      events.on('node-selected', view => { if (view != 'table') restyle(); }),
+      events.on('selected-color-change', restyle)
+    ];
+    showColumns();
+    showData();
 
-    updateColumns();
-    updateTable();
-  })();
+    return {
+      resize: () => table.redraw(),
+      destroy() {
+        stop.forEach(fn => fn());
+        if (columnsMenu) columnsMenu.destroy();
+        table.destroy();
+      }
+    };
+  });
 </script>

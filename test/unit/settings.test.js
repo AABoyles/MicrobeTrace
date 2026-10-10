@@ -62,7 +62,7 @@ test('events relay the jQuery-triggered versions, and emit fires them for old li
   const handlers = {};
   const jQuery = () => ({
     on(types, fn) { types.split(' ').forEach(t => (handlers[t] = handlers[t] || []).push(fn)); },
-    trigger(type) { (handlers[type] || []).forEach(fn => fn({ type })); }
+    trigger(type, args = []) { (handlers[type] || []).forEach(fn => fn({ type }, ...args)); }
   });
   const events = new MTEvents(jQuery);
   let heard = 0, old = 0;
@@ -74,4 +74,21 @@ test('events relay the jQuery-triggered versions, and emit fires them for old li
   // A new sender reaches both, once each
   events.emit('link-color-change');
   assert.deepStrictEqual([heard, old], [2, 2]);
+});
+
+test('extra arguments pass between old and new senders and listeners', () => {
+  const handlers = {};
+  const jQuery = () => ({
+    on(types, fn) { types.split(' ').forEach(t => (handlers[t] = handlers[t] || []).push(fn)); },
+    trigger(type, args = []) { (handlers[type] || []).forEach(fn => fn({ type }, ...args)); }
+  });
+  const events = new MTEvents(jQuery);
+  const heard = [], old = [];
+  events.on('node-selected', detail => heard.push(detail));
+  jQuery().on('node-selected', (e, view) => old.push(view));
+  jQuery().trigger('node-selected', ['table']);
+  events.emit('node-selected', 'heatmap');
+  events.emit('node-selected');
+  assert.deepStrictEqual(heard, ['table', 'heatmap', undefined]);
+  assert.deepStrictEqual(old, ['table', 'heatmap', undefined]);
 });

@@ -2044,14 +2044,53 @@
   };
 
   // Makes a view's settings button slide its pane in and out
-  MT.paneToggle = (button, pane) => {
-    let open = false;
-    button.addEventListener('click', () => {
-      open = !open;
+  MT.paneToggle = (button, pane, open = false) => {
+    const show = () => {
       button.classList.toggle('active', open);
       MT.slidePane(pane, open);
+    };
+    button.addEventListener('click', () => {
+      open = !open;
+      show();
+    });
+    if (open) show();
+  };
+
+  // Wires a table view's export dialog: a filename field (export-filename), a
+  // file type menu (export-filetype) and an .export-button. `formats` maps each
+  // file type to a function that saves the file, given the filename.
+  MT.tableExport = (root, formats) => {
+    const field = name => root.querySelector(`[name="${name}"]`);
+    root.querySelector('.export-button').addEventListener('click', () => {
+      const filetype = field('export-filetype').value;
+      formats[filetype](field('export-filename').value);
     });
   };
+
+  // A PDF of tables ({ title, headers, rows }) under MicrobeTrace's watermark
+  MT.tablesPDF = (heading, tables, filename) => pdfMake.createPdf({
+    content: [
+      { image: MT.watermark },
+      { text: heading, style: 'header', alignment: 'center' },
+      ...tables.map(t => ({
+        style: 'paddedTable',
+        table: { headerRows: 1, widths: t.headers.map(() => '*'), body: [t.headers].concat(t.rows) }
+      }))
+    ],
+    footer: (currentPage, pageCount) => [{ text: `Page ${currentPage} of ${pageCount}`, alignment: 'center' }],
+    styles: {
+      header: { fontSize: 22, bold: true },
+      paddedTable: { margin: [10, 10, 10, 10] }
+    }
+  }).download(filename + '.pdf');
+
+  // Turns a <select multiple> into a searchable menu of removable choices (Tom
+  // Select). To change its options, destroy() it and make a new one.
+  MT.multiSelect = (select, { max } = {}) => new TomSelect(select, {
+    plugins: ['remove_button'],
+    maxItems: max || null,
+    hideSelected: true
+  });
 
   // Plotly layout colors for the current background
   MT.plotColors = settings => {
