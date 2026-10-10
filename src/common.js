@@ -2008,6 +2008,52 @@
     $(contentItem.container.element).html(temp.componentCache[contentItem.componentType]);
   };
 
+  // The settings store and event bus that views use (see src/settings.js and
+  // src/events.js)
+  MT.settings = new MTSettings(() => session.style.widgets);
+  MT.events = new MTEvents(self.jQuery);
+
+  // Views written as modules register a mount function from their component's
+  // script:
+  //
+  //   MT.registerView('histogram', (root, { settings, events }) => {
+  //     ...
+  //     return { resize() { ... }, destroy() { ... } };
+  //   });
+  //
+  // mount runs once the view is in the layout, with the view's own element as
+  // root (query inside it rather than by global ID). resize() runs when the view
+  // changes size or its tab is shown, and destroy() when it closes. Views
+  // without a mount function are older ones that set themselves up when their
+  // script runs.
+  MT.views = {};
+  MT.registerView = (name, mount) => { MT.views[name] = mount; };
+
+  // Slides a view's settings pane (.left-pane) in or out
+  MT.slidePane = (pane, open) => {
+    if (pane.slide) pane.slide.cancel();
+    const from = getComputedStyle(pane).display == 'none' ? '-400px' : getComputedStyle(pane).left;
+    const to = open ? '0px' : '-400px';
+    pane.style.display = 'block';
+    pane.style.left = to;
+    pane.slide = pane.animate([{ left: from }, { left: to }], { duration: 400, easing: 'ease-in-out' });
+    pane.slide.onfinish = () => {
+      pane.slide = null;
+      if (!open) pane.style.display = 'none';
+    };
+  };
+
+  const mountView = contentItem => {
+    const mount = MT.views[contentItem.componentType];
+    if (!mount) return;
+    const container = contentItem.container;
+    const handle = mount(container.element, { settings: MT.settings, events: MT.events, container }) || {};
+    const resize = () => handle.resize && handle.resize();
+    container.on('resize', resize);
+    container.on('show', resize);
+    container.on('destroy', () => handle.destroy && handle.destroy());
+  };
+
   MT.launchView = (view, callback) => {
     if (!temp.componentCache[view]) {
       fetchView(view).then(() => MT.launchView(view, callback));
@@ -2015,13 +2061,15 @@
       let contentItem = layout.contentItems.find(item => item.componentType == view);
       if (contentItem) {
         contentItem.parent.setActiveComponentItem(contentItem, true);
+        setupView(contentItem);
       } else {
         if (!layout.rootItem) layout.loadLayout(emptyLayout);
         let lastStack = peek(stacks(layout.rootItem)) || layout.rootItem;
         contentItem = lastStack.newComponent(view, undefined, MT.titleize(view));
         renderView(contentItem);
+        setupView(contentItem);
+        mountView(contentItem);
       }
-      setupView(contentItem);
       if (callback) {
         callback(contentItem);
       } else {
@@ -2107,6 +2155,7 @@
       layout.contentItems.forEach(item => {
         renderView(item);
         setupView(item);
+        mountView(item);
       });
     });
   };

@@ -1,7 +1,7 @@
-<div id="histogram"></div>
+<div class="histogram-plot"></div>
 
 <div class="view-controls">
-  <button id="toggle-histogram-settings" type="button" data-toggle="button" class="btn btn-light btn-sm">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Histogram Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#histogram-export-modal" title="Export Histogram">
@@ -9,7 +9,7 @@
   </button>
 </div>
 
-<div id="histogram-settings-pane" class="left-pane">
+<div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item active">
       <a href="#histogram-settings" id="histogram-tab" class="nav-link active" aria-controls="histogram" role="tab" data-bs-toggle="tab">Histogram</a>
@@ -20,7 +20,7 @@
       <div class="form-group row" title="Which variable should the histogram be drawn from?">
         <div class="col-3"><label for="histogram-variable">Variable</label></div>
         <div class="col-9">
-          <select id="histogram-variable" class="form-select form-select-sm mixedVariables">
+          <select id="histogram-variable" class="form-select form-select-sm mixedVariables" data-setting="histogram-variable">
             <option selected>distance</option>
           </select>
         </div>
@@ -30,10 +30,10 @@
         <div class="col-9">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
             <label class="btn btn-light active col" title="Align the histogram along the X Axis">
-              <input type="radio" name="axis" id="histogram-axis-x" autocomplete="off" checked> X
+              <input type="radio" name="histogram-axis" data-setting="histogram-axis-x" value="true" autocomplete="off" checked> X
             </label>
             <label class="btn btn-light col" title="Align the histogram along the Y Axis">
-              <input type="radio" name="axis" id="histogram-axis-y" autocomplete="off"> Y
+              <input type="radio" name="histogram-axis" data-setting="histogram-axis-x" value="false" autocomplete="off"> Y
             </label>
           </div>
         </div>
@@ -43,10 +43,10 @@
         <div class="col-9">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
             <label class="btn btn-light col active" title="Scale the Histogram linearly">
-              <input type="radio" name="scale" id="histogram-scale-linear" autocomplete="off" checked> Linear
+              <input type="radio" name="histogram-scale" data-setting="histogram-scale-log" value="false" autocomplete="off" checked> Linear
             </label>
             <label class="btn btn-light col" title="Scale the Histogram logarithmically">
-              <input type="radio" name="scale" id="histogram-scale-log" autocomplete="off"> Log
+              <input type="radio" name="histogram-scale" data-setting="histogram-scale-log" value="true" autocomplete="off"> Log
             </label>
           </div>
         </div>
@@ -59,16 +59,16 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Flow Diagram</h5>
+        <h5 class="modal-title">Export Histogram</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" id="histogram-export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select id="histogram-export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" class="form-select form-select-sm">
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -78,7 +78,7 @@
         </div>
         <div class="form-group row mb-0">
           <div class="col-3 offset-9">
-            <button id="histogram-export-advanced-button" class="btn btn-primary btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#histogram-export-advanced" aria-expanded="false" aria-controls="histogram-export-advanced">Advanced</button>
+            <button class="btn btn-primary btn-sm w-100 export-advanced-button" type="button" data-bs-toggle="collapse" data-bs-target="#histogram-export-advanced" aria-expanded="false" aria-controls="histogram-export-advanced">Advanced</button>
           </div>
         </div>
         <div class="collapse" id="histogram-export-advanced" style="margin-top: 10px;">
@@ -88,19 +88,19 @@
                 <label for="histogram-export-scale">Scale</label>
               </div>
               <div class="col-9">
-                <input type="number" id="histogram-export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <input type="number" id="histogram-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
               </div>
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div id="histogram-export-dimensions" class="col-9 text-end"></div>
+              <div class="col-9 text-end export-dimensions"></div>
             </div>
             <div class="row">
               <div class="col-3">
                 <label for="histogram-export-quality">Quality</label>
               </div>
               <div class="col-9">
-                <input type="range" class="form-range" id="histogram-export-quality" min="0" max="1.0" value="0.92" step="0.01">
+                <input type="range" class="form-range" id="histogram-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
           </div>
@@ -110,205 +110,137 @@
             <label for="histogram-export-opacity">Watermark Opacity</label>
           </div>
           <div class="col-9">
-            <input type="range" id="histogram-export-opacity" min="0.0" max="1.0" value="0.4" step="0.01"></input>
+            <input type="range" id="histogram-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="histogram-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
 <script>
-  (function () {
+  MT.registerView('histogram', (root, { settings, events }) => {
     ga('set', 'page', '/histogram');
     ga('set', 'title', 'Histogram View');
     ga('send', 'pageview');
 
-    let plot;
+    const $ = selector => root.querySelector(selector);
+    const plot = $('.histogram-plot');
+    const pane = $('.left-pane');
 
-    function redrawHistogram() {
-      let panel = $('#histogram');
-      if (!panel.length) return;
-      if (plot) Plotly.purge('histogram');
-      let varSource, varName, axis = 'x', nonAxis = 'y';
-      [varSource, ...varName] = session.style.widgets['histogram-variable'].split('-');
-      varName = varName.join('-');
-      if (!session.style.widgets['histogram-axis-x']) {
-        axis = 'y', nonAxis = 'x';
+    // One histogram trace per color when the bars are colored by a variable
+    function traces(source, field, axis) {
+      const items = source == 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks();
+      const trace = (values, color) => ({ type: 'histogram', [axis]: values, marker: { color }, showlegend: false, hoverinfo: 'skip' });
+      const colorBy = settings.get(source == 'nodes' ? 'node-color-variable' : 'link-color-variable');
+      const colored = source == 'nodes' ? colorBy !== 'None' : !['None', 'origin'].includes(colorBy);
+      if (!colored) {
+        return [trace(items.map(d => d[field]), settings.get(source == 'nodes' ? 'node-color' : 'link-color'))];
       }
-      let traces = [];
-      let layout = {
-        width: panel.width(),
-        height: panel.parent().height()
-      };
-      if (varSource == 'nodes' && session.style.widgets['node-color-variable'] !== 'None') {
-        let values = [];
-        let field = session.style.widgets['node-color-variable'];
-        session.data.nodes.forEach(d => {
-          if (!values.includes(d[field])) values.push(d[field]);
-        });
-        let vnodes = MT.getVisibleNodes();
-        values.forEach((v, i) => {
-          let trace = {
-            type: 'histogram',
-            marker: {
-              color: temp.style.nodeColorMap(v),
-            },
-            showlegend: false,
-            hoverinfo: 'skip'
-          };
-          trace[axis] = vnodes.filter(d => d[field] == v).map(d => d[varName]);
-          traces.push(trace);
-        });
-        layout.barmode = 'stack';
-      } else if (varSource == 'links' && !['None', 'origin'].includes(session.style.widgets['link-color-variable'])) {
-        let field = session.style.widgets['link-color-variable'];
-        let distinct = new Set();
-        session.data.graph.forEachValue(field, v => distinct.add(v));
-        let values = Array.from(distinct);
-        let vlinks = MT.getVisibleLinks();
-        values.forEach((v, i) => {
-          let trace = {
-            type: 'histogram',
-            marker: {
-              color: temp.style.linkColorMap(v),
-            },
-            showlegend: false,
-            hoverinfo: 'skip'
-          };
-          trace[axis] = vlinks.filter(d => d[field] == v).map(d => d[varName]);
-          traces.push(trace);
-        });
-        layout.barmode = 'stack';
-      } else {
-        let trace = {
-          type: 'histogram',
-          marker: {
-            color: varSource == 'nodes' ? session.style.widgets['node-color'] : session.style.widgets['link-color'],
-          },
-          showlegend: false,
-          hoverinfo: 'skip'
-        };
-        trace[axis] = (varSource == 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks()).map(l => l[varName]);
-        traces = [trace];
-      }
-      layout[axis + 'axis'] = {
-        title: { text: MT.titleize(varName) }
-      }
-      layout[nonAxis + 'axis'] = {
-        title: { text: 'Number of ' + MT.titleize(varSource) },
-        type: session.style.widgets['histogram-scale-log'] ? 'log' : ''
-      };
-      traces.sort(function(a, b) { //#242
-        return a.x.length - b.x.length;
-      });
-      plot = Plotly.newPlot('histogram', traces, layout, {
+      const distinct = new Set();
+      if (source == 'nodes') session.data.nodes.forEach(d => distinct.add(d[colorBy]));
+      else session.data.graph.forEachValue(colorBy, v => distinct.add(v));
+      const colorMap = source == 'nodes' ? temp.style.nodeColorMap : temp.style.linkColorMap;
+      return Array.from(distinct)
+        .map(v => trace(items.filter(d => d[colorBy] == v).map(d => d[field]), colorMap(v)))
+        // Smaller groups first, so they stack at the bottom (#242)
+        .sort((a, b) => a[axis].length - b[axis].length);
+    }
+
+    function draw() {
+      const width = root.clientWidth, height = root.clientHeight;
+      // A view in a background tab has no size; it draws when it's shown
+      if (!width || !height) return;
+      const [source, ...rest] = settings.get('histogram-variable').split('-');
+      const field = rest.join('-');
+      const axis = settings.get('histogram-axis-x') ? 'x' : 'y', countAxis = axis == 'x' ? 'y' : 'x';
+      const data = traces(source, field, axis);
+      const background = settings.get('background-color');
+      Plotly.react(plot, data, {
+        width, height,
+        barmode: data.length > 1 ? 'stack' : undefined,
+        paper_bgcolor: background,
+        plot_bgcolor: background,
+        font: { color: settings.get('background-color-contrast') },
+        [axis + 'axis']: { title: { text: MT.titleize(field) } },
+        [countAxis + 'axis']: {
+          title: { text: 'Number of ' + MT.titleize(source) },
+          type: settings.get('histogram-scale-log') ? 'log' : '-'
+        }
+      }, {
         displaylogo: false,
         displayModeBar: false,
         scrollZoom: true
       });
-      setBackground();
     }
 
-    function setBackground() {
-      let col = session.style.widgets['background-color'];
-      $('#histogram svg.main-svg').first().css('background', col);
-      $('#histogram rect.bg').css('fill', col);
-
-      let contrast = session.style.widgets['background-color-contrast'];
-      $('#histogram .xtitle, .ytitle').css('fill', contrast);
-      $('#histogram .xaxislayer-above text').css('fill', contrast);
-      $('#histogram .yaxislayer-above text').css('fill', contrast);
-    }
-
-    $('#toggle-histogram-settings').on('click', function () {
-      let pane = $('#histogram-settings-pane');
-      if ($(this).hasClass('active')) {
-        pane.animate({ left: '-400px' }, function () { pane.hide(); });
-      } else {
-        pane.show(0, function () { pane.animate({ left: '0px' }); });
-      }
+    // Settings pane
+    let paneOpen = false;
+    const toggle = $('.settings-toggle');
+    toggle.addEventListener('click', () => {
+      paneOpen = !paneOpen;
+      toggle.classList.toggle('active', paneOpen);
+      MT.slidePane(pane, paneOpen);
     });
 
-    $('#histogram-variable').on('change', function (e) {
-      session.style.widgets['histogram-variable'] = e.target.value;
-      redrawHistogram();
+    // Export dialog
+    const field = name => $(`[name="${name}"]`);
+    const advancedButton = $('.export-advanced-button'), advanced = $('#histogram-export-advanced');
+    field('export-filetype').addEventListener('change', e => {
+      const svg = e.target.value == 'svg';
+      advancedButton.hidden = svg;
+      if (svg) bootstrap.Collapse.getOrCreateInstance(advanced, { toggle: false }).hide();
     });
+    const showDimensions = () => {
+      const scale = parseFloat(field('export-scale').value);
+      $('.export-dimensions').textContent = Math.round(root.clientWidth * scale) + 'x' + Math.round(root.clientHeight * scale) + 'px';
+    };
+    field('export-scale').addEventListener('input', showDimensions);
+    $('#histogram-export-modal').addEventListener('show.bs.modal', showDimensions);
 
-    $('#histogram-scale-log').parent().on('click', function () {
-      session.style.widgets['histogram-scale-log'] = true;
-      redrawHistogram();
-    });
-
-    $('#histogram-scale-linear').parent().on('click', function () {
-      session.style.widgets['histogram-scale-log'] = false;
-      redrawHistogram();
-    });
-
-    $('#histogram-axis-x').parent().on('click', function () {
-      session.style.widgets['histogram-axis-x'] = true;
-      redrawHistogram();
-    });
-
-    $('#histogram-axis-y').parent().on('click', function () {
-      session.style.widgets['histogram-axis-x'] = false;
-      redrawHistogram();
-    });
-
-    $('#histogram-export-filetype').on('change', function (e) {
-      if (e.target.value == 'svg') {
-        $('#histogram-export-advanced-button').slideUp();
-        if ($('#histogram-export-advanced').hasClass("show")) $('#histogram-export-advanced-button').click();
-      } else {
-        $('#histogram-export-advanced-button').slideDown();
-      }
-    });
-
-    $('#histogram-export-scale').on('input', function (e) {
-      let scale = parseFloat(e.target.value);
-      let wrapper = $('#histogram').parent();
-      $('#histogram-export-dimensions').text(
-        Math.round(wrapper.width() * scale) + 'x' +
-        Math.round(wrapper.height() * scale) + 'px'
-      );
-    }).trigger('input');
-
-    $('#histogram-export').on('click', function () {
-      let $histogram = $('#histogram .main-svg');
-      let histogram = $histogram.get(0);
-      $('#histogram .main-svg .infolayer').appendTo(histogram);
-      let watermark = d3.select(histogram).append('image')
+    $('.export-button').addEventListener('click', () => {
+      const svg = plot.querySelector('.main-svg');
+      // Plotly draws axis titles in a second SVG layer; bring them into this one
+      const titles = plot.querySelector('.main-svg .infolayer');
+      if (titles) svg.appendChild(titles);
+      const watermark = d3.select(svg).append('image')
         .attr('xlink:href', MT.watermark)
         .attr('height', 128)
         .attr('width', 128)
         .attr('x', 10)
-        .style('opacity', $('#histogram-export-opacity').val());
-      let filename = $('#histogram-export-filename').val(),
-        filetype = $('#histogram-export-filetype').val();
+        .style('opacity', field('export-opacity').value);
+      const filename = field('export-filename').value, filetype = field('export-filetype').value;
       if (filetype == 'svg') {
-        let content = MT.unparseSVG(histogram);
-        let blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
-        saveAs(blob, filename + '.' + filetype);
+        saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), filename + '.' + filetype);
         watermark.remove();
       } else {
-        saveSvgAsPng(histogram, filename + '.' + filetype, {
-          scale: parseFloat($('#histogram-export-scale').val()),
-          backgroundColor: session.style.widgets['background-color'],
+        saveSvgAsPng(svg, filename + '.' + filetype, {
+          scale: parseFloat(field('export-scale').value),
+          backgroundColor: settings.get('background-color'),
           encoderType: 'image/' + filetype,
-          encoderOptions: parseFloat($('#histogram-export-quality').val())
+          encoderOptions: parseFloat(field('export-quality').value)
         }).then(() => watermark.remove());
       }
     });
 
-    $window
-      .on('node-color-change link-color-change', redrawHistogram)
-      .on('background-color-change', setBackground);
+    const stop = [
+      MTBind(pane, settings),
+      settings.subscribe(['histogram-variable', 'histogram-axis-x', 'histogram-scale-log'], draw),
+      ...['node-color-change', 'link-color-change', 'background-color-change', 'node-visibility', 'link-visibility']
+        .map(type => events.on(type, draw))
+    ];
+    draw();
 
-    layout.on('stateChanged', redrawHistogram);
-    setTimeout(redrawHistogram, 80);
-  })();
+    return {
+      resize: draw,
+      destroy() {
+        stop.forEach(fn => fn());
+        Plotly.purge(plot);
+      }
+    };
+  });
 </script>

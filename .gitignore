@@ -8,3 +8,5 @@ yarn.lock
 *.gz
 *.br
 .cache
+test-results
+playwright-report
