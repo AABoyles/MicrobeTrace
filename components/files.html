@@ -122,9 +122,7 @@
         </div>
         <div class="col-7">
           <select id="default-view" class="form-select form-select-sm" title="Which view should MicrobeTrace render first, once it has successfully processed the data?">
-            <option value="2d_network" selected>2D Network</option>
-            <option value="pixi">Pixi</option>
-            <option value="3d_network">3D Network</option>
+            <option value="network" selected>Network</option>
             <option value="bubbles">Bubbles</option>
             <option value="table">Table</option>
           </select>
@@ -823,7 +821,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           const first = session.layout.content && session.layout.content[0];
           if (first) first.type = v;
         })
-        .val(cachedView ? cachedView : session.style.widgets['default-view'])
+        .val(MT.viewName(cachedView ? cachedView : session.style.widgets['default-view']))
         .trigger('change');
     });
 

@@ -26,7 +26,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `table.spec.js` | The table's datasets, column picker, row selection, text size and export |
 | `crosstab.spec.js` | The crosstab's variables, pivot, datasets, redraws and export |
 | `aggregation.spec.js` | The aggregation tables: adding, changing and removing them, redraws and export |
-| `network2d.spec.js` | The 2D network's tooltip-variables menu |
+| `network.spec.js` | The 2D network's tooltip-variables menu |
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.
