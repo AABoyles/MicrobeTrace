@@ -79,25 +79,25 @@
 
     // const app = new PIXI.Application(SCREEN_WIDTH, SCREEN_HEIGHT, { antialias: true });
 
-    const app = new PIXI.Application({
+    const app = new PIXI.Application();
+    await app.init({
       width: SCREEN_WIDTH,
       height: SCREEN_HEIGHT,
       resolution: RESOLUTION,
-      transparent: true,
+      backgroundAlpha: 0,
       antialias: true
     });
 
+    // app.renderer.background.color = 0x212121;
+    document.getElementById('pixi').appendChild(app.canvas);
 
 
-    // app.renderer.backgroundColor = 0x212121;
-    document.getElementById('pixi').appendChild(app.view);
-
-
-    const viewport = new Viewport.Viewport({
+    const viewport = new pixi_viewport.Viewport({
         screenWidth: SCREEN_WIDTH,
         screenHeight: SCREEN_HEIGHT,
         worldWidth: SCREEN_WIDTH,
-        worldHeight: SCREEN_HEIGHT
+        worldHeight: SCREEN_HEIGHT,
+        events: app.renderer.events
     });
 
 
@@ -105,17 +105,16 @@
     app.stage.addChild(viewport);
 
     function makeParicleTexture(props) {
-      const gfx = new PIXI.Graphics();
-      gfx.beginFill(props.fill);
-      gfx.lineStyle(props.strokeWidth, props.stroke);
-      gfx.moveTo(props.strokeWidth, props.strokeWidth);
-      gfx.lineTo(props.size - props.strokeWidth, props.strokeWidth);
-      gfx.lineTo(props.size - props.strokeWidth, props.size - props.strokeWidth);
-      gfx.lineTo(props.strokeWidth, props.size - props.strokeWidth);
-      gfx.lineTo(props.strokeWidth, props.strokeWidth);
-      gfx.endFill();
+      const gfx = new PIXI.Graphics()
+        .moveTo(props.strokeWidth, props.strokeWidth)
+        .lineTo(props.size - props.strokeWidth, props.strokeWidth)
+        .lineTo(props.size - props.strokeWidth, props.size - props.strokeWidth)
+        .lineTo(props.strokeWidth, props.size - props.strokeWidth)
+        .lineTo(props.strokeWidth, props.strokeWidth)
+        .fill(props.fill)
+        .stroke({ width: props.strokeWidth, color: props.stroke });
 
-      const texture = app.renderer.generateTexture(gfx, PIXI.SCALE_MODES.LINEAR, 2);
+      const texture = app.renderer.generateTexture({ target: gfx, resolution: 2 });
 
       return texture;
     }
@@ -152,8 +151,8 @@
         sprite.anchor.x = 0.5;
         sprite.anchor.y = 0.5;
         sprite.rotation = node.index * 10;
-        sprite.interactive = true;
-        sprite.buttonMode = true; // cursor change
+        sprite.eventMode = 'static';
+        sprite.cursor = 'pointer';
         sprite.scale.set(Math.random() * 2 + 1);
         sprite
           .on("pointerdown", onDragStart)
@@ -243,11 +242,10 @@
       _links.alpha = 0.07;
       _data.links.forEach(link => {
         let { source, target } = link;
-        _links.lineStyle(1.5, 0x212121);
         _links.moveTo(source.x, source.y);
         _links.lineTo(target.x, target.y);
       });
-      _links.endFill();
+      _links.stroke({ width: 1.5, color: 0x212121 });
     }
 
 
@@ -269,7 +267,6 @@
       viewport.plugins.pause('drag')
       simulation.alphaTarget(0.3).restart();
       this.isDown = true;
-      this.eventData = event.data;
       this.alpha = 0.5;
       this.dragging = true;
       globalDragging = true;
@@ -291,7 +288,7 @@
 
     function onDragMove(event) {
       if (this.dragging) {
-        const newPosition = this.eventData.getLocalPosition(this.parent);
+        const newPosition = event.getLocalPosition(this.parent);
         this.fx = newPosition.x;
         this.fy = newPosition.y;
       }

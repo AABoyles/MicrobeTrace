@@ -426,15 +426,13 @@
     function drag(projection) {
       let x0, y0, center;
 
-      function dragstarted() {
-        let e = d3.event;
+      function dragstarted(e) {
         center = projection.rotate();
         x0 = e.x;
         y0 = e.y;
       }
 
-      function dragged() {
-        let e = d3.event;
+      function dragged(e) {
         let x1 = e.x;
         let y1 = e.y;
         starProjection = starProjection.rotate([(x0 - x1) / k - center[0], Math.max(-90, Math.min((y1 - y0) / k - center[1], 90)), 0]);
@@ -446,8 +444,8 @@
         .on("drag", dragged);
     }
 
-    function zoomed() {
-      k = d3.event.transform.k;
+    function zoomed(event) {
+      k = event.transform.k;
       projection = projection.scale(k * 400);
       redraw();
     }

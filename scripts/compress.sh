@@ -2,13 +2,13 @@
 
 echo 'Compressing Large Files...'
 
-npx gzipper --brotli components/
-npx gzipper components/
-npx gzipper --brotli data/
-npx gzipper data/
-npx gzipper --brotli dist/
-npx gzipper dist/
-npx gzipper --brotli vendor/
-npx gzipper vendor/
-npx gzipper --brotli workers/
-npx gzipper workers/
+npx gzipper compress --brotli components/
+npx gzipper compress --gzip components/
+npx gzipper compress --brotli data/
+npx gzipper compress --gzip data/
+npx gzipper compress --brotli dist/
+npx gzipper compress --gzip dist/
+npx gzipper compress --brotli vendor/
+npx gzipper compress --gzip vendor/
+npx gzipper compress --brotli workers/
+npx gzipper compress --gzip workers/

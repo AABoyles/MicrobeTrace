@@ -24,6 +24,7 @@ self.addEventListener('install', function(event) {
         'dist/bundle.secondary.css',
         'dist/bundle.secondary.js',
         'dist/common.js',
+        'src/d3-compat.js',
         'src/graph.js',
         'dist/index.js',
         'dist/main.css',

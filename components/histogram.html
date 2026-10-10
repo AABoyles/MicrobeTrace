@@ -199,10 +199,10 @@
         traces = [trace];
       }
       layout[axis + 'axis'] = {
-        title: MT.titleize(varName)
+        title: { text: MT.titleize(varName) }
       }
       layout[nonAxis + 'axis'] = {
-        title: 'Number of ' + MT.titleize(varSource),
+        title: { text: 'Number of ' + MT.titleize(varSource) },
         type: session.style.widgets['histogram-scale-log'] ? 'log' : ''
       };
       traces.sort(function(a, b) { //#242

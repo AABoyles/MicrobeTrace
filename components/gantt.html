@@ -267,8 +267,8 @@
         .attr('width', width)
         .attr('height', height - margin.top - margin.bottom)
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .on('mousemove', function () {
-          let xc = d3.mouse(this)[0] + margin.left;
+        .on('mousemove', function (event) {
+          let xc = d3.pointer(event, this)[0] + margin.left;
           let h = height - margin.bottom;
           mouseLine.attr("d", function () {
             return "M" + xc + "," + h + " " + xc + "," + margin.top;
