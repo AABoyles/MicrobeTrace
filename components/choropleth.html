@@ -325,7 +325,7 @@
     });
 
     MT.paneToggle($('.settings-toggle'), pane);
-    const userLayers = MT.geoJSONUpload($('.geojson-input'), $('.geojson-layers'), map);
+    const userLayers = MT.leafletGeoJSONUpload($('.geojson-input'), $('.geojson-layers'), map);
     MT.tableExport(root, {
       ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename => MT.mapImage(map, filename, type, (context, canvas) => {
         context.globalAlpha = opacity();

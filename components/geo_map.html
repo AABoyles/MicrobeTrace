@@ -375,118 +375,24 @@
       return value && value != 'None' ? value : null;
     };
 
-    // Placing nodes. Each kind of location field, from the least precise to the
-    // most: a node takes the most precise location it has.
-    const kinds = ['country', 'state', 'county', 'zipcode', 'tract'];
-
-    // With no location fields chosen, node fields named for them are used
-    function pickFields() {
-      if ([...kinds, 'lat', 'lon'].some(field)) return;
-      [...kinds, 'lat', 'lon'].forEach(kind => {
-        if (session.data.nodeFields.includes(kind)) settings.set('map-field-' + kind, kind);
-      });
-    }
-
-    // Each map file, indexed by the values that match its places
-    function index(rows, keys) {
-      const index = new Map();
-      rows.forEach(row => keys(row).forEach(k => {
-        if (k != null && k === k && k !== '') index.set(String(k), row);
-      }));
-      return index;
-    }
-    const lookup = (index, value) => {
-      if (value == null || value === '') return;
-      const number = parseFloat(value);
-      return index.get(String(value)) || (isFinite(number) && index.get(String(number))) || undefined;
-    };
-    const coordinate = (value, negative) => typeof value == 'string' ? (value.toUpperCase().includes(negative) ? -1 : 1) * parseFloat(value) : value;
-
-    // Where each node goes ([lat, lon], by _id), and each node's random jitter
+    // Where each node goes ([lat, lon], by _id), moved by the jitter setting
     let positions = new Map(), request = 0, fitted = false;
-    const jitters = new Map();
+    const jitter = MT.jitterer(() => settings.get('map-node-jitter'));
+    const jittered = id => jitter.at(id, positions.get(id));
+    const fieldKeys = [...MT.locationKinds, 'lat', 'lon'].map(kind => 'map-field-' + kind);
 
     async function place() {
       const ticket = ++request;
-      const files = {
-        countries: field('country') && 'countries.json',
-        states: (field('state') || field('county')) && 'states.json',
-        counties: field('county') && 'counties.json',
-        zipcodes: field('zipcode') && 'zipcodes.csv',
-        tracts: field('tract') && 'tracts.csv'
-      };
-      const data = {};
-      await Promise.all(Object.entries(files).filter(([, file]) => file).map(([name, file]) => MT.getMapData(file).then(rows => data[name] = rows)));
+      const located = await MT.locateNodes(MT.getVisibleNodes(), field);
       // A newer request, or a closed view, makes this one moot
       if (ticket != request || destroyed) return;
-      const at = place => place && [parseFloat(place._lat), parseFloat(place._lon)];
-      const places = {};
-      if (data.countries) {
-        const i = index(data.countries.features, f => [f.id, f.properties.name]);
-        places.country = d => { const c = lookup(i, d[field('country')]); return c && at(c.properties); };
-      }
-      let stateOf = () => undefined;
-      if (data.states) {
-        const i = index(data.states.features, f => [f.properties.usps, f.properties.name, f.properties.name.toLowerCase()]);
-        stateOf = d => {
-          const v = field('state') && d[field('state')];
-          if (v == null || v === '') return;
-          return lookup(i, v) || lookup(i, String(v).toUpperCase()) || lookup(i, String(v).toLowerCase());
-        };
-        if (field('state')) places.state = d => { const s = stateOf(d); return s && at(s.properties); };
-      }
-      if (data.counties) {
-        const i = index(data.counties.features, f => [f.properties.fips]);
-        places.county = d => {
-          const v = d[field('county')];
-          let county = lookup(i, v);
-          // Otherwise by name, within the node's state
-          if (!county && typeof v == 'string' && v) {
-            const state = stateOf(d), name = v.toLowerCase();
-            if (state) county = data.counties.features.find(c => c.properties.state == state.properties.usps &&
-              (c.properties.name.includes(name) || name.includes(c.properties.name)));
-          }
-          return county && at(county.properties);
-        };
-      }
-      if (data.zipcodes) {
-        const i = index(data.zipcodes, z => [z.zipcode]);
-        places.zipcode = d => at(lookup(i, d[field('zipcode')]));
-      }
-      if (data.tracts) {
-        const i = index(data.tracts, t => [t.tract]);
-        places.tract = d => at(lookup(i, d[field('tract')]));
-      }
-      const lat = field('lat'), lon = field('lon');
-      positions = new Map();
-      MT.getVisibleNodes().forEach(d => {
-        let position;
-        kinds.forEach(kind => {
-          const p = places[kind] && places[kind](d);
-          if (p && isFinite(p[0]) && isFinite(p[1])) position = p;
-        });
-        if (lat && lon) {
-          const p = [coordinate(d[lat], 'S'), coordinate(d[lon], 'W')];
-          if (typeof p[0] == 'number' && typeof p[1] == 'number' && isFinite(p[0]) && isFinite(p[1])) position = p;
-        }
-        if (position) positions.set(d._id, position);
-      });
+      positions = located;
       drawLinks();
       drawNodes();
       if (!fitted && positions.size) {
         fitted = true;
         map.fitBounds(L.latLngBounds(Array.from(positions.values())), { animate: false });
       }
-    }
-
-    // A node's position on the map, moved by the jitter setting
-    function jittered(id) {
-      const [lat, lon] = positions.get(id);
-      const amount = settings.get('map-node-jitter') == -2 ? 0 : Math.pow(2, settings.get('map-node-jitter'));
-      if (!amount) return [lat, lon];
-      if (!jitters.has(id)) jitters.set(id, [MT.r01() * Math.PI * 2, MT.r01()]);
-      const [theta, j] = jitters.get(id);
-      return [lat + amount * j * Math.sin(theta), lon + amount * j * Math.cos(theta)];
     }
 
     function drawNodes(collapse = settings.get('map-collapsing-on')) {
@@ -608,13 +514,13 @@
       if (positions.size) map.flyToBounds(L.latLngBounds(Array.from(positions.keys()).map(jittered)));
     });
     $('.reroll-button').addEventListener('click', () => {
-      jitters.clear();
+      jitter.reroll();
       drawLinks();
       drawNodes();
     });
 
     MT.paneToggle($('.settings-toggle'), pane);
-    const userLayers = MT.geoJSONUpload($('.geojson-input'), $('.geojson-layers'), map);
+    const userLayers = MT.leafletGeoJSONUpload($('.geojson-input'), $('.geojson-layers'), map);
     MT.tableExport(root, {
       // Images show every node, so they are drawn uncollapsed for a moment
       ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename => {
@@ -627,11 +533,11 @@
       )
     });
 
-    pickFields();
+    MT.pickLocationFields(settings, 'map-field-');
     const redraw = () => { drawLinks(); drawNodes(); };
     const stop = [
       MTBind(pane, settings),
-      settings.subscribe([...kinds, 'lat', 'lon'].map(kind => 'map-field-' + kind), place),
+      settings.subscribe(fieldKeys, place),
       settings.subscribe(['map-node-show', 'map-collapsing-on', 'map-node-transparency'], () => drawNodes()),
       settings.subscribe(['map-link-show', 'map-link-transparency'], drawLinks),
       settings.subscribe('map-node-jitter', redraw),
