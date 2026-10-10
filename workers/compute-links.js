@@ -11,7 +11,7 @@ importScripts('../vendor/bx_distance_models.js');
 // hold exactly the pairs that must be averaged.
 //
 // With a threshold, only pairs at or under it are returned (as source, target and
-// distance arrays). Without one, every pair's distance is returned.
+// distance arrays). Without one, every pair's distance is returned (Float32).
 
 const ready = wasm_bindgen({ module_or_path: '../vendor/bx_distance_models_bg.wasm' });
 
@@ -42,7 +42,8 @@ onmessage = async function(e) {
 
   let output;
   if (threshold == null) {
-    output = { distances: concat(Float64Array, parts) };
+    // Float32 is what the graph stores, and halves the transfer
+    output = { distances: Float32Array.from(concat(Float64Array, parts)) };
   } else {
     output = {
       source: concat(Uint32Array, parts.map(p => p.source)),

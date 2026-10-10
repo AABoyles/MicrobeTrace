@@ -3,9 +3,8 @@
 
   let MT = {};
   
-  MT.dataSkeleton = () => ({
+  MT.dataSkeleton = () => MT.attachGraph({
     nodes: [],
-    links: [],
     clusters: [],
     nodeFields: [
       "index",
@@ -291,10 +290,32 @@
     warnings: []
   });
   
+  // session.data.graph (an MTGraph, see src/graph.js) holds every link.
+  // session.data.links is a view of it: reading it builds a link object per link
+  // (as saved in session files), and assigning an array of links replaces the
+  // graph. It's expensive for big networks, so MicrobeTrace itself reads links
+  // through MT.getVisibleLinks, MT.getLink and the graph.
+  MT.attachGraph = data => {
+    Object.defineProperty(data, 'graph', {
+      value: new MTGraph(),
+      writable: true,
+      configurable: true
+    });
+    Object.defineProperty(data, 'links', {
+      enumerable: true,
+      configurable: true,
+      get() { return MT.getAllLinks(this); },
+      set(links) {
+        this.graph = new MTGraph();
+        links.forEach(l => this.graph.addLink(l));
+      }
+    });
+    return data;
+  };
+
   MT.tempSkeleton = () => ({
     componentCache: {},
     mapData: {},
-    matrix: {},
     messageTimeout: null,
     style: {
       linkAlphaMap: () => 1 - session.style.widgets["link-opacity"],
@@ -361,44 +382,62 @@
     return 1;
   };
   
-  MT.addLink = newLink => {
-    if(!temp.matrix[newLink.source]){
-      temp.matrix[newLink.source] = {};
-    }
-    if(!temp.matrix[newLink.target]){
-      temp.matrix[newLink.target] = {};
-    }
-    if (newLink.source == newLink.target) return 0;
-    let linkIsNew = 1;
-    let sdlinks = session.data.links;
-    if(temp.matrix[newLink.source][newLink.target]){
-      let oldLink = temp.matrix[newLink.source][newLink.target];
-      let origin = uniq(newLink.origin.concat(oldLink.origin));
-      Object.assign(oldLink, newLink, {origin: origin});
-      linkIsNew = 0;
-    } else if(temp.matrix[newLink.target][newLink.source]){
-      console.warn("This scope should be unreachable. If you're using this code, something's wrong.");
-      let oldLink = temp.matrix[newLink.target][newLink.source];
-      let origin = uniq(newLink.origin.concat(oldLink.origin));
-      Object.assign(oldLink, newLink, {origin: origin});
-      linkIsNew = 0;
-    } else {
-      newLink = Object.assign({
-        index: sdlinks.length,
-        source: "",
-        target: "",
-        visible: false,
-        cluster: 1,
-        origin: []
-      }, newLink);
-      temp.matrix[newLink.source][newLink.target] = newLink;
-      temp.matrix[newLink.target][newLink.source] = newLink;
-      sdlinks.push(newLink);
-      linkIsNew = 1;
-    }
-    return linkIsNew;
+  // Adds a link, or merges it into the link between the same two nodes (its
+  // fields win, origins are combined). Returns 1 if the link is new.
+  MT.addLink = newLink => session.data.graph.addLink(newLink);
+
+  // The link between two node IDs, or undefined.
+  MT.getLink = (source, target) => {
+    const g = session.data.graph;
+    const a = g.index.get('' + source), b = g.index.get('' + target);
+    if (a === undefined || b === undefined) return;
+    const e = g.edgeBetween(a, b);
+    if (e >= 0) return MT.linkObject(e);
   };
-  
+
+  // A plain link object for edge e of the graph.
+  MT.linkObject = (e, visible, data) => {
+    data = data || session.data;
+    const g = data.graph;
+    const link = g.link(e);
+    data.linkFields.forEach(field => {
+      if (!(field in link)) link[field] = null;
+    });
+    link.visible = visible === undefined ? MT.isLinkVisible(e) : visible;
+    link.cluster = g.nodeCluster ? g.nodeCluster[g.source(e)] : 1;
+    return link;
+  };
+
+  MT.isLinkVisible = e => {
+    const g = session.data.graph;
+    if (!temp.visibleSet || temp.visibleSet.graph !== g || temp.visibleSet.version !== g.visibleVersion) {
+      temp.visibleSet = { graph: g, version: g.visibleVersion, set: new Set(g.visible.subarray(0, g.visibleCount)) };
+    }
+    return temp.visibleSet.set.has(e);
+  };
+
+  // The visible links of node id, as { neighbor: ID, link: link object }.
+  MT.getVisibleNeighbors = id => {
+    const g = session.data.graph, x = g.index.get('' + id);
+    if (x === undefined) return [];
+    const out = [];
+    for (let v = 0; v < g.visibleCount; v++) {
+      const e = g.visible[v], s = g.source(e), t = g.target(e);
+      if (s == x || t == x) out.push({ neighbor: g.ids[s == x ? t : s], link: MT.linkObject(e, true) });
+    }
+    return out;
+  };
+
+  // Every link as an object (what session files store).
+  MT.getAllLinks = data => {
+    data = data || session.data;
+    const g = data.graph;
+    const visible = new Set(g.visible.subarray(0, g.visibleCount));
+    const out = [];
+    g.forEachEdge(e => out.push(MT.linkObject(e, visible.has(e), data)));
+    return out;
+  };
+
   MT.processSVG = svg => {
     let nodes = [];
     const $xml = $(svg);
@@ -943,8 +982,9 @@
   };
 
   // Above this many pairs, 'auto' link storage keeps only the links within the
-  // link threshold: every stored link costs a few hundred bytes of memory.
-  MT.maxDenseLinks = 5e6;
+  // link threshold. Below it, every pair's distance is kept in the graph's
+  // distance triangle (4 bytes per pair: 200 MB for 10,000 sequences).
+  MT.maxDenseLinks = 5e7;
 
   // parts + 1 row boundaries splitting the upper triangle of an n x n matrix into
   // runs of rows with nearly equal numbers of pairs.
@@ -1005,62 +1045,78 @@
 
     console.log('Links Transit time: ', (Date.now() - Math.min(...parts.map(p => p.start))).toLocaleString(), 'ms');
     let start = Date.now();
-    let k = 0;
-    parts.forEach((part, w) => {
-      if (sparse) {
-        const { source, target, distance } = part;
+    const g = session.data.graph;
+    const before = g.edgeCount;
+    if (sparse) {
+      parts.forEach(({ source, target, distance }) => {
         const m = distance.length;
         for (let l = 0; l < m; l++) {
-          k += MT.addLink({
+          g.addLink({
             source: order[target[l]]._id,
             target: order[source[l]]._id,
             distance: distance[l],
             origin: ['Genetic Distance']
           });
         }
-      } else {
-        const dists = part.distances;
-        let l = 0;
-        for (let i = splits[w]; i < splits[w + 1]; i++) {
-          const targetID = order[i]._id;
-          for (let j = i + 1; j < n; j++) {
-            k += MT.addLink({
-              source: order[j]._id,
-              target: targetID,
-              distance: dists[l++],
-              origin: ['Genetic Distance']
-            });
-          }
-        }
-      }
-    });
+      });
+    } else {
+      // The parts are consecutive runs of the upper triangle, in order.
+      const tri = new Float32Array(pairs);
+      let offset = 0;
+      parts.forEach(part => {
+        tri.set(part.distances, offset);
+        offset += part.distances.length;
+      });
+      g.setDistances(order.map(d => d._id), tri, 'distance', 'Genetic Distance');
+    }
     console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-    return k;
+    return g.edgeCount - before;
   };
-  
+
+  // Distances between every pair of nodes, for the given link field, as a
+  // condensed upper triangle (NaN where there's no link) over labels.
+  MT.getCondensedDM = (metric, labels) => {
+    const g = session.data.graph;
+    metric = metric || session.style.widgets['link-sort-variable'];
+    labels = labels || MT.getDMLabels();
+    const n = labels.length;
+    const pos = new Int32Array(g.nodeCount).fill(-1);
+    labels.forEach((id, i) => {
+      const x = g.index.get(id);
+      if (x !== undefined) pos[x] = i;
+    });
+    const tri = new Float64Array(n * (n - 1) / 2).fill(NaN);
+    g.forEachValue(metric, (v, e, s, t) => {
+      let i = pos[s], j = pos[t];
+      if (typeof v != 'number') v = parseFloat(v); // XLSX link files give strings
+      if (i < 0 || j < 0 || isNaN(v)) return;
+      if (i > j) [i, j] = [j, i];
+      tri[MTGraph.pairIndex(i, j, n)] = v;
+    });
+    return { labels, tri };
+  };
+
+  // The row order of MT.getDM (every node, in session order).
+  MT.getDMLabels = () => session.data.nodes.map(d => d._id);
+
+  // The full distance matrix (arrays of arrays, null where there's no link) for
+  // the link sort variable, in the order of MT.getDMLabels().
   MT.getDM = () => {
     let start = Date.now();
     return new Promise(resolve => {
-      let labels = session.data.nodes.map(d => d._id);
-      let metric = session.style.widgets['link-sort-variable'];
+      const { labels, tri } = MT.getCondensedDM();
       const n = labels.length;
       let dm = new Array(n);
-      for(let i = 0; i < n; i++){
+      for (let i = 0; i < n; i++) {
         dm[i] = new Array(n);
         dm[i][i] = 0;
-        let source = labels[i];
-        let row = temp.matrix[source];
-        if(!row){
-          console.error('Incompletely populated temp.matrix! Couldn\'t find ' + source);
-          continue;
-        }
-        for(let j = 0; j < i; j++){
-          let link = row[labels[j]];
-          if(link){
-            dm[i][j] = dm[j][i] = link[metric];
-          } else {
-            dm[i][j] = dm[j][i] = null;
-          }
+      }
+      let k = 0;
+      for (let i = 0; i < n; i++) {
+        const row = dm[i];
+        for (let j = i + 1; j < n; j++, k++) {
+          const v = tri[k];
+          row[j] = dm[j][i] = v == v ? v : null;
         }
       }
       console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
@@ -1082,7 +1138,7 @@
       };
       MT.getDM().then(dm => {
         computer.postMessage({
-          labels: Object.keys(temp.matrix),
+          labels: MT.getDMLabels(),
           matrix: dm,
           round: session.style.widgets["tree-round"]
         });
@@ -1092,6 +1148,17 @@
   
   MT.computeDirectionality = () => {
     return new Promise(resolve => {
+      // Directions are inferred from the tree, which only exists once the
+      // phylogenetic tree view has computed it.
+      if (!temp.tree) return resolve();
+      const g = session.data.graph;
+      const ids = new Uint32Array(g.edgeCount), sources = [], targets = [];
+      let x = 0;
+      g.forEachEdge((e, s, t) => {
+        ids[x++] = e;
+        sources.push(g.ids[s]);
+        targets.push(g.ids[t]);
+      });
       let computer = new Worker("workers/compute-directionality.js");
       computer.onmessage = response => {
         let flips = new Uint8Array(response.data.output);
@@ -1100,80 +1167,63 @@
         let n = flips.length;
         for (let i = 0; i < n; i++) {
           if (flips[i]) {
-            let fliplink = session.data.links[i];
-            let fliptemp = fliplink.source;
-            fliplink.source = fliplink.target;
-            fliplink.target = fliptemp;
-            fliplink.directed = true;
+            const e = g.flip(ids[i]);
+            if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
           }
         }
+        g.version++;
         console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
       computer.postMessage({
-        links: session.data.links,
+        sources: sources,
+        targets: targets,
         tree: temp.tree
       });
     });
   };
-  
-  MT.computeMST = () => {
+
+  // Runs a worker that takes the condensed distance matrix for the link sort
+  // variable and returns pairs of node positions, and flags those links as
+  // nearest neighbors.
+  MT.computeNNFlags = (script, name) => {
     return new Promise((resolve, reject) => {
-      let mstMachine = new Worker("workers/compute-mst.js");
-      mstMachine.onmessage = response => {
+      const g = session.data.graph;
+      const metric = session.style.widgets['link-sort-variable'];
+      const labels = g.ids.slice();
+      const { tri } = MT.getCondensedDM(metric, labels);
+      let machine = new Worker(script);
+      machine.onmessage = response => {
         if (response.data == "Error") {
-          return reject("MST washed out");
+          return reject(name + " washed out");
         }
-        let output = new Uint8Array(response.data.links);
-        console.log("MST Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+        let pairs = new Uint32Array(response.data.pairs);
+        console.log(name + " Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         const start = Date.now();
-        let links = session.data.links;
-        const numLinks = links.length;
-        for (let i = 0; i < numLinks; i++) {
-          links[i].nn = output[i] ? true : false;
+        g.clearFlag(MTGraph.NN);
+        for (let i = 0; i < pairs.length; i += 2) {
+          const e = g.edgeBetween(pairs[i], pairs[i + 1]);
+          if (e >= 0) g.setFlag(e, MTGraph.NN, true);
         }
-        console.log("MST Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+        g.version++;
+        console.log(name + " Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
-      mstMachine.onerror = (e) => {
+      machine.onerror = (e) => {
         console.log(e);
         resolve();
       };
-      mstMachine.postMessage({
-        links: session.data.links,
-        matrix: temp.matrix,
-        epsilon: session.style.widgets["filtering-epsilon"],
-        metric: session.style.widgets['link-sort-variable']
-      });
+      machine.postMessage({
+        n: labels.length,
+        matrix: tri,
+        epsilon: session.style.widgets["filtering-epsilon"]
+      }, [tri.buffer]);
     });
   };
 
-  MT.computeNN = () => {
-    return new Promise((resolve, reject) => {
-      let nnMachine = new Worker("workers/compute-nn.js");
-      nnMachine.onmessage = response => {
-        if (response.data == "Error") {
-          return reject("Nearest Neighbor washed out");
-        }
-        let output = new Uint8Array(response.data.links);
-        console.log("NN Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-        const start = Date.now();
-        let links = session.data.links;
-        const numLinks = links.length;
-        for (let i = 0; i < numLinks; i++) {
-          links[i].nn = output[i] ? true : false;
-        }
-        console.log("NN Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-        resolve();
-      };
-      nnMachine.postMessage({
-        links: session.data.links,
-        matrix: temp.matrix,
-        epsilon: session.style.widgets["filtering-epsilon"],
-        metric: session.style.widgets['link-sort-variable']
-      });
-    });
-  };
+  MT.computeMST = () => MT.computeNNFlags("workers/compute-mst.js", "MST");
+
+  MT.computeNN = () => MT.computeNNFlags("workers/compute-nn.js", "NN");
   
   MT.computeTriangulation = () => {
     return new Promise((resolve, reject) => {
@@ -1184,24 +1234,26 @@
         console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         let start = Date.now();
         let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
-        let labels = Object.keys(temp.matrix);
+        const g = session.data.graph;
+        let labels = MT.getDMLabels();
         const n = labels.length;
         for(let i = 0; i < n; i++){
-          let source = labels[i];
-          let row = temp.matrix[source];
+          const source = labels[i], a = g.node(source);
           for(let j = 0; j < i; j++){
-            let target = labels[j];
-            if(!row[target]){
-              MT.addLink({
-                source: source,
-                target: target,
-                origin: ['Triangulation'],
-                visible: false
-              });
+            const target = labels[j], v = matrix[i][j];
+            const e = g.edgeBetween(a, g.node(target));
+            if (e < 0) {
+              g.addLink({ source: source, target: target, origin: ['Triangulation'], [metric]: v });
+            } else if (e < MTGraph.IMPLICIT) {
+              g.setValue(e, metric, v);
+            } else if (metric == g.dense.field) {
+              g.dense.tri[e - MTGraph.IMPLICIT] = v;
+            } else {
+              g.addLink({ source: g.ids[g.source(e)], target: g.ids[g.target(e)], [metric]: v });
             }
-            row[target][metric] = matrix[i][j];
           }
         }
+        g.version++;
         console.log("Triangulation Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
@@ -1224,15 +1276,14 @@
   
   MT.finishUp = async (oldSession) => { 
     clearTimeout(temp.messageTimeout);
-    ["node", "link"].forEach(v => {
-      let n = session.data[v + "s"].length;
-      let fields = session.data[v + "Fields"];
-      for (let i = 0; i < n; i++) {
-        let d = session.data[v + "s"][i];
-        fields.forEach(field => {
-          if (!(field in d)) d[field] = null;
-        });
-      }
+    // Links are done loading: swap the graph's pair lookup for its compact index.
+    // (Link objects get null for missing link fields as they're built.)
+    session.data.graph.freeze();
+    let nodeFields = session.data.nodeFields;
+    session.data.nodes.forEach(d => {
+      nodeFields.forEach(field => {
+        if (!(field in d)) d[field] = null;
+      });
     });
     
     // patch missing date fields to earliest date in the the data
@@ -1352,53 +1403,25 @@
     return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
   };
   
+  // Clusters are the connected components of the visible links.
   MT.tagClusters = () => {
     return new Promise(resolve => {
       let start = Date.now();
       let clusters = session.data.clusters = [];
-      let nodes = session.data.nodes,
-          links = session.data.links,
-          labels = nodes.map(d => d._id);
-      let numNodes = nodes.length,
-          numLinks = links.length;
-      let tempnodes = temp.nodes = [];
-      let lsv = session.style.widgets["link-sort-variable"];
-  
-      let DFS = (id, cluster) => {
-        if (tempnodes.indexOf(id) >= 0) return;
-        tempnodes.push(id);
-        let node = {};
-        for (let i = 0; i < numNodes; i++) {
-          let d = nodes[i];
-          if (d._id == id) {
-            node = d;
-            break;
-          }
-        }
-        let clusterID = cluster.id;
-        node.cluster = clusterID;
-        cluster.nodes++;
-        let row = temp.matrix[id];
-        if(!row) return;
-        for (let j = 0; j < numNodes; j++) {
-          let l = row[labels[j]];
-          if (!l) continue;
-          if (!l.visible) continue;
-          l.cluster = clusterID;
-          cluster.links++;
-          cluster.sum_distances += l[lsv];
-          if(tempnodes.length == numNodes) return;
-          DFS(l.source, cluster);
-          DFS(l.target, cluster);
-        }
-      };
-  
-      for (let k = 0; k < numNodes; k++) {
-        let d = nodes[k];
-        d.degree = 0;
-        let id = d._id;
-        if (tempnodes.indexOf(id) == -1) {
-          let cluster = {
+      const nodes = session.data.nodes;
+      const g = session.data.graph;
+      const lsv = session.style.widgets["link-sort-variable"];
+      const nodeIndex = nodes.map(d => g.node(d._id));
+      const component = g.components();
+
+      // Number clusters in node order, as MicrobeTrace always has
+      const clusterOf = new Int32Array(component.length).fill(-1);
+      const nodeCluster = new Int32Array(g.nodeCount).fill(-1);
+      nodeIndex.forEach(x => {
+        const c = component[x];
+        if (clusterOf[c] < 0) {
+          clusterOf[c] = clusters.length;
+          clusters.push({
             id: clusters.length,
             nodes: 0,
             links: 0,
@@ -1406,41 +1429,36 @@
             links_per_node: 0,
             mean_genetic_distance: undefined,
             visible: true
-          };
-          clusters.push(cluster);
-          DFS(id, cluster);
-          if(tempnodes.length == numNodes) break;
+          });
         }
-      }
-      console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
-  
-      start = Date.now();
-      //This is O(N^3)
-      //TODO: Refactor using temp.matrix to get O(N^2)
-      for (let m = 0; m < numLinks; m++) {
-        let l = links[m];
-        if (!l.visible) continue;
-        let s = false,
-        t = false;
-        for (let n = 0; n < numNodes; n++) {
-          let node = nodes[n];
-          if (l.source == node._id) {
-            s = true;
-            node.degree++;
-          }
-          if (l.target == node._id) {
-            t = true;
-            node.degree++;
-          }
-          if (s && t) break;
-        }
-      }
-      clusters.forEach(c => {
-        c.links = c.links / 2;
-        c.links_per_node = c.links / c.nodes;
-        c.mean_genetic_distance = c.sum_distances / 2 / c.links;
       });
-      console.log("Degree Computation time:", (Date.now() - start).toLocaleString(), "ms");
+      for (let x = 0; x < g.nodeCount; x++) {
+        nodeCluster[x] = clusterOf[component[x]];
+        if (nodeCluster[x] >= 0) clusters[nodeCluster[x]].nodes++;
+      }
+      g.nodeCluster = nodeCluster;
+      g.version++;
+
+      const degree = new Uint32Array(g.nodeCount);
+      for (let x = 0; x < g.visibleCount; x++) {
+        const e = g.visible[x], s = g.source(e), t = g.target(e);
+        degree[s]++;
+        degree[t]++;
+        const cluster = clusters[nodeCluster[s]];
+        if (!cluster) continue;
+        cluster.links++;
+        const v = parseFloat(g.getValue(e, lsv));
+        if (!isNaN(v)) cluster.sum_distances += v;
+      }
+      nodes.forEach((d, i) => {
+        d.cluster = nodeCluster[nodeIndex[i]];
+        d.degree = degree[nodeIndex[i]];
+      });
+      clusters.forEach(c => {
+        c.links_per_node = c.links / c.nodes;
+        c.mean_genetic_distance = c.sum_distances / c.links;
+      });
+      console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
       resolve();
     });
   };
@@ -1469,29 +1487,16 @@
   MT.setLinkVisibility = silent => { 
     let start = Date.now();
     let metric = session.style.widgets["link-sort-variable"],
-      threshold = session.style.widgets["link-threshold"],
+      threshold = parseFloat(session.style.widgets["link-threshold"]),
       showNN = session.style.widgets["link-show-nn"];
-    let links = session.data.links;
-    let clusters = session.data.clusters;
-    let n = links.length;
-    for (let i = 0; i < n; i++) {
-      let link = links[i];
-      let visible = true;
-      if (link[metric] == null) {
-        link.visible = false;
-        continue;
-      } else {
-        visible = link[metric] <= threshold;
-      }
-      if (showNN) {
-        visible = visible && link.nn;
-      }
-      let cluster = clusters[link.cluster];
-      if (cluster) {
-        visible = visible && cluster.visible;
-      }
-      link.visible = visible;
-    }
+    const g = session.data.graph;
+    const clusters = session.data.clusters;
+    const nodeCluster = g.nodeCluster;
+    const keep = nodeCluster && clusters.length ? s => {
+      const cluster = clusters[nodeCluster[s]];
+      return !cluster || cluster.visible;
+    } : () => true;
+    g.computeVisible(metric, threshold, showNN, keep);
     if (!silent) $window.trigger("link-visibility");
     console.log("Link Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
@@ -1556,26 +1561,17 @@
     return out;
   };
 
+  // Link objects for the visible links, built once per change to the graph.
   MT.getVisibleLinks = copy => {
-    let links = session.data.links;
-    let n = links.length;
-    let out = [];
-    if (copy) {
-      for (let i = 0; i < n; i++) {
-        let link = links[i];
-        if (link.visible){
-          out.push(JSON.parse(JSON.stringify(link)));
-        }
-      }
-    } else {
-      for (let j = 0; j < n; j++) {
-        let link = links[j];
-        if (link.visible){
-          out.push(link);
-        }
-      }
+    const g = session.data.graph;
+    let cache = temp.visibleLinks;
+    if (!cache || cache.graph !== g || cache.version !== g.version) {
+      const links = new Array(g.visibleCount);
+      for (let x = 0; x < g.visibleCount; x++) links[x] = MT.linkObject(g.visible[x], true);
+      cache = temp.visibleLinks = { graph: g, version: g.version, links };
     }
-    return out;
+    if (copy) return cache.links.map(link => JSON.parse(JSON.stringify(link)));
+    return cache.links.slice();
   };
   
   MT.getVisibleClusters = copy => {
@@ -2160,7 +2156,7 @@
   };
   
   MT.exportHIVTRACE = () => {
-    let links = session.data.links.filter(l => l.visible);
+    let links = MT.getVisibleLinks();
     let geneticLinks = links.filter(l => l.origin.includes("Genetic Distance"));
     let sequences = new Set(
       geneticLinks.map(l => l.source).concat(

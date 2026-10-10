@@ -39,6 +39,7 @@
     "cache": "scripts/sw.sh",
     "clean": "scripts/cleanup.sh",
     "compress": "scripts/compress.sh",
+    "test": "node --test test/unit/*.test.js",
     "update": "npm update && npm run bundle"
   },
   "directories": {

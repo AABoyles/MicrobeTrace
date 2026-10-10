@@ -1,51 +1,32 @@
+// Flags the links of the minimum spanning tree plus the near-ties allowed by
+// epsilon. Takes the condensed distance matrix (NaN where there's no link) of n
+// nodes and returns the flagged links as pairs of node positions.
 onmessage = function(e){
     const start = Date.now();
-    const links = e.data.links;
-    const dm = e.data.matrix;
-    const labels = Object.keys(dm);
+    const n = e.data.n;
+    const tri = e.data.matrix;
     const epsilon = Math.pow(10, e.data.epsilon);
-    const metric = e.data.metric;
-    const n = labels.length
-    const m = links.length;
-    let output = new Uint8Array(m);
-    let matrix = [];
-    let map = [];
-    for (let i = 0; i < n; i++) {
-        let minDist = Number.MAX_VALUE;
-        let targets = [];
-        const nodeid = labels[i];
-        const row = dm[nodeid];
-        for (let j = 0; j < n; j++) {
-          let cell = row[labels[j]];
-          if(!cell) {
-            targets.push(0);
-            continue;
-          };
-          let value = cell[metric];
-          targets.push(value);
-        }
-        matrix.push(targets);
-        map.push(nodeid);
-    }
 
-    const mst = primMST(matrix);
-    const nng = nearest_neighbour_graph(matrix, mst, epsilon);
+    // Missing links weigh 0, as they always have here
+    const weight = (u, v) => {
+      if (u == v) return 0;
+      const w = u < v ? tri[u * n - u * (u + 1) / 2 + v - u - 1] : tri[v * n - v * (v + 1) / 2 + u - v - 1];
+      return w == w ? w : 0;
+    };
 
+    const mst = primMST(n, weight);
+    const nng = nearest_neighbour_graph(n, weight, mst, epsilon);
+
+    let pairs = [];
     for (let i = 0; i < n; i++) {
-      const source = map[i];
       nng[i].push(mst[i]);
-      Array.from(new Set(nng[i])).forEach((u, index) => {
-        const target = map[u];
-        for(let k = 0; k < m; k++){
-          let l = links[k];
-          if((l.source == source && l.target == target) || (l.source == target && l.target == source)) {
-            output[k] = 1;
-          }
-        }
-      })
+      new Set(nng[i]).forEach(u => {
+        if (u >= 0) pairs.push(i, u);
+      });
     }
+    const output = Uint32Array.from(pairs);
     console.log('MST Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
-    postMessage({links: output.buffer, start: Date.now()}, [output.buffer]);
+    postMessage({pairs: output.buffer, start: Date.now()}, [output.buffer]);
     close();
 };
 
@@ -60,36 +41,33 @@ const minKey = (key, mstSet, V) => {
   return min_index;
 }
 
-const primMST = (graph) => {
-  const V = graph.length;
-  let parent = [];
-  let key = [];
-  let mstSet = [];
-  for (let i = 0; i < V; i++) {
-      key[i] = Number.MAX_VALUE;
-      mstSet[i] = false;
-  }
+const primMST = (V, weight) => {
+  let parent = new Int32Array(V);
+  let key = new Float64Array(V).fill(Number.MAX_VALUE);
+  let mstSet = new Uint8Array(V);
   key[0] = 0.0; 
   parent[0] = -1;
   for (let count = 0; count < V-1; count++) {
       let u = minKey(key, mstSet, V);
       if (u < 0) continue;
-      mstSet[u] = true;
+      mstSet[u] = 1;
 
-      if (graph[u].reduce((a, b) => a + b, 0) === 0 && u != 0) continue;
+      let rowSum = 0;
+      for (let v = 0; v < V; v++) rowSum += weight(u, v);
+      if (rowSum === 0 && u != 0) continue;
 
       for (let v = 0; v < V; v++) {
-          if (graph[u][v] >= 0 && !mstSet[v] && graph[u][v] <  key[v]) {
+          const w = weight(u, v);
+          if (w >= 0 && !mstSet[v] && w < key[v]) {
               parent[v]  = u;
-              key[v] = graph[u][v];
+              key[v] = w;
           }
       }
   }
   return parent;
 }
 
-const nearest_neighbour_graph = (graph, mst_parents, epsilon) => {
-  const V = graph.length;
+const nearest_neighbour_graph = (V, weight, mst_parents, epsilon) => {
   let mst = [];
   for (let i=0; i<V; ++i) {
     mst.push([]);
@@ -99,20 +77,18 @@ const nearest_neighbour_graph = (graph, mst_parents, epsilon) => {
     mst[mst_parents[i]].push(i);
   }
   let nng = [];
-  let longest_edge = [];
+  // Symmetric, so stored as a full matrix row by row
+  let longest_edge = new Float64Array(V * V);
   for (let i=0; i<V; ++i) {
     nng.push([]);
-    longest_edge.push([]);
-    for (let j=0; j<V; ++j) {
-        longest_edge[i][j] = 0;
-    }
   }
   for (let i=0; i<V; ++i) {
-    bfs_update_matrix(mst, graph, i, longest_edge);
+    bfs_update_matrix(V, mst, weight, i, longest_edge);
   }
   for (let i=0; i<V; ++i) {
     for (let j=0; j<V; ++j) {
-      if ((graph[i][j] > 0 ) && (graph[i][j] <= (longest_edge[i][j] * (1.0 + epsilon)))) {
+      const w = weight(i, j);
+      if ((w > 0 ) && (w <= (longest_edge[i * V + j] * (1.0 + epsilon)))) {
           nng[i].push(j);
           nng[j].push(i);
       } 
@@ -121,19 +97,18 @@ const nearest_neighbour_graph = (graph, mst_parents, epsilon) => {
   return nng;
 }
 
-const bfs_update_matrix = (mst, weights, root, longest_edge) => {
-  let visited = [];
-  let queue = [];
-  queue.push(root);
+const bfs_update_matrix = (V, mst, weight, root, longest_edge) => {
+  let visited = new Uint8Array(V);
+  let queue = [root];
   while (queue.length) {
     let v = queue.shift();
-    visited[v] = true;
-    mst[v].forEach((u, index) => {
+    visited[v] = 1;
+    mst[v].forEach(u => {
       if(visited[u]) return;
       queue.push(u);
-      const value = Math.max(weights[v][u], Math.max(longest_edge[root][u], longest_edge[root][v]));
-      longest_edge[root][u] = value;
-      longest_edge[u][root] = value;
+      const value = Math.max(weight(v, u), Math.max(longest_edge[root * V + u], longest_edge[root * V + v]));
+      longest_edge[root * V + u] = value;
+      longest_edge[u * V + root] = value;
     })
   }
 }

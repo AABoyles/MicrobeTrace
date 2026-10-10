@@ -14,7 +14,7 @@ onmessage = function(e) {
 
   let output;
   if (threshold == null) {
-    let distances = new Float64Array((rowEnd - rowStart) * n - (rowEnd * (rowEnd + 1) - rowStart * (rowStart + 1)) / 2);
+    let distances = new Float32Array((rowEnd - rowStart) * n - (rowEnd * (rowEnd + 1) - rowStart * (rowStart + 1)) / 2);
     let t = 0;
     for (let i = rowStart; i < rowEnd; i++) {
       for (let j = i + 1; j < n; j++) {

@@ -168,11 +168,10 @@
         });
         layout.barmode = 'stack';
       } else if (varSource == 'links' && !['None', 'origin'].includes(session.style.widgets['link-color-variable'])) {
-        let values = [];
         let field = session.style.widgets['link-color-variable'];
-        session.data.links.forEach(d => {
-          if (!(d[field] in values)) values.push(d[field]);
-        });
+        let distinct = new Set();
+        session.data.graph.forEachValue(field, v => distinct.add(v));
+        let values = Array.from(distinct);
         let vlinks = MT.getVisibleLinks();
         values.forEach((v, i) => {
           let trace = {

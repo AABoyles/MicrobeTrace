@@ -23,6 +23,7 @@ self.addEventListener('install', function(event) {
         'dist/bundle.secondary.css',
         'dist/bundle.secondary.js',
         'dist/common.js',
+        'src/graph.js',
         'dist/index.js',
         'dist/main.css',
         'workers/README.md',
