@@ -1354,8 +1354,7 @@
     session.meta.loadTime = Date.now() - session.meta.startTime;
     console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
     if (oldSession) {
-      layout.root.contentItems[0].remove();
-      setTimeout(() => MT.loadLayout(session.layout), 80);
+      MT.loadLayout(session.layout);
     } else {
       MT.launchView(session.style.widgets['default-view']);
     }
@@ -1382,7 +1381,7 @@
     })
     $(".hideForHIVTrace").css("display", "flex");
     setTimeout(() => {
-      let files = layout.contentItems.find(item => item.componentName == "files");
+      let files = layout.contentItems.find(item => item.componentType == "files");
       if (files) files.remove();
       $("#loading-information-modal").modal("hide");
     }, 1200);
@@ -1936,12 +1935,8 @@
     self.temp.componentCache = tempComp;
     
     self.session = MT.sessionSkeleton();
-    layout.unbind("stateChanged");
-    layout.root.replaceChild(layout.root.contentItems[0], {
-      type: "stack",
-      content: []
-    });
-    layout.contentItems = [];
+    // A new layout also drops the stateChanged listeners the old views added
+    MT.createLayout();
     MT.launchView("files");
   };
   
@@ -1976,84 +1971,57 @@
   
   let peek = ra => ra[ra.length - 1];
   
+  const emptyLayout = {
+    settings: { showPopoutIcon: false },
+    root: { type: "stack", content: [] }
+  };
+
+  // The view (component) items in a layout subtree, in layout order
+  const viewItems = item => !item ? [] : item.isComponent ? [item] : item.contentItems.flatMap(viewItems);
+  const stacks = item => !item || item.isComponent ? [] : (item.isStack ? [item] : []).concat(item.contentItems.flatMap(stacks));
+
+  MT.createLayout = () => {
+    if (self.layout) layout.destroy();
+    self.layout = new goldenLayout.GoldenLayout($("#main-panel")[0]);
+    layout.resizeWithContainerAutomatically = true;
+    // golden-layout builds a component before its element is in the page, where
+    // a view's inline scripts couldn't find their own elements. Components are
+    // therefore empty here, and renderView fills each one in once it's attached.
+    layout.registerComponentFunction(() => function () {});
+    // MicrobeTrace's open views, which golden-layout 1 called contentItems
+    Object.defineProperty(layout, "contentItems", { get: () => viewItems(layout.rootItem) });
+    layout.loadLayout(emptyLayout);
+    layout.on("stateChanged", () => session.layout = MT.cacheLayout(layout.rootItem));
+  };
+
+  // Fetches a view's HTML into temp.componentCache
+  const fetchView = view => new Promise(resolve => {
+    if (temp.componentCache[view]) return resolve();
+    $.get("components/" + view + ".html", response => {
+      temp.componentCache[view] = response;
+      resolve();
+    });
+  });
+
+  // Renders a view's HTML into its (newly attached) layout item
+  const renderView = contentItem => {
+    $(contentItem.container.element).html(temp.componentCache[contentItem.componentType]);
+  };
+
   MT.launchView = (view, callback) => {
     if (!temp.componentCache[view]) {
-      $.get("components/" + view + ".html", response => {
-        temp.componentCache[view] = response;
-        //This MUST NOT be replace by an arrow function!
-        layout.registerComponent(view, function (container, state) {
-          container.getElement().html(state.text);
-        });
-        if (callback) {
-          MT.launchView(view, callback);
-        } else {
-          return MT.launchView(view);
-        }
-      });
+      fetchView(view).then(() => MT.launchView(view, callback));
     } else {
-      let contentItem = layout.contentItems.find(item => item.componentName == view);
+      let contentItem = layout.contentItems.find(item => item.componentType == view);
       if (contentItem) {
-        contentItem.parent.setActiveContentItem(contentItem);
+        contentItem.parent.setActiveComponentItem(contentItem, true);
       } else {
-        if (layout.root.contentItems[0] === undefined) {
-          layout.root.addChild({ type: 'stack' });
-        }
-        let lastStack = peek(layout.root.contentItems[0].getItemsByType("stack"));
-        if (!lastStack) lastStack = layout.root.contentItems[0];
-        lastStack.addChild({
-          componentName: view,
-          componentState: { text: temp.componentCache[view] },
-          title: MT.titleize(view),
-          type: "component"
-        });
-        contentItem = peek(lastStack.contentItems);
-        contentItem.on("itemDestroyed", () => layout.contentItems.splice(layout.contentItems.findIndex(item => item === contentItem), 1));
-        layout.contentItems.push(contentItem);
+        if (!layout.rootItem) layout.loadLayout(emptyLayout);
+        let lastStack = peek(stacks(layout.rootItem)) || layout.rootItem;
+        contentItem = lastStack.newComponent(view, undefined, MT.titleize(view));
+        renderView(contentItem);
       }
-      contentItem.element.find("select.nodeVariables").html(
-        "<option>None</option>" +
-        session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
-      );
-      contentItem.element.find("select.linkVariables").html(
-        "<option>None</option>" +
-        session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
-      );
-      contentItem.element.find("select.mixedVariables").html(
-        "<option>None</option>" +
-        session.data.linkFields.map(field => '<option value="links-' + field + '">Links ' + MT.titleize(field) + "</option>").join("\n") +
-        session.data.nodeFields.map(field => '<option value="nodes-' + field + '">Nodes ' + MT.titleize(field) + "</option>").join("\n")
-      );
-      contentItem.element.find("select.branch-variables").html(
-        "<option>None</option>" +
-        ["id", "depth", "height", "length", "value"].map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
-      );
-      contentItem.element.find(".launch-color-options").click(() => {
-        $("#style-tab").tab("show");
-        setTimeout(() => $("#global-settings-modal").modal("show"), 250);
-      });
-      contentItem.element.find(".modal-header").on("mousedown", function(){
-        let body = $("body");
-        let parent = $(this).parent().parent().parent();
-        body.on("mousemove", e => {
-          parent
-            .css("top",  parseFloat(parent.css("top" )) + e.originalEvent.movementY + "px")
-            .css("left", parseFloat(parent.css("left")) + e.originalEvent.movementX + "px");
-        });
-        body.one("mouseup", () => body.off("mousemove"));
-      });
-      if (navigator.onLine) contentItem.element.find(".ifOnline").show();
-      for (let id in session.style.widgets) {
-        let $id = $("#" + id);
-        if ($id.length > 0) {
-          if (["radio", "checkbox"].includes($id[0].type)) {
-            if (session.style.widgets[id]) {
-              if($(contentItem.element[0]).find($id).length > 0)   $id.click();   // issue #182
-            }
-          } else {
-            $id.val(session.style.widgets[id]);
-          }
-        }
-      }
+      setupView(contentItem);
       if (callback) {
         callback(contentItem);
       } else {
@@ -2061,30 +2029,86 @@
       }
     }
   };
-  
+
+  // Fills in a view's variable menus and widget values, and binds its common controls
+  const setupView = contentItem => {
+    const $element = $(contentItem.element);
+    $element.find("select.nodeVariables").html(
+      "<option>None</option>" +
+      session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
+    );
+    $element.find("select.linkVariables").html(
+      "<option>None</option>" +
+      session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
+    );
+    $element.find("select.mixedVariables").html(
+      "<option>None</option>" +
+      session.data.linkFields.map(field => '<option value="links-' + field + '">Links ' + MT.titleize(field) + "</option>").join("\n") +
+      session.data.nodeFields.map(field => '<option value="nodes-' + field + '">Nodes ' + MT.titleize(field) + "</option>").join("\n")
+    );
+    $element.find("select.branch-variables").html(
+      "<option>None</option>" +
+      ["id", "depth", "height", "length", "value"].map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
+    );
+    $element.find(".launch-color-options").click(() => {
+      $("#style-tab").tab("show");
+      setTimeout(() => $("#global-settings-modal").modal("show"), 250);
+    });
+    $element.find(".modal-header").on("mousedown", function(){
+      let body = $("body");
+      let parent = $(this).parent().parent().parent();
+      body.on("mousemove", e => {
+        parent
+          .css("top",  parseFloat(parent.css("top" )) + e.originalEvent.movementY + "px")
+          .css("left", parseFloat(parent.css("left")) + e.originalEvent.movementX + "px");
+      });
+      body.one("mouseup", () => body.off("mousemove"));
+    });
+    if (navigator.onLine) $element.find(".ifOnline").show();
+    for (let id in session.style.widgets) {
+      let $id = $("#" + id);
+      if ($id.length > 0) {
+        if (["radio", "checkbox"].includes($id[0].type)) {
+          if (session.style.widgets[id]) {
+            if ($element.find($id).length > 0) $id.click();   // issue #182
+          }
+        } else {
+          $id.val(session.style.widgets[id]);
+        }
+      }
+    }
+  };
+
   MT.cacheLayout = contentItem => {
+    if (!contentItem) return { type: "stack", content: [] };
     if (["stack", "row", "column"].includes(contentItem.type)) {
       return {
         type: contentItem.type,
         content: contentItem.contentItems.map(MT.cacheLayout)
       };
     }
-    return { type: contentItem.componentName };
+    return { type: contentItem.componentType };
   };
-  
-  MT.loadLayout = (component, parent) => {
-    if (!parent) {
-      parent = layout.root;
-      try {
-        parent.contentItems[0].remove();
-      } catch (e) { }
-    }
-    if (["stack", "row", "column"].includes(component.type)) {
-      parent.addChild({ type: component.type });
-      component.content.forEach(c => MT.loadLayout(c, peek(parent.contentItems)));
-    } else {
-      MT.launchView(component.type);
-    }
+
+  // Replaces the layout with one saved by MT.cacheLayout
+  MT.loadLayout = component => {
+    const views = [], toConfig = c => {
+      if (["stack", "row", "column"].includes(c.type)) {
+        const content = c.content.map(toConfig);
+        // As launching them one by one did, the last view in each stack is active
+        return c.type == "stack" ? { type: c.type, content, activeItemIndex: Math.max(content.length - 1, 0) } : { type: c.type, content };
+      }
+      views.push(c.type);
+      return { type: "component", componentType: c.type, title: MT.titleize(c.type) };
+    };
+    const root = toConfig(component || emptyLayout.root);
+    return Promise.all(views.map(fetchView)).then(() => {
+      layout.loadLayout(Object.assign({}, emptyLayout, { root }));
+      layout.contentItems.forEach(item => {
+        renderView(item);
+        setupView(item);
+      });
+    });
   };
   
   MT.unparseSVG = svgNode => {

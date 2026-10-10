@@ -2288,7 +2288,7 @@ Note that this may cause slow performance on larger networks.">
 
     // Release the GPU context when the view is closed
     setTimeout(() => {
-      const item = layout.contentItems.find(item => item.element && item.element[0].contains(container));
+      const item = layout.contentItems.find(item => item.element && item.element.contains(container));
       if (item) item.on('itemDestroyed', destroy);
     }, 0);
 
