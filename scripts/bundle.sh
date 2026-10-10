@@ -7,7 +7,7 @@ primaryscripts=(
   "node_modules/jquery/dist/jquery.min.js"
   "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
   "node_modules/alertifyjs/build/alertify.min.js"
-  "node_modules/golden-layout/dist/goldenlayout.min.js"
+  "temp.golden-layout.js"
   "node_modules/chosen-js/chosen.jquery.min.js"
   "node_modules/fileto/fileto.js"
   "temp.screenfull.js"
@@ -53,8 +53,8 @@ secondaryscripts=(
 # render the page properly. You probably shouldn't put your new stylesheet here.
 primarystyles=(
   "node_modules/bootstrap/dist/css/bootstrap.min.css"
-  "node_modules/golden-layout/src/css/goldenlayout-base.css"
-  "node_modules/golden-layout/src/css/goldenlayout-light-theme.css"
+  "node_modules/golden-layout/dist/css/goldenlayout-base.css"
+  "temp.goldenlayout-theme.css"
   "node_modules/alertifyjs/build/css/alertify.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css"
@@ -70,6 +70,10 @@ secondarystyles=(
   "node_modules/leaflet.markercluster/dist/MarkerCluster.css"
   "node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css"
 )
+
+# golden-layout's theme refers to its icons by relative path; inline them
+npx esbuild node_modules/golden-layout/dist/css/themes/goldenlayout-light-theme.css --bundle \
+  --loader:.png=dataurl --log-level=warning --outfile=temp.goldenlayout-theme.css
 
 echo 'Assembling Stylesheets...'
 
@@ -112,6 +116,10 @@ done
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.
 npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-name=Plotly \
   --target=es2019 --define:global=globalThis --loader:.css=empty --log-level=warning --outfile=temp.plotly.js
+
+# golden-layout 2 ships only ES and CommonJS modules
+npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --format=iife --global-name=goldenLayout \
+  --target=es2019 --log-level=warning --outfile=temp.golden-layout.js
 
 # pixi-viewport's UMD build looks for Pixi under the global name pixi_js
 echo "window.pixi_js = window.PIXI;" > temp.pixi-alias.js

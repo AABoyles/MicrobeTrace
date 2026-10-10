@@ -29,22 +29,7 @@ $(function() {
 
   self.temp = MT.tempSkeleton();
   self.session = MT.sessionSkeleton();
-  self.layout = new GoldenLayout({
-    settings: {
-      selectionEnabled: true,
-      showPopoutIcon: false
-    },
-    content: [
-      {
-        type: "stack",
-        content: []
-      }
-    ]
-  }, $("#main-panel"));
-
-  layout.init();
-
-  layout.contentItems = [];
+  MT.createLayout();
 
   self.$window = $(window);
 
@@ -1272,8 +1257,6 @@ $(function() {
     }
   });
 
-  layout.on("stateChanged", () => session.layout = MT.cacheLayout(layout.root.contentItems[0]));
-
   $window
     .on("node-selected", () => $("#numberOfSelectedNodes").text(session.data.nodes.filter(d => d.selected).length.toLocaleString()))
     .on("click", () => $("#network-statistics-context, #link-color-table-context, #node-color-table-context").hide())
@@ -1290,7 +1273,6 @@ $(function() {
         $("#node-color-variable").trigger("change");
       }
     })
-    .on("resize", () => layout.updateSize())
     .on("devtoolschange", () => {
       if (window.devtools.isOpen) {
         console.log(
