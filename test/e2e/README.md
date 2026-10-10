@@ -29,6 +29,11 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `network.spec.js` | The 2D network's tooltip-variables menu |
 | `choropleth.spec.js` | The choropleth: counting nodes by state and country, colors, transparency, tile layers, redraws, fitting and export |
 | `geo_map.spec.js` | The geo map: placing nodes from coordinates and places, links, layers, collapsing, jitter, selection, tooltips, redraws and export |
+| `waterfall.spec.js` | The waterfall: clusters, their nodes, a node's links, redraws and background |
+| `sequences.spec.js` | The sequences: drawing, cell size, characters, restoring and export |
+| `timeline.spec.js` | The epi curve: the date field, cumulation, brushing to hide nodes, colors, resizing and restoring |
+| `gantt.spec.js` | The Gantt chart: adding, changing and removing dates, colors, redraws, restoring and export |
+| `bubbles.spec.js` | The bubbles: grouping, size, selection, colors, redraws, restoring and export |
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.

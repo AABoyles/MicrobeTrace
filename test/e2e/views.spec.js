@@ -35,8 +35,8 @@ const content = {
   bubbles: 'svg circle',
   gantt: 'svg',
   timeline: 'svg',
-  waterfall: '#waterfall-cluster-list .list-group-item',
-  sequences: '#sequences-panel canvas',
+  waterfall: '.waterfall-clusters .list-group-item',
+  sequences: '.sequences-panel canvas',
   choropleth: '.leaflet-container'
 };
 

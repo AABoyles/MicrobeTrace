@@ -721,7 +721,7 @@ button.btn,
 }
 
 /* Sequences */
-#sequences-panel {
+.sequences-panel {
   padding: 10px;
   padding-top: 50px;
   height: 100%;
@@ -759,27 +759,22 @@ button.btn,
   border: none;
 }
 
-/* Gantt */
-#gantt-settings-pane {
-  left: 0px;
-  display: block;
-}
 
 /* Timeline */
-#timeline {
+.timeline-chart {
   padding-top: 50px;
 }
-#timeline .axis--grid .domain {
+.timeline-chart .axis--grid .domain {
   fill: #ddd;
   stroke: none;
 }
 
-#timeline .axis--x .domain,
-#timeline .axis--grid .tick line {
+.timeline-chart .axis--x .domain,
+.timeline-chart .axis--grid .tick line {
   stroke: #fff;
 }
 
-#timeline .axis--grid .tick--minor line {
+.timeline-chart .axis--grid .tick--minor line {
   stroke-opacity: 0.5;
 }
 #timeline-date-field {
@@ -787,11 +782,11 @@ button.btn,
 }
 
 /* Waterfall View */
-#waterfall {
+.waterfall {
   padding: 30px;
   height: 100%;
 }
-#waterfall h4 {
+.waterfall h4 {
   padding: 0.75rem 1.25rem;
   border: 1px solid lightgray;
   border-radius: 0.25rem;
