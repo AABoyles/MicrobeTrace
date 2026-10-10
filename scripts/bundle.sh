@@ -5,6 +5,7 @@
 # index.html, components/files.html, or scripts/index.js
 primaryscripts=(
   "node_modules/jquery/dist/jquery.min.js"
+  "temp.jquery-trim.js"
   "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
   "node_modules/alertifyjs/build/alertify.min.js"
   "temp.golden-layout.js"
@@ -120,6 +121,9 @@ npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-na
 # golden-layout 2 ships only ES and CommonJS modules
 npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --format=iife --global-name=goldenLayout \
   --target=es2019 --log-level=warning --outfile=temp.golden-layout.js
+
+# chosen-js calls jQuery.trim, which jQuery 4 removed
+echo "jQuery.trim = jQuery.trim || (text => text == null ? \"\" : String(text).trim());" > temp.jquery-trim.js
 
 # pixi-viewport's UMD build looks for Pixi under the global name pixi_js
 echo "window.pixi_js = window.PIXI;" > temp.pixi-alias.js

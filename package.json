@@ -72,7 +72,7 @@
     "fileto": "^0.1.2",
     "golden-layout": "^2.6.0",
     "html5sortable": "^0.14.0",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
     "jszip": "^3.10.2",
     "leaflet": "^1.9.4",
     "leaflet-image": "^0.4.0",
