@@ -702,12 +702,12 @@ button.btn,
 }
 
 /* FLOW DIAGRAM */
-#flow {
+.flow-plot {
   margin: 15px;
   margin-top: 50px;
   height: calc(100% - 65px);
 }
-#flow-variables {
+.flow-variables {
   padding-left: 0;
 }
 .flow-items {

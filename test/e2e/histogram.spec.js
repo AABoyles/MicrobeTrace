@@ -1,7 +1,7 @@
 // The histogram view: its settings, what they draw, and how they're saved and
 // restored.
 const { test, expect } = require('@playwright/test');
-const { watchErrors, loadNetwork, launchView, closeView } = require('./helpers');
+const { watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -118,9 +118,7 @@ test('the plot follows the panel size', async () => {
 });
 
 test('exports a PNG', async () => {
-  await view().locator('button[title="Export Histogram"]').click();
-  const modal = page.locator('.modal.show');
-  await expect(modal).toBeVisible();
+  const modal = await openExport(page, view(), 'Export Histogram');
   await modal.getByPlaceholder('Filename').fill('histogram-test');
   const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
   expect(download.suggestedFilename()).toBe('histogram-test.png');

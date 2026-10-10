@@ -31,6 +31,14 @@ const waitForModal = (page, selector) => page.waitForFunction(selector => {
   return modal && modal.classList.contains('show') && getComputedStyle(modal).opacity == '1';
 }, selector);
 
+// Opens a view's export dialog from its button, once it has finished opening
+async function openExport(page, view, title) {
+  await view.locator(`button[title="${title}"]`).click();
+  const modal = page.locator('.modal.show');
+  await waitForModal(page, '.modal.show');
+  return modal;
+}
+
 // Opens MicrobeTrace and dismisses the license agreement.
 async function open(page) {
   await page.goto('/index.html');
@@ -67,4 +75,4 @@ async function closeView(page, view) {
   await page.evaluate(view => { const i = layout.contentItems.find(i => i.componentType == view); if (i) i.remove(); }, view);
 }
 
-module.exports = { fixtures, watchErrors, waitForModal, open, loadNetwork, launchView, viewNames, closeView };
+module.exports = { fixtures, watchErrors, waitForModal, openExport, open, loadNetwork, launchView, viewNames, closeView };

@@ -159,13 +159,10 @@
       const field = rest.join('-');
       const axis = settings.get('histogram-axis-x') ? 'x' : 'y', countAxis = axis == 'x' ? 'y' : 'x';
       const data = traces(source, field, axis);
-      const background = settings.get('background-color');
       Plotly.react(plot, data, {
         width, height,
         barmode: data.length > 1 ? 'stack' : undefined,
-        paper_bgcolor: background,
-        plot_bgcolor: background,
-        font: { color: settings.get('background-color-contrast') },
+        ...MT.plotColors(settings),
         [axis + 'axis']: { title: { text: MT.titleize(field) } },
         [countAxis + 'axis']: {
           title: { text: 'Number of ' + MT.titleize(source) },
@@ -178,54 +175,8 @@
       });
     }
 
-    // Settings pane
-    let paneOpen = false;
-    const toggle = $('.settings-toggle');
-    toggle.addEventListener('click', () => {
-      paneOpen = !paneOpen;
-      toggle.classList.toggle('active', paneOpen);
-      MT.slidePane(pane, paneOpen);
-    });
-
-    // Export dialog
-    const field = name => $(`[name="${name}"]`);
-    const advancedButton = $('.export-advanced-button'), advanced = $('#histogram-export-advanced');
-    field('export-filetype').addEventListener('change', e => {
-      const svg = e.target.value == 'svg';
-      advancedButton.hidden = svg;
-      if (svg) bootstrap.Collapse.getOrCreateInstance(advanced, { toggle: false }).hide();
-    });
-    const showDimensions = () => {
-      const scale = parseFloat(field('export-scale').value);
-      $('.export-dimensions').textContent = Math.round(root.clientWidth * scale) + 'x' + Math.round(root.clientHeight * scale) + 'px';
-    };
-    field('export-scale').addEventListener('input', showDimensions);
-    $('#histogram-export-modal').addEventListener('show.bs.modal', showDimensions);
-
-    $('.export-button').addEventListener('click', () => {
-      const svg = plot.querySelector('.main-svg');
-      // Plotly draws axis titles in a second SVG layer; bring them into this one
-      const titles = plot.querySelector('.main-svg .infolayer');
-      if (titles) svg.appendChild(titles);
-      const watermark = d3.select(svg).append('image')
-        .attr('xlink:href', MT.watermark)
-        .attr('height', 128)
-        .attr('width', 128)
-        .attr('x', 10)
-        .style('opacity', field('export-opacity').value);
-      const filename = field('export-filename').value, filetype = field('export-filetype').value;
-      if (filetype == 'svg') {
-        saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), filename + '.' + filetype);
-        watermark.remove();
-      } else {
-        saveSvgAsPng(svg, filename + '.' + filetype, {
-          scale: parseFloat(field('export-scale').value),
-          backgroundColor: settings.get('background-color'),
-          encoderType: 'image/' + filetype,
-          encoderOptions: parseFloat(field('export-quality').value)
-        }).then(() => watermark.remove());
-      }
-    });
+    MT.paneToggle($('.settings-toggle'), pane);
+    MT.plotExport(root, plot, settings);
 
     const stop = [
       MTBind(pane, settings),
