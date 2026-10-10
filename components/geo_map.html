@@ -1,19 +1,19 @@
-<div id="map" class="h-100"></div>
+<div class="map-canvas h-100"></div>
 
 <div class="view-controls">
-  <button type="button" id="toggle-map-settings" data-toggle="button" class="btn btn-light btn-sm" title="Toggle Map Settings Panel">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Geo Map Settings">
     <span class="oi oi-cog"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#map-export-modal"
-    title="Export Map Data">
+    title="Export Geo Map">
     <span class="oi oi-data-transfer-download"></span>
   </button>
-  <button id="map-fit" type="button" class="btn btn-light btn-sm" title="Center and Scale Network">
+  <button type="button" class="btn btn-light btn-sm fit-button" title="Fit to the Nodes">
     <span class="oi oi-target"></span>
   </button>
 </div>
 
-<div id="map-settings-pane" class="left-pane">
+<div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
       <a href="#map-data-configurations" class="nav-link active" aria-controls="map-data-configurations" role="tab"
@@ -45,7 +45,7 @@
       <div class="form-group row" title="If your data have a latitude variable, select that here.">
         <div class="col-4"><label for="map-field-lat">Latitude</label></div>
         <div class="col-8">
-          <select id="map-field-lat" class="nodeVariables form-select form-select-sm">
+          <select id="map-field-lat" class="nodeVariables form-select form-select-sm" data-setting="map-field-lat">
             <option selected>None</option>
           </select>
         </div>
@@ -53,7 +53,7 @@
       <div class="form-group row" title="If your data have a longitude variable, select that here.">
         <div class="col-4"><label for="map-field-lon">Longitude</label></div>
         <div class="col-8">
-          <select id="map-field-lon" class="nodeVariables form-select form-select-sm">
+          <select id="map-field-lon" class="nodeVariables form-select form-select-sm" data-setting="map-field-lon">
             <option selected>None</option>
           </select>
         </div>
@@ -61,7 +61,7 @@
       <div class="form-group row" title="If your data have a Census Tract variable, select that here.">
         <div class="col-4"><label for="map-field-tract">Census Tract</label></div>
         <div class="col-8">
-          <select id="map-field-tract" class="nodeVariables form-select form-select-sm">
+          <select id="map-field-tract" class="nodeVariables form-select form-select-sm" data-setting="map-field-tract">
             <option selected>None</option>
           </select>
         </div>
@@ -69,7 +69,7 @@
       <div class="form-group row" title="If your data have a zipcode variable, select that here.">
         <div class="col-4"><label for="map-field-zipcode">Zipcode</label></div>
         <div class="col-8">
-          <select id="map-field-zipcode" class="nodeVariables form-select form-select-sm">
+          <select id="map-field-zipcode" class="nodeVariables form-select form-select-sm" data-setting="map-field-zipcode">
             <option selected>None</option>
           </select>
         </div>
@@ -77,7 +77,7 @@
       <div class="form-group row" title="If your data have a County variable, select that here.">
         <div class="col-4"><label for="map-field-county">County</label></div>
         <div class="col-8">
-          <select id="map-field-county" class="nodeVariables form-select form-select-sm">
+          <select id="map-field-county" class="nodeVariables form-select form-select-sm" data-setting="map-field-county">
             <option selected>None</option>
           </select>
         </div>
@@ -85,7 +85,7 @@
       <div class="form-group row" title="If your data have a (US) State variable, select that here.">
         <div class="col-4"><label for="map-field-state">State</label></div>
         <div class="col-8">
-          <select id="map-field-state" class="nodeVariables form-select form-select-sm">
+          <select id="map-field-state" class="nodeVariables form-select form-select-sm" data-setting="map-field-state">
             <option selected>None</option>
           </select>
         </div>
@@ -93,7 +93,7 @@
       <div class="form-group row" title="If your data have a Country variable, select that here.">
         <div class="col-4"><label for="map-field-country">Country</label></div>
         <div class="col-8">
-          <select id="map-field-country" class="nodeVariables form-select form-select-sm">
+          <select id="map-field-country" class="nodeVariables form-select form-select-sm" data-setting="map-field-country">
             <option selected>None</option>
           </select>
         </div>
@@ -114,10 +114,10 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="map-node-options" id="map-node-show" autocomplete="off" checked> Show
+                      <input type="radio" name="map-node-options" data-setting="map-node-show" value="true" autocomplete="off" checked> Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="map-node-options" id="map-node-hide" autocomplete="off"> Hide
+                      <input type="radio" name="map-node-options" data-setting="map-node-show" value="false" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -127,10 +127,10 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col active">
-                      <input type="radio" name="map-link-options" id="map-link-show" autocomplete="off" checked> Show
+                      <input type="radio" name="map-link-options" data-setting="map-link-show" value="true" autocomplete="off" checked> Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="map-link-options" id="map-link-hide" autocomplete="off"> Hide
+                      <input type="radio" name="map-link-options" data-setting="map-link-show" value="false" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -149,11 +149,11 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="map-country-options" id="map-countries-show" autocomplete="off" checked>
+                      <input type="radio" name="map-country-options" data-setting="map-countries-show" value="true" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="map-country-options" id="map-countries-hide" autocomplete="off"> Hide
+                      <input type="radio" name="map-country-options" data-setting="map-countries-show" value="false" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -163,10 +163,10 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="map-state-options" id="map-states-show" autocomplete="off" checked> Show
+                      <input type="radio" name="map-state-options" data-setting="map-states-show" value="true" autocomplete="off" checked> Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="map-state-options" id="map-states-hide" autocomplete="off"> Hide
+                      <input type="radio" name="map-state-options" data-setting="map-states-show" value="false" autocomplete="off"> Hide
                     </label>
                   </div>
                 </div>
@@ -176,10 +176,10 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col">
-                      <input type="radio" name="map-county-options" id="map-counties-show" autocomplete="off"> Show
+                      <input type="radio" name="map-county-options" data-setting="map-counties-show" value="true" autocomplete="off"> Show
                     </label>
                     <label class="btn btn-light active col">
-                      <input type="radio" name="map-county-options" id="map-counties-hide" autocomplete="off" checked>
+                      <input type="radio" name="map-county-options" data-setting="map-counties-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
                   </div>
@@ -205,15 +205,15 @@
                   </div>
                 </div>
               </div>
-              <div id="baseRow" class="form-group row ifOnline" title="Would you like to use a Tile Basemap?">
+              <div class="form-group row ifOnline" title="Would you like to use a Tile Basemap?">
                 <div class="col-4">Basemap</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col">
-                      <input type="radio" name="map-basemap-options" id="map-basemap-show" autocomplete="off"> Show
+                      <input type="radio" name="map-basemap-options" data-setting="map-basemap-show" value="true" autocomplete="off"> Show
                     </label>
                     <label class="btn btn-light active col">
-                      <input type="radio" name="map-basemap-options" id="map-basemap-hide" autocomplete="off" checked>
+                      <input type="radio" name="map-basemap-options" data-setting="map-basemap-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
                   </div>
@@ -224,10 +224,10 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col">
-                      <input type="radio" name="map-satellite-options" id="map-satellite-show" autocomplete="off"> Show
+                      <input type="radio" name="map-satellite-options" data-setting="map-satellite-show" value="true" autocomplete="off"> Show
                     </label>
                     <label class="btn btn-light active col">
-                      <input type="radio" name="map-satellite-options" id="map-satellite-hide" autocomplete="off"
+                      <input type="radio" name="map-satellite-options" data-setting="map-satellite-show" value="false" autocomplete="off"
                         checked> Hide
                     </label>
                   </div>
@@ -252,10 +252,10 @@
               </div>
               <div class="form-group row" title="Import GeoJSON Map Data here">
                 <div class="col-12">
-                  <input type="file" id="map-file-input" class="form-control form-control-sm" multiple>
+                  <input type="file" class="form-control form-control-sm geojson-input" multiple>
                 </div>
               </div>
-              <div id="map-geojson-layers" class="form-group row" title="GeoJSON Layers"></div>
+              <div class="form-group row geojson-layers" title="GeoJSON Layers"></div>
             </div>
           </div>
         </div>
@@ -269,31 +269,31 @@
       <div class="form-group row">
         <div class="col-4">Collapsing</div>
         <div class="col-8">
-          <div class="btn-group btn-group-toggle btn-groupsm w-100" data-toggle="buttons">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
             <label class="btn btn-light btn-sm col active">
-              <input type="radio" name="map-collapsing" id="map-collapsing-on" autocomplete="off" checked> On
+              <input type="radio" name="map-collapsing" data-setting="map-collapsing-on" value="true" autocomplete="off" checked> On
             </label>
             <label class="btn btn-light btn-sm col">
-              <input type="radio" name="map-collapsing" id="map-collapsing-off" autocomplete="off"> Off
+              <input type="radio" name="map-collapsing" data-setting="map-collapsing-on" value="false" autocomplete="off"> Off
             </label>
           </div>
         </div>
       </div>
       <div class="form-group row" title="How transparent would you like the nodes to be?">
         <div class="col-4"><label for="map-node-transparency">Transparency</label></div>
-        <div class="col-8"><input type="range" class="form-range" id="map-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
+        <div class="col-8"><input type="range" class="form-range" id="map-node-transparency" data-setting="map-node-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
       </div>
       <div class="form-group row" title="How much randomness do you want to add to node locations?">
         <div class="col-4">
           <label for="map-node-jitter">Jitter</label>
-          <button id="map-node-jitter-reroll" class="btn btn-light btn-sm">Reroll</button>
+          <button type="button" class="btn btn-light btn-sm reroll-button">Reroll</button>
         </div>
-        <div class="col-8"><input type="range" class="form-range" id="map-node-jitter" min="-2" max="4" step="0.01" value="-2"></div>
+        <div class="col-8"><input type="range" class="form-range" id="map-node-jitter" data-setting="map-node-jitter" min="-2" max="4" step="0.01" value="-2"></div>
       </div>
       <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
         <div class="col-4"><label for="map-node-tooltip-variable">Tooltip</label></div>
         <div class="col-8">
-          <select id="map-node-tooltip-variable" class="form-select form-select-sm nodeVariables">
+          <select id="map-node-tooltip-variable" class="form-select form-select-sm nodeVariables" data-setting="map-node-tooltip-variable">
             <option selected>None</option>
           </select>
         </div>
@@ -306,12 +306,12 @@
       </div>
       <div class="form-group row" title="How transparent would you like links to be?">
         <div class="col-4"><label for="map-link-transparency">Transparency</label></div>
-        <div class="col-8"><input type="range" class="form-range" id="map-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
+        <div class="col-8"><input type="range" class="form-range" id="map-link-transparency" data-setting="map-link-transparency" min="0.00" max="1.00" step="0.01" value="0.00"></div>
       </div>
       <div class="form-group row" title="What link data would you like displayed as a tooltip for the link?">
         <div class="col-4"><label for="map-link-tooltip-variable">Tooltip</label></div>
         <div class="col-8">
-          <select id="map-link-tooltip-variable" class="linkVariables form-select form-select-sm">
+          <select id="map-link-tooltip-variable" class="linkVariables form-select form-select-sm" data-setting="map-link-tooltip-variable">
             <option selected>None</option>
           </select>
         </div>
@@ -324,16 +324,16 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Geospatial Data</h5>
+        <h5 class="modal-title">Export Geo Map</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
-          <div class="col-8">
-            <input type="text" id="map-export-file-name" class="form-control form-control-sm" placeholder="Filename">
+          <div class="col-9">
+            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
-          <div class="col-4">
-            <select id="map-export-file-format" class="form-select form-select-sm">
+          <div class="col-3">
+            <select name="export-filetype" class="form-select form-select-sm">
               <option selected>png</option>
               <option>jpeg</option>
               <option>webp</option>
@@ -344,652 +344,317 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="map-export" class="btn btn-primary" data-bs-dismiss="modal">Export</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
 <script>
-  (function () {
+  MT.registerView('geo_map', (root, { settings, events }) => {
     ga('set', 'page', '/geo_map');
     ga('set', 'title', 'Geo Map View');
     ga('send', 'pageview');
 
-    // save existing session styles
-    temp.mapData['map-countries-show'] = session.style.widgets['map-countries-show'];
-    temp.mapData['map-states-show'] = session.style.widgets['map-states-show'];
-    temp.mapData['map-counties-show'] = session.style.widgets['map-counties-show'];
-    temp.mapData['map-basemap-show'] = session.style.widgets['map-basemap-show'];
-    temp.mapData['map-satellite-show'] = session.style.widgets['map-satellite-show'];
-    session.style.widgets['map-countries-show']= true;
-    session.style.widgets['map-states-show']= true;
-    session.style.widgets['map-counties-show']= false;
-    session.style.widgets['map-basemap-show']= false;
-    session.style.widgets['map-satellite-show']= false;    
-    
-    if (navigator.onLine) {
-      $('#map').parent().find('.ifOnline').css('display', 'flex');
-    }
-
-    var layers = {
-      basemap: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
-      }),
-      satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
-        maxZoom: 19
-      }),
-      nodes: { remove: function () { return null; } },
-      links: { remove: function () { return null; } }
-    };
-
-    var nodes = [];
-
-    function getMapData(type, callback) {
-      var name = type.split('.')[0];
-      MT.getMapData(type).then(data => {
-        if (['countries', 'states', 'counties'].includes(name)) {
-          layers[name] = L.geoJSON(data, {
-            color: '#dadde0',
-            weight: name == 'countries' ? 1 : 0.5,
-            fillColor: '#fafaf8',
-            fillOpacity: name == 'countries' ? 1 : 0
-          });
-        }
-        if (callback) callback();
-      })
-    }
-
-    var map = L.map('map', {
+    const $ = selector => root.querySelector(selector);
+    const pane = $('.left-pane');
+    const map = L.map($('.map-canvas'), {
       center: [80, 0],
       zoom: 3,
       zoomControl: false,
       maxZoom: 20,
       preferCanvas: true
     });
-
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
+    const layers = { ...MT.tileLayers(), countries: null, states: null, counties: null, nodes: null, links: null };
+    let destroyed = false;
 
-    ['lat', 'lon', 'tract', 'zipcode', 'county', 'state', 'country'].forEach(v => {
-      var name = 'map-field-' + v, s = $('#' + name);
-      s.on('change', function (e) {
-        session.style.widgets[name] = e.target.value;
-        matchCoordinates(function () {
-          rerollNodes();
-          drawNodes();
-          drawLinks();
-          resetStack();
-        });
+    const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const field = name => {
+      const value = settings.get('map-field-' + name);
+      return value && value != 'None' ? value : null;
+    };
+
+    // Placing nodes. Each kind of location field, from the least precise to the
+    // most: a node takes the most precise location it has.
+    const kinds = ['country', 'state', 'county', 'zipcode', 'tract'];
+
+    // With no location fields chosen, node fields named for them are used
+    function pickFields() {
+      if ([...kinds, 'lat', 'lon'].some(field)) return;
+      [...kinds, 'lat', 'lon'].forEach(kind => {
+        if (session.data.nodeFields.includes(kind)) settings.set('map-field-' + kind, kind);
       });
-      if (session.data.nodeFields.includes(v)) s.val(v);
-    });
-
-    function matchCoordinates(callback, norefresh) {
-      if (!norefresh) nodes = MT.getVisibleNodes();
-      if (session.style.widgets['map-field-country'] !== 'None') {
-        if (!temp.mapData.countries) {
-          getMapData('countries.json', () => matchCoordinates(callback, true));
-          return;
-        }
-        var val = session.style.widgets['map-field-country'];
-        nodes.forEach(n => {
-          var country = temp.mapData.countries.features.find(c => c.id == n[val] || c.properties.name == n[val]);
-          if (country) {
-            n._lat = country.properties._lat,
-              n._lon = country.properties._lon
-          }
-        });
-      }
-      if (session.style.widgets['map-field-state'] !== 'None') {
-        if (!temp.mapData.states) {
-          getMapData('states.json', () => matchCoordinates(callback, true));
-          return;
-        }
-        var sval = session.style.widgets['map-field-state'];
-        nodes.forEach(n => {
-          var state = temp.mapData.states.features.find(s => s.properties.usps == n[sval] || s.properties.name == n[sval]);
-          if (state) {
-            n._lat = state.properties._lat;
-            n._lon = state.properties._lon;
-          }
-        });
-      }
-      if (session.style.widgets['map-field-county'] !== 'None') {
-        if (!temp.mapData.counties) {
-          getMapData('counties.json', () => matchCoordinates(callback, true));
-          return;
-        }
-        var sval = session.style.widgets['map-field-state'];
-        var cval = session.style.widgets['map-field-county'];
-        nodes.forEach(n => {
-          var county;
-          county = temp.mapData.counties.features.find(c => {
-            return (c.properties.fips == n[cval] ||
-              parseFloat(c.properties.fips) == parseFloat(n[cval]));
-          });
-          if (county) {
-            n._lat = county.properties._lat;
-            n._lon = county.properties._lon;
-            return;
-          }
-          var state = temp.mapData.states.features.find(s => s.properties.usps == n[sval].toUpperCase() || s.properties.name.toLowerCase().includes(n[sval].toLowerCase()));
-          county = temp.mapData.counties.features.find(c => {
-            var small = n[cval].toLowerCase();
-            return c.properties.state == state.properties.usps && (
-              c.properties.name.includes(small) ||
-              small.includes(c.properties.name)
-            );
-          });
-          if (county) {
-            n._lat = county.properties._lat;
-            n._lon = county.properties._lon;
-          }
-        });
-      }
-      if (session.style.widgets['map-field-zipcode'] !== 'None') {
-        if (!temp.mapData.zipcodes) {
-          getMapData('zipcodes.csv', () => matchCoordinates(callback, true));
-          return;
-        }
-        var val = session.style.widgets['map-field-zipcode'];
-        nodes.forEach(n => {
-          var zo = temp.mapData.zipcodes.find(z => z.zipcode == n[val]);
-          if (zo) {
-            n._lat = zo._lat;
-            n._lon = zo._lon;
-          }
-        });
-      }
-      if (session.style.widgets['map-field-tract'] !== 'None') {
-        if (!temp.mapData.tracts) {
-          getMapData('tracts.csv', () => matchCoordinates(callback, true));
-          return;
-        }
-        var val = session.style.widgets['map-field-tract'];
-        nodes.forEach(n => {
-          var tract = temp.mapData.tracts.find(t => t.tract == n[val]);
-          if (tract) {
-            n._lat = tract._lat;
-            n._lon = tract._lon;
-          }
-        });
-      }
-      if (session.style.widgets['map-field-lat'] !== 'None' && session.style.widgets['map-field-lon'] !== 'None') {
-        var lat = session.style.widgets['map-field-lat'],
-          lon = session.style.widgets['map-field-lon'];
-        nodes.forEach(n => {
-          if (typeof n[lat] == 'string') {
-            n._lat = (n[lat].includes('S') ? -1 : 1) * parseFloat(n[lat]);
-          } else {
-            n._lat = n[lat];
-          }
-          if (typeof n[lon] == 'string') {
-            n._lon = (n[lon].includes('W') ? -1 : 1) * parseFloat(n[lon]);
-          } else {
-            n._lon = n[lon];
-          }
-        });
-      }
-      if (callback) callback();
     }
 
-    function drawNodes() {
-      if(!$('#map').length) return;
-      layers.nodes.remove();
-      if (!session.style.widgets['map-node-show']) return;
-      var fillcolor = session.style.widgets['node-color'],
-        colorVariable = session.style.widgets['node-color-variable'],
-        selectedColor = session.style.widgets['selected-color'],
-        opacity = 1 - session.style.widgets['map-node-transparency'];
-      var features = [];
-      var n = nodes.length;
-      for (var i = 0; i < n; i++) {
-        var d = nodes[i];
-        if (!d._jlat || !d._jlon) continue;
-        features.push(L.circleMarker(L.latLng(d._jlat, d._jlon), {
-          weight: 1,
-          opacity: opacity,
-          color: d.selected ? selectedColor : '#000000',
-          fillColor: colorVariable == 'None' ? fillcolor : temp.style.nodeColorMap(d[colorVariable]),
-          fillOpacity: opacity,
-          data: d
-        }));
+    // Each map file, indexed by the values that match its places
+    function index(rows, keys) {
+      const index = new Map();
+      rows.forEach(row => keys(row).forEach(k => {
+        if (k != null && k === k && k !== '') index.set(String(k), row);
+      }));
+      return index;
+    }
+    const lookup = (index, value) => {
+      if (value == null || value === '') return;
+      const number = parseFloat(value);
+      return index.get(String(value)) || (isFinite(number) && index.get(String(number))) || undefined;
+    };
+    const coordinate = (value, negative) => typeof value == 'string' ? (value.toUpperCase().includes(negative) ? -1 : 1) * parseFloat(value) : value;
+
+    // Where each node goes ([lat, lon], by _id), and each node's random jitter
+    let positions = new Map(), request = 0, fitted = false;
+    const jitters = new Map();
+
+    async function place() {
+      const ticket = ++request;
+      const files = {
+        countries: field('country') && 'countries.json',
+        states: (field('state') || field('county')) && 'states.json',
+        counties: field('county') && 'counties.json',
+        zipcodes: field('zipcode') && 'zipcodes.csv',
+        tracts: field('tract') && 'tracts.csv'
+      };
+      const data = {};
+      await Promise.all(Object.entries(files).filter(([, file]) => file).map(([name, file]) => MT.getMapData(file).then(rows => data[name] = rows)));
+      // A newer request, or a closed view, makes this one moot
+      if (ticket != request || destroyed) return;
+      const at = place => place && [parseFloat(place._lat), parseFloat(place._lon)];
+      const places = {};
+      if (data.countries) {
+        const i = index(data.countries.features, f => [f.id, f.properties.name]);
+        places.country = d => { const c = lookup(i, d[field('country')]); return c && at(c.properties); };
       }
-      if (session.style.widgets['map-collapsing-on']) {
-        layers.nodes = L.markerClusterGroup({
-          maxClusterRadius: 20,
-          spiderLegPolylineOptions: { opacity: 0 }
+      let stateOf = () => undefined;
+      if (data.states) {
+        const i = index(data.states.features, f => [f.properties.usps, f.properties.name, f.properties.name.toLowerCase()]);
+        stateOf = d => {
+          const v = field('state') && d[field('state')];
+          if (v == null || v === '') return;
+          return lookup(i, v) || lookup(i, String(v).toUpperCase()) || lookup(i, String(v).toLowerCase());
+        };
+        if (field('state')) places.state = d => { const s = stateOf(d); return s && at(s.properties); };
+      }
+      if (data.counties) {
+        const i = index(data.counties.features, f => [f.properties.fips]);
+        places.county = d => {
+          const v = d[field('county')];
+          let county = lookup(i, v);
+          // Otherwise by name, within the node's state
+          if (!county && typeof v == 'string' && v) {
+            const state = stateOf(d), name = v.toLowerCase();
+            if (state) county = data.counties.features.find(c => c.properties.state == state.properties.usps &&
+              (c.properties.name.includes(name) || name.includes(c.properties.name)));
+          }
+          return county && at(county.properties);
+        };
+      }
+      if (data.zipcodes) {
+        const i = index(data.zipcodes, z => [z.zipcode]);
+        places.zipcode = d => at(lookup(i, d[field('zipcode')]));
+      }
+      if (data.tracts) {
+        const i = index(data.tracts, t => [t.tract]);
+        places.tract = d => at(lookup(i, d[field('tract')]));
+      }
+      const lat = field('lat'), lon = field('lon');
+      positions = new Map();
+      MT.getVisibleNodes().forEach(d => {
+        let position;
+        kinds.forEach(kind => {
+          const p = places[kind] && places[kind](d);
+          if (p && isFinite(p[0]) && isFinite(p[1])) position = p;
         });
-        layers.nodes.addLayers(features);
+        if (lat && lon) {
+          const p = [coordinate(d[lat], 'S'), coordinate(d[lon], 'W')];
+          if (typeof p[0] == 'number' && typeof p[1] == 'number' && isFinite(p[0]) && isFinite(p[1])) position = p;
+        }
+        if (position) positions.set(d._id, position);
+      });
+      drawLinks();
+      drawNodes();
+      if (!fitted && positions.size) {
+        fitted = true;
+        map.fitBounds(L.latLngBounds(Array.from(positions.values())), { animate: false });
+      }
+    }
+
+    // A node's position on the map, moved by the jitter setting
+    function jittered(id) {
+      const [lat, lon] = positions.get(id);
+      const amount = settings.get('map-node-jitter') == -2 ? 0 : Math.pow(2, settings.get('map-node-jitter'));
+      if (!amount) return [lat, lon];
+      if (!jitters.has(id)) jitters.set(id, [MT.r01() * Math.PI * 2, MT.r01()]);
+      const [theta, j] = jitters.get(id);
+      return [lat + amount * j * Math.sin(theta), lon + amount * j * Math.cos(theta)];
+    }
+
+    function drawNodes(collapse = settings.get('map-collapsing-on')) {
+      if (layers.nodes) layers.nodes.remove();
+      layers.nodes = null;
+      if (!settings.get('map-node-show')) return;
+      const colorVariable = settings.get('node-color-variable'), color = settings.get('node-color');
+      const selected = settings.get('selected-color'), opacity = 1 - settings.get('map-node-transparency');
+      const markers = MT.getVisibleNodes().filter(d => positions.has(d._id)).map(d => L.circleMarker(jittered(d._id), {
+        weight: 1,
+        opacity,
+        color: d.selected ? selected : '#000000',
+        fillColor: colorVariable == 'None' ? color : temp.style.nodeColorMap(d[colorVariable]),
+        fillOpacity: opacity,
+        data: d
+      }));
+      if (collapse) {
+        layers.nodes = L.markerClusterGroup({ maxClusterRadius: 20, spiderLegPolylineOptions: { opacity: 0 } });
+        layers.nodes.addLayers(markers);
       } else {
-        layers.nodes = L.featureGroup(features);
+        layers.nodes = L.featureGroup(markers);
       }
-
       layers.nodes
-        .on('mouseover', showNodeTooltip)
-        .on('mouseout', hideTooltip)
-        .on('click', clickHandler)
-        .addTo(map).bringToFront();
-    }
-
-    function drawLinks() {
-      if(!$('#map').length) return;
-      layers.links.remove();
-      if (!session.style.widgets['map-link-show']) return;
-      var lcv = session.style.widgets['link-color-variable'];
-      var opacity = 1 - session.style.widgets['map-link-transparency'];
-      var links = MT.getVisibleLinks();
-      layers.links = L.featureGroup();
-      links.forEach(function (d) {
-        if (!d.visible) return;
-        var source = nodes.find(node => node._id == d.source);
-        var target = nodes.find(node => node._id == d.target);
-        if (source && target) {
-          if (source._jlat && source._jlon && target._jlat && target._jlon) {
-            layers.links.addLayer(L.polyline([[
-              [source._jlat, source._jlon],
-              [target._jlat, target._jlon]
-            ]], {
-                color: lcv == "None" ?
-                  session.style.widgets['link-color'] :
-                  temp.style.linkColorMap(d[lcv]),
-                opacity: opacity,
-                data: d
-              }));
-          }
-        }
-      });
-      layers.links
-        .on('mouseover', showLinkTooltip)
-        .on('mouseout', hideTooltip)
+        .on('mouseover', e => showTooltip(e, 'map-node-tooltip-variable'))
+        .on('mouseout', () => MT.tooltip(null))
+        .on('click', select)
         .addTo(map);
     }
 
-    function showNodeTooltip(e) {
-      var d = e.layer.options.data;
-      var v = session.style.widgets['map-node-tooltip-variable'];
-      if (v !== 'None' && d[v]) {
-        d3.select('#tooltip')
-          .html(d[v])
-          .style('left', (e.originalEvent.pageX + 8) + 'px')
-          .style('top', (e.originalEvent.pageY + 18) + 'px')
-          .style('z-index', 1001)
-          .transition().duration(100)
-          .style('opacity', 1);
-      }
+    function drawLinks() {
+      if (layers.links) layers.links.remove();
+      layers.links = null;
+      if (!settings.get('map-link-show')) return;
+      const colorVariable = settings.get('link-color-variable'), color = settings.get('link-color');
+      const opacity = 1 - settings.get('map-link-transparency');
+      layers.links = L.featureGroup(MT.getVisibleLinks()
+        .filter(d => positions.has(d.source) && positions.has(d.target))
+        .map(d => L.polyline([jittered(d.source), jittered(d.target)], {
+          color: colorVariable == 'None' ? color : temp.style.linkColorMap(d[colorVariable]),
+          opacity,
+          data: d
+        })))
+        .on('mouseover', e => showTooltip(e, 'map-link-tooltip-variable'))
+        .on('mouseout', () => MT.tooltip(null))
+        .addTo(map);
+      restack();
     }
 
-    function showLinkTooltip(e) {
-      var d = e.layer.options.data;
-      var v = session.style.widgets['map-link-tooltip-variable'];
-      if (v !== 'None' && d[v]) {
-        d3.select('#tooltip')
-          .html(d[v])
-          .style('left', (e.originalEvent.pageX + 8) + 'px')
-          .style('top', (e.originalEvent.pageY + 18) + 'px')
-          .style('z-index', 1001)
-          .transition().duration(100)
-          .style('opacity', 1);
-      }
+    function showTooltip(e, key) {
+      const v = settings.get(key), d = e.layer && e.layer.options.data;
+      if (d && v && v != 'None' && d[v] != null && d[v] !== '') MT.tooltip(escape(d[v]), e.originalEvent);
     }
 
-    function hideTooltip() {
-      var tooltip = d3.select('#tooltip');
-      tooltip
-        .transition().duration(100)
-        .style('opacity', 0)
-        .on('end', () => tooltip.style('z-index', -1));
-    }
-
-    function clickHandler(e) {
-      var node = e.sourceTarget.feature.properties;
-      var d = session.data.nodes.find(d => d.id == node._id);
-      if (!e.originalEvent.ctrlKey) {
-        session.data.nodes
-          .filter(node => node._id !== d.id)
-          .forEach(node => node.selected = false);
-      }
+    // Clicking a node selects it alone (with Ctrl, adds or removes it)
+    function select(e) {
+      const d = e.layer && e.layer.options.data;
+      if (!d) return;
+      if (!(e.originalEvent && e.originalEvent.ctrlKey)) session.data.nodes.forEach(node => { if (node !== d) node.selected = false; });
       d.selected = !d.selected;
-      $window.trigger('node-selected');
+      events.emit('node-selected', 'geo_map');
     }
 
-    $('#toggle-map-settings').on('click', function () {
-      var pane = $('#map-settings-pane');
-      if ($(this).hasClass('active')) {
-        pane.animate({ left: '-400px' }, function () { pane.hide(); });
-      } else {
-        pane.show(0, function () { pane.animate({ left: '0px' }); });
-      }
-    });
-
-    $('#map-fit').on('click', function () {
-      map.flyToBounds(layers.nodes.getBounds());
-    });
-
-    $('#map-layer-upload').on('click', function () {
-      $('#map-file-input').click();
-    });
-
-    $('#map-file-input').on('change', event => {
-      Array.from(event.target.files).forEach(file => {
-        const { name } = file;
-        if (name.endsWith("json")) {
-          const layerName = name.split('.').slice(0, -1).join('.').toLowerCase();
-          const reader = new FileReader();
-          reader.onload = function (event2) {
-            temp.mapData[layerName] = JSON.parse(event2.target.result);
-            layers[layerName] = L.geoJSON(temp.mapData[layerName], {
-              color: '#000',
-              weight: .75,
-              fillColor: '#fafaf8',
-              fillOpacity: .5
-            });
-            layers[layerName].addTo(map);
-            var colorCell = $('<div class="col-3"></div>').append(
-              $('<input type="color" class="w-100">').on('change', function (e) {
-                layers[layerName].setStyle(f => ({ color: e.target.value }));
-              })
-            );
-            var nameCell = $(`<div class="col-9">${layerName}</div>`).prepend(
-              $('<a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>').on('click', function () {
-                nameCell.remove();
-                colorCell.remove();
-                layers[layerName].remove();
-              })
-            );
-            $('#map-geojson-layers')
-              .append(nameCell)
-              .append(colorCell);
-          };
-          reader.readAsText(file);
-        } else {
-          alert("Only GeoJSON Files are currently Supported.");
-        }
-      });
-    });
-
-    function resetStack() {
-      //Tile Layers, in reverse order:
-      if (layers.satellite && session.style.widgets['map-satellite-show']) layers.satellite.bringToBack();
-      if (layers.basemap && session.style.widgets['map-basemap-show']) layers.basemap.bringToBack();
-
-      //Background Layers, in order:
-      if (layers.countries && session.style.widgets['map-countries-show']) layers.countries.bringToFront();
-      if (layers.states && session.style.widgets['map-states-show']) layers.states.bringToFront();
-      if (layers.counties && session.style.widgets['map-counties-show']) layers.counties.bringToFront();
-
-      //User Layers:
-      Object.keys(layers)
-        .filter(l => !['countries', 'states', 'counties', 'satellite', 'basemap', 'links', 'nodes'].includes(l))
-        .forEach(l => layers[l].bringToFront());
-
-      //Foreground Layers, in order:
-      if (layers.links && !layers.links.remove && session.style.widgets['map-link-show']) layers.links.bringToFront();
-      if (layers.nodes && !layers.nodes.remove && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
-
-      drawNodes();
+    // Layers, from the back: tiles, outlines (countries, states, counties), the
+    // user's layers, links and nodes. Tiles are drawn in a pane of their own.
+    function restack() {
+      ['countries', 'states', 'counties'].forEach(name => layers[name] && map.hasLayer(layers[name]) && layers[name].bringToFront());
+      userLayers.forEach(layer => layer.bringToFront());
+      if (layers.links) layers.links.bringToFront();
+      if (layers.nodes && !(layers.nodes instanceof L.MarkerClusterGroup)) layers.nodes.bringToFront();
     }
 
-    $('#map-node-show').parent().on('click', function () {
-      session.style.widgets['map-node-show'] = true;
-      drawNodes();
-    });
-    $('#map-node-hide').parent().on('click', function () {
-      session.style.widgets['map-node-show'] = false;
-      layers.nodes.remove();
-    });
-
-    $('#map-link-show').parent().on('click', function () {
-      session.style.widgets['map-link-show'] = true;
-      drawLinks();
-      if (layers.nodes.bringToFront && session.style.widgets['map-node-show']) layers.nodes.bringToFront();
-    });
-    $('#map-link-hide').parent().on('click', function () {
-      session.style.widgets['map-link-show'] = false;
-      layers.links.remove();
-    });
-
-    $('#map-countries-show').parent().on('click', function () {
-      session.style.widgets['map-countries-show'] = true;
-      if (layers.countries) {
-        layers.countries.addTo(map);
-        resetStack();
-      } else {
-        getMapData('countries.json', () => $(this).trigger('click'));
-      }
-    });
-    $('#map-countries-hide').parent().on('click', function () {
-      session.style.widgets['map-countries-show'] = false;
-      layers && layers.countries && layers.countries.remove();
-    });
-
-    $('#map-states-show').parent().on('click', function () {
-      session.style.widgets['map-states-show'] = true;
-      if (layers.states) {
-        layers.states.addTo(map);
-        resetStack();
-      } else {
-        getMapData('states.json', () => $(this).trigger('click'));
-      }
-    });
-    $('#map-states-hide').parent().on('click', function () {
-      session.style.widgets['map-states-show'] = false;
-      layers && layers.states && layers.states.remove();
-    });
-
-    $('#map-counties-show').parent().on('click', function () {
-      session.style.widgets['map-counties-show'] = true;
-      if (layers.counties) {
-        layers.counties.addTo(map);
-        resetStack();
-      } else {
-        getMapData('counties.json', () => $(this).trigger('click'));
-      }
-    });
-    $('#map-counties-hide').parent().on('click', function () {
-      session.style.widgets['map-counties-show'] = false;
-      layers && layers.counties && layers.counties.remove();
-      // layers.counties.remove();
-    });
-
-    $('#map-basemap-show').parent().on('click', function () {
-      session.style.widgets['map-basemap-show'] = true;
-      layers.basemap.addTo(map);
-      $('#map-satellite-hide').trigger('click');
-      $('#map-countries-hide').trigger('click');
-      $('#map-states-hide').trigger('click');
-      $('#map-counties-hide').trigger('click');
-    });
-    $('#map-basemap-hide').parent().on('click', function () {
-      session.style.widgets['map-basemap-show'] = false;
-      layers.basemap.remove();
-      $('#map-countries-show').trigger('click');
-      $('#map-states-show').trigger('click');
-    });
-
-    $('#map-satellite-show').parent().on('click', function () {
-      session.style.widgets['map-satellite-show'] = true;
-      layers.satellite.addTo(map);
-      $('#map-basemap-hide').trigger('click');
-      $('#map-countries-hide').trigger('click');
-      $('#map-states-hide').trigger('click');
-      $('#map-counties-hide').trigger('click');
-    });
-    $('#map-satellite-hide').parent().on('click', function () {
-      session.style.widgets['map-satellite-show'] = false;
-      layers.satellite.remove();
-      $('#map-countries-show').trigger('click');
-      $('#map-states-show').trigger('click');
-      resetStack();
-    });
-
-    $('#map-collapsing-on').parent().on('click', function () {
-      session.style.widgets['map-collapsing-on'] = true;
-      drawNodes();
-    });
-    $('#map-collapsing-off').parent().on('click', function () {
-      session.style.widgets['map-collapsing-on'] = false;
-      drawNodes();
-    });
-
-    $('#map-node-transparency').on('input', function (e) {
-      session.style.widgets['map-node-transparency'] = parseFloat(e.target.value);
-      drawNodes();
-    });
-
-    $('#map-node-tooltip-variable').on('change', function (e) {
-      session.style.widgets['map-node-tooltip-variable'] = e.target.value;
-    });
-
-    $('#map-link-transparency').on('input', function (e) {
-      session.style.widgets['map-link-transparency'] = parseFloat(e.target.value);
-      drawLinks();
-    });
-
-    $('#map-link-tooltip-variable').on('change', function (e) {
-      session.style.widgets['map-link-tooltip-variable'] = e.target.value;
-    });
-
-    $('#map-node-jitter').on('input', function (e) {
-      var v = parseFloat(e.target.value);
-      session.style.widgets['map-node-jitter'] = v;
-      jitter();
-      drawLinks();
-      drawNodes();
-    });
-
-    function jitter() {
-      var v = session.style.widgets['map-node-jitter'] == -2 ? 0 : Math.pow(2, session.style.widgets['map-node-jitter']);
-      var n = nodes.length;
-      for (var i = 0; i < n; i++) {
-        var node = nodes[i];
-        node._jlon = parseFloat(node._lon) + v * node._j * Math.cos(node._theta);
-        node._jlat = parseFloat(node._lat) + v * node._j * Math.sin(node._theta);
-      }
-    }
-
-    $('#map-node-jitter-reroll').on('click', function () {
-      rerollNodes();
-      drawLinks();
-      drawNodes();
-    });
-
-    function rerollNodes() {
-      nodes.forEach(function (node) {
-        node._theta = MT.r01() * Math.PI * 2;
-        node._j = MT.r01();
-      });
-      jitter();
-    }
-
-    function makeGeoJSON() {
-      var features = [];
-      var jitter = session.style.widgets['map-node-jitter'] > 0;
-      nodes.forEach(function (d) {
-        if (d._lat && d._lon) {
-          features.push({
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: jitter ? [d._lon + d._jlon, d._lat + d._jlat] : [d._lon, d._lat]
-            },
-            properties: d
+    const outlines = {
+      countries: { file: 'countries.json', weight: 1, fillOpacity: 1 },
+      states: { file: 'states.json', weight: 0.5, fillOpacity: 0 },
+      counties: { file: 'counties.json', weight: 0.5, fillOpacity: 0 }
+    };
+    function showLayers() {
+      MT.showLayer(map, layers.basemap, settings.get('map-basemap-show'));
+      MT.showLayer(map, layers.satellite, settings.get('map-satellite-show'));
+      Object.entries(outlines).forEach(([name, style]) => {
+        const show = settings.get(`map-${name}-show`);
+        if (show && !layers[name]) {
+          MT.getMapData(style.file).then(data => {
+            if (destroyed || layers[name]) return;
+            layers[name] = L.geoJSON(data, { color: '#dadde0', weight: style.weight, fillColor: '#fafaf8', fillOpacity: style.fillOpacity });
+            showLayers();
           });
         }
+        MT.showLayer(map, layers[name], show);
       });
-      MT.getVisibleLinks().forEach(function (d) {
-        if (!d.visible) return;
-        var source = nodes.find(node => node._id == d.source);
-        var target = nodes.find(node => node._id == d.target);
-        if (source && target) {
-          if (source._lat && source._lon && target._lat && target._lon) {
-            features.push({
-              type: 'Feature',
-              geometry: {
-                type: 'LineString',
-                coordinates: jitter ? [
-                  [source._lon + source._jlon, source._lat + source._jlat],
-                  [target._lon + target._jlon, target._lat + target._jlat]
-                ] : [
-                    [source._lon, source._lat],
-                    [target._lon, target._lat]
-                  ]
-              },
-              properties: d
-            });
-          }
-        }
-      });
+      restack();
+    }
+
+    // A tile layer replaces the other and the outlines; with neither, the
+    // countries and states come back
+    const tiles = (key, other) => value => {
+      if (value) {
+        settings.set(other, false);
+        ['countries', 'states', 'counties'].forEach(name => settings.set(`map-${name}-show`, false));
+      } else if (!settings.get(other)) {
+        settings.set('map-countries-show', true);
+        settings.set('map-states-show', true);
+      }
+      showLayers();
+    };
+
+    function makeGeoJSON() {
+      const point = id => { const [lat, lon] = jittered(id); return [lon, lat]; };
+      const nodes = MT.getVisibleNodes(true).filter(d => positions.has(d._id));
+      const links = MT.getVisibleLinks(true).filter(d => positions.has(d.source) && positions.has(d.target));
       return {
         type: 'FeatureCollection',
-        features: features
+        features: nodes.map(d => ({ type: 'Feature', geometry: { type: 'Point', coordinates: point(d._id) }, properties: d }))
+          .concat(links.map(d => ({ type: 'Feature', geometry: { type: 'LineString', coordinates: [point(d.source), point(d.target)] }, properties: d })))
       };
     }
 
-    $('#map-export').on('click', function () {
-      var format = $('#map-export-file-format').val();
-      if (['png', 'jpeg', 'webp'].includes(format)) {
-        document.getElementById('map-collapsing-off').click();
-        setTimeout(() => {
-          leafletImage(map, function (err, canvas) {
-            canvas.toBlob(blob => {
-              saveAs(blob, $('#map-export-file-name').val() + '.' + format);
-            }, 'image/' + format);
-          });
-        }, 500); 
-      } else if (format == 'geojson') {
-        saveAs(
-          new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
-          $('#map-export-file-name').val() + '.' + format
-        );
+    $('.fit-button').addEventListener('click', () => {
+      if (positions.size) map.flyToBounds(L.latLngBounds(Array.from(positions.keys()).map(jittered)));
+    });
+    $('.reroll-button').addEventListener('click', () => {
+      jitters.clear();
+      drawLinks();
+      drawNodes();
+    });
+
+    MT.paneToggle($('.settings-toggle'), pane);
+    const userLayers = MT.geoJSONUpload($('.geojson-input'), $('.geojson-layers'), map);
+    MT.tableExport(root, {
+      // Images show every node, so they are drawn uncollapsed for a moment
+      ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename => {
+        drawNodes(false);
+        requestAnimationFrame(() => requestAnimationFrame(() => MT.mapImage(map, filename, type, () => drawNodes())));
+      }])),
+      geojson: filename => saveAs(
+        new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
+        filename + '.geojson'
+      )
+    });
+
+    pickFields();
+    const redraw = () => { drawLinks(); drawNodes(); };
+    const stop = [
+      MTBind(pane, settings),
+      settings.subscribe([...kinds, 'lat', 'lon'].map(kind => 'map-field-' + kind), place),
+      settings.subscribe(['map-node-show', 'map-collapsing-on', 'map-node-transparency'], () => drawNodes()),
+      settings.subscribe(['map-link-show', 'map-link-transparency'], drawLinks),
+      settings.subscribe('map-node-jitter', redraw),
+      settings.subscribe(['map-countries-show', 'map-states-show', 'map-counties-show'], showLayers),
+      settings.subscribe('map-basemap-show', tiles('map-basemap-show', 'map-satellite-show')),
+      settings.subscribe('map-satellite-show', tiles('map-satellite-show', 'map-basemap-show')),
+      events.on('node-visibility', place),
+      ...['node-selected', 'node-color-change', 'selected-color-change'].map(type => events.on(type, () => drawNodes())),
+      ...['link-color-change', 'link-visibility'].map(type => events.on(type, drawLinks))
+    ];
+    showLayers();
+    place();
+
+    const handle = temp.geoMap = { map, layers, userLayers };
+    return {
+      resize: () => map.invalidateSize(),
+      destroy() {
+        destroyed = true;
+        stop.forEach(fn => fn());
+        MT.tooltip(null);
+        map.remove();
+        if (temp.geoMap === handle) delete temp.geoMap;
       }
-    });
-
-    $window
-      .on('node-visibility node-selected', function () {
-        matchCoordinates(function () {
-          rerollNodes();
-          drawLinks();
-          drawNodes();
-        });
-      })
-      .on('node-color-change', drawNodes)
-      .on('link-color-change link-visibility', drawLinks);
-
-    layout.on('stateChanged', function () {
-      setTimeout(function () {
-        map.invalidateSize();
-      }, 80);
-    });
-
-    function initialLoadUpdate() {
-      if (temp.mapData['map-countries-show'] == false) $('#map-countries-hide').trigger('click');
-      if (temp.mapData['map-states-show'] == false) $('#map-states-hide').trigger('click');
-      if (temp.mapData['map-counties-show'] == true) $('#map-counties-show').trigger('click');
-      if (temp.mapData['map-basemap-show'] == true) $('#map-basemap-show').trigger('click');
-      if (temp.mapData['map-satellite-show'] == true) $('#map-satellite-show').trigger('click');
-      delete temp.mapData['map-countries-show'];
-      delete temp.mapData['map-states-show'];
-      delete temp.mapData['map-counties-show'];
-      delete temp.mapData['map-basemap-show'];
-      delete temp.mapData['map-satellite-show'];  
-      map.flyToBounds(layers.nodes.getBounds());
-    }
-
-    setTimeout(function () {
-      matchCoordinates(function () {
-        rerollNodes();
-        drawLinks();
-        drawNodes();
-        initialLoadUpdate();
-      });
-      
-      if (layers.nodes.length) map.flyToBounds(layers.nodes.getBounds());
-      
-    }, 40);
-
-  })();
+    };
+  });
 </script>

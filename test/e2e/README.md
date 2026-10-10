@@ -27,6 +27,8 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `crosstab.spec.js` | The crosstab's variables, pivot, datasets, redraws and export |
 | `aggregation.spec.js` | The aggregation tables: adding, changing and removing them, redraws and export |
 | `network.spec.js` | The 2D network's tooltip-variables menu |
+| `choropleth.spec.js` | The choropleth: counting nodes by state and country, colors, transparency, tile layers, redraws, fitting and export |
+| `geo_map.spec.js` | The geo map: placing nodes from coordinates and places, links, layers, collapsing, jitter, selection, tooltips, redraws and export |
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.

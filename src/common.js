@@ -2146,6 +2146,87 @@
     });
   };
 
+  // The online tile layers the map views offer
+  MT.tileLayers = () => ({
+    basemap: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }),
+    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+      maxZoom: 19
+    })
+  });
+
+  // Adds a map's layer and removes it, as `show` says
+  MT.showLayer = (map, layer, show) => {
+    if (!layer) return;
+    if (show && !map.hasLayer(layer)) layer.addTo(map);
+    if (!show && map.hasLayer(layer)) layer.remove();
+  };
+
+  // Lets the user add GeoJSON files to a map: each file chosen with `input`
+  // becomes a layer, listed in `list` with a color picker and a remove button.
+  // Returns the set of these layers.
+  MT.geoJSONUpload = (input, list, map) => {
+    const added = new Set();
+    input.addEventListener('change', () => {
+      Array.from(input.files).forEach(file => {
+        if (!file.name.endsWith('json')) return alert('Only GeoJSON Files are currently Supported.');
+        file.text().then(text => {
+          const layer = L.geoJSON(JSON.parse(text), { color: '#000', weight: 0.75, fillColor: '#fafaf8', fillOpacity: 0.5 }).addTo(map);
+          added.add(layer);
+          const name = document.createElement('div'), remove = document.createElement('a'), colorCell = document.createElement('div'), color = document.createElement('input');
+          name.className = 'col-9';
+          name.textContent = file.name.split('.').slice(0, -1).join('.');
+          remove.href = '#';
+          remove.className = 'oi oi-circle-x align-middle p-1';
+          remove.title = 'Remove this file';
+          name.prepend(remove);
+          colorCell.className = 'col-3';
+          color.type = 'color';
+          color.className = 'w-100';
+          colorCell.append(color);
+          color.addEventListener('change', () => layer.setStyle({ color: color.value }));
+          remove.addEventListener('click', e => {
+            e.preventDefault();
+            name.remove();
+            colorCell.remove();
+            layer.remove();
+            added.delete(layer);
+          });
+          list.append(name, colorCell);
+        });
+      });
+      input.value = '';
+    });
+    return added;
+  };
+
+  // Saves an image of a Leaflet map. draw(context, canvas), if given, adds to
+  // the image before it is saved.
+  MT.mapImage = (map, filename, filetype, draw) => leafletImage(map, (err, canvas) => {
+    if (err) return console.error(err);
+    if (draw) draw(canvas.getContext('2d'), canvas);
+    canvas.toBlob(blob => saveAs(blob, filename + '.' + filetype), 'image/' + filetype);
+  });
+
+  // Shows the shared tooltip at a mouse event, or hides it (html == null)
+  MT.tooltip = (html, event) => {
+    const tooltip = document.getElementById('tooltip');
+    if (html == null) {
+      tooltip.style.opacity = 0;
+      tooltip.style.zIndex = -1;
+      return;
+    }
+    tooltip.innerHTML = html;
+    tooltip.style.left = (event.clientX + 8) + 'px';
+    tooltip.style.top = (event.clientY + 18) + 'px';
+    tooltip.style.zIndex = 1001;
+    tooltip.style.opacity = 1;
+  };
+
   const mountView = contentItem => {
     const mount = MT.views[contentItem.componentType];
     if (!mount) return;
