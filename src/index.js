@@ -17,6 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
     byId("ie-warning").remove();
   }
 
+  // Mark local and preview deployments, so they aren't mistaken for the real site
+  MT.isDevelopmentHost = host => host == "localhost" || host == "127.0.0.1" || /-git-.+\.vercel\.app$/.test(host);
+  byId("development-version").hidden = !MT.isDevelopmentHost(location.hostname);
+
   // Before anything else gets done, ask the user to accept the legal agreement
   localforage.getItem("licenseAccepted").then(accepted => {
     if (!accepted) {
@@ -158,8 +162,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   on("ReloadTab", "click", e => {
     e.preventDefault();
-    onExit = () => window.location.reload();
+    onExit = MT.reload;
     modal("exit-modal").show();
+  });
+
+  // Leaving the page while data is loaded asks first, as the browser does it.
+  // MT.reload is for reloads that have already asked.
+  let leaving = false;
+  MT.reload = () => {
+    leaving = true;
+    window.location.reload();
+  };
+  window.addEventListener("beforeunload", e => {
+    if (leaving || !session.data.nodes.length) return;
+    e.preventDefault();
+    e.returnValue = "";
   });
 
   all(".viewbutton").forEach(button => button.addEventListener("click", e => {

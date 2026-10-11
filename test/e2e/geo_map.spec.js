@@ -56,6 +56,25 @@ test('places the nodes from their latitude and longitude fields', async () => {
   expect(await page.evaluate(() => temp.geoMap.layers.nodes instanceof L.MarkerClusterGroup)).toBe(true);
 });
 
+test('draws the nodes above the links', async () => {
+  await expect.poll(lines).toBeGreaterThan(0);
+  // Redrawing the links restacks the layers
+  await expect.poll(() => onMap('countries')).toBe(true);
+  await set('map-link-transparency', 0.1);
+  await expect.poll(() => page.evaluate(() => temp.geoMap.layers.links.getLayers()[0].options.opacity)).toBeCloseTo(0.9);
+  // The canvas renderer draws its layers in a list: every node after every link
+  const order = await page.evaluate(() => {
+    const kinds = [];
+    for (let item = temp.geoMap.layers.links.getLayers()[0]._renderer._drawFirst; item; item = item.next) {
+      const d = item.layer.options.data;
+      if (d) kinds.push('source' in d ? 'link' : 'node');
+    }
+    return { lastLink: kinds.lastIndexOf('link'), firstNode: kinds.indexOf('node') };
+  });
+  expect(order.firstNode).toBeGreaterThan(order.lastLink);
+  await set('map-link-transparency', 0);
+});
+
 test('draws the links between placed nodes', async () => {
   await expect.poll(lines).toBe(await placedLinks());
   expect(await lines()).toBeGreaterThan(0);

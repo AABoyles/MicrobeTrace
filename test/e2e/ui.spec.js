@@ -20,11 +20,30 @@ test('the license agreement shows and closes', async () => {
   await expect(page.locator('div#licenseAgreement')).toBeHidden();
 });
 
+test('the development label shows only off the production site', async () => {
+  await expect(page.locator('#development-version')).toBeVisible();
+  expect(await page.evaluate(() => ['localhost', 'microbetrace-git-main-team.vercel.app', 'microbetrace.cdc.gov', 'microbetrace.vercel.app', ''].map(MT.isDevelopmentHost)))
+    .toEqual([true, true, false, false, false]);
+});
+
+test('Help opens in a new tab', async () => {
+  await expect(page.locator('#HelpTab')).toHaveAttribute('target', '_blank');
+});
+
+const asksBeforeLeaving = () => page.evaluate(() => {
+  const event = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(event);
+  return event.defaultPrevented;
+});
+
 test('files load and launch the network', async () => {
+  expect(await asksBeforeLeaving()).toBe(false);
   await page.setInputFiles('#data-files', fixtures);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(3);
   await page.click('#launch');
   await expect(page.locator('#numberOfNodes')).toHaveText('310', { timeout: 120000 });
+  // With data loaded, leaving the page asks first
+  expect(await asksBeforeLeaving()).toBe(true);
 });
 
 test('the View menu opens and launches a view', async () => {
@@ -44,6 +63,10 @@ test('the settings dialog opens, switches tabs and closes', async () => {
   await expect(tabs.nth(1)).toHaveClass(/active/);
   await tabs.nth(0).click();
   await waitForModal(page, '#global-settings-modal');
+  // Opaque, and against the left edge
+  const style = await dialog.locator('.modal-content').evaluate(el => ({ background: getComputedStyle(el).backgroundColor, left: el.getBoundingClientRect().left }));
+  expect(style.background).toBe('rgb(255, 255, 255)');
+  expect(style.left).toBeLessThan(40);
   await dialog.locator('.btn-close').click();
   await expect(dialog).toBeHidden();
 });

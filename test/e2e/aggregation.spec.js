@@ -33,6 +33,16 @@ test('opens with node clusters', async () => {
   expect(t.total).toBe(310);
 });
 
+test('numbers sort as numbers', async () => {
+  // The table's own order: cluster IDs 0, 1, 2 … rather than 0, 1, 10, 11 …
+  const values = await view().locator('.tabulator').first().evaluate(el => {
+    const all = Tabulator.findTable(el), t = all[all.length - 1];
+    return t.getRows('active').map(r => r.getData().cluster);
+  });
+  expect(values.length).toBeGreaterThan(11);
+  expect(values.map(Number)).toEqual(values.map(Number).slice().sort((a, b) => a - b));
+});
+
 test('a variable can be added and changed', async () => {
   await view().locator('.view-controls button').first().click();
   await expect(pane()).toBeVisible();

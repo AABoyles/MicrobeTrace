@@ -46,6 +46,23 @@ test('columns can be removed and added', async () => {
   await expect.poll(async () => (await table()).columns).toEqual(['Index', 'ID', 'Cluster', 'Origin', 'Group']);
 });
 
+test('the table starts below its toolbar, however many columns are chosen', async () => {
+  const gap = () => view().evaluate(root => root.querySelector('.tabulator-header').getBoundingClientRect().top - root.querySelector('.view-controls').getBoundingClientRect().bottom);
+  await expect.poll(gap).toBeGreaterThanOrEqual(0);
+  const height = () => view().locator('.view-controls').evaluate(el => el.offsetHeight);
+  const before = await height();
+  // More columns in a narrow window, so the picker wraps onto more lines
+  await page.setViewportSize({ width: 700, height: 900 });
+  const extra = ['Lat', 'Lon', 'State', 'Date'];
+  for (const title of extra) await addColumn(title);
+  await expect.poll(height).toBeGreaterThan(before);
+  await expect.poll(gap).toBeGreaterThanOrEqual(0);
+  for (const title of extra) await removeColumn(title);
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await expect.poll(async () => (await table()).columns).toEqual(['Index', 'ID', 'Cluster', 'Origin', 'Group']);
+  await expect.poll(gap).toBeGreaterThanOrEqual(0);
+});
+
 test('shows links and clusters', async () => {
   await dataset('Links');
   await expect.poll(async () => (await table()).rows).toBe(476);

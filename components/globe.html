@@ -306,7 +306,7 @@
     const fieldKeys = [...MT.locationKinds, 'lat', 'lon'].map(kind => 'globe-field-' + kind);
 
     // Where each node goes ([lat, lon], by _id), moved by the jitter setting
-    let positions = new Map(), request = 0;
+    let positions = new Map(), request = 0, faced = false;
     const jitter = MT.jitterer(() => settings.get('globe-node-jitter'));
     const at = id => jitter.at(id, positions.get(id));
     async function place() {
@@ -314,6 +314,12 @@
       const located = await MT.locateNodes(MT.getVisibleNodes(), field);
       if (ticket != request || destroyed) return;
       positions = located;
+      // The first time there are nodes to show, turn the globe to face them
+      if (!faced && positions.size) {
+        faced = true;
+        const [lon, lat] = d3.geoCentroid({ type: 'MultiPoint', coordinates: Array.from(positions.values(), ([lat, lon]) => [lon, lat]) });
+        projection.rotate([-lon, -lat, 0]);
+      }
       draw();
     }
 
@@ -352,12 +358,12 @@
 
       context.beginPath();
       path(sphere);
-      context.fillStyle = '#005C99';
+      context.fillStyle = '#bcd4e2'; // ocean
       context.fill();
 
       context.beginPath();
       path(map.countries);
-      context.fillStyle = '#6CCC00';
+      context.fillStyle = '#f3f1ea'; // land
       context.fill();
       if (settings.get('globe-countries-show')) {
         context.lineWidth = 1;
@@ -508,15 +514,27 @@
       events.on('node-visibility', place),
       ...['node-color-change', 'link-color-change', 'link-visibility'].map(type => events.on(type, draw))
     ];
+    // d3 fills a polygon on the side its winding points to, so one wound the
+    // other way covers the rest of the sphere (as Bermuda's does in
+    // countries.json). Reverse any that cover more than half of it.
+    function rewind(collection) {
+      collection.features.forEach(feature => {
+        if (d3.geoArea(feature) <= 2 * Math.PI) return;
+        const { type, coordinates } = feature.geometry;
+        if (type == 'Polygon') coordinates.forEach(ring => ring.reverse());
+        else if (type == 'MultiPolygon') coordinates.forEach(polygon => polygon.forEach(ring => ring.reverse()));
+      });
+      return collection;
+    }
     Promise.all([MT.getMapData('stars.json'), MT.getMapData('countries.json')]).then(([stars, countries]) => {
       if (destroyed) return;
       map.stars = stars;
-      map.countries = countries;
+      map.countries = rewind(countries);
       resize();
     });
     place();
 
-    const handle = temp.globe = { projection, get positions() { return positions; }, get drawn() { return drawn; }, at, redraw: draw };
+    const handle = temp.globe = { projection, get countries() { return map.countries; }, get positions() { return positions; }, get drawn() { return drawn; }, at, redraw: draw };
     return {
       resize,
       destroy() {

@@ -59,6 +59,21 @@ test('branch distances can be shown, rounded and sized', async () => {
   await set('tree-branch-distances-hide', true);
 });
 
+test('rounded distances stay rounded through an animated redraw', async () => {
+  expect(await page.evaluate(() => session.style.widgets['tree-animation-on'])).toBe(true);
+  await set('tree-branch-distances-hide', false);
+  await set('tree-round-true', true);
+  const labels = () => view().locator('g.tidytree-link text').allTextContents();
+  await expect.poll(async () => (await labels()).every(t => /^\d+$/.test(t))).toBe(true);
+  // The redraw fades the labels out, rewrites them and fades them back in
+  await set('tree-mode', 'square');
+  await page.waitForTimeout(2000);
+  expect((await labels()).every(t => /^\d+$/.test(t))).toBe(true);
+  await set('tree-mode', 'smooth');
+  await set('tree-round-true', false);
+  await set('tree-branch-distances-hide', true);
+});
+
 test('leaf sizes and colors follow the settings', async () => {
   await set('tree-leaf-node-size', 15);
   await expect.poll(() => leaves().first().getAttribute('r')).toBe('15');

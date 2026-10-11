@@ -461,7 +461,9 @@
       ['countries', 'states', 'counties'].forEach(name => layers[name] && map.hasLayer(layers[name]) && layers[name].bringToFront());
       userLayers.forEach(layer => layer.bringToFront());
       if (layers.links) layers.links.bringToFront();
-      if (layers.nodes && !(layers.nodes instanceof L.MarkerClusterGroup)) layers.nodes.bringToFront();
+      // A cluster group draws its single markers in a feature group of its own
+      const nodes = layers.nodes instanceof L.MarkerClusterGroup ? layers.nodes._featureGroup : layers.nodes;
+      if (nodes) nodes.bringToFront();
     }
 
     const outlines = {

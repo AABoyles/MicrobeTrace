@@ -1310,7 +1310,7 @@
       alertify
         .error("Something went wrong! Please click here to start a new session and try again.")
         .delay(0)
-        .ondismiss(() => window.location.reload());
+        .ondismiss(() => MT.reload());
     }
     MT.setLinkVisibility(true);
     session.meta.loadTime = Date.now() - session.meta.startTime;
