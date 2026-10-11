@@ -2,10 +2,10 @@
 
 <div class="view-controls">
   <button type="button" class="btn btn-light btn-sm settings-toggle" title="Flow Diagram Settings">
-    <span class="oi oi-cog"></span>
+    <span class="bi bi-gear"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#flow-export-modal" title="Export Flow Diagram">
-    <span class="oi oi-data-transfer-download"></span>
+    <span class="bi bi-download"></span>
   </button>
 </div>
 
@@ -127,9 +127,9 @@
     function addVariable(value) {
       const item = document.createElement('li');
       item.className = 'flow-items';
-      item.innerHTML = `<span class="oi oi-x flow-remove" title="Remove this variable"></span>
+      item.innerHTML = `<span class="bi bi-x flow-remove" title="Remove this variable"></span>
         <select class="form-select form-select-sm flow-selector">${options(valid(value))}</select>
-        <span class="oi oi-elevator" title="Drag to reorder"></span>`;
+        <span class="bi bi-arrow-down-up" title="Drag to reorder"></span>`;
       list.appendChild(item);
       sortable(list, 'reload');
     }

@@ -2,10 +2,10 @@
 
 <div class="view-controls">
   <button type="button" class="btn btn-light btn-sm settings-toggle" title="Toggle Aggregation Settings">
-    <span class="oi oi-cog"></span>
+    <span class="bi bi-gear"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#aggregation-export-modal" title="Export Aggregation data">
-    <span class="oi oi-data-transfer-download"></span>
+    <span class="bi bi-download"></span>
   </button>
 </div>
 
@@ -84,9 +84,9 @@
     function addVariable(value) {
       const item = document.createElement('li');
       item.className = 'd-inline-flex aggregation-items';
-      item.innerHTML = `<span class="oi oi-x pt-2 aggregation-remove" title="Remove this table"></span>
+      item.innerHTML = `<span class="bi bi-x pt-2 aggregation-remove" title="Remove this table"></span>
         <select class="flex-grow-1 form-select form-select-sm aggregation-variable">${options(value)}</select>
-        <span class="pt-2 oi oi-elevator" title="Drag to reorder"></span>`;
+        <span class="pt-2 bi bi-arrow-down-up" title="Drag to reorder"></span>`;
       list.appendChild(item);
       sortable(list, 'reload');
     }

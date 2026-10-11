@@ -46,7 +46,7 @@ primarystyles=(
   "node_modules/alertifyjs/build/css/alertify.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css"
-  "node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css"
+  "temp.bootstrap-icons.css"
 )
 
 # secondarystyles is where you put stylesheets that must be loaded before a
@@ -62,6 +62,9 @@ secondarystyles=(
 # golden-layout's theme refers to its icons by relative path; inline them
 npx esbuild node_modules/golden-layout/dist/css/themes/goldenlayout-light-theme.css --bundle \
   --loader:.png=dataurl --log-level=warning --outfile=temp.goldenlayout-theme.css
+
+# Bootstrap Icons' stylesheet finds its fonts beside it; the bundle's are in fonts/
+sed 's#url("fonts/#url("../fonts/#g' node_modules/bootstrap-icons/font/bootstrap-icons.min.css > temp.bootstrap-icons.css
 
 echo 'Assembling Stylesheets...'
 
@@ -93,7 +96,7 @@ rm temp.cosmos.mjs
 cp node_modules/patristic/dist/patristic.min.js vendor/
 cp node_modules/tn93/dist/tn93.min.js vendor/
 cp node_modules/papaparse/papaparse.min.js vendor/
-cp -r node_modules/open-iconic/font/fonts/ .
+mkdir -p fonts && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* fonts/
 
 echo 'Building Dependencies...'
 
