@@ -18,7 +18,8 @@
   // takes the control's initial value. Text, number and range inputs store each
   // edit as it's made, unless they say data-setting-on="change" (for settings
   // that are slow to apply). Toggle-button groups (.btn-group-toggle)
-  // have their .active labels kept in step.
+  // have their .active labels kept in step, and color inputs show their value
+  // beside them.
   //
   // Returns a function that disconnects everything.
 
@@ -37,6 +38,19 @@
     else if (el.type == 'radio') el.checked = parseRadio(el.value) === value;
     else el.value = value == null ? '' : value;
     syncToggleGroup(el);
+    syncColorValue(el);
+  }
+
+  // A color input shows its value beside it, in a .color-value it's given
+  function syncColorValue(el) {
+    if (el.type != 'color') return;
+    let label = el.nextElementSibling;
+    if (!label || !label.classList.contains('color-value')) {
+      label = document.createElement('code');
+      label.className = 'color-value';
+      el.after(label);
+    }
+    label.textContent = el.value;
   }
 
   function syncToggleGroup(el) {
@@ -76,6 +90,12 @@
         };
         el.addEventListener(type, listener);
         cleanup.push(() => el.removeEventListener(type, listener));
+        if (el.type == 'color') {
+          // The value beside it follows the picker as it moves
+          const follow = () => syncColorValue(el);
+          el.addEventListener('input', follow);
+          cleanup.push(() => el.removeEventListener('input', follow));
+        }
       });
     });
 

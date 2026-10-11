@@ -403,9 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const Kind = kind == "node" ? "Node" : "Link";
     const sortLink = (key, other) => {
-      const a = document.createElement("a");
-      a.style.cursor = "pointer";
-      a.innerHTML = "&#8645;";
+      const a = MT.sortButton();
       a.addEventListener("click", () => {
         session.style.widgets[widget(other + "-sort")] = "";
         session.style.widgets[widget(key + "-sort")] = get(widget(key + "-sort")) === "ASC" ? "DESC" : "ASC";
@@ -461,10 +459,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     values.forEach((value, i) => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td data-value="${escape(value)}">${escape(names[value] || MT.titleize("" + value))}</td>` +
+      row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(names[value] || MT.titleize("" + value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
-        `<td><input type="color" value="${temp.style[colorMap](value)}"><a>⇳</a></td>`;
+        `<td><input type="color" value="${temp.style[colorMap](value)}">${MT.transparencyButton}</td>`;
       row.querySelector("input").addEventListener("change", e => {
         const key = session.style[savedKeys][variable].findIndex(k => k === value);
         session.style[savedColors][variable].splice(key, 1, e.target.value);
