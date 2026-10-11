@@ -20,6 +20,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `ui.spec.js` | The license dialog, menus, the settings dialog, toggle buttons |
 | `global.spec.js` | The page around the views: filtering, the color tables and colors, statistics, search, reading dates, the global timeline, saving and reopening sessions, stashes, New Session |
 | `panels.spec.js` | The floating panels following the view in front without overlapping, the timeline bar below the views, settings panes closing, and dialog backdrops |
+| `controls.spec.js` | How controls and text look: links, the chosen option in toggle groups, primary and secondary buttons and their focus ring, color settings, the color tables' icons and sorting, panel tabs, labels not wrapping, and the statistics |
 | `binder.spec.js` | `src/binder.js` on every control type |
 | `histogram.spec.js` | The histogram's settings, drawing, restoring and export |
 | `heatmap.spec.js` | The heatmap's settings, drawing, restoring, and PNG and CSV export |

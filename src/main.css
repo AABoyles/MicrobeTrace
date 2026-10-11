@@ -55,14 +55,15 @@ label[for="search"] {
   -o-transition: all 0.5s ease;
   transition: all 0.5s ease;
 }
-a {
-  color: #555555;
+/* Links look like links (Bootstrap's); icon-only actions, like removing a
+   file, are plain icons that darken on hover */
+.icon-action {
+  color: #6c757d;
   text-decoration: none;
 }
-a:hover,
-a:focus {
-  color: #555555;
-  text-decoration: none;
+.icon-action:hover,
+.icon-action:focus-visible {
+  color: #212529;
 }
 #ie-warning {
   display: none;
@@ -90,6 +91,56 @@ a:focus {
 }
 .view-controls button {
   border: 1px solid #cccccc;
+}
+/* Keyboard focus on a toolbar button shows as a ring, not a pressed button */
+.view-controls .btn:focus-visible {
+  background-color: var(--bs-btn-bg);
+  border-color: var(--bs-btn-border-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
+}
+/* The chosen option in a toggle group (grey read as disabled) */
+.btn-group-toggle > .btn.active {
+  position: relative;
+  z-index: 1;
+  background-color: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary);
+  color: var(--bs-primary-text-emphasis);
+  font-weight: 500;
+}
+/* A color table's sort and transparency buttons */
+.table-control {
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: normal;
+}
+/* Color settings: a swatch, with its value beside it (see src/binder.js) */
+input[type="color"].form-control {
+  display: inline-block;
+  vertical-align: middle;
+  width: 3rem;
+  height: calc(1.5em + 0.5rem + 2px);
+  padding: 0.125rem;
+}
+.color-value {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  font-size: 0.8125rem;
+  color: #495057;
+}
+/* Settings labels (the first of a row's two columns) get room enough not
+   to wrap; the settings dialog is a little wider to make that room */
+.left-pane .row > :is(.col-3, .col-4):first-child:not(:last-child),
+#global-settings-modal .row > :is(.col-3, .col-4):first-child:not(:last-child) {
+  width: 40%;
+}
+.left-pane .row > :is(.col-3, .col-4):first-child + :is(.col-8, .col-9):last-child,
+#global-settings-modal .row > :is(.col-3, .col-4):first-child + :is(.col-8, .col-9):last-child {
+  width: 60%;
+}
+@media (min-width: 640px) {
+  #global-settings-modal .modal-dialog {
+    max-width: 600px;
+  }
 }
 .floater {
   border: 1px solid #cccccc;
@@ -322,9 +373,6 @@ label[for="apply-style"] {
   width: calc(100% - 30px);
   margin: 0 15px;
 }
-.btn-primary {
-  background-color: #0037ff;
-}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after {
@@ -338,6 +386,20 @@ label[for="apply-style"] {
 }
 .lm_selected .lm_header {
   background: #f8f9fa !important;
+}
+/* Panel tabs, in text close to the menus' size */
+.lm_header .lm_tab {
+  font-family: inherit;
+  font-size: 13px;
+  height: 20px;
+  line-height: 20px;
+  padding-bottom: 3px;
+}
+.lm_header .lm_tab .lm_title {
+  padding-top: 0;
+}
+.lm_header .lm_tab .lm_close_tab {
+  top: 7px;
 }
 .lm_tab {
   color: #575858 !important;
@@ -411,8 +473,8 @@ label[for="OpenTab"] {
   text-overflow: ellipsis;
   margin: auto;
 }
-.filename span.bi-x-circle:hover {
-  color: red;
+.icon-action.bi-x-circle:hover {
+  color: #dc3545;
 }
 td {
   overflow: hidden;
@@ -570,8 +632,9 @@ td {
 input[type="range"] {
   width: inherit;
 }
-a.btn,
-button.btn,
+/* Light buttons (and groups of them) get a border; other kinds have their own */
+a.btn.btn-light,
+button.btn.btn-light,
 .btn-group {
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
@@ -704,9 +767,6 @@ body.timeline-open #main-panel {
   fill-opacity: 0.1;
   stroke: #ffffff;
   shape-rendering: crispEdges;
-}
-.btn-default {
-  background-color: #f8f9fa;
 }
 .view-controls {
   position: absolute;

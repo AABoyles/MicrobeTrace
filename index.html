@@ -185,14 +185,14 @@ performance of this software.</pre>
             <div class="ele"></div>
             <div class="ele"></div>
           </div>
-          <a class="btn btn-primary" data-bs-toggle="collapse" href="#loading-information-collapse" role="button"
+          <a class="btn btn-link px-0" data-bs-toggle="collapse" href="#loading-information-collapse" role="button"
             aria-expanded="true" aria-controls="loading-information-collapse">Details</a>
           <div id="loading-information-collapse" class="show">
             <div id="loading-information" class="card card-body"></div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -248,23 +248,20 @@ performance of this software.</pre>
     <div class="draghandle" hidden><span class="bi bi-arrows-move"></span></div>
     <table id="network-statistics-table">
       <tr>
-        <td class="text-end">
-          <span id="numberOfNodes"></span>
-          (<span id="numberOfSelectedNodes"></span>)
-        </td>
-        <td>Nodes (Selected)</td>
+        <td class="text-end"><span id="numberOfNodes"></span></td>
+        <td>nodes, <span id="numberOfSelectedNodes"></span> selected</td>
       </tr>
       <tr>
         <td id="numberOfVisibleLinks" class="text-end"></td>
-        <td>Links</td>
+        <td>links</td>
       </tr>
       <tr>
         <td id="numberOfDisjointComponents" class="text-end"></td>
-        <td>Clusters</td>
+        <td>clusters</td>
       </tr>
       <tr>
         <td id="numberOfSingletonNodes" class="text-end"></td>
-        <td>Singletons</td>
+        <td>singletons</td>
       </tr>
     </table>
   </div>
@@ -503,7 +500,7 @@ performance of this software.</pre>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" id="save-data" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
         </div>
       </div><!-- /.modal-content -->
@@ -525,7 +522,7 @@ performance of this software.</pre>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-error" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" id="stash-data" class="btn btn-primary" data-bs-dismiss="modal">Stash!</button>
         </div>
       </div><!-- /.modal-content -->
@@ -544,7 +541,7 @@ performance of this software.</pre>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" id="recall-delete-stash">Delete</button>
-          <button type="button" class="btn" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-success" id="recall-load-stash">Recall</button>
         </div>
       </div><!-- /.modal-content -->
@@ -570,15 +567,11 @@ performance of this software.</pre>
             reducing both the startup cost and analysis time and effort.
           </p>
           <p class="ifOnline">
-            <a href="https://github.com/CDCgov/MicrobeTrace/wiki" target="_blank" rel="noreferrer noopener">
-              Click Here to Learn More
-            </a>
+            <a href="https://github.com/CDCgov/MicrobeTrace/wiki" target="_blank" rel="noreferrer noopener">Read the MicrobeTrace wiki</a>
           </p>
           <p>
             MicrobeTrace was built by the Molecular Epidemiology and Bionformatics Team at the CDC in Atlanta.
-            <a href="https://cdcgov.github.io/MEBT" target="_blank" rel="noreferrer noopener" class="ifOnline">
-              Click Here to See MEBT's Other Tools
-            </a>
+            <a href="https://cdcgov.github.io/MEBT" target="_blank" rel="noreferrer noopener" class="ifOnline">See the team's other tools</a>
           </p>
           <p class="text-end">
             <a href="humans.txt">
@@ -587,7 +580,7 @@ performance of this software.</pre>
           </p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -604,7 +597,7 @@ performance of this software.</pre>
           Are you certain you want to leave this MicrobeTrace session? Any unsaved configurations will be lost!
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" id="exit-button" class="btn btn-danger" data-bs-dismiss="modal">Leave Session</button>
         </div>
       </div>

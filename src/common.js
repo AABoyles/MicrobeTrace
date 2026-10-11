@@ -103,7 +103,7 @@
     "histogram-variable": "links-distance",
     "infer-directionality-false": true,
     "link-color": "#a6cee3",
-    "link-color-table-name-sort": "DESC",
+    "link-color-table-name-sort": "ASC",
     "link-color-table-counts-sort": "DESC",
     "link-color-table-counts": true,
     "link-color-table-frequencies": false,
@@ -148,7 +148,7 @@
     "node-charge": 200,
     "node-color": "#1f77b4",
     "node-color-border": "#000000",
-    "node-color-table-name-sort": "DESC",
+    "node-color-table-name-sort": "ASC",
     "node-color-table-counts-sort": "DESC",
     "node-color-table-counts": true,
     "node-color-table-frequencies": false,
@@ -177,7 +177,7 @@
     "physics-tree-tooltip": "id",
     "physics-tree-type": "tree",
     "polygon-color": "#bbccee",
-    "polygon-color-table-name-sort": "DESC",
+    "polygon-color-table-name-sort": "ASC",
     "polygon-color-table-counts-sort": "DESC",
     "polygon-color-table-counts": true,
     "polygon-color-table-frequencies": false,
@@ -1936,6 +1936,7 @@
   
   const emptyLayout = {
     settings: { showPopoutIcon: false },
+    dimensions: { headerHeight: 26 },
     root: { type: "stack", content: [] }
   };
 
@@ -2159,6 +2160,19 @@
     return () => document.removeEventListener('click', outside);
   };
 
+  // A color table's controls: a header's sort button, and a row's
+  // transparency button (which opens the shared slider)
+  MT.sortButton = () => {
+    const button = document.createElement('a');
+    button.setAttribute('role', 'button');
+    button.className = 'icon-action table-control ms-1';
+    button.title = 'Sort';
+    button.contentEditable = false; // inside an editable header
+    button.innerHTML = '<span class="bi bi-arrow-down-up"></span>';
+    return button;
+  };
+  MT.transparencyButton = '<a role="button" class="icon-action table-control ms-1" title="Transparency"><span class="bi bi-droplet-half"></span></a>';
+
   // A view's panel dock: a column down its right-hand side that holds its
   // floating tables, stacked so they never overlap, with the statistics at the
   // bottom.
@@ -2308,7 +2322,7 @@
           name.className = 'col-9';
           name.textContent = file.name.split('.').slice(0, -1).join('.');
           remove.href = '#';
-          remove.className = 'bi bi-x-circle align-middle p-1';
+          remove.className = 'icon-action bi bi-x-circle align-middle p-1';
           remove.title = 'Remove this file';
           name.prepend(remove);
           colorCell.className = 'col-3';
