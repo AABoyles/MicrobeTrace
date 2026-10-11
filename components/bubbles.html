@@ -131,6 +131,23 @@
       .velocityDecay(0.2)
       .on('tick', () => svg.selectAll('circle').attr('cx', d => d.x).attr('cy', d => d.y));
 
+    // The bubbles' radius: the size setting, or by default one at which they
+    // pack a circle about half the view's height. The size slider shows it.
+    const sizeInput = $('[data-setting="bubble-size"]');
+    function radius() {
+      const size = settings.get('bubble-size');
+      if (size) return size;
+      const fit = 0.33 * Math.min(width, height) * Math.sqrt(0.6 / Math.max(bubbles.length, 1)) - 1;
+      return Math.round(Math.max(2, Math.min(30, fit)) * 10) / 10;
+    }
+    function resizeBubbles() {
+      const r = radius();
+      svg.selectAll('circle').attr('r', r);
+      // They don't overlap, whatever their size
+      simulation.force('collide', d3.forceCollide(r + 1).iterations(4));
+      sizeInput.value = r;
+    }
+
     // A bubble per visible node, keeping the places of those already drawn
     function update() {
       const before = new Map(bubbles.map(b => [b._id, b]));
@@ -147,9 +164,9 @@
           .on('click', (event, b) => {
             b.node.selected = !b.node.selected;
             events.emit('node-selected', 'bubbles');
-          }))
-        .attr('r', settings.get('bubble-size'));
+          }));
       simulation.nodes(bubbles);
+      resizeBubbles();
       setColors();
       group();
     }
@@ -203,6 +220,7 @@
       svg.attr('width', width).attr('height', height);
       svg.select('.x-label').attr('x', width / 2);
       svg.select('.y-label').attr('x', 20).attr('y', height / 2).attr('transform', `rotate(270, 20, ${height / 2})`);
+      resizeBubbles();
       group();
     }
 
@@ -217,7 +235,10 @@
     const stop = [
       MTBind(pane, settings),
       settings.subscribe(['bubble-x', 'bubble-y', 'bubble-charge'], group),
-      settings.subscribe('bubble-size', size => svg.selectAll('circle').attr('r', size)),
+      settings.subscribe('bubble-size', () => {
+        resizeBubbles();
+        simulation.alpha(0.3).restart();
+      }),
       events.on('background-color-change', setBackground),
       ...['node-color-change', 'selected-color-change', 'node-selected'].map(type => events.on(type, setColors)),
       ...['node-visibility', 'cluster-visibility'].map(type => events.on(type, update))

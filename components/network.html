@@ -711,7 +711,9 @@ Note that this may cause slow performance on larger networks.">
       if (!graph) return;
       const start = Date.now();
       syncPositions();
-      const timeline = get('timeline-date-field') != 'None';
+      // While the global timeline plays, positions are kept in its nodes. (The
+      // Epi Curve's date field is set then too, but also on its own.)
+      const timeline = get('node-timeline-variable') != 'None';
       const newNodes = MT.getVisibleNodes(true);
       const oldNodes = timeline ? session.network.timelineNodes : session.network.nodes;
       if (newNodes.length === 0 && !timeline) return;
@@ -897,7 +899,7 @@ Note that this may cause slow performance on larger networks.">
       const defaultSize = get('node-radius');
       const sizeVariable = get('node-radius-variable');
       if (sizeVariable === 'None') return points.map(() => defaultSize);
-      const nodes = get('timeline-date-field') == 'None' ? points : session.network.timelineNodes;
+      const nodes = get('node-timeline-variable') == 'None' ? points : session.network.timelineNodes;
       let min = Number.MAX_VALUE, max = Number.MIN_VALUE;
       nodes.forEach(d => {
         const size = d[sizeVariable];

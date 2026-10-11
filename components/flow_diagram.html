@@ -212,8 +212,11 @@
 
     // Older sessions store the dataset as something other than a boolean
     settings.set('flow-showNodes', !!settings.get('flow-showNodes'));
-    addVariable('cluster');
-    addVariable('cluster');
+    // It starts on the first two categorical fields, or the clusters
+    const items = settings.get('flow-showNodes') ? MT.getVisibleNodes() : MT.getVisibleLinks();
+    const [first = 'cluster', second = first] = MT.categoricalFields(items, fields());
+    addVariable(first);
+    addVariable(second);
     const stop = [
       MTBind(pane, settings),
       settings.subscribe('flow-showNodes', () => { showFields(); draw(); }),

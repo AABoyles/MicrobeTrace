@@ -1,4 +1,5 @@
 <div class="gantt"></div>
+<p class="view-message" hidden>Use <strong>Add Date</strong> in the settings to choose the fields of dates to draw.</p>
 
 <div class="view-controls">
   <button type="button" class="btn btn-light btn-sm settings-toggle" title="Gantt Settings">
@@ -138,6 +139,9 @@
 
     function draw() {
       const all = bars();
+      // Without dates, a note saying what to choose instead of an empty chart
+      $('.view-message').hidden = all.length > 0;
+      svg.style('display', all.length ? null : 'none');
       // Room for the longest label
       const context = document.createElement('canvas').getContext('2d');
       context.font = '10px ' + getComputedStyle(document.body).fontFamily;
@@ -241,7 +245,14 @@
       hoverLine.style('stroke', contrast);
     }
 
-    MT.paneToggle($('.settings-toggle'), pane, true);
+    // With no dates chosen, it starts on the data's first field of dates
+    if (!dates().length) {
+      const [field] = MT.dateFields(session.data.nodes, session.data.nodeFields);
+      if (field) setDates([{ start: field, end: 'None', color: d3.schemeCategory10[0], transparency: 0.4 }]);
+    }
+
+    // The settings start open when there's nothing to draw
+    MT.paneToggle($('.settings-toggle'), pane, !dates().length);
     MT.svgExport(root, () => svg.node(), settings);
 
     const stop = [

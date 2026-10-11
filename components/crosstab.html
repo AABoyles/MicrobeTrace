@@ -95,21 +95,34 @@
     const table = new Tabulator($('.crosstab-grid'), { layout: 'fitColumns', data: [], columns: [] });
     const built = new Promise(resolve => table.on('tableBuilt', resolve));
 
+    const items = () => MT['getVisible' + dataset[0].toUpperCase() + dataset.slice(1)]();
+
+    // The menus offer the dataset's fields, starting on its first two
+    // categorical fields. Without any, the table waits for a choice.
     function showFields() {
-      const options = session.data[dataset.slice(0, -1) + 'Fields'].map(f => `<option value="${f}">${MT.titleize(f)}</option>`).join('');
+      const fields = session.data[dataset.slice(0, -1) + 'Fields'];
+      const options = fields.map(f => `<option value="${f}">${MT.titleize(f)}</option>`).join('');
       fieldX.innerHTML = options;
       fieldY.innerHTML = options;
+      const [x, y = x] = MT.categoricalFields(items(), fields);
+      chosen = !!x;
+      if (chosen) [fieldX.value, fieldY.value] = [x, y];
     }
 
     // One row per Y value, one column per X value, counting the visible items
     async function update() {
-      // The table waits for the user to choose its variables
-      if (!chosen) return;
+      if (!chosen) {
+        data = [];
+        await built;
+        table.setColumns([]);
+        table.replaceData([]);
+        return;
+      }
       const xVar = fieldX.value, yVar = fieldY.value;
-      const items = MT['getVisible' + dataset[0].toUpperCase() + dataset.slice(1)]();
-      const xValues = Array.from(new Set(items.map(d => d[xVar] + '')));
+      const visible = items();
+      const xValues = Array.from(new Set(visible.map(d => d[xVar] + '')));
       const rows = new Map();
-      items.forEach(d => {
+      visible.forEach(d => {
         const y = d[yVar];
         if (!rows.has(y)) {
           const row = { col: y };
@@ -128,6 +141,7 @@
       if (!input.checked) return;
       dataset = input.value;
       showFields();
+      update();
     }));
     [fieldX, fieldY].forEach(select => select.addEventListener('change', () => {
       chosen = true;
@@ -138,8 +152,9 @@
       update();
     });
 
-    // The settings start open, since there's nothing to show until a choice
-    MT.paneToggle($('.settings-toggle'), $('.left-pane'), true);
+    showFields();
+    // The settings start open when there's nothing to show until a choice
+    MT.paneToggle($('.settings-toggle'), $('.left-pane'), !chosen);
 
     const title = () => MT.titleize(fieldX.value) + ' by ' + MT.titleize(fieldY.value);
     MT.tableExport(root, {
@@ -158,7 +173,7 @@
 
     root.style.zIndex = 1000;
 
-    showFields();
+    update();
     const stop = ['link-visibility', 'node-visibility'].map(type => events.on(type, update));
 
     return {

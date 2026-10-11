@@ -25,10 +25,10 @@ const plot = () => view().locator('.js-plotly-plot').evaluate(el => ({
   width: el.layout.width
 }));
 
-test('draws clusters to clusters for the nodes by default', async () => {
+test('draws the first two categorical variables of the nodes by default', async () => {
   await expect(selectors()).toHaveCount(2);
   await expect.poll(async () => (await plot()).flow).toBe(310);
-  expect((await plot()).variables).toEqual(['Cluster']);
+  expect((await plot()).variables).toEqual(['State', 'Group']);
 });
 
 test('the settings pane opens and closes', async () => {
@@ -42,7 +42,7 @@ test('the settings pane opens and closes', async () => {
 });
 
 test('changing a variable redraws', async () => {
-  await selectors().nth(1).selectOption('group');
+  await selectors().nth(0).selectOption('cluster');
   await expect.poll(async () => (await plot()).variables).toEqual(['Cluster', 'Group']);
   expect((await plot()).flow).toBe(310);
   // Each variable's nodes are its own values only

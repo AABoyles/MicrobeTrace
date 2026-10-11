@@ -20,12 +20,20 @@ const rows = () => pane().locator('.gantt-date');
 const bars = () => view().locator('svg .gantt-chart rect');
 const visibleDated = () => page.evaluate(() => session.data.nodes.filter(d => d.visible && d.date).length);
 
-test('opens with its settings showing and no bars', async () => {
-  await expect(pane()).toBeVisible();
-  await expect(bars()).toHaveCount(0);
+test('opens on the first field of dates, drawn', async () => {
+  await expect(rows()).toHaveCount(1);
+  await expect(bars()).toHaveCount(await visibleDated());
+  await expect(pane()).toBeHidden();
+  await expect(view().locator('.view-message')).toBeHidden();
 });
 
-test('adding a date draws a bar per node that has it', async () => {
+test('without dates it says what to choose, and adding a date draws a bar per node that has it', async () => {
+  await view().locator('.settings-toggle').click();
+  await expect(pane()).toBeVisible();
+  await rows().first().locator('a[title="Remove this date"]').click();
+  await expect(rows()).toHaveCount(0);
+  await expect(bars()).toHaveCount(0);
+  await expect(view().locator('.view-message')).toBeVisible();
   await pane().locator('button', { hasText: 'Add Date' }).click();
   await expect(rows()).toHaveCount(1);
   await rows().first().locator('select').first().selectOption('date');
@@ -68,6 +76,9 @@ test('exports a PNG', async () => {
 });
 
 test('removing a date removes its bars', async () => {
+  // With dates to draw, the reopened view starts with its settings closed
+  await expect(pane()).toBeHidden();
+  await view().locator('.settings-toggle').click();
   await rows().first().locator('a[title="Remove this date"]').click();
   await expect(rows()).toHaveCount(0);
   await expect(bars()).toHaveCount(0);
