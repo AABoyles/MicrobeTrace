@@ -1065,7 +1065,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       };
     };
 
-    MT.paneToggle($('.settings-toggle'), pane);
+    MT.paneToggle($('.settings-toggle'), pane, false, { push: $('.file-panel') });
     const stop = [
       MTBind(pane, settings),
       MTBind(modal, settings),

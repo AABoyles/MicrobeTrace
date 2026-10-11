@@ -115,9 +115,31 @@ svg#link-threshold-sparkline {
   left: -400px;
   display: none;
   width: 400px;
+  max-width: 100%;
   padding: 10px;
-  background: #d5d5d5;
+  background: #f1f3f5;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  border-bottom-right-radius: 0.375rem;
+  box-shadow: 0.25rem 0.25rem 1rem rgba(0, 0, 0, 0.12);
   z-index: 1000;
+}
+.left-pane .pane-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+/* What a pane pushes aside (MT.paneToggle) */
+.file-panel {
+  transition: padding-left 0.4s ease-in-out;
+}
+.pane-pushed {
+  padding-left: 410px !important;
+}
+/* A view's dialogs live inside it, under Bootstrap's backdrop, so they dim
+   the page with their own layer instead */
+.lm_content .modal.show[data-bs-backdrop="false"] {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 .left-pane .nav {
   padding-top: 40px;
@@ -149,13 +171,44 @@ svg#link-threshold-sparkline {
   overflow-y: auto;
   z-index: 10000;
 }
-#link-color-table-wrapper {
+/* A view's panel dock (MT.panelDock): its floating tables stacked down the
+   right-hand side, shrinking to fit rather than overlapping, with the
+   statistics at the bottom */
+.panel-dock {
   position: absolute;
-  top: 73px;
+  top: 10px;
   right: 10px;
+  bottom: 10px;
   z-index: 999;
+  max-width: calc(100% - 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+.panel-dock > * {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  pointer-events: auto;
+}
+.panel-dock > .expanded,
+#link-color-table-wrapper.expanded,
+#node-color-table-wrapper.expanded {
+  max-height: none;
+}
+#link-color-table-wrapper { order: 1; }
+#node-color-table-wrapper { order: 2; }
+.node-symbol-table-wrapper { order: 3; }
+.polygon-color-table-wrapper { order: 4; }
+#network-statistics-wrapper {
+  order: 5;
+  margin-top: auto;
+}
+#link-color-table-wrapper {
   max-height: 400px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
   color: #303030;
@@ -180,12 +233,8 @@ svg#link-threshold-sparkline {
   padding: 0;
 }
 #node-color-table-wrapper {
-  position: absolute;
-  top: 483px;
-  right: 10px;
-  z-index: 999;
   max-height: 400px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
   color: #303030;
@@ -216,12 +265,8 @@ svg#link-threshold-sparkline {
   text-overflow: "";
 }
 .polygon-color-table-wrapper {
-  position: absolute;
-  top: 893px;
-  right: 10px;
-  z-index: 999;
   max-height: 400px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
   color: #303030;
@@ -258,10 +303,7 @@ svg#link-threshold-sparkline {
 }
 #network-statistics-wrapper {
   display: none;
-  position: absolute;
-  bottom: 10px;
-  right: 20px;
-  z-index: 999;
+  padding: 0.25rem 0.375rem;
   color: #303030;
   background-color: #f8f9fa !important;
   border: 1px solid #c0c0c0;
@@ -557,14 +599,19 @@ button.btn,
     margin-right: auto;
   }
 }
+/* The timeline's bar, along the bottom of the page; the views end above it */
 #global-timeline-wrapper {
-  /* background: #f8f9fa; */
+  background: #f8f9fa;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  position: absolute;
-  left: 0px;
-  bottom: 0px;
-  right: 15px;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  right: 0;
   z-index: 1001;
+}
+body.timeline-open #main-panel {
+  align-self: flex-start;
+  height: calc(100% - var(--timeline-height, 0px));
 }
 
 #timeline-play-button {
@@ -622,12 +669,8 @@ button.btn,
   height: 100%;
 }
 .node-symbol-table-wrapper {
-  position: absolute;
-  top: 457px;
-  left: 10px;
-  z-index: 999;
   max-height: 400px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
   color: #303030;

@@ -565,6 +565,8 @@ Note that this may cause slow performance on larger networks.">
     const menu = $('.network-context-menu');
     const symbolWrapper = $('.node-symbol-table-wrapper'), symbolTable = $('.node-symbol-table');
     const polygonWrapper = $('.polygon-color-table-wrapper'), polygonTable = $('.polygon-color-table');
+    // The view's own legends stack with the page's in its panel dock
+    MT.panelDock(root).append(symbolWrapper, polygonWrapper);
     const SPACE = 4096;
     const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
@@ -1343,17 +1345,18 @@ Note that this may cause slow performance on larger networks.">
           Frequency: get(kind + '-color-table-frequencies') ? (aggregates[value] / total).toLocaleString() : undefined,
           Color: '<div style="margin-left:5px; width:40px;height:12px;background:' + colorMap(value) + '"> </div>'
         }));
-        return MT.tabulate(data, columns, document.getElementById(kind + '-color-table-wrapper'), svgNode);
+        return MT.tabulate(data, columns, document.getElementById(kind + '-color-table-wrapper'), svgNode, container);
       };
       const nodeLegend = legend('node', MT.createNodeColorMap(), MT.getVisibleNodes().length);
       const linkLegend = legend('link', MT.createLinkColorMap(), MT.getVisibleLinks().length);
 
       const statsDiv = document.getElementById('network-statistics-wrapper');
+      const statsBox = statsDiv.getBoundingClientRect(), viewBox = container.getBoundingClientRect();
       const stats = svg.append('svg:foreignObject')
-        .attr('x', statsDiv.offsetLeft)
-        .attr('y', statsDiv.offsetTop - 60)
-        .attr('width', statsDiv.offsetWidth)
-        .attr('height', statsDiv.offsetHeight);
+        .attr('x', statsBox.left - viewBox.left)
+        .attr('y', statsBox.top - viewBox.top)
+        .attr('width', statsBox.width)
+        .attr('height', statsBox.height);
       stats.append('xhtml:body').html(statsDiv.innerHTML);
       exportExtras = [wrapper, nodeLegend, linkLegend, stats];
       return svgNode;
@@ -1653,7 +1656,6 @@ Note that this may cause slow performance on larger networks.">
         onFrequencies: toggle('node-symbol-table-frequencies')
       }),
       MT.floatingTable(polygonWrapper, $('.polygon-color-table-menu'), {
-        edge: 'right',
         onHide: () => settings.set('polygon-color-table-show', false),
         onCounts: toggle('polygon-color-table-counts'),
         onFrequencies: toggle('polygon-color-table-frequencies')
@@ -1723,6 +1725,8 @@ Note that this may cause slow performance on larger networks.">
     });
 
     return {
+      // The page's floating panels this view shows (see MT.placePanels)
+      panels: ['link-colors', 'node-colors', 'statistics'],
       resize: drawOverlays,
       destroy() {
         destroyed = true;

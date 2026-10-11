@@ -187,6 +187,8 @@
     draw();
 
     return {
+      // The page's floating panels this view shows (see MT.placePanels)
+      panels: ['link-colors', 'node-colors'],
       resize: draw,
       destroy() {
         stop.forEach(fn => fn());

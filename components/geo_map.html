@@ -555,6 +555,8 @@
 
     const handle = temp.geoMap = { map, layers, userLayers };
     return {
+      // The page's floating panels this view shows (see MT.placePanels)
+      panels: ['link-colors', 'node-colors'],
       resize: () => map.invalidateSize(),
       destroy() {
         destroyed = true;

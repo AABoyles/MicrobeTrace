@@ -343,21 +343,21 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   settings.subscribe("network-statistics-show", MT.showStatistics, { reload: true });
   MT.floatingTable(statistics, byId("network-statistics-context"), {
-    edge: "right",
-    vertical: "bottom",
     onHide: () => settings.set("network-statistics-show", false)
   });
   events.on("node-selected", () => {
     byId("numberOfSelectedNodes").textContent = session.data.nodes.filter(d => d.selected).length.toLocaleString();
   });
 
-  // An SVG copy of a table, for exports
-  MT.tabulate = (data, columns, wrapper, container) => {
+  // An SVG copy of a table, for exports, where the table sits over origin (the
+  // element the SVG is a picture of)
+  MT.tabulate = (data, columns, wrapper, container, origin) => {
+    const box = wrapper.getBoundingClientRect(), at = origin.getBoundingClientRect();
     let foreignObj = d3.select(container).append("svg:foreignObject")
-      .attr("x", wrapper.offsetLeft)
-      .attr("y", wrapper.offsetTop-60)
-      .attr("width", wrapper.offsetWidth)
-      .attr("height", wrapper.offsetHeight);
+      .attr("x", box.left - at.left)
+      .attr("y", box.top - at.top)
+      .attr("width", box.width)
+      .attr("height", box.height);
     let body = foreignObj
       .append("xhtml:body")
       .append("table")
@@ -514,7 +514,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showColorTable(kind);
     };
     MT.floatingTable(wrapper, byId(kind + "-color-table-context"), {
-      edge: "right",
       onHide: () => settings.set(kind + "-color-table-show", false),
       onCounts: toggle(kind + "-color-table-counts"),
       onFrequencies: toggle(kind + "-color-table-frequencies")
@@ -554,6 +553,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // The global timeline -------------------------------------------------------
 
   // The global timeline: a slider over the dates of the timeline variable that
+  // The timeline's bar sits below the views, which shrink to make room for it
+  function showTimelineBar(open) {
+    const bar = byId("global-timeline-wrapper");
+    bar.style.display = open ? "block" : "none";
+    document.body.style.setProperty("--timeline-height", open ? bar.offsetHeight + "px" : "0px");
+    document.body.classList.toggle("timeline-open", open);
+  }
+
   // shows the network as of each date. Showing it again for the same variable
   // (previous == variable, as when a session is loaded) keeps its place.
   MT.showTimeline = (variable = session.style.widgets["node-timeline-variable"], previous = variable) => {
@@ -574,7 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (variable == "None") {
         document.getElementById("global-timeline-field").innerHTML = "";
         session.style.widgets["timeline-date-field"] = 'None'  
-        document.getElementById("global-timeline-wrapper").style.display = "none";
+        showTimelineBar(false);
         if (pin) pin.disabled = false;
         if(pin && !session.network.timelinePinned) {
           pin.click();
@@ -731,7 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .attr("x", x(t))
           .text(handleDateFormat(t));
       }
-      document.getElementById("global-timeline-wrapper").style.display = "block";
+      showTimelineBar(true);
       function update(h) {
         handle.attr("cx", x(h));
         label
