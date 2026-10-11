@@ -58,9 +58,9 @@ test('the links dataset crosstabs link variables, and redraws with the visible l
   await fieldX().selectOption('origin');
   await fieldY().selectOption('contact');
   await expect.poll(async () => (await table()).total).toBe(476);
-  await page.evaluate(() => $('#link-threshold').val(0.005).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect.poll(async () => (await table()).total).toBeLessThan(476);
-  await page.evaluate(() => $('#link-threshold').val(0.015).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect.poll(async () => (await table()).total).toBe(476);
 });
 

@@ -57,38 +57,24 @@ test('unknown events are refused', () => {
   assert.throws(() => events.emit('nope'), /Unknown MicrobeTrace event/);
 });
 
-test('events relay the jQuery-triggered versions, and emit fires them for old listeners', () => {
-  // A minimal stand-in for jQuery's on/trigger on window
-  const handlers = {};
-  const jQuery = () => ({
-    on(types, fn) { types.split(' ').forEach(t => (handlers[t] = handlers[t] || []).push(fn)); },
-    trigger(type, args = []) { (handlers[type] || []).forEach(fn => fn({ type }, ...args)); }
-  });
-  const events = new MTEvents(jQuery);
-  let heard = 0, old = 0;
-  events.on('link-color-change', () => heard++);
-  jQuery().on('link-color-change', () => old++);
-  // An old sender: $window.trigger('link-color-change')
-  jQuery().trigger('link-color-change');
-  assert.deepStrictEqual([heard, old], [1, 1]);
-  // A new sender reaches both, once each
-  events.emit('link-color-change');
-  assert.deepStrictEqual([heard, old], [2, 2]);
+test('reload calls only the subscribers that ask for it', () => {
+  let widgets = { a: 1 };
+  const settings = new MTSettings(() => widgets);
+  const shown = [], acted = [];
+  settings.subscribe('a', value => shown.push(value), { reload: true });
+  settings.subscribe('a', value => acted.push(value));
+  widgets = { a: 2 };
+  settings.reload();
+  assert.deepStrictEqual([shown, acted], [[2], []]);
+  settings.set('a', 3);
+  assert.deepStrictEqual([shown, acted], [[2, 3], [3]]);
 });
 
-test('extra arguments pass between old and new senders and listeners', () => {
-  const handlers = {};
-  const jQuery = () => ({
-    on(types, fn) { types.split(' ').forEach(t => (handlers[t] = handlers[t] || []).push(fn)); },
-    trigger(type, args = []) { (handlers[type] || []).forEach(fn => fn({ type }, ...args)); }
-  });
-  const events = new MTEvents(jQuery);
-  const heard = [], old = [];
+test('event details reach listeners', () => {
+  const events = new MTEvents();
+  const heard = [];
   events.on('node-selected', detail => heard.push(detail));
-  jQuery().on('node-selected', (e, view) => old.push(view));
-  jQuery().trigger('node-selected', ['table']);
   events.emit('node-selected', 'heatmap');
   events.emit('node-selected');
-  assert.deepStrictEqual(heard, ['table', 'heatmap', undefined]);
-  assert.deepStrictEqual(old, ['table', 'heatmap', undefined]);
+  assert.deepStrictEqual(heard, ['heatmap', undefined]);
 });

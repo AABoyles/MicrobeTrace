@@ -79,9 +79,9 @@ test('selections made elsewhere show', async () => {
     const row = t.getRows().find(r => r.getData()._id == session.data.nodes[1]._id);
     return row.getElement().style.backgroundColor;
   });
-  await page.evaluate(() => { session.data.nodes[1].selected = true; $(window).trigger('node-selected'); });
+  await page.evaluate(() => { session.data.nodes[1].selected = true; MT.events.emit('node-selected'); });
   await expect.poll(background).not.toBe('');
-  await page.evaluate(() => { session.data.nodes[1].selected = false; $(window).trigger('node-selected'); });
+  await page.evaluate(() => { session.data.nodes[1].selected = false; MT.events.emit('node-selected'); });
   await expect.poll(background).toBe('');
 });
 

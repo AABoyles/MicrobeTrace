@@ -18,6 +18,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `views.spec.js` | The network statistics, and every view opening and drawing without errors |
 | `layout.spec.js` | Tabs, splitting a panel, resizing, saving and reloading the layout, New Session |
 | `ui.spec.js` | The license dialog, menus, the settings dialog, toggle buttons |
+| `global.spec.js` | The page around the views: filtering, the color tables and colors, statistics, search, the global timeline, saving and reopening sessions, stashes, New Session |
 | `binder.spec.js` | `src/binder.js` on every control type |
 | `histogram.spec.js` | The histogram's settings, drawing, restoring and export |
 | `heatmap.spec.js` | The heatmap's settings, drawing, restoring, and PNG and CSV export |

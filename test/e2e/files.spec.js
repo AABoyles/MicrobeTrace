@@ -132,7 +132,7 @@ test('the audit flags odd sequences, which can be excluded', async () => {
 
 test('launching builds the network', async () => {
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && $('#numberOfNodes').text() != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
   await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
   expect(await page.evaluate(() => session.data.nodes.length)).toBe(310);
   expect(errors).toEqual([]);
