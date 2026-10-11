@@ -72,4 +72,21 @@ async function closeView(page, view) {
   await page.evaluate(view => { const i = layout.contentItems.find(i => i.componentType == view); if (i) i.remove(); }, view);
 }
 
-module.exports = { fixtures, watchErrors, waitForModal, openExport, open, loadNetwork, launchView, viewNames, closeView };
+// Reads a downloaded image in the page: its size, and how many colors it
+// has (a blank image has one).
+async function imageStats(page, download) {
+  const data = require('fs').readFileSync(await download.path()).toString('base64');
+  return page.evaluate(async data => {
+    const blob = new Blob([Uint8Array.from(atob(data), c => c.charCodeAt(0))]);
+    const bitmap = await createImageBitmap(blob);
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const context = canvas.getContext('2d');
+    context.drawImage(bitmap, 0, 0);
+    const pixels = context.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    const colors = new Set();
+    for (let i = 0; i < pixels.length; i += 4) colors.add(pixels[i] << 16 | pixels[i + 1] << 8 | pixels[i + 2]);
+    return { width: bitmap.width, height: bitmap.height, colors: colors.size };
+  }, data);
+}
+
+module.exports = { imageStats, fixtures, watchErrors, waitForModal, openExport, open, loadNetwork, launchView, viewNames, closeView };

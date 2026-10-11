@@ -129,11 +129,7 @@
     let x;
 
     // A node's date, or null
-    const dateOf = value => {
-      if (value == null || value === '') return null;
-      const time = moment(value);
-      return time.isValid() ? time.toDate() : null;
-    };
+    const dateOf = MT.parseDate;
 
     function draw() {
       const width = root.clientWidth - margin.left - margin.right;

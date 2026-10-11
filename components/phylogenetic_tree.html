@@ -599,7 +599,7 @@
 
     MT.paneToggle($('.settings-toggle'), pane);
     MT.svgExport(root, () => container.querySelector('svg'), settings, {
-      nwk: filename => saveAs(new Blob([data.toNewick()], { type: 'application/newick;charset=utf-8' }), filename + '.nwk')
+      nwk: filename => MT.saveAs(new Blob([data.toNewick()], { type: 'application/newick;charset=utf-8' }), filename + '.nwk')
     });
 
     const stop = [

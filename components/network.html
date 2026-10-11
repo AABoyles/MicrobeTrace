@@ -793,8 +793,6 @@ Note that this may cause slow performance on larger networks.">
     }
 
     // The node menu: pin or unpin it, copy its ID or sequence, see its attributes
-    const clipboard = new ClipboardJS(menu.querySelectorAll('.copy-id, .copy-sequence'));
-    clipboard.on('success', hideContextMenu);
     let menuNode = null;
 
     function showContextMenu(index, position, event) {
@@ -802,8 +800,6 @@ Note that this may cause slow performance on larger networks.">
       hideTooltip();
       menuNode = points[index];
       if (!menuNode) return;
-      menu.querySelector('.copy-id').dataset.clipboardText = menuNode._id;
-      menu.querySelector('.copy-sequence').dataset.clipboardText = menuNode.seq;
       menu.querySelector('.pin-node').textContent = menuNode.fixed ? 'Unpin Node' : 'Pin Node';
       const box = root.getBoundingClientRect();
       Object.assign(menu.style, { display: 'block', zIndex: 1000, opacity: 1, left: (event.clientX - box.left) + 'px', top: (event.clientY - box.top) + 'px' });
@@ -846,7 +842,11 @@ Note that this may cause slow performance on larger networks.">
         .join('');
       bootstrap.Modal.getOrCreateInstance(modal).show();
     });
-    menu.querySelectorAll('.copy-id, .copy-sequence').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+    [['.copy-id', '_id'], ['.copy-sequence', 'seq']].forEach(([selector, key]) => menu.querySelector(selector).addEventListener('click', e => {
+      e.preventDefault();
+      if (!menuNode) return;
+      navigator.clipboard.writeText(String(menuNode[key] ?? '')).then(hideContextMenu, () => alertify.error("Couldn't copy to the clipboard"));
+    }));
 
     // Tooltips: a node's tooltip variables (a table when there are several),
     // a link's tooltip variable
@@ -1731,7 +1731,6 @@ Note that this may cause slow performance on larger networks.">
         window.removeEventListener('keyup', brushPointer);
         window.removeEventListener('resize', onWindowResize);
         tooltipMenu.destroy();
-        clipboard.destroy();
         hideTooltip();
         if (graph) graph.destroy();
         graph = null;

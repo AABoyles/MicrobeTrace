@@ -3,7 +3,7 @@
 // restoring and export.
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
-const { watchErrors, loadNetwork, launchView, closeView, openExport, waitForModal } = require('./helpers');
+const { imageStats, watchErrors, loadNetwork, launchView, closeView, openExport, waitForModal } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -189,6 +189,21 @@ test("a node's context menu pins it and shows its attributes", async () => {
   await page.locator('.modal.show button', { hasText: 'OK' }).click();
 });
 
+test("a node's context menu copies its ID and sequence", async () => {
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  const menu = view().locator('.network-context-menu');
+  const clipboard = () => page.evaluate(() => navigator.clipboard.readText());
+  const [id, seq] = await page.evaluate(() => [temp.network.points[0]._id, temp.network.points[0].seq]);
+  await page.evaluate(() => temp.network.contextMenu(0, new MouseEvent('contextmenu', { clientX: 300, clientY: 300 })));
+  await menu.locator('a', { hasText: 'Copy ID' }).click();
+  await expect(menu).toBeHidden();
+  expect(await clipboard()).toBe(id);
+  await page.evaluate(() => temp.network.contextMenu(0, new MouseEvent('contextmenu', { clientX: 300, clientY: 300 })));
+  await menu.locator('a', { hasText: 'Copy Sequence' }).click();
+  await expect(menu).toBeHidden();
+  expect(await clipboard()).toBe(seq);
+});
+
 test('the tooltip variables menu takes up to three', async () => {
   await openSettings('Nodes', 'node-controls-labels');
   const menu = pane().locator('.ts-wrapper');
@@ -247,6 +262,12 @@ for (const [filetype, filename] of [['svg', 'network-test.svg'], ['png', 'networ
     if (filetype == 'svg') {
       const svg = fs.readFileSync(await download.path(), 'utf8');
       expect((svg.match(/<line /g) || []).length).toBe(476);
+    } else {
+      // The network, at the view's size, with more than its background
+      const stats = await imageStats(page, download);
+      const size = await view().locator('.network-view').evaluate(el => [el.clientWidth, el.clientHeight]);
+      expect([stats.width, stats.height]).toEqual(size);
+      expect(stats.colors).toBeGreaterThan(10);
     }
     expect(errors).toEqual([]);
   });

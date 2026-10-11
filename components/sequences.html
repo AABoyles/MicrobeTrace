@@ -124,14 +124,14 @@ For large sets of sequences, this can take a long time.">
 
     const setBackground = () => { panel.style.background = settings.get('background-color'); };
 
-    const saveText = (prefix, extension) => filename => saveAs(
+    const saveText = (prefix, extension) => filename => MT.saveAs(
       new Blob([sequences().map(d => prefix + d._id + '\r\n' + d.seq).join('\r\n')]),
       filename + '.' + extension
     );
 
     MT.paneToggle($('.settings-toggle'), pane);
     MT.tableExport(root, {
-      png: filename => canvas && canvas.toBlob(blob => saveAs(blob, filename + '.png')),
+      png: filename => canvas && canvas.toBlob(blob => MT.saveAs(blob, filename + '.png')),
       fasta: saveText('>', 'fasta'),
       mega: saveText('#', 'mega')
     });

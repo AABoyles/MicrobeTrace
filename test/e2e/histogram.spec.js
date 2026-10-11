@@ -1,7 +1,7 @@
 // The histogram view: its settings, what they draw, and how they're saved and
 // restored.
 const { test, expect } = require('@playwright/test');
-const { watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
+const { imageStats, watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -122,6 +122,10 @@ test('exports a PNG', async () => {
   await modal.getByPlaceholder('Filename').fill('histogram-test');
   const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
   expect(download.suggestedFilename()).toBe('histogram-test.png');
+  // The plot, with its styles: more than its background
+  const stats = await imageStats(page, download);
+  expect(stats.width).toBe(Math.round(await view().locator('.main-svg').first().evaluate(el => el.getBoundingClientRect().width)));
+  expect(stats.colors).toBeGreaterThan(10);
   expect(errors).toEqual([]);
 });
 

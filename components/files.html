@@ -472,7 +472,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
       row.querySelector('a[title="Resave this file"]').addEventListener('click', e => {
         e.preventDefault();
-        saveAs(new Blob([file.contents], { type: file.type || 'text' }), file.name);
+        MT.saveAs(new Blob([file.contents], { type: file.type || 'text' }), file.name);
       });
 
       // The fields named for what they hold, or the next column

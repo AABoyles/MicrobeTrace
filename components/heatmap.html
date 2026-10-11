@@ -199,7 +199,7 @@
     const table = () => [[''].concat(labels)].concat(matrix.map((row, i) => [labels[i]].concat(row)));
     MT.paneToggle($('.settings-toggle'), pane);
     MT.plotExport(root, plot, settings, {
-      csv: filename => saveAs(new Blob([Papa.unparse(table())], { type: 'text/csv;charset=utf-8' }), filename + '.csv'),
+      csv: filename => MT.saveAs(new Blob([Papa.unparse(table())], { type: 'text/csv;charset=utf-8' }), filename + '.csv'),
       xlsx: filename => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(table()), 'Distances');
