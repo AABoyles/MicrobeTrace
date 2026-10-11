@@ -175,3 +175,47 @@ test('saving sources adds little to a session', async ({ page }) => {
   // Values the nodes have are saved as 1
   expect(sizes.sources / sizes.session).toBeLessThan(0.05);
 });
+
+// The node fields that would be listed as "ID" in menus
+const idFields = page => page.evaluate(() => session.data.nodeFields.filter(f => MT.titleize(f) == 'ID'));
+
+test('the column chosen as the ID is the ID, listed once', async ({ page }) => {
+  const errors = watchErrors(page);
+  await add(page, [links, cases]);
+  await launch(page);
+  expect(await idFields(page)).toEqual(['_id']);
+  expect(await page.locator('#search-field option', { hasText: /^ID$/ }).count()).toBe(1);
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'S0').id)).toBeUndefined();
+  expect(errors).toEqual([]);
+});
+
+test('so are columns chosen as the ID and sequence under other names', async ({ page }) => {
+  const seqs = csv('nodes-samples.csv', ['SampleID', 'SEQUENCE', 'state'],
+    ids(20).map((id, i) => [id, 'ACGT'.repeat(10) + 'ACGT'.slice(0, i % 4), 'Texas']));
+  await add(page, [links, seqs]);
+  // The Files view chose them
+  const fields = page.locator('#file-table .file-table-row', { hasText: 'nodes-samples.csv' }).locator('select');
+  await expect(fields.nth(0)).toHaveValue('SampleID');
+  await expect(fields.nth(1)).toHaveValue('SEQUENCE');
+  await launch(page);
+  const fieldsAfter = await page.evaluate(() => session.data.nodeFields);
+  expect(fieldsAfter).not.toContain('SampleID');
+  expect(fieldsAfter).not.toContain('SEQUENCE');
+  expect(fieldsAfter).toContain('state');
+  expect(await page.evaluate(() => { const d = session.data.nodes.find(d => d._id == 'S1'); return [d.seq.replace(/-/g, '').length, d.SEQUENCE]; })).toEqual([41, undefined]);
+});
+
+test('a session that lists the ID column as a field too opens listing it once', async ({ page }) => {
+  await add(page, [links, cases]);
+  await launch(page);
+  // As sessions were saved before: the ID column copied onto the nodes and listed
+  const json = await page.evaluate(() => {
+    const old = JSON.parse(JSON.stringify(session));
+    old.data.nodes.forEach(d => { d.id = d._id; });
+    old.data.nodeFields.push('id');
+    return JSON.stringify(old);
+  });
+  await page.setInputFiles('#OpenTab', { name: 'old.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  expect(await idFields(page)).toEqual(['_id']);
+});

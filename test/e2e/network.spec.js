@@ -185,7 +185,11 @@ test("a node's context menu pins it and shows its attributes", async () => {
   await menu.locator('a', { hasText: 'View Attributes' }).click();
   await waitForModal(page, '.modal.show');
   const id = await page.evaluate(() => temp.network.points[0]._id);
-  await expect(page.locator('.modal.show tbody')).toContainText(id);
+  // Its ID first, once
+  const names = await page.locator('.modal.show tbody tr td:first-child').allInnerTexts();
+  expect(names[0]).toBe('ID');
+  expect(names.filter(name => name == 'ID')).toHaveLength(1);
+  await expect(page.locator('.modal.show tbody tr').first().locator('td').nth(1)).toHaveText(id);
   await page.locator('.modal.show button', { hasText: 'OK' }).click();
 });
 

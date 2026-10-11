@@ -902,6 +902,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 origin: origin
               };
               Object.keys(node).forEach(key => {
+                // The columns chosen as the ID and sequence are those, not fields too
+                if (key == file.field1 || key == file.field2) return;
                 let safeKey = filterXSS(key);
                 if (!session.data.nodeFields.includes(safeKey)) {
                   session.data.nodeFields.push(safeKey);
@@ -930,6 +932,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   origin: origin
                 };
                 Object.keys(node).forEach(key => {
+                  // The columns chosen as the ID and sequence are those, not fields too
+                  if (key == file.field1 || key == file.field2) return;
                   let safeKey = filterXSS(key);
                   if (!session.data.nodeFields.includes(safeKey)) {
                     session.data.nodeFields.push(safeKey);

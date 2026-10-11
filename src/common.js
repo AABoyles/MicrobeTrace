@@ -612,6 +612,10 @@
     ['nodeFields', 'linkFields', 'clusterFields', 'nodeExclusions'].forEach(v => {
       if(oldSession.data[v]) session.data[v] = uniq(session.data[v].concat(oldSession.data[v]));
     });
+    // Sessions saved before the ID column was the ID alone list it as a field
+    // too: leave it out where it only repeats the ID
+    session.data.nodeFields = session.data.nodeFields.filter(field => !(/^id$/i.test(field) &&
+      session.data.nodes.every(d => d[field] == null || "" + d[field] == d._id)));
     if(oldSession.network) session.network = oldSession.network;
     MT.applyStyle(session.style);
     // if(!links[0]['distance']){  #249
@@ -678,7 +682,8 @@
       newNode.id = "" + newNode.id;     
       MT.addNode(newNode, false);   
     });
-    ["genotypes", "group", "id", "name"].forEach(key => {     
+    // (A sample's id is its ID, _id, so isn't listed as a field too)
+    ["genotypes", "group", "name"].forEach(key => {     
       if (!session.data.nodeFields.includes(key)){
         session.data.nodeFields.push(key);     
       }   

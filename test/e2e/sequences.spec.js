@@ -7,7 +7,7 @@ const { watchErrors, loadNetwork, launchView, closeView, openExport } = require(
 test.describe.configure({ mode: 'serial' });
 
 let page, errors, ids;
-const nodeIds = () => page.evaluate(() => session.data.nodes.map(d => d.id));
+const nodeIds = () => page.evaluate(() => session.data.nodes.map(d => d._id));
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
   errors = watchErrors(page);
