@@ -2,10 +2,10 @@
 
 <div class="view-controls">
   <button type="button" class="btn btn-light btn-sm settings-toggle" title="Gantt Settings">
-    <span class="oi oi-cog"></span>
+    <span class="bi bi-gear"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#gantt-export-modal" title="Export Gantt">
-    <span class="oi oi-data-transfer-download"></span>
+    <span class="bi bi-download"></span>
   </button>
 </div>
 
@@ -191,7 +191,7 @@
         const row = document.createElement('div');
         row.className = 'form-group gantt-date';
         row.innerHTML = `
-          <a href="#" title="Remove this date" style="position: relative; top: 2px; left: 2px;"><span class="oi oi-circle-x"></span></a>
+          <a href="#" title="Remove this date" style="position: relative; top: 2px; left: 2px;"><span class="bi bi-x-circle"></span></a>
           <div class="row">
             <div class="col-3 offset-1">Start</div>
             <div class="col-8"><select class="form-select form-select-sm" name="start">${options}</select></div>

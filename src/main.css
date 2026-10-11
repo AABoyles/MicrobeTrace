@@ -358,7 +358,7 @@ label[for="OpenTab"] {
   text-overflow: ellipsis;
   margin: auto;
 }
-.filename span.oi-circle-x:hover {
+.filename span.bi-x-circle:hover {
   color: red;
 }
 td {

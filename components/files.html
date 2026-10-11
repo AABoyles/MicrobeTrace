@@ -24,7 +24,7 @@
 
 <div class="view-controls">
   <button type="button" class="btn btn-light btn-sm settings-toggle" title="Files Settings">
-    <span class="oi oi-cog"></span>
+    <span class="bi bi-gear"></span>
   </button>
 </div>
 
@@ -443,8 +443,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       row.innerHTML = `
         <div class="row w-100">
           <div class="file-name col">
-            <a href="#" class="oi oi-circle-x align-middle p-1" title="Remove this file"></a>
-            <a href="#" class="oi oi-data-transfer-download align-middle p-1" title="Resave this file"></a>
+            <a href="#" class="bi bi-x-circle align-middle p-1" title="Remove this file"></a>
+            <a href="#" class="bi bi-download align-middle p-1" title="Resave this file"></a>
             <span class="p-1"></span>
             <div class="btn-group btn-group-toggle btn-group-sm float-end" data-toggle="buttons">
               ${kinds.map(([value, label]) => `<label class="btn btn-light${value == kind ? ' active' : ''}">

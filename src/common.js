@@ -2228,7 +2228,7 @@
           name.className = 'col-9';
           name.textContent = file.name.split('.').slice(0, -1).join('.');
           remove.href = '#';
-          remove.className = 'oi oi-circle-x align-middle p-1';
+          remove.className = 'bi bi-x-circle align-middle p-1';
           remove.title = 'Remove this file';
           name.prepend(remove);
           colorCell.className = 'col-3';
