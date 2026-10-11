@@ -310,6 +310,10 @@
       writable: true,
       configurable: true
     });
+    // The nodes by ID, and the values each file gave them (see src/nodes.js).
+    // Like the graph, they aren't saved with the session.
+    Object.defineProperty(data, 'nodeIndex', { value: new Map(), writable: true, configurable: true });
+    Object.defineProperty(data, 'sources', { value: new MTNodeSources(), writable: true, configurable: true });
     Object.defineProperty(data, 'links', {
       enumerable: true,
       configurable: true,
@@ -365,31 +369,55 @@
     return out;
   };
   
-  MT.addNode = (newNode, check) => {
-    if ('id' in newNode){
-      if('_id' in newNode){
-        //This is here because the logic won't negate for some reason. I don't get it...
-      } else {
-        newNode._id = newNode.id;
-      }
-    }
+  // Adds a node, or merges it into the node with the same ID. Returns 1 if
+  // the node is new. (check is no longer needed: nodes are always merged.)
+  //
+  // Given the source it came from (session.data.sources), the node's values
+  // are recorded there, and where files disagree the top file's win. Without
+  // a source (a saved session, an import), its values replace any already set.
+  MT.addNode = (newNode, check, source) => {
+    if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
     if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
     if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
-    if (check) {
-      let nodes = session.data.nodes;
-      const n = nodes.length;
-      for (let i = 0; i < n; i++) {
-        let node = nodes[i];
-        if (node._id == newNode._id) {
-          newNode.origin = uniq(newNode.origin.concat(node.origin));
-          Object.assign(node, newNode);
-          return 0;
-        }
+    const index = session.data.nodeIndex;
+    let node = index.get(newNode._id);
+    if (!source) {
+      if (node) {
+        // (Imports may give one origin as text)
+        newNode.origin = uniq([].concat(newNode.origin || [], node.origin || []));
+        Object.assign(node, newNode);
+        return 0;
       }
+      node = Object.assign(MT.defaultNode(), newNode);
+      session.data.nodes.push(node);
+      index.set(node._id, node);
+      return 1;
     }
-    session.data.nodes.push(Object.assign(MT.defaultNode(), newNode));
-    return 1;
+    const added = !node;
+    if (added) {
+      node = Object.assign(MT.defaultNode(), { _id: newNode._id });
+      session.data.nodes.push(node);
+      index.set(node._id, node);
+    }
+    node.origin = uniq([].concat(newNode.origin || []).concat(node.origin));
+    const values = {};
+    for (const field in newNode) if (field != '_id' && field != 'origin') values[field] = newNode[field];
+    source.add(node._id, values);
+    // Each field takes the best source's value (an empty one, if none has more)
+    const sources = session.data.sources;
+    for (const field in values) {
+      const value = sources.resolve(node._id, field);
+      if (value !== undefined) node[field] = value;
+      else if (!(field in node)) node[field] = values[field];
+    }
+    return added ? 1 : 0;
   };
+
+  // Each file's value for a node's field, top file first, marking the one used
+  MT.provenance = (id, field) => session.data.sources.provenance('' + id, field);
+
+  // Where files disagree: each field, with the IDs of the nodes they disagree on
+  MT.nodeConflicts = () => session.data.sources.conflicts();
   
   // Adds a link, or merges it into the link between the same two nodes (its
   // fields win, origins are combined). Returns 1 if the link is new.
@@ -663,7 +691,7 @@
     });
   };
   
-  MT.parseCSVMatrix = file => {
+  MT.parseCSVMatrix = (file, source) => {
     return new Promise(resolve => {
       let check = session.files.length > 1;
       const origin = [file.name];
@@ -680,7 +708,7 @@
           nn += MT.addNode({
             _id: filterXSS(nodes[i]),
             origin: ['Genetic Distance']
-          }, check);
+          }, check, source);
         }
         const links = data.links;
         const tl = links.length;

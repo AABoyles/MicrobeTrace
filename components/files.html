@@ -5,6 +5,7 @@
       <span class="drop-zone-title">Drop files here, or <span class="link-primary">add files</span></span>
       <span class="drop-zone-hint">Link or node lists (CSV or Excel), distance matrices, FASTA, Newick, or a saved MicrobeTrace session</span>
     </label>
+    <p class="file-order-hint" hidden>Where files disagree about a node, the file nearest the top wins. Drag <span class="bi bi-grip-vertical"></span> to reorder them.</p>
   </div>
 </div>
 
@@ -356,6 +357,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     root.style.zIndex = 1000;
 
     const dropZone = $('.drop-zone');
+
+    // The files' order, which ranks them where they disagree, follows their
+    // rows, which can be dragged by their grips
+    const fileOf = new WeakMap();
+    const showOrderHint = () => { $('.file-order-hint').hidden = $$('.file-table-row').length < 2; };
+    sortable(table, { items: '.file-table-row', handle: '.file-grip', forcePlaceholderSize: true });
+    table.addEventListener('sortupdate', () => {
+      const order = $$('.file-table-row').map(row => fileOf.get(row));
+      session.files.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    });
+
     const ready = () => {
       dropZone.hidden = true;
       launchButton.disabled = false;
@@ -453,6 +465,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       row.innerHTML = `
         <div class="row w-100">
           <div class="file-name col">
+            <span class="bi bi-grip-vertical file-grip" title="Drag to reorder"></span>
             <span class="file-title p-1"></span>
             <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
               ${kinds.map(([value, label]) => `<label class="btn btn-light${value == kind ? ' active' : ''}">
@@ -479,6 +492,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const i = session.files.indexOf(file);
         if (i > -1) session.files.splice(i, 1);
         row.remove();
+        showOrderHint();
         if (!table.querySelector('.file-table-row')) {
           dropZone.hidden = false;
           launchButton.disabled = true;
@@ -530,6 +544,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       }
 
       table.append(row);
+      fileOf.set(row, file);
+      sortable(table, 'reload');
+      showOrderHint();
       matchHeaders(kind);
       refit(false);
       row.querySelectorAll(`input[name="${group}"]`).forEach(input => input.addEventListener('change', () => {
@@ -745,14 +762,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const nFiles = session.files.length - 1;
       const check = nFiles > 0;
 
+      // Files are read in the order their kinds need, but where they disagree
+      // about a node, the values of the file nearest the top of the list win
       const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
-      session.files.sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
+      const files = session.files.slice().sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
+      session.data.sources.reset();
 
       session.meta.anySequences = session.files.some(file => (file.format == "fasta") || (file.format == "node" && file.field2 !== "None"));
 
-      session.files.forEach((file, fileNum) => {
+      files.forEach((file, fileNum) => {
         const start = Date.now();
         const origin = [file.name];
+        const source = session.data.sources.add(file.name, session.files.indexOf(file));
 
         if (file.format == 'fasta') {
 
@@ -767,7 +788,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 _id: filterXSS(node.id),
                 seq: filterXSS(node.seq),
                 origin: origin
-              }, check);
+              }, check, source);
             }
             console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
@@ -806,28 +827,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             data.map(forEachLink);
             message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
             let n = 0, t = 0;
-            let nodeIDs = [];
+            const nodeIDs = new Set();
             const k = data.length;
             for (let i = 0; i < k; i++) {
               const l = data[i];
-              const f1 = l[file.field1];
-              if (nodeIDs.indexOf(f1) == -1) {
+              [l[file.field1], l[file.field2]].forEach(id => {
+                if (nodeIDs.has(id)) return;
                 t++;
-                nodeIDs.push(f1);
+                nodeIDs.add(id);
                 n += MT.addNode({
-                  _id: '' + f1,
+                  _id: '' + id,
                   origin: origin
-                }, true);
-              }
-              const f2 = l[file.field2];
-              if (nodeIDs.indexOf(f2) == -1) {
-                t++;
-                nodeIDs.push(f2);
-                n += MT.addNode({
-                  _id: '' + f2,
-                  origin: origin
-                }, true);
-              }
+                }, true, source);
+              });
             }
             console.log('Link Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
@@ -853,25 +865,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 });
                 let newNodes = 0, totalNodes = 0;
                 const n = data.length;
-                let nodeIDs = [];
+                // Each endpoint once (it used to count, and look up, every one)
+                const nodeIDs = new Set();
                 for (let i = 0; i < n; i++) {
                   const l = data[i];
-                  const f1 = l[file.field1];
-                  if (nodeIDs.indexOf(f1) == -1) {
+                  [l[file.field1], l[file.field2]].forEach(id => {
+                    if (nodeIDs.has(id)) return;
                     totalNodes++;
+                    nodeIDs.add(id);
                     newNodes += MT.addNode({
-                      _id: '' + f1,
+                      _id: '' + id,
                       origin: origin
-                    }, true);
-                  }
-                  const f2 = l[file.field2];
-                  if (nodeIDs.indexOf(f2) == -1) {
-                    totalNodes++;
-                    newNodes += MT.addNode({
-                      _id: '' + f2,
-                      origin: origin
-                    }, true);
-                  }
+                    }, true, source);
+                  });
                 }
                 console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
@@ -902,7 +908,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 }
                 safeNode[safeKey] = filterXSS(node[key]);
               });
-              m += MT.addNode(safeNode, check);
+              m += MT.addNode(safeNode, check, source);
             });
             console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
@@ -932,7 +938,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   safeNode[safeKey] =  (typeof node[key] === 'string')  ?   filterXSS(node[key]) : node[key]; //#173
 
                 });
-                m += MT.addNode(safeNode, check);
+                m += MT.addNode(safeNode, check, source);
               },
               complete: () => {
                 console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
@@ -969,7 +975,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     nn += MT.addNode({
                       _id: filterXSS('' + cell),
                       origin: origin
-                    }, check);
+                    }, check, source);
                   }
                 });
               } else {
@@ -994,7 +1000,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           } else {
 
-            MT.parseCSVMatrix(file).then(o => {
+            MT.parseCSVMatrix(file, source).then(o => {
               message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
               if (fileNum == nFiles) processSequences();
@@ -1014,7 +1020,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             newNodes += MT.addNode({
               _id: source,
               origin: origin
-            }, check);
+            }, check, source);
             for (let j = 0; j < i; j++) {
               newLinks += MT.addLink({
                 source: source,
@@ -1033,6 +1039,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
 
       async function processSequences() {
+        // Where files disagree about nodes, say so (the top file's values are used)
+        const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
+        if (differ) message(` - ${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files; the top file's are used.`);
         if (!session.meta.anySequences) return MT.runHamsters();
         session.data.nodeFields.push('seq');
         let nodes = session.data.nodes, subset = [];
@@ -1122,6 +1131,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       setDefaultView(view);
     });
 
+    stop.push(() => sortable(table, 'destroy'));
     return {
       destroy: () => stop.forEach(fn => fn())
     };
