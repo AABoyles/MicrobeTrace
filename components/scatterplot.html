@@ -142,13 +142,18 @@
     const variables = [['scatterplot-xVar', $('#scatterplot-xVar')], ['scatterplot-yVar', $('#scatterplot-yVar')]];
 
     // The variable menus offer the chosen dataset's fields. A variable the
-    // dataset doesn't have becomes its first field.
+    // dataset doesn't have (or not yet chosen) becomes one of its measurements:
+    // the first two, or the one by cluster.
     function showFields() {
-      const fields = session.data[settings.get('scatterplot-showNodes') ? 'nodeFields' : 'linkFields'];
+      const nodes = settings.get('scatterplot-showNodes');
+      const fields = session.data[nodes ? 'nodeFields' : 'linkFields'];
       const options = fields.map(f => `<option value="${f}">${MT.titleize(f)}</option>`).join('');
-      variables.forEach(([key, select]) => {
+      const measures = MT.numericFields(nodes ? MT.getVisibleNodes() : MT.getVisibleLinks(), fields);
+      const fallback = fields.includes('cluster') ? 'cluster' : fields[0];
+      const defaults = measures.length > 1 ? measures.slice(0, 2) : [fallback, measures[0] || fields[0]];
+      variables.forEach(([key, select], i) => {
         select.innerHTML = options;
-        if (!fields.includes(settings.get(key))) settings.set(key, fields[0]);
+        if (!fields.includes(settings.get(key))) settings.set(key, defaults[i]);
         select.value = settings.get(key);
       });
     }
@@ -160,7 +165,8 @@
       const nodes = settings.get('scatterplot-showNodes');
       const xVar = settings.get('scatterplot-xVar'), yVar = settings.get('scatterplot-yVar');
       const items = nodes ? MT.getVisibleNodes() : MT.getVisibleLinks();
-      const contrast = settings.get('background-color-contrast');
+      // Faint gridlines, so the points stand out
+      const grid = { gridcolor: MT.gridColor(settings), zerolinecolor: MT.gridColor(settings, 0.4) };
       Plotly.react(plot, [{
         x: items.map(d => d[xVar]),
         y: items.map(d => d[yVar]),
@@ -169,8 +175,8 @@
         marker: { color: settings.get(nodes ? 'node-color' : 'link-color') }
       }], {
         width, height,
-        xaxis: { title: { text: MT.titleize(xVar) }, gridcolor: contrast, zerolinecolor: contrast },
-        yaxis: { title: { text: MT.titleize(yVar) }, gridcolor: contrast, zerolinecolor: contrast, type: settings.get('scatterplot-logScale') ? 'log' : '-' },
+        xaxis: { title: { text: MT.titleize(xVar) }, ...grid },
+        yaxis: { title: { text: MT.titleize(yVar) }, ...grid, type: settings.get('scatterplot-logScale') ? 'log' : '-' },
         ...MT.plotColors(settings)
       }, {
         displaylogo: false,

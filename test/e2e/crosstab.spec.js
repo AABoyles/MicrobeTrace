@@ -30,7 +30,13 @@ const table = () => view().locator('.tabulator').evaluate(el => {
 });
 const distinct = field => page.evaluate(field => Array.from(new Set(session.data.nodes.map(d => d[field] + ''))), field);
 
-test('opens with its settings showing', async () => {
+test('opens on its first two categorical variables, drawn', async () => {
+  await expect.poll(async () => (await table()).total).toBe(310);
+  await expect(fieldX()).toHaveValue('state');
+  await expect(fieldY()).toHaveValue('group');
+  // With a table to show, the settings start closed
+  await expect(pane()).toBeHidden();
+  await view().locator('.settings-toggle').click();
   await expect(pane()).toBeVisible();
   await expect.poll(() => fieldX().evaluate(el => Array.from(el.options).map(o => o.value))).toContain('group');
 });

@@ -64,7 +64,7 @@
     "bubble-x": "None",
     "bubble-y": "None",
     "bubble-charge": 1.5,
-    "bubble-size": 5,
+    "bubble-size": null, // fits the view
     "choropleth-aggregate-as": "states",
     "choropleth-aggregate-on": "None",
     "choropleth-basemap-show": false,
@@ -188,8 +188,8 @@
     "reference-source-file": true,
     "reference-source-first": false,
     "reference-source-consensus": false,
-    "scatterplot-xVar": "index",
-    "scatterplot-yVar": "distance",
+    "scatterplot-xVar": null, // chosen from the data
+    "scatterplot-yVar": null,
     "scatterplot-logScale": false,
     "scatterplot-showNodes": false,
     "search-field": "_id",
@@ -214,7 +214,7 @@
     "tree-leaf-label-size": 12,
     "tree-leaf-node-radius-variable": "None",
     "tree-leaf-node-show": true,
-    "tree-leaf-node-size": 9,
+    "tree-leaf-node-size": null, // fits the leaf spacing
     "tree-mode-square": true,
     "tree-mode-smooth": false,
     "tree-mode-straight": false,
@@ -1258,7 +1258,8 @@
       });
     });
     
-    // patch missing date fields to earliest date in the the data
+    // patch missing date fields to earliest date in the the data: fields
+    // whose values are all dates (MT.isDate), so not numbers such as latitudes
     let fields = session.data["nodeFields"];
     let nodeSkeleton = MT.dataSkeleton();
     let fieldsToCheck = fields.filter(f => !nodeSkeleton.nodeFields.includes(f) && f != '_ambiguity' && f != '_diff'); 
@@ -1269,17 +1270,14 @@
       let field = fieldsToCheck[j];
       let times = [];
       for (let i = 0; i < n; i++) {
-        let node = session.data.nodes[i];
-        if (node[field] != null) {
-          let time = MT.parseDate(node[field]);
-          if (time)
-            times.push(time);
-          else
-            continue outerloop;
-        }
-      }      
-      if (times.length < n) {
-        let minTime = Math.min(...times);
+        let value = session.data.nodes[i][field];
+        if (value == null) continue;
+        if (!MT.isDate(value)) continue outerloop;
+        times.push(MT.parseDate(value));
+      }
+      // (A field with no values has no earliest date)
+      if (times.length && times.length < n) {
+        let minTime = times.reduce((a, b) => a < b ? a : b);
         let minTimeString = new Date(minTime).toString();
         session.data.nodes.forEach(d => {
           if (d[field] == null) {
@@ -2140,6 +2138,47 @@
     const background = settings.get('background-color'), contrast = settings.get('background-color-contrast');
     return { paper_bgcolor: background, plot_bgcolor: background, font: { color: contrast } };
   };
+
+  // A plot's gridlines: the contrast color, faint enough to sit behind the data
+  MT.gridColor = (settings, opacity = 0.15) => {
+    const color = d3.color(settings.get('background-color-contrast'));
+    color.opacity = opacity;
+    return color + '';
+  };
+
+  // Choosing a view's variables from the data. Fields that MicrobeTrace keeps
+  // for itself, or that identify items, are left out.
+  const ownFields = ['index', '_id', 'id', 'selected', 'visible', 'origin', 'seq', 'source', 'target', 'nn', 'directed'];
+  const choosable = fields => fields.filter(field => !ownFields.includes(field) && field[0] != '_');
+  const valuesOf = (items, field) => items.map(d => d[field]).filter(v => v != null && v !== '');
+
+  // Fields that sort items into a few groups: text with 2 to 20 values
+  MT.categoricalFields = (items, fields) => choosable(fields).filter(field => {
+    const values = valuesOf(items, field);
+    if (!values.length || values.some(v => typeof v != 'string')) return false;
+    const distinct = new Set(values).size;
+    return distinct >= 2 && distinct <= 20;
+  });
+
+  // Fields of measurements: numbers with at least 3 values (cluster IDs aren't)
+  MT.numericFields = (items, fields) => choosable(fields).filter(field => {
+    if (field == 'cluster') return false;
+    const values = valuesOf(items, field);
+    return values.length > 0 && values.every(v => typeof v == 'number' && isFinite(v)) && new Set(values).size >= 3;
+  });
+
+  // Whether a value is a date: a Date, or text that reads as one. Numbers
+  // aren't, nor text that's just a number (as spreadsheets give), though
+  // MT.parseDate reads them as times.
+  MT.isDate = value => value instanceof Date ? !isNaN(value) :
+    typeof value == 'string' && isNaN(value) && !!MT.parseDate(value);
+
+  // Fields of dates: all dates, with at least 2. Those named for dates come
+  // first.
+  MT.dateFields = (items, fields) => choosable(fields).filter(field => {
+    const values = valuesOf(items, field);
+    return values.length > 0 && values.every(MT.isDate) && new Set(values).size >= 2;
+  }).sort((a, b) => /date|time|day/i.test(b) - /date|time|day/i.test(a));
 
   // A floating table (such as a view's legend) with a drag handle and a
   // context menu. The menu's items say what they do with data-action: drag

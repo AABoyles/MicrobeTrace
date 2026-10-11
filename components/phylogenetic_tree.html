@@ -322,7 +322,7 @@
                   <label for="tree-leaf-node-size">Node Size</label>
                 </div>
                 <div class="col-9">
-                  <input id="tree-leaf-node-size" data-setting="tree-leaf-node-size" type="range" class="form-range" min="1" max="32" value="9" step="1">
+                  <input id="tree-leaf-node-size" data-setting="tree-leaf-node-size" type="range" class="form-range" min="1" max="32" value="9" step="0.5">
                 </div>
               </div>
             </div>
@@ -529,9 +529,28 @@
     });
     labelWatcher.observe(container, { subtree: true, childList: true, characterData: true });
 
-    // A leaf's radius: the size setting, or scaled to it by the size variable
+    // The leaves' size by default: just under half the usual space between
+    // neighboring leaves, so they don't overlap
+    function fittedRadius() {
+      const circular = settings.get('tree-layout') == 'circular';
+      const leaves = [];
+      tree.eachLeafNode((circle, d) => leaves.push(d));
+      leaves.sort((a, b) => a.x - b.x);
+      // Across the layout's breadth: pixels, or for a circle, angle times radius
+      const gaps = leaves.slice(1)
+        .map((d, i) => (d.x - leaves[i].x) * (circular ? Math.min(d.y, leaves[i].y) : 1))
+        .filter(gap => gap > 0)
+        .sort((a, b) => a - b);
+      const gap = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 20;
+      return Math.round(Math.max(1.5, Math.min(9, 0.45 * gap)) * 10) / 10;
+    }
+
+    // A leaf's radius: the size setting (or the fitted size, which its slider
+    // shows), or scaled to it by the size variable
     function radiusOf(nodes) {
-      const cap = settings.get('tree-leaf-node-size'), v = settings.get('tree-leaf-node-radius-variable');
+      const v = settings.get('tree-leaf-node-radius-variable');
+      let cap = settings.get('tree-leaf-node-size');
+      if (!cap) $('[data-setting="tree-leaf-node-size"]').value = cap = fittedRadius();
       if (!v || v == 'None') return () => cap;
       const value = (d, node) => treeVariables.includes(v) ? d.data[v] : node && node[v];
       const values = [];
@@ -541,10 +560,11 @@
       });
       const [min, max] = d3.extent(values);
       if (min === undefined || min == max) return () => cap;
-      const scale = d3.scaleLinear().domain([min, max]).range([4, cap]);
+      const least = Math.min(4, cap);
+      const scale = d3.scaleLinear().domain([min, max]).range([least, cap]);
       return (d, node) => {
         const x = parseFloat(value(d, node));
-        return isFinite(x) ? scale(x) : 4;
+        return isFinite(x) ? scale(x) : least;
       };
     }
 

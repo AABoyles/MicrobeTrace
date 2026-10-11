@@ -1,4 +1,5 @@
 <div class="timeline-chart"></div>
+<p class="view-message" hidden>Choose a <strong>Date Field</strong> in the settings to draw the epi curve.</p>
 
 <div class="view-controls">
   <button type="button" class="btn btn-light btn-sm settings-toggle" title="Epi Curve Settings">
@@ -139,8 +140,11 @@
       // The chart's padding is the top margin
       svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.bottom);
 
-      const field = settings.get('timeline-date-field');
-      const dates = field && field != 'None' ? session.data.nodes.map(d => dateOf(d[field])).filter(d => d) : [];
+      const field = dateField();
+      const dates = field ? session.data.nodes.map(d => dateOf(d[field])).filter(d => d) : [];
+      // Without dates, a note saying what to choose instead of an empty chart
+      $('.view-message').hidden = dates.length > 0;
+      svg.style('display', dates.length ? null : 'none');
       const domain = dates.length > 1 ? d3.extent(dates) : [new Date(2000, 1, 1), new Date()];
       x = d3.scaleTime().domain(domain).rangeRound([0, width]);
       const bins = d3.bin().domain(x.domain()).thresholds(d3.thresholdScott)(dates);
@@ -184,6 +188,9 @@
     function filter(end) {
       // With no range, nothing is hidden
       session.state.timeEnd = end ? end.getTime() : Date.now();
+      // Filtering needs the field chosen, not just shown. (Choosing it redraws,
+      // keeping the range just set.)
+      if (!chosen()) settings.set('timeline-date-field', dateField());
       MT.setNodeVisibility(true);
       MT.setLinkVisibility(true);
       MT.tagClusters().then(() => {
@@ -198,15 +205,35 @@
       axis.style('color', settings.get('background-color-contrast'));
     };
 
-    MT.paneToggle($('.settings-toggle'), pane, true);
+    // The date field: the one chosen, or else the data's first field of dates,
+    // which is shown but not saved until the curve filters by it (choosing it
+    // also tells the network and statistics to watch the dates)
+    const menu = $('[data-setting="timeline-date-field"]');
+    let [detected] = MT.dateFields(session.data.nodes, session.data.nodeFields);
+    const chosen = () => {
+      const field = settings.get('timeline-date-field');
+      return field && field != 'None' ? field : null;
+    };
+    const dateField = () => chosen() || detected || null;
+    const showField = () => { menu.value = dateField() || 'None'; };
+    // Choosing None leaves the curve empty
+    menu.addEventListener('change', () => {
+      if (menu.value == 'None') detected = null;
+      draw();
+    });
+
+    // The settings start open when there's no date field to draw
+    MT.paneToggle($('.settings-toggle'), pane, !dateField());
     MT.svgExport(root, () => svg.node(), settings);
 
     const stop = [
       MTBind(pane, settings),
+      settings.subscribe('timeline-date-field', showField, { reload: true }),
       settings.subscribe(['timeline-date-field', 'timeline-noncumulative'], draw),
       events.on('node-color-change', setColor),
       events.on('background-color-change', setBackground)
     ];
+    showField();
     draw();
     setBackground();
 

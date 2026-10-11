@@ -58,6 +58,16 @@ body {
   border-color: var(--bs-primary);
   color: var(--bs-primary-text-emphasis);
 }
+/* A view's note in place of a chart it can't draw yet */
+.view-message {
+  position: absolute;
+  top: 40%;
+  left: 0;
+  right: 0;
+  padding: 0 2rem;
+  text-align: center;
+  color: #6c757d;
+}
 /* The View menu, in two columns of groups */
 .view-menu.show {
   display: grid;

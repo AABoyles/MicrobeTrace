@@ -21,7 +21,12 @@ const bars = () => view().locator('svg rect.bar').evaluateAll(els => els.map(el 
 const visible = () => page.evaluate(() => session.data.nodes.filter(d => d.visible).length);
 const dated = () => page.evaluate(() => session.data.nodes.filter(d => MT.parseDate(d.date)).length);
 
-test('opens with its settings showing', async () => {
+test('opens on the first field of dates, shown but not yet saved', async () => {
+  await expect.poll(async () => (await bars()).reduce((a, b) => a + b, 0)).toBe(await dated());
+  await expect(pane().locator('select[data-setting="timeline-date-field"]')).toHaveValue('date');
+  expect(await page.evaluate(() => MT.settings.get('timeline-date-field'))).toBe('None');
+  await expect(pane()).toBeHidden();
+  await view().locator('button[title="Epi Curve Settings"]').click();
   await expect(pane()).toBeVisible();
 });
 
