@@ -501,11 +501,33 @@
           .attr('dx', 8)
           .style('font-size', settings.get('tree-leaf-label-size') + 'px');
       });
-      const round = settings.get('tree-round-true');
-      tree.eachBranchDistance((text, d) => d3.select(text)
-        .text(round ? Math.round(d.target.data.length) : d.target.data.length.toFixed(3))
-        .style('font-size', settings.get('tree-branch-distance-size') + 'px'));
+      styleBranchDistances();
     }
+
+    // The branch distances, rounded or not, at their size. Only what differs
+    // is set, so the watcher below doesn't see its own changes.
+    function styleBranchDistances() {
+      if (!tree || destroyed) return;
+      const round = settings.get('tree-round-true'), size = settings.get('tree-branch-distance-size') + 'px';
+      tree.eachBranchDistance((text, d) => {
+        const length = d.target.data.length || 0;
+        const label = round ? '' + Math.round(length) : length.toFixed(3);
+        if (text.textContent != label) text.textContent = label;
+        if (text.style.fontSize != size) text.style.fontSize = size;
+      });
+    }
+    // An animated redraw resets the labels' text halfway through, after
+    // style() has run: style them again whenever the tree changes
+    let restyling = false;
+    const labelWatcher = new MutationObserver(() => {
+      if (restyling) return;
+      restyling = true;
+      requestAnimationFrame(() => {
+        restyling = false;
+        styleBranchDistances();
+      });
+    });
+    labelWatcher.observe(container, { subtree: true, childList: true, characterData: true });
 
     // A leaf's radius: the size setting, or scaled to it by the size variable
     function radiusOf(nodes) {
@@ -643,6 +665,7 @@
       },
       destroy() {
         destroyed = true;
+        labelWatcher.disconnect();
         stop.forEach(fn => fn());
         MT.tooltip(null);
         if (tree) tree.destroy();
