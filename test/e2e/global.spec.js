@@ -217,12 +217,20 @@ test('a stashed session can be recalled', async () => {
   await expect(page.locator('.alertify-notifier')).toContainText('Stashed');
   // Stashing closes the dialog
   await expect(page.locator('#session-stash-modal')).toBeHidden();
+  // Recalled into a new session
+  await page.locator('nav .dropdown-toggle', { hasText: 'File' }).click();
+  await page.click('#NewTab');
+  await waitForModal(page, '#exit-modal');
+  await page.click('#exit-button');
+  await page.waitForFunction(() => session.data.nodes.length == 0);
   await page.locator('nav .dropdown-toggle', { hasText: 'File' }).click();
   await page.click('#RecallDataTab');
   await waitForModal(page, '#session-recall-modal');
   const row = page.locator('#recall-stashes-available .tabulator-row', { hasText: 'global-stash' });
   await expect(row).toHaveCount(1);
-  await row.click();
+  // (Its name: the middle of the row is the columns' resize handle)
+  await row.locator('.tabulator-cell').first().click();
+  await expect(row).toHaveClass(/tabulator-selected/);
   await page.click('#recall-load-stash');
   await page.waitForFunction(() => session.data.nodes.length == 310 && document.getElementById('numberOfNodes').textContent == '310', null, { timeout: 60000 });
   expect(await get('node-color-variable')).toBe('group');

@@ -4,7 +4,7 @@
 // one file, and merging many nodes quickly.
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { watchErrors, open } = require('./helpers');
+const { watchErrors, open, waitForModal } = require('./helpers');
 
 const links = path.join(__dirname, 'fixtures', 'links.csv');
 const csv = (name, header, rows) => ({ name, mimeType: 'text/csv', buffer: Buffer.from([header, ...rows].map(r => r.join(',')).join('\n')) });
@@ -94,4 +94,84 @@ test('nodes added without a source (sessions, imports) merge by ID, later values
     return { count: nodes.length, state: nodes[0].state, origin: nodes[0].origin, provenance: MT.provenance('X1', 'state') };
   });
   expect(merged).toEqual({ count: 1, state: 'Ohio', origin: ['Other', 'HIVTRACE Import'], provenance: [] });
+});
+
+// What the session knows about where values came from
+const traced = page => page.evaluate(() => ({
+  state: MT.provenance('S0', 'state'),
+  date: MT.provenance('S10', 'date'),
+  lab: MT.provenance('S60', 'lab'),
+  conflicts: Object.fromEntries(Array.from(MT.nodeConflicts(), ([field, keys]) => [field, keys.slice().sort()]))
+}));
+
+test('a saved session keeps where its values came from', async ({ page }) => {
+  const errors = watchErrors(page);
+  await add(page, [links, cases, lab]);
+  await launch(page);
+  const before = await traced(page);
+  expect(before.state.map(p => p.source)).toEqual(['nodes-cases.csv', 'nodes-lab.csv']);
+  // Saved from the Save dialog, uncompressed, and opened again
+  await page.keyboard.press('Control+s');
+  const modal = page.locator('#session-save-modal');
+  await expect(modal).toBeVisible();
+  await modal.locator('#save-file-compress').uncheck();
+  const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('#save-data').click()]);
+  const file = await download.path();
+  const saved = JSON.parse(require('fs').readFileSync(file, 'utf8'));
+  expect(saved.data.nodeSources.sources.map(s => s.name)).toEqual(['links.csv', 'nodes-cases.csv', 'nodes-lab.csv']);
+  await page.setInputFiles('#OpenTab', { name: 'reopened.microbetrace', mimeType: 'application/json', buffer: require('fs').readFileSync(file) });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  expect(await traced(page)).toEqual(before);
+  expect((await node(page, 'S0')).state).toBe('Texas');
+  expect(errors).toEqual([]);
+});
+
+test('a stashed session does too', async ({ page }) => {
+  await add(page, [links, cases, lab]);
+  await launch(page);
+  const before = await traced(page);
+  await page.locator('nav .dropdown-toggle', { hasText: 'File' }).click();
+  await page.click('#StashDataTab');
+  await waitForModal(page, '#session-stash-modal');
+  await page.fill('#stash-name', 'provenance');
+  await page.click('#stash-data');
+  await expect(page.locator('.alertify-notifier')).toContainText('Stashed');
+  await expect(page.locator('#session-stash-modal')).toBeHidden();
+  await page.evaluate(() => MT.reset());
+  expect(await page.evaluate(() => MT.provenance('S0', 'state'))).toEqual([]);
+  await page.locator('nav .dropdown-toggle', { hasText: 'File' }).click();
+  await page.click('#RecallDataTab');
+  await waitForModal(page, '#session-recall-modal');
+  const stash = page.locator('#recall-stashes-available .tabulator-row', { hasText: 'provenance' });
+  await expect(stash).toHaveCount(1);
+  // (Its name: the middle of the row is the columns' resize handle)
+  await stash.locator('.tabulator-cell').first().click();
+  await expect(stash).toHaveClass(/tabulator-selected/);
+  await page.click('#recall-load-stash');
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  expect(await traced(page)).toEqual(before);
+});
+
+test('a session saved before sources were, opens with none', async ({ page }) => {
+  const errors = watchErrors(page);
+  await add(page, [links, cases, lab]);
+  await launch(page);
+  const json = await page.evaluate(() => {
+    const old = JSON.parse(JSON.stringify(session));
+    delete old.data.nodeSources;
+    return JSON.stringify(old);
+  });
+  await page.setInputFiles('#OpenTab', { name: 'old.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  expect((await node(page, 'S0')).state).toBe('Texas');
+  expect(await traced(page)).toEqual({ state: [], date: [], lab: [], conflicts: {} });
+  expect(errors).toEqual([]);
+});
+
+test('saving sources adds little to a session', async ({ page }) => {
+  await add(page, [links, cases, lab]);
+  await launch(page);
+  const sizes = await page.evaluate(() => ({ session: JSON.stringify(session).length, sources: JSON.stringify(session.data.nodeSources).length }));
+  // Values the nodes have are saved as 1
+  expect(sizes.sources / sizes.session).toBeLessThan(0.05);
 });

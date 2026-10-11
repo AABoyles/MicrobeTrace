@@ -24,7 +24,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `menus.spec.js` | The menus and the words in dialogs: search and its options, the File, View and Help menus, the license, the empty Files view and its rows, the loading dialog, and the names Save, Stash and Export suggest |
 | `view-defaults.spec.js` | What views open on: variables chosen from the data (crosstab, flow diagram, scatterplot), the first field of dates or a note saying what to choose (epi curve, Gantt), sizes that fit the view (bubbles, tree leaves), and the network keeping its layout while the epi curve has a date |
 | `missing-values.spec.js` | Nodes missing values, from CSV and spreadsheets: missing dates filled with the earliest date, missing numbers (latitudes, counts) left missing, and which values count as dates |
-| `provenance.spec.js` | Where node values come from: files that disagree (the top file winning, others filling its gaps), tracing values to their files, reordering files, a node listed twice in a file, and merging many nodes quickly |
+| `provenance.spec.js` | Where node values come from: files that disagree (the top file winning, others filling its gaps), tracing values to their files, reordering files, a node listed twice in a file, merging many nodes quickly, and keeping all this in saved and stashed sessions |
 | `binder.spec.js` | `src/binder.js` on every control type |
 | `histogram.spec.js` | The histogram's settings, drawing, restoring and export |
 | `heatmap.spec.js` | The heatmap's settings, drawing, restoring, and PNG and CSV export |
