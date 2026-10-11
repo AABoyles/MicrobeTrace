@@ -81,3 +81,55 @@ test('same compares numbers as numbers and text without surrounding spaces', () 
   assert.strictEqual(same('Texas', 'texas'), false);
   assert.strictEqual(same(31, 32), false);
 });
+
+// The nodes as MicrobeTrace has them: each field the value used
+const resolved = sources => {
+  const nodes = new Map();
+  sources.list.forEach(s => s.rowOf.forEach((row, key) => {
+    const node = nodes.get(key) || { _id: key };
+    s.columns.forEach((column, field) => { node[field] = sources.resolve(key, field); });
+    nodes.set(key, node);
+  }));
+  return nodes;
+};
+
+test('saved and restored, sources give the same values, provenance and conflicts', () => {
+  const { sources } = three();
+  const nodes = resolved(sources);
+  const saved = JSON.parse(JSON.stringify(sources.save(key => nodes.get(key))));
+  const restored = MTNodeSources.restore(saved, key => nodes.get(key));
+  assert.deepStrictEqual(restored.ranked().map(s => [s.name, s.rank]), [['nodes.csv', 0], ['meta.xlsx', 1], ['seqs.fasta', 2]]);
+  for (const key of ['S1', 'S2']) {
+    for (const field of ['state', 'date', 'lat', 'seq']) {
+      assert.deepStrictEqual(restored.provenance(key, field), sources.provenance(key, field), `${key} ${field}`);
+    }
+  }
+  assert.deepStrictEqual(restored.conflicts(), sources.conflicts());
+});
+
+test('a saved value the node has is 1, one it does not is kept, and none is 0', () => {
+  const { sources } = three();
+  const nodes = resolved(sources);
+  const saved = sources.save(key => nodes.get(key));
+  const meta = saved.sources.find(s => s.name == 'meta.xlsx');
+  assert.deepStrictEqual(meta.keys, ['S1', 'S2']);
+  assert.deepStrictEqual(meta.columns.state, [['Ohio'], 1]); // S1 uses Texas; S2's Utah agrees
+  assert.deepStrictEqual(meta.columns.date, [['2020-01-05'], 1]);
+  const top = saved.sources.find(s => s.name == 'nodes.csv');
+  assert.deepStrictEqual(top.columns.date, [1, 0]); // S2's top date is empty
+});
+
+test('a value saved as 1 for a node that is gone is no value', () => {
+  const { sources } = three();
+  const nodes = resolved(sources);
+  const saved = sources.save(key => nodes.get(key));
+  const restored = MTNodeSources.restore(saved, key => key == 'S1' ? nodes.get(key) : undefined);
+  assert.strictEqual(restored.resolve('S2', 'state'), undefined);
+  assert.strictEqual(restored.resolve('S1', 'state'), 'Texas');
+});
+
+test('restoring nothing, or something else, gives no sources', () => {
+  assert.strictEqual(MTNodeSources.restore(undefined).list.length, 0);
+  assert.strictEqual(MTNodeSources.restore({ version: 1 }).list.length, 0);
+  assert.deepStrictEqual(new MTNodeSources().save(), { version: 1, sources: [] });
+});

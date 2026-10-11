@@ -132,6 +132,51 @@
     }
   }
 
+  // Saving and restoring sources, as sessions do. nodeOf(key) gives a node:
+  // a source's value the node also has (usually most) is saved as 1, and read
+  // back from the node; a value it doesn't have is saved as [value], and no
+  // value as 0.
+  MTNodeSources.prototype.save = function (nodeOf = () => undefined) {
+    return {
+      version: 1,
+      sources: this.list.map(source => {
+        const keys = new Array(source.rows);
+        source.rowOf.forEach((row, key) => { keys[row] = key; });
+        const columns = {};
+        source.columns.forEach((column, field) => {
+          columns[field] = keys.map((key, row) => {
+            const value = column[row];
+            if (empty(value)) return 0;
+            const node = nodeOf(key);
+            return node && node[field] === value ? 1 : [value];
+          });
+        });
+        return { name: source.name, rank: source.rank, keys, columns };
+      })
+    };
+  };
+
+  MTNodeSources.restore = (saved, nodeOf = () => undefined) => {
+    const sources = new MTNodeSources();
+    if (!saved || !Array.isArray(saved.sources)) return sources;
+    saved.sources.forEach((s, i) => {
+      const source = sources.add(s.name, typeof s.rank == 'number' ? s.rank : i);
+      const keys = s.keys || [];
+      keys.forEach((key, row) => source.rowOf.set(key, row));
+      source.rows = keys.length;
+      Object.keys(s.columns || {}).forEach(field => {
+        source.columns.set(field, s.columns[field].map((cell, row) => {
+          if (cell === 1) {
+            const node = nodeOf(keys[row]);
+            return node ? node[field] : undefined;
+          }
+          return Array.isArray(cell) ? cell[0] : undefined;
+        }));
+      });
+    });
+    return sources;
+  };
+
   MTNodeSources.empty = empty;
   MTNodeSources.same = same;
 

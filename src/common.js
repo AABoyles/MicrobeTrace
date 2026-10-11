@@ -310,10 +310,16 @@
       writable: true,
       configurable: true
     });
-    // The nodes by ID, and the values each file gave them (see src/nodes.js).
-    // Like the graph, they aren't saved with the session.
+    // The nodes by ID, and the values each file gave them (see src/nodes.js),
+    // which sessions save as nodeSources
     Object.defineProperty(data, 'nodeIndex', { value: new Map(), writable: true, configurable: true });
     Object.defineProperty(data, 'sources', { value: new MTNodeSources(), writable: true, configurable: true });
+    Object.defineProperty(data, 'nodeSources', {
+      enumerable: true,
+      configurable: true,
+      get() { return this.sources.save(key => this.nodeIndex.get(key)); },
+      set(saved) { this.sources = MTNodeSources.restore(saved, key => this.nodeIndex.get(key)); }
+    });
     Object.defineProperty(data, 'links', {
       enumerable: true,
       configurable: true,
@@ -574,6 +580,8 @@
           m = links.length;
     for(let i = 0; i < n; i++) MT.addNode(nodes[i]);
     for(let j = 0; j < m; j++) MT.addLink(links[j]);
+    // Where the nodes' values came from (sessions from before this have none)
+    if (oldSession.data.nodeSources) session.data.nodeSources = oldSession.data.nodeSources;
     ['nodeFields', 'linkFields', 'clusterFields', 'nodeExclusions'].forEach(v => {
       if(oldSession.data[v]) session.data[v] = uniq(session.data[v].concat(oldSession.data[v]));
     });
