@@ -72,10 +72,10 @@ test('the log scale applies to the count axis', async () => {
 });
 
 test('coloring nodes by a variable stacks the bars', async () => {
-  await page.evaluate(() => $('#node-color-variable').val('group').trigger('change'));
+  await page.evaluate(() => (el => { el.value = 'group'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('node-color-variable')));
   await expect.poll(async () => (await plot()).traces.length).toBeGreaterThan(1);
   expect((await plot()).traces.reduce((a, b) => a + b, 0)).toBe(310);
-  await page.evaluate(() => $('#node-color-variable').val('None').trigger('change'));
+  await page.evaluate(() => (el => { el.value = 'None'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('node-color-variable')));
   await expect.poll(async () => (await plot()).traces.length).toBe(1);
 });
 
@@ -98,14 +98,14 @@ test('a setting changed elsewhere updates the controls and the plot', async () =
 });
 
 test('redraws when the background color or the visible links change', async () => {
-  await page.evaluate(() => $('#background-color').val('#000000').trigger('change'));
+  await page.evaluate(() => (el => { el.value = '#000000'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('background-color')));
   await expect.poll(() => view().locator('.js-plotly-plot').evaluate(el => el.layout.paper_bgcolor)).toBe('#000000');
-  await page.evaluate(() => $('#background-color').val('#ffffff').trigger('change'));
+  await page.evaluate(() => (el => { el.value = '#ffffff'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('background-color')));
   await page.evaluate(() => MT.settings.set('histogram-variable', 'links-distance'));
   await expect.poll(async () => (await plot()).traces).toEqual([476]);
-  await page.evaluate(() => $('#link-threshold').val(0.005).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect.poll(async () => (await plot()).traces[0]).toBeLessThan(476);
-  await page.evaluate(() => $('#link-threshold').val(0.015).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect.poll(async () => (await plot()).traces).toEqual([476]);
 });
 

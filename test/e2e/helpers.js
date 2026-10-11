@@ -5,7 +5,6 @@ const fixtures = ['seqs.fasta', 'links.csv', 'nodes.csv'].map(f => path.join(__d
 // Errors that happen on master too, so they don't fail a test. Each is a bug to
 // fix; remove its pattern when it is.
 const KNOWN_ERRORS = [
-  /reading 'checked'/,      // files view: a radio read before the view exists
   /ga is not defined/,      // Google Analytics, blocked or offline
   /googletagmanager|google-analytics|doubleclick/
 ];
@@ -57,7 +56,7 @@ async function loadNetwork(page) {
   await page.setInputFiles('#data-files', fixtures);
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 3);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && $('#numberOfNodes').text() != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
   await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
 }
 

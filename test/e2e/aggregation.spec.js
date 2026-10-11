@@ -52,9 +52,9 @@ test('removing a variable removes its table', async () => {
 test('link variables count the visible links', async () => {
   await selectors().nth(0).selectOption('link contact');
   await expect.poll(async () => (await tables())[0].total).toBe(476);
-  await page.evaluate(() => $('#link-threshold').val(0.005).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect.poll(async () => (await tables())[0].total).toBeLessThan(476);
-  await page.evaluate(() => $('#link-threshold').val(0.015).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect.poll(async () => (await tables())[0].total).toBe(476);
 });
 

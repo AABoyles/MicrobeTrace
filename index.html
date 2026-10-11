@@ -115,7 +115,7 @@
         <span>W</span>
       </button>      
 
-      <select id="search-field" class="form-select form-select-sm nodeValues">
+      <select id="search-field" class="form-select form-select-sm nodeValues" data-setting="search-field">
         <option val="id">ID</option>
       </select>
     </div>
@@ -214,29 +214,29 @@ performance of this software.</pre>
   </div>
 
   <div id="link-color-table-wrapper" class="floater">
-    <div id="link-color-table-draghandle"><span class="oi oi-move"></span></div>
+    <div class="draghandle" hidden><span class="oi oi-move"></span></div>
     <table id="link-color-table"></table>
   </div>
 
   <div id="link-color-table-context" class="dropdown-menu">
-    <a href="#" id="link-color-table-drag" class="dropdown-item">Drag</a>
-    <a href="#" id="link-color-table-context-hide" class="dropdown-item">Hide</a>
-    <a href="#" id="link-color-table-expand" class="dropdown-item">Expand</a>
-    <a href="#" id="link-color-table-counts" class="dropdown-item">Toggle Counts</a>
-    <a href="#" id="link-color-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
+    <a href="#" class="dropdown-item" data-action="drag">Drag</a>
+    <a href="#" class="dropdown-item" data-action="hide">Hide</a>
+    <a href="#" class="dropdown-item" data-action="expand">Expand</a>
+    <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
+    <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
   </div>
 
   <div id="node-color-table-wrapper" class="floater">
-    <div id="node-color-table-draghandle"><span class="oi oi-move"></span></div>
+    <div class="draghandle" hidden><span class="oi oi-move"></span></div>
     <table id="node-color-table"></table>
   </div>
 
   <div id="node-color-table-context" class="dropdown-menu">
-    <a href="#" id="node-color-table-drag" class="dropdown-item">Drag</a>
-    <a href="#" id="node-color-table-context-hide" class="dropdown-item">Hide</a>
-    <a href="#" id="node-color-table-expand" class="dropdown-item">Expand</a>
-    <a href="#" id="node-color-table-counts" class="dropdown-item">Toggle Counts</a>
-    <a href="#" id="node-color-table-frequencies" class="dropdown-item">Toggle Frequencies</a>
+    <a href="#" class="dropdown-item" data-action="drag">Drag</a>
+    <a href="#" class="dropdown-item" data-action="hide">Hide</a>
+    <a href="#" class="dropdown-item" data-action="expand">Expand</a>
+    <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
+    <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
   </div>
 
   <div id="color-transparency-wrapper" class="floater">
@@ -244,7 +244,7 @@ performance of this software.</pre>
   </div>
 
   <div id="network-statistics-wrapper" class="floater">
-    <div id="network-statistics-draghandle"><span class="oi oi-move"></span></div>
+    <div class="draghandle" hidden><span class="oi oi-move"></span></div>
     <table id="network-statistics-table">
       <tr>
         <td class="text-end">
@@ -269,8 +269,8 @@ performance of this software.</pre>
   </div>
 
   <div id="network-statistics-context" class="dropdown-menu">
-    <a href="#" id="moveStats" class="dropdown-item">Drag</a>
-    <a href="#" id="hideStats" class="dropdown-item">Hide</a>
+    <a href="#" class="dropdown-item" data-action="drag">Drag</a>
+    <a href="#" class="dropdown-item" data-action="hide">Hide</a>
   </div>
 
   <span id="tooltip"></span>
@@ -301,18 +301,18 @@ performance of this software.</pre>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col" title="Show all links within threshold">
-                      <input type="radio" name="NNOptions" id="link-show-all" autocomplete="off" checked> None
+                      <input type="radio" name="NNOptions" data-setting="link-show-nn" value="false" autocomplete="off" checked> None
                     </label>
                     <label class="btn btn-light col" title="Prune links by Nearest Neighbor">
-                      <input type="radio" name="NNOptions" id="link-show-nn" autocomplete="off"> Nearest Neighbor
+                      <input type="radio" name="NNOptions" data-setting="link-show-nn" value="true" autocomplete="off"> Nearest Neighbor
                     </label>
                   </div>
                 </div>
               </div>
-              <div id="filtering-epsilon-row" class="form-group row" title="How much genetic distance represents non-equality for your ">
+              <div class="form-group row filtering-epsilon-row" title="How much genetic distance represents non-equality for your ">
                 <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="filtering-epsilon" min="-3" max="2" step=".01" value="-3">
+                  <input type="range" class="form-range" id="filtering-epsilon" data-setting="filtering-epsilon" data-setting-on="change" min="-3" max="2" step=".01" value="-3">
                 </div>
                 <div class="col-8 offset-4">
                   <input type="number" id="filtering-epsilon-copy" class="form-control form-control-sm" disabled>
@@ -323,14 +323,14 @@ performance of this software.</pre>
                   <label for="cluster-minimum-size">Minimum Cluster Size</label>
                 </div>
                 <div class="col-8">
-                  <input type="number" class="form-control form-control-sm" id="cluster-minimum-size" min="1" value="1" step="1">
+                  <input type="number" class="form-control form-control-sm" id="cluster-minimum-size" data-setting="cluster-minimum-size" data-setting-on="change" min="1" value="1" step="1">
                 </div>
               </div>
               <div id="filtering-wrapper">
                 <div class="form-group row" title="By what variable would you like to prune links from the network?">
                   <div class="col-4"><label for="link-sort-variable">Filter Links on</label></div>
                   <div class="col-8">
-                    <select id="link-sort-variable" class="form-select form-select-sm linkVariables">
+                    <select id="link-sort-variable" data-setting="link-sort-variable" class="form-select form-select-sm linkVariables">
                       <option value="distance" selected>Distance</option>
                     </select>
                   </div>
@@ -339,7 +339,7 @@ performance of this software.</pre>
                   <div class="col-4"><label for="link-threshold">Filtering Threshold</label></div>
                   <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
                   <div class="col-8 offset-4">
-                    <input type="number" class="form-control form-control-sm" id="link-threshold" step="0.001">
+                    <input type="number" class="form-control form-control-sm" id="link-threshold" data-setting="link-threshold" data-setting-on="change" step="0.001">
                   </div>
                 </div>
               </div>
@@ -355,11 +355,11 @@ performance of this software.</pre>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col" title="Show a table of overview statistics for the network">
-                      <input type="radio" name="network-statistics-visibility" id="network-statistics-show" autocomplete="off" checked>
+                      <input type="radio" name="network-statistics-visibility" data-setting="network-statistics-show" value="true" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light col" title="Do not show a table of overview statistics for the network">
-                      <input type="radio" name="network-statistics-visibility" id="network-statistics-hide" autocomplete="off">
+                      <input type="radio" name="network-statistics-visibility" data-setting="network-statistics-show" value="false" autocomplete="off">
                       Hide
                     </label>
                   </div>
@@ -370,77 +370,77 @@ performance of this software.</pre>
               <div class="form-group row" title="By what variable nodes be colored?">
                 <div class="col-4"><label for="node-color-variable">Color Nodes By</label></div>
                 <div class="col-8">
-                  <select id="node-color-variable" class="form-select form-select-sm nodeVariables">
+                  <select id="node-color-variable" class="form-select form-select-sm nodeVariables" data-setting="node-color-variable">
                     <option>None</option>
                   </select>
                 </div>
               </div>
-              <div id="node-color-table-row" class="form-group row" title="Should MicrobeTrace display the table of colors?">
+              <div class="form-group row node-color-table-row" title="Should MicrobeTrace display the table of colors?">
                 <div class="col-4">Node Color Table</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="nodeColorTableShowHide" id="node-color-table-show" autocomplete="off" checked>
+                      <input type="radio" name="nodeColorTableShowHide" data-setting="node-color-table-show" value="true" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="nodeColorTableShowHide" id="node-color-table-hide" autocomplete="off">
+                      <input type="radio" name="nodeColorTableShowHide" data-setting="node-color-table-show" value="false" autocomplete="off">
                       Hide
                     </label>
                   </div>
                 </div>
               </div>
-              <div id="node-color-value-row" class="form-group row" title="What color should the nodes be?">
+              <div class="form-group row node-color-value-row" title="What color should the nodes be?">
                 <div class="col-4"><label for="node-color">Nodes</label></div>
                 <div class="col-8">
-                  <input type="color" id="node-color" class="form-control form-control-sm" value="#1f77b4">
+                  <input type="color" id="node-color" data-setting="node-color" class="form-control form-control-sm" value="#1f77b4">
                 </div>
               </div>
               <div class="form-group row" title="What color should the node border be?">
                 <div class="col-4"><label for="node-color-border">Node Border</label></div>
                 <div class="col-8">
-                  <input type="color" id="node-color-border" class="form-control form-control-sm" value="#000000">
+                  <input type="color" id="node-color-border" data-setting="node-color-border" class="form-control form-control-sm" value="#000000">
                 </div>
               </div>
               <div class="form-group row" title="By what variable should links be colored?">
                 <div class="col-4"><label for="link-color-variable">Color Links By</label></div>
                 <div class="col-8">
-                  <select id="link-color-variable" class="form-select form-select-sm linkVariables">
+                  <select id="link-color-variable" class="form-select form-select-sm linkVariables" data-setting="link-color-variable">
                     <option>None</option>
                   </select>
                 </div>
               </div>
-              <div id="link-color-table-row" class="form-group row" title="Should MicrobeTrace display the table of colors?">
+              <div class="form-group row link-color-table-row" title="Should MicrobeTrace display the table of colors?">
                 <div class="col-4">Link Color Table</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col">
-                      <input type="radio" name="linkColorTableShowHide" id="link-color-table-show" autocomplete="off" checked>
+                      <input type="radio" name="linkColorTableShowHide" data-setting="link-color-table-show" value="true" autocomplete="off" checked>
                       Show
                     </label>
                     <label class="btn btn-light col">
-                      <input type="radio" name="linkColorTableShowHide" id="link-color-table-hide" autocomplete="off">
+                      <input type="radio" name="linkColorTableShowHide" data-setting="link-color-table-show" value="false" autocomplete="off">
                       Hide
                     </label>
                   </div>
                 </div>
               </div>
-              <div id="link-color-value-row" class="form-group row" title="What color should the links be?">
+              <div class="form-group row link-color-value-row" title="What color should the links be?">
                 <div class="col-4"><label for="link-color">Links</label></div>
                 <div class="col-8">
-                  <input type="color" id="link-color" class="form-control form-control-sm" value="#a6cee3">
+                  <input type="color" id="link-color" data-setting="link-color" class="form-control form-control-sm" value="#a6cee3">
                 </div>
               </div>
               <div class="form-group row" title="What color should denote selection?">
                 <div class="col-4"><label for="selected-color">Selected</label></div>
                 <div class="col-8">
-                  <input type="color" id="selected-color" class="form-control form-control-sm" value="#ff8300">
+                  <input type="color" id="selected-color" data-setting="selected-color" class="form-control form-control-sm" value="#ff8300">
                 </div>
               </div>
               <div class="form-group row" title="What color should the background be?">
                 <div class="col-4"><label for="background-color">Background</label></div>
                 <div class="col-8">
-                  <input type="color" id="background-color" class="form-control form-control-sm" value="#ffffff">
+                  <input type="color" id="background-color" data-setting="background-color" class="form-control form-control-sm" value="#ffffff">
                 </div>
               </div>
               <div class="form-group row" title="Load an existing MicrobeTrace style file">
@@ -455,7 +455,7 @@ performance of this software.</pre>
               <div class="form-group row" title="By what variable timeline applied?">
                 <div class="col-4"><label for="node-timeline-variable">Timeline By</label></div>
                 <div class="col-8">
-                  <select id="node-timeline-variable" class="form-select form-select-sm nodeVariables">
+                  <select id="node-timeline-variable" class="form-select form-select-sm nodeVariables" data-setting="node-timeline-variable">
                     <option>None</option>
                   </select>
                 </div>

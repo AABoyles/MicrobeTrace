@@ -18,6 +18,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `views.spec.js` | The network statistics, and every view opening and drawing without errors |
 | `layout.spec.js` | Tabs, splitting a panel, resizing, saving and reloading the layout, New Session |
 | `ui.spec.js` | The license dialog, menus, the settings dialog, toggle buttons |
+| `global.spec.js` | The page around the views: filtering, the color tables and colors, statistics, search, the global timeline, saving and reopening sessions, stashes, New Session |
 | `binder.spec.js` | `src/binder.js` on every control type |
 | `histogram.spec.js` | The histogram's settings, drawing, restoring and export |
 | `heatmap.spec.js` | The heatmap's settings, drawing, restoring, and PNG and CSV export |
@@ -33,6 +34,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `sequences.spec.js` | The sequences: drawing, cell size, characters, restoring and export |
 | `timeline.spec.js` | The epi curve: the date field, cumulation, brushing to hide nodes, colors, resizing and restoring |
 | `gantt.spec.js` | The Gantt chart: adding, changing and removing dates, colors, redraws, restoring and export |
+| `files.spec.js` | The files view: adding files and their kinds and fields, the loading settings, generating sequences, alignment and audit, launching |
 | `bubbles.spec.js` | The bubbles: grouping, size, selection, colors, redraws, restoring and export |
 | `phylogenetic_tree.spec.js` | The tree: layout, type and branch settings, leaf sizes, colors, labels and tooltips, selection, the context menu, restoring and export |
 | `globe.spec.js` | The globe: placing nodes, links, layers, transparency, jitter, turning, redraws, restoring and export |
