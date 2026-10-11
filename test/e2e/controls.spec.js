@@ -127,6 +127,8 @@ test('panel tabs are 13px, closer to the menus', async () => {
 
 test("a view's settings labels don't wrap", async () => {
   await launchView(page, 'crosstab');
+  // (It opens drawn, with its settings closed)
+  await page.locator('.lm_content:has(.crosstab-x) .settings-toggle').click();
   const label = page.locator('.lm_content:has(.crosstab-x) label', { hasText: 'X Variable' }).first();
   await expect(label).toBeVisible();
   const lineHeight = await label.evaluate(el => parseFloat(getComputedStyle(el).lineHeight));
