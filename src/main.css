@@ -516,7 +516,20 @@ label[for="OpenTab"] {
   border-color: var(--bs-primary);
   background-color: var(--bs-primary-bg-subtle);
 }
-/* A file's row: its name, its kind, then resave and remove */
+/* A file's row: its grip, name and kind, then resave and remove */
+.file-grip {
+  cursor: grab;
+  color: #adb5bd;
+  margin-right: 0.25rem;
+}
+.file-grip:hover {
+  color: #495057;
+}
+.file-order-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
 .file-table-row .file-name {
   display: flex;
   align-items: center;
