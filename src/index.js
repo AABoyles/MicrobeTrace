@@ -122,9 +122,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const zip = new JSZip();
       zip.file(name + "." + format, data);
       zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } })
-        .then(content => saveAs(content, name + ".zip"));
+        .then(content => MT.saveAs(content, name + ".zip"));
     } else {
-      saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), name + "." + format);
+      MT.saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), name + "." + format);
     }
   });
 
@@ -546,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let loadingJsonFile = previous == variable;
       if (previous != 'None' && !loadingJsonFile) {
         // change timeline variable when end time not reaching target time - redraw netwrok to start fresh
-        if (moment(session.state.timeEnd).toDate() < moment(session.state.timeTarget).toDate()) {
+        if (MT.parseDate(session.state.timeEnd) < MT.parseDate(session.state.timeTarget)) {
           session.state.timeEnd = session.state.timeTarget;
           MT.setNodeVisibility(false);
           MT.setLinkVisibility(false);
@@ -595,9 +595,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let times = [],
       vnodes = JSON.parse(JSON.stringify(session.data.nodes));
       vnodes.forEach(d => {
-        let time = moment(d[field]); 
-        if (time.isValid()) {
-          d[field] = time.toDate();
+        let time = MT.parseDate(d[field]);
+        if (time) {
+          d[field] = time;
           times.push(d[field]);
         } else {
           d[field] = null;
@@ -609,7 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
       timeDomainStart = Math.min(...times);
       timeDomainEnd = Math.max(...times);
 
-      var days = moment(timeDomainEnd).diff(moment(timeDomainStart), 'days');
+      var days = Math.floor((timeDomainEnd - timeDomainStart) / 864e5);
       var tickDateFormat = d => {
         if (days<184) return formatDateDateMonth(d);
         else if (days<367) return formatDateIntoMonth(d);
@@ -706,8 +706,8 @@ document.addEventListener("DOMContentLoaded", () => {
       session.style.widgets["timeline-date-field"] = field;
       session.state.timeStart = startDate;
       session.state.timeTarget = x.invert(targetValue);
-      if (loadingJsonFile && moment(session.state.timeEnd).toDate() < moment(session.state.timeTarget).toDate()) {
-        let t = moment(session.state.timeEnd).toDate();
+      if (loadingJsonFile && MT.parseDate(session.state.timeEnd) < MT.parseDate(session.state.timeTarget)) {
+        let t = MT.parseDate(session.state.timeEnd);
         currentValue = x(t);
         handle.attr("cx", x(t));
         label

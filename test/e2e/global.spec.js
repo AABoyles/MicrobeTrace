@@ -146,6 +146,17 @@ test('searching selects the matching nodes', async () => {
   await expect.poll(selected).toBe(0);
 });
 
+test('dates are read as local days, times and spreadsheet values', async () => {
+  const read = values => page.evaluate(values => values.map(v => {
+    const time = MT.parseDate(v);
+    return time && [time.getFullYear(), time.getMonth() + 1, time.getDate(), time.getHours(), time.getMinutes()];
+  }), values);
+  expect(await read(['2020-03-14', '20200314', '2020-03', '2020', ' 2020-03-14 ', '2020-03-14T10:30', '3/14/2020', 'March 14, 2020']))
+    .toEqual([[2020, 3, 14, 0, 0], [2020, 3, 14, 0, 0], [2020, 3, 1, 0, 0], [2020, 1, 1, 0, 0], [2020, 3, 14, 0, 0], [2020, 3, 14, 10, 30], [2020, 3, 14, 0, 0], [2020, 3, 14, 0, 0]]);
+  expect(await read(['', null, undefined, 'not a date', '2020-02-30', '2020-13-01'])).toEqual([null, null, null, null, null, null]);
+  expect(await page.evaluate(() => [MT.parseDate(0).getTime(), MT.parseDate(new Date(5)).getTime()])).toEqual([0, 5]);
+});
+
 test('the global timeline shows the network up to its date', async () => {
   await openSettings('Timeline');
   await dialog().locator('select[data-setting="node-timeline-variable"]').selectOption('date');

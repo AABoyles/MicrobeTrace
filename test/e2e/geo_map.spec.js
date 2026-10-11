@@ -1,7 +1,7 @@
 // The geo map view: placing nodes from their coordinates, links, the layers,
 // collapsing, transparency, jitter, selection, tooltips, redraws and export.
 const { test, expect } = require('@playwright/test');
-const { watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
+const { imageStats, watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -224,6 +224,12 @@ for (const [filetype, filename] of [['geojson', 'map-test.geojson'], ['png', 'ma
       expect(kinds.filter(k => k == 'LineString').length).toBe(await placedLinks());
       const s0 = data.features.find(f => f.properties._id == 'S0');
       expect(s0.geometry.coordinates).toEqual([-120, 30]);
+    } else {
+      // The map at its size: the outlines and nodes, not just the background
+      const stats = await imageStats(page, download);
+      const size = await page.evaluate(() => { const box = document.querySelector('.lm_content .leaflet-container').getBoundingClientRect(); return [Math.round(box.width), Math.round(box.height)]; });
+      expect([stats.width, stats.height]).toEqual(size);
+      expect(stats.colors).toBeGreaterThan(10);
     }
     expect(errors).toEqual([]);
   });

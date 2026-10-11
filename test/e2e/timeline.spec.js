@@ -19,7 +19,7 @@ const pane = () => view().locator('.left-pane');
 // Each bar's count
 const bars = () => view().locator('svg rect.bar').evaluateAll(els => els.map(el => +el.dataset.count));
 const visible = () => page.evaluate(() => session.data.nodes.filter(d => d.visible).length);
-const dated = () => page.evaluate(() => session.data.nodes.filter(d => d.date && moment(d.date).isValid()).length);
+const dated = () => page.evaluate(() => session.data.nodes.filter(d => MT.parseDate(d.date)).length);
 
 test('opens with its settings showing', async () => {
   await expect(pane()).toBeVisible();

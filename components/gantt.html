@@ -118,12 +118,8 @@
     const setDates = value => settings.set('gantt-dates', value);
     const update = (i, change) => setDates(dates().map((d, j) => j == i ? { ...d, ...change } : d));
 
-    // A node's date: spreadsheet day numbers or anything moment reads
-    const dateOf = value => {
-      if (value == null || value === '') return null;
-      const time = typeof value == 'number' ? moment((value - 25567) * 24 * 60 * 60 * 1000) : moment(value);
-      return time.isValid() ? time.toDate() : null;
-    };
+    // A node's date: spreadsheet day numbers, or anything MT.parseDate reads
+    const dateOf = value => MT.parseDate(typeof value == 'number' ? (value - 25567) * 24 * 60 * 60 * 1000 : value);
 
     function bars() {
       const nodes = session.data.nodes.filter(d => d.visible);

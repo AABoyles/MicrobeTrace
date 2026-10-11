@@ -18,7 +18,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `views.spec.js` | The network statistics, and every view opening and drawing without errors |
 | `layout.spec.js` | Tabs, splitting a panel, resizing, saving and reloading the layout, New Session |
 | `ui.spec.js` | The license dialog, menus, the settings dialog, toggle buttons |
-| `global.spec.js` | The page around the views: filtering, the color tables and colors, statistics, search, the global timeline, saving and reopening sessions, stashes, New Session |
+| `global.spec.js` | The page around the views: filtering, the color tables and colors, statistics, search, reading dates, the global timeline, saving and reopening sessions, stashes, New Session |
 | `binder.spec.js` | `src/binder.js` on every control type |
 | `histogram.spec.js` | The histogram's settings, drawing, restoring and export |
 | `heatmap.spec.js` | The heatmap's settings, drawing, restoring, and PNG and CSV export |
@@ -27,7 +27,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `table.spec.js` | The table's datasets, column picker, row selection, text size and export |
 | `crosstab.spec.js` | The crosstab's variables, pivot, datasets, redraws and export |
 | `aggregation.spec.js` | The aggregation tables: adding, changing and removing them, redraws and export |
-| `network.spec.js` | The network: sizes, shapes, colors, labels, tooltips, links, physics, polygons, selection, pinning, the node menu, restoring and export |
+| `network.spec.js` | The network: sizes, shapes, colors, labels, tooltips, links, physics, polygons, selection, pinning, the node menu (including copying), restoring and export |
 | `choropleth.spec.js` | The choropleth: counting nodes by state and country, colors, transparency, tile layers, redraws, fitting and export |
 | `geo_map.spec.js` | The geo map: placing nodes from coordinates and places, links, layers, collapsing, jitter, selection, tooltips, redraws and export |
 | `waterfall.spec.js` | The waterfall: clusters, their nodes, a node's links, redraws and background |

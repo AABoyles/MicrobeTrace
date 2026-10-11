@@ -492,8 +492,8 @@
     MT.paneToggle($('.settings-toggle'), pane);
     MT.tableExport(root, {
       ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename =>
-        canvas.toBlob(blob => saveAs(blob, filename + '.' + type), 'image/' + type)])),
-      geojson: filename => saveAs(
+        canvas.toBlob(blob => MT.saveAs(blob, filename + '.' + type), 'image/' + type)])),
+      geojson: filename => MT.saveAs(
         new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
         filename + '.geojson'
       )

@@ -147,7 +147,7 @@
       'csv.zip': name => {
         const zip = new JSZip();
         data.forEach(t => zip.file(t.dataset + '_' + t.column + '.csv', Papa.unparse(t.data)));
-        zip.generateAsync({ type: 'blob' }).then(content => saveAs(content, name + '.zip'));
+        zip.generateAsync({ type: 'blob' }).then(content => MT.saveAs(content, name + '.zip'));
       },
       xlsx: name => {
         const workbook = XLSX.utils.book_new();
@@ -159,7 +159,7 @@
         headers: [title(t), `Number of ${MT.titleize(t.dataset)}s`, 'Percentage'],
         rows: t.data.map(row => [row[t.column] + '', row.n + '', row.percent])
       })), name),
-      json: name => saveAs(new Blob([JSON.stringify(data)], { type: 'application/json;charset=utf-8' }), name + '.json')
+      json: name => MT.saveAs(new Blob([JSON.stringify(data)], { type: 'application/json;charset=utf-8' }), name + '.json')
     });
 
     root.style.overflowY = 'scroll';

@@ -1,7 +1,7 @@
 // The choropleth view: aggregating the nodes over states and countries, its
 // colors and transparency, the tile layers, redraws, fitting and export.
 const { test, expect } = require('@playwright/test');
-const { watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
+const { imageStats, watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -131,6 +131,12 @@ for (const [filetype, filename] of [['geojson', 'choropleth-test.geojson'], ['pn
     if (filetype == 'geojson') {
       const data = JSON.parse(require('fs').readFileSync(await download.path(), 'utf8'));
       expect(data.features.reduce((s, f) => s + f.properties.density, 0)).toBe(300);
+    } else {
+      // The map at its size: the outlines and nodes, not just the background
+      const stats = await imageStats(page, download);
+      const size = await page.evaluate(() => { const box = document.querySelector('.lm_content .leaflet-container').getBoundingClientRect(); return [Math.round(box.width), Math.round(box.height)]; });
+      expect([stats.width, stats.height]).toEqual(size);
+      expect(stats.colors).toBeGreaterThan(10);
     }
     expect(errors).toEqual([]);
   });

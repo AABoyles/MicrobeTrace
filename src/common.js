@@ -1271,9 +1271,9 @@
       for (let i = 0; i < n; i++) {
         let node = session.data.nodes[i];
         if (node[field] != null) {
-          let time = moment(node[field]); 
-          if (time.isValid())
-            times.push(time.toDate());
+          let time = MT.parseDate(node[field]);
+          if (time)
+            times.push(time);
           else
             continue outerloop;
         }
@@ -1427,6 +1427,7 @@
     let nodes = session.data.nodes,
       clusters = session.data.clusters;
     let n = nodes.length;
+    let timeEnd = dateField != "None" && MT.parseDate(session.state.timeEnd);
     for (let i = 0; i < n; i++) {
       let node = nodes[i];
       node.visible = true;
@@ -1435,8 +1436,9 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (dateField != "None" && node[dateField] != null && node[dateField] !== "") {
-        node.visible = node.visible && moment(session.state.timeEnd).toDate() >= moment(node[dateField]).toDate(); 
+      if (timeEnd && node[dateField] != null && node[dateField] !== "") {
+        let time = MT.parseDate(node[dateField]);
+        node.visible = node.visible && !!time && time <= timeEnd;
       }
     }
     if (!silent) MT.events.emit("node-visibility");
@@ -2166,16 +2168,16 @@
         .attr('x', 10)
         .style('opacity', field('export-opacity').value);
       if (filetype == 'svg') {
-        saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), filename + '.' + filetype);
+        MT.saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), filename + '.' + filetype);
         watermark.remove();
         if (done) done(svg);
       } else {
-        saveSvgAsPng(svg, filename + '.' + filetype, {
+        MT.svgImage(svg, {
           scale: parseFloat(field('export-scale').value),
           backgroundColor: settings.get('background-color'),
-          encoderType: 'image/' + filetype,
-          encoderOptions: parseFloat(field('export-quality').value)
-        }).then(() => {
+          type: 'image/' + filetype,
+          quality: parseFloat(field('export-quality').value)
+        }).then(blob => MT.saveAs(blob, filename + '.' + filetype), console.error).finally(() => {
           watermark.remove();
           if (done) done(svg);
         });
@@ -2377,13 +2379,143 @@
     };
   };
 
-  // Saves an image of a Leaflet map. draw(context, canvas), if given, adds to
-  // the image before it is saved.
-  MT.mapImage = (map, filename, filetype, draw) => leafletImage(map, (err, canvas) => {
-    if (err) return console.error(err);
-    if (draw) draw(canvas.getContext('2d'), canvas);
-    canvas.toBlob(blob => saveAs(blob, filename + '.' + filetype), 'image/' + filetype);
+  // Reads a date field: a Date, a time in milliseconds, or text. Dates written
+  // without a time (2020, 2020-03, 2020-03-14 or 20200314) are local midnight,
+  // as people mean them (Date alone reads the dashed ones as UTC). Anything
+  // else is read as Date reads it. Returns null if it isn't a date.
+  MT.parseDate = value => {
+    if (value == null || value === '') return null;
+    let time;
+    if (value instanceof Date || typeof value == 'number') {
+      time = new Date(value);
+    } else {
+      const text = String(value).trim();
+      const day = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?|(\d{2})(\d{2}))?$/.exec(text);
+      if (day) {
+        const year = +day[1], month = +(day[2] || day[4] || 1) - 1, date = +(day[3] || day[5] || 1);
+        time = new Date(year, month, date);
+        time.setFullYear(year); // years before 100 aren't 19xx
+        if (time.getMonth() != month || time.getDate() != date) return null;
+      } else {
+        time = new Date(text);
+      }
+    }
+    return isNaN(time) ? null : time;
+  };
+
+  // Downloads a Blob as a file
+  MT.saveAs = (blob, filename) => {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    // Some browsers read the URL after the click returns
+    setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+  };
+
+  // Loads an image, crossOrigin so that drawing it leaves a canvas readable.
+  // Resolves to null if it doesn't load.
+  const loadImage = src => new Promise(resolve => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
   });
+
+  const blobToDataURL = blob => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+  // Draws an SVG element as a raster image, as a Blob. An SVG drawn as an
+  // image can't reach the page, so the stylesheet rules that apply inside it
+  // and the images it links are copied into it first.
+  MT.svgImage = async (svg, { scale = 1, backgroundColor, type = 'image/png', quality } = {}) => {
+    const box = svg.getBoundingClientRect();
+    const width = box.width || parseFloat(svg.getAttribute('width')), height = box.height || parseFloat(svg.getAttribute('height'));
+    const copy = svg.cloneNode(true);
+    copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    if (!copy.getAttribute('viewBox')) copy.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    copy.setAttribute('width', width * scale);
+    copy.setAttribute('height', height * scale);
+
+    let css = '';
+    for (const sheet of document.styleSheets) {
+      let rules;
+      try { rules = sheet.cssRules; } catch (e) { continue; } // another origin's
+      for (const rule of rules || []) {
+        if (!rule.selectorText) continue;
+        try {
+          if (svg.matches(rule.selectorText) || svg.querySelector(rule.selectorText)) css += rule.cssText + '\n';
+        } catch (e) { /* a selector this browser can't match, like ::-moz- */ }
+      }
+    }
+    if (css) {
+      const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      style.textContent = css;
+      copy.insertBefore(style, copy.firstChild);
+    }
+
+    await Promise.all(Array.from(copy.querySelectorAll('image')).map(async image => {
+      const href = image.getAttribute('href') || image.getAttribute('xlink:href');
+      if (!href || href.startsWith('data:')) return;
+      try {
+        const data = await blobToDataURL(await (await fetch(href)).blob());
+        image.setAttribute('href', data);
+        image.removeAttribute('xlink:href');
+      } catch (e) {
+        image.remove();
+      }
+    }));
+
+    // A data URL, since the page's Content Security Policy refuses blob: images
+    const image = await loadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(copy)));
+    if (!image) throw new Error('The SVG could not be drawn');
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    const context = canvas.getContext('2d');
+    if (backgroundColor) {
+      context.fillStyle = backgroundColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return new Promise(resolve => canvas.toBlob(resolve, type, quality));
+  };
+
+  // Saves an image of a Leaflet map: its background, its tiles, the vector
+  // layers it draws on canvases, and its image markers, in the order Leaflet
+  // stacks them.
+  // draw(context, canvas), if given, adds to the image before it is saved.
+  MT.mapImage = async (map, filename, filetype, draw) => {
+    const container = map.getContainer(), box = container.getBoundingClientRect();
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(box.width);
+    canvas.height = Math.round(box.height);
+    const context = canvas.getContext('2d');
+    // The map's own background, where no layer covers it
+    context.fillStyle = getComputedStyle(container).backgroundColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    const layers = Array.from(container.querySelector('.leaflet-map-pane').querySelectorAll('img.leaflet-tile-loaded, canvas, img.leaflet-marker-icon'));
+    // Tiles come from other servers: load them again, asking for CORS, so the
+    // canvas can still be saved. Tiles that won't load that way are left out.
+    const images = await Promise.all(layers.map(el => el.tagName == 'IMG' ? loadImage(el.src) : el));
+    layers.forEach((el, i) => {
+      const image = images[i], rect = el.getBoundingClientRect();
+      if (!image || !rect.width || !rect.height) return;
+      const layer = el.closest('.leaflet-layer');
+      context.globalAlpha = layer ? parseFloat(getComputedStyle(layer).opacity) : 1;
+      context.drawImage(image, rect.left - box.left, rect.top - box.top, rect.width, rect.height);
+    });
+    context.globalAlpha = 1;
+    if (draw) draw(context, canvas);
+    canvas.toBlob(blob => MT.saveAs(blob, filename + '.' + filetype), 'image/' + filetype);
+  };
 
   // Shows the shared tooltip at a mouse event, or hides it (html == null)
   MT.tooltip = (html, event) => {
