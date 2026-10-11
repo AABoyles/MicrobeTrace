@@ -33,7 +33,7 @@ async function load(page, nodeFile) {
 
 // The nodes' values for the edited rows
 const read = page => page.evaluate(() => {
-  const byId = id => session.data.nodes.find(d => d.id == id);
+  const byId = id => session.data.nodes.find(d => d._id == id);
   const dates = session.data.nodes.map(d => MT.parseDate(d.date)).filter(Boolean).map(d => d.getTime());
   return {
     lats: ['S0', 'S5', 'S9'].map(id => byId(id).lat),

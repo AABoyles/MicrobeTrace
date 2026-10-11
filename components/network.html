@@ -840,8 +840,8 @@ Note that this may cause slow performance on larger networks.">
       if (!menuNode) return;
       const node = session.data.nodes.find(d => d._id == menuNode._id) || menuNode;
       const modal = $('.network-attribute-modal');
-      modal.querySelector('tbody').innerHTML = Object.keys(node)
-        .filter(attribute => attribute[0] != '_')
+      // Its ID first (_id), then the attributes that aren't MicrobeTrace's own
+      modal.querySelector('tbody').innerHTML = ['_id'].concat(Object.keys(node).filter(attribute => attribute[0] != '_'))
         .map(attribute => `<tr><td><strong>${escape(MT.titleize(attribute))}</strong></td><td>${escape(node[attribute])}</td></tr>`)
         .join('');
       bootstrap.Modal.getOrCreateInstance(modal).show();
