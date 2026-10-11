@@ -2097,12 +2097,64 @@
     return { paper_bgcolor: background, plot_bgcolor: background, font: { color: contrast } };
   };
 
+  // A floating table (such as a view's legend) with a drag handle and a
+  // context menu. The menu's items say what they do with data-action: drag
+  // (show or hide the drag handle), hide, expand (or contract), and counts or
+  // frequencies (call onCounts or onFrequencies). onHide hides the table, edge
+  // ('left' or 'right') is the side it's anchored to. Returns a function that
+  // disconnects it.
+  MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies, edge = 'left' } = {}) => {
+    const handle = wrapper.querySelector('.draghandle');
+    const closeMenu = () => { menu.style.display = 'none'; };
+    wrapper.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      // The menu is placed in the same container as the table
+      const box = wrapper.offsetParent ? wrapper.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+      Object.assign(menu.style, { display: 'block', left: (e.clientX - box.left) + 'px', top: (e.clientY - box.top) + 'px', zIndex: 1000 });
+    });
+    const outside = e => { if (!menu.contains(e.target)) closeMenu(); };
+    document.addEventListener('click', outside);
+    menu.addEventListener('click', e => {
+      const item = e.target.closest('[data-action]');
+      if (!item) return;
+      e.preventDefault();
+      closeMenu();
+      const action = item.dataset.action;
+      if (action == 'drag') {
+        handle.hidden = !handle.hidden;
+        item.textContent = handle.hidden ? 'Drag' : 'Pin';
+      } else if (action == 'hide') {
+        if (onHide) onHide();
+      } else if (action == 'expand') {
+        const expand = item.textContent == 'Expand';
+        wrapper.style.maxHeight = expand ? 'none' : '400px';
+        wrapper.style.overflowY = expand ? 'auto' : 'scroll';
+        item.textContent = expand ? 'Contract' : 'Expand';
+      } else if (action == 'counts' && onCounts) {
+        onCounts();
+      } else if (action == 'frequencies' && onFrequencies) {
+        onFrequencies();
+      }
+    });
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const move = e => {
+        wrapper.style.top = (parseFloat(getComputedStyle(wrapper).top) + e.movementY) + 'px';
+        if (edge == 'right') wrapper.style.right = (parseFloat(getComputedStyle(wrapper).right) - e.movementX) + 'px';
+        else wrapper.style.left = (parseFloat(getComputedStyle(wrapper).left) + e.movementX) + 'px';
+      };
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', () => document.removeEventListener('mousemove', move), { once: true });
+    });
+    return () => document.removeEventListener('click', outside);
+  };
+
   // Wires the export dialog of a view drawn as an SVG. The dialog (inside root)
   // has fields named export-filename, -filetype, -scale, -quality and
   // -opacity, an .export-advanced-button, an .export-dimensions readout and an
   // .export-button. Image formats save getSVG() with a watermark; `formats`
   // maps other file types to functions that save them, given the filename.
-  MT.svgExport = (root, getSVG, settings, formats = {}) => {
+  MT.svgExport = (root, getSVG, settings, formats = {}, done) => {
     const $ = selector => root.querySelector(selector);
     const field = name => $(`[name="${name}"]`);
     const modal = $('.export-button').closest('.modal');
@@ -2133,13 +2185,17 @@
       if (filetype == 'svg') {
         saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), filename + '.' + filetype);
         watermark.remove();
+        if (done) done(svg);
       } else {
         saveSvgAsPng(svg, filename + '.' + filetype, {
           scale: parseFloat(field('export-scale').value),
           backgroundColor: settings.get('background-color'),
           encoderType: 'image/' + filetype,
           encoderOptions: parseFloat(field('export-quality').value)
-        }).then(() => watermark.remove());
+        }).then(() => {
+          watermark.remove();
+          if (done) done(svg);
+        });
       }
     });
   };

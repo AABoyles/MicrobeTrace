@@ -826,7 +826,7 @@ $(function() {
       let startDate = timeDomainStart;
       let endDate = timeDomainEnd;
       var margin = {top:50, right:50, bottom:0, left:50},
-        width = ($('#network').parent().width() * 4 / 5) - margin.left - margin.right,
+        width = (($('.network-view').parent().width() || $(window).width()) * 4 / 5) - margin.left - margin.right,
         height = 200 - margin.top - margin.bottom;
       var svgTimeline = d3.select("#global-timeline")
           .append("svg")
@@ -1143,6 +1143,17 @@ $(function() {
       $this.text("Hide Frequencies");
     }
     $("#node-color-variable").change();
+  });
+
+  //#298: match case and match whole words, then search again
+  [["casesensitivebutton", "search-case-sensitive"], ["wholewordbutton", "search-whole-word"]].forEach(([id, key]) => {
+    document.getElementById(id).addEventListener("click", () => {
+      session.style.widgets[key] = !session.style.widgets[key];
+      document.getElementById("search").dispatchEvent(new Event("input"));
+      const results = document.getElementById("search-results");
+      results.innerHTML = "";
+      results.style.display = "none";
+    });
   });
 
   $("#search")
