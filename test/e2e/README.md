@@ -23,6 +23,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `controls.spec.js` | How controls and text look: links, the chosen option in toggle groups, primary and secondary buttons and their focus ring, color settings, the color tables' icons and sorting, panel tabs, labels not wrapping, and the statistics |
 | `menus.spec.js` | The menus and the words in dialogs: search and its options, the File, View and Help menus, the license, the empty Files view and its rows, the loading dialog, and the names Save, Stash and Export suggest |
 | `view-defaults.spec.js` | What views open on: variables chosen from the data (crosstab, flow diagram, scatterplot), the first field of dates or a note saying what to choose (epi curve, Gantt), sizes that fit the view (bubbles, tree leaves), and the network keeping its layout while the epi curve has a date |
+| `missing-values.spec.js` | Nodes missing values, from CSV and spreadsheets: missing dates filled with the earliest date, missing numbers (latitudes, counts) left missing, and which values count as dates |
 | `binder.spec.js` | `src/binder.js` on every control type |
 | `histogram.spec.js` | The histogram's settings, drawing, restoring and export |
 | `heatmap.spec.js` | The heatmap's settings, drawing, restoring, and PNG and CSV export |

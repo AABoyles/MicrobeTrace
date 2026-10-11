@@ -1258,7 +1258,8 @@
       });
     });
     
-    // patch missing date fields to earliest date in the the data
+    // patch missing date fields to earliest date in the the data: fields
+    // whose values are all dates (MT.isDate), so not numbers such as latitudes
     let fields = session.data["nodeFields"];
     let nodeSkeleton = MT.dataSkeleton();
     let fieldsToCheck = fields.filter(f => !nodeSkeleton.nodeFields.includes(f) && f != '_ambiguity' && f != '_diff'); 
@@ -1269,17 +1270,14 @@
       let field = fieldsToCheck[j];
       let times = [];
       for (let i = 0; i < n; i++) {
-        let node = session.data.nodes[i];
-        if (node[field] != null) {
-          let time = MT.parseDate(node[field]);
-          if (time)
-            times.push(time);
-          else
-            continue outerloop;
-        }
-      }      
-      if (times.length < n) {
-        let minTime = Math.min(...times);
+        let value = session.data.nodes[i][field];
+        if (value == null) continue;
+        if (!MT.isDate(value)) continue outerloop;
+        times.push(MT.parseDate(value));
+      }
+      // (A field with no values has no earliest date)
+      if (times.length && times.length < n) {
+        let minTime = times.reduce((a, b) => a < b ? a : b);
         let minTimeString = new Date(minTime).toString();
         session.data.nodes.forEach(d => {
           if (d[field] == null) {
@@ -2169,11 +2167,17 @@
     return values.length > 0 && values.every(v => typeof v == 'number' && isFinite(v)) && new Set(values).size >= 3;
   });
 
-  // Fields of dates: text that all reads as dates, with at least 2. Those named
-  // for dates come first.
+  // Whether a value is a date: a Date, or text that reads as one. Numbers
+  // aren't, nor text that's just a number (as spreadsheets give), though
+  // MT.parseDate reads them as times.
+  MT.isDate = value => value instanceof Date ? !isNaN(value) :
+    typeof value == 'string' && isNaN(value) && !!MT.parseDate(value);
+
+  // Fields of dates: all dates, with at least 2. Those named for dates come
+  // first.
   MT.dateFields = (items, fields) => choosable(fields).filter(field => {
     const values = valuesOf(items, field);
-    return values.length > 0 && values.every(v => typeof v == 'string' && MT.parseDate(v)) && new Set(values).size >= 2;
+    return values.length > 0 && values.every(MT.isDate) && new Set(values).size >= 2;
   }).sort((a, b) => /date|time|day/i.test(b) - /date|time|day/i.test(a));
 
   // A floating table (such as a view's legend) with a drag handle and a
