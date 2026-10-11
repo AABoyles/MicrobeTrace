@@ -51,10 +51,10 @@ test('choosing a node again closes its links', async () => {
 
 test('redraws when the visible links change', async () => {
   const before = (await clusters()).length;
-  await page.evaluate(() => $('#link-threshold').val(0.005).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect.poll(async () => (await clusters()).length).not.toBe(before);
   await expect(column(0)).toHaveCount((await clusters()).length);
-  await page.evaluate(() => $('#link-threshold').val(0.015).trigger('change'));
+  await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
   await expect(column(0)).toHaveCount(before);
 });
 

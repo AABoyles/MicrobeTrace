@@ -31,9 +31,10 @@
     }
 
     // Calls fn(value, key) whenever one of the keys is set. Returns a function
-    // that unsubscribes.
-    subscribe(keys, fn) {
+    // that unsubscribes. With { reload: true }, fn is also called by reload().
+    subscribe(keys, fn, { reload = false } = {}) {
       keys = [].concat(keys);
+      if (reload) fn.reload = true;
       keys.forEach(key => {
         if (!this.subscribers.has(key)) this.subscribers.set(key, new Set());
         this.subscribers.get(key).add(fn);
@@ -41,12 +42,19 @@
       return () => keys.forEach(key => this.subscribers.get(key).delete(fn));
     }
 
-    notify(key) {
+    notify(key, only) {
       const fns = this.subscribers.get(key);
       if (!fns) return;
       const value = this.get(key);
       // A subscriber may unsubscribe (or subscribe others) while being called
-      Array.from(fns).forEach(fn => fn(value, key));
+      Array.from(fns).filter(fn => !only || only(fn)).forEach(fn => fn(value, key));
+    }
+
+    // After every value has been replaced at once (a session or style was
+    // loaded), calls the subscribers that asked to hear it: the controls showing
+    // the values, not the code that acts on each change.
+    reload() {
+      Array.from(this.subscribers.keys()).forEach(key => this.notify(key, fn => fn.reload));
     }
   }
 

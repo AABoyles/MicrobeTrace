@@ -41,6 +41,14 @@
   });
   
   MT.defaultWidgets = {
+    // Which floating tables and panels are shown
+    "link-color-table-show": true,
+    "network-statistics-show": true,
+    "node-color-table-show": true,
+    "node-symbol-table-show": true,
+    "polygon-color-table-show": true,
+    "network-gridlines-show": false,
+    "node-label-orientation": "Right",
     "3DNet-link-tooltip-variable": "None",
     "3DNet-link-transparency": 0,
     "3DNet-link-width": 1.6,
@@ -284,7 +292,8 @@
       polygonColors: ['#bbccee','#cceeff','#ccddaa','#eeeebb','#ffcccc','#dddddd'],
       polygonValueNames: {},
       overwrite: {},
-      widgets: MT.defaultWidgets
+      // A copy: each session changes its own
+      widgets: Object.assign({}, MT.defaultWidgets)
     },
     timeline: 0,
     warnings: []
@@ -439,18 +448,18 @@
   };
 
   MT.processSVG = svg => {
+    const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+    const all = selector => Array.from(doc.querySelectorAll(selector));
     let nodes = [];
-    const $xml = $(svg);
-    if ($xml.find("#edges").length) {
-      $xml.find("#nodes circle").each((i, node) => {
-        const $node = $(node);
-        const gephid = $node.attr("class");
+    if (doc.querySelector("#edges")) {
+      all("#nodes circle").forEach(node => {
+        const gephid = node.getAttribute("class");
         nodes.push(gephid);
         MT.addNode(
           {
             id: gephid + "",
-            color: $node.attr("fill"),
-            size: parseFloat($node.attr("r")),
+            color: node.getAttribute("fill"),
+            size: parseFloat(node.getAttribute("r")),
             origin: ["Scraped Gephi SVG"]
           },
           false
@@ -458,13 +467,12 @@
       });
       session.data.nodeFields.push("color");
       session.data.nodeFields.push("size");
-      $xml.find("#edges path").each((i, link) => {
-        const $link = $(link);
-        const coords = $link.attr("class").split(" ");
+      all("#edges path").forEach(link => {
+        const coords = link.getAttribute("class").split(" ");
         let base = {
           source: coords[0] + "",
           target: coords[1] + "",
-          color: $link.attr("stroke"),
+          color: link.getAttribute("stroke"),
           origin: ["Scraped MicrobeTrace SVG"]
         };
         base[session.style.widgets['default-distance-metric']] = 0;
@@ -472,36 +480,14 @@
       });
       session.data.linkFields.push("color");
     } else {
-      $xml.find(".nodes g").each((i, node) => {
-        nodes.push(
-          $(node)
-            .attr("transform")
-            .slice(10, -1)
-            .split(",")
-            .map(parseFloat)
-        );
-        MT.addNode(
-          {
-            id: i + "",
-            origin: ["Scraped SVG"]
-          },
-          false
-        );
+      all(".nodes g").forEach((node, i) => {
+        nodes.push(node.getAttribute("transform").slice(10, -1).split(",").map(parseFloat));
+        MT.addNode({ id: i + "", origin: ["Scraped SVG"] }, false);
       });
-      $xml.find("line").each((i, link) => {
-        let $l = $(link);
-        const source = nodes.findIndex(d => {
-          return (
-            Math.abs(d[0] - parseFloat($l.attr("x1"))) < 0.0001 &&
-            Math.abs(d[1] - parseFloat($l.attr("y1"))) < 0.0001
-          );
-        });
-        const target = nodes.findIndex(d => {
-          return (
-            Math.abs(d[0] - parseFloat($l.attr("x2"))) < 0.0001 &&
-            Math.abs(d[1] - parseFloat($l.attr("y2"))) < 0.0001
-          );
-        });
+      all("line").forEach(link => {
+        const at = name => parseFloat(link.getAttribute(name));
+        const source = nodes.findIndex(d => Math.abs(d[0] - at("x1")) < 0.0001 && Math.abs(d[1] - at("y1")) < 0.0001);
+        const target = nodes.findIndex(d => Math.abs(d[0] - at("x2")) < 0.0001 && Math.abs(d[1] - at("y2")) < 0.0001);
         if (source < 0 || target < 0) return;
         let base = {
           source: source + "",
@@ -541,14 +527,11 @@
     //If anything here seems eccentric, assume it's to maintain compatibility with
     //session files from older versions of MicrobeTrace.
   
-    $window.trigger("stop-force-simulation"); // stop previous network ticks so previous polygon won't show up
-    
-    // when using recall function several times, window remembers every registered event function of each recall which all registered functions will be fired when triggered
-    // since an event is registered in both network.html and index.js, add namespace to events in network.html so they can be removed without affecting events in index
-    $window.off('.2d');
+    MT.events.emit("stop-force-simulation"); // stop previous network ticks so previous polygon won't show up
 
     MT.reset();
-    $("#launch").prop("disabled", true);
+    const launch = document.getElementById("launch");
+    if (launch) launch.disabled = true;
     session.files = oldSession.files;
     session.state = oldSession.state;
     session.style = Object.assign({},
@@ -576,7 +559,6 @@
     //   }
     // }
     MT.finishUp(true);
-    $("#network-statistics-show").parent().trigger("click");
   };
   
   MT.applyStyle = style => {
@@ -588,17 +570,7 @@
     MT.createLinkColorMap();
     MT.createNodeColorMap();
     MT.createPolygonColorMap();
-    let $id = null;
-    for (let id in session.style.widgets) {
-      $id = $("#" + id);
-      if ($id.length > 0) {
-        if (["radio", "checkbox"].includes($id[0].type)) {
-          if (session.style.widgets[id]) $id.trigger("click");
-        } else {
-          $id.val(session.style.widgets[id]);
-        }
-      }
-    }
+    MT.settings.reload();
   };
   
   MT.applyHIVTrace = hivtrace => {
@@ -1317,40 +1289,30 @@
       } 
     };
 
-    $("#search-field")
-      .html(session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
-      .val(session.style.widgets["search-field"]);
-    $("#search-form").css("display", "flex");
-    $("#link-sort-variable")
-      .html(session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
-      .val(session.style.widgets["link-sort-variable"]);
-    $("#node-color-variable")
-      .html(
-        "<option selected>None</option>" +
-        session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
-      .val(session.style.widgets["node-color-variable"]);
-    $("#node-timeline-variable")
-      .html(
-        "<option selected>None</option>" +
-        session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
-        .val(session.style.widgets["node-timeline-variable"]);
-    $("#link-color-variable")
-      .html(
-        "<option>None</option>" +
-        session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n"))
-      .val(session.style.widgets["link-color-variable"]);
+    // The global menus of node and link variables
+    const options = fields => fields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n");
+    const fill = (id, html) => {
+      const select = document.getElementById(id);
+      select.innerHTML = html;
+      select.value = session.style.widgets[id];
+    };
+    fill("search-field", options(session.data.nodeFields));
+    document.getElementById("search-form").style.display = "flex";
+    fill("link-sort-variable", options(session.data.linkFields));
+    fill("node-color-variable", "<option>None</option>" + options(session.data.nodeFields));
+    fill("node-timeline-variable", "<option>None</option>" + options(session.data.nodeFields));
+    fill("link-color-variable", "<option>None</option>" + options(session.data.linkFields));
     try {
       MT.updateThresholdHistogram();
     } catch (error) {
       console.error(error);
-      $("#loading-information-modal").modal("hide");
+      MT.hideModal("loading-information-modal");
       alertify
         .error("Something went wrong! Please click here to start a new session and try again.")
         .delay(0)
         .ondismiss(() => window.location.reload());
     }
     MT.setLinkVisibility(true);
-    // $("#SettingsTab").attr("data-target", "#global-settings-modal");
     session.meta.loadTime = Date.now() - session.meta.startTime;
     console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
     if (oldSession) {
@@ -1362,9 +1324,8 @@
       MT.setClusterVisibility(true);
       MT.setLinkVisibility(true);
       MT.setNodeVisibility(true);
-      ["cluster", "link", "node"].forEach(thing => $window.trigger(thing + "-visibility"));
-      MT.updateStatistics();
-      $("#network-statistics-wrapper").fadeIn();
+      ["cluster", "link", "node"].forEach(thing => MT.events.emit(thing + "-visibility"));
+      MT.showStatistics();
     });
     localforage.getItem("stash-auto").then(autostash => {
       if (autostash == "true") {
@@ -1379,11 +1340,11 @@
         };
       }  
     })
-    $(".hideForHIVTrace").css("display", "flex");
+    document.querySelectorAll(".hideForHIVTrace").forEach(el => el.style.display = "flex");
     setTimeout(() => {
       let files = layout.contentItems.find(item => item.componentType == "files");
       if (files) files.remove();
-      $("#loading-information-modal").modal("hide");
+      MT.hideModal("loading-information-modal");
     }, 1200);
   };
   
@@ -1478,7 +1439,7 @@
         node.visible = node.visible && moment(session.state.timeEnd).toDate() >= moment(node[dateField]).toDate(); 
       }
     }
-    if (!silent) $window.trigger("node-visibility");
+    if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
   
@@ -1495,7 +1456,7 @@
       return !cluster || cluster.visible;
     } : () => true;
     g.computeVisible(metric, threshold, showNN, keep);
-    if (!silent) $window.trigger("link-visibility");
+    if (!silent) MT.events.emit("link-visibility");
     console.log("Link Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
   
@@ -1508,7 +1469,7 @@
       let cluster = clusters[i];
       cluster.visible = cluster.nodes >= min;
     }
-    if (!silent) $window.trigger("cluster-visibility");
+    if (!silent) MT.events.emit("cluster-visibility");
     console.log("Cluster Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
 
@@ -1595,7 +1556,7 @@
   };
   
   MT.updateStatistics = () => {
-    if ($("#network-statistics-hide").is(":checked")) return;
+    if (!session.style.widgets["network-statistics-show"]) return;
     let vnodes = MT.getVisibleNodes();
     let vlinks = MT.getVisibleLinks();
     let linkCount = 0;
@@ -1621,12 +1582,12 @@
       clusterCount = session.data.clusters.filter(cluster => clusters[cluster.id] && clusters[cluster.id]>2 && cluster.visible && cluster.nodes > 1).length;
     }
     let singletons = vnodes.filter(d => d.degree == 0).length;
-    $("#numberOfSelectedNodes").text(vnodes.filter(d => d.selected).length.toLocaleString());
-    $("#numberOfNodes").text(vnodes.length.toLocaleString());
-    $("#numberOfVisibleLinks").text(linkCount.toLocaleString());
-    $("#numberOfSingletonNodes").text(singletons.toLocaleString());
-    //$("#numberOfDisjointComponents").text(session.data.clusters.length - singletons);
-    $("#numberOfDisjointComponents").text(clusterCount.toLocaleString()); // #187
+    const show = (id, n) => { document.getElementById(id).textContent = n.toLocaleString(); };
+    show("numberOfSelectedNodes", vnodes.filter(d => d.selected).length);
+    show("numberOfNodes", vnodes.length);
+    show("numberOfVisibleLinks", linkCount);
+    show("numberOfSingletonNodes", singletons);
+    show("numberOfDisjointComponents", clusterCount); // #187
   };
   
   MT.createNodeColorMap = () => {
@@ -1923,9 +1884,7 @@
   };
 
   MT.reset = () => {
-    $("#network-statistics-hide").parent().trigger("click");
-    // $("#SettingsTab").attr("data-target", "#sequence-controls-modal");
- 
+
     // temp variables is affecting the recall file's link visibility when recalling the same file
     // reset temp causing register component error since file view has been registered and 2nd_network view via ansyc call also causing register error
     // reset temp but retain componentCache
@@ -1934,6 +1893,9 @@
     self.temp.componentCache = tempComp;
     
     self.session = MT.sessionSkeleton();
+    // The controls show the new session's settings (and the statistics hide,
+    // having no network)
+    MT.settings.reload();
     // A new layout also drops the stateChanged listeners the old views added
     MT.createLayout();
     MT.launchView("files");
@@ -1947,7 +1909,7 @@
       if (temp.mapData[name]) {
         return resolve(temp.mapData[name]);
       }
-      $.get("data/" + type, response => {
+      fetch("data/" + type).then(response => format == "json" ? response.json() : response.text()).then(response => {
         if (format == "csv") {
           temp.mapData[name] = Papa.parse(response, { header: true }).data;
         }
@@ -1981,7 +1943,7 @@
 
   MT.createLayout = () => {
     if (self.layout) layout.destroy();
-    self.layout = new goldenLayout.GoldenLayout($("#main-panel")[0]);
+    self.layout = new goldenLayout.GoldenLayout(document.getElementById("main-panel"));
     layout.resizeWithContainerAutomatically = true;
     // golden-layout builds a component before its element is in the page, where
     // a view's inline scripts couldn't find their own elements. Components are
@@ -1996,21 +1958,41 @@
   // Fetches a view's HTML into temp.componentCache
   const fetchView = view => new Promise(resolve => {
     if (temp.componentCache[view]) return resolve();
-    $.get("components/" + view + ".html", response => {
+    fetch("components/" + view + ".html").then(response => response.text()).then(response => {
       temp.componentCache[view] = response;
       resolve();
     });
   });
 
   // Renders a view's HTML into its (newly attached) layout item
+  // (Scripts set as HTML don't run, so each is replaced by a copy that does.)
   const renderView = contentItem => {
-    $(contentItem.container.element).html(temp.componentCache[contentItem.componentType]);
+    const element = contentItem.container.element;
+    element.innerHTML = temp.componentCache[contentItem.componentType];
+    element.querySelectorAll("script").forEach(old => {
+      const script = document.createElement("script");
+      Array.from(old.attributes).forEach(a => script.setAttribute(a.name, a.value));
+      script.textContent = old.textContent;
+      old.replaceWith(script);
+    });
   };
 
   // The settings store and event bus that views use (see src/settings.js and
   // src/events.js)
   MT.settings = new MTSettings(() => session.style.widgets);
-  MT.events = new MTEvents(self.jQuery);
+  MT.events = new MTEvents();
+
+  // Closes a Bootstrap dialog by its id
+  MT.hideModal = id => {
+    const modal = document.getElementById(id);
+    if (modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
+  };
+
+  // Opens the global settings at their Styling tab
+  MT.showColorOptions = () => {
+    bootstrap.Tab.getOrCreateInstance(document.getElementById("style-tab")).show();
+    setTimeout(() => bootstrap.Modal.getOrCreateInstance(document.getElementById("global-settings-modal")).show(), 250);
+  };
 
   // Views written as modules register a mount function from their component's
   // script:
@@ -2100,10 +2082,10 @@
   // A floating table (such as a view's legend) with a drag handle and a
   // context menu. The menu's items say what they do with data-action: drag
   // (show or hide the drag handle), hide, expand (or contract), and counts or
-  // frequencies (call onCounts or onFrequencies). onHide hides the table, edge
-  // ('left' or 'right') is the side it's anchored to. Returns a function that
-  // disconnects it.
-  MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies, edge = 'left' } = {}) => {
+  // frequencies (call onCounts or onFrequencies). onHide hides the table; edge
+  // ('left' or 'right') and vertical ('top' or 'bottom') are the sides it's
+  // anchored to. Returns a function that disconnects it.
+  MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies, edge = 'left', vertical = 'top' } = {}) => {
     const handle = wrapper.querySelector('.draghandle');
     const closeMenu = () => { menu.style.display = 'none'; };
     wrapper.addEventListener('contextmenu', e => {
@@ -2139,7 +2121,8 @@
     handle.addEventListener('mousedown', e => {
       e.preventDefault();
       const move = e => {
-        wrapper.style.top = (parseFloat(getComputedStyle(wrapper).top) + e.movementY) + 'px';
+        if (vertical == 'bottom') wrapper.style.bottom = (parseFloat(getComputedStyle(wrapper).bottom) - e.movementY) + 'px';
+        else wrapper.style.top = (parseFloat(getComputedStyle(wrapper).top) + e.movementY) + 'px';
         if (edge == 'right') wrapper.style.right = (parseFloat(getComputedStyle(wrapper).right) - e.movementX) + 'px';
         else wrapper.style.left = (parseFloat(getComputedStyle(wrapper).left) + e.movementX) + 'px';
       };
@@ -2458,54 +2441,23 @@
     }
   };
 
-  // Fills in a view's variable menus and widget values, and binds its common controls
+  // Fills in a view's variable menus, and binds its common controls
   const setupView = contentItem => {
-    const $element = $(contentItem.element);
-    $element.find("select.nodeVariables").html(
-      "<option>None</option>" +
-      session.data.nodeFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
-    );
-    $element.find("select.linkVariables").html(
-      "<option>None</option>" +
-      session.data.linkFields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
-    );
-    $element.find("select.mixedVariables").html(
-      "<option>None</option>" +
-      session.data.linkFields.map(field => '<option value="links-' + field + '">Links ' + MT.titleize(field) + "</option>").join("\n") +
-      session.data.nodeFields.map(field => '<option value="nodes-' + field + '">Nodes ' + MT.titleize(field) + "</option>").join("\n")
-    );
-    $element.find("select.branch-variables").html(
-      "<option>None</option>" +
-      ["id", "depth", "height", "length", "value"].map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n")
-    );
-    $element.find(".launch-color-options").click(() => {
-      $("#style-tab").tab("show");
-      setTimeout(() => $("#global-settings-modal").modal("show"), 250);
-    });
-    $element.find(".modal-header").on("mousedown", function(){
-      let body = $("body");
-      let parent = $(this).parent().parent().parent();
-      body.on("mousemove", e => {
-        parent
-          .css("top",  parseFloat(parent.css("top" )) + e.originalEvent.movementY + "px")
-          .css("left", parseFloat(parent.css("left")) + e.originalEvent.movementX + "px");
-      });
-      body.one("mouseup", () => body.off("mousemove"));
-    });
-    if (navigator.onLine) $element.find(".ifOnline").show();
-    for (let id in session.style.widgets) {
-      let $id = $("#" + id);
-      if ($id.length > 0) {
-        if (["radio", "checkbox"].includes($id[0].type)) {
-          if (session.style.widgets[id]) {
-            if ($element.find($id).length > 0) $id.click();   // issue #182
-          }
-        } else {
-          $id.val(session.style.widgets[id]);
-        }
-      }
-    }
+    const element = contentItem.element;
+    const fill = (selector, html) => element.querySelectorAll(selector).forEach(select => { select.innerHTML = "<option>None</option>" + html; });
+    const options = (fields, prefix = "", label = "") => fields.map(field => '<option value="' + prefix + field + '">' + label + MT.titleize(field) + "</option>").join("\n");
+    fill("select.nodeVariables", options(session.data.nodeFields));
+    fill("select.linkVariables", options(session.data.linkFields));
+    fill("select.mixedVariables", options(session.data.linkFields, "links-", "Links ") + options(session.data.nodeFields, "nodes-", "Nodes "));
+    fill("select.branch-variables", options(["id", "depth", "height", "length", "value"]));
+    element.querySelectorAll(".launch-color-options").forEach(button => button.addEventListener("click", MT.showColorOptions));
+    if (navigator.onLine) MT.showOnline(element);
   };
+
+  // Shows the parts of a page that need the internet
+  MT.showOnline = element => element.querySelectorAll(".ifOnline").forEach(el => {
+    el.style.display = el.classList.contains("row") ? "flex" : "block";
+  });
 
   MT.cacheLayout = contentItem => {
     if (!contentItem) return { type: "stack", content: [] };

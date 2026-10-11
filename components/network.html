@@ -1668,9 +1668,7 @@ Note that this may cause slow performance on larger networks.">
     // The global timeline replays itself when the window changes size
     const onWindowResize = () => {
       if (get('node-timeline-variable') == 'None') return;
-      const select = document.getElementById('node-timeline-variable');
-      select.value = get('node-timeline-variable');
-      select.dispatchEvent(new Event('change'));
+      MT.showTimeline();
       setTimeout(fit, 0);
     };
     window.addEventListener('resize', onWindowResize);
@@ -1707,11 +1705,7 @@ Note that this may cause slow performance on larger networks.">
     showPolygonTable();
 
     // With links from several files, the links are colored by their file
-    if (session.files.length > 1 && get('link-color-variable') == 'None') {
-      const select = document.getElementById('link-color-variable');
-      select.value = 'origin';
-      select.dispatchEvent(new Event('change'));
-    }
+    if (session.files.length > 1 && get('link-color-variable') == 'None') settings.set('link-color-variable', 'origin');
 
     const handle = { graph: null, get points() { return points; }, get links() { return links; }, drawn, render, fit, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
     self.cosmosLoading.then(() => {

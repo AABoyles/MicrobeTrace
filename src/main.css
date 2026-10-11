@@ -161,8 +161,7 @@ svg#link-threshold-sparkline {
   color: #303030;
   background-color: #f8f9fa !important;
 }
-#link-color-table-draghandle {
-  display: none;
+#link-color-table-wrapper .draghandle {
   width: 100%;
   text-align: center;
 }
@@ -192,8 +191,7 @@ svg#link-threshold-sparkline {
   color: #303030;
   background-color: #f8f9fa !important;
 }
-#node-color-table-draghandle {
-  display: none;
+#node-color-table-wrapper .draghandle {
   width: 100%;
   text-align: center;
 }
@@ -269,8 +267,7 @@ svg#link-threshold-sparkline {
   border: 1px solid #c0c0c0;
   border-radius: 0.25rem;
 }
-#network-statistics-draghandle {
-  display: none;
+#network-statistics-wrapper .draghandle {
   width: 100%;
   text-align: center;
 }
