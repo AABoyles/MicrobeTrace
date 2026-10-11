@@ -27,7 +27,6 @@ primaryscripts=(
 # specific view can be rendered. You should probably add your new script to this
 # array.
 secondaryscripts=(
-  "node_modules/d3-force-attract/dist/d3-force-attract.min.js"
   "node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"
   "node_modules/d3-polygon/dist/d3-polygon.min.js"
   "temp.plotly.js"
@@ -36,7 +35,6 @@ secondaryscripts=(
   "node_modules/leaflet/dist/leaflet.js"
   "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
   "node_modules/leaflet-image/leaflet-image.js"
-  "node_modules/marked/lib/marked.umd.js"
   "node_modules/html5sortable/dist/html5sortable.min.js"
   "node_modules/alignment-viewer/dist/alignment-viewer.min.js"
   "node_modules/save-svg-as-png/lib/saveSvgAsPng.js"
