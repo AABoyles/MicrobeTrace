@@ -1,0 +1,133 @@
+<div class="conflicts-view">
+  <div class="conflicts-controls">
+    <label for="conflicts-field">Field</label>
+    <select id="conflicts-field" class="form-select form-select-sm conflicts-field"></select>
+    <label for="conflicts-rule">Use</label>
+    <select id="conflicts-rule" class="form-select form-select-sm conflicts-rule" title="Which file's values this field uses where files disagree"></select>
+    <button type="button" class="btn btn-light btn-sm conflicts-clear" title="Use the field's choice for every node again">Clear picks</button>
+  </div>
+  <p class="conflicts-note"></p>
+  <div class="conflicts-grid table-sm"></div>
+</div>
+<p class="view-message" hidden></p>
+
+<script>
+  // Where files disagree about nodes: for each field, the nodes and each file's
+  // value, marking the one used. A field can use another file's values, and a
+  // node can use another file's value (src/nodes.js keeps both).
+  MT.registerView('conflicts', (root, { events }) => {
+    ga('set', 'page', '/conflicts');
+    ga('set', 'title', 'Conflicts View');
+    ga('send', 'pageview');
+
+    const $ = selector => root.querySelector(selector);
+    const view = $('.conflicts-view'), message = $('.view-message');
+    const fieldMenu = $('.conflicts-field'), ruleMenu = $('.conflicts-rule'), note = $('.conflicts-note'), clear = $('.conflicts-clear');
+    const sources = () => session.data.sources;
+    const text = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    // Sequences are compared when files are read, so they're changed there
+    const fixed = field => field == 'seq';
+    let conflicts = new Map(), field = null, having = [];
+
+    const table = new Tabulator($('.conflicts-grid'), { layout: 'fitColumns', maxHeight: '100%', data: [], columns: [] });
+    const built = new Promise(resolve => table.on('tableBuilt', resolve));
+
+    // A row per node the files disagree on, in order of their IDs: each file's
+    // value, which is used, and whether the node picked it
+    const byID = (a, b) => a.localeCompare(b, undefined, { numeric: true });
+    const rows = () => (conflicts.get(field) || []).slice().sort(byID).map(id => {
+      const row = { id, picked: !!sources().picked(id, field), used: -1 };
+      sources().provenance(id, field).forEach(p => {
+        const i = having.findIndex(s => s.name == p.source);
+        row['v' + i] = p.value;
+        if (p.used) row.used = i;
+      });
+      return row;
+    });
+
+    function showFields() {
+      conflicts = MT.nodeConflicts();
+      const fields = Array.from(conflicts.keys()).sort((a, b) => conflicts.get(b).length - conflicts.get(a).length);
+      view.hidden = !fields.length;
+      message.hidden = !!fields.length;
+      message.textContent = sources().list.length ? 'No two files disagree about a node.' :
+        'Where this session\'s values came from isn\'t known. Files read from now on will be.';
+      fieldMenu.innerHTML = fields.map(f => {
+        const n = conflicts.get(f).length;
+        return `<option value="${text(f)}">${text(MT.titleize(f))} (${n.toLocaleString()} node${n == 1 ? '' : 's'})</option>`;
+      }).join('');
+      if (!fields.includes(field)) field = fields[0] || null;
+      fieldMenu.value = field;
+      showField();
+    }
+
+    async function showField() {
+      if (!field) return;
+      // The files with this field, best ranked first
+      having = sources().ranked().filter(s => s.columns.has(field));
+      const rule = sources().rules.get(field) || '';
+      ruleMenu.innerHTML = `<option value="">The top file's (${text(having[0].name)})</option>` +
+        having.slice(1).map(s => `<option value="${text(s.name)}">${text(s.name)}'s</option>`).join('');
+      ruleMenu.value = having.some(s => s.name == rule) ? rule : '';
+      ruleMenu.disabled = fixed(field);
+      note.innerHTML = fixed(field) ?
+        'Sequences are compared when files are read: to use another file\'s, drag it to the top in the Files view and launch again.' :
+        'The value marked <span class="bi bi-check2"></span> is used. Click another to use it for that node, or choose which file\'s to use for them all.';
+      await built;
+      table.setColumns([{ title: 'Node', field: 'id', formatter: cell => text(cell.getValue()) + (cell.getRow().getData().picked ? ' <span class="badge text-bg-light conflict-picked" title="This node uses a value picked for it">picked</span>' : '') }]
+        .concat(having.map((s, i) => ({
+          title: s.name,
+          field: 'v' + i,
+          formatter: cell => {
+            const value = cell.getValue();
+            if (value === undefined) return '<span class="text-muted">—</span>';
+            const used = cell.getRow().getData().used == i;
+            return `<span class="conflict-value${used ? ' used' : ''}">${used ? '<span class="bi bi-check2"></span> ' : ''}${text(value)}</span>`;
+          },
+          cellClick: (e, cell) => {
+            const row = cell.getRow().getData();
+            if (fixed(field) || cell.getValue() === undefined || row.used == i) return;
+            MT.pickSource(row.id, field, s.name);
+          }
+        }))));
+      await table.replaceData(rows());
+      clear.disabled = fixed(field) || !rows().some(row => row.picked);
+    }
+
+    fieldMenu.addEventListener('change', () => {
+      field = fieldMenu.value;
+      showField();
+    });
+    ruleMenu.addEventListener('change', () => MT.preferSource(field, ruleMenu.value || null));
+    clear.addEventListener('click', () => {
+      const ids = (conflicts.get(field) || []).filter(id => sources().picked(id, field));
+      if (ids.length) MT.pickSource(ids, field, null);
+    });
+
+    root.style.overflow = 'hidden';
+    // Choices made here or elsewhere, and files read again, show once a frame
+    // (a choice tells the views twice, and the timeline many times)
+    let pending = false;
+    const refresh = () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        showFields();
+      });
+    };
+    const stop = [
+      events.on('node-values-change', refresh),
+      events.on('node-visibility', refresh)
+    ];
+    showFields();
+
+    return {
+      resize: () => table.redraw(),
+      destroy() {
+        stop.forEach(fn => fn());
+        table.destroy();
+      }
+    };
+  });
+</script>

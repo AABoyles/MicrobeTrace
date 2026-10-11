@@ -424,6 +424,33 @@
 
   // Where files disagree: each field, with the IDs of the nodes they disagree on
   MT.nodeConflicts = () => session.data.sources.conflicts();
+
+  // Gives nodes their fields' chosen values again, and tells the views
+  const resolveNodes = (field, keys) => {
+    const sources = session.data.sources, index = session.data.nodeIndex;
+    keys.forEach(key => {
+      const node = index.get(key), value = sources.resolve(key, field);
+      if (node && value !== undefined) node[field] = value;
+    });
+    MT.events.emit("node-values-change", field);
+    // (The views redraw, and the color table follows)
+    MT.events.emit("node-visibility");
+  };
+
+  // Which file's values a field uses where files disagree: a file's name, or
+  // null for the top file's
+  MT.preferSource = (field, name) => {
+    session.data.sources.prefer(field, name);
+    resolveNodes(field, session.data.sources.keys(field));
+  };
+
+  // Which file's value a node's field uses (or several nodes'): a file's
+  // name, or null for the field's choice
+  MT.pickSource = (ids, field, name) => {
+    const keys = [].concat(ids).map(id => "" + id);
+    keys.forEach(key => session.data.sources.pick(key, field, name));
+    resolveNodes(field, keys);
+  };
   
   // Adds a link, or merges it into the link between the same two nodes (its
   // fields win, origins are combined). Returns 1 if the link is new.
@@ -1284,6 +1311,12 @@
   
   MT.finishUp = async (oldSession) => { 
     clearTimeout(temp.messageTimeout);
+    // Where the files just read disagree, say so, and offer to show where
+    if (!oldSession) {
+      const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
+      if (differ) alertify.warning(`${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files. Click to review them.`, 15,
+        clicked => { if (clicked) MT.launchView("conflicts"); });
+    }
     // Links are done loading: swap the graph's pair lookup for its compact index.
     // (Link objects get null for missing link fields as they're built.)
     session.data.graph.freeze();

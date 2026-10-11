@@ -182,6 +182,7 @@
 
     const stop = [
       events.on('link-visibility', showData),
+      events.on('node-values-change', () => { if (dataset == 'nodes') showData(); }),
       events.on('node-selected', view => { if (view != 'table') restyle(); }),
       events.on('selected-color-change', restyle)
     ];
