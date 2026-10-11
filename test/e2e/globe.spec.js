@@ -29,6 +29,17 @@ test('places the nodes from their latitude and longitude fields', async () => {
   expect((await drawn()).stars).toBe(true);
 });
 
+test('opens facing its nodes, with land and sea told apart', async () => {
+  // These nodes are in the US
+  const [lon, lat] = await page.evaluate(() => temp.globe.projection.rotate());
+  expect(-lon).toBeGreaterThan(-130);
+  expect(-lon).toBeLessThan(-65);
+  expect(-lat).toBeGreaterThan(20);
+  expect(-lat).toBeLessThan(50);
+  // A country wound the wrong way would cover the rest of the sphere
+  expect(await page.evaluate(() => temp.globe.countries.features.filter(f => d3.geoArea(f) > 2 * Math.PI).length)).toBe(0);
+});
+
 test('draws the links facing the viewer', async () => {
   // Turn the globe to face the nodes
   await page.evaluate(() => { temp.globe.projection.rotate([105, -35, 0]); temp.globe.redraw(); });

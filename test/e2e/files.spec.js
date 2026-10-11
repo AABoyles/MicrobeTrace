@@ -96,6 +96,10 @@ test('the sequence controls preview the sequences, and align them with Smith-Wat
   await waitForModal(page, '#sequence-controls-modal');
   const modal = page.locator('#sequence-controls-modal');
   await expect(modal.locator('.alignment-preview canvas')).toHaveCount(1, { timeout: 30000 });
+  // The preview scrolls inside the dialog rather than spilling out of it
+  const [preview, dialog] = await Promise.all([modal.locator('.alignment-preview'), modal.locator('.modal-content')].map(l => l.boundingBox()));
+  expect(preview.x + preview.width).toBeLessThanOrEqual(dialog.x + dialog.width);
+  expect(await modal.locator('.alignment-preview').evaluate(el => getComputedStyle(el).overflowX)).toBe('auto');
   await expect(modal.locator('.align-config-row').first()).toBeHidden();
   await modal.locator('label', { hasText: 'Smith-Waterman' }).click();
   await expect(modal.locator('.align-config-row').first()).toBeVisible();

@@ -116,7 +116,8 @@
         tables.push(new Tabulator(element, {
           layout: 'fitColumns',
           columns: [
-            { title: MT.titleize(dataset) + ' ' + MT.titleize(column), field: column },
+            // A natural sort, so numbers (cluster IDs, say) don't sort as text
+            { title: MT.titleize(dataset) + ' ' + MT.titleize(column), field: column, sorter: 'alphanum' },
             { title: `Number of ${MT.titleize(dataset)}s`, field: 'n' },
             { title: 'Percentage', field: 'percent', headerSort: false }
           ],

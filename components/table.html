@@ -169,6 +169,17 @@
     // The column menu opens over the panel's neighbors
     root.style.zIndex = 1000;
 
+    // The toolbar grows when the chosen columns wrap onto more lines: keep the
+    // table below it
+    const controls = $('.view-controls');
+    const belowControls = new ResizeObserver(() => {
+      const top = controls.offsetTop + controls.offsetHeight + 8;
+      if (grid.style.paddingTop == top + 'px') return;
+      grid.style.paddingTop = top + 'px';
+      built.then(() => table.redraw());
+    });
+    belowControls.observe(controls);
+
     const stop = [
       events.on('link-visibility', showData),
       events.on('node-selected', view => { if (view != 'table') restyle(); }),
@@ -181,6 +192,7 @@
       resize: () => table.redraw(),
       destroy() {
         stop.forEach(fn => fn());
+        belowControls.disconnect();
         if (columnsMenu) columnsMenu.destroy();
         table.destroy();
       }
