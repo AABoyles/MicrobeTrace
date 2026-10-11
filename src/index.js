@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("stash-data", "click", () => {
     localforage.setItem("stash-" + Date.now() + "-" + byId("stash-name").value, JSON.stringify(session))
-      .then(() => alertify.success("Session Stashed Successfully!"));
+      .then(() => alertify.success("Stashed in this browser"));
   });
 
   const stashes = new Tabulator("#recall-stashes-available", {
@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  MT.defaultFilename(byId("save-file-name"));
   on("save-data", "click", () => {
     const name = byId("save-file-name").value;
     const format = byId("save-file-format").value;
@@ -768,14 +769,27 @@ document.addEventListener("DOMContentLoaded", () => {
     results.style.display = "none";
   };
 
-  //#298: match case and match whole words, then search again
+  //#298: match case and match whole words, then search again. The buttons
+  // show whether they're on.
   [["casesensitivebutton", "search-case-sensitive"], ["wholewordbutton", "search-whole-word"]].forEach(([id, key]) => {
+    const button = byId(id);
+    const show = pressed => {
+      button.classList.toggle("active", !!pressed);
+      button.setAttribute("aria-pressed", !!pressed);
+    };
     on(id, "click", () => {
-      session.style.widgets[key] = !session.style.widgets[key];
+      settings.set(key, !get(key));
       search.dispatchEvent(new Event("input"));
       hideResults();
     });
+    settings.subscribe(key, show, { reload: true });
+    show(get(key));
   });
+
+  // The box says which field it searches
+  const showField = field => { search.placeholder = "Search nodes by " + MT.titleize(field); };
+  settings.subscribe("search-field", showField, { reload: true });
+  showField(get("search-field"));
 
   // A search for value selects the nodes whose search field matches it
   const pattern = value => {
@@ -829,13 +843,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   settings.subscribe("search-field", () => search.dispatchEvent(new Event("input")));
 
-  // Keyboard shortcuts: Ctrl+F to search, Ctrl+S to save
+  // Keyboard shortcuts: Ctrl+F to search, Ctrl+S to save (⌘ on a Mac). The
+  // menus show them in their .shortcut spans.
+  const mac = /Mac|iPhone|iPad/.test(navigator.platform);
+  document.querySelectorAll(".shortcut").forEach(hint => {
+    hint.textContent = (mac ? "⌘" : "Ctrl+") + hint.dataset.key;
+  });
   document.addEventListener("keydown", e => {
-    if (e.ctrlKey && e.key == "f") {
+    if (!e.ctrlKey && !e.metaKey) return;
+    if (e.key == "f" && !search.disabled) {
       e.preventDefault();
       search.focus();
     }
-    if (e.ctrlKey && e.key == "s") {
+    if (e.key == "s") {
       e.preventDefault();
       modal("session-save-modal").show();
     }

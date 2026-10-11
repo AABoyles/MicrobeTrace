@@ -1,9 +1,10 @@
 <div class="container-fluid file-panel">
   <div id="file-table" class="container">
-    <p class="text-muted file-prompt"> If you're having a problem with MicrobeTrace, please 
-      <a target="_blank" rel="noreferrer noopener" href="https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting---Caching">troubleshoot caching</a>. 
-    </p>
-    <p class="text-muted file-prompt">Drag-and-Drop Files here, or click "Add File(s)" to load data.</p>
+    <label for="data-files" class="drop-zone">
+      <span class="bi bi-cloud-arrow-up" aria-hidden="true"></span>
+      <span class="drop-zone-title">Drop files here, or <span class="link-primary">add files</span></span>
+      <span class="drop-zone-hint">Link or node lists (CSV or Excel), distance matrices, FASTA, Newick, or a saved MicrobeTrace session</span>
+    </label>
   </div>
 </div>
 
@@ -12,7 +13,7 @@
     <div class="row">
       <div class="col">
         <input type="file" id="data-files" class="d-none" multiple="true">
-        <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add File(s)</label>
+        <label for="data-files" class="btn btn-primary btn-nr floater mb-0">Add Files</label>
         <button type="button" class="btn btn-light btn-nr floater sequence-controls-button" data-bs-toggle="modal" data-bs-target="#sequence-controls-modal">Sequence Controls</button>
       </div>
       <div class="col text-end">
@@ -46,12 +47,12 @@
           </label>
         </div>
         <div class="col-7">
-          <select id="default-distance-metric" data-setting="default-distance-metric" class="form-select form-select-sm me-5">
+          <select id="default-distance-metric" data-setting="default-distance-metric" class="form-select form-select-sm">
             <optgroup label="Evolutionary Models">
-              <option value="tn93" selected>TN93 (Tamura-Nei 1993)</option>
-              <option value="tn92">TN92 (Tamura-Nei 1992)</option>
-              <option value="k2p">K2P (Kimura 2-Parameter)</option>
-              <option value="jc69">JC69 (Jukes-Cantor)</option>
+              <option value="tn93" selected title="Tamura-Nei 1993">TN93 (Tamura-Nei)</option>
+              <option value="tn92" title="Tamura-Nei 1992">TN92 (Tamura-Nei)</option>
+              <option value="k2p" title="Kimura 2-Parameter">K2P (Kimura)</option>
+              <option value="jc69" title="Jukes-Cantor">JC69 (Jukes-Cantor)</option>
             </optgroup>
             <optgroup label="Basic">
               <option value="snps">SNPs</option>
@@ -354,22 +355,31 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     root.style.zIndex = 1000;
 
+    const dropZone = $('.drop-zone');
     const ready = () => {
-      $$('.file-prompt').forEach(p => p.remove());
+      dropZone.hidden = true;
       launchButton.disabled = false;
     };
 
     // Adding files ---------------------------------------------------------------
 
-    $('#data-files').addEventListener('change', e => processFiles(e.target.files));
+    $('#data-files').addEventListener('change', e => {
+      processFiles(e.target.files);
+      e.target.value = ''; // so adding the same file again (after removing it) is a change
+    });
     panel.addEventListener('dragover', e => {
       e.stopPropagation();
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
+      panel.classList.add('dragging');
+    });
+    panel.addEventListener('dragleave', e => {
+      if (!panel.contains(e.relatedTarget)) panel.classList.remove('dragging');
     });
     panel.addEventListener('drop', e => {
       e.stopPropagation();
       e.preventDefault();
+      panel.classList.remove('dragging');
       processFiles(e.dataTransfer.files);
     });
 
@@ -443,14 +453,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       row.innerHTML = `
         <div class="row w-100">
           <div class="file-name col">
-            <a href="#" class="icon-action bi bi-x-circle align-middle p-1" title="Remove this file"></a>
-            <a href="#" class="icon-action bi bi-download align-middle p-1" title="Resave this file"></a>
-            <span class="p-1"></span>
-            <div class="btn-group btn-group-toggle btn-group-sm float-end" data-toggle="buttons">
+            <span class="file-title p-1"></span>
+            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
               ${kinds.map(([value, label]) => `<label class="btn btn-light${value == kind ? ' active' : ''}">
                 <input type="radio" name="${group}" value="${value}" autocomplete="off"${value == kind ? ' checked' : ''}>${label}
               </label>`).join('')}
             </div>
+            <a href="#" class="icon-action bi bi-download p-1 ms-2" title="Resave this file" aria-label="Resave this file"></a>
+            <a href="#" class="icon-action icon-remove bi bi-x-circle p-1" title="Remove this file" aria-label="Remove this file"></a>
           </div>
         </div>
         <div class="row w-100">
@@ -459,7 +469,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <select class="form-select form-select-sm">${options}</select>
           </div>`).join('')}
         </div>`;
-      row.querySelector('.file-name span').textContent = file.name;
+      row.querySelector('.file-title').textContent = file.name;
       const fields = Array.from(row.querySelectorAll('.file-field'));
       const selects = fields.map(f => f.querySelector('select'));
       const kindOf = () => row.querySelector(`input[name="${group}"]:checked`).value;
@@ -469,6 +479,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const i = session.files.indexOf(file);
         if (i > -1) session.files.splice(i, 1);
         row.remove();
+        if (!table.querySelector('.file-table-row')) {
+          dropZone.hidden = false;
+          launchButton.disabled = true;
+        }
       });
       row.querySelector('a[title="Resave this file"]').addEventListener('click', e => {
         e.preventDefault();
@@ -529,7 +543,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     }
 
     if (session.files.length > 0) {
-      $$('.file-prompt').forEach(p => p.remove());
+      dropZone.hidden = true;
       session.files.forEach(addToTable);
     }
 
@@ -707,6 +721,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const information = document.getElementById('loading-information');
       information.innerHTML = '<p>Processing file(s)...</p>';
       const loading = document.getElementById('loading-information-modal');
+      const n = session.files.length;
+      document.getElementById('loading-title').textContent = `Loading ${n} file${n == 1 ? '' : 's'}`;
       new Promise((resolve, reject) => {
         loading.addEventListener('shown.bs.modal', () => {
           session.messages = [];
@@ -1065,6 +1081,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       };
     };
 
+    // The metric menu shows short names; its tooltip, the chosen one's full name
+    const metricMenu = $('#default-distance-metric');
+    const showMetricName = () => {
+      const option = metricMenu.selectedOptions[0];
+      metricMenu.title = option ? option.title || option.text : '';
+    };
+
     MT.paneToggle($('.settings-toggle'), pane, false, { push: $('.file-panel') });
     const stop = [
       MTBind(pane, settings),
@@ -1073,6 +1096,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         ga('send', 'event', 'default-distance-metric', 'update', metric);
         localforage.setItem('default-distance-metric', metric);
         applyMetric(true);
+        showMetricName();
       }),
       settings.subscribe('ambiguity-resolution-strategy', showAmbiguityRows),
       settings.subscribe('default-view', view => {
@@ -1086,6 +1110,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       })
     ];
     applyMetric(false);
+    showMetricName();
     showAmbiguityRows();
     showAlignmentRows();
     localforage.getItem('default-distance-metric').then(cached => {
