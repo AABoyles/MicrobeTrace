@@ -34,18 +34,41 @@ body {
 .navbar {
   padding: 0.25rem;
 }
+/* Search: the box, match case (Aa) and whole words (ab), and the field */
 #search-form {
-  display: none;
-}
-label[for="search"] {
-  color: #555555;
+  gap: 0.25rem;
 }
 #search {
-  border-radius: 0.25rem 0 0 0.25rem;
+  width: 13rem;
 }
 #search-field {
-  border-radius: 0 0.25rem 0.25rem 0;
-  border-left: 0;
+  width: auto;
+  max-width: 10rem;
+}
+.search-option {
+  min-width: 2rem;
+  font-weight: 500;
+}
+.search-option .whole-word {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+#search-form .search-option.active {
+  background-color: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary);
+  color: var(--bs-primary-text-emphasis);
+}
+/* The View menu, in two columns of groups */
+.view-menu.show {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+}
+/* A menu item's keyboard shortcut */
+.dropdown-item .shortcut {
+  float: right;
+  margin-left: 2rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.8125rem;
 }
 #main-panel {
   width: 100%;
@@ -453,9 +476,47 @@ label[for="OpenTab"] {
 #warning-prompt {
   text-align: center;
 }
-#file-prompt {
+/* The empty Files view: where to drop files, or click to add them */
+.drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 4rem 1rem;
+  border: 2px dashed #adb5bd;
+  border-radius: 0.5rem;
+  color: #6c757d;
   text-align: center;
-  padding-top: 25%;
+  cursor: pointer;
+}
+.drop-zone .bi {
+  font-size: 3rem;
+  line-height: 1;
+}
+.drop-zone-title {
+  font-size: 1.125rem;
+  color: #212529;
+}
+.drop-zone-hint {
+  font-size: 0.875rem;
+}
+.drop-zone:hover,
+.file-panel.dragging .drop-zone {
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary-bg-subtle);
+}
+/* A file's row: its name, its kind, then resave and remove */
+.file-table-row .file-name {
+  display: flex;
+  align-items: center;
+}
+.file-table-row .file-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .file-table-row {
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -475,6 +536,14 @@ label[for="OpenTab"] {
 }
 .icon-action.bi-x-circle:hover {
   color: #dc3545;
+}
+/* Remove, where it's a row's destructive action */
+.icon-action.icon-remove {
+  color: #dc3545;
+}
+.icon-action.icon-remove:hover,
+.icon-action.icon-remove:focus-visible {
+  color: #b02a37;
 }
 td {
   overflow: hidden;
@@ -515,13 +584,8 @@ td {
   overflow: auto;
 }
 #loading-information {
-  font-family: "Courier New", Courier, "Lucida Sans Typewriter",
-    "Lucida Typewriter", monospace;
-  font-size: 11px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 23px;
+  font-size: 13px;
+  line-height: 1.6;
   padding: 10px;
   white-space: pre-line;
 }
@@ -1024,25 +1088,14 @@ body.timeline-open #main-panel {
 /* Search */
 .autocomplete-wrapper {
   position: relative;
-  border: solid 1px #EEE;
-  padding: 1px 2px;
-  font-family: 'Verdana', sans-serif;
-}
-.autocomplete-wrapper #search {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    font-size: 13px;
-}
-.autocomplete-wrapper #search:focus {
-    outline: 0;
 }
 .autocomplete-wrapper #search-results {
     display: none;
     position: absolute;
-    top: 36px;
-    left: -1px;
-    right: -1px;
+    z-index: 1100;
+    top: 100%;
+    left: 0;
+    right: 0;
     border: solid 1px #CCC;
     min-height: 50px;
     max-height: 200px;

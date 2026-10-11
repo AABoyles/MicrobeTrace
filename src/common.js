@@ -1297,7 +1297,7 @@
       select.value = session.style.widgets[id];
     };
     fill("search-field", options(session.data.nodeFields));
-    document.getElementById("search-form").style.display = "flex";
+    MT.enableSearch(true);
     fill("link-sort-variable", options(session.data.linkFields));
     fill("node-color-variable", "<option>None</option>" + options(session.data.nodeFields));
     fill("node-timeline-variable", "<option>None</option>" + options(session.data.nodeFields));
@@ -1898,6 +1898,7 @@
     // The controls show the new session's settings (and the statistics hide,
     // having no network)
     MT.settings.reload();
+    MT.enableSearch(false);
     // A new layout also drops the stateChanged listeners the old views added
     MT.createLayout();
     MT.launchView("files");
@@ -2069,11 +2070,40 @@
     if (open) set(true);
   };
 
+  // Search works once there are nodes to search
+  MT.enableSearch = enabled => {
+    ['search', 'search-field'].forEach(id => { document.getElementById(id).disabled = !enabled; });
+  };
+
+  // Today, as YYYY-MM-DD in local time
+  MT.today = () => {
+    const d = new Date(), pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  };
+
+  // A filename field that suggests a name each time its dialog opens:
+  // microbetrace-<what>-<today>, or microbetrace-<today>, where what() names
+  // what's saved. A name typed in is kept.
+  MT.defaultFilename = (field, what = () => '') => {
+    field.closest('.modal').addEventListener('show.bs.modal', () => {
+      if (field.value && field.value != field.dataset.suggested) return;
+      field.value = field.dataset.suggested = ['microbetrace', what(), MT.today()].filter(Boolean).join('-');
+    });
+  };
+
+  // What an export dialog inside a view suggests calling the file: the view's
+  // name, e.g. epi-curve
+  const exportName = root => {
+    const item = layout.contentItems.find(item => item.container.element.contains(root));
+    return item ? MT.titleize(item.componentType).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+  };
+
   // Wires a table view's export dialog: a filename field (export-filename), a
   // file type menu (export-filetype) and an .export-button. `formats` maps each
   // file type to a function that saves the file, given the filename.
   MT.tableExport = (root, formats) => {
     const field = name => root.querySelector(`[name="${name}"]`);
+    MT.defaultFilename(field('export-filename'), () => exportName(root));
     root.querySelector('.export-button').addEventListener('click', () => {
       const filetype = field('export-filetype').value;
       formats[filetype](field('export-filename').value);
@@ -2237,6 +2267,7 @@
     const $ = selector => root.querySelector(selector);
     const field = name => $(`[name="${name}"]`);
     const modal = $('.export-button').closest('.modal');
+    MT.defaultFilename(field('export-filename'), () => exportName(root));
     const advancedButton = $('.export-advanced-button');
     const advanced = $(advancedButton.dataset.bsTarget);
     field('export-filetype').addEventListener('change', e => {

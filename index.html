@@ -46,14 +46,14 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
         <div class="dropdown-menu">
-          <a href="#" id="StashDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-stash-modal">Stash</a>
-          <a href="#" id="RecallDataTab" class="dropdown-item">Recall</a>
+          <a href="#" id="NewTab" class="dropdown-item">New</a>
+          <label class="dropdown-item" for="OpenTab">Open…</label><input type="file" class="d-none" id="OpenTab">
+          <a href="#" id="SaveDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-save-modal">Save… <span class="shortcut" data-key="S"></span></a>
           <div class="dropdown-divider"></div>
-          <a href="#" id="SaveDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-save-modal">Save</a>
-          <label class="dropdown-item" for="OpenTab">Open</label><input type="file" class="d-none" id="OpenTab">
+          <a href="#" id="StashDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-stash-modal">Stash in Browser…</a>
+          <a href="#" id="RecallDataTab" class="dropdown-item">Recall from Browser…</a>
           <div class="dropdown-divider"></div>
           <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
-          <a href="#" id="NewTab" class="dropdown-item">New</a>
         </div>
       </li>
       <li class="nav-item">
@@ -61,24 +61,32 @@
       </li>
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
-        <div class="dropdown-menu">
-          <a href="#" class="dropdown-item viewbutton" data-href="network">Network</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="aggregation">Aggregation</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="crosstab">CrossTab</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="bubbles">Bubbles</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="choropleth">Choropleth</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="globe">Globe</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="gantt">Gantt</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="timeline">Epi Curve</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="heatmap">Heatmap</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
-          <a href="#" class="dropdown-item viewbutton" data-href="sequences">Sequences</a>
+        <div class="dropdown-menu view-menu">
+          <div>
+            <a href="#" class="dropdown-item viewbutton" data-href="network">Network</a>
+            <h6 class="dropdown-header">Charts</h6>
+            <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="bubbles">Bubbles</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="heatmap">Heatmap</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="timeline">Epi Curve</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="gantt">Gantt</a>
+          </div>
+          <div>
+            <h6 class="dropdown-header">Tables</h6>
+            <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="aggregation">Aggregation</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="crosstab">Crosstab</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</a>
+            <h6 class="dropdown-header">Maps</h6>
+            <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="choropleth">Choropleth</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="globe">Globe</a>
+            <h6 class="dropdown-header">Sequences</h6>
+            <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
+            <a href="#" class="dropdown-item viewbutton" data-href="sequences">Sequences</a>
+          </div>
         </div>
       </li>
       <li class="nav-item dropdown">
@@ -92,6 +100,7 @@
         <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
           <a href="https://github.com/CDCgov/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank" rel="noreferrer noopener">Help</a>
+          <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting---Caching" id="TroubleshootTab" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Troubleshoot Caching</a>
           <a href="https://github.com/CDCgov/MicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Report Bug</a>
           <div class="dropdown-divider ifOnline"></div>
           <a href="#" id="AboutTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#about-modal">About</a>
@@ -102,21 +111,16 @@
 
     </ul>
     <div id="search-form" class="d-flex align-items-center navbar-form">
-        <label for="search">Search</label>
-        <div class="autocomplete-wrapper">
-          <input type="search" id="search" class="form-control form-control-sm" placeholder="Nodes">
-          <ul id="search-results"></ul>
-        </div>
+      <label for="search" class="visually-hidden">Search nodes</label>
+      <div class="autocomplete-wrapper">
+        <input type="search" id="search" class="form-control form-control-sm" placeholder="Search nodes by ID" autocomplete="off" disabled>
+        <ul id="search-results"></ul>
+      </div>
       <!-- #298 -->
-      <button id="casesensitivebutton" type="button" class="btn btn-light btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off" title="Match Case">
-        <span>C</span>
-      </button>     
-      <button id="wholewordbutton" type="button" class="btn btn-light btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off" title="Match Whole Word">
-        <span>W</span>
-      </button>      
-
-      <select id="search-field" class="form-select form-select-sm nodeValues" data-setting="search-field">
-        <option val="id">ID</option>
+      <button id="casesensitivebutton" type="button" class="btn btn-light btn-sm search-option" aria-pressed="false" title="Match case">Aa</button>
+      <button id="wholewordbutton" type="button" class="btn btn-light btn-sm search-option" aria-pressed="false" title="Match whole words"><span class="whole-word">ab</span></button>
+      <select id="search-field" class="form-select form-select-sm nodeValues" data-setting="search-field" title="The field to search" disabled>
+        <option value="_id">ID</option>
       </select>
     </div>
   </nav>
@@ -128,25 +132,24 @@
     <a href='https://www.mozilla.org/en-US/firefox/new/'>Firefox</a>
   </div>
 
-  <div id="licenseAgreement" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="licenseAgreement">
+  <div id="licenseAgreement" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="licenseAgreementLabel">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="licenseAgreement" class="modal-title">License Agreement</h5>
+          <h5 id="licenseAgreementLabel" class="modal-title">License Agreement</h5>
         </div>
         <div class="modal-body">
-          <pre>The material embodied in this software is provided to you "As-is" and without
-warranty of any kind, express, implied or otherwise, including without
-limitation, any warranty of fitness for a particular purpose. In no event shall
-the Centers for Disease Control and Prevention (CDC) or the United States (U.S.)
-government be liable to you or anyone else for any direct, special, incidental,
-indirect or consequential damages of any kind, or any damages whatsoever,
-including without limitation, loss of profit, loss of use, savings or revenue,
-or the claims of third parties, whether or not CDC or the U.S. Government has
-been advised of the possibility of such loss, however caused and on any theory
-of liability, arising out of or in connection with the possession, use or
-performance of this software.</pre>
-          <p>Please Click "Accept" to accept this agreement, or "Reject" to close this application.</p>
+          <p>
+            The material embodied in this software is provided to you "As-is" and without warranty of any kind,
+            express, implied or otherwise, including without limitation, any warranty of fitness for a particular
+            purpose. In no event shall the Centers for Disease Control and Prevention (CDC) or the United States
+            (U.S.) government be liable to you or anyone else for any direct, special, incidental, indirect or
+            consequential damages of any kind, or any damages whatsoever, including without limitation, loss of
+            profit, loss of use, savings or revenue, or the claims of third parties, whether or not CDC or the U.S.
+            Government has been advised of the possibility of such loss, however caused and on any theory of
+            liability, arising out of or in connection with the possession, use or performance of this software.
+          </p>
+          <p class="mb-0">Accept to agree to these terms, or Reject to leave MicrobeTrace.</p>
         </div>
         <div class="modal-footer">
           <a href="https://www.cdc.gov/" id="rejectAgreement" class="btn btn-danger" role="button">Reject</a>
@@ -160,7 +163,7 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Loading File</h5>
+          <h5 id="loading-title" class="modal-title">Loading Files</h5>
         </div>
         <div class="modal-body">
           <div class="dna">
@@ -480,7 +483,7 @@ performance of this software.</pre>
         <div class="modal-body">
           <div class="form-group row">
             <div class="col-8">
-              <input type="text" id="save-file-name" class="form-control form-control-sm" title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename">
+              <input type="text" id="save-file-name" class="form-control form-control-sm" title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename" aria-label="Filename">
             </div>
             <div class="col-4">
               <select id="save-file-format" class="form-select form-select-sm" title="What format file would you like to save?">
@@ -494,7 +497,7 @@ performance of this software.</pre>
             <div class="col">
               <div class="form-check form-check-inline">
                 <input class="form-check-input" type="checkbox" id="save-file-compress" checked>
-                <label class="form-check-label" for="save-file-compress">Compress?</label>
+                <label class="form-check-label" for="save-file-compress">Compress the file</label>
               </div>
             </div>
           </div>
@@ -511,19 +514,20 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Stash</h5>
+          <h5 class="modal-title">Stash in Browser</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="form-group row" title="What would you like to call this Stash?">
             <div class="col">
-              <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Name your stash!">
+              <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Stash name" aria-label="Stash name" aria-describedby="stash-help">
+              <div id="stash-help" class="form-text">Stashes are kept in this browser, on this computer. Recall them from the File menu.</div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="stash-data" class="btn btn-primary" data-bs-dismiss="modal">Stash!</button>
+          <button type="button" id="stash-data" class="btn btn-primary" data-bs-dismiss="modal">Stash</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -533,7 +537,7 @@ performance of this software.</pre>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Recall Stash</h5>
+          <h5 class="modal-title">Recall from Browser</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
