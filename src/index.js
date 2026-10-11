@@ -62,53 +62,75 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(() => alertify.success("Stashed in this browser"));
   });
 
+  // Stashes are kept as stash-<when>-<name>, newest listed first
+  const stashOf = key => {
+    const parts = /^stash-(\d+)-([\s\S]*)$/.exec(key);
+    return parts && { key, time: +parts[1], name: parts[2] };
+  };
+  const stashName = stash => stash.name || "Untitled";
   const stashes = new Tabulator("#recall-stashes-available", {
-    height: "100%",
+    maxHeight: "50vh",
     layout: "fitColumns",
     selectableRows: 1,
+    placeholder: "Nothing is stashed in this browser yet. Stash a session from the File menu.",
+    initialSort: [{ column: "time", dir: "desc" }],
+    // (Columns resized from the cells would take the clicks choosing a stash)
+    columnDefaults: { resizable: false },
     columns: [
-      { title: "Name", field: "name" },
-      // ISO dates sort correctly as strings (Tabulator's date sorter needs luxon)
-      { title: "Date", field: "date", hozAlign: "right", sorter: "string" }
+      { title: "Name", field: "name", formatter: cell => cell.getValue() ? escape(cell.getValue()) : '<span class="text-muted">Untitled</span>' },
+      {
+        title: "Stashed", field: "time", width: 190, hozAlign: "right", sorter: "number",
+        formatter: cell => escape(new Date(cell.getValue()).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }))
+      }
     ]
   });
 
+  const selectedStash = () => stashes.getSelectedData()[0];
+  // Recall and Delete act on the stash chosen
+  const showChoice = () => ["recall-load-stash", "recall-delete-stash"].forEach(id => { byId(id).disabled = !selectedStash(); });
+  stashes.on("rowSelectionChanged", showChoice);
   function updateStashes() {
-    localforage.keys().then(keys => stashes.setData(keys
-      .filter(k => k.substring(0, 5) === "stash")
-      .map(k => ({
-        fullname: k,
-        name: k.substring(20),
-        date: new Date(parseFloat(k.substring(6, 19))).toISOString()
-      }))));
+    return localforage.keys()
+      .then(keys => stashes.setData(keys.map(stashOf).filter(Boolean)))
+      .then(showChoice);
   }
-  const selectedStash = () => {
-    const [stash] = stashes.getSelectedData();
-    return stash && stash.fullname;
-  };
+
+  function recall(stash) {
+    localforage.getItem(stash.key).then(json => {
+      MT.applySession(JSON.parse(json));
+      modal("session-recall-modal").hide();
+    }).catch(error => {
+      console.error(error);
+      alertify.error(`“${escape(stashName(stash))}” couldn't be recalled.`);
+    });
+  }
 
   on("RecallDataTab", "click", e => {
     e.preventDefault();
     updateStashes();
     modal("session-recall-modal").show();
   });
+  // (The table is drawn while the dialog is hidden)
+  on("session-recall-modal", "shown.bs.modal", () => stashes.redraw());
 
-  on("recall-delete-stash", "click", () => {
-    const key = selectedStash();
-    if (!key) return;
-    localforage.removeItem(key).then(() => {
-      updateStashes();
-      alertify.success("That stash has been deleted.");
-    });
+  stashes.on("rowDblClick", (e, row) => recall(row.getData()));
+  on("recall-load-stash", "click", () => {
+    const stash = selectedStash();
+    if (stash) recall(stash);
   });
 
-  on("recall-load-stash", "click", () => {
-    const key = selectedStash();
-    if (!key) return;
-    localforage.getItem(key).then(json => {
-      MT.applySession(JSON.parse(json));
-      modal("session-recall-modal").hide();
-    });
+  // Deleting can be undone, for a while
+  on("recall-delete-stash", "click", () => {
+    const stash = selectedStash();
+    if (!stash) return;
+    localforage.getItem(stash.key)
+      .then(json => localforage.removeItem(stash.key).then(() => json))
+      .then(json => {
+        updateStashes();
+        alertify.warning(`Deleted “${escape(stashName(stash))}”. Click here to undo.`, 10, clicked => {
+          if (clicked) localforage.setItem(stash.key, json).then(updateStashes);
+        });
+      });
   });
 
   MT.defaultFilename(byId("save-file-name"));
