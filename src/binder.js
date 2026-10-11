@@ -15,7 +15,9 @@
   // and updates the controls when the setting is changed elsewhere. Values keep
   // their types: number and range inputs store numbers, checkboxes booleans, and
   // radio values "true"/"false" booleans. A setting with no stored value yet
-  // takes the control's initial value. Toggle-button groups (.btn-group-toggle)
+  // takes the control's initial value. Text, number and range inputs store each
+  // edit as it's made, unless they say data-setting-on="change" (for settings
+  // that are slow to apply). Toggle-button groups (.btn-group-toggle)
   // have their .active labels kept in step.
   //
   // Returns a function that disconnects everything.
@@ -60,11 +62,12 @@
       }
       const show = value => els.forEach(el => write(el, value));
       show(settings.get(key));
-      cleanup.push(settings.subscribe(key, show));
+      cleanup.push(settings.subscribe(key, show, { reload: true }));
 
       els.forEach(el => {
         const live = el.type == 'range' || el.type == 'number' || el.type == 'text' || el.tagName == 'TEXTAREA';
-        const type = live ? 'input' : 'change';
+        // data-setting-on="change" waits for the edit to be committed
+        const type = el.dataset.settingOn || (live ? 'input' : 'change');
         const listener = () => {
           // A radio's change event fires only on the one being checked
           if (el.type == 'radio' && !el.checked) return;

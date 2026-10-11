@@ -52,13 +52,13 @@ test('a toggle-button group switches the statistics panel', async () => {
   const dialog = page.locator('#global-settings-modal');
   await page.click('#SettingsTab');
   await expect(dialog).toBeVisible();
-  const pane = await page.evaluate(() => document.querySelector('#network-statistics-hide').closest('.tab-pane').id);
+  const pane = await page.evaluate(() => document.querySelector('[data-setting="network-statistics-show"][value="false"]').closest('.tab-pane').id);
   await dialog.locator(`a[href="#${pane}"]`).click();
-  await dialog.locator('label:has(#network-statistics-hide)').click();
-  await expect(page.locator('label:has(#network-statistics-hide)')).toHaveClass(/active/);
-  await expect(page.locator('label:has(#network-statistics-show)')).not.toHaveClass(/active/);
+  await dialog.locator('label:has([data-setting="network-statistics-show"][value="false"])').click();
+  await expect(page.locator('label:has([data-setting="network-statistics-show"][value="false"])')).toHaveClass(/active/);
+  await expect(page.locator('label:has([data-setting="network-statistics-show"][value="true"])')).not.toHaveClass(/active/);
   await expect(page.locator('#network-statistics-wrapper')).toBeHidden();
-  await dialog.locator('label:has(#network-statistics-show)').click();
+  await dialog.locator('label:has([data-setting="network-statistics-show"][value="true"])').click();
   await expect(page.locator('#network-statistics-wrapper')).toBeVisible();
   await waitForModal(page, '#global-settings-modal');
   await dialog.locator('.btn-close').click();

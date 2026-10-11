@@ -14,7 +14,7 @@ test.beforeAll(async ({ browser }) => {
 test.afterAll(() => page.close());
 
 test('network statistics', async () => {
-  const stats = await page.evaluate(() => ['numberOfNodes', 'numberOfVisibleLinks', 'numberOfSingletonNodes', 'numberOfDisjointComponents'].map(id => $('#' + id).text()));
+  const stats = await page.evaluate(() => ['numberOfNodes', 'numberOfVisibleLinks', 'numberOfSingletonNodes', 'numberOfDisjointComponents'].map(id => document.getElementById(id).textContent));
   expect(stats).toEqual(['310', '476', '22', '76']);
   expect(errors).toEqual([]);
 });

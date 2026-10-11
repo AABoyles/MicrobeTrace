@@ -79,9 +79,9 @@ test('the color scheme applies', async () => {
 });
 
 test('the background color applies', async () => {
-  await page.evaluate(() => $('#background-color').val('#000000').trigger('change'));
+  await page.evaluate(() => (el => { el.value = '#000000'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('background-color')));
   await expect.poll(async () => (await plot()).background).toBe('rgb(0, 0, 0)');
-  await page.evaluate(() => $('#background-color').val('#ffffff').trigger('change'));
+  await page.evaluate(() => (el => { el.value = '#ffffff'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('background-color')));
 });
 
 test('reopening the view restores its settings', async () => {
