@@ -170,7 +170,7 @@ test('the File menu starts with New, says where stashes go, and shows its shortc
 test('the View menu groups the views, in two columns', async () => {
   const items = await openMenu('View');
   expect(await items.locator('.dropdown-header').allInnerTexts()).toEqual(['Charts', 'Tables', 'Maps', 'Sequences']);
-  await expect(items.locator('.viewbutton')).toHaveCount(17);
+  await expect(items.locator('.viewbutton')).toHaveCount(18);
   const views = await items.locator('.viewbutton').allInnerTexts();
   expect(views).toContain('Crosstab');
   expect(views).not.toContain('CrossTab');

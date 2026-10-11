@@ -37,7 +37,8 @@ const content = {
   timeline: 'svg',
   waterfall: '.waterfall-clusters .list-group-item',
   sequences: '.sequences-panel canvas',
-  choropleth: '.leaflet-container'
+  choropleth: '.leaflet-container',
+  conflicts: '.view-message:not([hidden])' // the fixture's files don't disagree
 };
 
 for (const [view, selector] of Object.entries(content)) {

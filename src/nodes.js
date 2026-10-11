@@ -10,6 +10,11 @@
   // the lowest rank (the file at the top of the list) wins, and a source with
   // no value for a field leaves it to the next. A key repeated within a source
   // keeps its first row, which later rows only fill in.
+  //
+  // A field can prefer a source (named), which then wins for it, and a node's
+  // field can pick one, which wins for that node alone. A preferred or picked
+  // source without a value leaves it to the others. Both are kept when the
+  // sources are reset, as they are each time files are read again.
 
   const empty = v => v === undefined || v === null || v === '' || (typeof v == 'number' && isNaN(v));
 
@@ -58,6 +63,8 @@
     constructor() {
       this.list = [];
       this.sorted = null;
+      this.rules = new Map(); // field → the preferred source's name
+      this.picks = new Map(); // key → Map of field → the picked source's name
     }
 
     // A new source, ranked rank (lower wins)
@@ -79,23 +86,66 @@
       return this.sorted;
     }
 
-    // The value to use for a node's field: the best source's, or undefined
-    resolve(key, field) {
-      for (const s of this.ranked()) {
-        const v = s.value(key, field);
-        if (v !== undefined) return v;
-      }
-      return undefined;
+    // Which source's value a field prefers (a source's name), or null for the
+    // ranks to decide
+    prefer(field, name) {
+      if (name == null) this.rules.delete(field);
+      else this.rules.set(field, name);
     }
 
-    // Every source's value for a node's field, best first, marking the one used
+    // Which source's value one node's field uses (a source's name), or null
+    // for the field's rule to decide
+    pick(key, field, name) {
+      let fields = this.picks.get(key);
+      if (name == null) {
+        if (fields) fields.delete(field);
+        if (fields && !fields.size) this.picks.delete(key);
+        return;
+      }
+      if (!fields) this.picks.set(key, fields = new Map());
+      fields.set(field, name);
+    }
+
+    // The name of the source a node's field picks, if any
+    picked(key, field) {
+      const fields = this.picks.get(key);
+      return fields && fields.get(field) || null;
+    }
+
+    // The source whose value a node's field uses: the one it picks, then the
+    // one its field prefers, then the best ranked with a value
+    decides(key, field) {
+      const named = name => name != null && this.ranked().find(s => s.name == name && s.value(key, field) !== undefined);
+      const picked = named(this.picked(key, field));
+      if (picked) return picked;
+      const preferred = named(this.rules.get(field));
+      if (preferred) return preferred;
+      return this.ranked().find(s => s.value(key, field) !== undefined);
+    }
+
+    // The value to use for a node's field, or undefined
+    resolve(key, field) {
+      const source = this.decides(key, field);
+      return source ? source.value(key, field) : undefined;
+    }
+
+    // Every source's value for a node's field, best ranked first, marking the
+    // one used
     provenance(key, field) {
+      const used = this.decides(key, field);
       const out = [];
       for (const s of this.ranked()) {
         const value = s.value(key, field);
-        if (value !== undefined) out.push({ source: s.name, row: s.rowOf.get(key), value, used: out.length == 0 });
+        if (value !== undefined) out.push({ source: s.name, row: s.rowOf.get(key), value, used: s === used });
       }
       return out;
+    }
+
+    // The keys of every node a source gives a field
+    keys(field) {
+      const keys = new Set();
+      this.list.forEach(s => { if (s.columns.has(field)) s.rowOf.forEach((row, key) => keys.add(key)); });
+      return keys;
     }
 
     // Where sources disagree: a Map of each field to the keys of the nodes
@@ -152,13 +202,17 @@
           });
         });
         return { name: source.name, rank: source.rank, keys, columns };
-      })
+      }),
+      rules: Object.fromEntries(this.rules),
+      picks: Array.from(this.picks, ([key, fields]) => Array.from(fields, ([field, name]) => [key, field, name])).flat()
     };
   };
 
   MTNodeSources.restore = (saved, nodeOf = () => undefined) => {
     const sources = new MTNodeSources();
     if (!saved || !Array.isArray(saved.sources)) return sources;
+    Object.entries(saved.rules || {}).forEach(([field, name]) => sources.prefer(field, name));
+    (saved.picks || []).forEach(([key, field, name]) => sources.pick(key, field, name));
     saved.sources.forEach((s, i) => {
       const source = sources.add(s.name, typeof s.rank == 'number' ? s.rank : i);
       const keys = s.keys || [];

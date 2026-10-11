@@ -16,6 +16,7 @@
     'node-border-change': 'node border color or width changed',
     'node-selected': 'the selected nodes changed (detail: the view that changed them, if one did)',
     'node-visibility': 'which nodes are visible changed',
+    'node-values-change': 'nodes took other files\' values for a field (detail: the field)',
     'link-visibility': 'which links are visible changed',
     'cluster-visibility': 'which clusters are visible changed',
     'stop-force-simulation': 'the network layout should stop (a new session is replacing this one)'

@@ -68,6 +68,39 @@ body {
   text-align: center;
   color: #6c757d;
 }
+/* The Conflicts view: a field's choice above the nodes files disagree on */
+.conflicts-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0.75rem;
+}
+.conflicts-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.conflicts-controls .form-select {
+  width: auto;
+  max-width: 20rem;
+}
+.conflicts-note {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+.conflicts-grid {
+  flex: 1;
+  min-height: 0;
+}
+.conflict-value:not(.used) {
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+.conflict-value.used {
+  font-weight: 600;
+}
 /* The View menu, in two columns of groups */
 .view-menu.show {
   display: grid;

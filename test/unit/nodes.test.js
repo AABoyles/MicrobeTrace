@@ -131,5 +131,54 @@ test('a value saved as 1 for a node that is gone is no value', () => {
 test('restoring nothing, or something else, gives no sources', () => {
   assert.strictEqual(MTNodeSources.restore(undefined).list.length, 0);
   assert.strictEqual(MTNodeSources.restore({ version: 1 }).list.length, 0);
-  assert.deepStrictEqual(new MTNodeSources().save(), { version: 1, sources: [] });
+  assert.deepStrictEqual(new MTNodeSources().save(), { version: 1, sources: [], rules: {}, picks: [] });
+});
+
+test('a field can prefer a source, which wins for it where it has a value', () => {
+  const { sources } = three();
+  sources.prefer('state', 'meta.xlsx');
+  assert.strictEqual(sources.resolve('S1', 'state'), 'Ohio');
+  assert.deepStrictEqual(sources.provenance('S1', 'state').map(p => [p.source, p.used]), [['nodes.csv', false], ['meta.xlsx', true]]);
+  // Other fields still go by rank
+  assert.strictEqual(sources.resolve('S1', 'date'), '2020-01-04');
+  // A preferred source without a value leaves it to the ranks
+  sources.prefer('seq', 'meta.xlsx');
+  assert.strictEqual(sources.resolve('S1', 'seq'), 'ACGT');
+  sources.prefer('state', null);
+  assert.strictEqual(sources.resolve('S1', 'state'), 'Texas');
+});
+
+test('a node can pick a source for a field, over the field\'s rule', () => {
+  const { sources } = three();
+  sources.prefer('date', 'nodes.csv');
+  sources.pick('S1', 'date', 'meta.xlsx');
+  assert.strictEqual(sources.resolve('S1', 'date'), '2020-01-05');
+  assert.strictEqual(sources.picked('S1', 'date'), 'meta.xlsx');
+  assert.strictEqual(sources.picked('S2', 'date'), null);
+  sources.pick('S1', 'date', null);
+  assert.strictEqual(sources.resolve('S1', 'date'), '2020-01-04');
+  assert.strictEqual(sources.picks.size, 0);
+});
+
+test('rules and picks are kept when sources are reset, and saved with them', () => {
+  const { sources } = three();
+  sources.prefer('state', 'meta.xlsx');
+  sources.pick('S2', 'lat', 'meta.xlsx');
+  const nodes = resolved(sources);
+  const saved = JSON.parse(JSON.stringify(sources.save(key => nodes.get(key))));
+  assert.deepStrictEqual(saved.rules, { state: 'meta.xlsx' });
+  assert.deepStrictEqual(saved.picks, [['S2', 'lat', 'meta.xlsx']]);
+  const restored = MTNodeSources.restore(saved, key => nodes.get(key));
+  assert.strictEqual(restored.resolve('S1', 'state'), 'Ohio');
+  assert.strictEqual(restored.picked('S2', 'lat'), 'meta.xlsx');
+  sources.reset();
+  assert.strictEqual(sources.rules.get('state'), 'meta.xlsx');
+  assert.strictEqual(sources.picked('S2', 'lat'), 'meta.xlsx');
+});
+
+test('keys lists every node a source gives a field', () => {
+  const { sources } = three();
+  assert.deepStrictEqual([...sources.keys('state')].sort(), ['S1', 'S2']);
+  assert.deepStrictEqual([...sources.keys('seq')], ['S1']);
+  assert.deepStrictEqual([...sources.keys('nothing')], []);
 });

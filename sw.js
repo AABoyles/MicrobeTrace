@@ -53,6 +53,7 @@ self.addEventListener('install', function(event) {
         'components/aggregation.html',
         'components/bubbles.html',
         'components/choropleth.html',
+        'components/conflicts.html',
         'components/crosstab.html',
         'components/files.html',
         'components/flow_diagram.html',
