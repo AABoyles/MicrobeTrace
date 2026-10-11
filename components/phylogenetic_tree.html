@@ -659,6 +659,8 @@
 
     const handle = temp.phylogeneticTree = { get tree() { return tree; } };
     return {
+      // The page's floating panels this view shows (see MT.placePanels)
+      panels: ['node-colors'],
       // TidyTree lays the tree out for the size it's drawn at
       resize() {
         if (!size || size[0] != root.clientWidth || size[1] != root.clientHeight) draw();

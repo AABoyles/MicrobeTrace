@@ -72,6 +72,8 @@ test('the settings dialog opens, switches tabs and closes', async () => {
 });
 
 test('a toggle-button group switches the statistics panel', async () => {
+  // The statistics show with the network, so bring it back in front of the table
+  await page.evaluate(() => MT.launchView('network'));
   const dialog = page.locator('#global-settings-modal');
   await page.click('#SettingsTab');
   await expect(dialog).toBeVisible();

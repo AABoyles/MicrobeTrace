@@ -536,6 +536,8 @@
 
     const handle = temp.globe = { projection, get countries() { return map.countries; }, get positions() { return positions; }, get drawn() { return drawn; }, at, redraw: draw };
     return {
+      // The page's floating panels this view shows (see MT.placePanels)
+      panels: ['node-colors'],
       resize,
       destroy() {
         destroyed = true;

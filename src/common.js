@@ -1944,7 +1944,11 @@
   const stacks = item => !item || item.isComponent ? [] : (item.isStack ? [item] : []).concat(item.contentItems.flatMap(stacks));
 
   MT.createLayout = () => {
-    if (self.layout) layout.destroy();
+    if (self.layout) {
+      parkPanels();
+      layout.destroy();
+    }
+    recentViews.length = 0;
     self.layout = new goldenLayout.GoldenLayout(document.getElementById("main-panel"));
     layout.resizeWithContainerAutomatically = true;
     // golden-layout builds a component before its element is in the page, where
@@ -1955,6 +1959,8 @@
     Object.defineProperty(layout, "contentItems", { get: () => viewItems(layout.rootItem) });
     layout.loadLayout(emptyLayout);
     layout.on("stateChanged", () => session.layout = MT.cacheLayout(layout.rootItem));
+    layout.on("activeContentItemChanged", bringForward);
+    layout.on("focus", e => bringForward(e.target));
   };
 
   // Fetches a view's HTML into temp.componentCache
@@ -2026,17 +2032,40 @@
     };
   };
 
-  // Makes a view's settings button slide its pane in and out
-  MT.paneToggle = (button, pane, open = false) => {
-    const show = () => {
+  // Makes a view's settings button slide its pane in and out. The pane also
+  // gets a close button, and Escape closes it, unless it's closing a dialog or
+  // a menu first or is typed in a text field. `push`, if given, is an element
+  // moved aside while the pane is open instead of covered by it.
+  const openPanes = new Set();
+  const typing = target => target.isContentEditable || target.tagName == 'TEXTAREA' ||
+    (target.tagName == 'INPUT' && !['checkbox', 'radio', 'range', 'button', 'color'].includes(target.type));
+  // In the capture phase, before a menu that Escape closes has closed
+  document.addEventListener('keydown', e => {
+    if (e.key != 'Escape' || typing(e.target) || document.querySelector('.modal.show, .ts-wrapper.dropdown-active, .dropdown-menu.show')) return;
+    openPanes.forEach(close => close());
+  }, true);
+  MT.paneToggle = (button, pane, open = false, { push } = {}) => {
+    const set = value => {
+      open = value;
       button.classList.toggle('active', open);
       MT.slidePane(pane, open);
+      if (push) push.classList.toggle('pane-pushed', open);
+      if (open) openPanes.add(close);
+      else openPanes.delete(close);
     };
-    button.addEventListener('click', () => {
-      open = !open;
-      show();
-    });
-    if (open) show();
+    const close = () => {
+      if (!pane.isConnected) return openPanes.delete(close);
+      if (open) set(false);
+    };
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'btn-close pane-close';
+    closeButton.title = 'Close settings';
+    closeButton.setAttribute('aria-label', 'Close settings');
+    closeButton.addEventListener('click', close);
+    pane.prepend(closeButton);
+    button.addEventListener('click', () => set(!open));
+    if (open) set(true);
   };
 
   // Wires a table view's export dialog: a filename field (export-filename), a
@@ -2084,17 +2113,15 @@
   // A floating table (such as a view's legend) with a drag handle and a
   // context menu. The menu's items say what they do with data-action: drag
   // (show or hide the drag handle), hide, expand (or contract), and counts or
-  // frequencies (call onCounts or onFrequencies). onHide hides the table; edge
-  // ('left' or 'right') and vertical ('top' or 'bottom') are the sides it's
-  // anchored to. Returns a function that disconnects it.
-  MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies, edge = 'left', vertical = 'top' } = {}) => {
+  // frequencies (call onCounts or onFrequencies). onHide hides the table.
+  // Tables sit in their view's panel dock (MT.panelDock); dragging one moves it
+  // from its place there. Returns a function that disconnects it.
+  MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies } = {}) => {
     const handle = wrapper.querySelector('.draghandle');
     const closeMenu = () => { menu.style.display = 'none'; };
     wrapper.addEventListener('contextmenu', e => {
       e.preventDefault();
-      // The menu is placed in the same container as the table
-      const box = wrapper.offsetParent ? wrapper.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
-      Object.assign(menu.style, { display: 'block', left: (e.clientX - box.left) + 'px', top: (e.clientY - box.top) + 'px', zIndex: 1000 });
+      Object.assign(menu.style, { display: 'block', position: 'fixed', left: e.clientX + 'px', top: e.clientY + 'px', zIndex: 1060 });
     });
     const outside = e => { if (!menu.contains(e.target)) closeMenu(); };
     document.addEventListener('click', outside);
@@ -2111,8 +2138,7 @@
         if (onHide) onHide();
       } else if (action == 'expand') {
         const expand = item.textContent == 'Expand';
-        wrapper.style.maxHeight = expand ? 'none' : '400px';
-        wrapper.style.overflowY = expand ? 'auto' : 'scroll';
+        wrapper.classList.toggle('expanded', expand);
         item.textContent = expand ? 'Contract' : 'Expand';
       } else if (action == 'counts' && onCounts) {
         onCounts();
@@ -2120,18 +2146,72 @@
         onFrequencies();
       }
     });
+    let offset = [0, 0];
     handle.addEventListener('mousedown', e => {
       e.preventDefault();
       const move = e => {
-        if (vertical == 'bottom') wrapper.style.bottom = (parseFloat(getComputedStyle(wrapper).bottom) - e.movementY) + 'px';
-        else wrapper.style.top = (parseFloat(getComputedStyle(wrapper).top) + e.movementY) + 'px';
-        if (edge == 'right') wrapper.style.right = (parseFloat(getComputedStyle(wrapper).right) - e.movementX) + 'px';
-        else wrapper.style.left = (parseFloat(getComputedStyle(wrapper).left) + e.movementX) + 'px';
+        offset = [offset[0] + e.movementX, offset[1] + e.movementY];
+        wrapper.style.translate = offset[0] + 'px ' + offset[1] + 'px';
       };
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', () => document.removeEventListener('mousemove', move), { once: true });
     });
     return () => document.removeEventListener('click', outside);
+  };
+
+  // A view's panel dock: a column down its right-hand side that holds its
+  // floating tables, stacked so they never overlap, with the statistics at the
+  // bottom.
+  MT.panelDock = element => {
+    let dock = Array.from(element.children).find(child => child.classList.contains('panel-dock'));
+    if (!dock) {
+      dock = document.createElement('div');
+      dock.className = 'panel-dock';
+      element.appendChild(dock);
+    }
+    return dock;
+  };
+
+  // The page's floating panels, and what a view says (with `panels` in what its
+  // mount function returns) to show them: the color tables in views that draw
+  // node or link colors, the statistics in the network. Each sits in the dock of
+  // the view in front that shows it, or nowhere if there's none.
+  const pagePanels = { 'link-colors': 'link-color-table-wrapper', 'node-colors': 'node-color-table-wrapper', 'statistics': 'network-statistics-wrapper' };
+  const recentViews = [];
+  const parking = () => {
+    let element = document.getElementById('panel-parking');
+    if (!element) {
+      element = document.createElement('div');
+      element.id = 'panel-parking';
+      element.hidden = true;
+      document.body.appendChild(element);
+    }
+    return element;
+  };
+  // Panels inside a view go with it when it closes, so they're parked first
+  const parkPanels = element => Object.values(pagePanels).forEach(id => {
+    const panel = document.getElementById(id);
+    if (panel && (!element || element.contains(panel))) parking().appendChild(panel);
+  });
+  const inFront = item => item.parent && item.parent.isStack && item.parent.getActiveComponentItem() === item;
+  MT.placePanels = () => {
+    if (!self.layout || !layout.rootItem) return parkPanels();
+    const views = layout.contentItems.filter(inFront)
+      .sort((a, b) => (recentViews.indexOf(a) + 1 || Infinity) - (recentViews.indexOf(b) + 1 || Infinity));
+    Object.entries(pagePanels).forEach(([kind, id]) => {
+      const panel = document.getElementById(id);
+      if (!panel) return;
+      const host = views.find(item => (item.panels || []).includes(kind));
+      const into = host ? MT.panelDock(host.container.element) : parking();
+      if (panel.parentElement !== into) into.appendChild(panel);
+    });
+  };
+  const bringForward = item => {
+    if (!item || !item.isComponent) return;
+    const i = recentViews.indexOf(item);
+    if (i >= 0) recentViews.splice(i, 1);
+    recentViews.unshift(item);
+    MT.placePanels();
   };
 
   // Wires the export dialog of a view drawn as an SVG. The dialog (inside root)
@@ -2537,10 +2617,19 @@
     if (!mount) return;
     const container = contentItem.container;
     const handle = mount(container.element, { settings: MT.settings, events: MT.events, container }) || {};
+    contentItem.panels = handle.panels || [];
     const resize = () => handle.resize && handle.resize();
     container.on('resize', resize);
     container.on('show', resize);
-    container.on('destroy', () => handle.destroy && handle.destroy());
+    container.on('destroy', () => {
+      parkPanels(container.element);
+      const i = recentViews.indexOf(contentItem);
+      if (i >= 0) recentViews.splice(i, 1);
+      if (handle.destroy) handle.destroy();
+      // Once the layout has settled, the view now in front takes the panels
+      setTimeout(MT.placePanels);
+    });
+    bringForward(contentItem);
   };
 
   // Views that were renamed or removed, and the view that opens in their place

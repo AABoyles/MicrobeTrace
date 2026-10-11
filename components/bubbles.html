@@ -229,6 +229,8 @@
     setBackground();
 
     return {
+      // The page's floating panels this view shows (see MT.placePanels)
+      panels: ['node-colors'],
       resize,
       destroy() {
         stop.forEach(fn => fn());
