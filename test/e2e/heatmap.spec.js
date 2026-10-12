@@ -69,7 +69,7 @@ test('axis labels can be shown', async () => {
 });
 
 test('the color scheme applies', async () => {
-  await pane().locator('input[type=color]').first().evaluate(el => {
+  await pane().locator('input[data-setting="heatmap-color-high"]').evaluate(el => {
     el.value = '#00ff00';
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -95,7 +95,7 @@ test('reopening the view restores its settings', async () => {
   await expect(pane().locator('label', { hasText: 'X-Axis' })).toHaveClass(/active/);
   await expect(pane().locator('label', { hasText: 'Y-Axis' })).not.toHaveClass(/active/);
   await expect(pane().locator('label', { hasText: 'Show' })).toHaveClass(/active/);
-  await expect(pane().locator('input[type=color]').first()).toHaveValue('#00ff00');
+  await expect(pane().locator('input[data-setting="heatmap-color-high"]')).toHaveValue('#00ff00');
 });
 
 test('the plot follows the panel size', async () => {
