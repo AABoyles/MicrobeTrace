@@ -228,8 +228,7 @@ test('a stashed session can be recalled', async () => {
   await waitForModal(page, '#session-recall-modal');
   const row = page.locator('#recall-stashes-available .tabulator-row', { hasText: 'global-stash' });
   await expect(row).toHaveCount(1);
-  // (Its name: the middle of the row is the columns' resize handle)
-  await row.locator('.tabulator-cell').first().click();
+  await row.click();
   await expect(row).toHaveClass(/tabulator-selected/);
   await page.click('#recall-load-stash');
   await page.waitForFunction(() => session.data.nodes.length == 310 && document.getElementById('numberOfNodes').textContent == '310', null, { timeout: 60000 });

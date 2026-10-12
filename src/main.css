@@ -68,6 +68,12 @@ body {
   text-align: center;
   color: #6c757d;
 }
+/* The Recall dialog's note when nothing is stashed, as the views' notes */
+#recall-stashes-available .tabulator-placeholder-contents {
+  font-size: inherit;
+  font-weight: normal;
+  color: #6c757d;
+}
 /* The Conflicts view: a field's choice above the nodes files disagree on */
 .conflicts-view {
   display: flex;
