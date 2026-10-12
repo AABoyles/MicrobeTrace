@@ -132,24 +132,30 @@
     const plot = $('.histogram-plot');
     const pane = $('.left-pane');
 
-    // One histogram trace per color when the bars are colored by a variable
+    // One histogram trace per color when the bars are colored by a variable,
+    // as the color table for the dataset gives them (links by their first origin)
     function traces(source, field, axis) {
       const items = source == 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks();
       const trace = (values, color) => ({ type: 'histogram', [axis]: values, marker: { color }, showlegend: false, hoverinfo: 'skip' });
       const colorBy = settings.get(source == 'nodes' ? 'node-color-variable' : 'link-color-variable');
-      const colored = source == 'nodes' ? colorBy !== 'None' : !['None', 'origin'].includes(colorBy);
-      if (!colored) {
+      if (colorBy == 'None') {
         return [trace(items.map(d => d[field]), settings.get(source == 'nodes' ? 'node-color' : 'link-color'))];
       }
-      const distinct = new Set();
-      if (source == 'nodes') session.data.nodes.forEach(d => distinct.add(d[colorBy]));
-      else session.data.graph.forEachValue(colorBy, v => distinct.add(v));
+      const valueOf = source == 'nodes' ? d => d[colorBy] : d => MT.linkColorValue(d, colorBy);
       const colorMap = source == 'nodes' ? temp.style.nodeColorMap : temp.style.linkColorMap;
-      return Array.from(distinct)
-        .map(v => trace(items.filter(d => d[colorBy] == v).map(d => d[field]), colorMap(v)))
+      const groups = new Map();
+      items.forEach(d => {
+        const key = String(valueOf(d));
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(d[field]);
+      });
+      return Array.from(groups, ([value, values]) => trace(values, colorMap(value)))
         // Smaller groups first, so they stack at the bottom (#242)
         .sort((a, b) => a[axis].length - b[axis].length);
     }
+
+    // The color table for the dataset charted, the only one its bars follow
+    const dataset = () => settings.get('histogram-variable').split('-')[0];
 
     function draw() {
       const width = root.clientWidth, height = root.clientHeight;
@@ -180,7 +186,11 @@
 
     const stop = [
       MTBind(pane, settings),
-      settings.subscribe(['histogram-variable', 'histogram-axis-x', 'histogram-scale-log'], draw),
+      // (A change of variable may change which color table it docks)
+      settings.subscribe(['histogram-variable', 'histogram-axis-x', 'histogram-scale-log'], () => {
+        MT.placePanels();
+        draw();
+      }),
       ...['node-color-change', 'link-color-change', 'background-color-change', 'node-visibility', 'link-visibility']
         .map(type => events.on(type, draw))
     ];
@@ -188,7 +198,7 @@
 
     return {
       // The page's floating panels this view shows (see MT.placePanels)
-      panels: ['link-colors', 'node-colors'],
+      panels: () => [dataset() == 'nodes' ? 'node-colors' : 'link-colors'],
       resize: draw,
       destroy() {
         stop.forEach(fn => fn());

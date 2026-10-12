@@ -110,7 +110,7 @@ test("the color tables' controls are labelled icons, and values sort by name", a
   const table = page.locator('#node-color-table');
   await expect(table.locator('td[data-value]')).toHaveCount(5);
   // Ascending by the raw values, where the empty one's key comes after "g3"
-  expect(await table.locator('td[data-value]').allTextContents()).toEqual(['G0', 'G1', 'G2', 'G3', '(Empty)']);
+  expect(await table.locator('td[data-value]').allTextContents()).toEqual(['g0', 'g1', 'g2', 'g3', '(Empty)']);
   await expect(table.locator('th [title="Sort"] .bi-arrow-down-up').first()).toBeVisible();
   await expect(table.locator('td [title="Transparency"] .bi-droplet-half')).toHaveCount(5);
   await expect(table.locator('td[data-value]').first()).toHaveAttribute('title', 'Double-click to rename');
@@ -118,7 +118,7 @@ test("the color tables' controls are labelled icons, and values sort by name", a
   await table.locator('th').first().locator('[title="Sort"]').click();
   await expect.poll(async () => (await table.locator('td[data-value]').allTextContents())[0]).toBe('(Empty)');
   await table.locator('th').first().locator('[title="Sort"]').click();
-  await expect.poll(async () => (await table.locator('td[data-value]').allTextContents())[0]).toBe('G0');
+  await expect.poll(async () => (await table.locator('td[data-value]').allTextContents())[0]).toBe('g0');
 });
 
 test('panel tabs are 13px, closer to the menus', async () => {

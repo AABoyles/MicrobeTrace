@@ -431,7 +431,7 @@
       layers.links = L.featureGroup(MT.getVisibleLinks()
         .filter(d => positions.has(d.source) && positions.has(d.target))
         .map(d => L.polyline([jittered(d.source), jittered(d.target)], {
-          color: colorVariable == 'None' ? color : temp.style.linkColorMap(d[colorVariable]),
+          color: colorVariable == 'None' ? color : temp.style.linkColorMap(MT.linkColorValue(d, colorVariable)),
           opacity,
           data: d
         })))

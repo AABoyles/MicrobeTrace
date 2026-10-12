@@ -96,7 +96,7 @@
       const items = MT['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
       const counts = new Map();
       items.forEach(d => {
-        const value = d[column] === null ? '_Unknown' : d[column];
+        const value = MT.valueLabel(d[column]) == '(Empty)' ? '(Empty)' : d[column];
         counts.set(value, (counts.get(value) || 0) + 1);
       });
       return Array.from(counts, ([value, n]) => ({ [column]: value, n, percent: (n / items.length * 100).toLocaleString() + '%' }));

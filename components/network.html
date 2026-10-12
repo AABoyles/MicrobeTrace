@@ -995,7 +995,7 @@ Note that this may cause slow performance on larger networks.">
       const options = $('[data-setting="node-symbol"]').innerHTML;
       values.forEach((v, i) => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td contenteditable>${escape(MT.titleize('' + v))}</td>` +
+        row.innerHTML = `<td contenteditable>${escape(MT.valueLabel(v))}</td>` +
           (counts ? `<td>${aggregates[v]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[v] / count).toLocaleString()}</td>` : '') +
           `<td><select>${options}</select></td>`;
@@ -1051,16 +1051,12 @@ Note that this may cause slow performance on larger networks.">
       refresh();
     }
 
-    // A link's color value; links with several origins are dashed and colored by
+    // A link's color; links with several origins are dashed and colored by
     // their first origin.
-    function linkValue(l, variable) {
-      return variable == 'origin' ? l.origin[0] : l[variable];
-    }
-
     function linkColor(l) {
       const variable = get('link-color-variable');
       if (variable == 'None') return rgba(get('link-color'), 1);
-      const v = linkValue(l, variable);
+      const v = MT.linkColorValue(l, variable);
       return rgba(temp.style.linkColorMap(v), temp.style.linkAlphaMap(v));
     }
 
@@ -1205,7 +1201,7 @@ Note that this may cause slow performance on larger networks.">
         session.style.polygonColors.splice(i, 1, temp.style.polygonColorMap(value));
         session.style.polygonAlphas.splice(i, 1, temp.style.polygonAlphaMap(value));
         const row = document.createElement('tr');
-        row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(session.style.polygonValueNames[value] || MT.titleize('' + value))}</td>` +
+        row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
           (counts ? `<td>${aggregates[value]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
           `<td><input type="color" value="${temp.style.polygonColorMap(value)}">${MT.transparencyButton}</td>`;
@@ -1337,7 +1333,7 @@ Note that this may cause slow performance on larger networks.">
         columns.push('Color');
         const names = session.style[kind + 'ValueNames'], colorMap = temp.style[kind + 'ColorMap'];
         const data = Object.keys(aggregates).map(value => ({
-          [kind == 'node' ? 'Node' : 'Link']: names[value] ? names[value] : MT.titleize('' + value),
+          [kind == 'node' ? 'Node' : 'Link']: names[value] ? names[value] : MT.valueLabel(value),
           Count: get(kind + '-color-table-counts') ? aggregates[value] : undefined,
           Frequency: get(kind + '-color-table-frequencies') ? (aggregates[value] / total).toLocaleString() : undefined,
           Color: '<div style="margin-left:5px; width:40px;height:12px;background:' + colorMap(value) + '"> </div>'
