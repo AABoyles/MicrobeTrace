@@ -213,7 +213,8 @@ test('the tooltip variables menu takes up to three', async () => {
   const menu = pane().locator('.ts-wrapper');
   const choose = async title => {
     await menu.locator('input').fill(title);
-    await expect(menu.locator('.ts-dropdown .option.active').first()).toHaveText(title);
+    // (The menu opens in the page body)
+    await expect(page.locator('body > .ts-dropdown:visible .option.active').first()).toHaveText(title);
     await page.keyboard.press('Enter');
     await page.keyboard.press('Escape');
   };
