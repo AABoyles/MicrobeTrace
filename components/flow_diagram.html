@@ -96,7 +96,7 @@
             <label for="flow-export-opacity">Watermark Opacity</label>
           </div>
           <div class="col-9">
-            <input type="range" id="flow-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
+            <input type="range" class="form-range" id="flow-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
@@ -129,7 +129,7 @@
       item.className = 'flow-items';
       item.innerHTML = `<span class="bi bi-x flow-remove" title="Remove this variable"></span>
         <select class="form-select form-select-sm flow-selector">${options(valid(value))}</select>
-        <span class="bi bi-arrow-down-up" title="Drag to reorder"></span>`;
+        <span class="bi bi-grip-vertical" title="Drag to reorder"></span>`;
       list.appendChild(item);
       sortable(list, 'reload');
     }

@@ -86,7 +86,7 @@
       item.className = 'd-inline-flex aggregation-items';
       item.innerHTML = `<span class="bi bi-x pt-2 aggregation-remove" title="Remove this table"></span>
         <select class="flex-grow-1 form-select form-select-sm aggregation-variable">${options(value)}</select>
-        <span class="pt-2 bi bi-arrow-down-up" title="Drag to reorder"></span>`;
+        <span class="pt-2 bi bi-grip-vertical" title="Drag to reorder"></span>`;
       list.appendChild(item);
       sortable(list, 'reload');
     }

@@ -2130,7 +2130,7 @@
       open = value;
       button.classList.toggle('active', open);
       MT.slidePane(pane, open);
-      if (push) push.classList.toggle('pane-pushed', open);
+      if (push) [].concat(push).forEach(element => element.classList.toggle('pane-pushed', open));
       if (open) openPanes.add(close);
       else openPanes.delete(close);
     };

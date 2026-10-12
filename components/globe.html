@@ -8,7 +8,7 @@
     <span class="bi bi-download"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm autorotate-toggle" title="Toggle Autorotation">
-    <span class="bi bi-arrow-repeat"></span>
+    <span class="bi bi-play-fill"></span>
   </button>
 </div>
 
@@ -479,6 +479,8 @@
         });
       }
       button.classList.toggle('active', !!spinner);
+      // Play to turn it, pause to stop
+      button.querySelector('.bi').className = 'bi ' + (spinner ? 'bi-pause-fill' : 'bi-play-fill');
     }
     $('.autorotate-toggle').addEventListener('click', autorotate);
 
