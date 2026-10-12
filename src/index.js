@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     values.forEach((value, i) => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(names[value] || MT.titleize("" + value))}</td>` +
+      row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(names[value] || MT.valueLabel(value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
         `<td><input type="color" value="${temp.style[colorMap](value)}">${MT.transparencyButton}</td>`;
@@ -490,11 +490,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const key = session.style[savedKeys][variable].findIndex(k => k === value);
         session.style[savedColors][variable].splice(key, 1, e.target.value);
         if (get("node-timeline-variable") == "None") {
-          temp.style[colorMap] = d3.scaleOrdinal(session.style[savedColors][variable]).domain(session.style[savedKeys][variable]);
+          temp.style[colorMap] = MT.colorScale(session.style[savedColors][variable], session.style[savedKeys][variable]);
         } else {
           const timelineKey = temp.style[timelineKeys].findIndex(k => k === value);
           temp.style[timelineColors].splice(timelineKey, 1, e.target.value);
-          temp.style[colorMap] = d3.scaleOrdinal(temp.style[timelineColors]).domain(temp.style[timelineKeys]);
+          temp.style[colorMap] = MT.colorScale(temp.style[timelineColors], temp.style[timelineKeys]);
         }
         events.emit(kind + "-color-change");
       });
@@ -505,7 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
         slider.value = session.style[alphas][i];
         slider.addEventListener("change", () => {
           session.style[alphas].splice(i, 1, parseFloat(slider.value));
-          temp.style[alphaMap] = d3.scaleOrdinal(session.style[alphas]).domain(values);
+          temp.style[alphaMap] = MT.colorScale(session.style[alphas], values);
           sliderWrapper.style.display = "none";
           events.emit(kind + "-color-change");
         }, { once: true });

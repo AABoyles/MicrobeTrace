@@ -90,7 +90,8 @@
 
     const $ = selector => root.querySelector(selector);
     const fieldX = $('.crosstab-x'), fieldY = $('.crosstab-y');
-    let dataset = 'nodes', data = [], chosen = false;
+    // data: a row per Y value; headers and rows: the same for export
+    let dataset = 'nodes', data = [], headers = [], rows = [], chosen = false;
 
     const table = new Tabulator($('.crosstab-grid'), { layout: 'fitColumns', data: [], columns: [] });
     const built = new Promise(resolve => table.on('tableBuilt', resolve));
@@ -109,10 +110,16 @@
       if (chosen) [fieldX.value, fieldY.value] = [x, y];
     }
 
-    // One row per Y value, one column per X value, counting the visible items
+    // Values in natural order (2 before 10), missing ones last
+    const missing = v => MT.valueLabel(v) == '(Empty)';
+    const natural = (a, b) => (missing(a) - missing(b)) || a.localeCompare(b, undefined, { numeric: true });
+
+    // One row per Y value, headed by the Y variable, and one column per X value,
+    // under a heading naming the X variable, counting the visible items. The
+    // columns are v0, v1… (a value, with a dot say, may not be a usable field).
     async function update() {
       if (!chosen) {
-        data = [];
+        data = headers = rows = [];
         await built;
         table.setColumns([]);
         table.replaceData([]);
@@ -120,20 +127,26 @@
       }
       const xVar = fieldX.value, yVar = fieldY.value;
       const visible = items();
-      const xValues = Array.from(new Set(visible.map(d => d[xVar] + '')));
-      const rows = new Map();
+      const xValues = Array.from(new Set(visible.map(d => String(d[xVar])))).sort(natural);
+      const column = new Map(xValues.map((x, i) => [x, 'v' + i]));
+      const byY = new Map();
       visible.forEach(d => {
-        const y = d[yVar];
-        if (!rows.has(y)) {
-          const row = { col: y };
-          xValues.forEach(x => row[x] = 0);
-          rows.set(y, row);
+        const y = String(d[yVar]);
+        if (!byY.has(y)) {
+          const row = { col: MT.valueLabel(y) };
+          xValues.forEach((x, i) => row['v' + i] = 0);
+          byY.set(y, row);
         }
-        rows.get(y)[d[xVar] + '']++;
+        byY.get(y)[column.get(String(d[xVar]))]++;
       });
-      data = Array.from(rows.values());
+      data = Array.from(byY.keys()).sort(natural).map(y => byY.get(y));
+      headers = [MT.titleize(yVar)].concat(xValues.map(MT.valueLabel));
+      rows = data.map(row => [row.col].concat(xValues.map((x, i) => row['v' + i])));
       await built;
-      table.setColumns([{ title: '', field: 'col', cssClass: 'fw-bold' }].concat(xValues.map(x => ({ title: MT.titleize(x), field: x }))));
+      table.setColumns([
+        { title: MT.titleize(yVar), field: 'col', cssClass: 'fw-bold', sorter: 'alphanum' },
+        { title: MT.titleize(xVar), columns: xValues.map((x, i) => ({ title: MT.valueLabel(x), field: 'v' + i })) }
+      ]);
       table.replaceData(data);
     }
 
@@ -158,17 +171,17 @@
 
     const title = () => MT.titleize(fieldX.value) + ' by ' + MT.titleize(fieldY.value);
     MT.tableExport(root, {
-      csv: name => MT.saveAs(new Blob([Papa.unparse(data)], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
+      csv: name => MT.saveAs(new Blob([Papa.unparse({ fields: headers, data: rows })], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
       xlsx: name => {
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(data), title().slice(0, 31));
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([headers].concat(rows)), title().slice(0, 31));
         XLSX.writeFile(workbook, name + '.xlsx');
       },
-      pdf: name => {
-        const keys = data.length ? Object.keys(data[0]) : [];
-        MT.tablesPDF('Crosstab: ' + title(), [{ headers: keys.map(k => MT.titleize(k)), rows: data.map(row => keys.map(k => row[k] + '')) }], name);
-      },
-      json: name => MT.saveAs(new Blob([JSON.stringify(data)], { type: 'application/json;charset=utf-8' }), name + '.json')
+      pdf: name => MT.tablesPDF('Crosstab: ' + title(), [{ headers, rows: rows.map(row => row.map(cell => cell + '')) }], name),
+      json: name => {
+        const objects = rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
+        MT.saveAs(new Blob([JSON.stringify(objects)], { type: 'application/json;charset=utf-8' }), name + '.json');
+      }
     });
 
     root.style.zIndex = 1000;

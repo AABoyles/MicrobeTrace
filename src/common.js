@@ -1664,6 +1664,23 @@
     show("numberOfDisjointComponents", clusterCount); // #187
   };
   
+  // A color (or transparency) for each value, as the color tables list them.
+  // Their values are text ("0", "null"), so a value is looked up as text too:
+  // a d3 scale would give 0 or null a new color of its own, unlike its row's.
+  MT.colorScale = (range, domain) => {
+    const scale = d3.scaleOrdinal(range).domain(domain);
+    const lookup = value => scale(String(value));
+    lookup.domain = () => scale.domain();
+    lookup.range = () => scale.range();
+    return lookup;
+  };
+
+  // The value a link is colored by: for origin, the first of its files
+  MT.linkColorValue = (link, variable) => variable == 'origin' ? [].concat(link.origin)[0] : link[variable];
+
+  // A value as legends and tables show it: as it is in the data, or (Empty)
+  MT.valueLabel = value => value === undefined || value === null || value === '' || value === 'null' || value === 'undefined' ? '(Empty)' : '' + value;
+
   MT.createNodeColorMap = () => {
     let variable = session.style.widgets["node-color-variable"];
     if (variable == "None") {
@@ -1752,13 +1769,8 @@
       temp.style.nodeColorKeys = [...values];
     }
       
-    temp.style.nodeColorMap = d3
-      .scaleOrdinal(nodeColors)
-      .domain(values);
-  
-    temp.style.nodeAlphaMap = d3
-      .scaleOrdinal(session.style.nodeAlphas)
-      .domain(values);
+    temp.style.nodeColorMap = MT.colorScale(nodeColors, values);
+    temp.style.nodeAlphaMap = MT.colorScale(session.style.nodeAlphas, values);
 
     return aggregates;
   };
@@ -1900,13 +1912,8 @@
       temp.style.linkColorsKeys = [...values];
     }
 
-    temp.style.linkColorMap = d3
-      .scaleOrdinal(linkColors)
-      .domain(values);
-  
-    temp.style.linkAlphaMap = d3
-      .scaleOrdinal(session.style.linkAlphas)
-      .domain(values);
+    temp.style.linkColorMap = MT.colorScale(linkColors, values);
+    temp.style.linkAlphaMap = MT.colorScale(session.style.linkAlphas, values);
 
     return aggregates;
   };
@@ -2330,9 +2337,10 @@
   };
 
   // The page's floating panels, and what a view says (with `panels` in what its
-  // mount function returns) to show them: the color tables in views that draw
-  // node or link colors, the statistics in the network. Each sits in the dock of
-  // the view in front that shows it, or nowhere if there's none.
+  // mount function returns: a list, or a function giving one) to show them: the
+  // color tables in views that draw node or link colors, the statistics in the
+  // network. Each sits in the dock of the view in front that shows it, or
+  // nowhere if there's none. A view whose list changes calls MT.placePanels.
   const pagePanels = { 'link-colors': 'link-color-table-wrapper', 'node-colors': 'node-color-table-wrapper', 'statistics': 'network-statistics-wrapper' };
   const recentViews = [];
   const parking = () => {
@@ -2358,7 +2366,7 @@
     Object.entries(pagePanels).forEach(([kind, id]) => {
       const panel = document.getElementById(id);
       if (!panel) return;
-      const host = views.find(item => (item.panels || []).includes(kind));
+      const host = views.find(item => (typeof item.panels == 'function' ? item.panels() : item.panels || []).includes(kind));
       const into = host ? MT.panelDock(host.container.element) : parking();
       if (panel.parentElement !== into) into.appendChild(panel);
     });

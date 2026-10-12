@@ -390,22 +390,35 @@
       }
 
       if (settings.get('globe-link-show')) {
-        // Links between nodes facing the viewer, as arcs over the surface
-        const arcs = [];
+        // Links between nodes facing the viewer, as arcs over the surface, a
+        // path per color (as the link color table gives them)
+        const variable = settings.get('link-color-variable'), color = settings.get('link-color');
+        const arcs = new Map();
         MT.getVisibleLinks().forEach(d => {
           if (!positions.has(d.source) || !positions.has(d.target)) return;
           const s = at(d.source).slice().reverse(), t = at(d.target).slice().reverse();
           if (!visible(s) || !visible(t)) return;
-          arcs.push([projection(s), projection(d3.geoInterpolate(s, t)(0.5)), projection(t)]);
+          const stroke = variable == 'None' ? color : temp.style.linkColorMap(MT.linkColorValue(d, variable));
+          if (!arcs.has(stroke)) arcs.set(stroke, []);
+          arcs.get(stroke).push([projection(s), projection(d3.geoInterpolate(s, t)(0.5)), projection(t)]);
         });
-        context.beginPath();
-        arcs.forEach(swoosh);
         context.globalAlpha = drawn.linkAlpha = 1 - settings.get('globe-link-transparency');
-        context.lineWidth = 2;
-        context.strokeStyle = settings.get('link-color');
+        // Each under a dark casing, so light colors stand out from the ocean
+        context.beginPath();
+        arcs.forEach(group => group.forEach(swoosh));
+        context.lineWidth = 3.5;
+        context.strokeStyle = 'rgba(0, 0, 0, 0.35)';
         context.stroke();
+        arcs.forEach((group, stroke) => {
+          context.beginPath();
+          group.forEach(swoosh);
+          context.lineWidth = 2;
+          context.strokeStyle = stroke;
+          context.stroke();
+        });
         context.globalAlpha = 1;
-        drawn.links = arcs.length;
+        drawn.links = Array.from(arcs.values()).reduce((n, group) => n + group.length, 0);
+        drawn.linkColors = Array.from(arcs.keys());
       }
 
       if (settings.get('globe-node-show')) {
@@ -537,7 +550,7 @@
     const handle = temp.globe = { projection, get countries() { return map.countries; }, get positions() { return positions; }, get drawn() { return drawn; }, at, redraw: draw };
     return {
       // The page's floating panels this view shows (see MT.placePanels)
-      panels: ['node-colors'],
+      panels: ['link-colors', 'node-colors'],
       resize,
       destroy() {
         destroyed = true;

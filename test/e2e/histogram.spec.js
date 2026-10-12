@@ -33,7 +33,8 @@ test('draws link distances by default', async () => {
   await expect.poll(async () => (await plot()).x).toBe('Distance');
   const p = await plot();
   expect(p.y).toBe('Number of Links');
-  expect(p.traces).toEqual([476]);
+  // Colored by origin, as the link legend is: by the file each link came from first
+  expect(p.traces).toEqual([10, 466]);
 });
 
 test('the settings pane opens and closes', async () => {
@@ -102,11 +103,12 @@ test('redraws when the background color or the visible links change', async () =
   await expect.poll(() => view().locator('.js-plotly-plot').evaluate(el => el.layout.paper_bgcolor)).toBe('#000000');
   await page.evaluate(() => (el => { el.value = '#ffffff'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('background-color')));
   await page.evaluate(() => MT.settings.set('histogram-variable', 'links-distance'));
-  await expect.poll(async () => (await plot()).traces).toEqual([476]);
+  const total = async () => (await plot()).traces.reduce((a, b) => a + b, 0);
+  await expect.poll(total).toBe(476);
   await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(async () => (await plot()).traces[0]).toBeLessThan(476);
+  await expect.poll(total).toBeLessThan(476);
   await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(async () => (await plot()).traces).toEqual([476]);
+  await expect.poll(total).toBe(476);
 });
 
 test('the plot follows the panel size', async () => {

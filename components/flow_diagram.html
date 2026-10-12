@@ -152,7 +152,7 @@
       order.forEach((variable, column) => {
         new Set(items.map(d => d[variable] + '')).forEach(value => {
           index.set(column + '\u0000' + value, labels.length);
-          labels.push(MT.titleize(value));
+          labels.push(MT.valueLabel(value));
           columns.push(MT.titleize(variable));
         });
       });

@@ -28,7 +28,8 @@ const table = () => view().locator('.tabulator').evaluate(el => {
     total: data.reduce((sum, r) => sum + fields.reduce((s, f) => s + (+r[f] || 0), 0), 0)
   };
 });
-const distinct = field => page.evaluate(field => Array.from(new Set(session.data.nodes.map(d => d[field] + ''))), field);
+// Each value of a field, as the crosstab labels it
+const distinct = field => page.evaluate(field => Array.from(new Set(session.data.nodes.map(d => MT.valueLabel(d[field])))), field);
 
 test('opens on its first two categorical variables, drawn', async () => {
   await expect.poll(async () => (await table()).total).toBe(310);
