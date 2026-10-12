@@ -29,7 +29,8 @@ async function addColumn(title) {
   await input.click();
   await input.fill(title);
   // Enter picks the highlighted option, so wait for the menu to filter
-  await expect(picker().locator('.ts-dropdown .option.active, .chosen-results .highlighted').first()).toHaveText(title);
+  // (Its menu opens in the page body)
+  await expect(page.locator('body > .ts-dropdown:visible .option.active').first()).toHaveText(title);
   await page.keyboard.press('Enter');
   await page.keyboard.press('Escape');
 }

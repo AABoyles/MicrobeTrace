@@ -26,7 +26,11 @@ async function openSettings(tab) {
   await waitForModal(page, '#global-settings-modal');
   await settings().locator('.nav-link', { hasText: tab }).click();
 }
-const closeSettings = () => settings().locator('.btn-close').click();
+// (Bootstrap ignores opening a dialog while it's still closing)
+async function closeSettings() {
+  await settings().locator('.btn-close').click();
+  await expect(settings()).toBeHidden();
+}
 
 test('links look like links, and say where they go', async () => {
   await page.locator('nav .dropdown-toggle', { hasText: 'Help' }).click();

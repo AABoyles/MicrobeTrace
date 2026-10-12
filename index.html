@@ -315,8 +315,6 @@
                 <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
                 <div class="col-8">
                   <input type="range" class="form-range" id="filtering-epsilon" data-setting="filtering-epsilon" data-setting-on="change" min="-3" max="2" step=".01" value="-3">
-                </div>
-                <div class="col-8 offset-4">
                   <input type="number" id="filtering-epsilon-copy" class="form-control form-control-sm" disabled>
                 </div>
               </div>
@@ -339,8 +337,8 @@
                 </div>
                 <div class="form-group row" title="What's the maximum genetic distance you're willing to call a link?">
                   <div class="col-4"><label for="link-threshold">Filtering Threshold</label></div>
-                  <div class="col-8"><svg id="link-threshold-sparkline"></svg></div>
-                  <div class="col-8 offset-4">
+                  <div class="col-8">
+                    <svg id="link-threshold-sparkline" title="Click or drag to set the threshold"></svg>
                     <input type="number" class="form-control form-control-sm" id="link-threshold" data-setting="link-threshold" data-setting-on="change" step="0.001">
                   </div>
                 </div>

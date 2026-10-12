@@ -11,7 +11,9 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: 38px;
+  /* Room for the menu bar, which wraps onto a second row in narrow windows
+     (src/index.js measures it) */
+  padding-top: var(--navbar-height, 38px);
   background-color: #f8f9fa;
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
@@ -228,9 +230,18 @@ input[type="color"].form-control {
   left: 62px;
   border: 1px solid #cccccc;
 }
+/* The threshold's histogram fills its column, above the threshold's box */
 svg#link-threshold-sparkline {
-  width: 280px;
+  display: block;
+  width: 100%;
   height: 48px;
+  margin-bottom: 0.25rem;
+  cursor: crosshair;
+}
+svg#link-threshold-sparkline line.threshold-mark {
+  stroke: var(--bs-danger);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
 }
 .left-pane {
   position: absolute;
@@ -259,13 +270,20 @@ svg#link-threshold-sparkline {
 .pane-pushed {
   padding-left: 410px !important;
 }
+/* Multi-select menus open in the page body: above the views and their panes,
+   below dialogs */
+body > .ts-dropdown {
+  z-index: 1050;
+}
 /* A view's dialogs live inside it, under Bootstrap's backdrop, so they dim
    the page with their own layer instead */
 .lm_content .modal.show[data-bs-backdrop="false"] {
   background-color: rgba(0, 0, 0, 0.5);
 }
 .left-pane .nav {
-  padding-top: 40px;
+  /* Below the view's toolbar (MT.paneToggle measures it), which sits 10px
+     above the pane's padding */
+  padding-top: max(40px, var(--controls-height, 0px) + 10px);
 }
 .left-pane .nav .active {
   background: #ffffff;
@@ -1174,4 +1192,17 @@ body.timeline-open #main-panel {
 .autocomplete-wrapper #search-results li:hover {
         background: #EEE;
         cursor: pointer;
+}
+.autocomplete-wrapper #search-results li.no-matches {
+  color: var(--bs-danger-text-emphasis);
+  cursor: default;
+}
+.autocomplete-wrapper #search-results li.no-matches:hover {
+  background: inherit;
+}
+/* A table's selected rows are pinned in its header, where they'd take the
+   header's bold and padding: they look like the rows below instead */
+.tabulator .tabulator-header .tabulator-frozen-rows-holder .tabulator-cell {
+  padding: 5px !important;
+  font-weight: 400;
 }

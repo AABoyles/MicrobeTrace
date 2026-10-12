@@ -42,6 +42,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const settings = MT.settings, events = MT.events;
   const get = key => settings.get(key);
 
+  // The page starts below the menu bar, however many rows it wraps onto
+  const navbar = document.querySelector("nav.navbar");
+  new ResizeObserver(() => {
+    document.body.style.setProperty("--navbar-height", navbar.offsetHeight + "px");
+  }).observe(navbar);
+
   // Dialogs can be dragged by their headers
   document.addEventListener("mousedown", e => {
     const header = e.target.closest && e.target.closest(".modal-header");
@@ -261,6 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   settings.subscribe("link-threshold", threshold => {
     ga('send', 'event', 'threshold', 'update', threshold);
+    MT.markThreshold(threshold);
     updateNetwork();
   });
 
@@ -277,15 +284,23 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   settings.subscribe(["link-show-nn", "cluster-minimum-size", "node-color-variable", "link-color-variable"], showRows, { reload: true });
 
-  // A histogram of the links' values, on which a click or drag sets the threshold
+  // A histogram of the links' values, marking the threshold, on which a click
+  // or drag sets it. It's drawn 280 wide and stretched to fit its column.
+  let thresholdScale = null;
+  MT.markThreshold = value => {
+    if (!thresholdScale) return;
+    const [x0, x1] = thresholdScale.range();
+    const x = Math.max(x0, Math.min(x1, thresholdScale(value)));
+    d3.select("svg#link-threshold-sparkline line.threshold-mark").attr("x1", x).attr("x2", x);
+  };
   MT.updateThresholdHistogram = () => {
     let width = 280,
       height = 48,
       svg = d3
         .select("svg#link-threshold-sparkline")
         .html(null)
-        .attr("width", width)
-        .attr("height", height);
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "none");
 
     // Binned straight from the graph: there can be tens of millions of links
     let lsv = get("link-sort-variable"),
@@ -297,7 +312,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (v < min) min = v;
       if (v > max) max = v;
     });
-    let range = max - min;
     let ticks = 40;
 
     let x = d3
@@ -334,12 +348,20 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("width", 6)
       .attr("height", d => height - y(d.length));
 
-    // Dragging shows the threshold as it moves; the network follows on release
-    const thresholdAt = event => parseFloat(((d3.pointer(event, svg.node())[0] / width) * range * 1.05 + min).toLocaleString());
+    svg.append("line").attr("class", "threshold-mark").attr("y1", 0).attr("y2", height);
+    thresholdScale = x;
+    MT.markThreshold(get("link-threshold"));
+
+    // The value under the pointer. Dragging shows the threshold as it moves;
+    // the network follows on release.
+    const thresholdAt = event => parseFloat(x.invert(d3.pointer(event, svg.node())[0]).toFixed(3));
     svg.on("click", event => settings.set("link-threshold", thresholdAt(event)));
     svg.on("mousedown", event => {
       event.preventDefault();
-      svg.on("mousemove", event => { byId("link-threshold").value = thresholdAt(event); });
+      svg.on("mousemove", event => {
+        byId("link-threshold").value = thresholdAt(event);
+        MT.markThreshold(thresholdAt(event));
+      });
       svg.on("mouseup mouseleave", event => {
         settings.set("link-threshold", thresholdAt(event));
         svg.on("mousemove", null).on("mouseup", null).on("mouseleave", null);
@@ -832,6 +854,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nodes = session.data.nodes;
     const value = search.value;
     hideResults();
+    search.classList.remove("is-invalid");
     if (value == "") {
       nodes.forEach(node => node.selected = false);
     } else {
@@ -858,7 +881,15 @@ document.addEventListener("DOMContentLoaded", () => {
         results.style.display = "block";
       });
       selectMatches(re, value);
-      if (!nodes.some(node => node.selected)) alertify.warning("No matches!");
+      // Nothing matches: the box says so, where the suggestions would be
+      if (!nodes.some(node => node.selected)) {
+        search.classList.add("is-invalid");
+        const li = document.createElement("li");
+        li.className = "no-matches";
+        li.textContent = "No matches";
+        results.append(li);
+        results.style.display = "block";
+      }
     }
     events.emit("node-selected");
   });

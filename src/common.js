@@ -2145,6 +2145,11 @@
     closeButton.setAttribute('aria-label', 'Close settings');
     closeButton.addEventListener('click', close);
     pane.prepend(closeButton);
+    // The pane's tabs start below the view's toolbar, however tall it grows
+    const controls = button.closest('.view-controls');
+    if (controls) new ResizeObserver(() => {
+      pane.style.setProperty('--controls-height', controls.offsetHeight + 'px');
+    }).observe(controls);
     button.addEventListener('click', () => set(!open));
     if (open) set(true);
   };
@@ -2207,11 +2212,13 @@
   }).download(filename + '.pdf');
 
   // Turns a <select multiple> into a searchable menu of removable choices (Tom
-  // Select). To change its options, destroy() it and make a new one.
+  // Select). To change its options, destroy() it and make a new one. Its menu
+  // opens in the page body, so a panel's edge doesn't cut it off.
   MT.multiSelect = (select, { max } = {}) => new TomSelect(select, {
     plugins: ['remove_button'],
     maxItems: max || null,
-    hideSelected: true
+    hideSelected: true,
+    dropdownParent: 'body'
   });
 
   // Plotly layout colors for the current background

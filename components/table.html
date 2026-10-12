@@ -166,8 +166,6 @@
       json: name => MT.saveAs(new Blob([JSON.stringify(rows())], { type: 'application/json;charset=utf-8' }), name + '.json')
     });
 
-    // The column menu opens over the panel's neighbors
-    root.style.zIndex = 1000;
 
     // The toolbar grows when the chosen columns wrap onto more lines: keep the
     // table below it
