@@ -20,7 +20,6 @@
       "index",
       "source",
       "target",
-      "distance",
       "visible",
       "cluster",
       "origin",
@@ -101,7 +100,7 @@
     "heatmap-axislabels-show": false,
     "histogram-axis-x": true,
     "histogram-scale-log": false,
-    "histogram-variable": "links-distance",
+    "histogram-variable": "links-tn93",
     "infer-directionality-false": true,
     "link-color": "#a6cee3",
     "link-color-table-name-sort": "ASC",
@@ -114,7 +113,7 @@
     "link-length": 0.125,
     "link-opacity": 0,
     "link-show-nn": false,
-    "link-sort-variable": "distance",
+    "link-sort-variable": "tn93",
     "link-storage": "auto",
     "link-threshold": 0.015,
     "link-thresholds": {},
@@ -620,14 +619,13 @@
     session.data.nodeFields = session.data.nodeFields.filter(field => !(/^id$/i.test(field) &&
       session.data.nodes.every(d => d[field] == null || "" + d[field] == d._id)));
     if(oldSession.network) session.network = oldSession.network;
+    // Sessions from before distances were kept under their metric's name (#249)
+    // kept the distance metric's as distance: they filter on that
+    const widgets = session.style.widgets;
+    if (!session.data.linkFields.includes(widgets['link-sort-variable']) && session.data.linkFields.includes('distance')) {
+      widgets['link-sort-variable'] = 'distance';
+    }
     MT.applyStyle(session.style);
-    // if(!links[0]['distance']){  #249
-    //   if(links[0]['tn93']){
-    //     session.style.widgets['link-sort-variable'] = 'tn93';
-    //   } else {
-    //     session.style.widgets['link-sort-variable'] = 'snps';
-    //   }
-    // }
     MT.finishUp(true);
   };
   
@@ -698,11 +696,11 @@
       let newLink = Object.assign({}, link, { 
         source: "" + link.source, 
         target: "" + link.target, 
-        distance: parseFloat(link.dist), 
+        [session.style.widgets['default-distance-metric']]: parseFloat(link.dist), 
         origin: ["GHOST Import"], visible: true });     
       MT.addLink(newLink, false);   
     }
-    [ "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
+    [ session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
   //	MT.finishUp(); 
     MT.runHamsters();
   }; 
@@ -1054,12 +1052,10 @@
     return [metric, ...new Set(also)];
   };
 
-  // The link field a computed metric is stored in: the distance metric's is
-  // distance, as it always has been; the others', their own names
-  MT.metricField = metric => metric == session.style.widgets['default-distance-metric'] ? 'distance' : metric;
-
-  // The metric a link field holds, if it holds a computed one
-  MT.fieldMetric = field => field == 'distance' ? session.style.widgets['default-distance-metric'] : MT.distanceMetrics[field] ? field : null;
+  // The metric a link field holds, if it holds a computed one. Each is kept
+  // under its own name (tn93, snps…); sessions from before this kept the
+  // distance metric's as distance, which they filter on.
+  MT.fieldMetric = field => MT.distanceMetrics[field] ? field : null;
 
   MT.computeLinks = async subset => {
     const widgets = session.style.widgets;
@@ -1116,7 +1112,7 @@
     const g = session.data.graph;
     const before = g.edgeCount;
     metrics.forEach((m, i) => {
-      const field = MT.metricField(m);
+      const field = m;
       if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
       if (sparse) {
         parts.forEach(({ results }) => {

@@ -182,6 +182,12 @@
       });
     }
 
+    // A link field the links don't have charts the one they're filtered on
+    const [source, ...rest] = settings.get('histogram-variable').split('-');
+    if (source == 'links' && !session.data.linkFields.includes(rest.join('-'))) {
+      settings.set('histogram-variable', 'links-' + settings.get('link-sort-variable'));
+    }
+
     MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.histogram-plot'), resize: draw });
     MT.plotExport(root, plot, settings);
 

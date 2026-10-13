@@ -1,8 +1,9 @@
 // Several distance metrics for the same sequences: the Files view computes
 // those chosen under Also Compute beside the distance metric, each kept on the
-// links under its own name (the distance metric's as distance), with the same
-// values computing it alone would give; the network filters on any of them,
-// each with its own threshold; and they're saved with the session.
+// links under its own name (tn93, snps…), with the same values computing it
+// alone would give; the network filters on the distance metric's, or any of
+// them, each with its own threshold; and they're saved with the session, as
+// is the one filtered on (sessions from before keep filtering on distance).
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
@@ -81,8 +82,10 @@ test('launching computes each metric for every pair, under its own name', async 
   await launch(page);
   const pairs = await page.evaluate(() => session.data.graph.densePairs);
   expect(pairs).toBeGreaterThan(40000);
-  for (const field of ['distance', 'snps', 'k2p']) expect((await total(page, field)).count).toBeGreaterThanOrEqual(pairs);
-  expect(await page.evaluate(() => ['snps', 'k2p'].every(f => session.data.linkFields.includes(f)))).toBe(true);
+  for (const field of ['tn93', 'snps', 'k2p']) expect((await total(page, field)).count).toBeGreaterThanOrEqual(pairs);
+  expect(await page.evaluate(() => ['tn93', 'snps', 'k2p'].every(f => session.data.linkFields.includes(f)))).toBe(true);
+  // Links are filtered on the distance metric's
+  expect(await get('link-sort-variable')).toBe('tn93');
   // SNPs count sites; the others are proportions
   const max = field => page.evaluate(field => {
     let max = -Infinity;
@@ -94,7 +97,7 @@ test('launching computes each metric for every pair, under its own name', async 
   expect(await page.evaluate(() => session.messages.join('\n'))).toContain('Also computed SNPs, K2P');
   // The menus offer them by name
   const options = await page.locator('#link-sort-variable option').allTextContents();
-  expect(options).toEqual(expect.arrayContaining(['Distance', 'SNPs', 'K2P']));
+  expect(options).toEqual(expect.arrayContaining(['TN93', 'SNPs', 'K2P']));
 });
 
 test('each metric has the values computing it alone gives', async ({ browser }) => {
@@ -107,14 +110,15 @@ test('each metric has the values computing it alone gives', async ({ browser }) 
     const g = session.data.graph;
     return { rows: Array.from(g.dense.rows, r => g.ids[r]).join(), values: Array.from(g.denseValues(field)) };
   }, field);
-  const want = await triangle(alone, 'distance'), got = await triangle(page, 'snps');
+  expect(await alone.evaluate(() => MT.settings.get('link-sort-variable'))).toBe('snps');
+  const want = await triangle(alone, 'snps'), got = await triangle(page, 'snps');
   await alone.close();
   expect(got.rows).toBe(want.rows);
   expect(got.values).toEqual(want.values);
 });
 
 test('the network filters on any metric, each with its own threshold', async () => {
-  const onDistance = await visibleLinks();
+  const onTn93 = await visibleLinks();
   expect(await get('link-threshold')).toBe(0.015);
   // SNPs starts at its own default, a count of sites
   await set('link-sort-variable', 'snps');
@@ -127,21 +131,22 @@ test('the network filters on any metric, each with its own threshold', async () 
     return n;
   });
   expect(onSnps).toBe(within);
-  expect(onSnps).not.toBe(onDistance);
+  expect(onSnps).not.toBe(onTn93);
   // A threshold set for one is kept for it
   await set('link-threshold', 8);
   await expect.poll(visibleLinks).toBeLessThan(onSnps);
-  await set('link-sort-variable', 'distance');
+  await set('link-sort-variable', 'tn93');
   await expect.poll(() => get('link-threshold')).toBe(0.015);
-  await expect.poll(visibleLinks).toBe(onDistance);
+  await expect.poll(visibleLinks).toBe(onTn93);
   await expect(page.locator('#link-threshold')).toHaveAttribute('step', '0.001');
   await set('link-sort-variable', 'snps');
   await expect.poll(() => get('link-threshold')).toBe(8);
-  await set('link-sort-variable', 'distance');
+  await set('link-sort-variable', 'tn93');
   await expect.poll(() => get('link-threshold')).toBe(0.015);
 });
 
-test('the metrics are saved with the session, and filter on when it’s opened', async () => {
+test('the metrics, and the one filtered on, are saved with the session', async () => {
+  await set('link-sort-variable', 'snps');
   await page.keyboard.press('Control+s');
   await waitForModal(page, '#session-save-modal');
   const modal = page.locator('#session-save-modal');
@@ -157,6 +162,8 @@ test('the metrics are saved with the session, and filter on when it’s opened',
   const after = await total(page, 'k2p');
   expect(after.count).toBe(before.count);
   expect(after.sum).toBeCloseTo(before.sum, 3);
+  expect(await get('link-sort-variable')).toBe('snps');
+  expect(await get('link-threshold')).toBe(8);
   await set('link-sort-variable', 'k2p');
   await expect.poll(() => get('link-threshold')).toBe(0.015);
   await set('link-threshold', 0.03);
@@ -169,6 +176,31 @@ test('the metrics are saved with the session, and filter on when it’s opened',
   expect(errors).toEqual([]);
 });
 
+test('a session from before keeps filtering on its distances', async () => {
+  // As sessions were saved: the distance metric's values as distance, and no
+  // other metrics
+  const old = JSON.parse(fs.readFileSync(saved, 'utf8'));
+  old.data.links.forEach(l => {
+    l.distance = l.tn93;
+    delete l.tn93; delete l.snps; delete l.k2p;
+  });
+  old.data.linkFields = old.data.linkFields.filter(f => !['tn93', 'snps', 'k2p'].includes(f)).concat(['distance']);
+  delete old.style.widgets['link-sort-variable'];
+  delete old.style.widgets['link-thresholds'];
+  old.style.widgets['link-threshold'] = 0.015;
+  const file = path.join(path.dirname(saved), 'before.microbetrace');
+  fs.writeFileSync(file, JSON.stringify(old));
+  await page.setInputFiles('#OpenTab', file);
+  await expect.poll(() => get('link-sort-variable')).toBe('distance');
+  const within = await page.evaluate(() => {
+    let n = 0;
+    session.data.graph.forEachValue('distance', v => { if (v <= 0.015) n++; });
+    return n;
+  });
+  expect(within).toBeGreaterThan(0);
+  await expect.poll(visibleLinks).toBe(within);
+});
+
 test('with only the links within the threshold kept, each metric keeps those within its own', async ({ browser }) => {
   const sparse = await browser.newPage();
   await open(sparse);
@@ -178,14 +210,14 @@ test('with only the links within the threshold kept, each metric keeps those wit
   });
   await launch(sparse);
   const result = await sparse.evaluate(() => {
-    let distance = 0, snps = 0, over = 0;
-    session.data.graph.forEachValue('distance', v => { distance++; if (v > 0.015) over++; });
+    let tn93 = 0, snps = 0, over = 0;
+    session.data.graph.forEachValue('tn93', v => { tn93++; if (v > 0.015) over++; });
     session.data.graph.forEachValue('snps', v => { snps++; if (v > 16) over++; });
-    return { distance, snps, over, dense: !!session.data.graph.dense };
+    return { tn93, snps, over, dense: !!session.data.graph.dense };
   });
   await sparse.close();
   expect(result.dense).toBe(false);
-  expect(result.distance).toBeGreaterThan(0);
+  expect(result.tn93).toBeGreaterThan(0);
   expect(result.snps).toBeGreaterThan(0);
   expect(result.over).toBe(0);
 });
