@@ -24,16 +24,16 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item">
+    <li class="nav-item" role="presentation">
       <a class="nav-link active" id="nodes-tab" data-bs-toggle="tab" href="#network-node-settings" role="tab" aria-controls="network-node-settings" aria-selected="true">Nodes</a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" role="presentation">
       <a class="nav-link" id="links-tab" data-bs-toggle="tab" href="#network-link-settings" role="tab" aria-controls="network-link-settings" aria-selected="false">Links</a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" role="presentation">
       <a class="nav-link" id="network-tab" data-bs-toggle="tab" href="#network-settings" role="tab" aria-controls="network-settings" aria-selected="false">Network</a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" role="presentation">
       <a class="nav-link" id="polygons-tab" data-bs-toggle="tab" href="#network-polygons-settings" role="tab" aria-controls="network-polygons-settings" aria-selected="false">Polygons</a>
     </li>
   </ul>
@@ -455,11 +455,11 @@ Note that this may cause slow performance on larger networks.">
   <a href="#" class="dropdown-item view-attributes">View Attributes</a>
 </div>
 
-<div class="modal fade selectable network-attribute-modal" tabindex="-1" role="dialog">
+<div class="modal fade selectable network-attribute-modal" tabindex="-1" role="dialog" aria-labelledby="network-attribute-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Node Attributes</h5>
+        <h5 id="network-attribute-modal-title" class="modal-title">Node Attributes</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="overflow: auto">
@@ -474,20 +474,20 @@ Note that this may cause slow performance on larger networks.">
   </div>
 </div>
 
-<div id="network-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="network-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="network-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Network</h5>
+        <h5 id="network-export-modal-title" class="modal-title">Export Network</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>
@@ -1001,6 +1001,7 @@ Note that this may cause slow performance on larger networks.">
           (counts ? `<td>${aggregates[v]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[v] / count).toLocaleString()}</td>` : '') +
           `<td><select>${options}</select></td>`;
+        MT.nameRow(row, MT.valueLabel(v));
         const select = row.querySelector('select');
         select.value = temp.style.nodeSymbolMap(v);
         select.addEventListener('change', () => {
@@ -1018,7 +1019,7 @@ Note that this may cause slow performance on larger networks.">
       symbolTable.querySelector('.p-1').addEventListener('focusout', e => {
         session.style.overwrite.nodeSymbolHeaderTitle = e.target.textContent;
       });
-      sortable(symbolTable, { items: 'tr' });
+      MT.sortable(symbolTable, { items: 'tr' });
       symbolWrapper.hidden = !get('node-symbol-table-show');
       redrawNodes();
     }
@@ -1207,6 +1208,7 @@ Note that this may cause slow performance on larger networks.">
           (counts ? `<td>${aggregates[value]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
           `<td><input type="color" value="${temp.style.polygonColorMap(value)}">${MT.transparencyButton}</td>`;
+        MT.nameRow(row, session.style.polygonValueNames[value] || MT.valueLabel(value));
         row.querySelector('input').addEventListener('change', e => {
           session.style.polygonColors.splice(i, 1, e.target.value);
           remap();
@@ -1234,11 +1236,12 @@ Note that this may cause slow performance on larger networks.">
         name.addEventListener('focusout', () => {
           name.contentEditable = false;
           session.style.polygonValueNames[value] = name.textContent;
+          MT.nameRow(row, name.textContent);
         });
         polygonTable.append(row);
       });
       remap();
-      sortable(polygonTable, { items: 'tr' });
+      MT.sortable(polygonTable, { items: 'tr' });
       polygonWrapper.hidden = !get('polygon-color-table-show');
       drawOverlays();
     }

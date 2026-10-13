@@ -12,12 +12,12 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item active">
-      <a href="#timeline-configurations" class="nav-link active" aria-controls="timeline-configurations" role="tab" data-bs-toggle="tab">Epi Curve</a>
+    <li class="nav-item active" role="presentation">
+      <a id="timeline-view-tab" href="#timeline-configurations" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="timeline-configurations" aria-selected="true">Epi Curve</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel">
+    <div class="tab-pane fade show active" id="timeline-configurations" role="tabpanel" aria-labelledby="timeline-view-tab">
       <div class="form-group row" title="Which variable in your data contains the date?">
         <div class="col-4">
           <label for="timeline-date-field">Date Field</label>
@@ -59,20 +59,20 @@
   </div>
 </div>
 
-<div id="timeline-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="timeline-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="timeline-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Epi Curve</h5>
+        <h5 id="timeline-export-modal-title" class="modal-title">Export Epi Curve</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>

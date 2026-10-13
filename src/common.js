@@ -2234,12 +2234,48 @@
   // Turns a <select multiple> into a searchable menu of removable choices (Tom
   // Select). To change its options, destroy() it and make a new one. Its menu
   // opens in the page body, so a panel's edge doesn't cut it off.
-  MT.multiSelect = (select, { max } = {}) => new TomSelect(select, {
-    plugins: ['remove_button'],
-    maxItems: max || null,
-    hideSelected: true,
-    dropdownParent: 'body'
-  });
+  // A Tabulator table, with its ARIA tree mended: Tabulator puts its scrolling
+  // holder (focusable, so it can be scrolled with the keys) between the grid
+  // and its rows, and marks column groups with a role and an attribute ARIA
+  // doesn't have (and puts their columns' headers inside the group's)
+  MT.table = (element, options) => {
+    const table = new Tabulator(element, options);
+    const mend = () => {
+      const root = table.element, holder = root.querySelector(':scope > .tabulator-tableholder');
+      root.removeAttribute('aria-owns');
+      if (holder) {
+        holder.setAttribute('role', 'rowgroup');
+        holder.querySelectorAll(':scope > .tabulator-table').forEach(body => body.setAttribute('role', 'none'));
+      }
+      // A group's title heads its columns, which sit beside it in the row
+      root.querySelectorAll('[role="columngroup"]').forEach(group => {
+        group.setAttribute('role', 'none');
+        group.removeAttribute('aria-title');
+        group.removeAttribute('aria-sort');
+        const title = group.querySelector(':scope > .tabulator-col-content');
+        if (title) title.setAttribute('role', 'columnheader');
+      });
+    };
+    table.on('tableBuilt', mend);
+    table.on('renderComplete', mend);
+    return table;
+  };
+
+  MT.multiSelect = (select, { max } = {}) => {
+    const label = select.labels && select.labels[0];
+    const name = select.getAttribute('aria-label') || (label ? label.textContent.trim() : select.title);
+    const menu = new TomSelect(select, {
+      plugins: ['remove_button'],
+      maxItems: max || null,
+      hideSelected: true,
+      dropdownParent: 'body'
+    });
+    // Tom Select moves the label to its own field, leaving the original (kept
+    // for forms, but still read out) without a name
+    select.setAttribute('aria-label', name);
+    if (!menu.control_input.hasAttribute('aria-labelledby')) menu.control_input.setAttribute('aria-label', name);
+    return menu;
+  };
 
   // Plotly layout colors for the current background
   MT.plotColors = settings => {
@@ -2373,6 +2409,29 @@
     return button;
   };
   MT.transparencyButton = '<a role="button" class="icon-action table-control ms-1" title="Transparency"><span class="bi bi-droplet-half"></span></a>';
+  // Names a color or shape table row's controls for the value it's for, as in
+  // "G0 color" and "G0 transparency"
+  MT.nameRow = (row, value) => {
+    const input = row.querySelector('input[type="color"]'), button = row.querySelector('.table-control'), select = row.querySelector('select');
+    if (input) input.setAttribute('aria-label', value + ' color');
+    if (button) button.setAttribute('aria-label', value + ' transparency');
+    if (select) select.setAttribute('aria-label', value + ' shape');
+  };
+
+  // html5sortable, without the roles it gives the list and its items: it marks
+  // them as a listbox's options, which they aren't (a table's rows, a list of
+  // menus), and hides from assistive technology the controls inside them.
+  MT.sortable = (element, options) => {
+    const result = sortable(element, options);
+    if (options != 'destroy') {
+      element.removeAttribute('aria-dropeffect');
+      element.querySelectorAll('[role="option"][aria-grabbed]').forEach(item => {
+        item.removeAttribute('role');
+        item.removeAttribute('aria-grabbed');
+      });
+    }
+    return result;
+  };
 
   // A view's panel dock: a column down its right-hand side that holds its
   // floating tables, stacked so they never overlap, with the statistics at the

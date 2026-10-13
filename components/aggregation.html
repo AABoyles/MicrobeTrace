@@ -11,14 +11,14 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item active">
-      <a href="#aggregation-settings" id="aggregation-tab" class="nav-link active" aria-controls="aggregation" role="tab" data-bs-toggle="tab">
+    <li class="nav-item active" role="presentation">
+      <a href="#aggregation-settings" id="aggregation-tab" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="aggregation-settings" aria-selected="true">
         Aggregation
       </a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="aggregation-tab">
+    <div id="aggregation-settings" class="tab-pane fade show active" role="tabpanel" aria-labelledby="aggregation-tab">
       <div class="form-group row" title="What data field would you like to aggregate on?">
         <div class="col-3">Tables</div>
         <div class="col-9">
@@ -32,20 +32,20 @@
   </div>
 </div>
 
-<div id="aggregation-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="aggregation-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="aggregation-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Aggregation</h5>
+        <h5 id="aggregation-export-modal-title" class="modal-title">Export Aggregation</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="csv.zip" selected>CSV (zipped)</option>
               <option value="xlsx">Excel (XLSX)</option>
               <option value="pdf">PDF</option>
@@ -85,10 +85,10 @@
       const item = document.createElement('li');
       item.className = 'd-inline-flex aggregation-items';
       item.innerHTML = `<span class="bi bi-x pt-2 aggregation-remove" title="Remove this table"></span>
-        <select class="flex-grow-1 form-select form-select-sm aggregation-variable">${options(value)}</select>
+        <select class="flex-grow-1 form-select form-select-sm aggregation-variable" aria-label="Table variable">${options(value)}</select>
         <span class="pt-2 bi bi-grip-vertical" title="Drag to reorder"></span>`;
       list.appendChild(item);
-      sortable(list, 'reload');
+      MT.sortable(list, 'reload');
     }
 
     // How many of the visible items have each value of a variable
@@ -116,7 +116,7 @@
         const element = document.createElement('div');
         element.className = 'aggregation-tables table-sm';
         grid.appendChild(element);
-        tables.push(new Tabulator(element, {
+        tables.push(MT.table(element, {
           layout: 'fitColumns',
           columns: [
             // A natural sort, so numbers (cluster IDs, say) don't sort as text
@@ -142,7 +142,7 @@
       e.target.closest('li').remove();
       update();
     });
-    sortable(list, { forcePlaceholderSize: true });
+    MT.sortable(list, { forcePlaceholderSize: true });
     list.addEventListener('sortupdate', update);
 
     MT.paneToggle($('.settings-toggle'), $('.left-pane'), false, { beside: $('.aggregation-grid'), resize: () => tables.forEach(table => table.redraw()) });
@@ -177,7 +177,7 @@
       resize: () => tables.forEach(table => table.redraw()),
       destroy() {
         stop.forEach(fn => fn());
-        sortable(list, 'destroy');
+        MT.sortable(list, 'destroy');
         tables.forEach(table => table.destroy());
       }
     };

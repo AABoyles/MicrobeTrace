@@ -11,8 +11,8 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item active">
-      <a href="#histogram-settings" id="histogram-tab" class="nav-link active" aria-controls="histogram" role="tab" data-bs-toggle="tab">Histogram</a>
+    <li class="nav-item active" role="presentation">
+      <a href="#histogram-settings" id="histogram-tab" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="histogram-settings" aria-selected="true">Histogram</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -55,20 +55,20 @@
   </div>
 </div>
 
-<div id="histogram-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="histogram-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="histogram-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Histogram</h5>
+        <h5 id="histogram-export-modal-title" class="modal-title">Export Histogram</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>

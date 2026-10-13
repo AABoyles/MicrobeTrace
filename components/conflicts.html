@@ -29,7 +29,7 @@
     const fixed = field => field == 'seq';
     let conflicts = new Map(), field = null, having = [];
 
-    const table = new Tabulator($('.conflicts-grid'), { layout: 'fitColumns', maxHeight: '100%', data: [], columns: [] });
+    const table = MT.table($('.conflicts-grid'), { layout: 'fitColumns', maxHeight: '100%', data: [], columns: [] });
     const built = new Promise(resolve => table.on('tableBuilt', resolve));
 
     // A row per node the files disagree on, in order of their IDs: each file's

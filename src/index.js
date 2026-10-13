@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return parts && { key, time: +parts[1], name: parts[2] };
   };
   const stashName = stash => stash.name || "Untitled";
-  const stashes = new Tabulator("#recall-stashes-available", {
+  const stashes = MT.table("#recall-stashes-available", {
     maxHeight: "50vh",
     layout: "fitColumns",
     selectableRows: 1,
@@ -514,6 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
         `<td><input type="color" value="${temp.style[colorMap](value)}">${MT.transparencyButton}</td>`;
+      MT.nameRow(row, names[value] || MT.valueLabel(value));
       row.querySelector("input").addEventListener("change", e => {
         const key = session.style[savedKeys][variable].findIndex(k => k === value);
         session.style[savedColors][variable].splice(key, 1, e.target.value);
@@ -547,11 +548,12 @@ document.addEventListener("DOMContentLoaded", () => {
       name.addEventListener("focusout", () => {
         name.contentEditable = false;
         names[value] = name.textContent;
+        MT.nameRow(row, name.textContent);
       });
       table.append(row);
     });
 
-    sortable(table, { items: "tr" });
+    MT.sortable(table, { items: "tr" });
     wrapper.style.display = get(widget("show")) ? "block" : "none";
     events.emit(kind + "-color-change");
   }
