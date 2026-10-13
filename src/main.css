@@ -333,6 +333,15 @@ svg#link-threshold-sparkline line.threshold-mark {
 .pane-pushed {
   padding-left: 410px !important;
 }
+/* The table's text size, in a menu from its toolbar */
+.table-text-size {
+  width: 14rem;
+}
+/* Beside the pane, in a view wide enough (MT.paneToggle's `beside`) */
+.pane-beside {
+  margin-left: 410px !important;
+  width: calc(100% - 410px) !important;
+}
 /* Multi-select menus open in the page body: above the views and their panes,
    below dialogs */
 body > .ts-dropdown {

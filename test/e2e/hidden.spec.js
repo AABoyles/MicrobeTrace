@@ -1,7 +1,7 @@
 // Nothing hidden behind anything else: the view tabs below a menu bar that
 // wraps in a narrow window; the dialogs of the table views and of Sequence
 // Settings covering the menu bar, as every other dialog does; the table's
-// settings tab below its column picker, whose menu opens over the page; a
+// column picker's menu opening over the page; a
 // search without matches saying so in the search box; the link threshold's
 // histogram in its column, marking the threshold; and the table's pinned
 // selected rows in line with the rest.
@@ -56,21 +56,15 @@ test('the table views’ export dialogs cover the menu bar', async () => {
   }
 });
 
-test('the table’s settings tab sits below its column picker, whose menu opens over the page', async () => {
+test('the table’s column picker’s menu opens over the page', async () => {
   await launchView(page, 'table');
   const view = page.locator('.lm_content:has(.table-grid)');
-  await view.locator('.settings-toggle').click();
-  const tab = view.locator('.left-pane .nav-link').first();
-  await expect(tab).toBeVisible();
-  await expect.poll(() => onTop(tab)).toBe(true);
-  await tab.click();
   // The column menu is in the page body, above the views
   await view.locator('.ts-control input').click();
   const menu = page.locator('body > .ts-dropdown:visible');
   await expect(menu).toBeVisible();
   expect(await onTop(menu.locator('.option').first())).toBe(true);
   await page.keyboard.press('Escape');
-  await view.locator('.settings-toggle').click();
 });
 
 test('the table’s pinned selected rows line up with the rest', async () => {

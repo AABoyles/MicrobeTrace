@@ -141,7 +141,7 @@
     sortable(list, { forcePlaceholderSize: true });
     list.addEventListener('sortupdate', update);
 
-    MT.paneToggle($('.settings-toggle'), $('.left-pane'));
+    MT.paneToggle($('.settings-toggle'), $('.left-pane'), false, { beside: $('.aggregation-grid'), resize: () => tables.forEach(table => table.redraw()) });
 
     const title = t => MT.titleize(t.dataset) + ' ' + MT.titleize(t.column);
     MT.tableExport(root, {

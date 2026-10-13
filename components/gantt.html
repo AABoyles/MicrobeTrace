@@ -295,7 +295,7 @@
     }
 
     // The settings start open when there's nothing to draw
-    MT.paneToggle($('.settings-toggle'), pane, !dates().length);
+    MT.paneToggle($('.settings-toggle'), pane, !dates().length, { beside: scroller, resize: draw });
     // (Exported whole, with the axis under the last row; it returns to the view's
     // bottom once the copy is made)
     MT.svgExport(root, () => {

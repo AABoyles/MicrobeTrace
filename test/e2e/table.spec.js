@@ -104,13 +104,13 @@ test('selections made elsewhere show', async () => {
 });
 
 test('the text size setting applies', async () => {
-  await view().locator('.view-controls button').first().click();
-  const slider = view().locator('.left-pane input[type=range]');
+  await view().locator('button[title="Text Size"]').click();
+  const slider = view().locator('.table-text-size input[type=range]');
   await expect(slider).toBeVisible();
   await slider.fill('20');
   await expect.poll(() => view().locator('.tabulator').evaluate(el => el.closest('[style*="font-size"]') && el.closest('[style*="font-size"]').style.fontSize)).toBe('20px');
-  await view().locator('.view-controls button').first().click();
-  await expect(view().locator('.left-pane')).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(slider).toBeHidden();
 });
 
 test('exports CSV', async () => {
