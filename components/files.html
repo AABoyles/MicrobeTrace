@@ -1099,7 +1099,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       metricMenu.title = option ? option.title || option.text : '';
     };
 
-    MT.paneToggle($('.settings-toggle'), pane, false, { push: $('.file-panel') });
+    MT.paneToggle($('.settings-toggle'), pane, false, { push: [$('.file-panel'), $('.file-footer')] });
     const stop = [
       MTBind(pane, settings),
       MTBind(modal, settings),

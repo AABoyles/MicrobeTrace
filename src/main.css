@@ -43,9 +43,9 @@ body {
 #search {
   width: 13rem;
 }
+/* (A fixed width: the toolbar doesn't jump when the fields arrive) */
 #search-field {
-  width: auto;
-  max-width: 10rem;
+  width: 7rem;
 }
 .search-option {
   min-width: 2rem;
@@ -202,14 +202,19 @@ input[type="color"].form-control {
   color: #495057;
 }
 /* Settings labels (the first of a row's two columns) get room enough not
-   to wrap; the settings dialog is a little wider to make that room */
+   to wrap, in panes and in dialogs; the settings dialog is a little wider to
+   make that room. Labels sit on their controls' text. */
 .left-pane .row > :is(.col-3, .col-4):first-child:not(:last-child),
-#global-settings-modal .row > :is(.col-3, .col-4):first-child:not(:last-child) {
+.modal-body .row > :is(.col-3, .col-4):first-child:not(:last-child) {
   width: 40%;
 }
 .left-pane .row > :is(.col-3, .col-4):first-child + :is(.col-8, .col-9):last-child,
-#global-settings-modal .row > :is(.col-3, .col-4):first-child + :is(.col-8, .col-9):last-child {
+.modal-body .row > :is(.col-3, .col-4):first-child + :is(.col-8, .col-9):last-child {
   width: 60%;
+}
+.left-pane .form-group.row,
+#global-settings-modal .form-group.row {
+  align-items: baseline;
 }
 @media (min-width: 640px) {
   #global-settings-modal .modal-dialog {
@@ -264,7 +269,8 @@ svg#link-threshold-sparkline line.threshold-mark {
   right: 14px;
 }
 /* What a pane pushes aside (MT.paneToggle) */
-.file-panel {
+.file-panel,
+.file-footer {
   transition: padding-left 0.4s ease-in-out;
 }
 .pane-pushed {
@@ -392,6 +398,18 @@ body > .ts-dropdown {
 }
 #node-color-table td {
   border: 1px solid lightgray;
+  padding: 4px;
+}
+/* A color table's swatch and its transparency button sit in line */
+#node-color-table td,
+#link-color-table td {
+  vertical-align: middle;
+}
+#node-color-table input[type="color"],
+#link-color-table input[type="color"],
+#node-color-table .table-control,
+#link-color-table .table-control {
+  vertical-align: middle;
 }
 #node-color-table input[type="color"] {
   border: none;
@@ -459,10 +477,6 @@ body > .ts-dropdown {
   padding: 0.125rem 0.25rem;
 }
 
-label[for="apply-style"] {
-  width: calc(100% - 30px);
-  margin: 0 15px;
-}
 
 /* NAV BAR and Golden Layout */
 .dropdown-toggle::after {
@@ -773,8 +787,9 @@ td {
 #loadCancelButton {
   display: none;
 }
+/* Sliders fill their column, as the menus and boxes beside them do */
 input[type="range"] {
-  width: inherit;
+  width: 100%;
 }
 /* Light buttons (and groups of them) get a border; other kinds have their own */
 a.btn.btn-light,
@@ -951,12 +966,21 @@ body.timeline-open #main-panel {
 .flow-variables {
   padding-left: 0;
 }
+/* A flow variable: remove, its menu, and a grip to reorder, in one line */
 .flow-items {
   list-style-type: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 .flow-selector {
-  width: calc(100% - 47px);
-  margin: 5px;
+  flex: 1;
+  min-width: 0;
+}
+.flow-items .bi-grip-vertical,
+.aggregation-items .bi-grip-vertical {
+  cursor: grab;
 }
 
 /* MAP */
@@ -1205,4 +1229,86 @@ body.timeline-open #main-panel {
 .tabulator .tabulator-header .tabulator-frozen-rows-holder .tabulator-cell {
   padding: 5px !important;
   font-weight: 400;
+}
+
+/* A toggle group in a pane or dialog fits its column: its options take
+   their text's width and share what's left, shrinking (rather than spilling
+   out) only when they must. Each is divided from the next. */
+:is(.left-pane, .modal) .btn-group-toggle > .btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A row whose label is short gives its control more room */
+.left-pane .row.wide-control > :is(.col-3, .col-4):first-child:not(:last-child) {
+  width: 25%;
+}
+.left-pane .row.wide-control > :is(.col-3, .col-4):first-child + :is(.col-8, .col-9):last-child {
+  width: 75%;
+}
+.btn-group-toggle > .btn + .btn {
+  border-left: 1px solid #ced4da;
+}
+/* A pane's sections open and close: an arrow says which. Colors isn't one
+   (it opens Global Settings), so it looks like the button it is. */
+.left-pane .card-header button[data-bs-toggle="collapse"]::after {
+  content: "\F282"; /* bi-chevron-down */
+  font-family: bootstrap-icons;
+  font-size: 0.75em;
+  margin-left: 0.5rem;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.left-pane .card-header button[data-bs-toggle="collapse"].collapsed::after {
+  transform: rotate(-90deg);
+}
+.left-pane .card-header .launch-color-options {
+  color: var(--bs-link-color) !important;
+}
+.left-pane .card-header .launch-color-options:hover {
+  text-decoration: underline;
+}
+/* A toolbar button that can't be used now stays solid over the view */
+.view-controls .btn:disabled {
+  opacity: 1;
+  color: var(--bs-secondary-color);
+  background-color: var(--bs-light);
+}
+/* A table's sort arrow follows its own column's title (not the far edge,
+   beside the next column's), and shows on columns not sorted only on hover */
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title-holder {
+  display: flex;
+  align-items: center;
+}
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-content .tabulator-col-title {
+  flex: 0 1 auto;
+  width: auto;
+  padding-right: 0.375rem;
+}
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-sorter {
+  position: static;
+}
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="none"] .tabulator-col-content .tabulator-col-sorter {
+  visibility: hidden;
+}
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="none"]:hover .tabulator-col-content .tabulator-col-sorter {
+  visibility: visible;
+}
+/* The heatmap's three colors, low to high, each captioned */
+.heatmap-colors {
+  display: flex;
+  gap: 0.75rem;
+}
+.heatmap-colors label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+}
+.heatmap-colors .color-value {
+  display: none;
 }

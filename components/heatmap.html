@@ -40,14 +40,19 @@
       </div>
       <div class="form-group row" title="What color scheme would you like the heatmap to use?">
         <div class="col-3">Color Scheme</div>
-        <div class="col-3">
-          <input type="color" class="form-control form-control-sm" data-setting="heatmap-color-high" value="#a50026" title="Highest distances">
-        </div>
-        <div class="col-3">
-          <input type="color" class="form-control form-control-sm" data-setting="heatmap-color-medium" value="#ffffbf" title="Middle distances">
-        </div>
-        <div class="col-3">
-          <input type="color" class="form-control form-control-sm" data-setting="heatmap-color-low" value="#313695" title="Lowest distances">
+        <div class="col-9 heatmap-colors">
+          <label title="Lowest distances">
+            <input type="color" class="form-control form-control-sm" data-setting="heatmap-color-low" value="#313695">
+            Low
+          </label>
+          <label title="Middle distances">
+            <input type="color" class="form-control form-control-sm" data-setting="heatmap-color-medium" value="#ffffbf">
+            Middle
+          </label>
+          <label title="Highest distances">
+            <input type="color" class="form-control form-control-sm" data-setting="heatmap-color-high" value="#a50026">
+            High
+          </label>
         </div>
       </div>
       <div class="form-group row" title="Would you like to show axis labels on the heatmap?">
@@ -124,7 +129,7 @@
             <label for="heatmap-export-opacity">Watermark Opacity</label>
           </div>
           <div class="col-9">
-            <input type="range" id="heatmap-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
+            <input type="range" class="form-range" id="heatmap-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
