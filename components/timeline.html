@@ -170,7 +170,7 @@
     }
 
     function draw() {
-      const width = root.clientWidth - margin.left - margin.right;
+      const width = MT.viewWidth(root) - margin.left - margin.right;
       const height = root.clientHeight - margin.top - margin.bottom;
       // A view in a background tab has no size; it draws when it's shown
       if (width <= 0 || height <= 0) return;
@@ -270,7 +270,7 @@
     });
 
     // The settings start open when there's no date field to draw
-    MT.paneToggle($('.settings-toggle'), pane, !dateField());
+    MT.paneToggle($('.settings-toggle'), pane, !dateField(), { beside: chart, resize: draw });
     MT.svgExport(root, () => svg.node(), settings);
 
     const stop = [

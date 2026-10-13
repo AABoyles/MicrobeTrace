@@ -158,7 +158,7 @@
     const dataset = () => settings.get('histogram-variable').split('-')[0];
 
     function draw() {
-      const width = root.clientWidth, height = root.clientHeight;
+      const width = MT.viewWidth(root), height = root.clientHeight;
       // A view in a background tab has no size; it draws when it's shown
       if (!width || !height) return;
       const [source, ...rest] = settings.get('histogram-variable').split('-');
@@ -181,7 +181,7 @@
       });
     }
 
-    MT.paneToggle($('.settings-toggle'), pane);
+    MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.histogram-plot'), resize: draw });
     MT.plotExport(root, plot, settings);
 
     const stop = [

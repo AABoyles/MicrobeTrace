@@ -215,7 +215,7 @@
     }
 
     function resize() {
-      width = root.clientWidth;
+      width = MT.viewWidth(root);
       height = root.clientHeight;
       svg.attr('width', width).attr('height', height);
       svg.select('.x-label').attr('x', width / 2);
@@ -229,7 +229,7 @@
       svg.style('fill', settings.get('background-color-contrast'));
     }
 
-    MT.paneToggle($('.settings-toggle'), pane);
+    MT.paneToggle($('.settings-toggle'), pane, false, { beside: svg.node(), resize });
     MT.svgExport(root, () => svg.node(), settings);
 
     const stop = [
@@ -243,7 +243,7 @@
       ...['node-color-change', 'selected-color-change', 'node-selected'].map(type => events.on(type, setColors)),
       ...['node-visibility', 'cluster-visibility'].map(type => events.on(type, update))
     ];
-    width = root.clientWidth;
+    width = MT.viewWidth(root);
     height = root.clientHeight;
     update();
     resize();
