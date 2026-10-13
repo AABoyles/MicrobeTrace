@@ -168,10 +168,11 @@
       Plotly.react(plot, data, {
         width, height,
         barmode: data.length > 1 ? 'stack' : undefined,
-        ...MT.plotColors(settings),
-        [axis + 'axis']: { title: { text: MT.titleize(field) } },
+        ...MT.plotLayout(root, settings),
+        [axis + 'axis']: { title: { text: MT.titleize(field) }, automargin: true },
         [countAxis + 'axis']: {
           title: { text: 'Number of ' + MT.titleize(source) },
+          automargin: true,
           type: settings.get('histogram-scale-log') ? 'log' : '-'
         }
       }, {
@@ -192,7 +193,9 @@
         draw();
       }),
       ...['node-color-change', 'link-color-change', 'background-color-change', 'node-visibility', 'link-visibility']
-        .map(type => events.on(type, draw))
+        .map(type => events.on(type, draw)),
+      // Clear of the color table docked at the right
+      MT.onDockChange(root, draw)
     ];
     draw();
 

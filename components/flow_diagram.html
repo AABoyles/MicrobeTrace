@@ -141,7 +141,7 @@
     // One sankey column per variable, with a node per value; links count the
     // items going from each value to each value of the next variable.
     function draw() {
-      const width = MT.viewWidth(root) - 40, height = root.clientHeight - 60;
+      const width = MT.viewWidth(root), height = root.clientHeight;
       // A view in a background tab has no size; it draws when it's shown
       if (width <= 0 || height <= 0) return;
       const nodes = settings.get('flow-showNodes');
@@ -150,11 +150,15 @@
 
       const index = new Map(), labels = [], columns = [];
       order.forEach((variable, column) => {
-        new Set(items.map(d => d[variable] + '')).forEach(value => {
-          index.set(column + '\u0000' + value, labels.length);
-          labels.push(MT.valueLabel(value));
-          columns.push(MT.titleize(variable));
-        });
+        // Each column's values in order (numbers by number), empty ones last
+        const empty = value => MT.valueLabel(value) != value;
+        Array.from(new Set(items.map(d => d[variable] + '')))
+          .sort((a, b) => empty(a) - empty(b) || a.localeCompare(b, undefined, { numeric: true }))
+          .forEach(value => {
+            index.set(column + '\u0000' + value, labels.length);
+            labels.push(MT.valueLabel(value));
+            columns.push(MT.titleize(variable));
+          });
       });
       const counts = new Map();
       for (let column = 0; column < order.length - 1; column++) {
@@ -170,6 +174,26 @@
         target.push(t);
         value.push(count);
       });
+      // Plotly would reorder each column's values; placing them keeps their
+      // order, top to bottom, each as tall as its flow
+      const flow = labels.map((label, i) => Math.max(
+        d3.sum(value.filter((v, j) => source[j] == i)),
+        d3.sum(value.filter((v, j) => target[j] == i))
+      ));
+      const column = [], x = [], y = [];
+      index.forEach((i, key) => { column[i] = +key.split('\u0000')[0]; });
+      const edge = 0.001;
+      order.forEach((variable, c) => {
+        const members = column.map((m, i) => m == c ? i : -1).filter(i => i >= 0);
+        const total = d3.sum(members, i => flow[i]) || 1;
+        let above = 0;
+        members.forEach(i => {
+          // (The last column's bars are drawn right of their place)
+          x[i] = order.length > 1 ? Math.min(0.97, Math.max(edge, c / (order.length - 1))) : 0.5;
+          y[i] = Math.min(1 - edge, Math.max(edge, (above + flow[i] / 2) / total));
+          above += flow[i];
+        });
+      });
 
       Plotly.react(plot, [{
         type: 'sankey',
@@ -180,14 +204,23 @@
           thickness: 30,
           line: { color: 'black', width: 0.5 },
           label: labels,
+          x, y,
           color: settings.get(nodes ? 'node-color' : 'link-color'),
           customdata: columns,
           hovertemplate: '<b> %{customdata}:  %{label} </b><br>Incoming flow count: %{targetLinks.length} <br>Outgoing flow count: %{sourceLinks.length}<extra>%{value}</extra>'
         },
-        link: { source, target, value }
+        link: { source, target, value },
+        textfont: { size: 12 }
       }], {
         width, height,
-        ...MT.plotColors(settings)
+        ...MT.plotLayout(root, settings),
+        // Each column named above it
+        annotations: order.map((variable, i) => ({
+          text: '<b>' + MT.titleize(variable) + '</b>',
+          xref: 'paper', yref: 'paper', y: 1, yanchor: 'bottom', yshift: 6, showarrow: false,
+          x: order.length > 1 ? i / (order.length - 1) : 0.5,
+          xanchor: order.length < 2 ? 'center' : i == 0 ? 'left' : i == order.length - 1 ? 'right' : 'center'
+        }))
       }, {
         displaylogo: false,
         displayModeBar: false

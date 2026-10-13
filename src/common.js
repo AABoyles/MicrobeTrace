@@ -2247,6 +2247,30 @@
     return { paper_bgcolor: background, plot_bgcolor: background, font: { color: contrast } };
   };
 
+  // The room a view's docked tables take at its right (0 without any), and a
+  // way to hear when that changes: they come and go as views move to the
+  // front, and grow as they're expanded
+  MT.dockRoom = root => {
+    const dock = Array.from(root.children).find(child => child.classList.contains('panel-dock'));
+    return dock && dock.children.length ? dock.offsetWidth + 10 : 0;
+  };
+  MT.onDockChange = (root, fn) => {
+    let room = MT.dockRoom(root);
+    const observer = new ResizeObserver(() => {
+      const now = MT.dockRoom(root);
+      if (now != room) { room = now; fn(); }
+    });
+    observer.observe(MT.panelDock(root));
+    return () => observer.disconnect();
+  };
+
+  // A plot's frame: just below the view's toolbar at the top (Plotly's own
+  // margin leaves 100px empty), and clear of the docked tables at the right
+  MT.plotLayout = (root, settings) => ({
+    margin: { t: 50, r: 20 + MT.dockRoom(root), b: 60, l: 70 },
+    ...MT.plotColors(settings)
+  });
+
   // A plot's gridlines: the contrast color, faint enough to sit behind the data
   MT.gridColor = (settings, opacity = 0.15) => {
     const color = d3.color(settings.get('background-color-contrast'));
