@@ -154,9 +154,9 @@ test('the heatmap names its metric, greys missing pairs, and labels cells with i
     notes: (el.layout.annotations || []).map(a => a.text),
     x0: el.data[0].x[0]
   }));
-  expect(p.title).toBe('Distance');
+  expect(p.title).toBe('TN93');
   expect(p.background).toBe('#d0d0d0');
-  expect(p.notes.join(' ')).toContain('No distance');
+  expect(p.notes.join(' ')).toContain('No TN93');
   expect(p.x0).toBe(await page.evaluate(() => String(session.data.nodes[0]._id)));
 });
 

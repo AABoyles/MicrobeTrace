@@ -95,8 +95,15 @@
     function showColumns() {
       const fields = session.data[dataset.slice(0, -1) + 'Fields'].filter(f => !hidden.includes(f));
       if (columnsMenu) columnsMenu.destroy();
-      // The first five, less the internal counter (still there to choose)
-      const shown = fields.filter(f => f != 'index').slice(0, 5);
+      // The first five, less the internal counter (still there to choose), and
+      // for links, the field they're filtered on after their ends
+      let order = fields.filter(f => f != 'index');
+      const filtered = settings.get('link-sort-variable');
+      if (dataset == 'links' && order.includes(filtered)) {
+        const rest = order.filter(f => f != filtered);
+        order = [...rest.slice(0, 2), filtered, ...rest.slice(2)];
+      }
+      const shown = order.slice(0, 5);
       columnsSelect.innerHTML = fields.map(f => `<option value="${f}"${shown.includes(f) ? ' selected' : ''}>${MT.titleize(f)}</option>`).join('');
       columnsMenu = MT.multiSelect(columnsSelect);
       columnsMenu.on('change', showData);

@@ -71,7 +71,7 @@ test('the loading log counts a node file’s rows, and says how many links are w
   const within = await page.evaluate(() => {
     const t = parseFloat(session.style.widgets['link-threshold']);
     let n = 0;
-    session.data.graph.forEachValue('distance', v => { if (v <= t) n++; });
+    session.data.graph.forEachValue('tn93', v => { if (v <= t) n++; });
     return n;
   });
   expect(messages).toContain(`${within.toLocaleString()} links are within the link threshold`);
