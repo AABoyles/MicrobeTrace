@@ -41,9 +41,9 @@
           </div>
           <div class="col-3">
             <select name="export-filetype" class="form-select form-select-sm">
-              <option selected>csv</option>
-              <option>xlsx</option>
-              <option>json</option>
+              <option value="csv" selected>CSV</option>
+              <option value="xlsx">Excel (XLSX)</option>
+              <option value="json">JSON</option>
             </select>
           </div>
         </div>
@@ -72,9 +72,10 @@
     const highlight = row => {
       row.getElement().style.background = row.getData().selected ? settings.get('selected-color') : '';
     };
+    // Columns as wide as their contents, the last taking what's left
     const table = new Tabulator(grid, {
       maxHeight: '100%',
-      layout: 'fitColumns',
+      layout: 'fitDataStretch',
       data: [],
       columns: [],
       rowFormatter: highlight
@@ -94,10 +95,18 @@
     function showColumns() {
       const fields = session.data[dataset.slice(0, -1) + 'Fields'].filter(f => !hidden.includes(f));
       if (columnsMenu) columnsMenu.destroy();
-      columnsSelect.innerHTML = fields.map((f, i) => `<option value="${f}"${i < 5 ? ' selected' : ''}>${MT.titleize(f)}</option>`).join('');
+      // The first five, less the internal counter (still there to choose)
+      const shown = fields.filter(f => f != 'index').slice(0, 5);
+      columnsSelect.innerHTML = fields.map(f => `<option value="${f}"${shown.includes(f) ? ' selected' : ''}>${MT.titleize(f)}</option>`).join('');
       columnsMenu = MT.multiSelect(columnsSelect);
       columnsMenu.on('change', showData);
     }
+
+    // A cell's value as text, lists (like a node's files) joined with commas
+    const listed = cell => {
+      const value = cell.getValue();
+      return document.createTextNode(Array.isArray(value) ? value.join(', ') : value == null ? '' : String(value));
+    };
 
     // Every node and cluster, but only the links that are visible: the full
     // set includes every computed distance (n² of them).
@@ -107,7 +116,7 @@
       await built;
       // In the order they were chosen
       const columns = columnsMenu.getValue();
-      table.setColumns(columns.map(c => ({ title: MT.titleize(c), field: c })));
+      table.setColumns(columns.map(c => ({ title: MT.titleize(c), field: c, formatter: listed })));
       await table.replaceData(items());
       table.getRows().forEach(row => { if (row.getData().selected) row.freeze(); });
     }
@@ -129,6 +138,8 @@
     }));
 
     const fontSize = $('.table-font-size');
+    // It starts at the size the text is
+    fontSize.value = Math.round(parseFloat(getComputedStyle(grid).fontSize)) || fontSize.value;
     fontSize.addEventListener('input', () => {
       grid.style.fontSize = fontSize.value + 'px';
       grid.style.lineHeight = fontSize.value / 10;

@@ -1,10 +1,10 @@
 <div class="tree"></div>
 
 <div class="view-controls">
-  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Tree Settings">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Phylogenetic Tree Settings">
     <span class="bi bi-gear"></span>
   </button>
-  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#tree-export-modal" title="Export Tree">
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#tree-export-modal" title="Export Phylogenetic Tree">
     <span class="bi bi-download"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm fit-button" title="Center and Scale Phylogenetic Tree">
@@ -229,38 +229,6 @@
           </div>
           <div id="tree-leaf-controls-labels" class="collapse show" data-bs-parent="#tree-leaf-controls-accordion">
             <div class="card-body">
-              <div class="form-group row tree-leaf-node-row">
-                <div class="col-3">
-                  <label class="form-switch">Tooltip</label>
-                </div>
-                <div class="col-9">
-                  <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                    <label class="btn btn-light btn-sm col active">
-                      <input type="radio" name="tree-tooltips" data-setting="tree-tooltip-show" value="true" autocomplete="off" checked>
-                      Show
-                    </label>
-                    <label class="btn btn-light btn-sm col">
-                      <input type="radio" name="tree-tooltips" data-setting="tree-tooltip-show" value="false" autocomplete="off">
-                      Hide
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group row">
-                <div class="col-3">Labels</div>
-                <div class="col-9">
-                  <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                    <label class="btn btn-light btn-sm col">
-                      <input type="radio" name="tree-leaf-labels" data-setting="tree-leaf-label-show" value="true" autocomplete="off">
-                      Show
-                    </label>
-                    <label class="btn btn-light btn-sm col active">
-                      <input type="radio" name="tree-leaf-labels" data-setting="tree-leaf-label-show" value="false" autocomplete="off" checked>
-                      Hide
-                    </label>
-                  </div>
-                </div>
-              </div>
               <div class="form-group row tree-leaf-label-size-row">
                 <div class="col-3">
                   <label for="tree-leaf-label-size">Label Size</label>
@@ -269,7 +237,7 @@
                   <input id="tree-leaf-label-size" data-setting="tree-leaf-label-size" type="range" class="form-range" min="1" max="32" value="6" step="1">
                 </div>
               </div>
-              <div class="form-group row" title="What field should be displayed as a label for the node?">
+              <div class="form-group row" title="What should label each leaf? None hides the labels.">
                 <div class="col-4"><label for="tree-leaf-label-variable">Label</label></div>
                 <div class="col-8">
                   <select id="tree-leaf-label-variable" class="form-select form-select-sm nodeVariables" data-setting="tree-leaf-label-variable">
@@ -277,7 +245,7 @@
                   </select>
                 </div>
               </div>
-              <div class="form-group row" title="What node data should be displayed as a tooltip for the node?">
+              <div class="form-group row" title="What should a leaf's tooltip show? None turns tooltips off.">
                 <div class="col-4"><label for="tree-leaf-tooltip-variable">Tooltip</label></div>
                 <div class="col-8">
                   <select id="tree-leaf-tooltip-variable" class="form-select form-select-sm nodeVariables" data-setting="tree-leaf-tooltip-variable">
@@ -348,7 +316,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Tree</h5>
+        <h5 class="modal-title">Export Phylogenetic Tree</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -358,11 +326,11 @@
           </div>
           <div class="col-3">
             <select name="export-filetype" class="form-select form-select-sm">
-              <option selected>png</option>
-              <option>jpeg</option>
-              <option>webp</option>
-              <option>svg</option>
-              <option>nwk</option>
+              <option value="png" selected>PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WebP</option>
+              <option value="svg">SVG</option>
+              <option value="nwk">Newick</option>
             </select>
           </div>
         </div>
@@ -615,6 +583,22 @@
     $('.consolidate-button').addEventListener('click', () => setData(data.consolidate()));
     $('.fit-button').addEventListener('click', () => tree && tree.recenter());
 
+    // The Label and Tooltip menus also turn what they name on and off: None
+    // hides it, anything else shows it (an older session's shown labels of
+    // None show the ID)
+    const menuToggles = [];
+    [['tree-leaf-label-variable', 'tree-leaf-label-show'], ['tree-leaf-tooltip-variable', 'tree-tooltip-show']].forEach(([variable, show]) => {
+      const sync = () => {
+        if (settings.get(show) && settings.get(variable) == 'None') settings.set(variable, '_id');
+        else if (!settings.get(show) && settings.get(variable) != 'None') settings.set(variable, 'None');
+      };
+      sync();
+      menuToggles.push(
+        settings.subscribe(variable, value => { if (settings.get(show) != (value != 'None')) settings.set(show, value != 'None'); }),
+        settings.subscribe(show, sync)
+      );
+    });
+
     // Rows that only apply with some settings
     function showRows() {
       const rows = (selector, show) => root.querySelectorAll(selector).forEach(row => row.hidden = !show);
@@ -648,6 +632,7 @@
     const stop = [
       MTBind(pane, settings),
       ...Object.keys(choices).map(key => settings.subscribe(key, syncChoice(key))),
+      ...menuToggles,
       settings.subscribe('tree-layout', change(v => tree.setLayout(v).recenter())),
       settings.subscribe('tree-mode', change(v => tree.setMode(v))),
       settings.subscribe('tree-type', change(v => tree.setType(v))),

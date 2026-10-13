@@ -16,7 +16,7 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => page.close());
 
-const view = () => page.locator('.lm_content:has(button[title="Export Tree"])').first();
+const view = () => page.locator('.lm_content:has(button[title="Export Phylogenetic Tree"])').first();
 const pane = () => view().locator('.left-pane');
 const leaves = () => view().locator('g.tidytree-node-leaf circle');
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
@@ -34,7 +34,7 @@ test('draws a leaf per sequence, in the node color', async () => {
 });
 
 test('the layout, type and branch mode can be changed', async () => {
-  await view().locator('button[title="Tree Settings"]').click();
+  await view().locator('button[title="Phylogenetic Tree Settings"]').click();
   await expect(pane()).toBeVisible();
   await pane().locator('label', { hasText: 'Circular' }).click();
   await expect.poll(async () => (await tree()).layout).toBe('circular');
@@ -151,7 +151,7 @@ test('the tree follows the panel size', async () => {
 
 for (const [filetype, filename] of [['nwk', 'tree-test.nwk'], ['svg', 'tree-test.svg'], ['png', 'tree-test.png']]) {
   test(`exports ${filetype}`, async () => {
-    const modal = await openExport(page, view(), 'Export Tree');
+    const modal = await openExport(page, view(), 'Export Phylogenetic Tree');
     await modal.getByPlaceholder('Filename').fill('tree-test');
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);

@@ -27,7 +27,7 @@ test('draws a bubble per visible node', async () => {
 test('grouping by a variable labels its values', async () => {
   await view().locator('button[title="Bubbles Settings"]').click();
   await expect(pane()).toBeVisible();
-  await pane().locator('a', { hasText: 'Physics' }).click();
+  await pane().locator('a', { hasText: 'Layout' }).click();
   await pane().locator('select[data-setting="bubble-x"]').selectOption('state');
   const states = await page.evaluate(() => Array.from(new Set(session.data.nodes.filter(d => d.visible).map(d => d.state == null ? '' : '' + d.state))).sort());
   await expect.poll(() => view().locator('svg .xtitle').allTextContents().then(t => t.sort())).toEqual(states);

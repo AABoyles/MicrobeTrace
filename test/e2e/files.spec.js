@@ -92,7 +92,7 @@ test('sequences can be generated', async () => {
 });
 
 test('the sequence controls preview the sequences, and align them with Smith-Waterman', async () => {
-  await view().locator('button', { hasText: 'Sequence Controls' }).click();
+  await view().locator('button', { hasText: 'Sequence Settings' }).click();
   await waitForModal(page, '#sequence-controls-modal');
   const modal = page.locator('#sequence-controls-modal');
   await expect(modal.locator('.alignment-preview canvas')).toHaveCount(1, { timeout: 30000 });
@@ -128,7 +128,7 @@ test('the audit flags odd sequences, which can be excluded', async () => {
   await expect(flagged.filter({ hasText: 'rna appears' }).locator('button')).toHaveText('Include');
   await flagged.filter({ hasText: 'rna appears' }).locator('button').click();
   expect(await page.evaluate(() => session.data.nodeExclusions)).not.toContain('rna');
-  await modal.locator('button', { hasText: 'Confirm' }).click();
+  await modal.locator('button', { hasText: 'Done' }).click();
   await expect(modal).toBeHidden();
   await row('odd.fasta').locator('a[title="Remove this file"]').click();
   await expect(rows()).toHaveCount(3);

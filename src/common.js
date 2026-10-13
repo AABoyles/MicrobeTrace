@@ -2886,7 +2886,7 @@
     const options = (fields, prefix = "", label = "") => fields.map(field => '<option value="' + prefix + field + '">' + label + MT.titleize(field) + "</option>").join("\n");
     fill("select.nodeVariables", options(session.data.nodeFields));
     fill("select.linkVariables", options(session.data.linkFields));
-    fill("select.mixedVariables", options(session.data.linkFields, "links-", "Links ") + options(session.data.nodeFields, "nodes-", "Nodes "));
+    fill("select.mixedVariables", options(session.data.linkFields, "links-", "Link ") + options(session.data.nodeFields, "nodes-", "Node "));
     fill("select.branch-variables", options(["id", "depth", "height", "length", "value"]));
     element.querySelectorAll(".launch-color-options").forEach(button => button.addEventListener("click", MT.showColorOptions));
     if (navigator.onLine) MT.showOnline(element);

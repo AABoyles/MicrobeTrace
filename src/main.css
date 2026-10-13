@@ -167,6 +167,10 @@ body {
   display: grid;
   grid-template-columns: repeat(2, auto);
 }
+/* The network, the main view, above both columns */
+.view-menu .view-menu-top {
+  grid-column: 1 / -1;
+}
 /* A menu item's keyboard shortcut */
 .dropdown-item .shortcut {
   float: right;

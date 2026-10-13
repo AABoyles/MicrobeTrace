@@ -35,16 +35,16 @@ async function addColumn(title) {
   await page.keyboard.press('Escape');
 }
 
-test('shows the nodes with their first fields', async () => {
+test('shows the nodes with their first fields, less the internal Index', async () => {
   await expect.poll(async () => (await table()).rows).toBe(310);
-  expect((await table()).columns).toEqual(['Index', 'ID', 'Cluster', 'Degree', 'Origin']);
+  expect((await table()).columns).toEqual(['ID', 'Cluster', 'Degree', 'Origin', 'Date']);
 });
 
 test('columns can be removed and added', async () => {
   await removeColumn('Degree');
-  await expect.poll(async () => (await table()).columns).toEqual(['Index', 'ID', 'Cluster', 'Origin']);
+  await expect.poll(async () => (await table()).columns).toEqual(['ID', 'Cluster', 'Origin', 'Date']);
   await addColumn('Group');
-  await expect.poll(async () => (await table()).columns).toEqual(['Index', 'ID', 'Cluster', 'Origin', 'Group']);
+  await expect.poll(async () => (await table()).columns).toEqual(['ID', 'Cluster', 'Origin', 'Date', 'Group']);
 });
 
 test('the table starts below its toolbar, however many columns are chosen', async () => {
@@ -54,13 +54,13 @@ test('the table starts below its toolbar, however many columns are chosen', asyn
   const before = await height();
   // More columns in a narrow window, so the picker wraps onto more lines
   await page.setViewportSize({ width: 700, height: 900 });
-  const extra = ['Lat', 'Lon', 'State', 'Date'];
+  const extra = ['Lat', 'Lon', 'State', 'Index'];
   for (const title of extra) await addColumn(title);
   await expect.poll(height).toBeGreaterThan(before);
   await expect.poll(gap).toBeGreaterThanOrEqual(0);
   for (const title of extra) await removeColumn(title);
   await page.setViewportSize({ width: 1400, height: 900 });
-  await expect.poll(async () => (await table()).columns).toEqual(['Index', 'ID', 'Cluster', 'Origin', 'Group']);
+  await expect.poll(async () => (await table()).columns).toEqual(['ID', 'Cluster', 'Origin', 'Date', 'Group']);
   await expect.poll(gap).toBeGreaterThanOrEqual(0);
 });
 

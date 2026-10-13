@@ -167,14 +167,20 @@ test('the File menu starts with New, says where stashes go, and shows its shortc
   await closeMenu();
 });
 
-test('the View menu groups the views, in two columns', async () => {
+test('the View menu has the network above two columns of grouped views', async () => {
   const items = await openMenu('View');
-  expect(await items.locator('.dropdown-header').allInnerTexts()).toEqual(['Charts', 'Tables', 'Maps', 'Sequences']);
+  expect(await items.locator('.dropdown-header').allInnerTexts()).toEqual(['Charts', 'Tables', 'Maps', 'Phylogenetics']);
+  // The network spans both columns, so their headings line up
+  const network = await items.locator('.view-menu-top').boundingBox();
+  const headings = await items.locator(':scope > div:not(.view-menu-top) > .dropdown-header:first-child').evaluateAll(hs => hs.map(h => h.getBoundingClientRect().top));
+  expect(headings.length).toBe(2);
+  expect(Math.abs(headings[0] - headings[1])).toBeLessThan(2);
+  expect(network.y + network.height).toBeLessThanOrEqual(headings[0] + 1);
   await expect(items.locator('.viewbutton')).toHaveCount(18);
   const views = await items.locator('.viewbutton').allInnerTexts();
   expect(views).toContain('Crosstab');
   expect(views).not.toContain('CrossTab');
-  const [first, second] = await items.locator(':scope > div').evaluateAll(cols => cols.map(c => c.getBoundingClientRect().toJSON()));
+  const [first, second] = await items.locator(':scope > div:not(.view-menu-top)').evaluateAll(cols => cols.map(c => c.getBoundingClientRect().toJSON()));
   expect(second.left).toBeGreaterThanOrEqual(first.right - 1);
   expect(Math.abs(second.top - first.top)).toBeLessThan(2);
   await closeMenu();

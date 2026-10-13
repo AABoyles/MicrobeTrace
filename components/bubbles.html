@@ -18,7 +18,7 @@
       <a href="#bubble-node-configurations" class="nav-link active" aria-controls="bubble-node-configurations" role="tab" data-bs-toggle="tab">Nodes</a>
     </li>
     <li class="nav-item">
-      <a href="#bubble-physics-configurations" class="nav-link" aria-controls="bubble-physics-configurations" role="tab" data-bs-toggle="tab">Physics</a>
+      <a href="#bubble-physics-configurations" class="nav-link" aria-controls="bubble-physics-configurations" role="tab" data-bs-toggle="tab">Layout</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -33,11 +33,11 @@
       </div>
     </div>
     <div class="tab-pane fade" id="bubble-physics-configurations" role="tabpanel">
-      <div class="form-group row" title="What variable should be used for the Bubbles' X axis?">
+      <div class="form-group row" title="Which variable should group the bubbles across, in columns?">
         <div class="col-3"><label for="bubble-x">X</label></div>
         <div class="col-9"><select id="bubble-x" class="form-select form-select-sm nodeVariables" data-setting="bubble-x"></select></div>
       </div>
-      <div class="form-group row" title="What variable should be used for the Bubbles' Y axis?">
+      <div class="form-group row" title="Which variable should group the bubbles down, in rows?">
         <div class="col-3"><label for="bubble-y">Y</label></div>
         <div class="col-9"><select id="bubble-y" class="form-select form-select-sm nodeVariables" data-setting="bubble-y"></select></div>
       </div>
@@ -63,10 +63,10 @@
           </div>
           <div class="col-3">
             <select name="export-filetype" class="form-select form-select-sm">
-              <option selected>png</option>
-              <option>jpeg</option>
-              <option>webp</option>
-              <option>svg</option>
+              <option value="png" selected>PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WebP</option>
+              <option value="svg">SVG</option>
             </select>
           </div>
         </div>
