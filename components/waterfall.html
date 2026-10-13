@@ -2,15 +2,18 @@
   <div class="row">
     <div class="col-3">
       <h4>Clusters <small class="float-end">Nodes</small></h4>
+      <p class="waterfall-note waterfall-skipped" hidden></p>
       <div class="list-group waterfall-clusters"></div>
     </div>
     <div class="col-4">
       <h4>Nodes <small class="float-end">Degree</small></h4>
       <div class="list-group waterfall-nodes"></div>
+      <p class="waterfall-note waterfall-nodes-hint">Choose a cluster to see its nodes.</p>
     </div>
     <div class="col-5">
       <h4>Links <small class="float-end">Distance</small></h4>
       <div class="list-group waterfall-links"></div>
+      <p class="waterfall-note waterfall-links-hint">Choose a node to see its links.</p>
     </div>
   </div>
 </div>
@@ -57,6 +60,10 @@
     function showClusters() {
       lists.clusters.innerHTML = '';
       const clusters = session.data.clusters.filter(c => c.visible && c.nodes > 1);
+      // Single nodes aren't listed (they've no links to show): say how many
+      const singles = session.data.clusters.filter(c => c.visible && c.nodes == 1).length;
+      $('.waterfall-skipped').hidden = !singles;
+      $('.waterfall-skipped').textContent = singles == 1 ? '1 cluster of a single node isn’t listed.' : `${singles.toLocaleString()} clusters of a single node aren’t listed.`;
       if (!clusters.some(c => c.id === cluster)) cluster = undefined;
       clusters.forEach(c => {
         item(lists.clusters, c.id, c.nodes, `Links: ${c.links}<br>
@@ -74,6 +81,7 @@
     function showNodes() {
       lists.nodes.innerHTML = '';
       const nodes = cluster === undefined ? [] : session.data.nodes.filter(d => d.cluster === cluster);
+      $('.waterfall-nodes-hint').hidden = cluster !== undefined;
       if (!nodes.some(d => d._id === node)) node = undefined;
       nodes.forEach(d => {
         item(lists.nodes, d._id, d.degree, details(d), chosen => {
@@ -87,6 +95,7 @@
 
     function showLinks() {
       lists.links.innerHTML = '';
+      $('.waterfall-links-hint').hidden = node !== undefined;
       if (node === undefined) return;
       const metric = settings.get('link-sort-variable');
       MT.getVisibleNeighbors(node).forEach(({ neighbor, link }) => item(lists.links, neighbor, link[metric], details(link)));

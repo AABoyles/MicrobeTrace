@@ -1175,6 +1175,12 @@ body.timeline-open #main-panel {
   padding: 30px;
   height: 100%;
 }
+/* What to choose in an empty column, and what isn't listed */
+.waterfall-note {
+  margin: 0.75rem 0.25rem;
+  font-size: 0.875rem;
+  color: var(--mt-muted);
+}
 .waterfall h4 {
   padding: 0.75rem 1.25rem;
   border: 1px solid lightgray;

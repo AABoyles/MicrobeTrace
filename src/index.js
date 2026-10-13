@@ -677,9 +677,10 @@ document.addEventListener("DOMContentLoaded", () => {
       timeDomainEnd = Math.max(...times);
 
       var days = Math.floor((timeDomainEnd - timeDomainStart) / 864e5);
-      var tickDateFormat = d => {
+      // Each year named where it starts (or on the first tick)
+      var tickDateFormat = (d, i) => {
         if (days<184) return formatDateDateMonth(d);
-        else if (days<367) return formatDateIntoMonth(d);
+        else if (days<367) return d.getMonth() == 0 || i == 0 ? formatDateMonthYear(d) : formatDateIntoMonth(d);
         else if (days<367*5) return formatDateIntoMonthYear(d);
         else return formatDateIntoYear(d);		
       }
@@ -708,9 +709,10 @@ document.addEventListener("DOMContentLoaded", () => {
           .range([0, targetValue])
           .clamp(true)
           .nice();
+      // (Centered, as wide on each side as its title)
       var slider = svgTimeline.append("g")
           .attr("class", "slider")
-          .attr("transform", "translate(30," + height/2 + ")");
+          .attr("transform", "translate(" + margin.left + "," + height/2 + ")");
       slider.append("line")
           .attr("class", "track")
           .attr("x1", x.range()[0])
@@ -740,15 +742,19 @@ document.addEventListener("DOMContentLoaded", () => {
         .attr("x", x)
         .attr("y", 10)
         .attr("text-anchor", "middle")
-        .text(function(d) { return tickDateFormat(d); });
+        .text(function(d, i) { return tickDateFormat(d, i); });
       var handle = slider.insert("circle", ".track-overlay")
           .attr("class", "handle")
           .attr("r", 9);
+      // The handle starts at the end, as the network does, showing every node
+      currentValue = targetValue;
+      handle.attr("cx", targetValue);
       var label = slider.append("text")  
           .attr("class", "label")
           .attr("text-anchor", "middle")
-          .text(handleDateFormat(startDate))
-          .attr("transform", "translate(25," + (-20) + ")")
+          .attr("x", targetValue)
+          .text(handleDateFormat(endDate))
+          .attr("transform", "translate(0," + (-20) + ")")
       playButton
         .on("click", function() {
           var button = d3.select(this);  
@@ -757,6 +763,8 @@ document.addEventListener("DOMContentLoaded", () => {
             clearInterval(session.timeline);
           } else {
             button.text("Pause");
+            // From the start again, once it's reached the end
+            if (currentValue >= targetValue) currentValue = 0;
             session.timeline = setInterval(step, 200);
           }
         })
