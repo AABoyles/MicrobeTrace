@@ -575,7 +575,7 @@ Note that this may cause slow performance on larger networks.">
     let pointIndex = new Map();
     let links = [];
     let mouse = { clientX: 0, clientY: 0 };
-    let lastSync = 0;
+    let lastSync = 0, lastFit = 0;
     let diameters = new Float32Array(0), maxDiameter = 0;
     let autoFit = true;
     let destroyed = false;
@@ -646,6 +646,8 @@ Note that this may cause slow performance on larger networks.">
         linkGreyoutOpacity: 0.1,
         onSimulationTick: () => {
           if (Date.now() - lastSync > 5000) syncPositions();
+          // Kept in view as the layout spreads, until the user zooms or pans
+          if (autoFit && Date.now() - lastFit > 700) fit(300);
           drawOverlays();
         },
         onSimulationEnd: () => {
@@ -1355,8 +1357,22 @@ Note that this may cause slow performance on larger networks.">
       return svgNode;
     }
 
-    function fit() {
-      if (graph && points.length) graph.fitView(750, 0.05);
+    // Fits the network to the view, leaving the docked tables at the right
+    // their room: a point as far right as they reach widens what's fitted
+    function fit(duration = 750) {
+      if (!graph || !points.length) return;
+      lastFit = Date.now();
+      const positions = Array.from(graph.getPointPositions());
+      const room = MT.dockRoom(root), width = root.clientWidth;
+      if (room && width > 2 * room) {
+        let min = Infinity, max = -Infinity;
+        for (let i = 0; i < positions.length; i += 2) {
+          if (positions[i] < min) min = positions[i];
+          if (positions[i] > max) max = positions[i];
+        }
+        positions.push(max + (max - min) * room / (width - room), positions[1]);
+      }
+      graph.fitViewByPointPositions(positions, duration, 0.05);
     }
 
     function pinAll() {
@@ -1442,12 +1458,13 @@ Note that this may cause slow performance on larger networks.">
     }
 
     // Node labels to draw: every point while there are few, otherwise the
-    // evenly spaced sample of on-screen points cosmos.gl provides.
+    // evenly spaced sample of on-screen points cosmos.gl provides. Labels keep
+    // their size on screen as the view zooms (their place beside the node
+    // follows the node's size).
     function labelPositions() {
       const labelVar = get('node-label-variable');
       if (!labelVar || labelVar == 'None' || !graph || !points.length) return [];
-      const k = zoomScale(), size = get('node-label-size') * k;
-      if (size < 4) return [];
+      const k = zoomScale(), size = get('node-label-size');
       const tracked = graph.getTrackedPointPositionsMap();
       const sample = points.length <= 2000 ? null : graph.getSampledPointPositionsMap();
       const indices = sample ? Array.from(sample.keys()) : points.map((d, i) => i);
@@ -1526,10 +1543,23 @@ Note that this may cause slow performance on larger networks.">
         under.globalAlpha = 1;
       }
 
+      // Labels in the contrast color with a halo of the background, skipping
+      // any that would run into one already drawn (or off the view)
       over.fillStyle = d3.hsl(get('background-color')).l < 0.5 ? '#ffffff' : '#000000';
+      over.strokeStyle = get('background-color');
+      over.lineWidth = 3;
+      over.lineJoin = 'round';
+      const placed = [];
       labelPositions().forEach(({ text, x, y, anchor, size }) => {
         over.font = size + 'px sans-serif';
         over.textAlign = anchor == 'middle' ? 'center' : anchor == 'end' ? 'right' : 'left';
+        const width = over.measureText(text).width;
+        const left = anchor == 'middle' ? x - width / 2 : anchor == 'end' ? x - width : x;
+        const box = [left - 2, y - size, left + width + 2, y + size * 0.25];
+        if (box[0] < 0 || box[2] > w || box[1] < 0 || box[3] > h) return;
+        if (placed.some(b => box[0] < b[2] && b[0] < box[2] && box[1] < b[3] && b[1] < box[3])) return;
+        placed.push(box);
+        over.strokeText(text, x, y);
         over.fillText(text, x, y);
         drawn.labels++;
       });
@@ -1633,7 +1663,7 @@ Note that this may cause slow performance on larger networks.">
     const pinButton = $('.pin-button');
     pinButton.classList.toggle('active', !!session.network.allPinned);
     pinButton.addEventListener('click', pinAll);
-    $('.fit-button').addEventListener('click', fit);
+    $('.fit-button').addEventListener('click', () => fit());
     MT.paneToggle($('.settings-toggle'), pane);
     MT.svgExport(root, buildExportSVG, settings, {}, () => {
       exportExtras.forEach(element => element.remove());
