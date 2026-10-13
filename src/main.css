@@ -1,3 +1,56 @@
+/* The interface's colors, light or dark as the system is (index.html sets
+   data-bs-theme). The views draw in their own colors. */
+:root {
+  --mt-page: #f8f9fa;
+  --mt-panel: #f8f9fa;
+  --mt-surface: #ffffff;
+  --mt-pane: #f1f3f5;
+  --mt-secondary: #e9ecef;
+  --mt-hover: #eeeeee;
+  --mt-text: #303030;
+  --mt-strong: #212529;
+  --mt-muted: #6c757d;
+  --mt-muted-strong: #495057;
+  --mt-faint: #adb5bd;
+  --mt-border: #cccccc;
+  --mt-border-soft: #dee2e6;
+  --mt-border-control: #ced4da;
+  --mt-rule: rgba(0, 0, 0, 0.1);
+  --mt-tab: #888888;
+  --mt-tab-text: #575858;
+  --mt-notice-bg: #fbefd8;
+  --mt-notice-text: #7a4a00;
+  --mt-track: #000000;
+  --mt-track-inset: #dcdcdc;
+  --mt-handle: #ffffff;
+  --mt-ink: #000000;
+}
+[data-bs-theme="dark"] {
+  --mt-page: #1a1d20;
+  --mt-panel: #2b3035;
+  --mt-surface: #212529;
+  --mt-pane: #2b3035;
+  --mt-secondary: #343a40;
+  --mt-hover: #343a40;
+  --mt-text: #dee2e6;
+  --mt-strong: #f8f9fa;
+  --mt-muted: #adb5bd;
+  --mt-muted-strong: #ced4da;
+  --mt-faint: #6c757d;
+  --mt-border: #495057;
+  --mt-border-soft: #495057;
+  --mt-border-control: #495057;
+  --mt-rule: rgba(255, 255, 255, 0.12);
+  --mt-tab: #343a40;
+  --mt-tab-text: #adb5bd;
+  --mt-notice-bg: #3d2e12;
+  --mt-notice-text: #ffd699;
+  --mt-track: #adb5bd;
+  --mt-track-inset: #495057;
+  --mt-handle: #dee2e6;
+  --mt-ink: #ced4da;
+}
+
 /* Global Stuff */
 html,
 body {
@@ -14,7 +67,7 @@ body {
   /* Room for the menu bar, which wraps onto a second row in narrow windows
      (src/index.js measures it) */
   padding-top: var(--navbar-height, 38px);
-  background-color: #f8f9fa;
+  background-color: var(--mt-page);
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -khtml-user-select: none; /* Konqueror HTML */
@@ -68,13 +121,13 @@ body {
   right: 0;
   padding: 0 2rem;
   text-align: center;
-  color: #6c757d;
+  color: var(--mt-muted);
 }
 /* The Recall dialog's note when nothing is stashed, as the views' notes */
 #recall-stashes-available .tabulator-placeholder-contents {
   font-size: inherit;
   font-weight: normal;
-  color: #6c757d;
+  color: var(--mt-muted);
 }
 /* The Conflicts view: a field's choice above the nodes files disagree on */
 .conflicts-view {
@@ -96,7 +149,7 @@ body {
 .conflicts-note {
   margin: 0.5rem 0;
   font-size: 0.875rem;
-  color: #6c757d;
+  color: var(--mt-muted);
 }
 .conflicts-grid {
   flex: 1;
@@ -132,12 +185,12 @@ body {
 /* Links look like links (Bootstrap's); icon-only actions, like removing a
    file, are plain icons that darken on hover */
 .icon-action {
-  color: #6c757d;
+  color: var(--mt-muted);
   text-decoration: none;
 }
 .icon-action:hover,
 .icon-action:focus-visible {
-  color: #212529;
+  color: var(--mt-strong);
 }
 #ie-warning {
   display: none;
@@ -164,7 +217,7 @@ body {
   display: none;
 }
 .view-controls button {
-  border: 1px solid #cccccc;
+  border: 1px solid var(--mt-border);
 }
 /* Keyboard focus on a toolbar button shows as a ring, not a pressed button */
 .view-controls .btn:focus-visible {
@@ -199,7 +252,7 @@ input[type="color"].form-control {
   margin-left: 0.5rem;
   vertical-align: middle;
   font-size: 0.8125rem;
-  color: #495057;
+  color: var(--mt-muted-strong);
 }
 /* Settings labels (the first of a row's two columns) get room enough not
    to wrap, in panes and in dialogs; the settings dialog is a little wider to
@@ -222,7 +275,7 @@ input[type="color"].form-control {
   }
 }
 .floater {
-  border: 1px solid #cccccc;
+  border: 1px solid var(--mt-border);
   border-radius: 0.25rem;
 }
 .nodeVariables,
@@ -233,7 +286,7 @@ input[type="color"].form-control {
   position: absolute;
   top: 10px;
   left: 62px;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--mt-border);
 }
 /* The threshold's histogram fills its column, above the threshold's box */
 svg#link-threshold-sparkline {
@@ -242,6 +295,10 @@ svg#link-threshold-sparkline {
   height: 48px;
   margin-bottom: 0.25rem;
   cursor: crosshair;
+}
+/* (Its bars in the text's color, light or dark) */
+svg#link-threshold-sparkline .bar rect {
+  fill: var(--mt-ink);
 }
 svg#link-threshold-sparkline line.threshold-mark {
   stroke: var(--bs-danger);
@@ -256,9 +313,9 @@ svg#link-threshold-sparkline line.threshold-mark {
   width: 400px;
   max-width: 100%;
   padding: 10px;
-  background: #f1f3f5;
-  border-right: 1px solid #dee2e6;
-  border-bottom: 1px solid #dee2e6;
+  background: var(--mt-pane);
+  border-right: 1px solid var(--mt-border-soft);
+  border-bottom: 1px solid var(--mt-border-soft);
   border-bottom-right-radius: 0.375rem;
   box-shadow: 0.25rem 0.25rem 1rem rgba(0, 0, 0, 0.12);
   z-index: 1000;
@@ -301,21 +358,21 @@ body > .ts-dropdown {
   padding-top: max(40px, var(--controls-height, 0px) + 10px);
 }
 .left-pane .nav .active {
-  background: #ffffff;
+  background: var(--mt-surface);
   border-width: 2px;
-  border-color: #ffffff #ffffff transparent #ffffff;
+  border-color: var(--mt-surface) var(--mt-surface) transparent var(--mt-surface);
 }
 .left-pane div.tab-content {
-  background: #ffffff;
+  background: var(--mt-surface);
 }
 .ifOnline {
   display: none;
 }
 #tooltip {
   position: fixed;
-  color: #333333;
-  background-color: #f8f9fa !important;
-  border: 1px solid #cccccc;
+  color: var(--mt-text);
+  background-color: var(--mt-panel) !important;
+  border: 1px solid var(--mt-border);
   border-radius: 0.25rem;
   padding: 0.25rem;
   opacity: 0;
@@ -367,8 +424,8 @@ body > .ts-dropdown {
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
-  color: #303030;
-  background-color: #f8f9fa !important;
+  color: var(--mt-text);
+  background-color: var(--mt-panel) !important;
 }
 #link-color-table-wrapper .draghandle {
   width: 100%;
@@ -393,8 +450,8 @@ body > .ts-dropdown {
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
-  color: #303030;
-  background-color: #f8f9fa !important;
+  color: var(--mt-text);
+  background-color: var(--mt-panel) !important;
 }
 #node-color-table-wrapper .draghandle {
   width: 100%;
@@ -437,8 +494,8 @@ body > .ts-dropdown {
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
-  color: #303030;
-  background-color: #f8f9fa !important;
+  color: var(--mt-text);
+  background-color: var(--mt-panel) !important;
 }
 .polygon-color-table-wrapper .draghandle {
   width: 100%;
@@ -463,8 +520,8 @@ body > .ts-dropdown {
   position: absolute;
   z-index: 999;
   border-radius: 0.25rem;
-  color: #303030;
-  background-color: #f8f9fa !important;
+  color: var(--mt-text);
+  background-color: var(--mt-panel) !important;
   padding: 4px 8px;
   transform: rotate(270deg);
   transform-origin: top left;
@@ -472,9 +529,9 @@ body > .ts-dropdown {
 #network-statistics-wrapper {
   display: none;
   padding: 0.25rem 0.375rem;
-  color: #303030;
-  background-color: #f8f9fa !important;
-  border: 1px solid #c0c0c0;
+  color: var(--mt-text);
+  background-color: var(--mt-panel) !important;
+  border: 1px solid var(--mt-border);
   border-radius: 0.25rem;
 }
 #network-statistics-wrapper .draghandle {
@@ -492,13 +549,13 @@ body > .ts-dropdown {
   content: none; /* Hides carats */
 }
 .lm_goldenlayout {
-  background: #f8f9fa !important;
+  background: var(--mt-page) !important;
 }
 .lm_content {
-  background: #ffffff;
+  background: var(--mt-surface);
 }
 .lm_selected .lm_header {
-  background: #f8f9fa !important;
+  background: var(--mt-page) !important;
 }
 /* Panel tabs, in text close to the menus' size */
 .lm_header .lm_tab {
@@ -515,17 +572,17 @@ body > .ts-dropdown {
   top: 7px;
 }
 .lm_tab {
-  color: #575858 !important;
-  background-color: #888888;
+  color: var(--mt-tab-text) !important;
+  background-color: var(--mt-tab);
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
 }
 .lm_tab.lm_active {
-  background-color: #ffffff;
+  background-color: var(--mt-surface);
   box-shadow: none !important;
 }
 .tab-pane {
-  border: 2px solid #ffffff;
+  border: 2px solid var(--mt-surface);
   border-top: none;
   border-bottom-left-radius: 0.25rem;
   border-bottom-right-radius: 0.25rem;
@@ -538,8 +595,8 @@ button.navbar-toggler {
   margin-left: 2rem;
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  background: #fbefd8;
-  color: #7a4a00;
+  background: var(--mt-notice-bg);
+  color: var(--mt-notice-text);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -558,7 +615,7 @@ label[for="OpenTab"] {
   height: calc(100% - 68px);
   padding: 15px;
   padding-top: 40px;
-  background-color: #ffffff;
+  background-color: var(--mt-surface);
 }
 #file-table {
   height: calc(100% - 50px);
@@ -574,9 +631,9 @@ label[for="OpenTab"] {
   gap: 0.5rem;
   margin: 1.5rem 0;
   padding: 4rem 1rem;
-  border: 2px dashed #adb5bd;
+  border: 2px dashed var(--mt-faint);
   border-radius: 0.5rem;
-  color: #6c757d;
+  color: var(--mt-muted);
   text-align: center;
   cursor: pointer;
 }
@@ -586,7 +643,7 @@ label[for="OpenTab"] {
 }
 .drop-zone-title {
   font-size: 1.125rem;
-  color: #212529;
+  color: var(--mt-strong);
 }
 .drop-zone-hint {
   font-size: 0.875rem;
@@ -599,16 +656,16 @@ label[for="OpenTab"] {
 /* A file's row: its grip, name and kind, then resave and remove */
 .file-grip {
   cursor: grab;
-  color: #adb5bd;
+  color: var(--mt-faint);
   margin-right: 0.25rem;
 }
 .file-grip:hover {
-  color: #495057;
+  color: var(--mt-muted-strong);
 }
 .file-order-hint {
   margin: 0.75rem 0 0;
   font-size: 0.875rem;
-  color: #6c757d;
+  color: var(--mt-muted);
 }
 .file-table-row .file-name {
   display: flex;
@@ -622,14 +679,14 @@ label[for="OpenTab"] {
   white-space: nowrap;
 }
 .file-table-row {
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--mt-rule);
   border-radius: 0.25rem;
   margin: 10px 0;
-  background: #f8f9fa !important;
+  background: var(--mt-panel) !important;
   padding: 15px;
 }
 .file-table-row .btn:not(.active) {
-  background-color: #ffffff;
+  background-color: var(--mt-surface);
 }
 .filename {
   white-space: nowrap;
@@ -664,7 +721,7 @@ td {
 }
 /* Bootstrap 4's tab links were gray; Bootstrap 5 colors them as links */
 .nav-tabs .nav-link {
-  color: #495057;
+  color: var(--mt-muted-strong);
 }
 /* Bootstrap 4 classes MicrobeTrace still uses (removed in Bootstrap 5) */
 .form-group {
@@ -804,12 +861,12 @@ input[type="range"] {
 a.btn.btn-light,
 button.btn.btn-light,
 .btn-group {
-  border: 1px solid #ced4da;
+  border: 1px solid var(--mt-border-control);
   border-radius: 0.25rem;
 }
 #file-footer {
-  background: #f8f9fa;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--mt-page);
+  border-top: 1px solid var(--mt-rule);
   position: absolute;
   left: 0px;
   bottom: 0px;
@@ -832,8 +889,8 @@ button.btn.btn-light,
 }
 /* The timeline's bar, along the bottom of the page; the views end above it */
 #global-timeline-wrapper {
-  background: #f8f9fa;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--mt-page);
+  border-top: 1px solid var(--mt-rule);
   position: fixed;
   left: 0;
   bottom: 0;
@@ -873,12 +930,12 @@ body.timeline-open #main-panel {
   stroke-linecap: round;
 }
 .track {
-  stroke: #000;
+  stroke: var(--mt-track);
   stroke-opacity: 0.3;
   stroke-width: 10px;
 }
 .track-inset {
-  stroke: #dcdcdc;
+  stroke: var(--mt-track-inset);
   stroke-width: 8px;
 }
 .track-overlay {
@@ -888,8 +945,8 @@ body.timeline-open #main-panel {
   cursor: crosshair;
 }
 .handle {
-  fill: #fff;
-  stroke: #000;
+  fill: var(--mt-handle);
+  stroke: var(--mt-track);
   stroke-opacity: 0.5;
   stroke-width: 1.25px;
 }
@@ -904,8 +961,8 @@ body.timeline-open #main-panel {
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 0.25rem;
-  color: #303030;
-  background-color: #f8f9fa !important;
+  color: var(--mt-text);
+  background-color: var(--mt-panel) !important;
 }
 .node-symbol-table-wrapper .draghandle {
   width: 100%;
@@ -1194,7 +1251,7 @@ body.timeline-open #main-panel {
 }
 
 #help-footer {
-  background-color: #e9ecef;
+  background-color: var(--mt-secondary);
   text-align: center;
 }
 
@@ -1216,7 +1273,7 @@ body.timeline-open #main-panel {
   height: calc(100% - 50px) !important;
   width: calc(100% - 20px);
   margin: 50px 10px 0 10px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--mt-border-control);
   border-radius: 0.25rem;
 }
 
@@ -1232,7 +1289,7 @@ body.timeline-open #main-panel {
   cursor: grab;
 }
 #tooltip table, td {
-  border:1px solid #cccccc;
+  border:1px solid var(--mt-border);
   border-radius:.25rem;
 }
 /* Search */
@@ -1246,13 +1303,13 @@ body.timeline-open #main-panel {
     top: 100%;
     left: 0;
     right: 0;
-    border: solid 1px #CCC;
+    border: solid 1px var(--mt-border);
     min-height: 50px;
     max-height: 200px;
     overflow: scroll;
     list-style: none;
     padding: 2px;
-    background: white;
+    background: var(--mt-surface);
 }
 .autocomplete-wrapper #search-results li {
       padding: 5px;
@@ -1260,7 +1317,7 @@ body.timeline-open #main-panel {
       font-size: 13px;
 }
 .autocomplete-wrapper #search-results li:hover {
-        background: #EEE;
+        background: var(--mt-hover);
         cursor: pointer;
 }
 .autocomplete-wrapper #search-results li.no-matches {
@@ -1296,7 +1353,7 @@ body.timeline-open #main-panel {
   width: 75%;
 }
 .btn-group-toggle > .btn + .btn {
-  border-left: 1px solid #ced4da;
+  border-left: 1px solid var(--mt-border-control);
 }
 /* A pane's sections open and close: an arrow says which. Colors isn't one
    (it opens Global Settings), so it looks like the button it is. */
@@ -1321,7 +1378,7 @@ body.timeline-open #main-panel {
 .view-controls .btn:disabled {
   opacity: 1;
   color: var(--bs-secondary-color);
-  background-color: var(--bs-light);
+  background-color: var(--mt-panel);
 }
 /* A table's sort arrow follows its own column's title (not the far edge,
    beside the next column's), and shows on columns not sorted only on hover */
@@ -1357,4 +1414,81 @@ body.timeline-open #main-panel {
 }
 .heatmap-colors .color-value {
   display: none;
+}
+
+/* Dark: what Bootstrap's and the libraries' own themes leave light */
+[data-bs-theme="dark"] .btn-light {
+  --bs-btn-color: #dee2e6;
+  --bs-btn-bg: #343a40;
+  --bs-btn-border-color: #495057;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #3d434a;
+  --bs-btn-hover-border-color: #5c636a;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #495057;
+  --bs-btn-active-border-color: #6c757d;
+  --bs-btn-disabled-color: #adb5bd;
+  --bs-btn-disabled-bg: #2b3035;
+  --bs-btn-disabled-border-color: #495057;
+}
+[data-bs-theme="dark"] .lm_splitter {
+  background: #343a40;
+}
+[data-bs-theme="dark"] .lm_splitter:hover,
+[data-bs-theme="dark"] .lm_splitter.lm_dragging {
+  background: #6c757d;
+}
+[data-bs-theme="dark"] .lm_content {
+  border-color: #343a40;
+}
+[data-bs-theme="dark"] .lm_header .lm_tab {
+  border-color: #495057;
+}
+[data-bs-theme="dark"] .lm_tab:hover {
+  background: #3d434a;
+}
+[data-bs-theme="dark"] .lm_tab.lm_active {
+  color: #f8f9fa !important;
+}
+/* (Golden Layout's buttons are black images) */
+[data-bs-theme="dark"] .lm_header .lm_tab .lm_close_tab,
+[data-bs-theme="dark"] .lm_header .lm_controls > * {
+  filter: invert(1);
+}
+[data-bs-theme="dark"] .alertify .ajs-dialog,
+[data-bs-theme="dark"] .alertify-notifier .ajs-message {
+  color: var(--bs-body-color);
+  background: var(--mt-panel);
+}
+[data-bs-theme="dark"] .alertify .ajs-header,
+[data-bs-theme="dark"] .alertify .ajs-footer {
+  color: var(--bs-body-color);
+  background: var(--mt-surface);
+  border-color: var(--mt-border);
+}
+[data-bs-theme="dark"] .lm_header .lm_tab {
+  background: var(--mt-tab);
+}
+[data-bs-theme="dark"] .lm_header .lm_tab.lm_active {
+  background: var(--mt-surface);
+}
+[data-bs-theme="dark"] .ts-wrapper.multi .ts-control > div {
+  color: var(--bs-body-color);
+  background: var(--mt-secondary);
+  border-color: var(--mt-border);
+}
+[data-bs-theme="dark"] .ts-control,
+[data-bs-theme="dark"] .ts-control input,
+[data-bs-theme="dark"] .ts-dropdown {
+  color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .ts-wrapper:not(.form-control, .form-select).single .ts-control {
+  background-image: var(--bs-form-select-bg-img);
+}
+[data-bs-theme="dark"] .ts-dropdown {
+  border-color: var(--mt-border);
+}
+[data-bs-theme="dark"] .tabulator .tabulator-tableholder .tabulator-table {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
 }
