@@ -51,10 +51,10 @@ test('the busiest regions get the high color, the empty ones the low', async () 
   await expect.poll(async () => (await regions()).find(r => r.name == 'Georgia').fill).toBe('#0000ff');
 });
 
-test('transparency applies to the regions and the legend', async () => {
+test('transparency applies to the regions, and the legend stays solid', async () => {
   await set('choropleth-transparency', 0.6);
   await expect.poll(async () => (await regions())[0].opacity).toBeCloseTo(0.4);
-  await expect(view().locator('.legend canvas')).toHaveCSS('opacity', '0.4');
+  await expect(view().locator('.choropleth-legend')).toHaveCSS('opacity', '1');
 });
 
 test('aggregates over countries', async () => {
