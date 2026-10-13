@@ -1,4 +1,5 @@
 <div class="sequences-panel"></div>
+<div class="sequences-key" title="What each cell's color means"></div>
 
 <div class="view-controls">
   <button type="button" class="btn btn-light btn-sm settings-toggle" title="Sequences Settings">
@@ -31,7 +32,7 @@
       </div>
       <div class="form-group row" title="Should the sequences viewer include the nucleotide character in each cell?
 For large sets of sequences, this can take a long time.">
-        <div class="col-3">Characters</div>
+        <div class="col-3">Letters</div>
         <div class="col-9">
           <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
             <label class="btn btn-light active col">
@@ -41,6 +42,7 @@ For large sets of sequences, this can take a long time.">
               <input type="radio" name="sequences-show-chars" data-setting="sequences-show-chars" value="false" autocomplete="off"> Hide
             </label>
           </div>
+          <small class="form-text sequences-letters-note" hidden>Letters show in cells at least 7px wide and 8px tall.</small>
         </div>
       </div>
     </div>
@@ -85,12 +87,45 @@ For large sets of sequences, this can take a long time.">
     const $ = selector => root.querySelector(selector);
     const panel = $('.sequences-panel');
     const pane = $('.left-pane');
-    let canvas = null, transform = d3.zoomIdentity, request = 0, destroyed = false;
+    let canvas = null, labels = null, transform = d3.zoomIdentity, request = 0, destroyed = false;
 
     const sequences = () => session.data.nodes.filter(d => d.seq);
 
+    // A color for each base, distinct from the others and light enough for
+    // its letter; anything else (gaps, ambiguity codes) is pale grey
+    const colors = { A: '#8dd38d', C: '#7fb3e6', G: '#ffd54f', T: '#f28482', ambig: '#ececec' };
+    $('.sequences-key').innerHTML = Object.entries(colors).map(([base, color]) =>
+      `<span><i style="background:${color}"></i>${base == 'ambig' ? 'Other' : base}</span>`).join('');
+    // Letters only where they fit; smaller cells would turn them to hatching
+    const lettersFit = (width, height) => width >= 7 && height >= 8;
+
+    // The ids stay at the left as the alignment pans beneath them, and follow
+    // it up and down and in zoom
     function place() {
-      if (canvas) canvas.style.transform = `translate(${Math.round(transform.x)}px,${Math.round(transform.y)}px) scale(${transform.k})`;
+      const x = Math.round(transform.x), y = Math.round(transform.y), k = transform.k;
+      const offset = labels ? labels.width * k : 0;
+      if (canvas) canvas.style.transform = `translate(${x + offset}px,${y}px) scale(${k})`;
+      if (labels) labels.style.transform = `translate(0,${y}px) scale(${k})`;
+    }
+
+    // Each row's id, in a column as tall as the alignment
+    function drawLabels(ids, height) {
+      const column = document.createElement('canvas');
+      const context = column.getContext('2d');
+      const font = `${Math.max(1, height - 2)}px ${getComputedStyle(document.body).fontFamily}`;
+      context.font = font;
+      column.width = Math.ceil(Math.max(0, ...ids.map(id => context.measureText(id).width))) + 14;
+      column.height = ids.length * height;
+      context.fillStyle = settings.get('background-color');
+      context.fillRect(0, 0, column.width, column.height);
+      context.font = font;
+      context.fillStyle = settings.get('background-color-contrast');
+      context.textAlign = 'right';
+      context.textBaseline = 'middle';
+      ids.forEach((id, i) => context.fillText(id, column.width - 4, i * height + height / 2));
+      column.className = 'sequence-ids';
+      column.style.transformOrigin = '0 0';
+      return column;
     }
 
     // Draws the alignment, replacing the last one when it's ready
@@ -98,18 +133,25 @@ For large sets of sequences, this can take a long time.">
       const ticket = ++request;
       const width = settings.get('sequences-cell-width'), height = settings.get('sequences-cell-height');
       if (!(width >= 1) || !(height >= 1)) return;
-      // The viewer labels rows by id; give it copies, so the nodes stay as they are
-      alignmentViewer(sequences().map(d => ({ id: d._id, seq: d.seq })), {
+      const rows = sequences();
+      const show = settings.get('sequences-show-chars');
+      $('.sequences-letters-note').hidden = !show || lettersFit(width, height);
+      // The viewer doesn't label rows; give it copies, so the nodes stay as they are
+      alignmentViewer(rows.map(d => ({ id: d._id, seq: d.seq.toUpperCase() })), {
         width: 0 | width,
         height: 0 | height,
-        showChar: settings.get('sequences-show-chars')
+        showChar: show && lettersFit(width, height),
+        colors
       }).then(c => {
         // A newer drawing, or a closed view, makes this one moot
         if (ticket != request || destroyed) return;
         if (canvas) canvas.remove();
+        if (labels) labels.remove();
         canvas = c;
+        canvas.className = 'alignment';
         canvas.style.transformOrigin = '0 0';
-        panel.append(canvas);
+        labels = drawLabels(rows.map(d => '' + d._id), 0 | height);
+        panel.append(canvas, labels);
         place();
       });
     }
@@ -122,7 +164,22 @@ For large sets of sequences, this can take a long time.">
     panel.addEventListener('mousedown', () => { panel.style.cursor = 'grabbing'; });
     panel.addEventListener('mouseup', () => { panel.style.cursor = 'grab'; });
 
-    const setBackground = () => { panel.style.background = settings.get('background-color'); };
+    const setBackground = () => {
+      panel.style.background = settings.get('background-color');
+      // (The ids are drawn on the background)
+      if (canvas) draw();
+    };
+
+    // The ids and the alignment, side by side
+    function image() {
+      const out = document.createElement('canvas');
+      out.width = labels.width + canvas.width;
+      out.height = canvas.height;
+      const context = out.getContext('2d');
+      context.drawImage(labels, 0, 0);
+      context.drawImage(canvas, labels.width, 0);
+      return out;
+    }
 
     const saveText = (prefix, extension) => filename => MT.saveAs(
       new Blob([sequences().map(d => prefix + d._id + '\r\n' + d.seq).join('\r\n')]),
@@ -131,7 +188,7 @@ For large sets of sequences, this can take a long time.">
 
     MT.paneToggle($('.settings-toggle'), pane);
     MT.tableExport(root, {
-      png: filename => canvas && canvas.toBlob(blob => MT.saveAs(blob, filename + '.png')),
+      png: filename => canvas && image().toBlob(blob => MT.saveAs(blob, filename + '.png')),
       fasta: saveText('>', 'fasta'),
       mega: saveText('#', 'mega')
     });

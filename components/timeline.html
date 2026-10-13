@@ -26,6 +26,20 @@
           <select id="timeline-date-field" class="form-select form-select-sm nodeVariables" data-setting="timeline-date-field"></select>
         </div>
       </div>
+      <div class="form-group row" title="How long a period each bar counts">
+        <div class="col-4">
+          <label for="timeline-bin">Bars</label>
+        </div>
+        <div class="col-8">
+          <select id="timeline-bin" class="form-select form-select-sm" data-setting="timeline-bin">
+            <option value="auto">Automatic</option>
+            <option value="day">Days</option>
+            <option value="week">Weeks</option>
+            <option value="month">Months</option>
+            <option value="year">Years</option>
+          </select>
+        </div>
+      </div>
       <div class="form-group row" title="Should the Epi Curve be cumulative, or not?">
         <div class="col-4">Epi Curve</div>
         <div class="col-8">
@@ -121,16 +135,39 @@
     const $ = selector => root.querySelector(selector);
     const chart = $('.timeline-chart');
     const pane = $('.left-pane');
-    const margin = { top: 50, left: 20, right: 20, bottom: 30 };
-    const tickFormat = d3.timeFormat('%Y-%m-%d');
-    const svg = d3.select(chart).append('svg');
+    const margin = { top: 50, left: 50, right: 40, bottom: 30 };
+    // (Overflowing into the padding above, for the top count's label)
+    const svg = d3.select(chart).append('svg').style('overflow', 'visible');
     const curve = svg.append('g').attr('class', 'timeline-epi-curve').attr('transform', `translate(${margin.left},0)`);
     const axis = svg.append('g').attr('class', 'axis axis--x');
+    const countAxis = svg.append('g').attr('class', 'axis axis--y').attr('transform', `translate(${margin.left},0)`);
     const brushG = svg.append('g').attr('class', 'brush').attr('transform', `translate(${margin.left},0)`);
     let x;
 
     // A node's date, or null
     const dateOf = MT.parseDate;
+
+    // The calendar periods bars can count, each with how its dates read
+    const periods = {
+      day: { interval: d3.timeDay, format: '%Y-%m-%d', name: d => d3.timeFormat('%Y-%m-%d')(d) },
+      week: { interval: d3.timeMonday, format: '%Y-%m-%d', name: d => 'Week of ' + d3.timeFormat('%Y-%m-%d')(d) },
+      month: { interval: d3.timeMonth, format: '%Y-%m', name: d => d3.timeFormat('%B %Y')(d) },
+      year: { interval: d3.timeYear, format: '%Y', name: d => d3.timeFormat('%Y')(d) }
+    };
+    // Automatic: the shortest period that makes no more than about 60 bars
+    function period(dates) {
+      const chosen = settings.get('timeline-bin');
+      if (periods[chosen]) return periods[chosen];
+      const [first, last] = d3.extent(dates);
+      return Object.values(periods).find(p => p.interval.count(first, last) < 60) || periods.year;
+    }
+
+    // Ticks at the starts of the bars' periods, so each label is a bar's own
+    // (whole dates can fall anywhere)
+    function ticks(interval, format, domain, most) {
+      if (format.includes('%d')) return most;
+      return interval.every(Math.ceil(interval.count(...domain) / most));
+    }
 
     function draw() {
       const width = root.clientWidth - margin.left - margin.right;
@@ -145,29 +182,38 @@
       // Without dates, a note saying what to choose instead of an empty chart
       $('.view-message').hidden = dates.length > 0;
       svg.style('display', dates.length ? null : 'none');
-      const domain = dates.length > 1 ? d3.extent(dates) : [new Date(2000, 1, 1), new Date()];
-      x = d3.scaleTime().domain(domain).rangeRound([0, width]);
-      const bins = d3.bin().domain(x.domain()).thresholds(d3.thresholdScott)(dates);
+      // Bars count calendar periods: whole days, weeks, months or years
+      const { interval, format, name } = period(dates.length ? dates : [new Date()]);
+      const domain = dates.length
+        ? [interval.floor(d3.min(dates)), interval.offset(interval.floor(d3.max(dates)), 1)]
+        : [new Date(2000, 1, 1), new Date()];
+      x = d3.scaleTime().domain(domain).range([0, width]);
+      const bins = dates.length ? d3.bin().domain(domain).thresholds(interval.range(...domain))(dates) : [];
       const counts = bins.map(b => b.length);
-      if (!settings.get('timeline-noncumulative')) counts.forEach((c, i) => { if (i) counts[i] += counts[i - 1]; });
-      const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(counts) || 1]);
+      const cumulative = !settings.get('timeline-noncumulative');
+      if (cumulative) counts.forEach((c, i) => { if (i) counts[i] += counts[i - 1]; });
+      const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(counts) || 1]).nice();
 
+      // A gap between neighboring bars, when there's room for one
+      const gap = width / bins.length > 4 ? 1 : 0;
       curve.selectAll('rect.bar')
         .data(bins)
-        .join('rect')
+        .join(enter => enter.append('rect').call(rect => rect.append('title')))
         .attr('class', 'bar')
         .attr('data-count', (d, i) => counts[i])
-        .attr('transform', (d, i) => `translate(${x(d.x0)},${y(counts[i])})`)
-        .attr('width', d => Math.max(0, x(d.x1) - x(d.x0)))
+        .attr('x', d => x(d.x0))
+        .attr('y', (d, i) => y(counts[i]))
+        .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - gap))
         .attr('height', (d, i) => height - y(counts[i]))
-        .attr('fill', settings.get('node-color'));
+        .attr('fill', settings.get('node-color'))
+        .select('title')
+        .text((d, i) => `${name(d.x0)}: ${counts[i]} ${counts[i] == 1 ? 'node' : 'nodes'}${cumulative ? ' so far' : ''}`);
 
       axis
         .attr('transform', `translate(${margin.left},${height})`)
-        .call(d3.axisBottom(x).tickSize(8).tickPadding(8).tickFormat(tickFormat))
-        .attr('text-anchor', null)
-        .selectAll('text')
-        .attr('x', 6);
+        .call(d3.axisBottom(x).ticks(ticks(interval, format, domain, Math.max(2, Math.floor(width / 90)))).tickSize(8).tickPadding(8).tickFormat(d3.timeFormat(format)));
+      // Counts up the side: whole numbers only
+      countAxis.call(d3.axisLeft(y).ticks(Math.min(y.domain()[1], Math.max(2, Math.floor(height / 50)))).tickFormat(d3.format('d')));
 
       brush.extent([[0, 0], [width, height]]);
       brushG.call(brush);
@@ -203,6 +249,7 @@
     const setBackground = () => {
       chart.style.background = settings.get('background-color');
       axis.style('color', settings.get('background-color-contrast'));
+      countAxis.style('color', settings.get('background-color-contrast'));
     };
 
     // The date field: the one chosen, or else the data's first field of dates,
@@ -229,7 +276,7 @@
     const stop = [
       MTBind(pane, settings),
       settings.subscribe('timeline-date-field', showField, { reload: true }),
-      settings.subscribe(['timeline-date-field', 'timeline-noncumulative'], draw),
+      settings.subscribe(['timeline-date-field', 'timeline-noncumulative', 'timeline-bin'], draw),
       events.on('node-color-change', setColor),
       events.on('background-color-change', setBackground)
     ];

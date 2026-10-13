@@ -1008,10 +1008,41 @@ body.timeline-open #main-panel {
 
 /* Sequences */
 .sequences-panel {
-  padding: 10px;
-  padding-top: 50px;
+  position: relative;
+  overflow: hidden;
   height: 100%;
   cursor: grab;
+}
+/* (The ids' column starts at the edge, so nothing pans out beside it) */
+.sequences-panel canvas {
+  position: absolute;
+  top: 50px;
+  left: 0;
+}
+/* The ids over the alignment as it pans */
+.sequences-panel .sequence-ids {
+  z-index: 1;
+}
+.sequences-key {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+}
+.sequences-key i {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.25rem;
+  vertical-align: -0.125rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 /* Phylogenetic tree */
@@ -1045,6 +1076,12 @@ body.timeline-open #main-panel {
   border: none;
 }
 
+
+/* The Gantt chart scrolls when its rows don't fit */
+.gantt {
+  height: 100%;
+  overflow-y: auto;
+}
 
 /* Timeline */
 .timeline-chart {

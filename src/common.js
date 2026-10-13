@@ -198,6 +198,7 @@
     "search-whole-word" : false,
     "selected-color": "#ff8300",
     "selected-color-contrast": "#000000",
+    "timeline-bin": "auto",
     "timeline-date-field": "None",
     "timeline-noncumulative": true,
     "tree-animation-on": true,
