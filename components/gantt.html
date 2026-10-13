@@ -1,4 +1,4 @@
-<div class="gantt"></div>
+<div class="gantt" tabindex="0" role="region" aria-label="Gantt chart"></div>
 <p class="view-message" hidden>Use <strong>Add Date</strong> in the settings to choose the fields of dates to draw.</p>
 
 <div class="view-controls">
@@ -12,12 +12,12 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item active">
-      <a href="#gantt-configurations" class="nav-link active" aria-controls="gantt-configurations" role="tab" data-bs-toggle="tab">Gantt</a>
+    <li class="nav-item active" role="presentation">
+      <a id="gantt-tab" href="#gantt-configurations" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="gantt-configurations" aria-selected="true">Gantt</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade show active" id="gantt-configurations" style="max-height: 900px; overflow-y: auto;" role="tabpanel">
+    <div class="tab-pane fade show active" id="gantt-configurations" style="max-height: 900px; overflow-y: auto;" role="tabpanel" aria-labelledby="gantt-tab">
       <div class="gantt-dates"></div>
       <div class="form-group row">
         <div class="col"><button type="button" class="btn btn-light w-100 add-date">Add Date</button></div>
@@ -26,20 +26,20 @@
   </div>
 </div>
 
-<div id="gantt-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="gantt-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="gantt-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Gantt</h5>
+        <h5 id="gantt-export-modal-title" class="modal-title">Export Gantt</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>
@@ -240,19 +240,19 @@
           </div>
           <div class="row">
             <div class="col-4">Start</div>
-            <div class="col-8"><select class="form-select form-select-sm" name="start">${options}</select></div>
+            <div class="col-8"><select class="form-select form-select-sm" name="start" aria-label="Start">${options}</select></div>
           </div>
           <div class="row">
             <div class="col-4">End</div>
-            <div class="col-8"><select class="form-select form-select-sm" name="end">${options}</select></div>
+            <div class="col-8"><select class="form-select form-select-sm" name="end" aria-label="End">${options}</select></div>
           </div>
           <div class="row">
             <div class="col-4">Color</div>
-            <div class="col-8"><input class="form-control form-control-sm" type="color" name="color"></div>
+            <div class="col-8"><input class="form-control form-control-sm" type="color" name="color" aria-label="Color"></div>
           </div>
           <div class="row">
             <div class="col-4">Transparency</div>
-            <div class="col-8"><input type="range" class="form-range" name="transparency" min="0" max="1" step="0.01"></div>
+            <div class="col-8"><input type="range" class="form-range" name="transparency" aria-label="Transparency" min="0" max="1" step="0.01"></div>
           </div>`;
         const field = name => row.querySelector(`[name="${name}"]`);
         field('start').value = date.start;

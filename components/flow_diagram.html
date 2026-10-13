@@ -11,8 +11,8 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item active">
-      <a href="#flow-configurations" id="flow-tab" class="nav-link active" aria-controls="flow" role="tab" data-bs-toggle="tab">Flow Diagram</a>
+    <li class="nav-item active" role="presentation">
+      <a href="#flow-configurations" id="flow-tab" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="flow-configurations" aria-selected="true">Flow Diagram</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -41,20 +41,20 @@
   </div>
 </div>
 
-<div id="flow-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="flow-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="flow-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Flow Diagram</h5>
+        <h5 id="flow-export-modal-title" class="modal-title">Export Flow Diagram</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>
@@ -128,10 +128,10 @@
       const item = document.createElement('li');
       item.className = 'flow-items';
       item.innerHTML = `<span class="bi bi-x flow-remove" title="Remove this variable"></span>
-        <select class="form-select form-select-sm flow-selector">${options(valid(value))}</select>
+        <select class="form-select form-select-sm flow-selector" aria-label="Flow variable">${options(valid(value))}</select>
         <span class="bi bi-grip-vertical" title="Drag to reorder"></span>`;
       list.appendChild(item);
-      sortable(list, 'reload');
+      MT.sortable(list, 'reload');
     }
 
     function showFields() {
@@ -240,7 +240,7 @@
       e.target.closest('li').remove();
       draw();
     });
-    sortable(list, { forcePlaceholderSize: true });
+    MT.sortable(list, { forcePlaceholderSize: true });
     list.addEventListener('sortupdate', draw);
 
     // Older sessions store the dataset as something other than a boolean
@@ -263,7 +263,7 @@
       resize: draw,
       destroy() {
         stop.forEach(fn => fn());
-        sortable(list, 'destroy');
+        MT.sortable(list, 'destroy');
         Plotly.purge(plot);
       }
     };

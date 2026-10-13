@@ -14,14 +14,14 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item">
-      <a href="#tree-configurations" id="tree-tab" class="nav-link active" aria-controls="tree" role="tab" data-bs-toggle="tab">Tree</a>
+    <li class="nav-item" role="presentation">
+      <a href="#tree-configurations" id="tree-tab" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="tree-configurations" aria-selected="true">Tree</a>
     </li>
-    <li class="nav-item">
-      <a href="#tree-branch-configurations" id="tree-branch-tab" class="nav-link" aria-controls="tree" role="tab" data-bs-toggle="tab">Branches</a>
+    <li class="nav-item" role="presentation">
+      <a href="#tree-branch-configurations" id="tree-branch-tab" class="nav-link" role="tab" data-bs-toggle="tab" aria-controls="tree-branch-configurations" aria-selected="false">Branches</a>
     </li>
-    <li class="nav-item">
-      <a href="#tree-leaf-configurations" id="tree-leaf-tab" class="nav-link" aria-controls="tree" role="tab" data-bs-toggle="tab">Leaves</a>
+    <li class="nav-item" role="presentation">
+      <a href="#tree-leaf-configurations" id="tree-leaf-tab" class="nav-link" role="tab" data-bs-toggle="tab" aria-controls="tree-leaf-configurations" aria-selected="false">Leaves</a>
     </li>
   </ul>
   <div class="tab-content">
@@ -312,20 +312,20 @@
   <a href="#" class="dropdown-item" data-action="reroot">Set As Root</a>
 </div>
 
-<div id="tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="tree-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="tree-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Phylogenetic Tree</h5>
+        <h5 id="tree-export-modal-title" class="modal-title">Export Phylogenetic Tree</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>

@@ -24,23 +24,23 @@
       <input type="radio" name="table-dataset" value="clusters" autocomplete="off"> Clusters
     </label>
   </div>
-  <select class="table-columns" multiple title="What columns would you like to see?"></select>
+  <select class="table-columns" multiple title="What columns would you like to see?" aria-label="Columns"></select>
 </div>
 
-<div id="table-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="table-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="table-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Table</h5>
+        <h5 id="table-export-modal-title" class="modal-title">Export Table</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="csv" selected>CSV</option>
               <option value="xlsx">Excel (XLSX)</option>
               <option value="json">JSON</option>
@@ -73,7 +73,7 @@
       row.getElement().style.background = row.getData().selected ? settings.get('selected-color') : '';
     };
     // Columns as wide as their contents, the last taking what's left
-    const table = new Tabulator(grid, {
+    const table = MT.table(grid, {
       maxHeight: '100%',
       layout: 'fitDataStretch',
       data: [],

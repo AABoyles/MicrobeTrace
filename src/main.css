@@ -910,7 +910,7 @@ body.timeline-open #main-panel {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: #f08080;
+  background: #c64141;
   padding-right: 10px;
   border-radius: 3px;
   border: none;
@@ -1396,8 +1396,9 @@ body.timeline-open #main-panel {
 .left-pane .card-header button[data-bs-toggle="collapse"].collapsed::after {
   transform: rotate(-90deg);
 }
+/* The darker link color: the lighter one is too faint on the header's gray */
 .left-pane .card-header .launch-color-options {
-  color: var(--bs-link-color) !important;
+  color: var(--bs-link-hover-color) !important;
 }
 .left-pane .card-header .launch-color-options:hover {
   text-decoration: underline;

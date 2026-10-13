@@ -32,15 +32,15 @@
 
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item">
+    <li class="nav-item" role="presentation">
       <a class="nav-link active" id="files-tab" data-bs-toggle="tab" href="#file-settings" role="tab" aria-controls="file-settings" aria-selected="true">Files</a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" role="presentation">
       <a class="nav-link" id="experimental-tab" data-bs-toggle="tab" href="#experimental-settings" role="tab" aria-controls="experimental-settings" aria-selected="false">Experimental</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div id="file-settings" class="tab-pane fade active show" role="tabpanel">
+    <div id="file-settings" class="tab-pane fade active show" role="tabpanel" aria-labelledby="files-tab">
       <div class="form-group row">
         <div class="col-5">
           <label for="default-distance-metric" class="me-2" title="Which genetic distance metric should MicrobeTrace use to build the network from sequences?">
@@ -131,7 +131,7 @@
         </div>
       </div>
     </div>
-    <div id="experimental-settings" class="tab-pane fade" role="tabpanel">
+    <div id="experimental-settings" class="tab-pane fade" role="tabpanel" aria-labelledby="experimental-tab">
       <div class="form-group row">
         <div class="col-12">
           <div class="alert alert-warning alert-dismissible" role="alert">
@@ -181,7 +181,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   </div>
 </div>
 
-<div id="sequence-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="#sequence-controls-title" aria-hidden="true" data-bs-backdrop="false">
+<div id="sequence-controls-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-bs-backdrop="false" aria-labelledby="sequence-controls-title">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -190,10 +190,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       </div>
       <div class="modal-body">
         <ul class="nav nav-tabs" id="sequence-controls-tab" role="tablist">
-          <li class="nav-item">
+          <li class="nav-item" role="presentation">
             <a class="nav-link active" id="sequence-alignment-tab" data-bs-toggle="tab" href="#sequence-alignment" role="tab" aria-controls="sequence-alignment" aria-selected="true">Alignment</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" role="presentation">
             <a class="nav-link" id="sequence-auditor-tab" data-bs-toggle="tab" href="#sequence-auditor" role="tab" aria-controls="sequence-auditor" aria-selected="false">Audit</a>
           </li>
         </ul>
@@ -205,9 +205,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   <p>
                     MicrobeTrace is not intended to be an alignment program (although it can be used in that way).
                     For best results, please align your sequences using
-                    <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" target="_blank" rel="noreferrer noopener">an external tool</a>
+                    <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" class="alert-link" target="_blank" rel="noreferrer noopener">an external tool</a>
                     before loading them into MicrobeTrace.
-                    <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="ifOnline" target="_blank" rel="noreferrer noopener">Read more about alignment in MicrobeTrace.</a>
+                    <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="alert-link ifOnline" target="_blank" rel="noreferrer noopener">Read more about alignment in MicrobeTrace.</a>
                   </p>
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -359,7 +359,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // rows, which can be dragged by their grips
     const fileOf = new WeakMap();
     const showOrderHint = () => { $('.file-order-hint').hidden = $$('.file-table-row').length < 2; };
-    sortable(table, { items: '.file-table-row', handle: '.file-grip', forcePlaceholderSize: true });
+    MT.sortable(table, { items: '.file-table-row', handle: '.file-grip', forcePlaceholderSize: true });
     table.addEventListener('sortupdate', () => {
       const order = $$('.file-table-row').map(row => fileOf.get(row));
       session.files.sort((a, b) => order.indexOf(a) - order.indexOf(b));
@@ -577,7 +577,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
       table.append(row);
       fileOf.set(row, file);
-      sortable(table, 'reload');
+      MT.sortable(table, 'reload');
       showOrderHint();
       matchHeaders(kind);
       refit(false);
@@ -1174,7 +1174,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       setDefaultView(view);
     });
 
-    stop.push(() => sortable(table, 'destroy'));
+    stop.push(() => MT.sortable(table, 'destroy'));
     return {
       destroy: () => stop.forEach(fn => fn())
     };

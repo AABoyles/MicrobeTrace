@@ -15,14 +15,14 @@
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
-      <a href="#choropleth-data-configurations" class="nav-link active" aria-controls="choropleth-data-configurations" role="tab" data-bs-toggle="tab">Data</a>
+      <a id="choropleth-data-tab" href="#choropleth-data-configurations" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="choropleth-data-configurations" aria-selected="true">Data</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#choropleth-layer-configurations" class="nav-link" aria-controls="choropleth-layer-configurations" role="tab" data-bs-toggle="tab">Layers</a>
+      <a id="choropleth-layer-tab" href="#choropleth-layer-configurations" class="nav-link" role="tab" data-bs-toggle="tab" aria-controls="choropleth-layer-configurations" aria-selected="false">Layers</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade show active" id="choropleth-data-configurations">
+    <div role="tabpanel" class="tab-pane fade show active" id="choropleth-data-configurations" aria-labelledby="choropleth-data-tab">
       <div class="form-group row" title="What kind of Choropleth do you want to see?">
         <div class="col-4"><label for="choropleth-aggregate-as">Regions</label></div>
         <div class="col-8">
@@ -42,7 +42,7 @@
         </div>
       </div>
     </div>
-    <div role="tabpanel" class="tab-pane fade" id="choropleth-layer-configurations">
+    <div role="tabpanel" class="tab-pane fade" id="choropleth-layer-configurations" aria-labelledby="choropleth-layer-tab">
       <div class="accordion" id="choropleth-layers-accordion">
         <div class="card">
           <div class="card-header p-0">
@@ -53,13 +53,13 @@
               <div class="form-group row" title="What color scheme would you like the choropleth to use?">
                 <div class="col-4">Color Scheme</div>
                 <div class="col">
-                  <input type="color" class="form-control form-control-sm" data-setting="choropleth-color-low" value="#ffffcc">
+                  <input type="color" class="form-control form-control-sm" data-setting="choropleth-color-low" aria-label="Low color" value="#ffffcc">
                 </div>
                 <div class="col">
-                  <input type="color" class="form-control form-control-sm" data-setting="choropleth-color-medium" value="#fd8d3c">
+                  <input type="color" class="form-control form-control-sm" data-setting="choropleth-color-medium" aria-label="Middle color" value="#fd8d3c">
                 </div>
                 <div class="col">
-                  <input type="color" class="form-control form-control-sm" data-setting="choropleth-color-high" value="#800026">
+                  <input type="color" class="form-control form-control-sm" data-setting="choropleth-color-high" aria-label="High color" value="#800026">
                 </div>
               </div>
               <div class="form-group row">
@@ -83,7 +83,7 @@
                 <div class="col-12">
                   <div class="alert alert-warning alert-dismissible" role="alert">
                     Enabling any of the layers below will download tiles from the Internet.
-                    <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Tile-maps">Read More.</a>
+                    <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Tile-maps" class="alert-link">Read More.</a>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                 </div>
@@ -133,7 +133,7 @@
               </div>
               <div class="form-group row" title="Import GeoJSON choropleth Data here">
                 <div class="col-12">
-                  <input type="file" class="form-control form-control-sm geojson-input" multiple>
+                  <input type="file" class="form-control form-control-sm geojson-input" multiple aria-label="GeoJSON files">
                 </div>
               </div>
               <div class="form-group row geojson-layers" title="GeoJSON Layers"></div>
@@ -145,20 +145,20 @@
   </div>
 </div>
 
-<div id="choropleth-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="choropleth-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="choropleth-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Choropleth</h5>
+        <h5 id="choropleth-export-modal-title" class="modal-title">Export Choropleth</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>

@@ -59,6 +59,7 @@
     "acorn": "^8.19.0",
     "alertifyjs": "^1.14.0",
     "alignment-viewer": "^0.3.4",
+    "axe-core": "^4.14.0",
     "bioseq": "^0.1.5",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.2",

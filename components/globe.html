@@ -18,20 +18,20 @@
 <div class="left-pane">
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
-      <a href="#globe-data-configurations" class="nav-link active" aria-controls="globe-data-configurations" role="tab" data-bs-toggle="tab">Data</a>
+      <a id="globe-data-tab" href="#globe-data-configurations" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="globe-data-configurations" aria-selected="true">Data</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#globe-layer-configurations" class="nav-link" aria-controls="globe-layer-configurations" role="tab" data-bs-toggle="tab">Layers</a>
+      <a id="globe-layer-tab" href="#globe-layer-configurations" class="nav-link" role="tab" data-bs-toggle="tab" aria-controls="globe-layer-configurations" aria-selected="false">Layers</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#globe-node-configurations" class="nav-link" aria-controls="globe-node-configurations" role="tab" data-bs-toggle="tab">Nodes</a>
+      <a id="globe-node-tab" href="#globe-node-configurations" class="nav-link" role="tab" data-bs-toggle="tab" aria-controls="globe-node-configurations" aria-selected="false">Nodes</a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#globe-link-configurations" class="nav-link" aria-controls="globe-link-configurations" role="tab" data-bs-toggle="tab">Links</a>
+      <a id="globe-link-tab" href="#globe-link-configurations" class="nav-link" role="tab" data-bs-toggle="tab" aria-controls="globe-link-configurations" aria-selected="false">Links</a>
     </li>
   </ul>
   <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade show active" id="globe-data-configurations">
+    <div role="tabpanel" class="tab-pane fade show active" id="globe-data-configurations" aria-labelledby="globe-data-tab">
       <div class="row">
         <div class="col-12">
           <div class="alert alert-info alert-dismissible" role="alert">
@@ -97,7 +97,7 @@
         </div>
       </div>
     </div>
-    <div role="tabpanel" class="tab-pane fade" id="globe-layer-configurations">
+    <div role="tabpanel" class="tab-pane fade" id="globe-layer-configurations" aria-labelledby="globe-layer-tab">
       <div class="accordion" id="globe-layers-accordion">
         <div class="card">
           <div class="card-header p-0">
@@ -205,7 +205,7 @@
               </div>
               <div class="form-group row" title="Import GeoJSON Map Data here">
                 <div class="col-12">
-                  <input type="file" class="form-control form-control-sm geojson-input" multiple>
+                  <input type="file" class="form-control form-control-sm geojson-input" multiple aria-label="GeoJSON files">
                 </div>
               </div>
               <div class="form-group row geojson-layers" title="GeoJSON Layers"></div>
@@ -214,7 +214,7 @@
         </div>
       </div>
     </div>
-    <div role="tabpanel" class="tab-pane fade" id="globe-node-configurations">
+    <div role="tabpanel" class="tab-pane fade" id="globe-node-configurations" aria-labelledby="globe-node-tab">
       <div class="form-group row">
         <div class="col-4">Color</div>
         <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
@@ -235,7 +235,7 @@
         </div>
       </div>
     </div>
-    <div role="tabpanel" class="tab-pane fade" id="globe-link-configurations">
+    <div role="tabpanel" class="tab-pane fade" id="globe-link-configurations" aria-labelledby="globe-link-tab">
       <div class="form-group row">
         <div class="col-4">Color</div>
         <div class="col-8"><button class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button></div>
@@ -250,20 +250,20 @@
   </div>
 </div>
 
-<div id="globe-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false">
+<div id="globe-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="globe-export-modal-title">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Export Globe</h5>
+        <h5 id="globe-export-modal-title" class="modal-title">Export Globe</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="form-group row">
           <div class="col-9">
-            <input type="text" name="export-filename" class="form-control form-control-sm" placeholder="Filename">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
           </div>
           <div class="col-3">
-            <select name="export-filetype" class="form-select form-select-sm">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
               <option value="png" selected>PNG</option>
               <option value="jpeg">JPEG</option>
               <option value="webp">WebP</option>
