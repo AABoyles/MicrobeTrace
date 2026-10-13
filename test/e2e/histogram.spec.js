@@ -29,8 +29,8 @@ const plot = () => view().locator('.js-plotly-plot').evaluate(el => ({
   width: el.layout.width
 }));
 
-test('draws link distances by default', async () => {
-  await expect.poll(async () => (await plot()).x).toBe('Distance');
+test('draws the links’ distances by default', async () => {
+  await expect.poll(async () => (await plot()).x).toBe('TN93');
   const p = await plot();
   expect(p.y).toBe('Number of Links');
   // Colored by origin, as the link legend is: by the file each link came from first

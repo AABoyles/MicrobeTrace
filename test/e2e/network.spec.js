@@ -117,7 +117,7 @@ test('the link settings apply', async () => {
   await openSettings('Links', 'link-controls-shapes');
   await set('link-width', 9);
   await expect.poll(() => page.evaluate(() => temp.network.graph.getLinkWidths()[0])).toBe(9);
-  await set('link-width-variable', 'distance');
+  await set('link-width-variable', 'tn93');
   await expect.poll(() => page.evaluate(() => new Set(temp.network.graph.getLinkWidths()).size)).toBeGreaterThan(1);
   await set('link-width-variable', 'None');
   await set('link-opacity', 0.5);

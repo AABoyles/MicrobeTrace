@@ -120,7 +120,7 @@ test('the link threshold’s histogram sits in its column and marks the threshol
   expect(Math.abs(await mark() - r.width * 0.25)).toBeLessThan(3);
   // The threshold set is the value under the pointer: the visible links are within it
   const threshold = await page.evaluate(() => MT.settings.get('link-threshold'));
-  const bounds = await page.evaluate(() => { let lo = Infinity, hi = -Infinity; session.data.graph.forEachValue('distance', v => { lo = Math.min(lo, +v); hi = Math.max(hi, +v); }); return [lo, hi]; });
+  const bounds = await page.evaluate(() => { let lo = Infinity, hi = -Infinity; session.data.graph.forEachValue('tn93', v => { lo = Math.min(lo, +v); hi = Math.max(hi, +v); }); return [lo, hi]; });
   // (to three places, and within a pixel)
   expect(Math.abs(threshold - (bounds[0] + (bounds[1] - bounds[0]) * 0.25))).toBeLessThan(0.003);
   await dialog.locator('#link-threshold').fill('0.015');

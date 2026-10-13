@@ -20,7 +20,6 @@
       "index",
       "source",
       "target",
-      "distance",
       "visible",
       "cluster",
       "origin",
@@ -75,6 +74,7 @@
     "choropleth-transparency": 0.3,
     "cluster-minimum-size": 1,
     "default-distance-metric": "tn93",
+    "distance-metrics-also": [],
     "default-view": "network",
     "filtering-epsilon": -8,
     "flow-showNodes": "selected",
@@ -100,7 +100,7 @@
     "heatmap-axislabels-show": false,
     "histogram-axis-x": true,
     "histogram-scale-log": false,
-    "histogram-variable": "links-distance",
+    "histogram-variable": "links-tn93",
     "infer-directionality-false": true,
     "link-color": "#a6cee3",
     "link-color-table-name-sort": "ASC",
@@ -113,9 +113,10 @@
     "link-length": 0.125,
     "link-opacity": 0,
     "link-show-nn": false,
-    "link-sort-variable": "distance",
+    "link-sort-variable": "tn93",
     "link-storage": "auto",
     "link-threshold": 0.015,
+    "link-thresholds": {},
     "link-tooltip-variable": "None",
     "link-width": 3,
     "link-width-variable": "None",
@@ -618,14 +619,13 @@
     session.data.nodeFields = session.data.nodeFields.filter(field => !(/^id$/i.test(field) &&
       session.data.nodes.every(d => d[field] == null || "" + d[field] == d._id)));
     if(oldSession.network) session.network = oldSession.network;
+    // Sessions from before distances were kept under their metric's name (#249)
+    // kept the distance metric's as distance: they filter on that
+    const widgets = session.style.widgets;
+    if (!session.data.linkFields.includes(widgets['link-sort-variable']) && session.data.linkFields.includes('distance')) {
+      widgets['link-sort-variable'] = 'distance';
+    }
     MT.applyStyle(session.style);
-    // if(!links[0]['distance']){  #249
-    //   if(links[0]['tn93']){
-    //     session.style.widgets['link-sort-variable'] = 'tn93';
-    //   } else {
-    //     session.style.widgets['link-sort-variable'] = 'snps';
-    //   }
-    // }
     MT.finishUp(true);
   };
   
@@ -696,11 +696,11 @@
       let newLink = Object.assign({}, link, { 
         source: "" + link.source, 
         target: "" + link.target, 
-        distance: parseFloat(link.dist), 
+        [session.style.widgets['default-distance-metric']]: parseFloat(link.dist), 
         origin: ["GHOST Import"], visible: true });     
       MT.addLink(newLink, false);   
     }
-    [ "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
+    [ session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
   //	MT.finishUp(); 
     MT.runHamsters();
   }; 
@@ -1022,6 +1022,9 @@
     ts_tv_ratio: { label: 'Ts/Tv Ratio', threshold: 2 }
   };
 
+  // The step of a threshold for a metric's values
+  MT.thresholdStep = metric => metric.count ? 1 : metric.threshold < 1 ? 0.001 : 0.1;
+
   // Above this many pairs, 'auto' link storage keeps only the links within the
   // link threshold. Below it, every pair's distance is kept in the graph's
   // distance triangle (4 bytes per pair: 200 MB for 10,000 sequences).
@@ -1040,9 +1043,23 @@
     return splits;
   };
 
+  // The metrics computed from the sequences: the distance metric first, then
+  // any others chosen to compute too (GapMM computes TN93 alone)
+  MT.computedMetrics = (widgets = session.style.widgets) => {
+    const metric = widgets['default-distance-metric'];
+    if ((widgets['ambiguity-resolution-strategy'] || '').toUpperCase() == 'GAPMM') return [metric];
+    const also = (widgets['distance-metrics-also'] || []).filter(m => m != metric && MT.distanceMetrics[m]);
+    return [metric, ...new Set(also)];
+  };
+
+  // The metric a link field holds, if it holds a computed one. Each is kept
+  // under its own name (tn93, snps…); sessions from before this kept the
+  // distance metric's as distance, which they filter on.
+  MT.fieldMetric = field => MT.distanceMetrics[field] ? field : null;
+
   MT.computeLinks = async subset => {
     const widgets = session.style.widgets;
-    const metric = widgets['default-distance-metric'];
+    const metrics = MT.computedMetrics(widgets), metric = metrics[0];
     const strategy = (widgets['ambiguity-resolution-strategy'] || 'SKIP').toUpperCase();
     const legacy = strategy == 'GAPMM';
     if (legacy && metric != 'tn93') {
@@ -1062,9 +1079,12 @@
     const n = order.length;
     const pairs = n * (n - 1) / 2;
     const storage = widgets['link-storage'];
-    const sparse = storage == 'threshold' || (storage != 'all' && pairs > MT.maxDenseLinks);
-    const threshold = sparse ? parseFloat(widgets['link-threshold']) : null;
-    if (sparse) console.log(`Keeping only links with ${metric} <= ${threshold} (${pairs.toLocaleString()} pairs)`);
+    // Each metric kept takes its own 4 bytes a pair
+    const sparse = storage == 'threshold' || (storage != 'all' && pairs * metrics.length > MT.maxDenseLinks);
+    // Kept within the link threshold for the distance metric, and within their
+    // own default thresholds for the others
+    const thresholds = sparse ? metrics.map((m, i) => i == 0 ? parseFloat(widgets['link-threshold']) : MT.distanceMetrics[m].threshold) : null;
+    if (sparse) console.log(`Keeping only links with ${metrics.map((m, i) => `${m} <= ${thresholds[i]}`).join(', ')} (${pairs.toLocaleString()} pairs)`);
 
     const seqs = order.map(d => d.seq);
     const cores = Math.min(navigator.hardwareConcurrency || 4, 8);
@@ -1073,13 +1093,16 @@
     const message = {
       seqs,
       metric,
+      metrics,
       mode: strategy == 'HIVTRACE-G' ? 'hivtrace-g' : strategy.toLowerCase(),
       averageRows,
-      threshold
+      threshold: thresholds && thresholds[0],
+      thresholds
     };
+    // Each worker's results, a part per metric (the legacy worker computes one)
     const parts = await Promise.all(splits.slice(1).map((rowEnd, w) => new Promise((resolve, reject) => {
       const computer = new Worker(legacy ? 'workers/compute-links-legacy.js' : 'workers/compute-links.js');
-      computer.onmessage = response => resolve(response.data);
+      computer.onmessage = response => resolve(legacy ? { results: [response.data], start: response.data.start } : response.data);
       computer.onerror = reject;
       computer.postMessage(Object.assign({ rowStart: splits[w], rowEnd }, message));
     })));
@@ -1088,28 +1111,33 @@
     let start = Date.now();
     const g = session.data.graph;
     const before = g.edgeCount;
-    if (sparse) {
-      parts.forEach(({ source, target, distance }) => {
-        const m = distance.length;
-        for (let l = 0; l < m; l++) {
-          g.addLink({
-            source: order[target[l]]._id,
-            target: order[source[l]]._id,
-            distance: distance[l],
-            origin: ['Genetic Distance']
-          });
-        }
-      });
-    } else {
-      // The parts are consecutive runs of the upper triangle, in order.
-      const tri = new Float32Array(pairs);
-      let offset = 0;
-      parts.forEach(part => {
-        tri.set(part.distances, offset);
-        offset += part.distances.length;
-      });
-      g.setDistances(order.map(d => d._id), tri, 'distance', 'Genetic Distance');
-    }
+    metrics.forEach((m, i) => {
+      const field = m;
+      if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
+      if (sparse) {
+        parts.forEach(({ results }) => {
+          const { source, target, distance } = results[i];
+          const k = distance.length;
+          for (let l = 0; l < k; l++) {
+            g.addLink({
+              source: order[target[l]]._id,
+              target: order[source[l]]._id,
+              [field]: distance[l],
+              origin: ['Genetic Distance']
+            });
+          }
+        });
+      } else {
+        // The parts are consecutive runs of the upper triangle, in order.
+        const tri = new Float32Array(pairs);
+        let offset = 0;
+        parts.forEach(({ results }) => {
+          tri.set(results[i].distances, offset);
+          offset += results[i].distances.length;
+        });
+        g.setDistances(order.map(d => d._id), tri, field, 'Genetic Distance');
+      }
+    });
     console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
     return g.edgeCount - before;
   };
@@ -1287,8 +1315,8 @@
               g.addLink({ source: source, target: target, origin: ['Triangulation'], [metric]: v });
             } else if (e < MTGraph.IMPLICIT) {
               g.setValue(e, metric, v);
-            } else if (metric == g.dense.field) {
-              g.dense.tri[e - MTGraph.IMPLICIT] = v;
+            } else if (g.denseValues(metric)) {
+              g.denseValues(metric)[e - MTGraph.IMPLICIT] = v;
             } else {
               g.addLink({ source: g.ids[g.source(e)], target: g.ids[g.target(e)], [metric]: v });
             }

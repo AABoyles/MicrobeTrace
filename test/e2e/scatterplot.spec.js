@@ -30,7 +30,7 @@ const plot = () => view().locator('.js-plotly-plot').evaluate(el => ({
 test('plots link variables by default: distance by cluster, with one measurement', async () => {
   await expect.poll(async () => (await plot()).points).toBe(476);
   const p = await plot();
-  expect([p.x, p.y]).toEqual(['Cluster', 'Distance']);
+  expect([p.x, p.y]).toEqual(['Cluster', 'TN93']);
   expect(await options('X Variable')).toContain('distance');
 });
 

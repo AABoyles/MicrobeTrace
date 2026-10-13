@@ -22,7 +22,7 @@ test("the data's categorical, numeric and date fields are found", async () => {
     numeric: MT.numericFields(MT.getVisibleLinks(), session.data.linkFields),
     dates: MT.dateFields(session.data.nodes, session.data.nodeFields)
   }));
-  expect(fields).toEqual({ categorical: ['state', 'group'], numeric: ['distance'], dates: ['date'] });
+  expect(fields).toEqual({ categorical: ['state', 'group'], numeric: ['tn93'], dates: ['date'] });
 });
 
 test('the crosstab opens on two categorical variables, drawn', async () => {
@@ -50,7 +50,7 @@ test('the flow diagram opens on two categorical variables', async () => {
 test('the scatterplot opens on a measurement, with faint gridlines', async () => {
   await launchView(page, 'scatterplot');
   const plot = view('.scatterplot-plot').locator('.js-plotly-plot');
-  await expect.poll(() => plot.evaluate(el => el.layout && [el.layout.xaxis.title.text, el.layout.yaxis.title.text])).toEqual(['Cluster', 'Distance']);
+  await expect.poll(() => plot.evaluate(el => el.layout && [el.layout.xaxis.title.text, el.layout.yaxis.title.text])).toEqual(['Cluster', 'TN93']);
   const grid = await plot.evaluate(el => el.layout.xaxis.gridcolor);
   const alpha = +grid.match(/rgba\(.*,\s*([\d.]+)\)/)[1];
   expect(alpha).toBeLessThan(0.3);
