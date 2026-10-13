@@ -181,18 +181,24 @@ document.addEventListener("DOMContentLoaded", () => {
     MT.launchView("files");
   });
 
-  // Starting over (or reloading) asks first
+  // Starting over (or reloading) asks first, saying what goes, with a way to
+  // save it before it does
   let onExit = MT.reset;
   on("exit-button", "click", () => onExit());
+  on("exit-save-first", "click", () => modal("session-save-modal").show());
+  const askToExit = (exit, title, action) => {
+    onExit = exit;
+    byId("exitModalLabel").textContent = title;
+    byId("exit-button").textContent = action;
+    modal("exit-modal").show();
+  };
   on("NewTab", "click", e => {
     e.preventDefault();
-    onExit = MT.reset;
-    modal("exit-modal").show();
+    askToExit(MT.reset, "Start a new session?", "Start New Session");
   });
   on("ReloadTab", "click", e => {
     e.preventDefault();
-    onExit = MT.reload;
-    modal("exit-modal").show();
+    askToExit(MT.reload, "Reload MicrobeTrace?", "Reload");
   });
 
   // Leaving the page while data is loaded asks first, as the browser does it.

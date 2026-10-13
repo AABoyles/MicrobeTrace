@@ -18,7 +18,7 @@
         <button type="button" class="btn btn-light btn-nr floater sequence-controls-button" data-bs-toggle="modal" data-bs-target="#sequence-controls-modal">Sequence Controls</button>
       </div>
       <div class="col text-end">
-        <button id="launch" class="btn btn-success" title="Please select a Network CSV or FASTA File" disabled>Launch</button>
+        <button id="launch" class="btn btn-success" title="Add a network file (a link list, matrix, FASTA or Newick tree) to launch" disabled>Launch</button>
       </div>
     </div>
   </div>
@@ -43,7 +43,7 @@
     <div id="file-settings" class="tab-pane fade active show" role="tabpanel">
       <div class="form-group row">
         <div class="col-5">
-          <label for="default-distance-metric" class="me-2" title="Which Genetic Distance Metric should Microbe use to first construct the network?">
+          <label for="default-distance-metric" class="me-2" title="Which genetic distance metric should MicrobeTrace use to build the network from sequences?">
             Distance Metric
           </label>
         </div>
@@ -368,8 +368,26 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     const ready = () => {
       dropZone.hidden = true;
-      launchButton.disabled = false;
+      checkLaunch();
     };
+
+    // Launch waits until every file can be read as what it's marked: each row
+    // that can't says why
+    const problems = new WeakMap();
+    function checkLaunch() {
+      const rows = $$('.file-table-row');
+      let blocked = !rows.length;
+      rows.forEach(row => {
+        const problem = problems.has(row) ? problems.get(row)() : '';
+        const note = row.querySelector('.file-problem');
+        note.textContent = problem;
+        note.hidden = !problem;
+        if (problem) blocked = true;
+      });
+      launchButton.disabled = blocked;
+      launchButton.title = !rows.length ? 'Add a network file (a link list, matrix, FASTA or Newick tree) to launch'
+        : blocked ? 'Fix the files marked above to launch' : 'Launch MicrobeTrace with these files';
+    }
 
     // Adding files ---------------------------------------------------------------
 
@@ -474,6 +492,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <a href="#" class="icon-action icon-remove bi bi-x-circle p-1" title="Remove this file" aria-label="Remove this file"></a>
           </div>
         </div>
+        <p class="file-problem small text-danger mb-0 mt-1" hidden></p>
         <div class="row w-100">
           ${[1, 2, 3].map(i => `<div class="col-4 file-field">
             <label></label>
@@ -491,10 +510,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         if (i > -1) session.files.splice(i, 1);
         row.remove();
         showOrderHint();
-        if (!table.querySelector('.file-table-row')) {
-          dropZone.hidden = false;
-          launchButton.disabled = true;
-        }
+        if (!table.querySelector('.file-table-row')) dropZone.hidden = false;
+        checkLaunch();
       });
       row.querySelector('a[title="Resave this file"]').addEventListener('click', e => {
         e.preventDefault();
@@ -541,19 +558,34 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         update();
       }
 
+      // What keeps this file from being read as what it's marked, if anything
+      problems.set(row, () => {
+        const type = kindOf(), [first, second] = selects.map(select => select.value);
+        if (type == 'link') {
+          if (headers.length < 2) return 'No columns were found in this file, so it can’t be read as a link list.';
+          if (first == 'None' || second == 'None') return 'Choose the Source and Target columns.';
+          if (first == second) return 'Source and Target need to be different columns.';
+        }
+        if (type == 'node') {
+          if (!headers.length) return 'No columns were found in this file, so it can’t be read as a node list.';
+          if (first == 'None') return 'Choose the ID column.';
+        }
+        return '';
+      });
       table.append(row);
       fileOf.set(row, file);
       sortable(table, 'reload');
       showOrderHint();
       matchHeaders(kind);
       refit(false);
+      checkLaunch();
       row.querySelectorAll(`input[name="${group}"]`).forEach(input => input.addEventListener('change', () => {
         refit(true);
-        launchButton.disabled = false;
+        checkLaunch();
       }));
       selects.forEach(s => s.addEventListener('change', () => {
         update();
-        launchButton.disabled = false;
+        checkLaunch();
       }));
     }
 
@@ -893,6 +925,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
+            n = data.length;
             data.forEach(node => {
               let safeNode = {
                 _id: filterXSS('' + node[file.field1]),
@@ -924,6 +957,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               skipEmptyLines: true,
               step: data => {
                 let node = data.data;
+                n++;
                 let safeNode = {
                   _id: filterXSS('' + node[file.field1]),
                   seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),
@@ -1087,7 +1121,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
         message('Computing Links based on Genomic Proximity...');
         const k = await MT.computeLinks(subset);
-        message(` - Found ${k} New Links from Genomic Proximity`);
+        // Every pair has a distance; the network shows those within the threshold
+        const threshold = parseFloat(session.style.widgets['link-threshold']);
+        let within = 0;
+        session.data.graph.forEachValue('distance', v => { if (v <= threshold) within++; });
+        message(` - Computed ${k.toLocaleString()} distances between sequences; ${within.toLocaleString()} links are within the link threshold (${threshold}).`);
         MT.runHamsters();
       };
     };

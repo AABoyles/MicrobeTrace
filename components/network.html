@@ -186,7 +186,7 @@
                   </select>
                 </div>
               </div>
-              <div class="form-group row" title="What data should be displayed when you hover over a link?">
+              <div class="form-group row" title="Which variable should label each link?">
                 <div class="col-4"><label for="link-label-variable">Label</label></div>
                 <div class="col-8">
                   <select id="link-label-variable" data-setting="link-label-variable" class="form-select form-select-sm linkVariables">
@@ -231,7 +231,7 @@
                 <div class="col-4"><label for="link-length">Length</label></div>
                 <div class="col-8"><input type="range" class="form-range" id="link-length" data-setting="link-length" min="0" max="200" value="50"></div>
               </div>
-              <div class="form-group row hideForHIVTrace" title="Shoul arrowheads pointing to the">
+              <div class="form-group row hideForHIVTrace" title="Should links show arrowheads pointing to their targets?">
                 <div class="col-4">Arrows</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -264,7 +264,7 @@
           </div>
           <div id="network-controls-labels" class="collapse show" data-bs-parent="#network-controls-accordion">
             <div class="card-body">
-              <div class="form-group row" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
+              <div class="form-group row" title="Should MicrobeTrace highlight a node's neighbors when you hover over it?">
                 <div class="col-4">Neighbors</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -281,7 +281,7 @@ Note that this may cause slow performance on larger networks.">
                   </div>
                 </div>
               </div>
-              <div class="form-group row" title="Should MicrobeTrace Highlight a node's neighbors when you hover on it?">
+              <div class="form-group row" title="Should MicrobeTrace draw gridlines behind the network?">
                 <div class="col-4">Gridlines</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -347,7 +347,7 @@ Note that this may cause slow performance on larger networks.">
           </div>
           <div id="polygons-controls-labels" class="collapse show" data-bs-parent="#polygons-controls-accordion">
             <div class="card-body">
-              <div class="form-group row" title="What data should be displayed when you hover over a link?">
+              <div class="form-group row" title="Should MicrobeTrace draw a shape around each group of nodes?">
                 <div class="col-4">Polygons</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
@@ -488,10 +488,10 @@ Note that this may cause slow performance on larger networks.">
           </div>
           <div class="col-3">
             <select name="export-filetype" class="form-select form-select-sm">
-              <option selected>png</option>
-              <option>jpeg</option>
-              <option>webp</option>
-              <option>svg</option>
+              <option value="png" selected>PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WebP</option>
+              <option value="svg">SVG</option>
             </select>
           </div>
         </div>

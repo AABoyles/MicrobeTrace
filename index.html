@@ -322,7 +322,7 @@
                   </div>
                 </div>
               </div>
-              <div class="form-group row filtering-epsilon-row" title="How much genetic distance represents non-equality for your ">
+              <div class="form-group row filtering-epsilon-row" title="How close two distances must be to count as a tie, when pruning to nearest neighbors (10 to this power)">
                 <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
                 <div class="col-8">
                   <input type="range" class="form-range" id="filtering-epsilon" data-setting="filtering-epsilon" data-setting-on="change" min="-3" max="2" step=".01" value="-3">
@@ -378,7 +378,7 @@
               </div>
             </div>
             <div class="tab-pane fade" id="style-config" role="tabpanel" aria-labelledby="style-tab">
-              <div class="form-group row" title="By what variable nodes be colored?">
+              <div class="form-group row" title="Which variable should color the nodes?">
                 <div class="col-4"><label for="node-color-variable">Color Nodes By</label></div>
                 <div class="col-8">
                   <select id="node-color-variable" class="form-select form-select-sm nodeVariables" data-setting="node-color-variable">
@@ -492,14 +492,16 @@
         </div>
         <div class="modal-body">
           <div class="form-group row">
-            <div class="col-8">
-              <input type="text" id="save-file-name" class="form-control form-control-sm" title="What would you like to call your MicrobeTrace Save File?" placeholder="Filename" aria-label="Filename">
+            <div class="col-7">
+              <label for="save-file-name" class="form-label small mb-1">File Name</label>
+              <input type="text" id="save-file-name" class="form-control form-control-sm" title="What would you like to call your MicrobeTrace save file?" placeholder="Filename">
             </div>
-            <div class="col-4">
-              <select id="save-file-format" class="form-select form-select-sm" title="What format file would you like to save?">
-                <option selected>microbetrace</option>
-                <option>hivtrace</option>
-                <option>microbetracestyle</option>
+            <div class="col-5">
+              <label for="save-file-format" class="form-label small mb-1">Format</label>
+              <select id="save-file-format" class="form-select form-select-sm" title="What would you like to save: the whole session, its network for HIV-TRACE, or only its style (its colors and settings)?">
+                <option value="microbetrace" selected>MicrobeTrace session</option>
+                <option value="hivtrace">HIV-TRACE</option>
+                <option value="microbetracestyle">Style only</option>
               </select>
             </div>
           </div>
@@ -604,15 +606,16 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exitModalLabel">Leave MicrobeTrace Session?</h5>
+          <h5 class="modal-title" id="exitModalLabel">Start a new session?</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          Are you certain you want to leave this MicrobeTrace session? Any unsaved configurations will be lost!
+          Your data and settings will be cleared. Save them first to come back to them.
         </div>
         <div class="modal-footer">
+          <button type="button" id="exit-save-first" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Save First…</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="exit-button" class="btn btn-danger" data-bs-dismiss="modal">Leave Session</button>
+          <button type="button" id="exit-button" class="btn btn-danger" data-bs-dismiss="modal">Start New Session</button>
         </div>
       </div>
     </div>
