@@ -111,7 +111,19 @@
     const hover = svg.append('g').attr('class', 'mouse-over-effects').style('opacity', 0);
     const hoverLine = hover.append('path').attr('class', 'mouse-line').style('stroke', 'black').style('stroke-width', '1px');
     const hoverDate = hover.append('text').attr('y', margin.top - 5).attr('text-anchor', 'middle');
-    const hoverBox = svg.append('rect').attr('fill', 'none').attr('pointer-events', 'all');
+    // (The box only measures the pointer; the svg listens, so rows under it
+    // still say their dates on hover)
+    const hoverBox = svg.append('rect').attr('fill', 'none').attr('pointer-events', 'none');
+    hover.attr('pointer-events', 'none');
+    // The axis stays at the bottom of the view while the rows scroll behind it
+    const scroller = $('.gantt');
+    // (over the rows and their labels, down to the view's bottom edge)
+    const axisBackground = xAxis.append('rect').attr('class', 'axis-background').attr('y', 0).attr('height', margin.bottom + 10);
+    [xAxis, hover, hoverBox].forEach(g => g.raise());
+    let placeAxis = () => {};
+    scroller.addEventListener('scroll', () => placeAxis());
+    // Rows are never shorter than their labels
+    const minRow = 14;
 
     // The dates drawn: each a start field, an end field (or None), a color and
     // a transparency
@@ -146,42 +158,69 @@
       const context = document.createElement('canvas').getContext('2d');
       context.font = '10px ' + getComputedStyle(document.body).fontFamily;
       margin.left = Math.max(30, ...all.map(b => Math.ceil(context.measureText(b.row).width))) + 15;
-      const width = root.clientWidth - margin.left - margin.right - 5;
-      const height = root.clientHeight - margin.top - margin.bottom - 5;
+      const visibleHeight = root.clientHeight - margin.top - margin.bottom - 5;
       // A view in a background tab has no size; it draws when it's shown
-      if (width <= 0 || height <= 0) return;
-      svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
+      if (root.clientWidth <= 0 || visibleHeight <= 0) return;
+
+      // Rows in order of their first date, each tall enough for its label;
+      // more than fit scroll
+      const first = d3.rollup(all, bs => d3.min(bs, b => b.start), b => b.row);
+      const rows = Array.from(first.keys()).sort((a, b) => first.get(a) - first.get(b) || a.localeCompare(b, undefined, { numeric: true }));
+      const height = Math.max(visibleHeight, rows.length * minRow);
+      svg.attr('height', height + margin.top + margin.bottom);
+      // (Measured once the height says whether there's a scrollbar)
+      const width = scroller.clientWidth - margin.left - margin.right - 5;
+      if (width <= 0) return;
+      svg.attr('width', width + margin.left + margin.right);
       [chart, yAxis, hoverBox].forEach(g => g.attr('transform', `translate(${margin.left},${margin.top})`));
 
-      const x = d3.scaleTime().range([0, width]).clamp(true)
+      const y = d3.scaleBand().domain(rows).range([0, height]).padding(0.1);
+      // (Inset by half a row, so dots at either end show whole)
+      const inset = y.bandwidth() / 2;
+      const x = d3.scaleTime().range([inset, width - inset]).clamp(true)
         .domain(all.length ? [d3.min(all, b => b.start), d3.max(all, b => b.end)] : [new Date(2000, 0, 1), new Date()]);
-      const y = d3.scaleBand().domain(Array.from(new Set(all.map(b => b.row)))).range([0, height]).padding(0.1);
 
-      xAxis.attr('transform', `translate(${margin.left},${margin.top + height})`)
-        .call(d3.axisBottom(x).tickFormat(tickFormat).tickSize(8).tickPadding(8));
+      xAxis.call(d3.axisBottom(x).tickFormat(tickFormat).tickSize(8).tickPadding(8));
+      axisBackground.attr('x', -margin.left).attr('width', width + margin.left + margin.right).lower();
+      // At the bottom of what's in view (or, given true, of the whole chart)
+      placeAxis = whole => {
+        const bottom = whole ? height : Math.min(height, scroller.scrollTop + visibleHeight);
+        xAxis.attr('transform', `translate(${margin.left},${margin.top + bottom})`);
+        hoverDate.attr('y', (whole ? 0 : scroller.scrollTop) + margin.top - 5);
+      };
+      placeAxis();
       yAxis.call(d3.axisLeft(y).tickSize(0));
 
       const list = dates();
+      // A single day is a dot, a span a bar
+      const band = y.bandwidth();
+      const dot = b => x(b.end) - x(b.start) < band;
       chart.selectAll('rect')
         .data(all, b => b.id)
-        .join('rect')
-        .attr('rx', 5)
-        .attr('ry', 5)
-        .attr('class', b => 'date-' + b.date)
-        .attr('x', b => x(b.start))
+        .join(enter => enter.append('rect').call(rect => rect.append('title')))
+        .attr('class', b => 'date-' + b.date + (dot(b) ? ' dot' : ''))
+        .attr('rx', b => dot(b) ? band / 2 : Math.min(5, band / 2))
+        .attr('ry', b => dot(b) ? band / 2 : Math.min(5, band / 2))
+        .attr('x', b => dot(b) ? (x(b.start) + x(b.end) - band) / 2 : x(b.start))
         .attr('y', b => y(b.row))
-        .attr('height', y.bandwidth())
-        .attr('width', b => Math.max(x(b.end) - x(b.start), 5))
+        .attr('height', band)
+        .attr('width', b => dot(b) ? band : x(b.end) - x(b.start))
         .attr('fill', b => list[b.date].color)
-        .attr('fill-opacity', b => 1 - list[b.date].transparency);
+        .attr('fill-opacity', b => 1 - list[b.date].transparency)
+        .select('title')
+        .text(b => b.row + ': ' + tickFormat(b.start) + (+b.end != +b.start ? ' to ' + tickFormat(b.end) : ''));
 
-      hoverBox.attr('width', width).attr('height', height)
-        .on('mouseover', () => hover.style('opacity', 1))
-        .on('mouseout', () => hover.style('opacity', 0))
+      hoverBox.attr('width', width).attr('height', height);
+      svg
+        .on('mouseleave', () => hover.style('opacity', 0))
         .on('mousemove', event => {
-          const px = d3.pointer(event)[0];
+          const [px, py] = d3.pointer(event, hoverBox.node());
+          const inside = px >= 0 && px <= width && py >= 0 && py <= height;
+          hover.style('opacity', inside ? 1 : 0);
+          if (!inside) return;
           const sx = px + margin.left;
-          hoverLine.attr('d', `M${sx},${margin.top + height} ${sx},${margin.top}`);
+          const top = scroller.scrollTop + margin.top;
+          hoverLine.attr('d', `M${sx},${Math.min(height, scroller.scrollTop + visibleHeight) + margin.top} ${sx},${top}`);
           hoverDate.attr('x', Math.min(Math.max(sx, 60), width + margin.left - 40)).text(tickFormat(x.invert(px)));
         });
       setBackground();
@@ -243,6 +282,7 @@
       $('.gantt').style.background = settings.get('background-color');
       const contrast = settings.get('background-color-contrast');
       xAxis.style('color', contrast);
+      axisBackground.attr('fill', settings.get('background-color'));
       yAxis.style('color', contrast);
       hoverDate.attr('fill', contrast);
       hoverLine.style('stroke', contrast);
@@ -256,7 +296,13 @@
 
     // The settings start open when there's nothing to draw
     MT.paneToggle($('.settings-toggle'), pane, !dates().length);
-    MT.svgExport(root, () => svg.node(), settings);
+    // (Exported whole, with the axis under the last row; it returns to the view's
+    // bottom once the copy is made)
+    MT.svgExport(root, () => {
+      placeAxis(true);
+      setTimeout(() => placeAxis());
+      return svg.node();
+    }, settings);
 
     const stop = [
       settings.subscribe('gantt-dates', draw),

@@ -19,7 +19,7 @@ test.afterAll(() => page.close());
 
 const view = () => page.locator('.lm_content:has(.modal-title:has-text("Export Sequences"))').first();
 const pane = () => view().locator('.left-pane');
-const canvases = () => view().locator('canvas');
+const canvases = () => view().locator('canvas.alignment');
 const size = () => canvases().first().evaluate(c => [c.width, c.height]);
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 const sequences = () => page.evaluate(() => session.data.nodes.filter(d => d.seq).length);
