@@ -135,7 +135,7 @@ test('Sequence Settings covers the menu bar', async ({ browser }) => {
   const freshErrors = watchErrors(fresh);
   await open(fresh);
   await fresh.setInputFiles('#data-files', fixtures);
-  await fresh.locator('button', { hasText: 'Sequence Controls' }).click();
+  await fresh.locator('button', { hasText: 'Sequence Settings' }).click();
   await waitForModal(fresh, '#sequence-controls-modal');
   const covered = await fresh.evaluate(() => {
     const nav = document.querySelector('nav.navbar').getBoundingClientRect();

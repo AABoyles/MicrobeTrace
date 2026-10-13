@@ -231,7 +231,7 @@ test('reopening the view restores its settings', async () => {
 
 for (const [filetype, filename] of [['geojson', 'map-test.geojson'], ['png', 'map-test.png']]) {
   test(`exports ${filetype}`, async () => {
-    const modal = await openExport(page, view(), 'Export Geo Map');
+    const modal = await openExport(page, view(), 'Export Map');
     await modal.getByPlaceholder('Filename').fill('map-test');
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);

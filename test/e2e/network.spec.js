@@ -190,7 +190,7 @@ test("a node's context menu pins it and shows its attributes", async () => {
   expect(names[0]).toBe('ID');
   expect(names.filter(name => name == 'ID')).toHaveLength(1);
   await expect(page.locator('.modal.show tbody tr').first().locator('td').nth(1)).toHaveText(id);
-  await page.locator('.modal.show button', { hasText: 'OK' }).click();
+  await page.locator('.modal.show .modal-footer button', { hasText: 'Close' }).click();
 });
 
 test("a node's context menu copies its ID and sequence", async () => {

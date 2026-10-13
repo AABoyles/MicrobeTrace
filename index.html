@@ -73,8 +73,11 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
         <div class="dropdown-menu view-menu">
-          <div>
+          <div class="view-menu-top">
             <a href="#" class="dropdown-item viewbutton" data-href="network">Network</a>
+            <div class="dropdown-divider"></div>
+          </div>
+          <div>
             <h6 class="dropdown-header">Charts</h6>
             <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
             <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
@@ -95,7 +98,7 @@
             <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
             <a href="#" class="dropdown-item viewbutton" data-href="choropleth">Choropleth</a>
             <a href="#" class="dropdown-item viewbutton" data-href="globe">Globe</a>
-            <h6 class="dropdown-header">Sequences</h6>
+            <h6 class="dropdown-header">Phylogenetics</h6>
             <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
             <a href="#" class="dropdown-item viewbutton" data-href="sequences">Sequences</a>
           </div>
@@ -347,7 +350,7 @@
                   </div>
                 </div>
                 <div class="form-group row" title="What's the maximum genetic distance you're willing to call a link?">
-                  <div class="col-4"><label for="link-threshold">Filtering Threshold</label></div>
+                  <div class="col-4"><label for="link-threshold">Link Threshold</label></div>
                   <div class="col-8">
                     <svg id="link-threshold-sparkline" title="Click or drag to set the threshold"></svg>
                     <input type="number" class="form-control form-control-sm" id="link-threshold" data-setting="link-threshold" data-setting-on="change" step="0.001">
@@ -558,7 +561,7 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" id="recall-delete-stash">Delete</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-success" id="recall-load-stash">Recall</button>
+          <button type="button" class="btn btn-primary" id="recall-load-stash">Recall</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
