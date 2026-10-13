@@ -365,6 +365,8 @@
       maxZoom: 20,
       preferCanvas: true
     });
+    // Fitting leaves the docked tables at the right their room
+    const clearOfDock = () => ({ paddingTopLeft: [20, 20], paddingBottomRight: [20 + MT.dockRoom(root), 20] });
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
     const layers = { ...MT.tileLayers(), countries: null, states: null, counties: null, nodes: null, links: null };
     let destroyed = false;
@@ -391,7 +393,7 @@
       drawNodes();
       if (!fitted && positions.size) {
         fitted = true;
-        map.fitBounds(L.latLngBounds(Array.from(positions.values())), { animate: false });
+        map.fitBounds(L.latLngBounds(Array.from(positions.values())), { animate: false, ...clearOfDock() });
       }
     }
 
@@ -513,7 +515,7 @@
     }
 
     $('.fit-button').addEventListener('click', () => {
-      if (positions.size) map.flyToBounds(L.latLngBounds(Array.from(positions.keys()).map(jittered)));
+      if (positions.size) map.flyToBounds(L.latLngBounds(Array.from(positions.keys()).map(jittered)), clearOfDock());
     });
     $('.reroll-button').addEventListener('click', () => {
       jitter.reroll();

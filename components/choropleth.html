@@ -192,16 +192,13 @@
     });
     const layers = { ...MT.tileLayers(), countries: null, aggregates: null };
 
-    // The legend: the color ramp, labelled with the lowest and highest counts
-    const legendCanvas = document.createElement('canvas');
-    legendCanvas.width = 256;
-    legendCanvas.height = 25;
+    // The legend: what's counted, over the color ramp, with the lowest and
+    // highest counts below it (solid, however see-through the regions are)
+    const legendDiv = L.DomUtil.create('div', 'legend choropleth-legend');
+    legendDiv.innerHTML = '<div class="legend-title"></div><div class="legend-ramp"></div><div class="legend-ends"><span></span><span></span></div>';
+    let legendState = null;
     const legend = L.control({ position: 'bottomleft' });
-    legend.onAdd = () => {
-      const div = L.DomUtil.create('div', 'legend');
-      div.append(legendCanvas);
-      return div;
-    };
+    legend.onAdd = () => legendDiv;
     legend.addTo(map);
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
@@ -223,7 +220,7 @@
     }
 
     // The regions, each with its count of visible nodes (properties.density)
-    let regions = null, request = 0, destroyed = false;
+    let regions = null, request = 0, destroyed = false, fitNext = true;
     async function aggregate() {
       const ticket = ++request, { file, keys } = unit();
       const data = await MT.getMapData(file);
@@ -274,26 +271,47 @@
           .on('mouseout', () => MT.tooltip(null))
       }).addTo(map);
       drawLegend(color, min, max);
+      // Opens on the regions with data, and again when what's counted changes
+      if (fitNext) {
+        fitNext = false;
+        fit(false);
+      }
     }
 
     function drawLegend(color, min, max) {
-      const context = legendCanvas.getContext('2d');
-      for (let i = 0; i < 256; ++i) {
-        context.fillStyle = d3.rgb(color(i / 255)).formatHex();
-        context.fillRect(i, 0, 1, 25);
-      }
-      context.font = 'bold 20px sans';
+      const field = settings.get('choropleth-aggregate-on');
+      const title = field && field != 'None' ? 'Nodes by ' + MT.titleize(field) : 'Nodes';
+      legendState = { color, min, max, title };
+      legendDiv.querySelector('.legend-title').textContent = title;
+      legendDiv.querySelector('.legend-ramp').style.background = `linear-gradient(to right, ${[0, 0.5, 1].map(t => d3.rgb(color(t)).formatHex()).join(', ')})`;
+      const [low, high] = legendDiv.querySelectorAll('.legend-ends span');
+      low.textContent = min;
+      high.textContent = max;
+    }
+
+    // The legend as drawn into an exported image, at the bottom left
+    function paintLegend(context, canvas) {
+      if (!legendState) return;
+      const { color, min, max, title } = legendState;
+      const x = 10, width = 200, top = canvas.height - 64;
+      context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      context.fillRect(x, top, width + 16, 56);
+      context.fillStyle = '#212529';
+      context.font = 'bold 13px sans-serif';
       context.textAlign = 'left';
-      context.fillStyle = 'black';
-      context.fillText(min + '', 5, 20);
-      context.fillStyle = 'white';
+      context.fillText(title, x + 8, top + 17);
+      const gradient = context.createLinearGradient(x + 8, 0, x + 8 + width, 0);
+      [0, 0.5, 1].forEach(t => gradient.addColorStop(t, d3.rgb(color(t)).formatHex()));
+      context.fillStyle = gradient;
+      context.fillRect(x + 8, top + 24, width, 12);
+      context.fillStyle = '#212529';
+      context.font = '12px sans-serif';
+      context.fillText(min + '', x + 8, top + 50);
       context.textAlign = 'right';
-      context.fillText(max + '', 251, 20);
-      legendCanvas.style.opacity = opacity();
+      context.fillText(max + '', x + 8 + width, top + 50);
     }
 
     function setTransparency() {
-      legendCanvas.style.opacity = opacity();
       if (layers.aggregates) layers.aggregates.setStyle({ fillOpacity: opacity() });
     }
 
@@ -317,20 +335,20 @@
       showLayers();
     });
 
-    $('.fit-button').addEventListener('click', () => {
+    // Fits the regions that have nodes, or all of them if none do
+    function fit(animate = true) {
       if (!layers.aggregates) return;
-      // Fit the regions that have nodes, or all of them if none do
       const counted = layers.aggregates.getLayers().filter(l => l.feature.properties.density > 0);
-      map.flyToBounds((counted.length ? L.featureGroup(counted) : layers.aggregates).getBounds());
-    });
+      const bounds = (counted.length ? L.featureGroup(counted) : layers.aggregates).getBounds();
+      if (animate) map.flyToBounds(bounds, { padding: [20, 20] });
+      else map.fitBounds(bounds, { padding: [20, 20] });
+    }
+    $('.fit-button').addEventListener('click', () => fit());
 
     MT.paneToggle($('.settings-toggle'), pane);
     const userLayers = MT.leafletGeoJSONUpload($('.geojson-input'), $('.geojson-layers'), map);
     MT.tableExport(root, {
-      ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename => MT.mapImage(map, filename, type, (context, canvas) => {
-        context.globalAlpha = opacity();
-        context.drawImage(legendCanvas, 10, canvas.height - 40);
-      })])),
+      ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename => MT.mapImage(map, filename, type, paintLegend)])),
       geojson: filename => MT.saveAs(
         new Blob([JSON.stringify(regions)], { type: 'application/json;charset=utf-8' }),
         filename + '.geojson'
@@ -341,7 +359,7 @@
     const stop = [
       MTBind(pane, settings),
       settings.subscribe('choropleth-aggregate-as', pickField),
-      settings.subscribe(['choropleth-aggregate-as', 'choropleth-aggregate-on'], aggregate),
+      settings.subscribe(['choropleth-aggregate-as', 'choropleth-aggregate-on'], () => { fitNext = true; aggregate(); }),
       settings.subscribe(['choropleth-color-low', 'choropleth-color-medium', 'choropleth-color-high'], draw),
       settings.subscribe('choropleth-transparency', setTransparency),
       settings.subscribe('choropleth-basemap-show', takeTurns('choropleth-satellite-show')),

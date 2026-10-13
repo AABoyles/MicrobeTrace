@@ -165,6 +165,7 @@
       const nodes = settings.get('scatterplot-showNodes');
       const xVar = settings.get('scatterplot-xVar'), yVar = settings.get('scatterplot-yVar');
       const items = nodes ? MT.getVisibleNodes() : MT.getVisibleLinks();
+      const color = settings.get(nodes ? 'node-color' : 'link-color');
       // Faint gridlines, so the points stand out
       const grid = { gridcolor: MT.gridColor(settings), zerolinecolor: MT.gridColor(settings, 0.4) };
       Plotly.react(plot, [{
@@ -172,12 +173,13 @@
         y: items.map(d => d[yVar]),
         type: 'scatter',
         mode: 'markers',
-        marker: { color: settings.get(nodes ? 'node-color' : 'link-color') }
+        // An outline in a darker shade, so light colors stand out from the page
+        marker: { color, size: 8, line: { color: d3.color(color).darker(1.5) + '', width: 1 } }
       }], {
         width, height,
-        xaxis: { title: { text: MT.titleize(xVar) }, ...grid },
-        yaxis: { title: { text: MT.titleize(yVar) }, ...grid, type: settings.get('scatterplot-logScale') ? 'log' : '-' },
-        ...MT.plotColors(settings)
+        xaxis: { title: { text: MT.titleize(xVar) }, automargin: true, ...grid },
+        yaxis: { title: { text: MT.titleize(yVar) }, automargin: true, ...grid, type: settings.get('scatterplot-logScale') ? 'log' : '-' },
+        ...MT.plotLayout(root, settings)
       }, {
         displaylogo: false,
         displayModeBar: false

@@ -154,6 +154,7 @@
     // The distance matrix and its labels as last drawn (before any inversion),
     // for export
     let labels = [], matrix = [], drawing = 0;
+    const missingColor = '#d0d0d0';
 
     async function draw() {
       const width = MT.viewWidth(root), height = root.clientHeight;
@@ -165,7 +166,8 @@
       if (ticket != drawing) return;
       labels = MT.getDMLabels();
       matrix = dm;
-      let x = labels.map(d => 'N' + d), y = x.slice(), z = dm;
+      // The nodes' own ids, as categories (numeric ids would make a number line)
+      let x = labels.map(String), y = x.slice(), z = dm;
       if (settings.get('heatmap-invertX')) {
         z = z.map(row => row.slice().reverse());
         x.reverse();
@@ -175,10 +177,16 @@
         y.reverse();
       }
       const showLabels = settings.get('heatmap-axislabels-show');
-      const axis = { autotick: false, showticklabels: showLabels, ticks: showLabels ? undefined : '' };
+      const axis = { type: 'category', autotick: false, showticklabels: showLabels, ticks: showLabels ? undefined : '', automargin: true };
+      const metric = MT.titleize(settings.get('link-sort-variable'));
+      // Pairs without a distance show the grey behind the cells, said in a note
+      const missing = dm.some(row => row.some(v => v == null));
       Plotly.react(plot, [{
         x, y, z,
         type: 'heatmap',
+        hoverongaps: false,
+        hovertemplate: '%{y} and %{x}: %{z}<extra></extra>',
+        colorbar: { title: { text: metric } },
         colorscale: [
           [0, settings.get('heatmap-color-low')],
           [0.5, settings.get('heatmap-color-medium')],
@@ -188,7 +196,12 @@
         width, height,
         xaxis: axis,
         yaxis: axis,
-        ...MT.plotColors(settings)
+        ...MT.plotLayout(root, settings),
+        plot_bgcolor: missingColor,
+        annotations: missing ? [{
+          text: '<span style="color:' + missingColor + '">■</span> No ' + metric.toLowerCase(),
+          xref: 'paper', yref: 'paper', x: 1, y: 1, xanchor: 'right', yanchor: 'bottom', yshift: 4, showarrow: false
+        }] : []
       }, {
         displaylogo: false,
         displayModeBar: false
@@ -215,7 +228,7 @@
     const stop = [
       MTBind(pane, settings),
       settings.subscribe(['heatmap-invertX', 'heatmap-invertY', 'heatmap-axislabels-show', 'heatmap-color-low', 'heatmap-color-medium', 'heatmap-color-high'], draw),
-      events.on('background-color-change', () => plot.data && Plotly.relayout(plot, MT.plotColors(settings)))
+      events.on('background-color-change', () => plot.data && Plotly.relayout(plot, { ...MT.plotColors(settings), plot_bgcolor: missingColor }))
     ];
     draw();
 

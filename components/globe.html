@@ -7,6 +7,9 @@
   <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#globe-export-modal" title="Export Globe">
     <span class="bi bi-download"></span>
   </button>
+  <button type="button" class="btn btn-light btn-sm fit-button" title="Fit to the Nodes">
+    <span class="bi bi-bullseye"></span>
+  </button>
   <button type="button" class="btn btn-light btn-sm autorotate-toggle" title="Toggle Autorotation">
     <span class="bi bi-play-fill"></span>
   </button>
@@ -153,8 +156,8 @@
                   </div>
                 </div>
               </div>
-              <div class="form-group row" title="Would you like to see Countries on the globe?">
-                <div class="col-4">Countries</div>
+              <div class="form-group row" title="Would you like to see the countries' borders on the globe?">
+                <div class="col-4">Borders</div>
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light col">
@@ -314,13 +317,30 @@
       const located = await MT.locateNodes(MT.getVisibleNodes(), field);
       if (ticket != request || destroyed) return;
       positions = located;
-      // The first time there are nodes to show, turn the globe to face them
+      // The first time there are nodes to show, turn and zoom to them
       if (!faced && positions.size) {
         faced = true;
-        const [lon, lat] = d3.geoCentroid({ type: 'MultiPoint', coordinates: Array.from(positions.values(), ([lat, lon]) => [lon, lat]) });
-        projection.rotate([-lon, -lat, 0]);
+        fitPending = true;
       }
+      if (fitPending) fit();
       draw();
+    }
+
+    // Turns the globe to face the nodes, and zooms until they fill most of the
+    // view (no closer than the whole globe, no further than 50 times that)
+    let fitPending = false;
+    function fit() {
+      if (!positions.size) return;
+      if (!width || !height || !map.countries) return void (fitPending = true);
+      fitPending = false;
+      const points = Array.from(positions.values(), ([lat, lon]) => [lon, lat]);
+      const center = d3.geoCentroid({ type: 'MultiPoint', coordinates: points });
+      projection.rotate([-center[0], -center[1], 0]);
+      // A point at angle a from the center sits sin(a) of the radius from it
+      const spread = d3.max(points, p => d3.geoDistance(center, p));
+      const reach = spread < Math.PI / 2 ? Math.sin(spread) : 1;
+      const k = Math.max(1, Math.min(50, 0.4 * Math.min(width, height) / (baseScale * Math.max(reach, 0.001))));
+      d3.select(canvas).call(zoomer.scaleTo, k);
     }
 
     function resize() {
@@ -334,6 +354,7 @@
       baseScale = projection.scale();
       projection.scale(baseScale * zoom).rotate(rotation);
       if (map.stars) starProjection.fitExtent([[0, 0], [3 * width, 3 * height]], map.stars).translate([width / 2, height / 2]);
+      if (fitPending) fit();
       draw();
     }
 
@@ -434,17 +455,26 @@
           drawn.nodes++;
         });
         context.globalAlpha = drawn.nodeAlpha = 1 - settings.get('globe-node-transparency');
+        // Each outlined in a darker shade, so close nodes stay apart
+        context.lineWidth = 1;
         groups.forEach((points, fill) => {
           context.beginPath();
           path({ type: 'GeometryCollection', geometries: points });
           context.fillStyle = fill;
           context.fill();
+          context.strokeStyle = d3.color(fill).darker(1.5) + '';
+          context.stroke();
         });
         context.globalAlpha = 1;
       }
     }
 
     // Dragging turns the globe; the wheel zooms
+    const zoomer = d3.zoom().scaleExtent([0.5, 50]).filter(e => e.type == 'wheel').on('zoom', e => {
+      zoom = e.transform.k;
+      projection.scale(baseScale * zoom);
+      draw();
+    });
     let start, rotation;
     d3.select(canvas)
       .call(d3.drag()
@@ -457,11 +487,8 @@
           ]);
           draw();
         }))
-      .call(d3.zoom().filter(e => e.type == 'wheel').on('zoom', e => {
-        zoom = e.transform.k;
-        projection.scale(baseScale * zoom);
-        draw();
-      }));
+      .call(zoomer);
+    $('.fit-button').addEventListener('click', fit);
 
     let spinner = null, last;
     function autorotate() {

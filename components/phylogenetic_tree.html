@@ -467,7 +467,8 @@
         branchDistances: !settings.get('tree-branch-distances-hide'),
         leafNodes: settings.get('tree-leaf-node-show'),
         leafLabels: settings.get('tree-leaf-label-show'),
-        margin: [60, 100, 60, 60]
+        // (Clear of the color table docked at the right)
+        margin: [60, 100 + MT.dockRoom(root), 60, 60]
       }, {
         select,
         contextmenu: showMenu,
@@ -661,7 +662,9 @@
       settings.subscribe(['tree-round-true', 'tree-branch-distance-size', 'tree-leaf-label-size', 'tree-leaf-node-size',
         'tree-leaf-node-radius-variable', 'tree-leaf-label-variable', 'tree-leaf-tooltip-variable'], style),
       ...['node-color-change', 'selected-color-change', 'node-selected'].map(type => events.on(type, style)),
-      events.on('background-color-change', setBackground)
+      events.on('background-color-change', setBackground),
+      // Laid out again when the docked table comes, goes or grows
+      MT.onDockChange(root, draw)
     ];
     showRows();
     setBackground();
