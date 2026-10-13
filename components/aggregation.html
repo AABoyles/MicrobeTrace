@@ -99,7 +99,10 @@
         const value = MT.valueLabel(d[column]) == '(Empty)' ? '(Empty)' : d[column];
         counts.set(value, (counts.get(value) || 0) + 1);
       });
-      return Array.from(counts, ([value, n]) => ({ [column]: value, n, percent: (n / items.length * 100).toLocaleString() + '%' }));
+      // Most common first (ties in the values' order), each a share to one decimal
+      const natural = (a, b) => String(a).localeCompare(String(b), undefined, { numeric: true });
+      return Array.from(counts, ([value, n]) => ({ [column]: value, n, percent: (n / items.length * 100).toFixed(1) + '%' }))
+        .sort((a, b) => b.n - a.n || natural(a[column], b[column]));
     }
 
     function update() {
@@ -118,11 +121,12 @@
           columns: [
             // A natural sort, so numbers (cluster IDs, say) don't sort as text
             { title: MT.titleize(dataset) + ' ' + MT.titleize(column), field: column, sorter: 'alphanum' },
-            { title: `Number of ${MT.titleize(dataset)}s`, field: 'n' },
-            { title: 'Percentage', field: 'percent', headerSort: false }
+            { title: `Number of ${MT.titleize(dataset)}s`, field: 'n', hozAlign: 'right', headerHozAlign: 'right' },
+            { title: 'Percentage', field: 'percent', headerSort: false, hozAlign: 'right', headerHozAlign: 'right' }
           ],
           data: rows,
-          initialSort: [{ column: 'n', dir: 'desc' }, { column, dir: 'asc' }]
+          // One sort, by the count (rows come in that order already)
+          initialSort: [{ column: 'n', dir: 'desc' }]
         }));
         return { dataset, column, data: rows };
       });

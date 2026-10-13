@@ -34,7 +34,8 @@ test('opens with node clusters', async () => {
 });
 
 test('numbers sort as numbers', async () => {
-  // The table's own order: cluster IDs 0, 1, 2 … rather than 0, 1, 10, 11 …
+  // Sorted by cluster: IDs 0, 1, 2 … rather than 0, 1, 10, 11 …
+  await view().locator('.tabulator-col', { hasText: 'Node Cluster' }).locator('.tabulator-col-title').click();
   const values = await view().locator('.tabulator').first().evaluate(el => {
     const all = Tabulator.findTable(el), t = all[all.length - 1];
     return t.getRows('active').map(r => r.getData().cluster);
