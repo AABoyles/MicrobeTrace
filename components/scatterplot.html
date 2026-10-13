@@ -159,7 +159,7 @@
     }
 
     function draw() {
-      const width = root.clientWidth, height = root.clientHeight;
+      const width = MT.viewWidth(root), height = root.clientHeight;
       // A view in a background tab has no size; it draws when it's shown
       if (!width || !height) return;
       const nodes = settings.get('scatterplot-showNodes');
@@ -184,7 +184,7 @@
       });
     }
 
-    MT.paneToggle($('.settings-toggle'), pane);
+    MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.scatterplot-plot'), resize: draw });
     MT.plotExport(root, plot, settings);
 
     // Older sessions may store the dataset as something other than a boolean

@@ -167,7 +167,7 @@
 
     showFields();
     // The settings start open when there's nothing to show until a choice
-    MT.paneToggle($('.settings-toggle'), $('.left-pane'), !chosen);
+    MT.paneToggle($('.settings-toggle'), $('.left-pane'), !chosen, { beside: $('.crosstab-grid'), resize: () => table.redraw() });
 
     const title = () => MT.titleize(fieldX.value) + ' by ' + MT.titleize(fieldY.value);
     MT.tableExport(root, {

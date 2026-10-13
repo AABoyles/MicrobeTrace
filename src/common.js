@@ -2117,7 +2117,14 @@
   // Makes a view's settings button slide its pane in and out. The pane also
   // gets a close button, and Escape closes it, unless it's closing a dialog or
   // a menu first or is typed in a text field. `push`, if given, is an element
-  // moved aside while the pane is open instead of covered by it.
+  // moved aside while the pane is open instead of covered by it. `beside` is
+  // one moved aside only while the view is wide enough to keep a good width
+  // beside the pane (in a narrower view the pane covers it, as others do);
+  // `resize` redraws the view when it moves.
+  const paneRoom = 410, besideAtLeast = 600;
+  // The width a view has to draw in: all of it, less what an open pane beside
+  // it takes
+  MT.viewWidth = root => root.clientWidth - (root.classList.contains('pane-beside-open') ? paneRoom : 0);
   const openPanes = new Set();
   const typing = target => target.isContentEditable || target.tagName == 'TEXTAREA' ||
     (target.tagName == 'INPUT' && !['checkbox', 'radio', 'range', 'button', 'color'].includes(target.type));
@@ -2126,12 +2133,24 @@
     if (e.key != 'Escape' || typing(e.target) || document.querySelector('.modal.show, .ts-wrapper.dropdown-active, .dropdown-menu.show')) return;
     openPanes.forEach(close => close());
   }, true);
-  MT.paneToggle = (button, pane, open = false, { push } = {}) => {
+  MT.paneToggle = (button, pane, open = false, { push, beside, resize } = {}) => {
+    const root = pane.parentElement;
+    let aside = false;
+    const placeBeside = () => {
+      const now = open && root.clientWidth >= paneRoom + besideAtLeast;
+      if (now == aside) return;
+      aside = now;
+      beside.classList.toggle('pane-beside', aside);
+      root.classList.toggle('pane-beside-open', aside);
+      if (resize) resize();
+    };
+    if (beside) new ResizeObserver(placeBeside).observe(root);
     const set = value => {
       open = value;
       button.classList.toggle('active', open);
       MT.slidePane(pane, open);
       if (push) [].concat(push).forEach(element => element.classList.toggle('pane-pushed', open));
+      if (beside) placeBeside();
       if (open) openPanes.add(close);
       else openPanes.delete(close);
     };

@@ -141,7 +141,7 @@
     // One sankey column per variable, with a node per value; links count the
     // items going from each value to each value of the next variable.
     function draw() {
-      const width = root.clientWidth - 40, height = root.clientHeight - 60;
+      const width = MT.viewWidth(root) - 40, height = root.clientHeight - 60;
       // A view in a background tab has no size; it draws when it's shown
       if (width <= 0 || height <= 0) return;
       const nodes = settings.get('flow-showNodes');
@@ -194,7 +194,7 @@
       });
     }
 
-    MT.paneToggle($('.settings-toggle'), pane);
+    MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.flow-plot'), resize: draw });
     MT.plotExport(root, plot, settings);
 
     $('.flow-add-variable').addEventListener('click', () => {
