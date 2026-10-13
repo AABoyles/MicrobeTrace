@@ -16,7 +16,8 @@ test.afterAll(() => page.close());
 const view = () => page.locator('.lm_content:has(.js-plotly-plot)').first();
 const pane = () => view().locator('.left-pane');
 const widget = key => page.evaluate(key => session.style.widgets[key], key);
-const labels = () => page.evaluate(() => session.data.nodes.map(d => 'N' + d._id));
+// Each cell labelled with its nodes' own ids
+const labels = () => page.evaluate(() => session.data.nodes.map(d => String(d._id)));
 
 const plot = () => view().locator('.js-plotly-plot').evaluate(el => ({
   rows: el.data[0].z.length,
