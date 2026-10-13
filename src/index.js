@@ -267,12 +267,21 @@ document.addEventListener("DOMContentLoaded", () => {
     ["cluster", "link", "node"].forEach(thing => events.emit(thing + "-visibility"));
     MT.updateStatistics();
   });
-  settings.subscribe("link-sort-variable", () => {
+  // Each link field keeps its own threshold: filtering on another brings back
+  // the threshold last used with it or, for a computed distance metric (TN93,
+  // SNPs…), that metric's default
+  settings.subscribe("link-sort-variable", field => {
+    const metric = MT.distanceMetrics[MT.fieldMetric(field)];
+    const saved = (get("link-thresholds") || {})[field];
+    const threshold = saved != null ? saved : metric ? metric.threshold : null;
+    if (metric) byId("link-threshold").step = MT.thresholdStep(metric);
     MT.updateThresholdHistogram();
-    updateNetwork();
+    if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
+    else updateNetwork();
   });
   settings.subscribe("link-threshold", threshold => {
     ga('send', 'event', 'threshold', 'update', threshold);
+    settings.set("link-thresholds", Object.assign({}, get("link-thresholds"), { [get("link-sort-variable")]: threshold }));
     MT.markThreshold(threshold);
     updateNetwork();
   });

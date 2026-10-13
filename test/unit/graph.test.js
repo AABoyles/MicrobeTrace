@@ -194,3 +194,42 @@ test('visibility and components match a direct computation', () => {
   assert.ok(nnVis.includes(e));
   assert.ok(g.link(e).nn);
 });
+
+test('several metrics over the same sequences are kept side by side', () => {
+  const r = rng(4), ids = Array.from({ length: 25 }, (_, i) => 'm' + i);
+  const n = ids.length, pairs = n * (n - 1) / 2;
+  const tn93 = new Float32Array(pairs).map(() => Math.round(r() * 100) / 1000);
+  const snps = new Float32Array(pairs).map(() => Math.floor(r() * 40));
+  const g = new MTGraph();
+  g.addLink({ source: 'm3', target: 'm1', origin: ['links.csv'], weight: 7 });
+  g.setDistances(ids, tn93, 'distance', 'Genetic Distance');
+  g.setDistances(ids, snps, 'snps', 'Genetic Distance');
+  // A link added later, over a computed pair, carries both
+  g.addLink({ source: 'm5', target: 'm9', origin: ['links.csv'] });
+  g.freeze();
+
+  assert.strictEqual(g.edgeCount, pairs);
+  const at = (a, b) => g.edgeBetween(g.index.get(a), g.index.get(b));
+  const k = (a, b) => pairIndex(Math.min(a, b), Math.max(a, b), n);
+  [['m3', 'm1', 1, 3], ['m5', 'm9', 5, 9], ['m2', 'm20', 2, 20]].forEach(([a, b, i, j]) => {
+    const l = g.link(at(a, b));
+    assert.strictEqual(l.distance, tn93[k(i, j)]);
+    assert.strictEqual(l.snps, snps[k(i, j)]);
+  });
+  assert.strictEqual(g.link(at('m3', 'm1')).weight, 7);
+
+  // Each field is read, and filters, on its own
+  let count = 0, sum = 0;
+  g.forEachValue('snps', v => { count++; sum += v; });
+  assert.strictEqual(count, pairs);
+  assert.strictEqual(sum, snps.reduce((a, b) => a + b, 0));
+  const within = Array.from(snps).filter(v => v <= 10).length;
+  assert.strictEqual(g.computeVisible('snps', 10, false, () => true).length, within);
+  assert.strictEqual(g.computeVisible('distance', 0.05, false, () => true).length, Array.from(tn93).filter(v => v <= 0.05).length);
+
+  // Distances over other sequences replace them all
+  const others = ['m1', 'm2', 'm3'];
+  g.setDistances(others, new Float32Array([0.1, 0.2, 0.3]), 'distance', 'Genetic Distance');
+  assert.strictEqual(g.denseValues('snps'), null);
+  assert.strictEqual(g.link(at('m1', 'm2')).distance, Math.fround(0.1));
+});

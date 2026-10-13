@@ -11,11 +11,12 @@
   // - Explicit edges (IDs below IMPLICIT): a columnar edge list. Source and target
   //   indices, flags and origins are typed arrays; each link field is one column
   //   (Float64Array while every value is numeric, a plain Array otherwise).
-  // - Implicit edges (IDs IMPLICIT + k): computed genetic distances, kept as a
-  //   condensed upper triangle (4 bytes per pair, no indices). Pair k of rows
-  //   i < j has source rows[j] and target rows[i]. A pair that also has an
-  //   explicit edge is "shadowed": the explicit edge carries its distance and
-  //   the implicit one is skipped.
+  // - Implicit edges (IDs IMPLICIT + k): computed genetic distances, kept as
+  //   condensed upper triangles (4 bytes per pair, no indices), one per field
+  //   (a distance metric) over the same rows. Pair k of rows i < j has source
+  //   rows[j] and target rows[i]. A pair that also has an explicit edge is
+  //   "shadowed": the explicit edge carries its distances and the implicit one
+  //   is skipped.
   //
   // While links are being added, a Map finds duplicate pairs. freeze() replaces it
   // with a CSR adjacency index (offsets / neighbors / edge IDs), which is much
@@ -147,8 +148,9 @@
 
     getValue(e, field) {
       if (e >= IMPLICIT) {
-        if (!this.dense || field != this.dense.field) return null;
-        const v = this.dense.tri[e - IMPLICIT];
+        const tri = this.denseValues(field);
+        if (!tri) return null;
+        const v = tri[e - IMPLICIT];
         return isNaN(v) ? null : v;
       }
       const col = this.columns.get(field);
@@ -187,11 +189,11 @@
         e = this.pushEdge(s, t);
         this.pairs.set(key, e);
         if (k >= 0) {
-          // This pair already had a computed distance: it becomes explicit.
+          // This pair already had computed distances: it becomes explicit.
           const d = this.dense;
           d.shadow[k >> 3] |= 1 << (k & 7);
           d.shadowCount++;
-          this.setValue(e, d.field, d.tri[k]);
+          d.tris.forEach((tri, field) => this.setValue(e, field, tri[k]));
           this.combo[e] = d.combo;
           if (this.implicitFlags.has(k)) {
             this.flags[e] = this.implicitFlags.get(k);
@@ -277,17 +279,31 @@
 
     // Stores computed distances for every pair of ids (a condensed upper
     // triangle in that row order) as field `field`. Pairs that already have an
-    // explicit edge get the distance and origin on that edge.
+    // explicit edge get the distance and origin on that edge. Distances over
+    // the same ids, in the same order, are kept beside those already stored
+    // (another metric for the same sequences); over others, they replace them.
     setDistances(ids, tri, field, origin) {
       const n = ids.length;
       if (tri.length != n * (n - 1) / 2) throw new Error('Distance triangle does not match the number of sequences');
       this.version++;
+      const old = this.dense;
+      if (old && old.n == n && ids.every((id, r) => this.index.get('' + id) === old.rows[r])) {
+        old.tris.set(field, tri);
+        this.column(field);
+        // The explicit edges over these pairs carry this field too
+        for (let e = 0; e < this.m; e++) {
+          const k = this.densePair(this.src[e], this.tgt[e]);
+          if (k >= 0) this.setValue(e, field, tri[k]);
+        }
+        return;
+      }
       const rows = Uint32Array.from(ids, id => this.node(id));
       const pos = new Int32Array(this.nodeCount).fill(-1);
       rows.forEach((g, r) => { pos[g] = r; });
       const combo = this.internOrigins([origin]);
       const d = this.dense = {
-        rows, pos, tri, field, combo, n,
+        rows, pos, n, combo,
+        tris: new Map([[field, tri]]),
         shadow: new Uint8Array(Math.ceil(tri.length / 8)),
         shadowCount: 0
       };
@@ -304,6 +320,16 @@
         this.setValue(e, field, tri[k]);
         this.combo[e] = this.mergeOrigins(this.combo[e], [origin]);
       }
+    }
+
+    // The computed distances stored for field, a condensed triangle, or null
+    denseValues(field) {
+      return this.dense ? this.dense.tris.get(field) || null : null;
+    }
+
+    // The number of pairs the triangles cover
+    get densePairs() {
+      return this.dense ? this.dense.n * (this.dense.n - 1) / 2 : 0;
     }
 
     // Position k of pair (a, b) in the triangle, or -1. Shadowed pairs count.
@@ -323,7 +349,7 @@
     // Any edges --------------------------------------------------------------
 
     get edgeCount() {
-      return this.m + (this.dense ? this.dense.tri.length - this.dense.shadowCount : 0);
+      return this.m + (this.dense ? this.densePairs - this.dense.shadowCount : 0);
     }
 
     // The edge between node indices a and b, or -1.
@@ -415,9 +441,9 @@
           fn(v, e, this.src[e], this.tgt[e]);
         }
       }
-      const d = this.dense;
-      if (!d || d.field != field) return;
-      const { rows, n, tri, shadow } = d;
+      const d = this.dense, tri = this.denseValues(field);
+      if (!tri) return;
+      const { rows, n, shadow } = d;
       let k = 0;
       for (let i = 0; i < n; i++) {
         const t = rows[i];
@@ -449,17 +475,17 @@
           push(e);
         }
       }
-      const d = this.dense;
-      if (d && d.field == field) {
+      const d = this.dense, tri = this.denseValues(field);
+      if (tri) {
         if (nnOnly) {
           this.implicitFlags.forEach((f, k) => {
-            if ((f & NN) && d.tri[k] <= threshold && !this.isShadowed(k)) {
+            if ((f & NN) && tri[k] <= threshold && !this.isShadowed(k)) {
               const e = IMPLICIT + k;
               if (keep(this.source(e))) push(e);
             }
           });
         } else {
-          const { rows, n, tri, shadow } = d;
+          const { rows, n, shadow } = d;
           let k = 0;
           for (let i = 0; i < n; i++) {
             for (let j = i + 1; j < n; j++, k++) {
@@ -529,7 +555,10 @@
       this.columns.forEach(col => { b += col.numeric ? col.data.byteLength : col.data.length * 8; });
       if (this.csr) b += this.csr.offsets.byteLength + this.csr.nbr.byteLength + this.csr.eid.byteLength;
       if (this.pairs) b += this.pairs.size * 40;
-      if (this.dense) b += this.dense.tri.byteLength + this.dense.shadow.byteLength + this.dense.pos.byteLength + this.dense.rows.byteLength;
+      if (this.dense) {
+        this.dense.tris.forEach(tri => { b += tri.byteLength; });
+        b += this.dense.shadow.byteLength + this.dense.pos.byteLength + this.dense.rows.byteLength;
+      }
       return b;
     }
   }

@@ -68,6 +68,14 @@
           </select>
         </div>
       </div>
+      <div class="form-group row distance-metrics-also-row" title="Which other metrics should MicrobeTrace compute for the same sequences? Each is kept on the links beside the distance metric, to filter links on, color or plot by.">
+        <div class="col-5">
+          <label for="distance-metrics-also" class="me-2">Also Compute</label>
+        </div>
+        <div class="col-7">
+          <select id="distance-metrics-also" multiple></select>
+        </div>
+      </div>
       <div class="form-group row">
         <div class="col-5">
           <label for="ambiguity-resolution-strategy" class="me-2" title="What Strategy should MicrobeTrace use to handle ambiguities?">
@@ -723,7 +731,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     function applyMetric(resetThreshold) {
       const metric = get('default-distance-metric'), m = MT.distanceMetrics[metric];
       if (!m) return;
-      const step = m.count ? 1 : m.threshold < 1 ? 0.001 : 0.1;
+      const step = MT.thresholdStep(m);
       [thresholdInput, document.getElementById('link-threshold')].forEach(input => {
         if (!input) return;
         input.step = step;
@@ -1129,9 +1137,35 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         let within = 0;
         session.data.graph.forEachValue('distance', v => { if (v <= threshold) within++; });
         message(` - Computed ${k.toLocaleString()} distances between sequences; ${within.toLocaleString()} links are within the link threshold (${threshold}).`);
+        const also = MT.computedMetrics().slice(1);
+        if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Global Settings.`);
         MT.runHamsters();
       };
     };
+
+    // Other metrics to compute too: any but the distance metric (and none with
+    // GapMM, which computes TN93 alone)
+    const alsoMenu = MT.multiSelect($('#distance-metrics-also'));
+    const showAlso = () => {
+      const metric = get('default-distance-metric');
+      const chosen = (get('distance-metrics-also') || []).filter(m => m != metric && MT.distanceMetrics[m]);
+      alsoMenu.clear(true);
+      alsoMenu.clearOptions();
+      alsoMenu.addOptions(Array.from($('#default-distance-metric').options)
+        .filter(o => o.value != metric)
+        .map(o => ({ value: o.value, text: o.text })));
+      alsoMenu.setValue(chosen, true);
+      // (Rebuilding a focused menu opens it)
+      alsoMenu.close();
+      const gapmm = get('ambiguity-resolution-strategy') == 'GAPMM';
+      if (gapmm) alsoMenu.disable(); else alsoMenu.enable();
+      $('.distance-metrics-also-row').classList.toggle('text-body-secondary', gapmm);
+    };
+    alsoMenu.on('change', () => {
+      const chosen = alsoMenu.getValue();
+      settings.set('distance-metrics-also', chosen);
+      localforage.setItem('distance-metrics-also', chosen);
+    });
 
     // The metric menu shows short names; its tooltip, the chosen one's full name
     const metricMenu = $('#default-distance-metric');
@@ -1149,8 +1183,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         localforage.setItem('default-distance-metric', metric);
         applyMetric(true);
         showMetricName();
+        showAlso();
       }),
-      settings.subscribe('ambiguity-resolution-strategy', showAmbiguityRows),
+      settings.subscribe('ambiguity-resolution-strategy', () => {
+        showAmbiguityRows();
+        showAlso();
+      }),
       settings.subscribe('default-view', view => {
         localforage.setItem('default-view', view);
         setDefaultView(view);
@@ -1163,10 +1201,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     ];
     applyMetric(false);
     showMetricName();
+    showAlso();
     showAmbiguityRows();
     showAlignmentRows();
     localforage.getItem('default-distance-metric').then(cached => {
       if (cached && MT.distanceMetrics[cached]) settings.set('default-distance-metric', cached);
+    });
+    localforage.getItem('distance-metrics-also').then(cached => {
+      if (!Array.isArray(cached)) return;
+      settings.set('distance-metrics-also', cached.filter(m => MT.distanceMetrics[m]));
+      showAlso();
     });
     localforage.getItem('default-view').then(cached => {
       const view = MT.viewName(cached || get('default-view'));
@@ -1174,7 +1218,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       setDefaultView(view);
     });
 
-    stop.push(() => MT.sortable(table, 'destroy'));
+    stop.push(() => MT.sortable(table, 'destroy'), () => alsoMenu.destroy());
     return {
       destroy: () => stop.forEach(fn => fn())
     };

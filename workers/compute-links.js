@@ -10,51 +10,53 @@ importScripts('../vendor/bx_distance_models.js');
 // caller puts the too-ambiguous sequences first, so the first averageRows rows
 // hold exactly the pairs that must be averaged.
 //
-// With a threshold, only pairs at or under it are returned (as source, target and
-// distance arrays). Without one, every pair's distance is returned (Float32).
+// metrics are computed from one parsed set of sequences, and returned in
+// order as results. With thresholds (one per metric), only the pairs at or
+// under a metric's threshold are returned for it (as source, target and
+// distance arrays). Without, every pair's distance is (Float32).
 
 const ready = wasm_bindgen({ module_or_path: '../vendor/bx_distance_models_bg.wasm' });
 
 onmessage = async function(e) {
   await ready;
   let start = Date.now();
-  const { seqs, metric, mode, averageRows, rowStart, rowEnd } = e.data;
-  const threshold = e.data.threshold == null ? null : parseFloat(e.data.threshold);
+  const { seqs, metrics, mode, averageRows, rowStart, rowEnd } = e.data;
+  const thresholds = e.data.thresholds ? e.data.thresholds.map(parseFloat) : null;
 
   const ranges = mode == 'hivtrace-g' ? [
     ['average', rowStart, Math.min(rowEnd, averageRows)],
     ['resolve', Math.max(rowStart, averageRows), rowEnd]
   ] : [[mode, rowStart, rowEnd]];
 
-  const parts = [];
+  // Each metric's parts, range by range
+  const parts = metrics.map(() => []);
   ranges.forEach(([ambiguity, a, b]) => {
     if (a >= b) return;
     const set = new wasm_bindgen.SequenceSet(seqs, ambiguity);
-    if (threshold == null) {
-      parts.push(set.distances(metric, a, b));
-    } else {
-      const links = set.links(metric, threshold, a, b);
-      parts.push({ source: links.source, target: links.target, distance: links.distance });
-      links.free();
-    }
+    metrics.forEach((metric, m) => {
+      if (!thresholds) {
+        parts[m].push(set.distances(metric, a, b));
+      } else {
+        const links = set.links(metric, thresholds[m], a, b);
+        parts[m].push({ source: links.source, target: links.target, distance: links.distance });
+        links.free();
+      }
+    });
     set.free();
   });
 
-  let output;
-  if (threshold == null) {
+  const results = parts.map(metricParts => !thresholds
     // Float32 is what the graph stores, and halves the transfer
-    output = { distances: Float32Array.from(concat(Float64Array, parts)) };
-  } else {
-    output = {
-      source: concat(Uint32Array, parts.map(p => p.source)),
-      target: concat(Uint32Array, parts.map(p => p.target)),
-      distance: concat(Float64Array, parts.map(p => p.distance))
-    };
-  }
+    ? { distances: Float32Array.from(concat(Float64Array, metricParts)) }
+    : {
+      source: concat(Uint32Array, metricParts.map(p => p.source)),
+      target: concat(Uint32Array, metricParts.map(p => p.target)),
+      distance: concat(Float64Array, metricParts.map(p => p.distance))
+    });
 
-  console.log('Links Compute time (rows ' + rowStart + '-' + rowEnd + '): ', (Date.now() - start).toLocaleString(), 'ms');
-  output.start = Date.now();
-  postMessage(output, Object.values(output).filter(v => v.buffer).map(v => v.buffer));
+  console.log('Links Compute time (rows ' + rowStart + '-' + rowEnd + ', ' + metrics.join(', ') + '): ', (Date.now() - start).toLocaleString(), 'ms');
+  const buffers = results.flatMap(r => Object.values(r).map(v => v.buffer));
+  postMessage({ results, start: Date.now() }, buffers);
   close();
 };
 
