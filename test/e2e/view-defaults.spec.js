@@ -85,7 +85,8 @@ test('the epi curve opens on the first field of dates, saving it only once it fi
 test('the network keeps its layout while the epi curve has a date field', async () => {
   await page.evaluate(() => MT.launchView('network'));
   await page.evaluate(() => MT.settings.set('timeline-date-field', 'date'));
-  const placed = () => page.evaluate(() => temp.network.points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y)).length);
+  // (Read from the GPU, as saving and the timeline do)
+  const placed = () => page.evaluate(() => { MT.syncLayout(); return temp.network.points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y)).length; });
   await expect.poll(placed).toBe(310);
   // A redraw, as when links are shown or hidden
   await page.evaluate(() => { MT.setLinkVisibility(true); return MT.tagClusters().then(() => { MT.events.emit('link-visibility'); MT.events.emit('node-visibility'); }); });

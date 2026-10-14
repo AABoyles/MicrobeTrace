@@ -1434,6 +1434,7 @@
           time: Date.now(),
           interval: setInterval(() => {
             let newTime = Date.now();
+            MT.syncLayout();
             localforage.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
             localforage.removeItem("stash-" + temp.autostash.time + "-autostash");
             temp.autostash.time = newTime;
@@ -1576,7 +1577,15 @@
     console.log("Cluster Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
   };
 
+  // Copies the network's layout from the GPU into session.network.nodes, for
+  // what reads it there (saving, the timeline). The network does this itself
+  // only when its layout settles: reading it back waits for the GPU.
+  MT.syncLayout = () => {
+    if (temp.network && temp.network.syncPositions) temp.network.syncPositions();
+  };
+
   MT.getNetworkNodes = () => {
+    MT.syncLayout();
     let nodes = session.network.nodes;
     let n = nodes.length;
     let out = [];
@@ -1588,6 +1597,7 @@
   };
 
   MT.updatePinNodes = copy => {
+    MT.syncLayout();
     let nodes = session.network.nodes;
     let n = nodes.length;
     for (let i = 0; i < n; i++) {
@@ -1601,6 +1611,9 @@
     }
   };
 
+  // The visible nodes, or copies of them to place (their own fields, not the
+  // values those hold: a copy through JSON took a second for a few thousand
+  // nodes, most of it their sequences)
   MT.getVisibleNodes = copy => {
     let nodes = session.data.nodes;
     let n = nodes.length;
@@ -1609,7 +1622,7 @@
       for (let i = 0; i < n; i++) {
         let node = nodes[i];
         if (node.visible) {
-          out.push(JSON.parse(JSON.stringify(node)));
+          out.push(Object.assign({}, node));
         }
       }
     } else {
@@ -2925,6 +2938,9 @@
     const resize = () => handle.resize && handle.resize();
     container.on('resize', resize);
     container.on('show', resize);
+    // A view behind another can stop what only shows (an animation, say)
+    if (handle.show) container.on('show', handle.show);
+    if (handle.hide) container.on('hide', handle.hide);
     container.on('destroy', () => {
       parkPanels(container.element);
       const i = recentViews.indexOf(contentItem);
