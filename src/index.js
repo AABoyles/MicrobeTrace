@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // The menus ---------------------------------------------------------------
 
   on("stash-data", "click", () => {
+    MT.syncLayout();
     localforage.setItem("stash-" + Date.now() + "-" + byId("stash-name").value, JSON.stringify(session))
       .then(() => alertify.success("Stashed in this browser"));
   });
@@ -149,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (format == "hivtrace") {
       data = MT.exportHIVTRACE();
     } else {
+      MT.syncLayout();
       data = JSON.stringify(session);
     }
     if (byId("save-file-compress").checked) {
