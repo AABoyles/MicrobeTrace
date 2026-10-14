@@ -101,6 +101,8 @@ test('launching computes each metric for every pair, under its own name', async 
 });
 
 test('each metric has the values computing it alone gives', async ({ browser }) => {
+  // (This page's layout waits, so as not to slow the other's)
+  await page.evaluate(() => temp.network.graph.pause());
   const alone = await browser.newPage();
   await open(alone);
   await alone.evaluate(() => MT.settings.set('default-distance-metric', 'snps'));
@@ -157,8 +159,10 @@ test('the metrics, and the one filtered on, are saved with the session', async (
   await expect(modal).toBeHidden();
   const before = await total(page, 'k2p');
 
+  // (Until the file is read, the session open is the one saved)
+  await page.evaluate(() => { window.before = session.style.widgets; });
   await page.setInputFiles('#OpenTab', saved);
-  await page.waitForFunction(() => document.getElementById('numberOfNodes').textContent != '' && session.data.graph.edgeCount > 0, null, { timeout: 60000 });
+  await page.waitForFunction(() => session.style.widgets !== window.before && document.getElementById('numberOfNodes').textContent != '' && session.data.graph.edgeCount > 0, null, { timeout: 60000 });
   const after = await total(page, 'k2p');
   expect(after.count).toBe(before.count);
   expect(after.sum).toBeCloseTo(before.sum, 3);
@@ -202,6 +206,8 @@ test('a session from before keeps filtering on its distances', async () => {
 });
 
 test('with only the links within the threshold kept, each metric keeps those within its own', async ({ browser }) => {
+  // (This page's layout waits, so as not to slow the other's)
+  await page.evaluate(() => temp.network && temp.network.graph && temp.network.graph.pause());
   const sparse = await browser.newPage();
   await open(sparse);
   await sparse.evaluate(() => {
