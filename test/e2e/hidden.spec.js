@@ -89,7 +89,7 @@ test('a search without matches says so in the search box', async () => {
   await page.fill('#search', 'nothing-is-called-this');
   await expect(page.locator('#search')).toHaveClass(/is-invalid/);
   await expect(page.locator('#search-results li.no-matches')).toHaveText('No matches');
-  await expect(page.locator('.alertify-notifier .ajs-message', { hasText: 'No matches' })).toHaveCount(0);
+  await expect(page.locator('.mt-toast-container .toast', { hasText: 'No matches' })).toHaveCount(0);
   // A match clears it
   await page.fill('#search', 'S1');
   await expect(page.locator('#search')).not.toHaveClass(/is-invalid/);

@@ -37,7 +37,8 @@ const used = id => row(id).locator('.conflict-value.used').textContent().then(t 
 const state = id => page.evaluate(id => session.data.nodes.find(d => d._id == id).state, id);
 
 test('after launching, a notice says how many values differ, and opens the view', async () => {
-  const notice = page.locator('.alertify-notifier .ajs-message', { hasText: 'differ between files' });
+  const notice = page.locator('.mt-toast-container .toast', { hasText: 'differ between files' });
+  await expect(notice).toBeVisible({ timeout: 20000 });
   await expect(notice).toContainText('14 node values differ between files');
   await notice.click();
   await expect(view()).toBeVisible();

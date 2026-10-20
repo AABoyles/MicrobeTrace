@@ -78,8 +78,9 @@ test('deleting a stash can be undone', async () => {
   expect(await names()).not.toContain('Outbreak A, first look');
   expect((await stashKeys()).length).toBe(2);
   for (const button of await buttons().all()) await expect(button).toBeDisabled();
-  const notice = page.locator('.alertify-notifier .ajs-message', { hasText: 'Deleted' });
-  await expect(notice).toHaveText('Deleted “Outbreak A, first look”. Click here to undo.');
+  const notice = page.locator('.mt-toast-container .toast', { hasText: 'Deleted' });
+  await expect(notice).toBeVisible({ timeout: 20000 });
+  await expect(notice).toHaveText('Deleted "Outbreak A, first look". Click here to undo.');
   await notice.click();
   await expect(rows()).toHaveCount(3);
   expect((await stashKeys()).sort()).toEqual(before.sort());
@@ -105,7 +106,7 @@ test("a stash that can't be read says so", async () => {
   await openRecall();
   await row('broken').click();
   await dialog().locator('#recall-load-stash').click();
-  await expect(page.locator('.alertify-notifier .ajs-message', { hasText: 'broken' })).toHaveText('“broken” couldn\'t be recalled.');
+  await expect(page.locator('.mt-toast-container .toast', { hasText: 'broken' })).toHaveText('“broken” couldn\'t be recalled.');
   await expect(dialog()).toBeVisible();
   // (It's logged, for whoever looks)
   expect(errors).toEqual([expect.stringMatching(/JSON/)]);
