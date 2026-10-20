@@ -50,8 +50,7 @@
     "express": "^5.3.0",
     "express-http-to-https": "^1.1.4",
     "express-static-gzip": "^3.0.2",
-    "gzipper": "^8.3.0",
-    "tom-select": "^2.6.2"
+    "gzipper": "^8.3.0"
   },
   "devDependencies": {
     "@cosmos.gl/graph": "^3.5.1",
@@ -74,12 +73,13 @@
     "papaparse": "^5.7.0",
     "patristic": "^0.6.0",
     "pdfmake": "^0.3.11",
+    "playwright": "^1.64.0",
     "plotly.js": "^4.1.2",
     "postcss": "^8.5.29",
     "postcss-cli": "^12.0.0",
-    "puppeteer": "^25.13.0",
     "tabulator-tables": "^6.6.1",
     "tidytree": "^0.7.0",
+    "tom-select": "^2.6.2",
     "tn93": "^0.3.5",
     "xlsx": "^0.18.5"
   }
