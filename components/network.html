@@ -568,7 +568,6 @@ Note that this may cause slow performance on larger networks.">
     // The view's own legends stack with the page's in its panel dock
     MT.panelDock(root).append(symbolWrapper, polygonWrapper);
     const SPACE = 4096;
-    const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
     let graph = null;
     let points = [];
@@ -844,7 +843,7 @@ Note that this may cause slow performance on larger networks.">
       const modal = $('.network-attribute-modal');
       // Its ID first (_id), then the attributes that aren't MicrobeTrace's own
       modal.querySelector('tbody').innerHTML = ['_id'].concat(Object.keys(node).filter(attribute => attribute[0] != '_'))
-        .map(attribute => `<tr><td><strong>${escape(MT.titleize(attribute))}</strong></td><td>${escape(node[attribute])}</td></tr>`)
+        .map(attribute => `<tr><td><strong>${MT.escape(MT.titleize(attribute))}</strong></td><td>${MT.escape(node[attribute])}</td></tr>`)
         .join('');
       bootstrap.Modal.getOrCreateInstance(modal).show();
     });
@@ -866,8 +865,8 @@ Note that this may cause slow performance on larger networks.">
       if (get('node-highlight')) highlightNeighbors(index);
       const variables = tooltipVariables();
       if (!variables.length) return;
-      const html = variables.length == 1 ? escape(d[variables[0]] == null ? '' : d[variables[0]]) :
-        '<table><tbody>' + variables.map(v => `<tr><td>${escape(MT.titleize(v))}</td><td>${escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
+      const html = variables.length == 1 ? MT.escape(d[variables[0]] == null ? '' : d[variables[0]]) :
+        '<table><tbody>' + variables.map(v => `<tr><td>${MT.escape(MT.titleize(v))}</td><td>${MT.escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
       MT.tooltip(html, event || mouse);
     }
 
@@ -881,7 +880,7 @@ Note that this may cause slow performance on larger networks.">
     function showLinkTooltip(index) {
       const v = get('link-tooltip-variable'), d = links[index];
       if (!v || v == 'None' || !d) return;
-      MT.tooltip(escape(d[v] == null ? '' : d[v]), mouse);
+      MT.tooltip(MT.escape(d[v] == null ? '' : d[v]), mouse);
     }
 
     function hideTooltip() {
@@ -990,14 +989,14 @@ Note that this may cause slow performance on larger networks.">
       const title = session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : 'Node ' + MT.titleize(variable);
       const counts = get('node-symbol-table-counts'), frequencies = get('node-symbol-table-frequencies');
       symbolTable.innerHTML = '<tr>' +
-        `<th class="p-1" contenteditable>${escape(title)}</th>` +
+        `<th class="p-1" contenteditable>${MT.escape(title)}</th>` +
         (counts ? '<th>Count</th>' : '') +
         (frequencies ? '<th>Frequency</th>' : '') +
         '<th>Shape</th></tr>';
       const options = $('[data-setting="node-symbol"]').innerHTML;
       values.forEach((v, i) => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td contenteditable>${escape(MT.valueLabel(v))}</td>` +
+        row.innerHTML = `<td contenteditable>${MT.escape(MT.valueLabel(v))}</td>` +
           (counts ? `<td>${aggregates[v]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[v] / count).toLocaleString()}</td>` : '') +
           `<td><select>${options}</select></td>`;
@@ -1204,7 +1203,7 @@ Note that this may cause slow performance on larger networks.">
         session.style.polygonColors.splice(i, 1, temp.style.polygonColorMap(value));
         session.style.polygonAlphas.splice(i, 1, temp.style.polygonAlphaMap(value));
         const row = document.createElement('tr');
-        row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
+        row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
           (counts ? `<td>${aggregates[value]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
           `<td><input type="color" value="${temp.style.polygonColorMap(value)}">${MT.transparencyButton}</td>`;
@@ -1658,7 +1657,7 @@ Note that this may cause slow performance on larger networks.">
     // The tooltip variables menu: up to three node variables
     const tooltipSelect = $('.node-tooltip-variable');
     const chosen = tooltipVariables();
-    tooltipSelect.innerHTML = session.data.nodeFields.map(f => `<option value="${escape(f)}">${escape(MT.titleize(f))}</option>`).join('');
+    tooltipSelect.innerHTML = session.data.nodeFields.map(f => `<option value="${MT.escape(f)}">${MT.escape(MT.titleize(f))}</option>`).join('');
     const tooltipMenu = MT.multiSelect(tooltipSelect, { max: 3 });
     tooltipMenu.setValue(chosen, true);
     tooltipMenu.on('change', () => settings.set('node-tooltip-variable', tooltipMenu.getValue()));

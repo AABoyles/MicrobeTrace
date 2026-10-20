@@ -390,7 +390,6 @@
     const pane = $('.left-pane');
     const container = $('.tree');
     const menu = $('.tree-context-menu');
-    const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     // The tree drawn, and the data it draws (rerooted, rotated and so on)
     let tree = null, data = null, size = null, destroyed = false;
 
@@ -551,7 +550,7 @@
     function showTooltip(args) {
       if (!settings.get('tree-tooltip-show')) return;
       const e = eventOf(args);
-      MT.tooltip(escape(e.target.getAttribute('title')), e);
+      MT.tooltip(MT.escape(e.target.getAttribute('title')), e);
     }
 
     // The context menu: rotate, flip or reroot at a branch

@@ -8,7 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const all = selector => Array.from(document.querySelectorAll(selector));
   const on = (id, type, fn) => byId(id).addEventListener(type, fn);
   const modal = (id, options) => bootstrap.Modal.getOrCreateInstance(byId(id), options);
-  const escape = value => String(value).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const escape = value => String(value).replace(/[&<>'"/\\]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "\\": "&#x5C;" })[c]);
+  MT.escape = escape;
 
   if (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.appName.indexOf("Microsoft Internet Explorer") >= 0) {
     byId("ie-warning").style.display = "block";
@@ -83,10 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // (Columns resized from the cells would take the clicks choosing a stash)
     columnDefaults: { resizable: false },
     columns: [
-      { title: "Name", field: "name", formatter: cell => cell.getValue() ? escape(cell.getValue()) : '<span class="text-muted">Untitled</span>' },
+      { title: "Name", field: "name", formatter: cell => cell.getValue() ? MT.escape(cell.getValue()) : '<span class="text-muted">Untitled</span>' },
       {
         title: "Stashed", field: "time", width: 190, hozAlign: "right", sorter: "number",
-        formatter: cell => escape(new Date(cell.getValue()).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }))
+        formatter: cell => MT.escape(new Date(cell.getValue()).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }))
       }
     ]
   });
@@ -107,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modal("session-recall-modal").hide();
     }).catch(error => {
       console.error(error);
-      MT.toast.error(`“${escape(stashName(stash))}” couldn't be recalled.`);
+      MT.toast.error(`"${MT.escape(stashName(stash))}" couldn't be recalled.`);
     });
   }
 
@@ -133,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(json => db.removeItem(stash.key).then(() => json))
       .then(json => {
         updateStashes();
-        MT.toast.warning(`Deleted “${escape(stashName(stash))}”. Click here to undo.`, 10, clicked => {
+        MT.toast.warning(`Deleted "${MT.escape(stashName(stash))}". Click here to undo.`, 10, clicked => {
           if (clicked) db.setItem(stash.key, json).then(updateStashes);
         });
       });
@@ -523,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     values.forEach((value, i) => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(names[value] || MT.valueLabel(value))}</td>` +
+      row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
         `<td><input type="color" value="${temp.style[colorMap](value)}">${MT.transparencyButton}</td>`;

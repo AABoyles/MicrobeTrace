@@ -371,7 +371,6 @@
     const layers = { ...MT.tileLayers(), countries: null, states: null, counties: null, nodes: null, links: null };
     let destroyed = false;
 
-    const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const field = name => {
       const value = settings.get('map-field-' + name);
       return value && value != 'None' ? value : null;
@@ -445,7 +444,7 @@
 
     function showTooltip(e, key) {
       const v = settings.get(key), d = e.layer && e.layer.options.data;
-      if (d && v && v != 'None' && d[v] != null && d[v] !== '') MT.tooltip(escape(d[v]), e.originalEvent);
+      if (d && v && v != 'None' && d[v] != null && d[v] !== '') MT.tooltip(MT.escape(d[v]), e.originalEvent);
     }
 
     // Clicking a node selects it alone (with Ctrl, adds or removes it)

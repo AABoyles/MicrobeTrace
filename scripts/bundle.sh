@@ -10,7 +10,6 @@ primaryscripts=(
   "node_modules/papaparse/papaparse.min.js"
   "node_modules/jszip/dist/jszip.min.js"
   "node_modules/xlsx/dist/xlsx.core.min.js"
-  "node_modules/xss/dist/xss.min.js"
   "node_modules/tn93/dist/tn93.min.js"
   "node_modules/d3/dist/d3.min.js"
   "node_modules/tabulator-tables/dist/js/tabulator.min.js"

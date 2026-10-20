@@ -747,7 +747,7 @@
         const tn = nodes.length;
         for (let i = 0; i < tn; i++) {
           nn += MT.addNode({
-            _id: filterXSS(nodes[i]),
+            _id: MT.escape(nodes[i]),
             origin: ['Genetic Distance']
           }, check, source);
         }

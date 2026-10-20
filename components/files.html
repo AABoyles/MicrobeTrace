@@ -456,7 +456,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           reader.readAsText(rawfile);
         }
       }).then(file => {
-        file.name = filterXSS(file.name);
+        file.name = MT.escape(file.name);
         file.extension = file.name.split('.').pop().toLowerCase();
         session.files.push(file);
         addToTable(file);
@@ -465,7 +465,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     // A file's row: its name, what kind of file it is, and the fields to read
     function addToTable(file) {
-      const extension = file.extension ? file.extension : filterXSS(file.name).split('.').pop().toLowerCase();
+      const extension = file.extension ? file.extension : MT.escape(file.name).split('.').pop().toLowerCase();
       //#291 restore to previous filetype selection if available
       const isFasta = 'fasta' == file.format || extension.indexOf('fas') > -1;
       const isNewick = 'newick' == file.format || extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
@@ -476,7 +476,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false, dateNF: 'yyyy-mm-dd' });
         const headers = [];
         data.forEach(row => Object.keys(row).forEach(key => {
-          const safeKey = filterXSS(key);
+          const safeKey = MT.escape(key);
           if (!headers.includes(safeKey)) headers.push(safeKey);
         }));
         addRow(file, kind, headers);
@@ -489,7 +489,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           delimiter: ',',
           header: true,
           preview: 1,
-          complete: output => addRow(file, kind, tabular ? output.meta.fields.map(filterXSS) : [])
+          complete: output => addRow(file, kind, tabular ? output.meta.fields.map(MT.escape) : [])
         });
       }
     }
@@ -669,10 +669,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const file = e.target.files[0];
       if (!file) return;
       file.text().then(text => MT.parseFASTA(text)).then(nodes => {
-        referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${filterXSS(d.seq)}"${i == 0 ? ' selected' : ''}>${filterXSS(d.id)}</option>`).join('');
+        referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${MT.escape(d.seq)}"${i == 0 ? ' selected' : ''}>${MT.escape(d.id)}</option>`).join('');
         referenceSelect.dispatchEvent(new Event('change'));
       });
-      $('.reference-file-name').textContent = filterXSS(file.name);
+      $('.reference-file-name').textContent = MT.escape(file.name);
     });
 
     referenceSelect.innerHTML = `
@@ -839,8 +839,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               let node = seqs[i];
               if (!node) continue;
               newNodes += MT.addNode({
-                _id: filterXSS(node.id),
-                seq: filterXSS(node.seq),
+                _id: MT.escape(node.id),
+                seq: MT.escape(node.seq),
                 origin: origin
               }, check, source);
             }
@@ -860,8 +860,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             const n = keys.length;
             let safeLink = {};
             for (let i = 0; i < n; i++) {
-              let key = filterXSS(keys[i]);
-              safeLink[key] =  (typeof link[key] === 'string')  ?   filterXSS(link[key]) : link[key];  // #195
+              let key = MT.escape(keys[i]);
+              safeLink[key] =  (typeof link[key] === 'string')  ?   MT.escape(link[key]) : link[key];  // #195
               if (!session.data.linkFields.includes(key)) {
                 session.data.linkFields.push(key);
               }
@@ -914,7 +914,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 data.map(forEachLink);
                 message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
                 results.meta.fields.forEach(key => {
-                  const safeKey = filterXSS(key);
+                  const safeKey = MT.escape(key);
                   if (!session.data.linkFields.includes(safeKey)) {
                     session.data.linkFields.push(safeKey);
                   }
@@ -954,18 +954,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             n = data.length;
             data.forEach(node => {
               let safeNode = {
-                _id: filterXSS('' + node[file.field1]),
-                seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),
+                _id: MT.escape('' + node[file.field1]),
+                seq: (file.field2 == 'None') ? '' : MT.escape(node[file.field2]),
                 origin: origin
               };
               Object.keys(node).forEach(key => {
                 // The columns chosen as the ID and sequence are those, not fields too
                 if (key == file.field1 || key == file.field2) return;
-                let safeKey = filterXSS(key);
+                let safeKey = MT.escape(key);
                 if (!session.data.nodeFields.includes(safeKey)) {
                   session.data.nodeFields.push(safeKey);
                 }
-                safeNode[safeKey] = filterXSS(node[key]);
+                safeNode[safeKey] = MT.escape(node[key]);
               });
               m += MT.addNode(safeNode, check, source);
             });
@@ -985,19 +985,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 let node = data.data;
                 n++;
                 let safeNode = {
-                  _id: filterXSS('' + node[file.field1]),
-                  seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),
+                  _id: MT.escape('' + node[file.field1]),
+                  seq: (file.field2 == 'None') ? '' : MT.escape(node[file.field2]),
                   origin: origin
                 };
                 Object.keys(node).forEach(key => {
                   // The columns chosen as the ID and sequence are those, not fields too
                   if (key == file.field1 || key == file.field2) return;
-                  let safeKey = filterXSS(key);
+                  let safeKey = MT.escape(key);
                   if (!session.data.nodeFields.includes(safeKey)) {
                     session.data.nodeFields.push(safeKey);
                   }
-                  // safeNode[safeKey] = filterXSS(node[key]);
-                  safeNode[safeKey] =  (typeof node[key] === 'string')  ?   filterXSS(node[key]) : node[key]; //#173
+                  // safeNode[safeKey] = MT.escape(node[key]);
+                  safeNode[safeKey] =  (typeof node[key] === 'string')  ?   MT.escape(node[key]) : node[key]; //#173
 
                 });
                 m += MT.addNode(safeNode, check, source);
@@ -1035,16 +1035,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 nodeIDs.forEach((cell, k) => {
                   if (k > 0) {
                     nn += MT.addNode({
-                      _id: filterXSS('' + cell),
+                      _id: MT.escape('' + cell),
                       origin: origin
                     }, check, source);
                   }
                 });
               } else {
-                const source = filterXSS('' + row[0]);
+                const source = MT.escape('' + row[0]);
                 row.forEach((cell, j) => {
                   if (j == 0) return;
-                  const target = filterXSS('' + nodeIDs[j]);
+                  const target = MT.escape('' + nodeIDs[j]);
                   if (source == target) return;
                   nl += MT.addLink({
                     source: source,
@@ -1076,7 +1076,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           let newNodes = 0;
           const tree = patristic.parseNewick(file.contents);
           temp.tree = tree;
-          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
+          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(MT.escape), n = labels.length;
           for (let i = 0; i < n; i++) {
             const source = labels[i];
             newNodes += MT.addNode({
