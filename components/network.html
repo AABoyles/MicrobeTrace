@@ -753,35 +753,105 @@ Note that this may cause slow performance on larger networks.">
       console.log('Network render time:', (Date.now() - start).toLocaleString(), 'ms');
     }
 
-    // Known positions are kept; a new node starts next to a placed neighbor, or
-    // near the middle.
+    // Strategic initial positioning: known positions are kept, foci-based groups
+// are placed on tight hex grids, connected components use BFS from highest-
+// degree nodes, and true orphans fall back to a random circle.
     function initialPositions() {
       const n = points.length;
       const pos = new Float32Array(2 * n);
       const placed = new Uint8Array(n);
-      const spread = 10 * Math.sqrt(n) + 50;
+      const linkDist = 50 + 1.4 * parseFloat(get('link-length'));
+
+      // Step 1: Preserve cached positions (from previous render, pinned nodes).
       points.forEach((d, i) => {
-        const x = d.fixed && isNumber(d.fx) ? d.fx : d.x, y = d.fixed && isNumber(d.fy) ? d.fy : d.y;
+        const x = d.fixed && isNumber(d.fx) ? d.fx : d.x,
+              y = d.fixed && isNumber(d.fy) ? d.fy : d.y;
         if (isNumber(x) && isNumber(y) && x == x && y == y) {
           pos[2 * i] = x;
           pos[2 * i + 1] = y;
           placed[i] = 1;
         }
       });
-      for (let i = 0; i < links.length; i++) {
-        const s = pointIndex.get(links[i].source), t = pointIndex.get(links[i].target);
-        if (placed[s] == placed[t]) continue;
-        const [from, to] = placed[s] ? [s, t] : [t, s];
-        pos[2 * to] = pos[2 * from] + (Math.random() - 0.5) * 20;
-        pos[2 * to + 1] = pos[2 * from + 1] + (Math.random() - 0.5) * 20;
-        placed[to] = 1;
+
+      // Step 2: Foci-based hex layout.  Group nodes by the foci variable
+      // (same logic as updateGroups) and place same-foci nodes in a tight
+      // hex packing, then arrange group centers on a coarser grid.
+      const fociVar = get('polygons-foci');
+      if (get('polygons-show') && fociVar && fociVar !== 'None') {
+        const byKey = new Map();
+        points.forEach((d, i) => {
+          if (placed[i]) return;
+          const key = '' + d[fociVar];
+          if (!key || key === 'undefined' || key === 'null') return;
+          if (!byKey.has(key)) byKey.set(key, []);
+          byKey.get(key).push(i);
+        });
+
+        // Place each group on a staggered grid, nodes within each group in a
+        // golden-angle spiral (hex packing).
+        const spacing = 3 * linkDist;
+        const cols = Math.max(1, Math.ceil(Math.sqrt(byKey.size)));
+
+        let groupIdx = 0;
+        byKey.forEach((indices, key) => {
+          if (indices.length < 3) return; // too small — let BFS handle it
+
+          const groupR = 3 * Math.sqrt(indices.length) + 10;
+          const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+
+          for (let j = 0; j < indices.length; j++) {
+            const i = indices[j];
+            const r = groupR * Math.sqrt(j / indices.length);
+            const a = j * goldenAngle;
+            pos[2 * i] = r * Math.cos(a);
+            pos[2 * i + 1] = r * Math.sin(a);
+          }
+
+          // Offset this group's positions by its grid position.
+          const col = groupIdx % cols;
+          const row = Math.floor(groupIdx / cols);
+          const ox = (row % 2 === 1) ? spacing * 0.5 : 0;
+          const cx = (col - cols / 2) * spacing + ox;
+          const cy = (row - Math.ceil(byKey.size / cols) / 2) * spacing;
+          const jitter = byKey.size > 3 ? spacing * 0.1 : 0;
+
+          for (let j = 0; j < indices.length; j++) {
+            const i = indices[j];
+            pos[2 * i] += cx + (Math.random() - 0.5) * jitter;
+            pos[2 * i + 1] += cy + (Math.random() - 0.5) * jitter;
+            placed[i] = 1;
+          }
+          groupIdx++;
+        });
       }
+
+      // Step 3: BFS from placed nodes — each placed neighbor anchors its
+      // unplaced links nearby.
+      for (let i = 0; i < links.length; i++) {
+        const s = pointIndex.get(links[i].source),
+              t = pointIndex.get(links[i].target);
+        if (placed[s] && placed[t]) continue;
+        if (placed[s]) {
+          pos[2 * t] = pos[2 * s] + (Math.random() - 0.5) * 20;
+          pos[2 * t + 1] = pos[2 * s + 1] + (Math.random() - 0.5) * 20;
+          placed[t] = 1;
+        } else if (placed[t]) {
+          pos[2 * s] = pos[2 * t] + (Math.random() - 0.5) * 20;
+          pos[2 * s + 1] = pos[2 * t + 1] + (Math.random() - 0.5) * 20;
+          placed[s] = 1;
+        }
+      }
+
+      // Step 4: True orphans — random circle fallback.
+      const spread = 10 * Math.sqrt(n) + 50;
       for (let i = 0; i < n; i++) {
         if (placed[i]) continue;
-        const r = spread * Math.sqrt(Math.random()), a = 2 * Math.PI * Math.random();
+        const r = spread * Math.sqrt(Math.random());
+        const a = 2 * Math.PI * Math.random();
         pos[2 * i] = SPACE / 2 + r * Math.cos(a);
         pos[2 * i + 1] = SPACE / 2 + r * Math.sin(a);
       }
+
       return pos;
     }
 
