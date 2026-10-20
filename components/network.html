@@ -575,7 +575,7 @@ Note that this may cause slow performance on larger networks.">
     let pointIndex = new Map();
     let links = [];
     let mouse = { clientX: 0, clientY: 0 };
-    let lastSync = 0, lastFit = 0;
+    let lastFit = 0;
     let diameters = new Float32Array(0), maxDiameter = 0;
     let autoFit = true;
     let destroyed = false;
@@ -645,7 +645,8 @@ Note that this may cause slow performance on larger networks.">
         pointGreyoutOpacity: 0.1,
         linkGreyoutOpacity: 0.1,
         onSimulationTick: () => {
-          if (Date.now() - lastSync > 5000) syncPositions();
+          // (The layout is read back from the GPU when it settles, or when
+          // something needs it: see MT.syncLayout)
           // Kept in view as the layout spreads, until the user zooms or pans
           if (autoFit && Date.now() - lastFit > 700) fit(300);
           drawOverlays();
@@ -693,7 +694,6 @@ Note that this may cause slow performance on larger networks.">
     // Copies the current layout into session.network.nodes, which the timeline,
     // other views and saved sessions read.
     function syncPositions() {
-      lastSync = Date.now();
       if (!graph || !points.length) return;
       const p = graph.getPointPositions();
       if (p.length < 2 * points.length) return;
@@ -709,16 +709,59 @@ Note that this may cause slow performance on larger networks.">
       });
     }
 
+    // A change to what's visible comes as several events (nodes, links,
+    // clusters): it's drawn once, after them all
+    let renderQueued = false;
+    function renderSoon() {
+      if (renderQueued) return;
+      renderQueued = true;
+      Promise.resolve().then(() => {
+        renderQueued = false;
+        render();
+      });
+    }
+
+    // Behind another view the network stops laying out, and what changes
+    // meanwhile is drawn when it's shown again
+    let hidden = false, wasRunning = false, stale = false;
+    function hide() {
+      if (hidden) return;
+      hidden = true;
+      if (!graph) return;
+      wasRunning = graph.isSimulationRunning;
+      if (wasRunning) graph.pause();
+    }
+    function show() {
+      if (!hidden) return;
+      hidden = false;
+      if (!graph) return;
+      if (stale) {
+        stale = false;
+        render();
+      } else if (wasRunning) {
+        graph.unpause();
+      }
+      drawOverlays();
+    }
+
     function render() {
       if (!graph) return;
+      if (hidden) {
+        stale = true;
+        return;
+      }
       const start = Date.now();
-      syncPositions();
       // While the global timeline plays, positions are kept in its nodes. (The
       // Epi Curve's date field is set then too, but also on its own.)
       const timeline = get('node-timeline-variable') != 'None';
       const newNodes = MT.getVisibleNodes(true);
-      const oldNodes = timeline ? session.network.timelineNodes : session.network.nodes;
       if (newNodes.length === 0 && !timeline) return;
+      // The same nodes (as a new threshold usually leaves them) keep their
+      // places on the GPU: only the links change. Reading the places back
+      // waits for the GPU to finish all it has queued.
+      const same = !timeline && newNodes.length == points.length && newNodes.every((d, i) => d._id === points[i]._id);
+      if (!same) syncPositions();
+      const oldNodes = same ? points : timeline ? session.network.timelineNodes : session.network.nodes;
 
       const previous = new Map(oldNodes.map(d => [d._id, d]));
       newNodes.forEach(d => {
@@ -740,7 +783,7 @@ Note that this may cause slow performance on larger networks.">
         pairs[2 * i + 1] = pointIndex.get(l.target);
       });
 
-      graph.setPointPositions(initialPositions());
+      if (!same) graph.setPointPositions(initialPositions());
       graph.setLinks(pairs);
       redrawNodes();
       updateNodeColors();
@@ -1723,7 +1766,7 @@ Note that this may cause slow performance on larger networks.">
       events.on('node-color-change', updateNodeColors),
       events.on('link-color-change', updateLinkColor),
       events.on('node-selected', updateSelection),
-      ...['node-visibility', 'link-visibility', 'cluster-visibility'].map(type => events.on(type, render)),
+      ...['node-visibility', 'link-visibility', 'cluster-visibility'].map(type => events.on(type, renderSoon)),
       events.on('stop-force-simulation', () => { if (graph) graph.pause(); }),
       ...floaters
     ];
@@ -1735,7 +1778,7 @@ Note that this may cause slow performance on larger networks.">
     // With links from several files, the links are colored by their file
     if (session.files.length > 1 && get('link-color-variable') == 'None') settings.set('link-color-variable', 'origin');
 
-    const handle = { graph: null, get points() { return points; }, get links() { return links; }, drawn, render, fit, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
+    const handle = { graph: null, get points() { return points; }, get links() { return links; }, get paused() { return hidden; }, drawn, render, fit, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
     self.cosmosLoading.then(() => {
       if (destroyed) return;
       createGraph();
@@ -1754,6 +1797,8 @@ Note that this may cause slow performance on larger networks.">
       // The page's floating panels this view shows (see MT.placePanels)
       panels: ['link-colors', 'node-colors', 'statistics'],
       resize: drawOverlays,
+      show,
+      hide,
       destroy() {
         destroyed = true;
         stop.forEach(fn => fn());

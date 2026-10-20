@@ -48,7 +48,7 @@ test('the view lists the fields files disagree on, and each file\'s values', asy
   await expect(view().locator('.conflicts-grid .tabulator-row')).toHaveCount(10);
   // In order of their IDs, the top file's value used
   expect(await view().locator('.tabulator-cell[tabulator-field="id"]').allTextContents()).toEqual(ids(10).map(id => id));
-  expect(await used('S0')).toBe('Texas');
+  await expect.poll(() => used('S0')).toBe('Texas');
   expect(await view().locator('.tabulator-col-title').allTextContents()).toEqual(['Node', 'nodes-cases.csv', 'nodes-lab.csv']);
   await expect(view().locator('.conflicts-rule')).toHaveValue('');
   expect(await view().locator('.conflicts-rule option').allTextContents()).toEqual(["The top file's (nodes-cases.csv)", "nodes-lab.csv's"]);
@@ -74,7 +74,7 @@ test('clicking another file\'s value uses it for that node, and the views follow
 test('a field can use another file\'s values, and picks can be cleared', async () => {
   await view().locator('.conflicts-rule').selectOption('nodes-lab.csv');
   await expect.poll(() => page.evaluate(() => ['S0', 'S5', 'S9', 'S20'].map(id => session.data.nodes.find(d => d._id == id).state))).toEqual(['Ohio', 'Ohio', 'Ohio', 'Texas']);
-  expect(await used('S0')).toBe('Ohio');
+  await expect.poll(() => used('S0')).toBe('Ohio');
   // A node's pick wins over the field's choice: pick the top file's for S2
   await row('S2').locator('.conflict-value', { hasText: 'Texas' }).click();
   await expect.poll(() => state('S2')).toBe('Texas');
@@ -86,7 +86,7 @@ test('a field can use another file\'s values, and picks can be cleared', async (
   // The other field keeps the top file's
   await view().locator('.conflicts-field').selectOption('date');
   await expect(view().locator('.conflicts-grid .tabulator-row')).toHaveCount(4);
-  expect(await used('S0')).toBe('2020-01-01');
+  await expect.poll(() => used('S0')).toBe('2020-01-01');
 });
 
 test('the table view shows the values chosen', async () => {
