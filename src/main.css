@@ -1521,3 +1521,13 @@ body.timeline-open #main-panel {
   color: var(--bs-body-color);
   background-color: var(--bs-body-bg);
 }
+
+/* Toast notifications (replaces alertifyjs) */
+.mt-toast-container .toast-custom {
+  --bs-toast-zindex: 9999;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
+.mt-toast-container .toast-custom.show {
+  opacity: 1;
+}

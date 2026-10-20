@@ -851,7 +851,7 @@ Note that this may cause slow performance on larger networks.">
     [['.copy-id', '_id'], ['.copy-sequence', 'seq']].forEach(([selector, key]) => menu.querySelector(selector).addEventListener('click', e => {
       e.preventDefault();
       if (!menuNode) return;
-      navigator.clipboard.writeText(String(menuNode[key] ?? '')).then(hideContextMenu, () => alertify.error("Couldn't copy to the clipboard"));
+      navigator.clipboard.writeText(String(menuNode[key] ?? '')).then(hideContextMenu, () => MT.toast.error("Couldn't copy to the clipboard"));
     }));
 
     // Tooltips: a node's tooltip variables (a table when there are several),
@@ -1747,7 +1747,7 @@ Note that this may cause slow performance on larger networks.">
       setTimeout(fit, 1200);
     }).catch(e => {
       console.error(e);
-      alertify.error('The 2D network needs WebGL, which this browser could not start.');
+      MT.toast.error('The 2D network needs WebGL, which this browser could not start.');
     });
 
     return {

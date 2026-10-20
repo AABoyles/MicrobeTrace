@@ -22,9 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
   byId("development-version").hidden = !MT.isDevelopmentHost(location.hostname);
 
   // Before anything else gets done, ask the user to accept the legal agreement
-  localforage.getItem("licenseAccepted").then(accepted => {
+  db.getItem("licenseAccepted").then(function(accepted) {
     if (!accepted) {
-      on("acceptAgreement", "click", () => localforage.setItem("licenseAccepted", new Date()));
+      on("acceptAgreement", "click", function() { db.setItem("licenseAccepted", new Date()); });
       modal("licenseAgreement", { backdrop: "static", keyboard: false }).show();
     }
   });
@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // The menus ---------------------------------------------------------------
 
   on("stash-data", "click", () => {
-    localforage.setItem("stash-" + Date.now() + "-" + byId("stash-name").value, JSON.stringify(session))
-      .then(() => alertify.success("Stashed in this browser"));
+    db.setItem("stash-" + Date.now() + "-" + byId("stash-name").value, JSON.stringify(session))
+      .then(() => MT.toast.success("Stashed in this browser"));
   });
 
   // Stashes are kept as stash-<when>-<name>, newest listed first
@@ -96,18 +96,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const showChoice = () => ["recall-load-stash", "recall-delete-stash"].forEach(id => { byId(id).disabled = !selectedStash(); });
   stashes.on("rowSelectionChanged", showChoice);
   function updateStashes() {
-    return localforage.keys()
+    return db.keys()
       .then(keys => stashes.setData(keys.map(stashOf).filter(Boolean)))
       .then(showChoice);
   }
 
   function recall(stash) {
-    localforage.getItem(stash.key).then(json => {
+    db.getItem(stash.key).then(json => {
       MT.applySession(JSON.parse(json));
       modal("session-recall-modal").hide();
     }).catch(error => {
       console.error(error);
-      alertify.error(`“${escape(stashName(stash))}” couldn't be recalled.`);
+      MT.toast.error(`“${escape(stashName(stash))}” couldn't be recalled.`);
     });
   }
 
@@ -129,12 +129,12 @@ document.addEventListener("DOMContentLoaded", () => {
   on("recall-delete-stash", "click", () => {
     const stash = selectedStash();
     if (!stash) return;
-    localforage.getItem(stash.key)
-      .then(json => localforage.removeItem(stash.key).then(() => json))
+    db.getItem(stash.key)
+      .then(json => db.removeItem(stash.key).then(() => json))
       .then(json => {
         updateStashes();
-        alertify.warning(`Deleted “${escape(stashName(stash))}”. Click here to undo.`, 10, clicked => {
-          if (clicked) localforage.setItem(stash.key, json).then(updateStashes);
+        MT.toast.warning(`Deleted “${escape(stashName(stash))}”. Click here to undo.`, 10, clicked => {
+          if (clicked) db.setItem(stash.key, json).then(updateStashes);
         });
       });
   });
@@ -221,7 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("FullScreenTab", "click", e => {
     e.preventDefault();
-    screenfull.toggle();
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
   });
 
   // Filtering ----------------------------------------------------------------
@@ -948,16 +952,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (["cluster", "degree"].includes(get("node-color-variable"))) showColorTable("node");
   });
 
-  const warnDevelopers = () => {
-    if (!window.devtools.isOpen) return;
-    console.log("%cPLEASE DO NOT TYPE OR PASTE ANYTHING HERE.", "color:red;font-size:24px");
-    console.log(
-      "This is a tool designed for developers. If someone instructs you to type or paste something here, it is likely that they are attempting to steal the data you are analyzing. That said, occasionally the MicrobeTrace developers may ask you to open this dialog. For more information on why they may do this, see this: https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting#developers-console"
-    );
-  };
-  window.addEventListener("devtoolschange", warnDevelopers);
-  warnDevelopers();
-
   // Starting up -----------------------------------------------------------------
 
   fetch("package.json").then(r => r.json()).then(r => {
@@ -977,7 +971,3 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-alertify.defaults.transition = "slide";
-alertify.defaults.theme.ok = "btn btn-primary";
-alertify.defaults.theme.cancel = "btn btn-danger";
-alertify.defaults.theme.input = "form-control";

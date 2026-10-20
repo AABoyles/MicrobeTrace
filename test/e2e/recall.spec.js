@@ -39,17 +39,17 @@ async function closeRecall() {
 }
 // Stashes of this session as stashing keeps them ([name, hours ago, contents])
 const stash = entries => page.evaluate(entries => Promise.all(entries.map(([name, hoursAgo, json]) =>
-  localforage.setItem('stash-' + Math.round(Date.now() - hoursAgo * 3600000) + '-' + name, json || JSON.stringify(session)))), entries);
-const stashKeys = () => page.evaluate(() => localforage.keys().then(keys => keys.filter(k => /^stash-\d/.test(k))));
+  db.setItem('stash-' + Math.round(Date.now() - hoursAgo * 3600000) + '-' + name, json || JSON.stringify(session)))), entries);
+const stashKeys = () => page.evaluate(() => db.keys().then(keys => keys.filter(k => /^stash-\d/.test(k))));
 
 test('the stashes are listed newest first, by name and when they were stashed', async () => {
   // (The autostash setting is kept alongside them)
-  await page.evaluate(() => localforage.setItem('stash-auto', '0'));
+  await page.evaluate(() => db.setItem('stash-auto', '0'));
   await stash([['Outbreak A, first look', 72], ['', 1], ['cluster <b>7</b>', 0]]);
   await openRecall();
   expect(await names()).toEqual(['cluster <b>7</b>', 'Untitled', 'Outbreak A, first look']);
   // When, as this browser writes dates and times
-  const expected = await page.evaluate(() => localforage.keys().then(keys => keys.filter(k => /^stash-\d/.test(k))
+  const expected = await page.evaluate(() => db.keys().then(keys => keys.filter(k => /^stash-\d/.test(k))
     .map(k => +k.split('-')[1]).sort((a, b) => b - a)
     .map(t => new Date(t).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }))));
   expect(await dialog().locator('.tabulator-cell[tabulator-field="time"]').allInnerTexts()).toEqual(expected);
@@ -115,7 +115,7 @@ test("a stash that can't be read says so", async () => {
 test('with nothing stashed, the dialog says so', async () => {
   await closeRecall();
   await page.evaluate(async () => {
-    for (const k of await localforage.keys()) if (/^stash-\d/.test(k)) await localforage.removeItem(k);
+    for (const k of await db.keys()) if (/^stash-\d/.test(k)) await db.removeItem(k);
   });
   await openRecall();
   await expect(rows()).toHaveCount(0);

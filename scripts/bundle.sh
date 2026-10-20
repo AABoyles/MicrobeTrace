@@ -5,11 +5,8 @@
 # index.html, components/files.html, or scripts/index.js
 primaryscripts=(
   "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-  "node_modules/alertifyjs/build/alertify.min.js"
   "temp.golden-layout.js"
   "node_modules/tom-select/dist/js/tom-select.complete.min.js"
-  "node_modules/fileto/fileto.js"
-  "temp.screenfull.js"
   "node_modules/papaparse/papaparse.min.js"
   "node_modules/jszip/dist/jszip.min.js"
   "node_modules/xlsx/dist/xlsx.core.min.js"
@@ -17,8 +14,6 @@ primaryscripts=(
   "node_modules/tn93/dist/tn93.min.js"
   "node_modules/d3/dist/d3.min.js"
   "node_modules/tabulator-tables/dist/js/tabulator.min.js"
-  "temp.devtools-detect.js"
-  "node_modules/localforage/dist/localforage.min.js"
 )
 
 # secondaryscripts is where you put scripts that must be loaded before a
@@ -43,7 +38,6 @@ primarystyles=(
   "node_modules/bootstrap/dist/css/bootstrap.min.css"
   "node_modules/golden-layout/dist/css/goldenlayout-base.css"
   "temp.goldenlayout-theme.css"
-  "node_modules/alertifyjs/build/css/alertify.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css"
   "temp.bootstrap-icons.css"
@@ -99,13 +93,6 @@ cp node_modules/papaparse/papaparse.min.js vendor/
 mkdir -p fonts && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* fonts/
 
 echo 'Building Dependencies...'
-
-# screenfull and devtools-detect are ES modules (a single `export default`), so they
-# are wrapped to set the same globals their older versions did.
-for module in screenfull devtools-detect; do
-  name=$( [ $module = screenfull ] && echo screenfull || echo devtools )
-  { echo "{"; sed "s/^export default $name;$/window.$name = $name;/" node_modules/$module/index.js; echo "}"; } > temp.$module.js
-done
 
 # TidyTree, with interrupted redraws no longer rejecting (see scripts/patch-tidytree.js)
 node scripts/patch-tidytree.js temp.tidytree.js || exit 1
