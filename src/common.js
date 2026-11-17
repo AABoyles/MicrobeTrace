@@ -765,7 +765,7 @@
   
   MT.r01 = Math.random;
   
-  // ported from https://github.com/CDCgov/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
+  // ported from https://github.com/aaboyles/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
   MT.generateSeqs = (idPrefix, count, snps, seed) => {
     let start = Date.now();
     if (!count) count = 1000;

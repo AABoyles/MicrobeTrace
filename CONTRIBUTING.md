@@ -12,11 +12,11 @@ are expected to abide by it.
 
 ## Open an issue in the repository
 If you don't have specific language to submit but would like to suggest a change
-or have something addressed, you can [open an issue in this repository](http://github.com/cdcgov/MicrobeTrace/issues).
+or have something addressed, you can [open an issue in this repository](http://github.com/aaboyles/MicrobeTrace/issues).
 Team members will respond to the issue as soon as possible.
 
 ## Submit a pull request
-If you would like to [contribute](https://github.com/CDCgov/MicrobeTrace/wiki/Contributing),
+If you would like to [contribute](https://github.com/aaboyles/MicrobeTrace/wiki/Contributing),
 please submit a pull request. In order for us to merge a pull request, it must:
 * Be at least seven days old. Pull requests may be held longer if necessary
   to give people the opportunity to assess it.
@@ -25,9 +25,9 @@ please submit a pull request. In order for us to merge a pull request, it must:
   discuss a plan of action for the pull request.
 
 ## Legal Stuff
-Before contributing, we encourage you to also read or [LICENSE](https://github.com/CDCgov/template/blob/master/LICENSE),
-[README](https://github.com/CDCgov/template/blob/master/README.md), and
-[code-of-conduct](https://github.com/CDCgov/template/blob/master/code-of-conduct.md)
+Before contributing, we encourage you to also read or [LICENSE](https://github.com/aaboyles/template/blob/master/LICENSE),
+[README](https://github.com/aaboyles/template/blob/master/README.md), and
+[code-of-conduct](https://github.com/aaboyles/template/blob/master/code-of-conduct.md)
 files, also found in this repository. If you have any inquiries or questions not
 answered by the content of this repository, feel free to [contact us](mailto:chiic@cdc.gov).
 

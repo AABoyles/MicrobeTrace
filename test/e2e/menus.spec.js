@@ -70,7 +70,7 @@ test('the empty Files view is a drop zone, and opens the file picker', async () 
 test('troubleshooting caching is in the Help menu', async () => {
   const items = await openMenu('Help');
   const link = items.locator('a', { hasText: 'Troubleshoot Caching' });
-  await expect(link).toHaveAttribute('href', 'https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting---Caching');
+  await expect(link).toHaveAttribute('href', 'https://github.com/aaboyles/MicrobeTrace/wiki/Troubleshooting---Caching');
   await expect(link).toHaveAttribute('target', '_blank');
   await closeMenu();
 });

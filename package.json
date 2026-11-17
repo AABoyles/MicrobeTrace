@@ -2,7 +2,7 @@
   "name": "MicrobeTrace",
   "version": "0.6.2",
   "description": "The Visualization Multitool for Molecular Epidemiology and Bioinformatics",
-  "homepage": "https://github.com/CDCgov/MicrobeTrace#readme",
+  "homepage": "https://github.com/aaboyles/MicrobeTrace#readme",
   "keywords": [
     "bioinformatics",
     "epidemiology",
@@ -20,17 +20,17 @@
     "genomic-data-analysis",
     "sequence-analysis"
   ],
-  "author": "Tony Boyles <nsp3@cdc.gov>",
+  "author": "Tony Boyles <aaboyles@gmail.com>",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CDCgov/MicrobeTrace.git"
+    "url": "git+https://github.com/aaboyles/MicrobeTrace.git"
   },
   "bugs": {
-    "url": "https://github.com/CDCgov/MicrobeTrace/issues"
+    "url": "https://github.com/aaboyles/MicrobeTrace/issues"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "scripts": {
     "build": "npm run compress",
