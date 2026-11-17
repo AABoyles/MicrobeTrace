@@ -1455,7 +1455,7 @@ Note that this may cause slow performance on larger networks.">
           [kind == 'node' ? 'Node' : 'Link']: names[value] ? names[value] : MT.valueLabel(value),
           Count: get(kind + '-color-table-counts') ? aggregates[value] : undefined,
           Frequency: get(kind + '-color-table-frequencies') ? (aggregates[value] / total).toLocaleString() : undefined,
-          Color: '<div style="margin-left:5px; width:40px;height:12px;background:' + colorMap(value) + '"> </div>'
+          Color: { swatch: colorMap(value) }
         }));
         return MT.tabulate(data, columns, document.getElementById(kind + '-color-table-wrapper'), svgNode, container);
       };
@@ -1469,7 +1469,9 @@ Note that this may cause slow performance on larger networks.">
         .attr('y', statsBox.top - viewBox.top)
         .attr('width', statsBox.width)
         .attr('height', statsBox.height);
-      stats.append('xhtml:body').html(statsDiv.innerHTML);
+      // Copies of the panel's nodes, not its markup parsed again
+      const statsBody = stats.append('xhtml:body').node();
+      Array.from(statsDiv.childNodes).forEach(child => statsBody.appendChild(child.cloneNode(true)));
       exportExtras = [wrapper, nodeLegend, linkLegend, stats];
       return svgNode;
     }
