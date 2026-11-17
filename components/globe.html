@@ -282,9 +282,6 @@
 
 <script>
   MT.registerView('globe', (root, { settings, events }) => {
-    ga('set', 'page', '/globe');
-    ga('set', 'title', 'Globe View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const pane = $('.left-pane');

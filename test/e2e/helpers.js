@@ -4,10 +4,7 @@ const fixtures = ['seqs.fasta', 'links.csv', 'nodes.csv'].map(f => path.join(__d
 
 // Errors that happen on master too, so they don't fail a test. Each is a bug to
 // fix; remove its pattern when it is.
-const KNOWN_ERRORS = [
-  /ga is not defined/,      // Google Analytics, blocked or offline
-  /googletagmanager|google-analytics|doubleclick/
-];
+const KNOWN_ERRORS = [];
 
 // Collects page errors and console errors, minus the known ones above.
 function watchErrors(page) {
@@ -32,6 +29,16 @@ const waitForModal = (page, selector) => page.waitForFunction(selector => {
     !(instance && instance._isTransitioning);
 }, selector);
 
+// Answers the "Replace the current session?" question (asked when opening or
+// recalling a session over loaded data) with Replace
+async function confirmReplace(page) {
+  await waitForModal(page, '#replace-modal');
+  await page.evaluate(() => { window.replacing = session; });
+  await page.click('#replace-button');
+  // (The session is replaced once the dialog has gone)
+  await page.waitForFunction(() => session !== window.replacing);
+}
+
 // Opens a view's export dialog from its button, once it has finished opening
 async function openExport(page, view, title) {
   await view.locator(`button[title="${title}"]`).click();
@@ -40,8 +47,40 @@ async function openExport(page, view, title) {
   return modal;
 }
 
-// Opens MicrobeTrace and dismisses the license agreement.
-async function open(page) {
+// Turns WebMCP on in this tab before the page loads (and again on reloads), as
+// the switch in Settings > AI Agents does; webmcp-optin.spec.js tests the switch
+const enableWebMCP = page => page.addInitScript(() => sessionStorage.setItem('microbetrace-webmcp', 'on'));
+
+// Runs fn (which calls WebMCP tools in the page), clicking Allow in each
+// confirmation dialog the calls raise, as the user would
+async function allowing(page, fn) {
+  let done = false;
+  const allow = page.locator('#webmcp-confirm-allow');
+  const clicker = (async () => {
+    while (!done) {
+      try { await allow.click({ timeout: 200 }); } catch (e) { /* none showing */ }
+      if (page.isClosed()) return;
+    }
+  })();
+  try { return await fn(); } finally { done = true; await clicker; }
+}
+
+// Calls WebMCP tools in the page, allowing any that ask the user: call returns
+// the plain result (or throws), fails the error message (or null), and agent
+// the content blocks an agent would get
+function webmcp(page) {
+  const run = (method, name, args) => allowing(page, () => page.evaluate(([method, name, args]) => MTWebMCP[method](name, args), [method, name, args || {}]));
+  return {
+    call: (name, args) => run('call', name, args),
+    agent: (name, args) => run('callAsAgent', name, args),
+    fails: (name, args) => allowing(page, () => page.evaluate(([name, args]) => MTWebMCP.call(name, args).then(() => null, e => e.message), [name, args || {}]))
+  };
+}
+
+// Opens MicrobeTrace and dismisses the license agreement. With webmcp: true,
+// WebMCP is turned on first.
+async function open(page, { webmcp = false } = {}) {
+  if (webmcp) await enableWebMCP(page);
   await page.goto('/index.html');
   await page.waitForSelector('#data-files', { state: 'attached' });
   const accept = page.locator('#acceptAgreement');
@@ -55,8 +94,8 @@ async function open(page) {
 
 // Loads the fixture network (300 sequences, a links file and a nodes file) and
 // waits for the default view and the network statistics.
-async function loadNetwork(page) {
-  await open(page);
+async function loadNetwork(page, options) {
+  await open(page, options);
   await page.setInputFiles('#data-files', fixtures);
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 3);
   await page.click('#launch');
@@ -93,4 +132,4 @@ async function imageStats(page, download) {
   }, data);
 }
 
-module.exports = { imageStats, fixtures, watchErrors, waitForModal, openExport, open, loadNetwork, launchView, viewNames, closeView };
+module.exports = { confirmReplace, imageStats, fixtures, watchErrors, waitForModal, openExport, open, loadNetwork, launchView, viewNames, closeView, enableWebMCP, allowing, webmcp };

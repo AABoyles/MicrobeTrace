@@ -1,19 +1,21 @@
 // WebMCP tools for views (src/webmcp/views.js)
 const { test, expect } = require('@playwright/test');
-const { watchErrors, loadNetwork } = require('./helpers');
+const { watchErrors, loadNetwork, webmcp } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
-let page, errors;
+let page, errors, tools;
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
   errors = watchErrors(page);
-  await loadNetwork(page);
+  await loadNetwork(page, { webmcp: true });
+  tools = webmcp(page);
 });
 test.afterAll(() => page.close());
 
-const call = (name, args) => page.evaluate(([n, a]) => MTWebMCP.call(n, a), [name, args || {}]);
-const agent = (name, args) => page.evaluate(([n, a]) => MTWebMCP.callAsAgent(n, a), [name, args || {}]);
+// Tools that ask the user are allowed, as the user would
+const call = (name, args) => tools.call(name, args);
+const agent = (name, args) => tools.agent(name, args);
 
 test('list_views and open_view', async () => {
   const list = await call('list_views');

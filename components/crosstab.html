@@ -84,9 +84,6 @@
 
 <script>
   MT.registerView('crosstab', (root, { events }) => {
-    ga('set', 'page', '/crosstab');
-    ga('set', 'title', 'Crosstab View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const fieldX = $('.crosstab-x'), fieldY = $('.crosstab-y');

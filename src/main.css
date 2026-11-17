@@ -960,6 +960,29 @@ body.timeline-open #main-panel {
   width: 100%;
   height: 100%;
 }
+/* Keyboard focus on the network (its node's ring is drawn on the canvas) */
+.network-view:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
+.network-keys {
+  position: absolute;
+  top: 48px;
+  left: 10px;
+  z-index: 1001;
+  max-width: 22rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--mt-text);
+  background-color: var(--mt-panel);
+  border: 1px solid var(--mt-border);
+  border-radius: 0.25rem;
+}
+.network-keys dt {
+  font-weight: 600;
+}
+.network-keys dd {
+  margin: 0 0 0.25rem;
+}
 .node-symbol-table-wrapper {
   max-height: 400px;
   overflow-y: auto;

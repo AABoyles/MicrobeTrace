@@ -382,9 +382,6 @@
 
 <script>
   MT.registerView('phylogenetic_tree', (root, { settings, events }) => {
-    ga('set', 'page', '/phylogenetic_tree');
-    ga('set', 'title', 'Phylogenetic Tree View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const pane = $('.left-pane');

@@ -1,10 +1,29 @@
-<div class="network-view" style="position: relative; overflow: hidden;">
+<!-- The network takes the keyboard itself (see "Keyboard and screen readers"
+     below): the graph has no element per node, so a node's description is
+     spoken through the status region after it -->
+<div class="network-view" style="position: relative; overflow: hidden;" tabindex="0" role="application" aria-label="Network" aria-describedby="network-keys-summary">
   <canvas class="network-underlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
   <div class="network-cosmos" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
   <canvas class="network-overlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
   <div class="network-brush" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; cursor: crosshair;">
     <div class="network-brush-rect" style="position: absolute; display: none; border: 1px solid #808080; background: rgba(128, 128, 128, 0.1);"></div>
   </div>
+</div>
+<div class="network-live visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+<p id="network-keys-summary" class="visually-hidden">Arrow keys move to the nearest node in that direction, N and P step through every node, L follows the focused node's links, Enter selects, F pins, M opens the node menu, Escape clears the selection, and question mark lists the keys. The Table view lists the same nodes.</p>
+<div id="network-keys" class="network-keys" hidden>
+  <h2 class="h6">Network keys</h2>
+  <p class="small mb-1">Click the network or Tab to it, then:</p>
+  <dl class="small mb-0">
+    <dt>Arrow keys</dt><dd>Nearest node in that direction</dd>
+    <dt>N / P, Home / End</dt><dd>Next / previous node, first / last</dd>
+    <dt>L / Shift+L</dt><dd>Next / previous linked node</dd>
+    <dt>Enter or Space</dt><dd>Select the node (Ctrl: add or remove it)</dd>
+    <dt>F</dt><dd>Pin or unpin the node</dd>
+    <dt>M, Shift+F10</dt><dd>Node menu (copy ID, attributes…)</dd>
+    <dt>I</dt><dd>Describe the node again</dd>
+    <dt>Escape</dt><dd>Clear the selection, then the focus</dd>
+  </dl>
 </div>
 
 <div class="view-controls">
@@ -19,6 +38,9 @@
   </button>
   <button id="pinbutton" type="button" class="btn btn-light btn-sm pin-button" data-toggle="button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
     <span class="bi bi-pin-angle"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm keys-button" title="Keyboard Shortcuts" aria-expanded="false" aria-controls="network-keys">
+    <span class="bi bi-keyboard"></span>
   </button>
 </div>
 
@@ -448,11 +470,11 @@ Note that this may cause slow performance on larger networks.">
   <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
 </div>
 
-<div class="dropdown-menu network-context-menu">
-  <a href="#" class="dropdown-item pin-node">Pin Node</a>
-  <a href="#" class="dropdown-item copy-id">Copy ID</a>
-  <a href="#" class="dropdown-item copy-sequence">Copy Sequence</a>
-  <a href="#" class="dropdown-item view-attributes">View Attributes</a>
+<div class="dropdown-menu network-context-menu" role="menu" aria-label="Node">
+  <a href="#" class="dropdown-item pin-node" role="menuitem">Pin Node</a>
+  <a href="#" class="dropdown-item copy-id" role="menuitem">Copy ID</a>
+  <a href="#" class="dropdown-item copy-sequence" role="menuitem">Copy Sequence</a>
+  <a href="#" class="dropdown-item view-attributes" role="menuitem">View Attributes</a>
 </div>
 
 <div class="modal fade selectable network-attribute-modal" tabindex="-1" role="dialog" aria-labelledby="network-attribute-modal-title">
@@ -543,9 +565,6 @@ Note that this may cause slow performance on larger networks.">
 
 <script>
   MT.registerView('network', (root, { settings, events }) => {
-    ga('set', 'page', '/network');
-    ga('set', 'title', '2D View');
-    ga('send', 'pageview');
 
     // The network is drawn and laid out on the GPU by cosmos.gl
     // (vendor/cosmos.min.js, loaded the first time this view opens). Point i of
@@ -579,7 +598,7 @@ Note that this may cause slow performance on larger networks.">
     let autoFit = true;
     let destroyed = false;
     // What the last overlay frame drew (for tests)
-    const drawn = { labels: 0, polygons: 0 };
+    const drawn = { labels: 0, polygons: 0, focus: 0 };
     const isNumber = a => typeof a == 'number';
 
     self.cosmosLoading = self.cosmosLoading || new Promise((resolve, reject) => {
@@ -774,6 +793,8 @@ Note that this may cause slow performance on larger networks.">
 
       session.network.nodes = points = newNodes;
       pointIndex = new Map(points.map((d, i) => [d._id, i]));
+      focused = focusId === undefined ? undefined : pointIndex.get(focusId);
+      walk = adjacency = null;
 
       links = MT.getVisibleLinks().filter(l => pointIndex.has(l.source) && pointIndex.has(l.target));
       const pairs = new Float32Array(links.length * 2);
@@ -784,6 +805,7 @@ Note that this may cause slow performance on larger networks.">
 
       if (!same) graph.setPointPositions(initialPositions());
       graph.setLinks(pairs);
+      describeView();
       redrawNodes();
       updateNodeColors();
       updateLinkColor();
@@ -907,6 +929,11 @@ Note that this may cause slow performance on larger networks.">
       const was = node.selected;
       if (!(event && event.ctrlKey)) session.data.nodes.forEach(d => d.selected = false);
       node.selected = !was;
+      // The keyboard carries on from the node clicked
+      focused = index;
+      focusId = n._id;
+      walk = null;
+      updateTracking();
       events.emit('node-selected', 'network');
     }
 
@@ -923,15 +950,20 @@ Note that this may cause slow performance on larger networks.">
       Object.assign(menu.style, { display: 'block', zIndex: 1000, opacity: 1, left: (event.clientX - box.left) + 'px', top: (event.clientY - box.top) + 'px' });
     }
 
+    // (Opened from the keyboard, the focus goes back to the network)
     function hideContextMenu() {
       menu.style.display = 'none';
+      if (menu.contains(document.activeElement)) container.focus();
     }
 
     menu.querySelector('.pin-node').addEventListener('click', e => {
       e.preventDefault();
       const d = menuNode;
       hideContextMenu();
-      if (!d) return;
+      if (d) togglePin(d);
+    });
+
+    function togglePin(d) {
       if (d.fixed) {
         d.fx = null;
         d.fy = null;
@@ -946,14 +978,16 @@ Note that this may cause slow performance on larger networks.">
         updatePins();
         refresh();
       }
-    });
+    }
 
     menu.querySelector('.view-attributes').addEventListener('click', e => {
       e.preventDefault();
+      const fromKeys = menu.contains(document.activeElement);
       hideContextMenu();
       if (!menuNode) return;
       const node = session.data.nodes.find(d => d._id == menuNode._id) || menuNode;
       const modal = $('.network-attribute-modal');
+      if (fromKeys) modal.addEventListener('hidden.bs.modal', () => container.focus(), { once: true });
       // Its ID first (_id), then the attributes that aren't MicrobeTrace's own
       modal.querySelector('tbody').innerHTML = ['_id'].concat(Object.keys(node).filter(attribute => attribute[0] != '_'))
         .map(attribute => `<tr><td><strong>${MT.escape(MT.titleize(attribute))}</strong></td><td>${MT.escape(node[attribute])}</td></tr>`)
@@ -1367,7 +1401,6 @@ Note that this may cause slow performance on larger networks.">
     // the color legends and the network statistics, for export.
     let exportExtras = [];
     function buildExportSVG() {
-      ga('send', 'event', '2D-network-export', 'trigger', 'on');
       syncPositions();
       const width = container.clientWidth, height = container.clientHeight, k = zoomScale();
       const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -1567,7 +1600,8 @@ Note that this may cause slow performance on larger networks.">
     function updateTracking() {
       if (!graph) return;
       const needAll = get('polygons-show') || (get('node-label-variable') != 'None' && points.length <= 2000);
-      graph.trackPointPositionsByIndices(needAll ? points.map((d, i) => i) : []);
+      // (and the keyboard's, for its ring)
+      graph.trackPointPositionsByIndices(needAll ? points.map((d, i) => i) : focused !== undefined ? [focused] : []);
     }
 
     function spacePosition(i, tracked) {
@@ -1630,7 +1664,7 @@ Note that this may cause slow performance on larger networks.">
       const w = container.clientWidth, h = container.clientHeight, k = zoomScale();
       const under = sizeCanvas(underlay), over = sizeCanvas(overlay);
       const tracked = graph.getTrackedPointPositionsMap();
-      drawn.labels = drawn.polygons = 0;
+      drawn.labels = drawn.polygons = drawn.focus = 0;
 
       if (get('network-gridlines-show')) {
         under.strokeStyle = 'lightgray';
@@ -1705,6 +1739,30 @@ Note that this may cause slow performance on larger networks.">
           });
         }
       }
+
+      // The keyboard's node: a ring in the contrast color with a halo of the
+      // background, and its ID above it
+      if (ringed()) {
+        const p = spacePosition(focused, tracked);
+        if (isNumber(p[0]) && isNumber(p[1])) {
+          const [x, y] = graph.spaceToScreenPosition(p);
+          const r = Math.max(6, diameters[focused] * k / 2) + 5;
+          over.beginPath();
+          over.arc(x, y, r, 0, 2 * Math.PI);
+          over.lineWidth = 6;
+          over.stroke();
+          over.lineWidth = 2.5;
+          over.strokeStyle = over.fillStyle;
+          over.stroke();
+          over.font = 'bold 14px sans-serif';
+          over.textAlign = 'center';
+          over.lineWidth = 3;
+          over.strokeStyle = get('background-color');
+          over.strokeText(points[focused]._id, x, y - r - 6);
+          over.fillText(points[focused]._id, x, y - r - 6);
+          drawn.focus = 1;
+        }
+      }
     }
 
     // Node hover is found here with cosmos.gl's synchronous point query: its own
@@ -1752,6 +1810,219 @@ Note that this may cause slow performance on larger networks.">
       cosmosDiv.style.cursor = index === undefined ? '' : 'pointer';
       if (index !== undefined) showNodeTooltip(index, null, mouse);
     }
+
+    // Keyboard and screen readers ----------------------------------------------
+
+    // The graph has no element per node, so the view itself takes the keys. One
+    // node at a time has the keyboard focus: it's ringed on the overlay and
+    // described in the status region (its ID, cluster, label and tooltip
+    // variables, and its visible links, closest first). Only the ring is drawn
+    // per frame; the rest runs on a key press.
+    const live = root.querySelector('.network-live');
+    const keysButton = $('.keys-button'), keysPanel = root.querySelector('.network-keys');
+    let focused, focusId;   // the focused point's index and node ID
+    let keyed = false;      // the focus came from the keyboard (so it's ringed)
+    let adjacency = null;   // each point's links, closest first (built when needed)
+    let walk = null;        // following links: the node it started from, which link, where it is
+    let spoken = '';
+
+    const plural = (n, word) => n.toLocaleString() + ' ' + word + (n == 1 ? '' : 's');
+    const format = v => isNumber(v) ? v.toLocaleString(undefined, { maximumSignificantDigits: 3 }) : MT.valueLabel(v);
+    const ringed = () => keyed && focused !== undefined && points[focused] &&
+      (document.activeElement === container || menu.contains(document.activeElement));
+
+    // The view's name says what's in it
+    function describeView() {
+      const clusters = new Set();
+      points.forEach(d => { if (d.cluster != null) clusters.add(d.cluster); });
+      container.setAttribute('aria-label', `Network of ${plural(points.length, 'node')} and ${plural(links.length, 'link')}` +
+        (clusters.size ? ` in ${plural(clusters.size, 'cluster')}` : ''));
+    }
+
+    function announce(text) {
+      // (The same words again are still spoken)
+      spoken = text == spoken.trim() ? text + ' ' : text;
+      live.textContent = spoken;
+    }
+
+    function neighbours(i) {
+      if (!adjacency) {
+        const key = get('link-sort-variable');
+        adjacency = points.map(() => []);
+        links.forEach(l => {
+          const s = pointIndex.get(l.source), t = pointIndex.get(l.target);
+          adjacency[s].push({ index: t, value: l[key] });
+          if (t !== s) adjacency[t].push({ index: s, value: l[key] });
+        });
+        const order = v => isNumber(v) ? v : Infinity;
+        adjacency.forEach(list => list.sort((a, b) => order(a.value) - order(b.value)));
+      }
+      return adjacency[i] || [];
+    }
+
+    // "Node S3, 4 of 300. Cluster 2, State Texas. Selected. 3 links: S1 0, S8 0.012, S9 0.015."
+    function describe(i, where) {
+      const d = points[i];
+      const parts = ['Node ' + d._id + (where ? ', ' + where : '')];
+      const variables = [...new Set(['cluster', get('node-label-variable')].concat(tooltipVariables()))]
+        .filter(v => v && v != 'None' && v != '_id' && d[v] != null && d[v] !== '' && d[v] !== d._id);
+      if (variables.length) parts.push(variables.map(v => MT.titleize(v) + ' ' + format(d[v])).join(', '));
+      const state = [d.selected && 'Selected', d.fixed && 'Pinned'].filter(Boolean);
+      if (state.length) parts.push(state.join(', '));
+      const near = neighbours(i);
+      const listed = near.slice(0, 5).map(n => points[n.index]._id + (n.value == null ? '' : ' ' + format(n.value)));
+      if (near.length > 5) listed.push(`and ${near.length - 5} more`);
+      parts.push(near.length ? plural(near.length, 'link') + ': ' + listed.join(', ') : 'No links');
+      return parts.join('. ') + '.';
+    }
+
+    function screenOf(i) {
+      const p = graph.getPointPositions();
+      return graph.spaceToScreenPosition([p[2 * i], p[2 * i + 1]]);
+    }
+
+    function focusPoint(i, where, before) {
+      if (!points[i]) return;
+      focused = i;
+      focusId = points[i]._id;
+      keyed = true;
+      updateTracking();
+      // Off screen, the view pans to it (keeping its zoom)
+      const [x, y] = screenOf(i), margin = 30;
+      if (x < margin || y < margin || x > container.clientWidth - margin || y > container.clientHeight - margin) {
+        autoFit = false;
+        graph.zoomToPointByIndex(i, 400, graph.getZoomLevel(), true);
+      }
+      drawOverlays();
+      announce((before ? before + ' ' : '') + describe(i, where));
+    }
+
+    // The nearest point on screen in a direction, preferring those within 45°
+    // of it; with none focused, the one nearest the middle
+    function nearest(dx, dy) {
+      const p = graph.getPointPositions();
+      const screen = i => graph.spaceToScreenPosition([p[2 * i], p[2 * i + 1]]);
+      let best, bestScore = Infinity, wide, wideScore = Infinity;
+      if (focused === undefined) {
+        const cx = container.clientWidth / 2, cy = container.clientHeight / 2;
+        points.forEach((d, i) => {
+          const [x, y] = screen(i), score = Math.hypot(x - cx, y - cy);
+          if (score < bestScore) [best, bestScore] = [i, score];
+        });
+        return best;
+      }
+      const [x0, y0] = screen(focused);
+      for (let i = 0; i < points.length; i++) {
+        if (i === focused) continue;
+        const [x, y] = screen(i);
+        const along = (x - x0) * dx + (y - y0) * dy, across = Math.abs((x - x0) * dy - (y - y0) * dx);
+        if (!(along > 0.5)) continue;
+        const score = along + 2 * across;
+        if (across <= along) {
+          if (score < bestScore) [best, bestScore] = [i, score];
+        } else if (score < wideScore) [wide, wideScore] = [i, score];
+      }
+      return best !== undefined ? best : wide;
+    }
+
+    const directions = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+    const noFocus = () => announce('No node is focused. Use the arrow keys or N to choose one.');
+
+    function onKey(e) {
+      if (e.target !== container || !graph || e.altKey) return;
+      const ctrl = e.ctrlKey || e.metaKey, key = e.key.length == 1 ? e.key.toLowerCase() : e.key;
+      const n = points.length;
+      const needsFocus = action => () => focused === undefined ? noFocus() : action(points[focused]);
+      let action;
+      if (directions[key] && !ctrl) action = () => {
+        const i = nearest(...directions[key]);
+        if (i === undefined) announce('No node that way.');
+        else focusPoint(i);
+      };
+      else if (!ctrl && (key == 'n' || key == 'p' || key == 'Home' || key == 'End')) action = () => {
+        const i = key == 'Home' ? 0 : key == 'End' ? n - 1 : focused === undefined ? (key == 'n' ? 0 : n - 1) : (focused + (key == 'n' ? 1 : n - 1)) % n;
+        focusPoint(i, `${(i + 1).toLocaleString()} of ${n.toLocaleString()}`);
+      };
+      else if (key == 'l' && !ctrl) action = needsFocus(() => {
+        if (!walk || walk.at !== focused) walk = { from: focused, k: e.shiftKey ? 0 : -1 };
+        const list = neighbours(walk.from), from = points[walk.from]._id;
+        if (!list.length) return announce(`Node ${from} has no links.`);
+        walk.k = (walk.k + (e.shiftKey ? list.length - 1 : 1)) % list.length;
+        const { index, value } = list[walk.k];
+        focusPoint(index, null, `Link ${walk.k + 1} of ${list.length} from ${from}` +
+          (value == null ? '.' : `, ${MT.titleize(get('link-sort-variable'))} ${format(value)}.`));
+        walk.at = index;
+      });
+      else if (key == 'Enter' || key == ' ') action = needsFocus(d => {
+        clickHandler(focused, null, { ctrlKey: ctrl });
+        const count = session.data.nodes.filter(node => node.selected).length;
+        announce(`${d._id} ${d.selected ? 'selected' : 'deselected'}. ${plural(count, 'node')} selected.`);
+      });
+      else if (key == 'f' && !ctrl) action = needsFocus(d => {
+        togglePin(d);
+        announce(`${d._id} ${d.fixed ? 'pinned' : 'unpinned'}.`);
+      });
+      else if ((key == 'm' && !ctrl) || key == 'ContextMenu' || (key == 'F10' && e.shiftKey)) action = needsFocus(() => {
+        const [x, y] = screenOf(focused), box = container.getBoundingClientRect();
+        showContextMenu(focused, null, new MouseEvent('contextmenu', { clientX: box.left + x, clientY: box.top + y }));
+        menu.querySelector('.dropdown-item').focus();
+      });
+      else if (key == 'i' && !ctrl) action = needsFocus(() => announce(describe(focused)));
+      else if (key == '?') action = () => toggleKeys();
+      if (!action) return;
+      e.preventDefault();
+      e.stopPropagation();
+      keyed = true;
+      if (!points.length) announce('The network has no nodes.');
+      else action();
+    }
+    container.addEventListener('keydown', onKey);
+
+    // Escape clears the selection, then the focus; in the node menu, the
+    // arrows move between its items, Space or Enter chooses one, and Escape or
+    // Tab go back to the network. (These are taken before the page's own:
+    // its Escape would close the settings pane, and Bootstrap's dropdown keys
+    // look for a toggle this menu doesn't have.)
+    const onKeyFirst = e => {
+      if (menu.contains(e.target)) {
+        const items = Array.from(menu.querySelectorAll('.dropdown-item')), at = items.indexOf(e.target);
+        if (e.key == 'ArrowDown' || e.key == 'ArrowUp') items[(at + (e.key == 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+        else if (e.key == ' ') e.target.click();
+        else if (e.key == 'Escape' || e.key == 'Tab') hideContextMenu();
+        else return;
+      } else if (e.key != 'Escape' || e.target !== container) return;
+      else if (!keysPanel.hidden) toggleKeys(false);
+      else if (session.data.nodes.some(d => d.selected)) {
+        session.data.nodes.forEach(d => { d.selected = false; });
+        events.emit('node-selected', 'network');
+        announce('Selection cleared.');
+      } else if (focused !== undefined) {
+        focused = focusId = undefined;
+        walk = null;
+        updateTracking();
+        drawOverlays();
+        announce('No node focused.');
+      } else return;
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    window.addEventListener('keydown', onKeyFirst, true);
+
+    // The ring shows while the view has the focus, from the keyboard
+    container.addEventListener('mousedown', () => {
+      if (!keyed) return;
+      keyed = false;
+      drawOverlays();
+    });
+    container.addEventListener('focus', drawOverlays);
+    container.addEventListener('blur', drawOverlays);
+
+    function toggleKeys(show = keysPanel.hidden) {
+      keysPanel.hidden = !show;
+      keysButton.setAttribute('aria-expanded', String(show));
+      keysButton.classList.toggle('active', show);
+    }
+    keysButton.addEventListener('click', () => toggleKeys());
 
     // Controls -----------------------------------------------------------------
 
@@ -1851,7 +2122,7 @@ Note that this may cause slow performance on larger networks.">
     // With links from several files, the links are colored by their file
     if (session.files.length > 1 && get('link-color-variable') == 'None') settings.set('link-color-variable', 'origin');
 
-    const handle = { graph: null, get points() { return points; }, get links() { return links; }, get paused() { return hidden; }, drawn, render, fit, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
+    const handle = { graph: null, get points() { return points; }, get links() { return links; }, get paused() { return hidden; }, get focused() { return focused; }, focus: i => focusPoint(i), drawn, render, fit, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
     self.cosmosLoading.then(() => {
       if (destroyed) return;
       createGraph();
@@ -1878,6 +2149,7 @@ Note that this may cause slow performance on larger networks.">
         window.removeEventListener('keydown', brushPointer);
         window.removeEventListener('keyup', brushPointer);
         window.removeEventListener('resize', onWindowResize);
+        window.removeEventListener('keydown', onKeyFirst, true);
         tooltipMenu.destroy();
         hideTooltip();
         if (graph) graph.destroy();

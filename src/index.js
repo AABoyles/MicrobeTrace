@@ -31,7 +31,32 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(error => {
+    // A new version is installed in the background but waits, so a session in
+    // progress isn't swapped under the user: they choose when to reload (#194)
+    // (The first install claims the page too; that needs no reload.)
+    let reloading = false;
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading || !hadController) return;
+      reloading = true;
+      location.reload();
+    });
+    const offerUpdate = worker => {
+      MT.toast.info("A new version is available. Click here to reload (unsaved work will be lost).", 0, clicked => {
+        if (clicked) worker.postMessage({ type: "SKIP_WAITING" });
+      });
+    };
+    navigator.serviceWorker.register("sw.js").then(registration => {
+      if (!registration) return;
+      // Only an update has a controller already; the first install needs no prompt
+      if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        worker.addEventListener("statechange", () => {
+          if (worker.state == "installed" && navigator.serviceWorker.controller) offerUpdate(worker);
+        });
+      });
+    }).catch(error => {
       console.error("Service Worker Registration failed with " + error);
     });
   }
@@ -64,11 +89,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // The menus ---------------------------------------------------------------
 
-  on("stash-data", "click", () => {
+  const stashSession = name => {
     MT.syncLayout();
-    db.setItem("stash-" + Date.now() + "-" + byId("stash-name").value, JSON.stringify(session))
+    return db.setItem("stash-" + Date.now() + "-" + name, JSON.stringify(session))
       .then(() => MT.toast.success("Stashed in this browser"));
-  });
+  };
+  on("stash-data", "click", () => stashSession(byId("stash-name").value));
+
+  // Replacing the session (Open, Recall, a dropped session file) asks first,
+  // when there is something to lose. There is no tracking of unsaved changes,
+  // so that is any data loaded: a session with none has nothing to lose.
+  // `cancelled` is told when the answer is no.
+  MT.confirmReplace = (replace, cancelled) => {
+    if (!session.data.nodes.length) return replace();
+    let answer = "cancel";
+    const dialog = byId("replace-modal");
+    const choose = choice => () => { answer = choice; };
+    const choices = [["replace-button", "replace"], ["replace-stash-first", "stash"]].map(([id, choice]) => {
+      const handler = choose(choice);
+      byId(id).addEventListener("click", handler);
+      return [id, handler];
+    });
+    dialog.addEventListener("hidden.bs.modal", () => {
+      choices.forEach(([id, handler]) => byId(id).removeEventListener("click", handler));
+      if (answer == "replace") replace();
+      else if (answer == "stash") stashSession("Before replacing, " + new Date().toLocaleString()).then(replace, () => MT.toast.error("Couldn't stash the current session, so it was kept."));
+      else if (cancelled) cancelled();
+    }, { once: true });
+    // (Escape and the backdrop dismiss it: Cancel)
+    modal("replace-modal", { backdrop: true, keyboard: true }).show();
+  };
 
   // Stashes are kept as stash-<when>-<name>, newest listed first
   const stashOf = key => {
@@ -105,7 +155,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function recall(stash) {
     db.getItem(stash.key).then(json => {
-      MT.applySession(JSON.parse(json));
+      const data = JSON.parse(json);
+      const load = () => {
+        MT.applySession(data);
+        modal("session-recall-modal").hide();
+      };
+      if (!session.data.nodes.length) return load();
+      // Ask once the Recall dialog is out of the way (and bring it back on Cancel)
+      const recallDialog = byId("session-recall-modal");
+      recallDialog.addEventListener("hidden.bs.modal", () =>
+        MT.confirmReplace(load, () => modal("session-recall-modal").show()), { once: true });
       modal("session-recall-modal").hide();
     }).catch(error => {
       console.error(error);
@@ -166,17 +225,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("OpenTab", "change", e => {
     const [file] = e.target.files;
+    // (So choosing the same file again, after cancelling, is a change)
+    e.target.value = "";
     if (!file) return;
     const extension = file.name.split(".").pop().toLowerCase();
-    if (extension == "zip") {
-      new JSZip().loadAsync(file).then(zip => {
-        zip.forEach((relativePath, zipEntry) => {
-          zipEntry.async("string").then(c => MT.processJSON(c, zipEntry.name.split(".").pop()));
+    MT.confirmReplace(() => {
+      if (extension == "zip") {
+        new JSZip().loadAsync(file).then(zip => {
+          zip.forEach((relativePath, zipEntry) => {
+            zipEntry.async("string").then(c => MT.processJSON(c, zipEntry.name.split(".").pop()));
+          });
         });
-      });
-    } else {
-      file.text().then(text => MT.processJSON(text, extension));
-    }
+      } else {
+        file.text().then(text => MT.processJSON(text, extension));
+      }
+    });
   });
 
   on("AddDataTab", "click", e => {
@@ -257,7 +320,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   settings.subscribe("link-show-nn", nn => {
     if (nn) {
-      ga('send', 'event', 'nearest-neighbor', 'trigger', 'on');
       showEpsilon();
       MT.computeMST(get("default-distance-metric")).then(updateNetwork);
     } else {
@@ -288,7 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
     else updateNetwork();
   });
   settings.subscribe("link-threshold", threshold => {
-    ga('send', 'event', 'threshold', 'update', threshold);
     settings.set("link-thresholds", Object.assign({}, get("link-thresholds"), { [get("link-sort-variable")]: threshold }));
     MT.markThreshold(threshold);
     updateNetwork();
@@ -332,6 +393,8 @@ document.addEventListener("DOMContentLoaded", () => {
       min = Number.MAX_SAFE_INTEGER;
     g.forEachValue(lsv, v => {
       v = parseFloat(v);
+      // Saturated distances are Infinity, and have no place on the scale (#281)
+      if (!isFinite(v)) return;
       if (v < min) min = v;
       if (v > max) max = v;
     });

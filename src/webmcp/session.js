@@ -22,6 +22,10 @@
 
   const dataLoaded = () => !!(self.session && self.session.data && self.session.data.nodes.length);
 
+  // An agent's text, quoted and short, for a confirmation message
+  const quote = text => JSON.stringify(String(text == null ? '' : text).slice(0, 100));
+  const replacing = () => dataLoaded() ? ', replacing the data loaded now' : '';
+
   function bytesOf(base64) {
     try {
       return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
@@ -189,6 +193,11 @@
       format: { type: 'string', enum: ['auto'].concat(FORMATS), default: 'auto', description: 'How to read the file' },
       replace: bool('Replace a pending file of the same name instead of failing', false)
     }, fieldProps), ['name']),
+    // It brings the agent's content into the page (and a session opens at once)
+    confirm: args => !String(args.name || '').trim() ? fail('name is required') :
+      /\.(microbetrace|hivtrace|zip)$/i.test(String(args.name).trim()) ?
+      'Open the session file ' + quote(args.name) + ', which the agent supplies' + replacing() + '.' :
+      'Add the file ' + quote(args.name) + ', which the agent supplies, to the files to load.',
     execute: async (args) => {
       const name = String(args.name || '').trim();
       if (!name) fail('name is required');
@@ -469,6 +478,7 @@
       'Fails if there are no files or a file has a problem (the error says which and how to fix it; see list_pending_files). Large sequence sets can take minutes.',
     inputSchema: obj({ timeoutMs: timeoutSchema(300000) }),
     annotations: { consequentialHint: true },
+    confirm: () => dataLoaded() ? 'Build a new network from the files waiting to load, replacing the network loaded now.' : null,
     execute: async (args) => {
       if (!self.session.files.length) fail('There are no files to launch. Add some with add_file (or use load_demo / generate_sequences / open_session).');
       const view = await filesView();
@@ -503,6 +513,7 @@
       timeoutMs: timeoutSchema(300000)
     }),
     annotations: { consequentialHint: true },
+    confirm: () => dataLoaded() || self.session.files.length ? 'Load the demo outbreak, replacing the current data and files.' : null,
     execute: async (args) => {
       const source = args.source || 'session';
       const timeout = args.timeoutMs || 300000;
@@ -541,6 +552,7 @@
       timeoutMs: timeoutSchema(300000)
     }),
     annotations: { consequentialHint: true },
+    confirm: args => args.launch && dataLoaded() ? 'Generate random sequences and launch them, replacing the network loaded now.' : null,
     execute: async (args) => {
       const view = await filesView();
       view.remove('generatedNodes.csv');
@@ -567,6 +579,7 @@
       timeoutMs: timeoutSchema(300000)
     }),
     annotations: { consequentialHint: true },
+    confirm: () => 'Open a session file, which the agent supplies' + replacing() + '.',
     execute: async (args) => {
       if (args.contents === undefined && args.contentsBase64 === undefined) fail('Give the session as contents (JSON text) or contentsBase64 (a zip)');
       let text = args.contents, extension = args.extension || 'auto';
@@ -590,6 +603,7 @@
       contents: str('The style file\'s JSON text'),
       style: { type: 'object', description: 'The style as an object (alternatively to contents)' }
     }),
+    confirm: () => 'Apply a style, which the agent supplies, replacing the current colors, view settings and other settings.',
     execute: async (args) => {
       let style = args.style;
       if (!style) {
@@ -643,6 +657,7 @@
       returnContents: bool('Return the JSON text in the result', true)
     }),
     annotations: { consequentialHint: true },
+    confirm: args => args.download ? 'Download the session (' + (args.format || 'microbetrace') + ') as a file' + (args.filename ? ' named ' + quote(args.filename) : '') + ' to this computer.' : null,
     execute: async (args) => {
       const MT = self.MT, format = args.format || 'microbetrace';
       const data = sessionText(format);
@@ -672,9 +687,14 @@
   define({
     name: 'new_session',
     title: 'Start a new session',
-    description: 'Discards the current session (all loaded data, files and settings) and starts empty at the Files view, as File > New does. This cannot be undone; stash_session or save_session first if the data matters. You must pass confirm: true.',
+    description: 'Discards the current session (all loaded data, files and settings) and starts empty at the Files view, as File > New does. This cannot be undone; stash_session or save_session first if the data matters. You must pass confirm: true (and the user must then allow it).',
     inputSchema: obj({ confirm: { type: 'boolean', description: 'Must be true to proceed' } }, ['confirm']),
     annotations: { consequentialHint: true },
+    // The confirm argument is the agent saying it means it; the user still decides
+    confirm: args => {
+      if (args.confirm !== true) fail('This discards all loaded data and settings. Pass confirm: true to proceed (stash_session or save_session first to keep it).');
+      return 'Discard all the loaded data, files and settings, and start a new session. This cannot be undone.';
+    },
     execute: async (args) => {
       if (args.confirm !== true) fail('This discards all loaded data and settings. Pass confirm: true to proceed (stash_session or save_session first to keep it).');
       self.MT.reset();
@@ -733,6 +753,7 @@
     title: 'Stash the session',
     description: 'Saves the current session in this browser under a name (key stash-<time>-<name>), to recall later with recall_stash, as File > Stash does. Stashed data stays on this computer\'s disk, which may matter for PII. Returns the stash\'s key.',
     inputSchema: obj({ name: str('A name for the stash (may be empty)') }),
+    confirm: args => 'Store a copy of the session, with all its data, in this browser' + (args.name ? ' as ' + quote(args.name) : '') + '.',
     execute: async (args) => {
       requireData();
       const key = 'stash-' + Date.now() + '-' + (args.name || '');
@@ -748,6 +769,8 @@
     description: 'Loads a stashed session (by key, or by name for the most recent with that name), replacing the current data. Waits for the network to load and returns the summary.',
     inputSchema: obj(Object.assign({ timeoutMs: timeoutSchema(300000) }, stashRef)),
     annotations: { consequentialHint: true },
+    // A stash is another dataset than the one the user is sharing, and recalling it replaces that
+    confirm: args => 'Recall the stashed session ' + quote(args.key || args.name) + replacing() + '.',
     execute: async (args) => {
       if (!args.key && !args.name && args.name !== '') fail('Give the stash\'s key or name (list_stashes shows them)');
       const stash = await findStash(args);
@@ -765,6 +788,7 @@
     description: 'Permanently deletes a stashed session (by key, or by name: the most recent with that name). It cannot be undone.',
     inputSchema: obj(stashRef),
     annotations: { consequentialHint: true },
+    confirm: args => 'Permanently delete the stashed session ' + quote(args.key || args.name) + '.',
     execute: async (args) => {
       const stash = await findStash(args);
       await self.db.removeItem(stash.key);
@@ -778,6 +802,7 @@
     description: 'Says whether autostash is on: when it is, a session is stashed automatically each minute (named "autostash") after it loads, so it can be recovered after a crash. This stores data on disk, which may matter for PII.',
     inputSchema: obj({}),
     annotations: { readOnlyHint: true },
+    untrusted: false,
     execute: async () => ({ autostash: (await self.db.getItem('stash-auto')) == 'true', running: !!(self.temp && self.temp.autostash) })
   });
 
@@ -786,6 +811,9 @@
     title: 'Set autostash',
     description: 'Turns autostash on or off (as the Files view\'s experimental setting does). Turning it on takes effect the next time a network loads; turning it off stops it immediately. Autostash writes the session to this browser\'s storage every minute.',
     inputSchema: obj({ enabled: { type: 'boolean' } }, ['enabled']),
+    untrusted: false,
+    // Turning it off stores less, so only turning it on asks
+    confirm: args => args.enabled ? 'Turn autostash on: every session loaded from now on would be saved in this browser each minute, until it is turned off.' : null,
     execute: async (args) => {
       await self.db.setItem('stash-auto', args.enabled ? 'true' : 'false');
       if (!args.enabled && self.temp && self.temp.autostash) clearInterval(self.temp.autostash.interval);

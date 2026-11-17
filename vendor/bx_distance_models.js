@@ -267,7 +267,7 @@ let wasm_bindgen = (function(exports) {
     /**
      * Compute Hamming distance between two aligned sequences.
      * Returns the proportion of differing positions (0 to 1) among compared sites,
-     * or 1.0 if there are none.
+     * or NaN if there are none (the distance is undefined).
      * @param {string} seq1
      * @param {string} seq2
      * @returns {number}
@@ -294,6 +294,7 @@ let wasm_bindgen = (function(exports) {
      * Compute Jukes-Cantor (JC69) distance between two aligned sequences.
      * A simple evolutionary model assuming all substitutions are equally likely.
      * This is a basic but fundamental model used in phylogenetics.
+     * Substitutions per site (may exceed 1); `Infinity` when p >= 3/4.
      * @param {string} seq1
      * @param {string} seq2
      * @returns {number}
@@ -312,6 +313,7 @@ let wasm_bindgen = (function(exports) {
      * Compute Kimura 2-Parameter (K2P) distance between two aligned sequences.
      * Accounts for different rates of transitions and transversions.
      * Simpler than TN93 but more accurate than Hamming or JC69.
+     * Substitutions per site (may exceed 1); `Infinity` when the model saturates.
      * @param {string} seq1
      * @param {string} seq2
      * @returns {number}
@@ -362,8 +364,10 @@ let wasm_bindgen = (function(exports) {
     exports.snps_distance = snps_distance;
 
     /**
-     * Compute Tajima-Nei 92 (TN92) distance between two aligned sequences.
-     * Similar to TN93 but with a slightly different parameterization.
+     * Compute the Tamura (1992) distance (T92) between two aligned sequences.
+     * Kimura's two-parameter model extended for G+C-content bias, using the G+C content of each
+     * sequence. Exposed as `tn92` for compatibility.
+     * Substitutions per site (may exceed 1); `Infinity` when the model saturates.
      * @param {string} seq1
      * @param {string} seq2
      * @returns {number}
@@ -382,6 +386,7 @@ let wasm_bindgen = (function(exports) {
      * Compute Tamura-Nei 93 (TN93) distance between two aligned sequences.
      * This is a more sophisticated nucleotide substitution model that accounts
      * for different rates of transitions and transversions.
+     * Substitutions per site (may exceed 1); `Infinity` when the model saturates.
      * @param {string} seq1
      * @param {string} seq2
      * @returns {number}

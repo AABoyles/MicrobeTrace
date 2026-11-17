@@ -80,9 +80,6 @@ For large sets of sequences, this can take a long time.">
 
 <script>
   MT.registerView('sequences', (root, { settings, events }) => {
-    ga('set', 'page', '/sequences');
-    ga('set', 'title', 'Sequences View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const panel = $('.sequences-panel');

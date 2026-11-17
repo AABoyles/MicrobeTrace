@@ -268,9 +268,14 @@
   }
 
   function summarizeValues(values, { field, top = 20, bins = 10 } = {}) {
-    const present = values.filter(v => !isEmpty(v) && !(typeof v == 'string' && v === 'null'));
+    let present = values.filter(v => !isEmpty(v) && !(typeof v == 'string' && v === 'null'));
+    // Saturated distances are Infinity (#281): they'd make the field non-numeric
+    // and the histogram infinitely wide, so they're counted apart
+    const infinite = present.filter(v => typeof v == 'number' && (v === Infinity || v === -Infinity)).length;
+    if (infinite) present = present.filter(v => !(typeof v == 'number' && (v === Infinity || v === -Infinity)));
     const type = inferType(present, field);
-    const out = { type, count: present.length, empty: values.length - present.length };
+    const out = { type, count: present.length, empty: values.length - present.length - infinite };
+    if (infinite) out.infinite = infinite;
     if (type == 'sequence') {
       const lengths = present.map(s => String(s).length).sort((a, b) => a - b);
       out.length = { min: lengths[0] ?? null, max: lengths[lengths.length - 1] ?? null, median: quantile(lengths, 0.5) };
@@ -861,12 +866,12 @@
       if (args.format == 'pairs') {
         const pairs = [];
         let k = 0;
-        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++, k++) if (tri[k] == tri[k]) pairs.push({ source: labels[i], target: labels[j], value: round(tri[k], dec) });
+        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++, k++) if (isFinite(tri[k])) pairs.push({ source: labels[i], target: labels[j], value: round(tri[k], dec) });
         return { metric, labels, pairs };
       }
       const matrix = Array.from({ length: n }, (_, i) => { const r = new Array(n).fill(null); r[i] = 0; return r; });
       let k = 0;
-      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++, k++) { const v = tri[k]; if (v == v) matrix[i][j] = matrix[j][i] = round(v, dec); }
+      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++, k++) { const v = tri[k]; if (isFinite(v)) matrix[i][j] = matrix[j][i] = round(v, dec); }
       return { metric, labels, matrix };
     }
   });

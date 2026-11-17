@@ -2,23 +2,26 @@
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { watchErrors, open } = require('./helpers');
+const { watchErrors, open, webmcp } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
 const fixture = name => fs.readFileSync(path.join(__dirname, 'fixtures', name), 'utf8');
 
-let page, errors;
+let page, errors, tools;
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
   errors = watchErrors(page);
-  await open(page);
+  await open(page, { webmcp: true });
   await page.waitForFunction(() => window.MTWebMCP && MTWebMCP.tools.has('launch') && MT.filesView);
+  tools = webmcp(page);
 });
 test.afterAll(() => page.close());
 
-const call = (name, args) => page.evaluate(([name, args]) => MTWebMCP.call(name, args), [name, args || {}]);
-const fails = (name, args) => page.evaluate(([name, args]) => MTWebMCP.call(name, args).then(() => null, e => e.message), [name, args || {}]);
+// Tools that ask the user are allowed, as the user would (webmcp-optin.spec.js
+// tests the asking)
+const call = (name, args) => tools.call(name, args);
+const fails = (name, args) => tools.fails(name, args);
 
 test('defines the session tools', async () => {
   const names = await page.evaluate(() => MTWebMCP.list().map(t => t.name));

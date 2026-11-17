@@ -20,9 +20,6 @@
 
 <script>
   MT.registerView('waterfall', (root, { settings, events, container }) => {
-    ga('set', 'page', '/waterfall');
-    ga('set', 'title', 'Waterfall View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const lists = { clusters: $('.waterfall-clusters'), nodes: $('.waterfall-nodes'), links: $('.waterfall-links') };

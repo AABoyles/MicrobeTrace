@@ -18,10 +18,6 @@ const FILES = ['distances', 'ambiguity'];
 const num = v => typeof v == 'number' ? v : Number(v);
 const near = (got, want, tol) => got === want || Math.abs(got - want) <= tol * Math.max(1, Math.abs(want));
 
-// Discrepancies with the reference, kept as todo tests (see test/golden/README.md)
-const TN92_TODO = 'the vendored bx-distance-models (39f47f3) "tn92" is not Tamura (1992), and can fall below the p-distance; ' +
-  'e.g. ref vs tv: app 0.0063175, reference 0.0254822 (= K2P at 50% G+C)';
-
 // Checks every pair of one metric; ts_tv_ratio has no value when a pair has
 // neither transitions nor transversions, which the app reports as 0 (a convention).
 function checkMetric(metric, got, want, pairs, tol) {
@@ -81,7 +77,7 @@ for (const file of FILES) {
       const exp = expected(`${file}.expected.json`);
       const results = await workerDistances(await parseFasta(`${file}.fasta`), mode);
       for (const [m, metric] of METRICS.entries()) {
-        await t.test(metric, { todo: metric == 'tn92' ? TN92_TODO : false }, () =>
+        await t.test(metric, () =>
           checkMetric(metric, results[m], exp.modes[mode][metric], exp.pairs, 1e-9));
       }
     });
@@ -112,7 +108,7 @@ for (const file of FILES) {
       const exp = expected(`${file}.expected.json`);
       const { MT, ids } = await pipeline(file, strategy);
       for (const metric of METRICS) {
-        await t.test(metric, { todo: metric == 'tn92' ? TN92_TODO : false }, () => {
+        await t.test(metric, () => {
           const { tri } = MT.getCondensedDM(metric, ids);
           checkMetric(metric, Array.from(tri), exp.modes[mode][metric], exp.pairs, 1e-6);
         });
@@ -157,15 +153,22 @@ for (const file of FILES) {
       const k = exp.pairs.map((p, i) => i).filter(i => !gapFacesBase[i]);
       checkMetric('tn93', k.map(i => got[i]), k.map(i => want[i]), k.map(i => exp.pairs[i]), 1e-6);
     });
-    await t.test('pairs where a gap faces a base', {
-      todo: 'tn93.js weighs an N (so a GapMM gap) 1/3 per base, not 1/4, and B 1/2, not 1/3: ' +
-        'e.g. ref vs gapped: app 0.1330724, tn93 -a gapmm 0.1084786'
-    }, () => {
+    await t.test('pairs where a gap faces a base', () => {
       const k = exp.pairs.map((p, i) => i).filter(i => gapFacesBase[i]);
       checkMetric('tn93', k.map(i => got[i]), k.map(i => want[i]), k.map(i => exp.pairs[i]), 1e-6);
     });
   });
 }
+
+// GapMM weights: each resolutionsCount entry is 1 / (bases its resolution covers), 0 if none
+test('tn93.min.js resolutionsCount matches resolutions', () => {
+  const { resolutions, resolutionsCount } = tn93js;
+  assert.strictEqual(resolutionsCount.length, resolutions.length);
+  resolutions.forEach((r, i) => {
+    const bases = r.reduce((a, b) => a + b, 0);
+    assert.strictEqual(resolutionsCount[i], bases ? 1 / bases : 0, `resolutionsCount[${i}]`);
+  });
+});
 
 // HIV-TRACE -g: hivtrace runs tn93 -a resolve -g FRACTION, which decides pair by
 // pair whether to average. MicrobeTrace decides sequence by sequence: a pair is
