@@ -29,6 +29,16 @@ const waitForModal = (page, selector) => page.waitForFunction(selector => {
     !(instance && instance._isTransitioning);
 }, selector);
 
+// Answers the "Replace the current session?" question (asked when opening or
+// recalling a session over loaded data) with Replace
+async function confirmReplace(page) {
+  await waitForModal(page, '#replace-modal');
+  await page.evaluate(() => { window.replacing = session; });
+  await page.click('#replace-button');
+  // (The session is replaced once the dialog has gone)
+  await page.waitForFunction(() => session !== window.replacing);
+}
+
 // Opens a view's export dialog from its button, once it has finished opening
 async function openExport(page, view, title) {
   await view.locator(`button[title="${title}"]`).click();
@@ -122,4 +132,4 @@ async function imageStats(page, download) {
   }, data);
 }
 
-module.exports = { imageStats, fixtures, watchErrors, waitForModal, openExport, open, loadNetwork, launchView, viewNames, closeView, enableWebMCP, allowing, webmcp };
+module.exports = { confirmReplace, imageStats, fixtures, watchErrors, waitForModal, openExport, open, loadNetwork, launchView, viewNames, closeView, enableWebMCP, allowing, webmcp };
