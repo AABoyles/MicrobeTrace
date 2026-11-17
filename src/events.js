@@ -19,6 +19,7 @@
     'node-values-change': 'nodes took other files\' values for a field (detail: the field)',
     'link-visibility': 'which links are visible changed',
     'cluster-visibility': 'which clusters are visible changed',
+    'session-loaded': 'a network finished loading and its clusters are tagged (files were launched or a session was opened)',
     'stop-force-simulation': 'the network layout should stop (a new session is replacing this one)'
   };
 

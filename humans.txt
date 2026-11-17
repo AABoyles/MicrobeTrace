@@ -1,5 +1,5 @@
 /* TEAM */
-  Chief Developer: Tony Boyles <tony@ephemer.ai>
+  Chief Developer: Tony Boyles <aaboyles@gmail.com>
 
   Algorithms Guru: Sergey Kniazev
 
@@ -8,13 +8,3 @@
   Head Writer: Anupama Shankar
 
   Fearless Leader: Bill Switzer
-
-  Retired Developers: Jay Kim (Miss you, dude!)
-
-/* SITE */
-  Doctype: HTML5
-	IDE: Atom, VSCode (When Atom chokes), Notepad++
-  Browsers: Chrome, Firefox, Safari
-
-/* NOTES */
-  Build 1

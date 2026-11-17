@@ -1,4 +1,4 @@
-FROM node:14.8.0-slim
+FROM dhi.io/node:26-alpine-dev
 WORKDIR /usr/src/app/
 COPY package*.json ./
 RUN npm install

@@ -215,7 +215,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     For best results, please align your sequences using
                     <a href="https://en.wikipedia.org/wiki/List_of_sequence_alignment_software" class="alert-link" target="_blank" rel="noreferrer noopener">an external tool</a>
                     before loading them into MicrobeTrace.
-                    <a href="https://github.com/CDCgov/MicrobeTrace/wiki/Alignment" class="alert-link ifOnline" target="_blank" rel="noreferrer noopener">Read more about alignment in MicrobeTrace.</a>
+                    <a href="https://github.com/aaboyles/MicrobeTrace/wiki/Alignment" class="alert-link ifOnline" target="_blank" rel="noreferrer noopener">Read more about alignment in MicrobeTrace.</a>
                   </p>
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -366,6 +366,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // The files' order, which ranks them where they disagree, follows their
     // rows, which can be dragged by their grips
     const fileOf = new WeakMap();
+    const rowOf = new WeakMap(); // a file's row, and the columns it has
+    const headersOf = new WeakMap();
     const showOrderHint = () => { $('.file-order-hint').hidden = $$('.file-table-row').length < 2; };
     MT.sortable(table, { items: '.file-table-row', handle: '.file-grip', forcePlaceholderSize: true });
     table.addEventListener('sortupdate', () => {
@@ -442,8 +444,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         rawfile.text().then(text => MT.processSVG(text));
         return;
       }
-      fileto.promise(rawfile, (extension == 'xlsx' || extension == 'xls') ? 'ArrayBuffer' : 'Text').then(file => {
-        file.name = filterXSS(file.name);
+      var extension_for_reader = (extension == 'xlsx' || extension == 'xls') ? 'ArrayBuffer' : 'Text';
+      new Promise((resolve) => {
+        var reader = new FileReader();
+        reader.onload = (e) => {
+          var file = { name: rawfile.name, lastModified: rawfile.lastModified, extension: extension };
+          file.contents = e.target.result;
+          resolve(file);
+        };
+        if (extension_for_reader == 'ArrayBuffer') {
+          reader.readAsArrayBuffer(rawfile);
+        } else {
+          reader.readAsText(rawfile);
+        }
+      }).then(file => {
+        file.name = MT.escape(file.name);
         file.extension = file.name.split('.').pop().toLowerCase();
         session.files.push(file);
         addToTable(file);
@@ -452,7 +467,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     // A file's row: its name, what kind of file it is, and the fields to read
     function addToTable(file) {
-      const extension = file.extension ? file.extension : filterXSS(file.name).split('.').pop().toLowerCase();
+      const extension = file.extension ? file.extension : MT.escape(file.name).split('.').pop().toLowerCase();
       //#291 restore to previous filetype selection if available
       const isFasta = 'fasta' == file.format || extension.indexOf('fas') > -1;
       const isNewick = 'newick' == file.format || extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
@@ -463,7 +478,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false, dateNF: 'yyyy-mm-dd' });
         const headers = [];
         data.forEach(row => Object.keys(row).forEach(key => {
-          const safeKey = filterXSS(key);
+          const safeKey = MT.escape(key);
           if (!headers.includes(safeKey)) headers.push(safeKey);
         }));
         addRow(file, kind, headers);
@@ -476,7 +491,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           delimiter: ',',
           header: true,
           preview: 1,
-          complete: output => addRow(file, kind, tabular ? output.meta.fields.map(filterXSS) : [])
+          complete: output => addRow(file, kind, tabular ? output.meta.fields.map(MT.escape) : [])
         });
       }
     }
@@ -511,6 +526,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           </div>`).join('')}
         </div>`;
       row.querySelector('.file-title').textContent = file.name;
+      rowOf.set(file, row);
+      headersOf.set(file, headers);
       const fields = Array.from(row.querySelectorAll('.file-field'));
       const selects = fields.map(f => f.querySelector('select'));
       const kindOf = () => row.querySelector(`input[name="${group}"]:checked`).value;
@@ -656,10 +673,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const file = e.target.files[0];
       if (!file) return;
       file.text().then(text => MT.parseFASTA(text)).then(nodes => {
-        referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${filterXSS(d.seq)}"${i == 0 ? ' selected' : ''}>${filterXSS(d.id)}</option>`).join('');
+        referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${MT.escape(d.seq)}"${i == 0 ? ' selected' : ''}>${MT.escape(d.id)}</option>`).join('');
         referenceSelect.dispatchEvent(new Event('change'));
       });
-      $('.reference-file-name').textContent = filterXSS(file.name);
+      $('.reference-file-name').textContent = MT.escape(file.name);
     });
 
     referenceSelect.innerHTML = `
@@ -700,24 +717,34 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       audited.append(row);
     }
 
-    $('.audit-launcher').addEventListener('click', () => readFastas().then(data => {
-      const start = Date.now();
+    // What looks wrong with each sequence, as [{id, type}]: check(name) says
+    // whether to look for each of the Audit tab's problems (empty, gaps, RNA,
+    // amino-acids, CIGAR, malformed)
+    function auditSequences(data, check) {
       const isGaps = /^-+$/;
       const isRNA = /^[ACGURYMKWSBDHVN-]+$/;
       const isAA = /^[ARNDCQEGHILKMFPSTWYVBZN]+$/;
       const isDNA = /^[ACGTRYMKWSBDHVN-]+$/;
       const isCIGAR = /^[0-9MIDNSHP=X]+$/;
       const isMalformed = /[^ACGTURYMKWSBDHVNQEILFPZX0-9-]+/;
+      const found = [];
+      const log = (id, type) => found.push({ id, type });
+      data.forEach(({ seq, id }) => {
+        if (check('empty') && seq == '') log(id, 'empty');
+        if (check('gaps') && isGaps.test(seq)) log(id, 'all gaps');
+        if (check('RNA') && isRNA.test(seq) && !isGaps.test(seq) && /U/.test(seq)) log(id, 'RNA');
+        if (check('amino-acids') && isAA.test(seq) && !isDNA.test(seq)) log(id, 'amino acids');
+        if (check('CIGAR') && isCIGAR.test(seq)) log(id, 'a CIGAR');
+        if (check('malformed') && isMalformed.test(seq)) log(id, 'malformed');
+      });
+      return found;
+    }
+
+    $('.audit-launcher').addEventListener('click', () => readFastas().then(data => {
+      const start = Date.now();
       const check = name => modal.querySelector(`[name="audit-${name}"]`).checked;
       audited.innerHTML = '';
-      data.forEach(({ seq, id }) => {
-        if (check('empty') && seq == '') logAudit(id, 'empty');
-        if (check('gaps') && isGaps.test(seq)) logAudit(id, 'all gaps');
-        if (check('RNA') && isRNA.test(seq) && !isGaps.test(seq) && /U/.test(seq)) logAudit(id, 'RNA');
-        if (check('amino-acids') && isAA.test(seq) && !isDNA.test(seq)) logAudit(id, 'amino acids');
-        if (check('CIGAR') && isCIGAR.test(seq)) logAudit(id, 'a CIGAR');
-        if (check('malformed') && isMalformed.test(seq)) logAudit(id, 'malformed');
-      });
+      auditSequences(data, check).forEach(({ id, type }) => logAudit(id, type));
       console.log('Sequence Auditing time:', (Date.now() - start).toLocaleString(), 'ms');
     }));
 
@@ -759,10 +786,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // Autostashing is kept by the browser
     $$('input[name="stash-auto"]').forEach(input => input.addEventListener('change', () => {
       if (!input.checked) return;
-      localforage.setItem('stash-auto', input.value);
+      db.setItem('stash-auto', input.value);
       if (input.value == 'false' && temp.autostash) clearInterval(temp.autostash.interval);
     }));
-    localforage.getItem('stash-auto').then(autostash => {
+    db.getItem('stash-auto').then(autostash => {
       if (autostash == 'true') $('input[name="stash-auto"][value="true"]').click();
     });
 
@@ -797,7 +824,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     const launch = async () => {
       temp.messageTimeout = setTimeout(() => {
-        alertify.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
+        MT.toast.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
       }, 20000);
 
       const nFiles = session.files.length - 1;
@@ -826,8 +853,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               let node = seqs[i];
               if (!node) continue;
               newNodes += MT.addNode({
-                _id: filterXSS(node.id),
-                seq: filterXSS(node.seq),
+                _id: MT.escape(node.id),
+                seq: MT.escape(node.seq),
                 origin: origin
               }, check, source);
             }
@@ -847,8 +874,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             const n = keys.length;
             let safeLink = {};
             for (let i = 0; i < n; i++) {
-              let key = filterXSS(keys[i]);
-              safeLink[key] =  (typeof link[key] === 'string')  ?   filterXSS(link[key]) : link[key];  // #195
+              let key = MT.escape(keys[i]);
+              safeLink[key] =  (typeof link[key] === 'string')  ?   MT.escape(link[key]) : link[key];  // #195
               if (!session.data.linkFields.includes(key)) {
                 session.data.linkFields.push(key);
               }
@@ -901,7 +928,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 data.map(forEachLink);
                 message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
                 results.meta.fields.forEach(key => {
-                  const safeKey = filterXSS(key);
+                  const safeKey = MT.escape(key);
                   if (!session.data.linkFields.includes(safeKey)) {
                     session.data.linkFields.push(safeKey);
                   }
@@ -941,18 +968,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             n = data.length;
             data.forEach(node => {
               let safeNode = {
-                _id: filterXSS('' + node[file.field1]),
-                seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),
+                _id: MT.escape('' + node[file.field1]),
+                seq: (file.field2 == 'None') ? '' : MT.escape(node[file.field2]),
                 origin: origin
               };
               Object.keys(node).forEach(key => {
                 // The columns chosen as the ID and sequence are those, not fields too
                 if (key == file.field1 || key == file.field2) return;
-                let safeKey = filterXSS(key);
+                let safeKey = MT.escape(key);
                 if (!session.data.nodeFields.includes(safeKey)) {
                   session.data.nodeFields.push(safeKey);
                 }
-                safeNode[safeKey] = filterXSS(node[key]);
+                safeNode[safeKey] = MT.escape(node[key]);
               });
               m += MT.addNode(safeNode, check, source);
             });
@@ -972,19 +999,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 let node = data.data;
                 n++;
                 let safeNode = {
-                  _id: filterXSS('' + node[file.field1]),
-                  seq: (file.field2 == 'None') ? '' : filterXSS(node[file.field2]),
+                  _id: MT.escape('' + node[file.field1]),
+                  seq: (file.field2 == 'None') ? '' : MT.escape(node[file.field2]),
                   origin: origin
                 };
                 Object.keys(node).forEach(key => {
                   // The columns chosen as the ID and sequence are those, not fields too
                   if (key == file.field1 || key == file.field2) return;
-                  let safeKey = filterXSS(key);
+                  let safeKey = MT.escape(key);
                   if (!session.data.nodeFields.includes(safeKey)) {
                     session.data.nodeFields.push(safeKey);
                   }
-                  // safeNode[safeKey] = filterXSS(node[key]);
-                  safeNode[safeKey] =  (typeof node[key] === 'string')  ?   filterXSS(node[key]) : node[key]; //#173
+                  // safeNode[safeKey] = MT.escape(node[key]);
+                  safeNode[safeKey] =  (typeof node[key] === 'string')  ?   MT.escape(node[key]) : node[key]; //#173
 
                 });
                 m += MT.addNode(safeNode, check, source);
@@ -1022,16 +1049,16 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 nodeIDs.forEach((cell, k) => {
                   if (k > 0) {
                     nn += MT.addNode({
-                      _id: filterXSS('' + cell),
+                      _id: MT.escape('' + cell),
                       origin: origin
                     }, check, source);
                   }
                 });
               } else {
-                const source = filterXSS('' + row[0]);
+                const source = MT.escape('' + row[0]);
                 row.forEach((cell, j) => {
                   if (j == 0) return;
-                  const target = filterXSS('' + nodeIDs[j]);
+                  const target = MT.escape('' + nodeIDs[j]);
                   if (source == target) return;
                   nl += MT.addLink({
                     source: source,
@@ -1063,7 +1090,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           let newNodes = 0;
           const tree = patristic.parseNewick(file.contents);
           temp.tree = tree;
-          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(filterXSS), n = labels.length;
+          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(MT.escape), n = labels.length;
           for (let i = 0; i < n; i++) {
             const source = labels[i];
             newNodes += MT.addNode({
@@ -1166,7 +1193,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     alsoMenu.on('change', () => {
       const chosen = alsoMenu.getValue();
       settings.set('distance-metrics-also', chosen);
-      localforage.setItem('distance-metrics-also', chosen);
+      db.setItem('distance-metrics-also', chosen);
     });
 
     // The metric menu shows short names; its tooltip, the chosen one's full name
@@ -1182,7 +1209,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       MTBind(modal, settings),
       settings.subscribe('default-distance-metric', metric => {
         ga('send', 'event', 'default-distance-metric', 'update', metric);
-        localforage.setItem('default-distance-metric', metric);
+        db.setItem('default-distance-metric', metric);
         // Links are filtered on the distance metric's values
         settings.set('link-sort-variable', metric);
         applyMetric(true);
@@ -1194,7 +1221,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         showAlso();
       }),
       settings.subscribe('default-view', view => {
-        localforage.setItem('default-view', view);
+        db.setItem('default-view', view);
         setDefaultView(view);
       }),
       settings.subscribe('align-sw', () => {
@@ -1208,23 +1235,129 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     showAlso();
     showAmbiguityRows();
     showAlignmentRows();
-    localforage.getItem('default-distance-metric').then(cached => {
+    db.getItem('default-distance-metric').then(cached => {
       if (cached && MT.distanceMetrics[cached]) settings.set('default-distance-metric', cached);
     });
-    localforage.getItem('distance-metrics-also').then(cached => {
+    db.getItem('distance-metrics-also').then(cached => {
       if (!Array.isArray(cached)) return;
       settings.set('distance-metrics-also', cached.filter(m => MT.distanceMetrics[m]));
       showAlso();
     });
-    localforage.getItem('default-view').then(cached => {
+    db.getItem('default-view').then(cached => {
       const view = MT.viewName(cached || get('default-view'));
       settings.set('default-view', view);
       setDefaultView(view);
     });
 
     stop.push(() => MT.sortable(table, 'destroy'), () => alsoMenu.destroy());
+
+    // A programmatic way to do what the view does, for scripts and agents (see
+    // src/webmcp/session.js). It goes with the view.
+    const named = name => session.files.find(f => f.name == name);
+    const describe = file => {
+      const row = rowOf.get(file);
+      const problem = row && problems.has(row) ? problems.get(row)() : '';
+      return {
+        name: file.name,
+        extension: file.extension,
+        format: file.format,
+        field1: file.field1, field2: file.field2, field3: file.field3,
+        headers: (headersOf.get(file) || []).slice(),
+        problem: problem || null
+      };
+    };
+    const api = {
+      // Adds a file ({name, contents, extension?, format?, field1?, field2?,
+      // field3?}) as the view does, returning its description
+      add(file) {
+        file = Object.assign({}, file);
+        file.name = MT.escape(file.name);
+        file.extension = (file.extension || file.name.split('.').pop()).toLowerCase();
+        ready();
+        session.files.push(file);
+        addToTable(file);
+        return describe(file);
+      },
+      remove(name) {
+        const file = named(name), row = file && rowOf.get(file);
+        if (!row) return false;
+        row.querySelector('a[title="Remove this file"]').click();
+        return true;
+      },
+      // Changes how a pending file is read: {format, field1, field2, field3}
+      update(name, changes) {
+        const file = named(name), row = file && rowOf.get(file);
+        if (!row) return null;
+        if (changes.format && changes.format != file.format) {
+          const radio = row.querySelector(`input[type="radio"][value="${changes.format}"]`);
+          if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+        const selects = row.querySelectorAll('.file-field select');
+        [changes.field1, changes.field2, changes.field3].forEach((value, i) => {
+          if (value === undefined) return;
+          selects[i].value = value;
+          selects[i].dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        return describe(file);
+      },
+      // Puts the named files first, in this order (the others follow, as they were)
+      reorder(names) {
+        const listed = names.map(named).filter(Boolean);
+        const order = listed.concat(session.files.filter(f => !listed.includes(f)));
+        order.forEach(f => { const row = rowOf.get(f); if (row) table.append(row); });
+        MT.sortable(table, 'reload');
+        session.files.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        return session.files.map(describe);
+      },
+      list: () => session.files.map(describe),
+      // What keeps Launch disabled, by file
+      problems: () => session.files.map(describe).filter(d => d.problem).map(d => ({ name: d.name, problem: d.problem })),
+      canLaunch() { checkLaunch(); return !launchButton.disabled; },
+      // Same as clicking Launch (after setting the reference a first-sequence
+      // alignment uses, as opening the sequence settings does)
+      async launch() {
+        checkLaunch();
+        if (launchButton.disabled) return false;
+        if (get('align-sw') && get('reference-source-first')) {
+          const data = await readFastas();
+          if (data.length) session.data.reference = data[0].seq;
+        }
+        launchButton.click();
+        return true;
+      },
+      // Adds a file of generated random sequences, as the Generate button does
+      generate(count) {
+        return api.add({ name: 'generatedNodes.csv', extension: 'csv', contents: Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', count, 20)) });
+      },
+      // The audit's findings for [{id, seq}], given {empty, gaps, RNA, 'amino-acids', CIGAR, malformed} (each on unless false)
+      auditSequences: (data, checks) => auditSequences(data, name => checks[name] !== false),
+      readFastas,
+      // The alignment scores {match, mismatch, gapOpen, gapExtend}, after setting any given
+      aligner(values) {
+        const inputs = { match: '.aligner-match', mismatch: '.aligner-mismatch', gapOpen: '.aligner-gap-open', gapExtend: '.aligner-gap-extend' };
+        Object.keys(inputs).forEach(k => { if (values && values[k] !== undefined) $(inputs[k]).value = values[k]; });
+        return Object.fromEntries(Object.keys(inputs).map(k => [k, number(inputs[k])]));
+      },
+      // Redraws the controls that follow other settings, after those were set
+      refresh() {
+        showAlso();
+        showAmbiguityRows();
+        showAlignmentRows();
+        $$('input[name="reference-source"]').forEach(input => {
+          input.checked = input.value == referenceSource();
+          input.closest('.btn').classList.toggle('active', input.checked);
+        });
+      }
+    };
+    MT.filesView = api;
     return {
-      destroy: () => stop.forEach(fn => fn())
+      destroy: () => {
+        if (MT.filesView === api) MT.filesView = undefined;
+        stop.forEach(fn => fn());
+      }
     };
   });
 </script>

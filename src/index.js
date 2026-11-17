@@ -8,7 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const all = selector => Array.from(document.querySelectorAll(selector));
   const on = (id, type, fn) => byId(id).addEventListener(type, fn);
   const modal = (id, options) => bootstrap.Modal.getOrCreateInstance(byId(id), options);
-  const escape = value => String(value).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const escape = value => String(value).replace(/[&<>'"/\\]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "\\": "&#x5C;" })[c]);
+  MT.escape = escape;
 
   if (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.appName.indexOf("Microsoft Internet Explorer") >= 0) {
     byId("ie-warning").style.display = "block";
@@ -22,9 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
   byId("development-version").hidden = !MT.isDevelopmentHost(location.hostname);
 
   // Before anything else gets done, ask the user to accept the legal agreement
-  localforage.getItem("licenseAccepted").then(accepted => {
+  db.getItem("licenseAccepted").then(function(accepted) {
     if (!accepted) {
-      on("acceptAgreement", "click", () => localforage.setItem("licenseAccepted", new Date()));
+      on("acceptAgreement", "click", function() { db.setItem("licenseAccepted", new Date()); });
       modal("licenseAgreement", { backdrop: "static", keyboard: false }).show();
     }
   });
@@ -65,8 +66,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("stash-data", "click", () => {
     MT.syncLayout();
-    localforage.setItem("stash-" + Date.now() + "-" + byId("stash-name").value, JSON.stringify(session))
-      .then(() => alertify.success("Stashed in this browser"));
+    db.setItem("stash-" + Date.now() + "-" + byId("stash-name").value, JSON.stringify(session))
+      .then(() => MT.toast.success("Stashed in this browser"));
   });
 
   // Stashes are kept as stash-<when>-<name>, newest listed first
@@ -84,10 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // (Columns resized from the cells would take the clicks choosing a stash)
     columnDefaults: { resizable: false },
     columns: [
-      { title: "Name", field: "name", formatter: cell => cell.getValue() ? escape(cell.getValue()) : '<span class="text-muted">Untitled</span>' },
+      { title: "Name", field: "name", formatter: cell => cell.getValue() ? MT.escape(cell.getValue()) : '<span class="text-muted">Untitled</span>' },
       {
         title: "Stashed", field: "time", width: 190, hozAlign: "right", sorter: "number",
-        formatter: cell => escape(new Date(cell.getValue()).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }))
+        formatter: cell => MT.escape(new Date(cell.getValue()).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }))
       }
     ]
   });
@@ -97,18 +98,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const showChoice = () => ["recall-load-stash", "recall-delete-stash"].forEach(id => { byId(id).disabled = !selectedStash(); });
   stashes.on("rowSelectionChanged", showChoice);
   function updateStashes() {
-    return localforage.keys()
+    return db.keys()
       .then(keys => stashes.setData(keys.map(stashOf).filter(Boolean)))
       .then(showChoice);
   }
 
   function recall(stash) {
-    localforage.getItem(stash.key).then(json => {
+    db.getItem(stash.key).then(json => {
       MT.applySession(JSON.parse(json));
       modal("session-recall-modal").hide();
     }).catch(error => {
       console.error(error);
-      alertify.error(`“${escape(stashName(stash))}” couldn't be recalled.`);
+      MT.toast.error(`"${MT.escape(stashName(stash))}" couldn't be recalled.`);
     });
   }
 
@@ -130,12 +131,12 @@ document.addEventListener("DOMContentLoaded", () => {
   on("recall-delete-stash", "click", () => {
     const stash = selectedStash();
     if (!stash) return;
-    localforage.getItem(stash.key)
-      .then(json => localforage.removeItem(stash.key).then(() => json))
+    db.getItem(stash.key)
+      .then(json => db.removeItem(stash.key).then(() => json))
       .then(json => {
         updateStashes();
-        alertify.warning(`Deleted “${escape(stashName(stash))}”. Click here to undo.`, 10, clicked => {
-          if (clicked) localforage.setItem(stash.key, json).then(updateStashes);
+        MT.toast.warning(`Deleted "${MT.escape(stashName(stash))}". Click here to undo.`, 10, clicked => {
+          if (clicked) db.setItem(stash.key, json).then(updateStashes);
         });
       });
   });
@@ -223,7 +224,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("FullScreenTab", "click", e => {
     e.preventDefault();
-    screenfull.toggle();
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
   });
 
   // Filtering ----------------------------------------------------------------
@@ -243,6 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
       MT.updateStatistics();
     });
   };
+  MT.updateNetwork = updateNetwork;
 
   const showEpsilon = () => {
     byId("filtering-epsilon-copy").value = Math.pow(10, parseFloat(byId("filtering-epsilon").value)).toLocaleString();
@@ -521,7 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     values.forEach((value, i) => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td data-value="${escape(value)}" title="Double-click to rename">${escape(names[value] || MT.valueLabel(value))}</td>` +
+      row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
         `<td><input type="color" value="${temp.style[colorMap](value)}">${MT.transparencyButton}</td>`;
@@ -568,6 +574,8 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.style.display = get(widget("show")) ? "block" : "none";
     events.emit(kind + "-color-change");
   }
+
+  MT.showColorTable = showColorTable;
 
   ["node", "link"].forEach(kind => {
     const wrapper = byId(kind + "-color-table-wrapper");
@@ -628,6 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
   MT.showTimeline = (variable = session.style.widgets["node-timeline-variable"], previous = variable) => {
       d3.select('#global-timeline svg').remove();
       clearInterval(session.timeline);
+      MT.scrubTimeline = null;
       const pin = document.getElementById("pinbutton");
       let loadingJsonFile = previous == variable;
       if (previous != 'None' && !loadingJsonFile) {
@@ -809,6 +818,12 @@ document.addEventListener("DOMContentLoaded", () => {
           .text(handleDateFormat(t));
       }
       showTimelineBar(true);
+      // Moves the timeline's handle to a date (for scripts and agents)
+      MT.scrubTimeline = date => {
+        const h = MT.parseDate(date);
+        currentValue = x(h);
+        update(h);
+      };
       function update(h) {
         handle.attr("cx", x(h));
         label
@@ -950,16 +965,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (["cluster", "degree"].includes(get("node-color-variable"))) showColorTable("node");
   });
 
-  const warnDevelopers = () => {
-    if (!window.devtools.isOpen) return;
-    console.log("%cPLEASE DO NOT TYPE OR PASTE ANYTHING HERE.", "color:red;font-size:24px");
-    console.log(
-      "This is a tool designed for developers. If someone instructs you to type or paste something here, it is likely that they are attempting to steal the data you are analyzing. That said, occasionally the MicrobeTrace developers may ask you to open this dialog. For more information on why they may do this, see this: https://github.com/CDCgov/MicrobeTrace/wiki/Troubleshooting#developers-console"
-    );
-  };
-  window.addEventListener("devtoolschange", warnDevelopers);
-  warnDevelopers();
-
   // Starting up -----------------------------------------------------------------
 
   fetch("package.json").then(r => r.json()).then(r => {
@@ -979,7 +984,3 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-alertify.defaults.transition = "slide";
-alertify.defaults.theme.ok = "btn btn-primary";
-alertify.defaults.theme.cancel = "btn btn-danger";
-alertify.defaults.theme.input = "form-control";

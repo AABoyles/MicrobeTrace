@@ -135,7 +135,7 @@ test('a stashed session does too', async ({ page }) => {
   await waitForModal(page, '#session-stash-modal');
   await page.fill('#stash-name', 'provenance');
   await page.click('#stash-data');
-  await expect(page.locator('.alertify-notifier')).toContainText('Stashed');
+  await expect(page.locator('.mt-toast-container .toast').first()).toContainText('Stashed');
   await expect(page.locator('#session-stash-modal')).toBeHidden();
   await page.evaluate(() => MT.reset());
   expect(await page.evaluate(() => MT.provenance('S0', 'state'))).toEqual([]);

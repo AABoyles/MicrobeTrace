@@ -214,7 +214,7 @@ test('a stashed session can be recalled', async () => {
   await waitForModal(page, '#session-stash-modal');
   await page.fill('#stash-name', 'global-stash');
   await page.click('#stash-data');
-  await expect(page.locator('.alertify-notifier')).toContainText('Stashed');
+  await expect(page.locator('.mt-toast-container .toast')).toContainText('Stashed');
   // Stashing closes the dialog
   await expect(page.locator('#session-stash-modal')).toBeHidden();
   // Recalled into a new session

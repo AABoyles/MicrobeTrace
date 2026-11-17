@@ -27,9 +27,8 @@
     const $ = selector => root.querySelector(selector);
     const lists = { clusters: $('.waterfall-clusters'), nodes: $('.waterfall-nodes'), links: $('.waterfall-links') };
     const meta = ['index', 'id', 'visible', 'degree', '_diff', 'seq', 'cluster', 'directed', 'source', 'target'];
-    const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const format = value => typeof value == 'number' ? value.toLocaleString() : value;
-    const details = item => Object.keys(item).filter(k => !meta.includes(k)).map(k => escape(MT.titleize(k) + ': ' + format(item[k]))).join('<br>');
+    const details = item => Object.keys(item).filter(k => !meta.includes(k)).map(k => MT.escape(MT.titleize(k) + ': ' + format(item[k]))).join('<br>');
 
     root.style.overflowY = 'scroll';
 
@@ -40,8 +39,8 @@
       a.href = '#';
       a.className = 'list-group-item list-group-item-action';
       a.innerHTML = `<div class="d-flex w-100 justify-content-between">
-          <span class="ellipsisToFit">${escape(name)}</span>
-          <small>${escape(format(number))}</small>
+          <span class="ellipsisToFit">${MT.escape(name)}</span>
+          <small>${MT.escape(format(number))}</small>
         </div>
         <div class="hideIfNotActive">${detail}</div>`;
       a.addEventListener('click', e => {

@@ -57,6 +57,10 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `bubbles.spec.js` | The bubbles: grouping, size, selection, colors, redraws, restoring and export |
 | `phylogenetic_tree.spec.js` | The tree: layout, type and branch settings, leaf sizes, colors, labels and tooltips, selection, the context menu, restoring and export |
 | `globe.spec.js` | The globe: placing nodes, links, layers, transparency, jitter, turning, redraws, restoring and export |
+| `webmcp-session.spec.js` | The WebMCP session tools: adding, updating, reordering and removing files, loading options, sequence audits, launching, saving and reopening, stashes and autostash, the demo, and generated sequences |
+| `webmcp-query.spec.js` | The WebMCP query tools: status, statistics and fields, node and link queries, neighbors and paths, clusters, aggregates, matrices, sequences and the tree |
+| `webmcp-style.spec.js` | The WebMCP styling tools: settings, the link filter and cluster sizes, selection and search, node and link colors, sizes, shapes, labels and tooltips, the timeline, and reset_style |
+| `webmcp-views.spec.js` | The WebMCP view tools: listing and opening views, placement, view settings and actions, the network's camera and layout, view images, exports, and set_view_control |
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.
