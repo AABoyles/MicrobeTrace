@@ -569,6 +569,18 @@
   MTGraph.pairIndex = pairIndex;
   MTGraph.pairRows = pairRows;
 
+  // A link read from a distance matrix or tree, with its distance kept under
+  // the field the network filters on (the distance metric's, as for sequences
+  // and link lists) rather than under "distance" (#213)
+  MTGraph.distanceLink = (link, field) => {
+    const out = Object.assign({}, link);
+    if ('distance' in out && field != 'distance') {
+      out[field] = out.distance;
+      delete out.distance;
+    }
+    return out;
+  };
+
   self.MTGraph = MTGraph;
   if (typeof module !== 'undefined' && module.exports) module.exports = MTGraph;
 })(typeof self !== 'undefined' ? self : this);
