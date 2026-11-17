@@ -28,6 +28,7 @@ self.addEventListener('install', function(event) {
         'src/binder.js',
         'src/events.js',
         'src/graph.js',
+        'src/dates.js',
         'src/nodes.js',
         'src/settings.js',
         'dist/index.js',
