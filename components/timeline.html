@@ -142,6 +142,7 @@
     const axis = svg.append('g').attr('class', 'axis axis--x');
     const countAxis = svg.append('g').attr('class', 'axis axis--y').attr('transform', `translate(${margin.left},0)`);
     const brushG = svg.append('g').attr('class', 'brush').attr('transform', `translate(${margin.left},0)`);
+    const undatedNote = svg.append('text').attr('class', 'undated-note').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'currentColor');
     let x;
 
     // A node's date, or null
@@ -179,6 +180,11 @@
 
       const field = dateField();
       const dates = field ? session.data.nodes.map(d => dateOf(d[field])).filter(d => d) : [];
+      // Nodes with no date aren't in the curve; say how many
+      const undated = field ? MTDates.countUndated(session.data.nodes, field) : 0;
+      undatedNote
+        .attr('x', margin.left + width).attr('y', margin.top - 30)
+        .text(dates.length && undated ? `${undated.toLocaleString()} undated ${undated == 1 ? 'node' : 'nodes'} not shown` : '');
       // Without dates, a note saying what to choose instead of an empty chart
       $('.view-message').hidden = dates.length > 0;
       svg.style('display', dates.length ? null : 'none');

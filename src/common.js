@@ -753,8 +753,11 @@
         }
         const links = data.links;
         const tl = links.length;
+        // Distances go under the distance metric, which the threshold filters on (#213)
+        const field = session.style.widgets["default-distance-metric"];
+        if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
         for (let j = 0; j < tl; j++) {
-          nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
+          nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field), check);
         }
         console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve({ nn, nl, tn, tl });
@@ -1196,14 +1199,25 @@
   MT.computeTree = () => {
     return new Promise((resolve, reject) => {
       let computer = new Worker("workers/compute-tree.js");
+      // Every way out settles the promise, as MT.runHamsters waits on it:
+      // parsing a tree too deep for patristic throws here, on the main thread (#250)
+      const fail = e => {
+        computer.terminate();
+        reject(e);
+      };
       computer.onmessage = response => {
-        temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+        try {
+          temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+        } catch (e) {
+          return fail(e);
+        }
+        computer.terminate();
         console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         resolve();
       };
       computer.onerror = e => {
         console.error(e);
-        reject(e);
+        fail(e);
       };
       MT.getDM().then(dm => {
         computer.postMessage({
@@ -1211,14 +1225,13 @@
           matrix: dm,
           round: session.style.widgets["tree-round"]
         });
-      });
+      }).catch(fail);
     });
   };
   
   MT.computeDirectionality = () => {
-    return new Promise(resolve => {
-      // Directions are inferred from the tree, which only exists once the
-      // phylogenetic tree view has computed it.
+    return new Promise((resolve, reject) => {
+      // Directions are inferred from the tree (see MT.runHamsters).
       if (!temp.tree) return resolve();
       const g = session.data.graph;
       const ids = new Uint32Array(g.edgeCount), sources = [], targets = [];
@@ -1234,15 +1247,28 @@
         console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         let start = Date.now();
         let n = flips.length;
-        for (let i = 0; i < n; i++) {
-          if (flips[i]) {
-            const e = g.flip(ids[i]);
-            if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
+        try {
+          for (let i = 0; i < n; i++) {
+            if (flips[i]) {
+              const e = g.flip(ids[i]);
+              if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
+            }
           }
+        } catch (e) {
+          computer.terminate();
+          return reject(e);
+        } finally {
+          g.version++;
         }
-        g.version++;
+        computer.terminate();
         console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
+      };
+      // (Without this a worker that throws, say on a tree too deep for
+      // patristic, would leave the load waiting forever.)
+      computer.onerror = e => {
+        computer.terminate();
+        reject(e);
       };
       computer.postMessage({
         sources: sources,
@@ -1334,13 +1360,26 @@
     });
   };
   
+  // Directions are inferred from the tree, so with that on, the tree is built
+  // first (unless there is one already, from a Newick file) and the links are
+  // flipped before finishUp freezes the graph and the views draw it. The tree
+  // isn't built otherwise: building it on every load overflowed patristic's
+  // stack on large datasets (#250), and only the tree view needs it then, which
+  // builds it when opened (and reuses the one built here).
   MT.runHamsters = async () => {
     // if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation(); #236
     // MT.computeNN();
     // MT.computeMST();
-    // await MT.computeTree();
-    if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
-    MT.finishUp();
+    if (!session.style.widgets['infer-directionality-false']) {
+      try {
+        if (!temp.tree) await MT.computeTree();
+        await MT.computeDirectionality();
+      } catch (error) {
+        console.error(error);
+        MT.toast.warning("Couldn't infer the links' directions; they are shown as loaded.", 10);
+      }
+    }
+    return MT.finishUp();
   };
   
   MT.finishUp = async (oldSession) => { 
@@ -1361,35 +1400,6 @@
       });
     });
     
-    // patch missing date fields to earliest date in the the data: fields
-    // whose values are all dates (MT.isDate), so not numbers such as latitudes
-    let fields = session.data["nodeFields"];
-    let nodeSkeleton = MT.dataSkeleton();
-    let fieldsToCheck = fields.filter(f => !nodeSkeleton.nodeFields.includes(f) && f != '_ambiguity' && f != '_diff'); 
-    let n = session.data.nodes.length;
-    let k = fieldsToCheck.length;
-    outerloop:
-    for (let j = 0; j < k; j++) {
-      let field = fieldsToCheck[j];
-      let times = [];
-      for (let i = 0; i < n; i++) {
-        let value = session.data.nodes[i][field];
-        if (value == null) continue;
-        if (!MT.isDate(value)) continue outerloop;
-        times.push(MT.parseDate(value));
-      }
-      // (A field with no values has no earliest date)
-      if (times.length && times.length < n) {
-        let minTime = times.reduce((a, b) => a < b ? a : b);
-        let minTimeString = new Date(minTime).toString();
-        session.data.nodes.forEach(d => {
-          if (d[field] == null) {
-            d[field] = minTimeString;
-          } 
-        });
-      } 
-    };
-
     // The global menus of node and link variables
     const options = fields => fields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n");
     const fill = (id, html) => {
@@ -1537,10 +1547,7 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (timeEnd && node[dateField] != null && node[dateField] !== "") {
-        let time = MT.parseDate(node[dateField]);
-        node.visible = node.visible && !!time && time <= timeEnd;
-      }
+      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd);
     }
     if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
@@ -2775,29 +2782,8 @@
     };
   };
 
-  // Reads a date field: a Date, a time in milliseconds, or text. Dates written
-  // without a time (2020, 2020-03, 2020-03-14 or 20200314) are local midnight,
-  // as people mean them (Date alone reads the dashed ones as UTC). Anything
-  // else is read as Date reads it. Returns null if it isn't a date.
-  MT.parseDate = value => {
-    if (value == null || value === '') return null;
-    let time;
-    if (value instanceof Date || typeof value == 'number') {
-      time = new Date(value);
-    } else {
-      const text = String(value).trim();
-      const day = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?|(\d{2})(\d{2}))?$/.exec(text);
-      if (day) {
-        const year = +day[1], month = +(day[2] || day[4] || 1) - 1, date = +(day[3] || day[5] || 1);
-        time = new Date(year, month, date);
-        time.setFullYear(year); // years before 100 aren't 19xx
-        if (time.getMonth() != month || time.getDate() != date) return null;
-      } else {
-        time = new Date(text);
-      }
-    }
-    return isNaN(time) ? null : time;
-  };
+  // Reads a date field (see src/dates.js): null if it is not a date.
+  MT.parseDate = MTDates.parseDate;
 
   // Downloads a Blob as a file
   MT.saveAs = (blob, filename) => {
