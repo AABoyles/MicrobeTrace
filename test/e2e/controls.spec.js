@@ -90,7 +90,10 @@ test('primary buttons use one blue in every state, and secondary actions are not
   await expect(cancel).toHaveClass(/btn-secondary/);
   expect((await style(cancel, 'borderTopColor')).borderTopColor).not.toBe('rgba(0, 0, 0, 0)');
   // Closed from the Cancel button (Escape doesn't work with data-bs-backdrop="false")
-  await modal.locator('button', { hasText: 'Cancel' }).click();
+  // (with the keyboard: focus returned to the button after a mouse click isn't
+  // :focus-visible in every Chromium, but after a key press it always is)
+  await modal.locator('button', { hasText: 'Cancel' }).focus();
+  await page.keyboard.press('Enter');
   await expect(modal).toBeHidden();
   const button = view.locator('button[title="Export Network"]');
   await expect.poll(() => button.evaluate(el => el.matches(':focus-visible'))).toBe(true);

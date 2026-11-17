@@ -15,6 +15,13 @@ const { watchErrors, open, launchView } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
+// The redraw's time budget. It is 2 s on CI, where nothing else is running; on
+// a workstation shared with other jobs, the same redraw (software WebGL, on
+// the page's one thread) has taken from 0.2 s to over 8 s, so the budget there
+// is 15 s, which still catches a slowdown of an order of magnitude. The redraw
+// count, which doesn't vary with load, is exact in both.
+const thresholdBudget = process.env.CI ? 2000 : 15000;
+
 // Sequences of 1,000 sites in clusters of 25: each a few changes from its
 // cluster's centre, each centre a few dozen from a common ancestor
 const N = 2000;
@@ -99,7 +106,7 @@ test('a threshold change redraws the network once, in under 2 seconds', async ()
   results.rendersPerChange = results.renders;
   expect(results.rendersPerChange).toBe(1);
   expect(await page.evaluate(() => temp.network.links.length)).toBe(await page.evaluate(() => MT.getVisibleLinks().length));
-  expect(results.thresholdMs).toBeLessThan(2000);
+  expect(results.thresholdMs).toBeLessThan(thresholdBudget);
 });
 
 test('laying out, the network reads positions back only to keep the layout in view', async () => {
