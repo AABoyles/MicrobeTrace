@@ -314,13 +314,15 @@
 
   function linkValueRange(variable, bins) {
     const g = self.session.data.graph;
-    let min = Infinity, max = -Infinity, n = 0;
-    g.forEachValue(variable, v => { v = +v; if (isNaN(v)) return; n++; if (v < min) min = v; if (v > max) max = v; });
-    if (!n) return { count: 0 };
+    let min = Infinity, max = -Infinity, n = 0, infinite = 0;
+    // Saturated distances are Infinity (#281): counted, but not part of the range
+    g.forEachValue(variable, v => { v = +v; if (isNaN(v)) return; if (!isFinite(v)) { infinite++; return; } n++; if (v < min) min = v; if (v > max) max = v; });
+    if (!n) return infinite ? { count: 0, infinite } : { count: 0 };
     const out = { count: n, min, max };
+    if (infinite) out.infinite = infinite;
     if (bins > 0 && max > min) {
       const counts = new Array(bins).fill(0), width = (max - min) / bins;
-      g.forEachValue(variable, v => { v = +v; if (!isNaN(v)) counts[Math.min(bins - 1, Math.floor((v - min) / width))]++; });
+      g.forEachValue(variable, v => { v = +v; if (isFinite(v)) counts[Math.min(bins - 1, Math.floor((v - min) / width))]++; });
       out.histogram = counts.map((count, i) => ({ from: min + i * width, to: min + (i + 1) * width, count }));
     }
     return out;

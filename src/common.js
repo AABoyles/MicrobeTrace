@@ -1188,7 +1188,8 @@
         const row = dm[i];
         for (let j = i + 1; j < n; j++, k++) {
           const v = tri[k];
-          row[j] = dm[j][i] = v == v ? v : null;
+          // NaN (no link) and Infinity (a saturated distance) are both missing
+          row[j] = dm[j][i] = isFinite(v) ? v : null;
         }
       }
       console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
