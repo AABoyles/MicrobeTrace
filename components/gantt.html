@@ -95,9 +95,6 @@
 
 <script>
   MT.registerView('gantt', (root, { settings, events }) => {
-    ga('set', 'page', '/gantt');
-    ga('set', 'title', 'Gantt View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const pane = $('.left-pane');

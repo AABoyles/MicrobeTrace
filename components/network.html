@@ -543,9 +543,6 @@ Note that this may cause slow performance on larger networks.">
 
 <script>
   MT.registerView('network', (root, { settings, events }) => {
-    ga('set', 'page', '/network');
-    ga('set', 'title', '2D View');
-    ga('send', 'pageview');
 
     // The network is drawn and laid out on the GPU by cosmos.gl
     // (vendor/cosmos.min.js, loaded the first time this view opens). Point i of
@@ -1367,7 +1364,6 @@ Note that this may cause slow performance on larger networks.">
     // the color legends and the network statistics, for export.
     let exportExtras = [];
     function buildExportSVG() {
-      ga('send', 'event', '2D-network-export', 'trigger', 'on');
       syncPositions();
       const width = container.clientWidth, height = container.clientHeight, k = zoomScale();
       const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

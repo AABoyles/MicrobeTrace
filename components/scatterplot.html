@@ -132,9 +132,6 @@
 
 <script>
   MT.registerView('scatterplot', (root, { settings, events }) => {
-    ga('set', 'page', '/scatterplot');
-    ga('set', 'title', 'Scatterplot View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const plot = $('.scatterplot-plot');

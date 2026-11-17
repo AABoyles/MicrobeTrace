@@ -347,9 +347,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
 <script>
   MT.registerView('files', (root, { settings, events }) => {
-    ga('set', 'page', '/files');
-    ga('set', 'title', 'Files View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const $$ = selector => Array.from(root.querySelectorAll(selector));
@@ -1229,7 +1226,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       MTBind(pane, settings),
       MTBind(modal, settings),
       settings.subscribe('default-distance-metric', metric => {
-        ga('send', 'event', 'default-distance-metric', 'update', metric);
         db.setItem('default-distance-metric', metric);
         // Links are filtered on the distance metric's values
         settings.set('link-sort-variable', metric);

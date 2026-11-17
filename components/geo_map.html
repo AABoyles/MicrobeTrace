@@ -352,9 +352,6 @@
 
 <script>
   MT.registerView('geo_map', (root, { settings, events }) => {
-    ga('set', 'page', '/geo_map');
-    ga('set', 'title', 'Geo Map View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const pane = $('.left-pane');

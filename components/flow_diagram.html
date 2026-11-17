@@ -110,9 +110,6 @@
 
 <script>
   MT.registerView('flow_diagram', (root, { settings, events }) => {
-    ga('set', 'page', '/flow_diagram');
-    ga('set', 'title', 'Flow Diagram View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const plot = $('.flow-plot');

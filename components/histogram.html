@@ -124,9 +124,6 @@
 
 <script>
   MT.registerView('histogram', (root, { settings, events }) => {
-    ga('set', 'page', '/histogram');
-    ga('set', 'title', 'Histogram View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const plot = $('.histogram-plot');

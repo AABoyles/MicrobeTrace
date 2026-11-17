@@ -128,9 +128,6 @@
 
 <script>
   MT.registerView('timeline', (root, { settings, events }) => {
-    ga('set', 'page', '/timeline');
-    ga('set', 'title', 'Timeline View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const chart = $('.timeline-chart');
