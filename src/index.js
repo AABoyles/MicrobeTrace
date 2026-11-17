@@ -530,7 +530,9 @@ document.addEventListener("DOMContentLoaded", () => {
       row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
-        `<td><input type="color" value="${temp.style[colorMap](value)}">${MT.transparencyButton}</td>`;
+        `<td><input type="color">${MT.transparencyButton}</td>`;
+      // (Set as a property: the color comes from the session, and could be markup)
+      row.querySelector("input").value = temp.style[colorMap](value);
       MT.nameRow(row, names[value] || MT.valueLabel(value));
       row.querySelector("input").addEventListener("change", e => {
         const key = session.style[savedKeys][variable].findIndex(k => k === value);

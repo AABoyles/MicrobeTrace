@@ -228,7 +228,6 @@
 
     // The settings for each date
     function showDates() {
-      const options = '<option>None</option>' + session.data.nodeFields.map(f => `<option value="${f}">${MT.titleize(f)}</option>`).join('');
       list.innerHTML = '';
       dates().forEach((date, i) => {
         const row = document.createElement('div');
@@ -240,11 +239,11 @@
           </div>
           <div class="row">
             <div class="col-4">Start</div>
-            <div class="col-8"><select class="form-select form-select-sm" name="start" aria-label="Start">${options}</select></div>
+            <div class="col-8"><select class="form-select form-select-sm" name="start" aria-label="Start"></select></div>
           </div>
           <div class="row">
             <div class="col-4">End</div>
-            <div class="col-8"><select class="form-select form-select-sm" name="end" aria-label="End">${options}</select></div>
+            <div class="col-8"><select class="form-select form-select-sm" name="end" aria-label="End"></select></div>
           </div>
           <div class="row">
             <div class="col-4">Color</div>
@@ -255,6 +254,7 @@
             <div class="col-8"><input type="range" class="form-range" name="transparency" aria-label="Transparency" min="0" max="1" step="0.01"></div>
           </div>`;
         const field = name => row.querySelector(`[name="${name}"]`);
+        ['start', 'end'].forEach(name => MT.fillSelect(field(name), session.data.nodeFields, { none: true }));
         field('start').value = date.start;
         field('end').value = date.end;
         field('color').value = date.color;

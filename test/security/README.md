@@ -12,6 +12,15 @@ which contain tag-like syntax (e.g. a CSV with a field populated by HTML or XML
 values) will not be loaded completely and correctly.
 THIS IS A FEATURE, NOT A BUG.
 
+Script tags inserted through `innerHTML` never run, so those files only catch
+leaks into markup that is parsed some other way. `sessionInjection.microbetrace`
+(a session, via File > Open) and `hivtraceInjection.json` (HIV-TRACE output)
+use `<img src=x onerror=...>`, which does run through `innerHTML`, in field
+names, values, node IDs and (in the session) a color. Unlike CSV and Excel
+files, sessions and HIV-TRACE/GHOST output aren't escaped as they load, so
+every place their names and values are shown has to treat them as text (#204).
+`test/unit/menus.test.js` loads both through MicrobeTrace's loaders.
+
 To test MicrobeTrace's security using these files, launch the MicrobeTrace
 webserver:
 

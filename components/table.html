@@ -104,7 +104,7 @@
         order = [...rest.slice(0, 2), filtered, ...rest.slice(2)];
       }
       const shown = order.slice(0, 5);
-      columnsSelect.innerHTML = fields.map(f => `<option value="${f}"${shown.includes(f) ? ' selected' : ''}>${MT.titleize(f)}</option>`).join('');
+      MT.fillSelect(columnsSelect, fields, { selected: shown });
       columnsMenu = MT.multiSelect(columnsSelect);
       columnsMenu.on('change', showData);
     }

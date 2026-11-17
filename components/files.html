@@ -507,7 +507,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const row = document.createElement('div');
       row.className = 'file-table-row';
       const group = 'file-kind-' + (rowCount++);
-      const options = '<option>None</option>' + headers.map(h => `<option value="${h}">${MT.titleize(h)}</option>`).join('');
       row.innerHTML = `
         <div class="row w-100">
           <div class="file-name col">
@@ -526,7 +525,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         <div class="row w-100">
           ${[1, 2, 3].map(i => `<div class="col-4 file-field">
             <label></label>
-            <select class="form-select form-select-sm">${options}</select>
+            <select class="form-select form-select-sm"></select>
           </div>`).join('')}
         </div>`;
       row.querySelector('.file-title').textContent = file.name;
@@ -534,6 +533,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       headersOf.set(file, headers);
       const fields = Array.from(row.querySelectorAll('.file-field'));
       const selects = fields.map(f => f.querySelector('select'));
+      selects.forEach(select => MT.fillSelect(select, headers, { none: true }));
       const kindOf = () => row.querySelector(`input[name="${group}"]:checked`).value;
 
       row.querySelector('a[title="Remove this file"]').addEventListener('click', e => {

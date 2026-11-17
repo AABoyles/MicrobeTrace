@@ -1319,7 +1319,9 @@ Note that this may cause slow performance on larger networks.">
         row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
           (counts ? `<td>${aggregates[value]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
-          `<td><input type="color" value="${temp.style.polygonColorMap(value)}">${MT.transparencyButton}</td>`;
+          `<td><input type="color">${MT.transparencyButton}</td>`;
+        // (Set as a property: the color comes from the session, and could be markup)
+        row.querySelector('input').value = temp.style.polygonColorMap(value);
         MT.nameRow(row, session.style.polygonValueNames[value] || MT.valueLabel(value));
         row.querySelector('input').addEventListener('change', e => {
           session.style.polygonColors.splice(i, 1, e.target.value);
@@ -1770,7 +1772,7 @@ Note that this may cause slow performance on larger networks.">
     // The tooltip variables menu: up to three node variables
     const tooltipSelect = $('.node-tooltip-variable');
     const chosen = tooltipVariables();
-    tooltipSelect.innerHTML = session.data.nodeFields.map(f => `<option value="${MT.escape(f)}">${MT.escape(MT.titleize(f))}</option>`).join('');
+    MT.fillSelect(tooltipSelect, session.data.nodeFields);
     const tooltipMenu = MT.multiSelect(tooltipSelect, { max: 3 });
     tooltipMenu.setValue(chosen, true);
     tooltipMenu.on('change', () => settings.set('node-tooltip-variable', tooltipMenu.getValue()));

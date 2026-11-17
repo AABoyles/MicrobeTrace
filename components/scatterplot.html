@@ -147,12 +147,11 @@
     function showFields() {
       const nodes = settings.get('scatterplot-showNodes');
       const fields = session.data[nodes ? 'nodeFields' : 'linkFields'];
-      const options = fields.map(f => `<option value="${f}">${MT.titleize(f)}</option>`).join('');
       const measures = MT.numericFields(nodes ? MT.getVisibleNodes() : MT.getVisibleLinks(), fields);
       const fallback = fields.includes('cluster') ? 'cluster' : fields[0];
       const defaults = measures.length > 1 ? measures.slice(0, 2) : [fallback, measures[0] || fields[0]];
       variables.forEach(([key, select], i) => {
-        select.innerHTML = options;
+        MT.fillSelect(select, fields);
         if (!fields.includes(settings.get(key))) settings.set(key, defaults[i]);
         select.value = settings.get(key);
       });

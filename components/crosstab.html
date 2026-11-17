@@ -102,9 +102,8 @@
     // categorical fields. Without any, the table waits for a choice.
     function showFields() {
       const fields = session.data[dataset.slice(0, -1) + 'Fields'];
-      const options = fields.map(f => `<option value="${f}">${MT.titleize(f)}</option>`).join('');
-      fieldX.innerHTML = options;
-      fieldY.innerHTML = options;
+      MT.fillSelect(fieldX, fields);
+      MT.fillSelect(fieldY, fields);
       const [x, y = x] = MT.categoricalFields(items(), fields);
       chosen = !!x;
       if (chosen) [fieldX.value, fieldY.value] = [x, y];

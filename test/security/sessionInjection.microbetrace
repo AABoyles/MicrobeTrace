@@ -1,0 +1,160 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "_id": "S1",
+        "id": "S1",
+        "selected": false,
+        "cluster": 0,
+        "visible": true,
+        "degree": 1,
+        "origin": [
+          "nodes.csv"
+        ],
+        "subtype": "B",
+        "gender\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session node field name (#204)')\">": "M",
+        "note": "<img src=x onerror=\"MT.toast.error('Ya been pwned by a session node value (#204)')\">"
+      },
+      {
+        "_id": "S2",
+        "id": "S2",
+        "selected": false,
+        "cluster": 0,
+        "visible": true,
+        "degree": 2,
+        "origin": [
+          "nodes.csv"
+        ],
+        "subtype": "<img src=x onerror=\"MT.toast.error('Ya been pwned by a session node value used as a color key (#204)')\">",
+        "gender\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session node field name (#204)')\">": "F",
+        "note": "plain"
+      },
+      {
+        "_id": "S3<img src=x onerror=\"MT.toast.error('Ya been pwned by a session node ID (#204)')\">",
+        "id": "S3<img src=x onerror=\"MT.toast.error('Ya been pwned by a session node ID (#204)')\">",
+        "selected": false,
+        "cluster": 0,
+        "visible": true,
+        "degree": 1,
+        "origin": [
+          "nodes.csv"
+        ],
+        "subtype": "C",
+        "gender\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session node field name (#204)')\">": "<img src=x onerror=\"MT.toast.error('Ya been pwned by a session node value (#204)')\">",
+        "note": "plain"
+      }
+    ],
+    "links": [
+      {
+        "source": "S1",
+        "target": "S2",
+        "visible": true,
+        "cluster": 0,
+        "origin": [
+          "links.csv"
+        ],
+        "tn93": 0.01,
+        "nn": true,
+        "directed": null,
+        "kind\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session link field name (#204)')\">": "<img src=x onerror=\"MT.toast.error('Ya been pwned by a session link value (#204)')\">"
+      },
+      {
+        "source": "S2",
+        "target": "S3<img src=x onerror=\"MT.toast.error('Ya been pwned by a session node ID (#204)')\">",
+        "visible": true,
+        "cluster": 0,
+        "origin": [
+          "links.csv"
+        ],
+        "tn93": 0.012,
+        "nn": true,
+        "directed": null,
+        "kind\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session link field name (#204)')\">": "plain"
+      }
+    ],
+    "clusters": [],
+    "nodeFields": [
+      "index",
+      "_id",
+      "selected",
+      "cluster",
+      "visible",
+      "degree",
+      "origin",
+      "subtype",
+      "gender\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session node field name (#204)')\">",
+      "note"
+    ],
+    "linkFields": [
+      "index",
+      "source",
+      "target",
+      "visible",
+      "cluster",
+      "origin",
+      "nn",
+      "directed",
+      "tn93",
+      "kind\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session link field name (#204)')\">"
+    ],
+    "clusterFields": [
+      "id",
+      "nodes",
+      "links",
+      "sum_distances",
+      "links_per_node",
+      "mean_genetic_distance",
+      "visible",
+      "selected"
+    ]
+  },
+  "files": [],
+  "layout": {
+    "type": "stack",
+    "content": [
+      {
+        "type": "table"
+      },
+      {
+        "type": "crosstab"
+      },
+      {
+        "type": "aggregation"
+      },
+      {
+        "type": "flow_diagram"
+      },
+      {
+        "type": "scatterplot"
+      },
+      {
+        "type": "gantt"
+      }
+    ]
+  },
+  "messages": [],
+  "warnings": [],
+  "meta": {
+    "loadTime": 0,
+    "startTime": 0
+  },
+  "state": {
+    "metrics": [
+      "tn93"
+    ],
+    "timeStart": 0,
+    "timeEnd": 0
+  },
+  "style": {
+    "nodeColors": [
+      "#1f77b4\"><img src=x onerror=\"MT.toast.error('Ya been pwned by a session color (#204)')\">",
+      "#ff7f0e",
+      "#2ca02c"
+    ],
+    "widgets": {
+      "node-color-variable": "subtype",
+      "link-sort-variable": "tn93",
+      "default-distance-metric": "tn93"
+    }
+  }
+}

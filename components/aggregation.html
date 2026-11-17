@@ -74,19 +74,16 @@
     let tables = [], data = [];
 
     const datasets = { node: 'nodeFields', link: 'linkFields', cluster: 'clusterFields' };
-    const options = value => Object.entries(datasets).map(([dataset, fields]) =>
-      session.data[fields].map(f => {
-        const v = dataset + ' ' + f;
-        return `<option value="${v}"${v == value ? ' selected' : ''}>${MT.titleize(dataset)} ${MT.titleize(f)}</option>`;
-      }).join('')
-    ).join('');
+    const fill = (select, value) => Object.entries(datasets).forEach(([dataset, fields], i) =>
+      MT.fillSelect(select, session.data[fields], { prefix: dataset + ' ', label: MT.titleize(dataset) + ' ', selected: value, append: i > 0 }));
 
     function addVariable(value) {
       const item = document.createElement('li');
       item.className = 'd-inline-flex aggregation-items';
       item.innerHTML = `<span class="bi bi-x pt-2 aggregation-remove" title="Remove this table"></span>
-        <select class="flex-grow-1 form-select form-select-sm aggregation-variable" aria-label="Table variable">${options(value)}</select>
+        <select class="flex-grow-1 form-select form-select-sm aggregation-variable" aria-label="Table variable"></select>
         <span class="pt-2 bi bi-grip-vertical" title="Drag to reorder"></span>`;
+      fill(item.querySelector('select'), value);
       list.appendChild(item);
       MT.sortable(list, 'reload');
     }
