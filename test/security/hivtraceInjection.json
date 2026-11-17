@@ -1,0 +1,43 @@
+{
+  "trace_results": {
+    "Nodes": [
+      {
+        "_id": "P1",
+        "patient_attributes": {
+          "gender\"><img src=x onerror=\"MT.toast.error('Ya been pwned by an HIV-TRACE attribute name (#204)')\">": "M",
+          "note": "<img src=x onerror=\"MT.toast.error('Ya been pwned by an HIV-TRACE attribute value (#204)')\">"
+        }
+      },
+      {
+        "_id": "P2",
+        "patient_attributes": {
+          "gender\"><img src=x onerror=\"MT.toast.error('Ya been pwned by an HIV-TRACE attribute name (#204)')\">": "<img src=x onerror=\"MT.toast.error('Ya been pwned by an HIV-TRACE attribute value (#204)')\">",
+          "note": "plain"
+        }
+      },
+      {
+        "_id": "P3<img src=x onerror=\"MT.toast.error('Ya been pwned by an HIV-TRACE node ID (#204)')\">",
+        "patient_attributes": {
+          "gender\"><img src=x onerror=\"MT.toast.error('Ya been pwned by an HIV-TRACE attribute name (#204)')\">": "F",
+          "note": "plain"
+        }
+      }
+    ],
+    "Edges": [
+      {
+        "sequences": [
+          "P1",
+          "P2"
+        ],
+        "length": "0.01"
+      },
+      {
+        "sequences": [
+          "P2",
+          "P3<img src=x onerror=\"MT.toast.error('Ya been pwned by an HIV-TRACE node ID (#204)')\">"
+        ],
+        "length": "0.012"
+      }
+    ]
+  }
+}

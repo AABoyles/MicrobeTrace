@@ -1401,18 +1401,17 @@
     });
     
     // The global menus of node and link variables
-    const options = fields => fields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n");
-    const fill = (id, html) => {
+    const fill = (id, fields, none = false) => {
       const select = document.getElementById(id);
-      select.innerHTML = html;
+      MT.fillSelect(select, fields, { none });
       select.value = session.style.widgets[id];
     };
-    fill("search-field", options(session.data.nodeFields));
+    fill("search-field", session.data.nodeFields);
     MT.enableSearch(true);
-    fill("link-sort-variable", options(session.data.linkFields));
-    fill("node-color-variable", "<option>None</option>" + options(session.data.nodeFields));
-    fill("node-timeline-variable", "<option>None</option>" + options(session.data.nodeFields));
-    fill("link-color-variable", "<option>None</option>" + options(session.data.linkFields));
+    fill("link-sort-variable", session.data.linkFields);
+    fill("node-color-variable", session.data.nodeFields, true);
+    fill("node-timeline-variable", session.data.nodeFields, true);
+    fill("link-color-variable", session.data.linkFields, true);
     try {
       MT.updateThresholdHistogram();
     } catch (error) {
@@ -1471,7 +1470,34 @@
     if (small == "nn") return "Nearest Neighbor";
     return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
   };
-  
+
+  // Undoes MT.escape (src/index.js), which CSV and Excel loading apply to
+  // names and values, for text that's shown as text: "a&amp;b" reads "a&b".
+  // (Its result must only ever go to textContent or a property, never markup.)
+  const unescapes = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&#x2F;": "/", "&#x5C;": "\\" };
+  MT.unescape = value => String(value).replace(/&(?:amp|lt|gt|quot|#39|#x2F|#x5C);/g, entity => unescapes[entity]);
+
+  // Fills a menu with an option per field: its value prefix + the field, its
+  // text label + the field's title. They're built as elements, not markup, so
+  // a field named by a loaded file (a session's, say) can't add any (#204).
+  //   none: a "None" option first; selected: the value(s) to select;
+  //   append: add to the options already there, rather than replace them
+  MT.fillSelect = (select, fields, { prefix = "", label = "", none = false, selected, append = false } = {}) => {
+    const chosen = [].concat(selected === undefined ? [] : selected).map(String);
+    const doc = select.ownerDocument;
+    const add = (value, text) => {
+      const option = doc.createElement("option");
+      option.value = value;
+      option.textContent = text;
+      if (chosen.includes(value)) option.defaultSelected = option.selected = true;
+      select.appendChild(option);
+    };
+    if (!append) select.replaceChildren();
+    if (none) add("None", "None");
+    (fields || []).forEach(field => add(prefix + field, label + MT.titleize(MT.unescape(field))));
+    return select;
+  };
+
   // Clusters are the connected components of the visible links.
   MT.tagClusters = () => {
     return new Promise(resolve => {
@@ -2970,12 +2996,14 @@
   // Fills in a view's variable menus, and binds its common controls
   const setupView = contentItem => {
     const element = contentItem.element;
-    const fill = (selector, html) => element.querySelectorAll(selector).forEach(select => { select.innerHTML = "<option>None</option>" + html; });
-    const options = (fields, prefix = "", label = "") => fields.map(field => '<option value="' + prefix + field + '">' + label + MT.titleize(field) + "</option>").join("\n");
-    fill("select.nodeVariables", options(session.data.nodeFields));
-    fill("select.linkVariables", options(session.data.linkFields));
-    fill("select.mixedVariables", options(session.data.linkFields, "links-", "Link ") + options(session.data.nodeFields, "nodes-", "Node "));
-    fill("select.branch-variables", options(["id", "depth", "height", "length", "value"]));
+    const fill = (selector, fields) => element.querySelectorAll(selector).forEach(select => MT.fillSelect(select, fields, { none: true }));
+    fill("select.nodeVariables", session.data.nodeFields);
+    fill("select.linkVariables", session.data.linkFields);
+    element.querySelectorAll("select.mixedVariables").forEach(select => {
+      MT.fillSelect(select, session.data.linkFields, { none: true, prefix: "links-", label: "Link " });
+      MT.fillSelect(select, session.data.nodeFields, { prefix: "nodes-", label: "Node ", append: true });
+    });
+    fill("select.branch-variables", ["id", "depth", "height", "length", "value"]);
     element.querySelectorAll(".launch-color-options").forEach(button => button.addEventListener("click", MT.showColorOptions));
     if (navigator.onLine) MT.showOnline(element);
   };

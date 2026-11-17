@@ -418,7 +418,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // An SVG copy of a table, for exports, where the table sits over origin (the
-  // element the SVG is a picture of)
+  // element the SVG is a picture of). Cell values are written as text, never as
+  // markup (they can come from loaded files); a value {swatch: color} makes a
+  // color swatch, its color set through the style API, which ignores anything
+  // that isn't a valid color.
   MT.tabulate = (data, columns, wrapper, container, origin) => {
     const box = wrapper.getBoundingClientRect(), at = origin.getBoundingClientRect();
     let foreignObj = d3.select(container).append("svg:foreignObject")
@@ -451,7 +454,18 @@ document.addEventListener("DOMContentLoaded", () => {
       .data(row => columns.map(column => ({ column: column, value: row[column.split(" ")[0]] })))
       .enter()
       .append("td")
-      .html(d => d.value);
+      .each(function(d) {
+        const cell = d3.select(this);
+        if (d.value !== null && typeof d.value == "object" && "swatch" in d.value) {
+          cell.append("div")
+            .style("margin-left", "5px")
+            .style("width", "40px")
+            .style("height", "12px")
+            .style("background", String(d.value.swatch));
+        } else if (d.value !== undefined && d.value !== null) {
+          cell.text(String(d.value));
+        }
+      });
     return foreignObj;
   };
 
@@ -530,7 +544,9 @@ document.addEventListener("DOMContentLoaded", () => {
       row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
-        `<td><input type="color" value="${temp.style[colorMap](value)}">${MT.transparencyButton}</td>`;
+        `<td><input type="color">${MT.transparencyButton}</td>`;
+      // (Set as a property: the color comes from the session, and could be markup)
+      row.querySelector("input").value = temp.style[colorMap](value);
       MT.nameRow(row, names[value] || MT.valueLabel(value));
       row.querySelector("input").addEventListener("change", e => {
         const key = session.style[savedKeys][variable].findIndex(k => k === value);

@@ -1319,7 +1319,9 @@ Note that this may cause slow performance on larger networks.">
         row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
           (counts ? `<td>${aggregates[value]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
-          `<td><input type="color" value="${temp.style.polygonColorMap(value)}">${MT.transparencyButton}</td>`;
+          `<td><input type="color">${MT.transparencyButton}</td>`;
+        // (Set as a property: the color comes from the session, and could be markup)
+        row.querySelector('input').value = temp.style.polygonColorMap(value);
         MT.nameRow(row, session.style.polygonValueNames[value] || MT.valueLabel(value));
         row.querySelector('input').addEventListener('change', e => {
           session.style.polygonColors.splice(i, 1, e.target.value);
@@ -1453,7 +1455,7 @@ Note that this may cause slow performance on larger networks.">
           [kind == 'node' ? 'Node' : 'Link']: names[value] ? names[value] : MT.valueLabel(value),
           Count: get(kind + '-color-table-counts') ? aggregates[value] : undefined,
           Frequency: get(kind + '-color-table-frequencies') ? (aggregates[value] / total).toLocaleString() : undefined,
-          Color: '<div style="margin-left:5px; width:40px;height:12px;background:' + colorMap(value) + '"> </div>'
+          Color: { swatch: colorMap(value) }
         }));
         return MT.tabulate(data, columns, document.getElementById(kind + '-color-table-wrapper'), svgNode, container);
       };
@@ -1467,7 +1469,9 @@ Note that this may cause slow performance on larger networks.">
         .attr('y', statsBox.top - viewBox.top)
         .attr('width', statsBox.width)
         .attr('height', statsBox.height);
-      stats.append('xhtml:body').html(statsDiv.innerHTML);
+      // Copies of the panel's nodes, not its markup parsed again
+      const statsBody = stats.append('xhtml:body').node();
+      Array.from(statsDiv.childNodes).forEach(child => statsBody.appendChild(child.cloneNode(true)));
       exportExtras = [wrapper, nodeLegend, linkLegend, stats];
       return svgNode;
     }
@@ -1770,7 +1774,7 @@ Note that this may cause slow performance on larger networks.">
     // The tooltip variables menu: up to three node variables
     const tooltipSelect = $('.node-tooltip-variable');
     const chosen = tooltipVariables();
-    tooltipSelect.innerHTML = session.data.nodeFields.map(f => `<option value="${MT.escape(f)}">${MT.escape(MT.titleize(f))}</option>`).join('');
+    MT.fillSelect(tooltipSelect, session.data.nodeFields);
     const tooltipMenu = MT.multiSelect(tooltipSelect, { max: 3 });
     tooltipMenu.setValue(chosen, true);
     tooltipMenu.on('change', () => settings.set('node-tooltip-variable', tooltipMenu.getValue()));

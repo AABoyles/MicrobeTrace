@@ -408,8 +408,7 @@
     // Leaves can be sized by a node variable, or by one of the tree's own
     // TODO: s/respresenting/representing/g, once patristic is fixed
     const treeVariables = ['height', 'depth', 'length', 'respresenting', 'value'];
-    $('[data-setting="tree-leaf-node-radius-variable"]').insertAdjacentHTML('beforeend',
-      treeVariables.map(v => `<option value="${v}">${MT.titleize(v)}</option>`).join(''));
+    MT.fillSelect($('[data-setting="tree-leaf-node-radius-variable"]'), treeVariables, { append: true });
 
     // TidyTree hands its handlers the arguments of its d3 listener: the event
     // (whose target's datum is the tree node), or under d3 v5 the tree node

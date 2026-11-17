@@ -120,7 +120,7 @@
     const list = $('.flow-variables');
 
     const fields = () => session.data[settings.get('flow-showNodes') ? 'nodeFields' : 'linkFields'];
-    const options = (value) => fields().map(f => `<option value="${f}"${f == value ? ' selected' : ''}>${MT.titleize(f)}</option>`).join('');
+    const fill = (select, value) => MT.fillSelect(select, fields(), { selected: value });
     // A variable the dataset doesn't have becomes its cluster, or first field
     const valid = value => fields().includes(value) ? value : fields().includes('cluster') ? 'cluster' : fields()[0];
 
@@ -128,14 +128,15 @@
       const item = document.createElement('li');
       item.className = 'flow-items';
       item.innerHTML = `<span class="bi bi-x flow-remove" title="Remove this variable"></span>
-        <select class="form-select form-select-sm flow-selector" aria-label="Flow variable">${options(valid(value))}</select>
+        <select class="form-select form-select-sm flow-selector" aria-label="Flow variable"></select>
         <span class="bi bi-grip-vertical" title="Drag to reorder"></span>`;
+      fill(item.querySelector('select'), valid(value));
       list.appendChild(item);
       MT.sortable(list, 'reload');
     }
 
     function showFields() {
-      list.querySelectorAll('select').forEach(select => { select.innerHTML = options(valid(select.value)); });
+      list.querySelectorAll('select').forEach(select => fill(select, valid(select.value)));
     }
 
     // One sankey column per variable, with a node per value; links count the
