@@ -17,6 +17,9 @@ module.exports = defineConfig({
     baseURL: `http://localhost:${port}`,
     viewport: { width: 1400, height: 900 },
     acceptDownloads: true,
+    // The service worker has its own spec (service-worker.spec.js); elsewhere it
+    // would only add a first-load precache of every file to each test
+    serviceWorkers: 'block',
     trace: 'on-first-retry',
     actionTimeout: 20000,
     launchOptions: {

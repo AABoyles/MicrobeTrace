@@ -33,9 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if ("serviceWorker" in navigator) {
     // A new version is installed in the background but waits, so a session in
     // progress isn't swapped under the user: they choose when to reload (#194)
+    // (The first install claims the page too; that needs no reload.)
     let reloading = false;
+    const hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloading) return;
+      if (reloading || !hadController) return;
       reloading = true;
       location.reload();
     });
