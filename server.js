@@ -14,19 +14,6 @@ const app = express();
 app.disable("x-powered-by");
 
 // ---------------------------------------------------------------------------
-// Static asset extension heuristic
-// ---------------------------------------------------------------------------
-const STATIC_EXTENSIONS = new Set([
-  ".js", ".mjs", ".css", ".html",
-  ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".webp", ".avif", ".woff",
-  ".woff2", ".ttf", ".eot", ".otf", ".map",
-  ".br", ".gz",
-]);
-
-const isStaticAsset = (url) =>
-  STATIC_EXTENSIONS.has(path.extname(url).toLowerCase());
-
-// ---------------------------------------------------------------------------
 // 1. Security headers (every response)
 // ---------------------------------------------------------------------------
 const securityHeaders = {
@@ -58,14 +45,16 @@ for (const [key, value] of Object.entries(securityHeaders)) {
 app.use(redirectToHTTPS([/^localhost:\d*$/, /^127\.0\.0\.1:\d*$/], [], 301));
 
 // ---------------------------------------------------------------------------
-// 3. Cache-Control headers
+// 3. Cache-Control headers (#211)
+// Nothing here has a content hash in its name (index.html, src/*.js, dist/*,
+// fonts/, vendor/ ... are all served at fixed URLs), so none of it may be
+// "immutable": a browser holding such a copy would ignore a deployed fix for a
+// year. "no-cache" lets browsers keep a copy but revalidate it every time; the
+// static middleware below adds ETag and Last-Modified, so an unchanged file
+// costs a 304 with no body. (The service worker, sw.js, handles offline use.)
 // ---------------------------------------------------------------------------
-app.use((req, res, next) => {
-  if (isStaticAsset(req.url)) {
-    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-  } else {
-    res.setHeader("Cache-Control", "no-cache");
-  }
+app.use((_req, res, next) => {
+  res.setHeader("Cache-Control", "no-cache");
   next();
 });
 

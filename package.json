@@ -35,7 +35,7 @@
   "scripts": {
     "build": "npm run compress",
     "bundle": "scripts/bundle.sh",
-    "cache": "scripts/sw.sh",
+    "cache": "node scripts/build-sw.js",
     "clean": "scripts/cleanup.sh",
     "compress": "scripts/compress.sh",
     "test": "node --test test/unit/*.test.js",

@@ -31,7 +31,32 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(error => {
+    // A new version is installed in the background but waits, so a session in
+    // progress isn't swapped under the user: they choose when to reload (#194)
+    // (The first install claims the page too; that needs no reload.)
+    let reloading = false;
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading || !hadController) return;
+      reloading = true;
+      location.reload();
+    });
+    const offerUpdate = worker => {
+      MT.toast.info("A new version is available. Click here to reload (unsaved work will be lost).", 0, clicked => {
+        if (clicked) worker.postMessage({ type: "SKIP_WAITING" });
+      });
+    };
+    navigator.serviceWorker.register("sw.js").then(registration => {
+      if (!registration) return;
+      // Only an update has a controller already; the first install needs no prompt
+      if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        worker.addEventListener("statechange", () => {
+          if (worker.state == "installed" && navigator.serviceWorker.controller) offerUpdate(worker);
+        });
+      });
+    }).catch(error => {
       console.error("Service Worker Registration failed with " + error);
     });
   }
