@@ -827,8 +827,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         MT.toast.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
       }, 20000);
 
-      const nFiles = session.files.length - 1;
-      const check = nFiles > 0;
+      const check = session.files.length > 1;
 
       // Files are read in the order their kinds need, but where they disagree
       // about a node, the values of the file nearest the top of the list win
@@ -838,7 +837,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       session.meta.anySequences = session.files.some(file => (file.format == "fasta") || (file.format == "node" && file.field2 !== "None"));
 
-      files.forEach((file, fileNum) => {
+      // Parsers finish in any order (FASTA and matrix parsing is asynchronous), so
+      // processing waits for every file, not for the last one in the list (#212)
+      const parsedFiles = [];
+
+      files.forEach(file => {
+        let parsed;
+        parsedFiles.push(new Promise(resolve => { parsed = resolve; }));
         const start = Date.now();
         const origin = [file.name];
         const source = session.data.sources.add(file.name, session.files.indexOf(file));
@@ -860,7 +865,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
             console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
-            if (fileNum == nFiles) processSequences();
+            parsed();
           });
 
         } else if (file.format == 'link') {
@@ -913,7 +918,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             }
             console.log('Link Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
-            if (fileNum == nFiles) processSequences();
+            parsed();
 
           } else {
 
@@ -951,7 +956,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 }
                 console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
-                if (fileNum == nFiles) processSequences();
+                parsed();
               }
             });
           }
@@ -985,7 +990,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             });
             console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
-            if (fileNum == nFiles) processSequences();
+            parsed();
 
           } else {
 
@@ -1019,7 +1024,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               complete: () => {
                 console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
-                if (fileNum == nFiles) processSequences();
+                parsed();
               }
             });
           }
@@ -1072,14 +1077,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             console.log('Distance Matrix Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${nn} New, ${data.length - 1} Total Nodes from Excel Distance Matrix.`);
             message(` - Parsed ${nl} New, ${((data.length - 1) ** 2 - (data.length - 1)) / 2} Total Links from Excel Distance Matrix.`);
-            if (fileNum == nFiles) processSequences();
+            parsed();
 
           } else {
 
             MT.parseCSVMatrix(file, source).then(o => {
               message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
               message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
-              if (fileNum == nFiles) processSequences();
+              parsed();
             });
           }
 
@@ -1110,9 +1115,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           console.log('Newick Tree Parse time:', (Date.now() - start).toLocaleString(), 'ms');
           message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
           message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
-          if (fileNum == nFiles) processSequences();
+          parsed();
         }
       });
+
+      Promise.all(parsedFiles).then(() => processSequences());
 
       async function processSequences() {
         // Where files disagree about nodes, say so (the top file's values are used)
