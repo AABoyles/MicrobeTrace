@@ -1,7 +1,8 @@
-// Nodes missing values: a missing date is filled with the earliest date, but a
-// missing number (such as a latitude, or a count) stays missing, from CSV and
-// from spreadsheets (whose cells are text, and the browser reads text such as
-// "12" as a date).
+// Nodes missing values: a missing date stays missing (it isn't made the
+// earliest date, which would put the node on the timeline), and so does a
+// missing number (such as a latitude, or a count), from CSV and from
+// spreadsheets (whose cells are text, and the browser reads text such as "12"
+// as a date).
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
@@ -34,14 +35,13 @@ async function load(page, nodeFile) {
 // The nodes' values for the edited rows
 const read = page => page.evaluate(() => {
   const byId = id => session.data.nodes.find(d => d._id == id);
-  const dates = session.data.nodes.map(d => MT.parseDate(d.date)).filter(Boolean).map(d => d.getTime());
   return {
     lats: ['S0', 'S5', 'S9'].map(id => byId(id).lat),
     counts: ['S0', 'S5', 'S9'].map(id => byId(id).count),
     lat: byId('S20').lat,
     count: byId('S20').count,
-    filled: ['S10', 'S14'].map(id => MT.parseDate(byId(id).date) && MT.parseDate(byId(id).date).getTime()),
-    earliest: Math.min(...dates),
+    missing: ['S10', 'S14'].map(id => byId(id).date),
+    kept: byId('S20').date,
     invalid: session.data.nodes.filter(d => Object.values(d).some(v => v === 'Invalid Date')).length
   };
 });
@@ -50,7 +50,7 @@ for (const [kind, file] of [
   ['CSV', { name: 'nodes.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) }],
   ['a spreadsheet', { name: 'nodes.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: xlsx }]
 ]) {
-  test(`from ${kind}, missing dates are filled but missing numbers aren't`, async ({ page }) => {
+  test(`from ${kind}, missing dates and numbers stay missing`, async ({ page }) => {
     const errors = watchErrors(page);
     await load(page, file);
     const values = await read(page);
@@ -59,8 +59,9 @@ for (const [kind, file] of [
     expect(values.counts).toEqual([null, null, null]);
     expect(+values.lat).toBe(+nodes[20][2]); // S20's, kept
     expect(+values.count).toBe(20 % 12 + 1);
-    // Missing dates are the earliest date
-    expect(values.filled).toEqual([values.earliest, values.earliest]);
+    // Missing dates stay missing, not the earliest date; the others are kept
+    expect(values.missing).toEqual([null, null]);
+    expect(values.kept).toBe(nodes[20][1]);
     expect(values.invalid).toBe(0);
     expect(errors).toEqual([]);
   });

@@ -106,7 +106,7 @@ test("a stash that can't be read says so", async () => {
   await openRecall();
   await row('broken').click();
   await dialog().locator('#recall-load-stash').click();
-  await expect(page.locator('.mt-toast-container .toast', { hasText: 'broken' })).toHaveText('“broken” couldn\'t be recalled.');
+  await expect(page.locator('.mt-toast-container .toast', { hasText: 'broken' })).toHaveText('"broken" couldn\'t be recalled.');
   await expect(dialog()).toBeVisible();
   // (It's logged, for whoever looks)
   expect(errors).toEqual([expect.stringMatching(/JSON/)]);

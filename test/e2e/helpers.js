@@ -25,7 +25,11 @@ function watchErrors(page) {
 // until it has, so a click that closes it would do nothing.
 const waitForModal = (page, selector) => page.waitForFunction(selector => {
   const modal = document.querySelector(selector);
-  return modal && modal.classList.contains('show') && getComputedStyle(modal).opacity == '1';
+  // Opaque isn't enough: until Bootstrap has finished the transition it ignores
+  // hide() and hasn't yet moved focus into the dialog (its focus trap)
+  const instance = window.bootstrap && bootstrap.Modal.getInstance(modal);
+  return modal && modal.classList.contains('show') && getComputedStyle(modal).opacity == '1' &&
+    !(instance && instance._isTransitioning);
 }, selector);
 
 // Opens a view's export dialog from its button, once it has finished opening

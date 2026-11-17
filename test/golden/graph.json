@@ -1,0 +1,53 @@
+{
+  "derivation": "By hand; see README.md. Distances are all distinct in 'toy', so its minimum spanning tree is unique.",
+  "toy": {
+    "nodes": ["A", "B", "C", "D", "E", "F"],
+    "distances": [
+      ["A", "B", 0.004], ["A", "C", 0.012], ["A", "D", 0.031], ["A", "E", 0.035], ["A", "F", 0.050],
+      ["B", "C", 0.010], ["B", "D", 0.027], ["B", "E", 0.033], ["B", "F", 0.048],
+      ["C", "D", 0.020], ["C", "E", 0.024], ["C", "F", 0.045],
+      ["D", "E", 0.006], ["D", "F", 0.040],
+      ["E", "F", 0.038]
+    ],
+    "mst": [["A", "B"], ["D", "E"], ["B", "C"], ["C", "D"], ["E", "F"]],
+    "mstWeight": 0.078,
+    "nearestNeighbours": [["A", "B"], ["B", "C"], ["D", "E"], ["E", "F"]],
+    "clusters": {
+      "0.015": [["A", "B", "C"], ["D", "E"], ["F"]],
+      "0.02": [["A", "B", "C", "D", "E"], ["F"]],
+      "0.005": [["A", "B"], ["C"], ["D"], ["E"], ["F"]],
+      "0.05": [["A", "B", "C", "D", "E", "F"]]
+    }
+  },
+  "square": {
+    "comment": "A square of four unit sides with diagonals of 2: four minimum spanning trees (any three sides), each node's two nearest neighbours tied.",
+    "nodes": ["W", "X", "Y", "Z"],
+    "distances": [
+      ["W", "X", 1], ["X", "Y", 1], ["Y", "Z", 1], ["Z", "W", 1],
+      ["W", "Y", 2], ["X", "Z", 2]
+    ],
+    "mstUnion": [["W", "X"], ["X", "Y"], ["Y", "Z"], ["W", "Z"]],
+    "nearestNeighbours": [["W", "X"], ["X", "Y"], ["Y", "Z"], ["W", "Z"]]
+  },
+  "tree": {
+    "comment": "Patristic distances of the unrooted tree ((A:0.1,B:0.2):0.05,C:0.3,(D:0.15,E:0.25):0.1); an additive matrix, from which neighbour joining recovers that tree exactly.",
+    "newick": "((A:0.1,B:0.2):0.05,C:0.3,(D:0.15,E:0.25):0.1);",
+    "labels": ["A", "B", "C", "D", "E"],
+    "matrix": [
+      [0, 0.3, 0.45, 0.4, 0.5],
+      [0.3, 0, 0.55, 0.5, 0.6],
+      [0.45, 0.55, 0, 0.55, 0.65],
+      [0.4, 0.5, 0.55, 0, 0.4],
+      [0.5, 0.6, 0.65, 0.4, 0]
+    ],
+    "splits": [["A", "B"], ["D", "E"]],
+    "leafLengths": { "A": 0.1, "B": 0.2, "C": 0.3, "D": 0.15, "E": 0.25 }
+  },
+  "alignment": {
+    "comment": "Deleting CT (sites 6-7, from 0) from the reference is the only two-base deletion that gives the query; 14 matches less a gap of 5 + 2 x 2 scores 5 with the default costs.",
+    "reference": "ACGTAGCTTGCAATCG",
+    "query": "ACGTAGTGCAATCG",
+    "aligned": "ACGTAG--TGCAATCG",
+    "score": 5
+  }
+}
