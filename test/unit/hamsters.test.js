@@ -20,6 +20,7 @@ function load({ directionality = true, tree = null, failTree = false } = {}) {
     console: { log() {}, error() {}, warn() {} },
     TextDecoder, TextEncoder,
     MTSettings: require('../../src/settings.js'),
+    MTDates: require('../../src/dates.js'),
     MTEvents: require('../../src/events.js'),
     document: stub()
   };
@@ -83,6 +84,7 @@ function bare() {
     console: { log() {}, error() {} },
     TextDecoder, TextEncoder,
     MTSettings: require('../../src/settings.js'),
+    MTDates: require('../../src/dates.js'),
     MTEvents: require('../../src/events.js'),
     document: stub()
   };
@@ -137,6 +139,7 @@ test('computeDirectionality rejects, rather than hanging, when its worker throws
     console: { log() {}, error() {} },
     TextDecoder, TextEncoder,
     MTSettings: require('../../src/settings.js'),
+    MTDates: require('../../src/dates.js'),
     MTEvents: require('../../src/events.js'),
     document: stub()
   };
