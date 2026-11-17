@@ -1199,14 +1199,25 @@
   MT.computeTree = () => {
     return new Promise((resolve, reject) => {
       let computer = new Worker("workers/compute-tree.js");
+      // Every way out settles the promise, as MT.runHamsters waits on it:
+      // parsing a tree too deep for patristic throws here, on the main thread (#250)
+      const fail = e => {
+        computer.terminate();
+        reject(e);
+      };
       computer.onmessage = response => {
-        temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+        try {
+          temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+        } catch (e) {
+          return fail(e);
+        }
+        computer.terminate();
         console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         resolve();
       };
       computer.onerror = e => {
         console.error(e);
-        reject(e);
+        fail(e);
       };
       MT.getDM().then(dm => {
         computer.postMessage({
@@ -1214,14 +1225,13 @@
           matrix: dm,
           round: session.style.widgets["tree-round"]
         });
-      });
+      }).catch(fail);
     });
   };
   
   MT.computeDirectionality = () => {
-    return new Promise(resolve => {
-      // Directions are inferred from the tree, which only exists once the
-      // phylogenetic tree view has computed it.
+    return new Promise((resolve, reject) => {
+      // Directions are inferred from the tree (see MT.runHamsters).
       if (!temp.tree) return resolve();
       const g = session.data.graph;
       const ids = new Uint32Array(g.edgeCount), sources = [], targets = [];
@@ -1237,15 +1247,28 @@
         console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         let start = Date.now();
         let n = flips.length;
-        for (let i = 0; i < n; i++) {
-          if (flips[i]) {
-            const e = g.flip(ids[i]);
-            if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
+        try {
+          for (let i = 0; i < n; i++) {
+            if (flips[i]) {
+              const e = g.flip(ids[i]);
+              if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
+            }
           }
+        } catch (e) {
+          computer.terminate();
+          return reject(e);
+        } finally {
+          g.version++;
         }
-        g.version++;
+        computer.terminate();
         console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
+      };
+      // (Without this a worker that throws, say on a tree too deep for
+      // patristic, would leave the load waiting forever.)
+      computer.onerror = e => {
+        computer.terminate();
+        reject(e);
       };
       computer.postMessage({
         sources: sources,
@@ -1337,13 +1360,26 @@
     });
   };
   
+  // Directions are inferred from the tree, so with that on, the tree is built
+  // first (unless there is one already, from a Newick file) and the links are
+  // flipped before finishUp freezes the graph and the views draw it. The tree
+  // isn't built otherwise: building it on every load overflowed patristic's
+  // stack on large datasets (#250), and only the tree view needs it then, which
+  // builds it when opened (and reuses the one built here).
   MT.runHamsters = async () => {
     // if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation(); #236
     // MT.computeNN();
     // MT.computeMST();
-    // await MT.computeTree();
-    if(!session.style.widgets['infer-directionality-false']) MT.computeDirectionality();
-    MT.finishUp();
+    if (!session.style.widgets['infer-directionality-false']) {
+      try {
+        if (!temp.tree) await MT.computeTree();
+        await MT.computeDirectionality();
+      } catch (error) {
+        console.error(error);
+        MT.toast.warning("Couldn't infer the links' directions; they are shown as loaded.", 10);
+      }
+    }
+    return MT.finishUp();
   };
   
   MT.finishUp = async (oldSession) => { 
