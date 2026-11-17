@@ -17,6 +17,10 @@ Developed By ([some folks](https://github.com/aaboyles/MicrobeTrace/blob/master/
 * [Watch how to use MicrobeTrace for COVID-19](https://www.youtube.com/watch?v=he0Yq5yvToc)
 * [Cite MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/Cite-MicrobeTrace)
 
+## AI Agents (WebMCP)
+
+MicrobeTrace offers its features as tools for AI agents through [WebMCP](https://webmachinelearning.github.io/webmcp/), a draft web standard for exposing tools to agents in the browser. An agent can load files, launch a network, query and style nodes and links, and draw views, using the same operations as the interface. The tools are described in [src/webmcp/README.md](src/webmcp/README.md), which also covers the filter language, an example workflow and how to add a tool. The tools work without WebMCP too, through `MTWebMCP.call` in the page.
+
 ## To Spread the Word:
 
 * [View the MicrobeTrace Flyer](https://github.com/aaboyles/MicrobeTrace/blob/master/docs/MicrobeTrace%20Flyer_Sept_2019.pdf)

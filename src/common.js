@@ -1425,6 +1425,7 @@
       MT.setNodeVisibility(true);
       ["cluster", "link", "node"].forEach(thing => MT.events.emit(thing + "-visibility"));
       MT.showStatistics();
+      MT.events.emit("session-loaded");
     });
     db.getItem("stash-auto").then(autostash => {
       if (autostash == "true") {

@@ -366,6 +366,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // The files' order, which ranks them where they disagree, follows their
     // rows, which can be dragged by their grips
     const fileOf = new WeakMap();
+    const rowOf = new WeakMap(); // a file's row, and the columns it has
+    const headersOf = new WeakMap();
     const showOrderHint = () => { $('.file-order-hint').hidden = $$('.file-table-row').length < 2; };
     MT.sortable(table, { items: '.file-table-row', handle: '.file-grip', forcePlaceholderSize: true });
     table.addEventListener('sortupdate', () => {
@@ -524,6 +526,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           </div>`).join('')}
         </div>`;
       row.querySelector('.file-title').textContent = file.name;
+      rowOf.set(file, row);
+      headersOf.set(file, headers);
       const fields = Array.from(row.querySelectorAll('.file-field'));
       const selects = fields.map(f => f.querySelector('select'));
       const kindOf = () => row.querySelector(`input[name="${group}"]:checked`).value;
@@ -713,24 +717,34 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       audited.append(row);
     }
 
-    $('.audit-launcher').addEventListener('click', () => readFastas().then(data => {
-      const start = Date.now();
+    // What looks wrong with each sequence, as [{id, type}]: check(name) says
+    // whether to look for each of the Audit tab's problems (empty, gaps, RNA,
+    // amino-acids, CIGAR, malformed)
+    function auditSequences(data, check) {
       const isGaps = /^-+$/;
       const isRNA = /^[ACGURYMKWSBDHVN-]+$/;
       const isAA = /^[ARNDCQEGHILKMFPSTWYVBZN]+$/;
       const isDNA = /^[ACGTRYMKWSBDHVN-]+$/;
       const isCIGAR = /^[0-9MIDNSHP=X]+$/;
       const isMalformed = /[^ACGTURYMKWSBDHVNQEILFPZX0-9-]+/;
+      const found = [];
+      const log = (id, type) => found.push({ id, type });
+      data.forEach(({ seq, id }) => {
+        if (check('empty') && seq == '') log(id, 'empty');
+        if (check('gaps') && isGaps.test(seq)) log(id, 'all gaps');
+        if (check('RNA') && isRNA.test(seq) && !isGaps.test(seq) && /U/.test(seq)) log(id, 'RNA');
+        if (check('amino-acids') && isAA.test(seq) && !isDNA.test(seq)) log(id, 'amino acids');
+        if (check('CIGAR') && isCIGAR.test(seq)) log(id, 'a CIGAR');
+        if (check('malformed') && isMalformed.test(seq)) log(id, 'malformed');
+      });
+      return found;
+    }
+
+    $('.audit-launcher').addEventListener('click', () => readFastas().then(data => {
+      const start = Date.now();
       const check = name => modal.querySelector(`[name="audit-${name}"]`).checked;
       audited.innerHTML = '';
-      data.forEach(({ seq, id }) => {
-        if (check('empty') && seq == '') logAudit(id, 'empty');
-        if (check('gaps') && isGaps.test(seq)) logAudit(id, 'all gaps');
-        if (check('RNA') && isRNA.test(seq) && !isGaps.test(seq) && /U/.test(seq)) logAudit(id, 'RNA');
-        if (check('amino-acids') && isAA.test(seq) && !isDNA.test(seq)) logAudit(id, 'amino acids');
-        if (check('CIGAR') && isCIGAR.test(seq)) logAudit(id, 'a CIGAR');
-        if (check('malformed') && isMalformed.test(seq)) logAudit(id, 'malformed');
-      });
+      auditSequences(data, check).forEach(({ id, type }) => logAudit(id, type));
       console.log('Sequence Auditing time:', (Date.now() - start).toLocaleString(), 'ms');
     }));
 
@@ -1236,8 +1250,114 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     });
 
     stop.push(() => MT.sortable(table, 'destroy'), () => alsoMenu.destroy());
+
+    // A programmatic way to do what the view does, for scripts and agents (see
+    // src/webmcp/session.js). It goes with the view.
+    const named = name => session.files.find(f => f.name == name);
+    const describe = file => {
+      const row = rowOf.get(file);
+      const problem = row && problems.has(row) ? problems.get(row)() : '';
+      return {
+        name: file.name,
+        extension: file.extension,
+        format: file.format,
+        field1: file.field1, field2: file.field2, field3: file.field3,
+        headers: (headersOf.get(file) || []).slice(),
+        problem: problem || null
+      };
+    };
+    const api = {
+      // Adds a file ({name, contents, extension?, format?, field1?, field2?,
+      // field3?}) as the view does, returning its description
+      add(file) {
+        file = Object.assign({}, file);
+        file.name = MT.escape(file.name);
+        file.extension = (file.extension || file.name.split('.').pop()).toLowerCase();
+        ready();
+        session.files.push(file);
+        addToTable(file);
+        return describe(file);
+      },
+      remove(name) {
+        const file = named(name), row = file && rowOf.get(file);
+        if (!row) return false;
+        row.querySelector('a[title="Remove this file"]').click();
+        return true;
+      },
+      // Changes how a pending file is read: {format, field1, field2, field3}
+      update(name, changes) {
+        const file = named(name), row = file && rowOf.get(file);
+        if (!row) return null;
+        if (changes.format && changes.format != file.format) {
+          const radio = row.querySelector(`input[type="radio"][value="${changes.format}"]`);
+          if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+        const selects = row.querySelectorAll('.file-field select');
+        [changes.field1, changes.field2, changes.field3].forEach((value, i) => {
+          if (value === undefined) return;
+          selects[i].value = value;
+          selects[i].dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        return describe(file);
+      },
+      // Puts the named files first, in this order (the others follow, as they were)
+      reorder(names) {
+        const listed = names.map(named).filter(Boolean);
+        const order = listed.concat(session.files.filter(f => !listed.includes(f)));
+        order.forEach(f => { const row = rowOf.get(f); if (row) table.append(row); });
+        MT.sortable(table, 'reload');
+        session.files.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        return session.files.map(describe);
+      },
+      list: () => session.files.map(describe),
+      // What keeps Launch disabled, by file
+      problems: () => session.files.map(describe).filter(d => d.problem).map(d => ({ name: d.name, problem: d.problem })),
+      canLaunch() { checkLaunch(); return !launchButton.disabled; },
+      // Same as clicking Launch (after setting the reference a first-sequence
+      // alignment uses, as opening the sequence settings does)
+      async launch() {
+        checkLaunch();
+        if (launchButton.disabled) return false;
+        if (get('align-sw') && get('reference-source-first')) {
+          const data = await readFastas();
+          if (data.length) session.data.reference = data[0].seq;
+        }
+        launchButton.click();
+        return true;
+      },
+      // Adds a file of generated random sequences, as the Generate button does
+      generate(count) {
+        return api.add({ name: 'generatedNodes.csv', extension: 'csv', contents: Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', count, 20)) });
+      },
+      // The audit's findings for [{id, seq}], given {empty, gaps, RNA, 'amino-acids', CIGAR, malformed} (each on unless false)
+      auditSequences: (data, checks) => auditSequences(data, name => checks[name] !== false),
+      readFastas,
+      // The alignment scores {match, mismatch, gapOpen, gapExtend}, after setting any given
+      aligner(values) {
+        const inputs = { match: '.aligner-match', mismatch: '.aligner-mismatch', gapOpen: '.aligner-gap-open', gapExtend: '.aligner-gap-extend' };
+        Object.keys(inputs).forEach(k => { if (values && values[k] !== undefined) $(inputs[k]).value = values[k]; });
+        return Object.fromEntries(Object.keys(inputs).map(k => [k, number(inputs[k])]));
+      },
+      // Redraws the controls that follow other settings, after those were set
+      refresh() {
+        showAlso();
+        showAmbiguityRows();
+        showAlignmentRows();
+        $$('input[name="reference-source"]').forEach(input => {
+          input.checked = input.value == referenceSource();
+          input.closest('.btn').classList.toggle('active', input.checked);
+        });
+      }
+    };
+    MT.filesView = api;
     return {
-      destroy: () => stop.forEach(fn => fn())
+      destroy: () => {
+        if (MT.filesView === api) MT.filesView = undefined;
+        stop.forEach(fn => fn());
+      }
     };
   });
 </script>

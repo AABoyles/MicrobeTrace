@@ -246,6 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
       MT.updateStatistics();
     });
   };
+  MT.updateNetwork = updateNetwork;
 
   const showEpsilon = () => {
     byId("filtering-epsilon-copy").value = Math.pow(10, parseFloat(byId("filtering-epsilon").value)).toLocaleString();
@@ -572,6 +573,8 @@ document.addEventListener("DOMContentLoaded", () => {
     events.emit(kind + "-color-change");
   }
 
+  MT.showColorTable = showColorTable;
+
   ["node", "link"].forEach(kind => {
     const wrapper = byId(kind + "-color-table-wrapper");
     const toggle = key => () => {
@@ -631,6 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
   MT.showTimeline = (variable = session.style.widgets["node-timeline-variable"], previous = variable) => {
       d3.select('#global-timeline svg').remove();
       clearInterval(session.timeline);
+      MT.scrubTimeline = null;
       const pin = document.getElementById("pinbutton");
       let loadingJsonFile = previous == variable;
       if (previous != 'None' && !loadingJsonFile) {
@@ -812,6 +816,12 @@ document.addEventListener("DOMContentLoaded", () => {
           .text(handleDateFormat(t));
       }
       showTimelineBar(true);
+      // Moves the timeline's handle to a date (for scripts and agents)
+      MT.scrubTimeline = date => {
+        const h = MT.parseDate(date);
+        currentValue = x(h);
+        update(h);
+      };
       function update(h) {
         handle.attr("cx", x(h));
         label
