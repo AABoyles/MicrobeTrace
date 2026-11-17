@@ -799,6 +799,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     // Launching -----------------------------------------------------------------
 
+    // The name as the user gave it: files from sessions saved before rawName existed only have the escaped name
+    const shownName = file => file.rawName ?? file.name;
+
     // Log lines are plain text (file names included), so they are never parsed as HTML
     function message(msg) {
       session.messages.push(msg);
@@ -860,7 +863,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         if (file.format == 'fasta') {
 
-          message(`Parsing ${file.rawName} as FASTA...`);
+          message(`Parsing ${shownName(file)} as FASTA...`);
           let newNodes = 0;
           MT.parseFASTA(file.contents).then(seqs => {
             const n = seqs.length;
@@ -880,7 +883,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         } else if (file.format == 'link') {
 
-          message(`Parsing ${file.rawName} as Link List...`);
+          message(`Parsing ${shownName(file)} as Link List...`);
           let l = 0;
           if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
 
@@ -972,7 +975,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           }
         } else if (file.format == 'node') {
 
-          message(`Parsing ${file.rawName} as Node List...`);
+          message(`Parsing ${shownName(file)} as Node List...`);
 
           let m = 0, n = 0;
 
@@ -1041,7 +1044,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         } else if (file.format == 'matrix') {
 
-          message(`Parsing ${file.rawName} as Distance Matrix...`);
+          message(`Parsing ${shownName(file)} as Distance Matrix...`);
 
           if (file.extension == 'xls' || file.extension == 'xlsx') {
 
