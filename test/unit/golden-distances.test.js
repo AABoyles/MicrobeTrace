@@ -157,15 +157,22 @@ for (const file of FILES) {
       const k = exp.pairs.map((p, i) => i).filter(i => !gapFacesBase[i]);
       checkMetric('tn93', k.map(i => got[i]), k.map(i => want[i]), k.map(i => exp.pairs[i]), 1e-6);
     });
-    await t.test('pairs where a gap faces a base', {
-      todo: 'tn93.js weighs an N (so a GapMM gap) 1/3 per base, not 1/4, and B 1/2, not 1/3: ' +
-        'e.g. ref vs gapped: app 0.1330724, tn93 -a gapmm 0.1084786'
-    }, () => {
+    await t.test('pairs where a gap faces a base', () => {
       const k = exp.pairs.map((p, i) => i).filter(i => gapFacesBase[i]);
       checkMetric('tn93', k.map(i => got[i]), k.map(i => want[i]), k.map(i => exp.pairs[i]), 1e-6);
     });
   });
 }
+
+// GapMM weights: each resolutionsCount entry is 1 / (bases its resolution covers), 0 if none
+test('tn93.min.js resolutionsCount matches resolutions', () => {
+  const { resolutions, resolutionsCount } = tn93js;
+  assert.strictEqual(resolutionsCount.length, resolutions.length);
+  resolutions.forEach((r, i) => {
+    const bases = r.reduce((a, b) => a + b, 0);
+    assert.strictEqual(resolutionsCount[i], bases ? 1 / bases : 0, `resolutionsCount[${i}]`);
+  });
+});
 
 // HIV-TRACE -g: hivtrace runs tn93 -a resolve -g FRACTION, which decides pair by
 // pair whether to average. MicrobeTrace decides sequence by sequence: a pair is

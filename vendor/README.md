@@ -17,6 +17,12 @@ the `wasm32-unknown-unknown` target and `wasm-pack`). The committed build is fro
 `workers/compute-links-legacy.js`, which handles the GapMM ambiguity strategy that
 bx-distance-models doesn't implement.
 
+`tn93.min.js` is a local patch of tn93 0.3.5 from NPM. Its `resolutionsCount` table (the weight
+of each resolution in GapMM) had one extra 0.5 entry, shifting every later weight by one index,
+so B, N and gaps were weighted wrongly. The table is now derived from `resolutions` (1 / number of
+bases the code covers, 0 if none) and no other part of the file was changed. Re-apply this fix
+if the file is regenerated from NPM. Test: `test/unit/golden-distances.test.js`.
+
 ## cosmos.gl
 
 `cosmos.min.js` is a build of [cosmos.gl](https://github.com/cosmosgl/graph) (`@cosmos.gl/graph`
