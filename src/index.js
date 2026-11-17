@@ -332,6 +332,8 @@ document.addEventListener("DOMContentLoaded", () => {
       min = Number.MAX_SAFE_INTEGER;
     g.forEachValue(lsv, v => {
       v = parseFloat(v);
+      // Saturated distances are Infinity, and have no place on the scale (#281)
+      if (!isFinite(v)) return;
       if (v < min) min = v;
       if (v > max) max = v;
     });

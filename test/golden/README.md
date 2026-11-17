@@ -115,15 +115,11 @@ costs (match 1, mismatch 1, gap open 5, gap extend 2).
 
 These tests are marked `todo`, so `npm test` passes, until the app is fixed.
 
-1. **TN92** (`tn92`) is wrong in every mode. The vendored bx-distance-models build (commit 39f47f3)
-   uses a formula that isn't Tamura (1992) and can fall below the p-distance: `ref` against `tv`
-   gives 0.0063175 against 0.0254822 (and p = 0.025). Upstream fixed it in 3cb2ca9; the vendored
-   build predates that.
-2. **GapMM** weighs a gap facing a base as 4/3 of a site. tn93.js's `resolutionsCount` table has
+1. **GapMM** weighs a gap facing a base as 4/3 of a site. tn93.js's `resolutionsCount` table has
    one 1/2 too many, so B counts 1/2 per base (not 1/3) and N, which GapMM puts in for a gap, 1/3
    (not 1/4). `ref` against `gapped`: 0.1330724 against tn93's 0.1084786; with those weights the
    reference gives the app's value exactly. Pairs with no gap facing a base agree.
-3. **HIV-TRACE -g** averages by sequence, not by pair, and counts gaps as ambiguity. `h1`-`h2`
+2. **HIV-TRACE -g** averages by sequence, not by pair, and counts gaps as ambiguity. `h1`-`h2`
    (one resolvable code each, 2 of 100 sites): tn93 averages (0.0205196), MicrobeTrace resolves
    (0.0102056). `h0`-`h4` (`h4` has one code and 20 gaps, 21% non-ACGT): tn93 resolves (0),
    MicrobeTrace averages (0.0063275).

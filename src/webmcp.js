@@ -232,7 +232,8 @@
 
   function compare(a, b) {
     const na = asNumber(a), nb = asNumber(b);
-    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+    // Not na - nb: two Infinity (saturated distances, #281) would give NaN
+    if (!isNaN(na) && !isNaN(nb)) return na < nb ? -1 : na > nb ? 1 : 0;
     const ta = asTime(a), tb = asTime(b);
     if (!isNaN(ta) && !isNaN(tb)) return ta - tb;
     return String(a).localeCompare(String(b));
