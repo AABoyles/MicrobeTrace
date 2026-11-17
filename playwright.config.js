@@ -2,18 +2,22 @@
 const { defineConfig } = require('@playwright/test');
 
 const port = process.env.E2E_PORT || 5057;
+const ci = !!process.env.CI;
 
 module.exports = defineConfig({
   testDir: 'test/e2e',
-  timeout: 180000,
+  timeout: 90000, // slowest test today is ~24 s (failing ones wait out a 20 s expect)
   expect: { timeout: 20000 },
   fullyParallel: false,
   workers: 1,
-  reporter: [['list']],
+  forbidOnly: ci,
+  retries: ci ? 1 : 0,
+  reporter: ci ? [['list'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: `http://localhost:${port}`,
     viewport: { width: 1400, height: 900 },
     acceptDownloads: true,
+    trace: 'on-first-retry',
     actionTimeout: 20000,
     launchOptions: {
       // A Chromium other than Playwright's own, e.g. a preinstalled one
