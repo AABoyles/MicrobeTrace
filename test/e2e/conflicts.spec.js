@@ -4,7 +4,7 @@
 // choice; and sessions keeping it.
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { watchErrors, open, launchView } = require('./helpers');
+const { watchErrors, open, launchView, confirmReplace } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -113,6 +113,7 @@ test('a saved session keeps the choices', async () => {
   expect(saved.rules).toEqual({ state: 'nodes-lab.csv' });
   expect(saved.picks).toEqual([['S4', 'state', 'nodes-cases.csv']]);
   await page.setInputFiles('#OpenTab', { name: 'choices.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await confirmReplace(page);
   await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
   expect(await page.evaluate(() => ['S0', 'S4'].map(id => session.data.nodes.find(d => d._id == id).state))).toEqual(['Ohio', 'Texas']);
   expect(await page.evaluate(() => [session.data.sources.rules.get('state'), session.data.sources.picked('S4', 'state')])).toEqual(['nodes-lab.csv', 'nodes-cases.csv']);

@@ -4,7 +4,7 @@
 // one file, and merging many nodes quickly.
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { watchErrors, open, waitForModal } = require('./helpers');
+const { watchErrors, open, waitForModal, confirmReplace } = require('./helpers');
 
 const links = path.join(__dirname, 'fixtures', 'links.csv');
 const csv = (name, header, rows) => ({ name, mimeType: 'text/csv', buffer: Buffer.from([header, ...rows].map(r => r.join(',')).join('\n')) });
@@ -120,6 +120,7 @@ test('a saved session keeps where its values came from', async ({ page }) => {
   const saved = JSON.parse(require('fs').readFileSync(file, 'utf8'));
   expect(saved.data.nodeSources.sources.map(s => s.name)).toEqual(['links.csv', 'nodes-cases.csv', 'nodes-lab.csv']);
   await page.setInputFiles('#OpenTab', { name: 'reopened.microbetrace', mimeType: 'application/json', buffer: require('fs').readFileSync(file) });
+  await confirmReplace(page);
   await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
   expect(await traced(page)).toEqual(before);
   expect((await node(page, 'S0')).state).toBe('Texas');
@@ -162,6 +163,7 @@ test('a session saved before sources were, opens with none', async ({ page }) =>
     return JSON.stringify(old);
   });
   await page.setInputFiles('#OpenTab', { name: 'old.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await confirmReplace(page);
   await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
   expect((await node(page, 'S0')).state).toBe('Texas');
   expect(await traced(page)).toEqual({ state: [], date: [], lab: [], conflicts: {} });
@@ -216,6 +218,7 @@ test('a session that lists the ID column as a field too opens listing it once', 
     return JSON.stringify(old);
   });
   await page.setInputFiles('#OpenTab', { name: 'old.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await confirmReplace(page);
   await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
   expect(await idFields(page)).toEqual(['_id']);
 });

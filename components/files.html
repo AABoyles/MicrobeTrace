@@ -424,9 +424,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       processFiles(e.dataTransfer.files);
     });
 
+    // Session files (and zips, which hold them) replace the current session
+    const isSession = file => ['zip', 'microbetrace', 'hivtrace'].includes(file.name.split('.').pop().toLowerCase());
+
     function processFiles(files) {
+      files = Array.from(files);
+      if (files.some(isSession)) {
+        MT.confirmReplace(() => addFiles(files));
+      } else {
+        addFiles(files);
+      }
+    }
+
+    function addFiles(files) {
       ready();
-      Array.from(files).forEach(processFile);
+      files.forEach(processFile);
       launchButton.focus();
     }
 

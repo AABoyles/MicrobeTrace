@@ -8,7 +8,7 @@ const { test, expect } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { watchErrors, open, waitForModal } = require('./helpers');
+const { watchErrors, open, waitForModal, confirmReplace } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -162,6 +162,7 @@ test('the metrics, and the one filtered on, are saved with the session', async (
   // (Until the file is read, the session open is the one saved)
   await page.evaluate(() => { window.before = session.style.widgets; });
   await page.setInputFiles('#OpenTab', saved);
+  await confirmReplace(page);
   await page.waitForFunction(() => session.style.widgets !== window.before && document.getElementById('numberOfNodes').textContent != '' && session.data.graph.edgeCount > 0, null, { timeout: 60000 });
   const after = await total(page, 'k2p');
   expect(after.count).toBe(before.count);
@@ -195,6 +196,7 @@ test('a session from before keeps filtering on its distances', async () => {
   const file = path.join(path.dirname(saved), 'before.microbetrace');
   fs.writeFileSync(file, JSON.stringify(old));
   await page.setInputFiles('#OpenTab', file);
+  await confirmReplace(page);
   await expect.poll(() => get('link-sort-variable')).toBe('distance');
   const within = await page.evaluate(() => {
     let n = 0;

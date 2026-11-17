@@ -624,6 +624,25 @@
     </div>
   </div>
 
+  <div class="modal fade" id="replace-modal" tabindex="-1" role="dialog" aria-labelledby="replaceModalLabel" aria-describedby="replaceModalBody">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="replaceModalLabel">Replace the current session?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="replaceModalBody">
+          Unsaved changes will be lost. Stash the current session first to come back to it.
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="replace-stash-first" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Stash Current First</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="replace-button" class="btn btn-danger" data-bs-dismiss="modal">Replace</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script async src="https://googletagmanager.com/gtag/js?id=UA-116308624-1"></script>
   <script>
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'https:') window.location.replace('https://' + window.location.hostname + window.location.pathname);
