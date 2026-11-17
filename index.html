@@ -309,6 +309,9 @@
             <li class="nav-item" role="presentation">
               <a class="nav-link" id="timeline-tab" data-bs-toggle="tab" href="#timeline-config" role="tab" aria-controls="timeline-config" aria-selected="false">Timeline</a>
             </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="agents-tab" data-bs-toggle="tab" href="#agents-config" role="tab" aria-controls="agents-config" aria-selected="false">AI Agents</a>
+            </li>
           </ul>
           <div class="tab-content">
             <div class="tab-pane fade show active" id="filtering-config" role="tabpanel" aria-labelledby="filtering-tab">
@@ -473,6 +476,18 @@
                     <option>None</option>
                   </select>
                 </div>
+              </div>
+            </div>
+            <!-- Not a session setting (no data-setting): src/webmcp.js keeps it, for this tab only -->
+            <div class="tab-pane fade" id="agents-config" role="tabpanel" aria-labelledby="agents-tab">
+              <div class="form-check form-switch my-2">
+                <input class="form-check-input" type="checkbox" role="switch" id="webmcp-enabled" aria-describedby="webmcp-help webmcp-status">
+                <label class="form-check-label" for="webmcp-enabled">Let AI agents in this browser use MicrobeTrace (WebMCP)</label>
+              </div>
+              <p id="webmcp-status" class="small" aria-live="polite"></p>
+              <div id="webmcp-help" class="small text-muted">
+                <p>When this is on, an AI agent your browser connects to can load files, read the loaded data (including sequences), and change the views. You will be asked before an agent replaces or deletes data, opens a file, downloads or stores anything, or clicks a view's button.</p>
+                <p class="mb-0">Text in a data file can try to instruct an agent, so only turn this on for data you trust and agents you chose. It stays on until you turn it off or close this tab.</p>
               </div>
             </div>
           </div>

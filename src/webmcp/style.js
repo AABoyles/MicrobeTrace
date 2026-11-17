@@ -670,11 +670,15 @@
       if (args.literal) text = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       if (wholeWord) text = '\\b' + text + '\\b';
       let re;
-      try { re = new RegExp(text, caseSensitive ? '' : 'i'); } catch (e) { fail('Invalid regular expression: ' + args.query + ' (use literal: true for plain text)'); }
+      if (args.literal) {
+        re = new RegExp(text, caseSensitive ? '' : 'i'); // escaped: it can't backtrack badly
+      } else {
+        try { re = T.regex(text, caseSensitive ? '' : 'i'); } catch (e) { fail(e.message + ' (use literal: true for plain text)'); }
+      }
       const set = new Set();
       nodes().forEach(d => {
         const v = d[field];
-        if (typeof v == 'string') { if (re.test(v)) set.add(d); }
+        if (typeof v == 'string') { if (re.test(T.regexInput(v))) set.add(d); }
         else if (typeof v == 'number') { if (v + '' == args.query) set.add(d); }
       });
       const changed = applySelection(set, mode);
@@ -937,6 +941,7 @@
     description: 'Lists the named d3 color schemes usable with set_palette (e.g. schemeCategory10, schemePaired, schemeTableau10, schemeSet1, and sequential/diverging ones like schemeBlues, schemeRdYlBu), with their sizes and sample colors, and the palettes currently in use for nodes and links.',
     inputSchema: obj({}),
     annotations: readOnly,
+    untrusted: false,
     execute: async () => ({
       schemes: schemeNames().map(name => {
         const s = self.d3[name];
@@ -1290,6 +1295,7 @@
       clearValueColors: bool('Also reset per-value colors, opacities, names and palettes for the scope (default true)')
     }),
     annotations: { consequentialHint: true },
+    confirm: ({ scope = 'all' }) => 'Reset ' + (scope == 'all' ? 'all the styling' : 'the ' + ({ nodes: 'node', links: 'link', page: 'page' }[scope] || scope) + ' styling') + ' to the defaults. Custom colors and settings for it are lost.',
     execute: async ({ scope = 'all', clearValueColors = true }) => {
       T.requireData();
       const groups = scope == 'all' ? ['nodes', 'links', 'page'] : [scope];

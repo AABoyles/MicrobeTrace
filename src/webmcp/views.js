@@ -707,6 +707,8 @@
       required: ['view', 'action'],
       additionalProperties: false
     },
+    // A button can do anything its view does, so the user decides each click
+    confirm: ({ view, action }) => 'Click ' + JSON.stringify(String(action).slice(0, 100)) + ' in the ' + String(view).slice(0, 50) + ' view.',
     execute: async ({ view, open, action }) => {
       const item = await need(view, { open, show: true });
       const root = rootOf(item);
@@ -927,6 +929,9 @@
       additionalProperties: false
     },
     annotations: { consequentialHint: true },
+    confirm: ({ view, format, filename, download = true }) => download ?
+      'Download an export of the ' + (view ? String(view).slice(0, 50) + ' view' : 'active view') + (format ? ' as ' + String(format).slice(0, 20) : '') +
+      (filename ? ', named ' + JSON.stringify(String(filename).slice(0, 100)) : '') + ', to this computer.' : null,
     execute: async ({ view, open, format, filename, download = true, scale, quality, opacity, maxChars = 200000, maxWidth = 1200 }) => {
       const item = await need(view, { open, show: true });
       await settle(100);
