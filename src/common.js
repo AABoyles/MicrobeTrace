@@ -3253,12 +3253,15 @@
       container.appendChild(el);
 
       var bsToast = new bootstrap.Toast(el, { autohide: duration > 0 });
-      var callbackFired = false;
+      var callbackFired = false, clicked = false;
+      // The body dismisses the toast on click (data-bs-dismiss); the callback is
+      // told whether that is why it closed, as alertify's was
+      el.addEventListener('click', function () { clicked = true; });
       el.addEventListener('hidden.bs.toast', function () {
         if (callback && !callbackFired) {
           callbackFired = true;
-          var shouldClose = callback(false);
-          if (!shouldClose) {
+          var shouldClose = callback(clicked);
+          if (shouldClose === false) {
             bsToast.show(); // re-show if callback returned false (alertify compat)
           }
         }
