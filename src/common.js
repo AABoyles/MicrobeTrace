@@ -1364,35 +1364,6 @@
       });
     });
     
-    // patch missing date fields to earliest date in the the data: fields
-    // whose values are all dates (MT.isDate), so not numbers such as latitudes
-    let fields = session.data["nodeFields"];
-    let nodeSkeleton = MT.dataSkeleton();
-    let fieldsToCheck = fields.filter(f => !nodeSkeleton.nodeFields.includes(f) && f != '_ambiguity' && f != '_diff'); 
-    let n = session.data.nodes.length;
-    let k = fieldsToCheck.length;
-    outerloop:
-    for (let j = 0; j < k; j++) {
-      let field = fieldsToCheck[j];
-      let times = [];
-      for (let i = 0; i < n; i++) {
-        let value = session.data.nodes[i][field];
-        if (value == null) continue;
-        if (!MT.isDate(value)) continue outerloop;
-        times.push(MT.parseDate(value));
-      }
-      // (A field with no values has no earliest date)
-      if (times.length && times.length < n) {
-        let minTime = times.reduce((a, b) => a < b ? a : b);
-        let minTimeString = new Date(minTime).toString();
-        session.data.nodes.forEach(d => {
-          if (d[field] == null) {
-            d[field] = minTimeString;
-          } 
-        });
-      } 
-    };
-
     // The global menus of node and link variables
     const options = fields => fields.map(field => '<option value="' + field + '">' + MT.titleize(field) + "</option>").join("\n");
     const fill = (id, html) => {
@@ -1540,10 +1511,7 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (timeEnd && node[dateField] != null && node[dateField] !== "") {
-        let time = MT.parseDate(node[dateField]);
-        node.visible = node.visible && !!time && time <= timeEnd;
-      }
+      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd);
     }
     if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
@@ -2778,29 +2746,8 @@
     };
   };
 
-  // Reads a date field: a Date, a time in milliseconds, or text. Dates written
-  // without a time (2020, 2020-03, 2020-03-14 or 20200314) are local midnight,
-  // as people mean them (Date alone reads the dashed ones as UTC). Anything
-  // else is read as Date reads it. Returns null if it isn't a date.
-  MT.parseDate = value => {
-    if (value == null || value === '') return null;
-    let time;
-    if (value instanceof Date || typeof value == 'number') {
-      time = new Date(value);
-    } else {
-      const text = String(value).trim();
-      const day = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?|(\d{2})(\d{2}))?$/.exec(text);
-      if (day) {
-        const year = +day[1], month = +(day[2] || day[4] || 1) - 1, date = +(day[3] || day[5] || 1);
-        time = new Date(year, month, date);
-        time.setFullYear(year); // years before 100 aren't 19xx
-        if (time.getMonth() != month || time.getDate() != date) return null;
-      } else {
-        time = new Date(text);
-      }
-    }
-    return isNaN(time) ? null : time;
-  };
+  // Reads a date field (see src/dates.js): null if it is not a date.
+  MT.parseDate = MTDates.parseDate;
 
   // Downloads a Blob as a file
   MT.saveAs = (blob, filename) => {
