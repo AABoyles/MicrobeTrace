@@ -1064,7 +1064,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     source: source,
                     target: target,
                     origin: origin,
-                    distance: parseFloat(cell)
+                    [get('default-distance-metric')]: parseFloat(cell)
                   }, check);
                 });
               }
@@ -1085,6 +1085,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
         } else { // if(file.format == 'newick'){
 
+          if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
           let links = 0;
           let newLinks = 0;
           let newNodes = 0;
@@ -1102,7 +1103,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 source: source,
                 target: labels[j],
                 origin: origin,
-                distance: parseFloat(matrix[i][j])
+                [get('default-distance-metric')]: parseFloat(matrix[i][j])
               }, check);
               links++;
             }

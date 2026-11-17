@@ -753,8 +753,11 @@
         }
         const links = data.links;
         const tl = links.length;
+        // Distances go under the distance metric, which the threshold filters on (#213)
+        const field = session.style.widgets["default-distance-metric"];
+        if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
         for (let j = 0; j < tl; j++) {
-          nl += MT.addLink(Object.assign(links[j], { origin: origin }), check);
+          nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field), check);
         }
         console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve({ nn, nl, tn, tl });
