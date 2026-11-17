@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     };
     navigator.serviceWorker.register("sw.js").then(registration => {
+      if (!registration) return;
       // Only an update has a controller already; the first install needs no prompt
       if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
       registration.addEventListener("updatefound", () => {
