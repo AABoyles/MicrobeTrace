@@ -32,6 +32,20 @@ test('the worker caches every listed file and the app loads offline', async ({ p
   await page.evaluate(() => navigator.serviceWorker.ready);
   await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([cacheName]);
 
+  // A navigation is answered from the cache even online (no new index.html with
+  // old scripts): plant a marker in the cached page and see it served
+  await page.evaluate(async name => {
+    const cache = await caches.open(name);
+    await cache.put(new URL('index.html', location.href).href,
+      new Response('<title>from the cache</title>', { headers: { 'content-type': 'text/html' } }));
+  }, cacheName);
+  await page.reload();
+  await expect(page).toHaveTitle('from the cache');
+  await page.evaluate(async name => {
+    const cache = await caches.open(name);
+    await cache.put(new URL('index.html', location.href).href, await fetch('index.html?fresh=1', { cache: 'reload' }));
+  }, cacheName);
+
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator('nav.navbar')).toBeVisible();

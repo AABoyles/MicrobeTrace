@@ -117,19 +117,25 @@ self.addEventListener("activate", event => {
   );
 });
 
-// Navigations: network first, so a reload gets the newest page, falling back to
-// the cached one offline. Everything else from this origin: cache first, since
-// the cache holds one consistent version (replaced as a whole on update); files
-// not precached (e.g. data/) are fetched, then kept for next time.
+// Navigations: app shell. The page comes from the current cache version, like
+// every asset it loads, so a reload never mixes a new index.html with old
+// scripts (#211). The root URL means index.html; the network is only asked for
+// pages that aren't cached. The browser re-fetches sw.js on navigation, which is
+// how a new version is found; it then waits for the user (see src/index.js).
+// Everything else from this origin: cache first, since the cache holds one
+// consistent version (replaced as a whole on update); files not precached
+// (e.g. data/) are fetched, then kept for next time.
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET" || !request.url.startsWith(self.location.origin)) return;
   if (request.headers.has("range")) return;
 
   if (request.mode === "navigate") {
+    const path = new URL(request.url).pathname;
+    const isRoot = path.endsWith("/") || path.endsWith("/index.html");
     event.respondWith(
-      fetch(request).catch(() =>
-        caches.match(request, { ignoreSearch: true }).then(hit => hit || caches.match(INDEX)))
+      caches.open(CACHE).then(cache => cache.match(isRoot ? INDEX : request, { ignoreSearch: true }))
+        .then(hit => hit || fetch(request))
     );
     return;
   }
