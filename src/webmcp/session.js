@@ -608,6 +608,8 @@
     if (format == 'microbetracestyle') return JSON.stringify(self.session.style);
     if (!dataLoaded()) fail('No data is loaded, so there is nothing to save. Load data first.');
     if (format == 'hivtrace') return MT.exportHIVTRACE();
+    // The network's positions are on the GPU until synced (see MT.syncLayout)
+    if (MT.syncLayout) MT.syncLayout();
     return JSON.stringify(self.session);
   }
 
@@ -732,6 +734,7 @@
     execute: async (args) => {
       requireData();
       const key = 'stash-' + Date.now() + '-' + (args.name || '');
+      if (self.MT.syncLayout) self.MT.syncLayout();
       await self.db.setItem(key, JSON.stringify(self.session));
       return stashOf(key);
     }
