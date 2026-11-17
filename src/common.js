@@ -1196,14 +1196,25 @@
   MT.computeTree = () => {
     return new Promise((resolve, reject) => {
       let computer = new Worker("workers/compute-tree.js");
+      // Every way out settles the promise, as MT.runHamsters waits on it:
+      // parsing a tree too deep for patristic throws here, on the main thread (#250)
+      const fail = e => {
+        computer.terminate();
+        reject(e);
+      };
       computer.onmessage = response => {
-        temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+        try {
+          temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
+        } catch (e) {
+          return fail(e);
+        }
+        computer.terminate();
         console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         resolve();
       };
       computer.onerror = e => {
         console.error(e);
-        reject(e);
+        fail(e);
       };
       MT.getDM().then(dm => {
         computer.postMessage({
@@ -1211,7 +1222,7 @@
           matrix: dm,
           round: session.style.widgets["tree-round"]
         });
-      });
+      }).catch(fail);
     });
   };
   
@@ -1233,13 +1244,20 @@
         console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         let start = Date.now();
         let n = flips.length;
-        for (let i = 0; i < n; i++) {
-          if (flips[i]) {
-            const e = g.flip(ids[i]);
-            if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
+        try {
+          for (let i = 0; i < n; i++) {
+            if (flips[i]) {
+              const e = g.flip(ids[i]);
+              if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
+            }
           }
+        } catch (e) {
+          computer.terminate();
+          return reject(e);
+        } finally {
+          g.version++;
         }
-        g.version++;
+        computer.terminate();
         console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };

@@ -77,6 +77,61 @@ test('a tree that fails to build warns and still finishes the load', async () =>
   assert.strictEqual(warnings.length, 1);
 });
 
+// Loads common.js with nothing replaced, for the compute steps themselves
+function bare() {
+  const ctx = {
+    console: { log() {}, error() {} },
+    TextDecoder, TextEncoder,
+    MTSettings: require('../../src/settings.js'),
+    MTEvents: require('../../src/events.js'),
+    document: stub()
+  };
+  ctx.self = ctx.window = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx);
+  ctx.session = { style: { widgets: {} } };
+  ctx.temp = {};
+  return ctx;
+}
+
+// A tree worker that answers with a tree, and notes when it's terminated
+function treeWorker(ctx) {
+  const worker = { terminated: false };
+  ctx.Worker = class {
+    postMessage() {
+      const tree = new TextEncoder().encode('{"id":"root"}').buffer;
+      setTimeout(() => this.onmessage({ data: { tree, start: Date.now() } }), 1);
+    }
+    terminate() { worker.terminated = true; }
+  };
+  ctx.MT.getDMLabels = () => ['a', 'b'];
+  ctx.MT.getDM = async () => [[0, 1], [1, 0]];
+  return worker;
+}
+
+test('computeTree rejects, rather than hanging, when the tree is too deep to parse', async () => {
+  const ctx = bare(), worker = treeWorker(ctx);
+  ctx.patristic = { parseJSON: () => { throw new RangeError('Maximum call stack size exceeded'); } };
+  await assert.rejects(ctx.MT.computeTree(), /Maximum call stack/);
+  assert.ok(worker.terminated);
+  assert.strictEqual(ctx.temp.tree, undefined);
+});
+
+test('computeTree rejects when the distance matrix fails', async () => {
+  const ctx = bare(), worker = treeWorker(ctx);
+  ctx.MT.getDM = async () => { throw new Error('no matrix'); };
+  await assert.rejects(ctx.MT.computeTree(), /no matrix/);
+  assert.ok(worker.terminated);
+});
+
+test('computeTree sets the tree and terminates its worker', async () => {
+  const ctx = bare(), worker = treeWorker(ctx);
+  ctx.patristic = { parseJSON: json => JSON.parse(json) };
+  await ctx.MT.computeTree();
+  assert.strictEqual(ctx.temp.tree.id, 'root');
+  assert.ok(worker.terminated);
+});
+
 test('computeDirectionality rejects, rather than hanging, when its worker throws', async () => {
   const ctx = {
     console: { log() {}, error() {} },
