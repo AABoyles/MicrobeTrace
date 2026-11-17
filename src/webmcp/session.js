@@ -216,6 +216,8 @@
         contents = args.contents;
       }
       const view = await filesView();
+      // The view stores names escaped (view.add escapes the raw name it is given), so the
+      // duplicate check compares escaped names. Pass the raw name to view.add, not safeName.
       const safeName = self.MT.escape(name);
       const existing = self.session.files.find(f => f.name == safeName);
       if (existing) {
