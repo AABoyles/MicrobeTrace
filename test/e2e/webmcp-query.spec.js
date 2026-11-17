@@ -2,17 +2,18 @@
 const { test, expect } = require('@playwright/test');
 const { loadNetwork, open, watchErrors } = require('./helpers');
 
+// None of the query tools asks the user, so they are called directly
 const call = (page, name, args) => page.evaluate(([name, args]) => MTWebMCP.call(name, args || {}), [name, args]);
 
 test('get_status works with no data', async ({ page }) => {
-  await open(page);
+  await open(page, { webmcp: true });
   const s = await call(page, 'get_status');
   expect(s.loaded).toBe(false);
   expect(Array.isArray(s.views)).toBe(true);
 });
 
 test.describe('with a network', () => {
-  test.beforeEach(async ({ page }) => { await loadNetwork(page); });
+  test.beforeEach(async ({ page }) => { await loadNetwork(page, { webmcp: true }); });
 
   test('status, statistics and fields', async ({ page }) => {
     const errors = watchErrors(page);

@@ -1,21 +1,21 @@
 // The WebMCP tools for settings, filtering, selection, styling and the timeline
 const { test, expect } = require('@playwright/test');
-const { watchErrors, loadNetwork } = require('./helpers');
+const { watchErrors, loadNetwork, webmcp } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
-let page, errors;
+let page, errors, tools;
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
   errors = watchErrors(page);
-  await loadNetwork(page);
+  await loadNetwork(page, { webmcp: true });
+  tools = webmcp(page);
 });
 test.afterAll(() => page.close());
 
-const call = (name, args = {}) => page.evaluate(([name, args]) => MTWebMCP.call(name, args), [name, args]);
-const fails = (name, args = {}) => page.evaluate(async ([name, args]) => {
-  try { await MTWebMCP.call(name, args); return null; } catch (e) { return e.message; }
-}, [name, args]);
+// Tools that ask the user are allowed, as the user would
+const call = (name, args = {}) => tools.call(name, args);
+const fails = (name, args = {}) => tools.fails(name, args);
 const visibleNodes = () => page.evaluate(() => session.data.nodes.filter(d => d.visible).length);
 const setting = key => page.evaluate(key => MT.settings.get(key), key);
 
