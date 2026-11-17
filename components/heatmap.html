@@ -143,9 +143,6 @@
 
 <script>
   MT.registerView('heatmap', (root, { settings, events }) => {
-    ga('set', 'page', '/heatmap');
-    ga('set', 'title', 'Heatmap View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const plot = $('.heatmap-plot');

@@ -16,9 +16,6 @@
   // value, marking the one used. A field can use another file's values, and a
   // node can use another file's value (src/nodes.js keeps both).
   MT.registerView('conflicts', (root, { events }) => {
-    ga('set', 'page', '/conflicts');
-    ga('set', 'title', 'Conflicts View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const view = $('.conflicts-view'), message = $('.view-message');

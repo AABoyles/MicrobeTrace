@@ -64,9 +64,6 @@
 
 <script>
   MT.registerView('aggregation', (root, { events }) => {
-    ga('set', 'page', '/aggregation');
-    ga('set', 'title', 'Aggregation View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const grid = $('.aggregation-grid'), list = $('.aggregation-variables');

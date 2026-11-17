@@ -58,9 +58,6 @@
 
 <script>
   MT.registerView('table', (root, { settings, events }) => {
-    ga('set', 'page', '/table');
-    ga('set', 'title', 'Table View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const grid = $('.table-grid');

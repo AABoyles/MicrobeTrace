@@ -177,9 +177,6 @@
 
 <script>
   MT.registerView('choropleth', (root, { settings, events }) => {
-    ga('set', 'page', '/choropleth');
-    ga('set', 'title', 'Choropleth View');
-    ga('send', 'pageview');
 
     const $ = selector => root.querySelector(selector);
     const pane = $('.left-pane');

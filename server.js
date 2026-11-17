@@ -32,21 +32,17 @@ const isStaticAsset = (url) =>
 const securityHeaders = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "SAMEORIGIN",
-  "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "no-referrer",
   "Strict-Transport-Security":
     "max-age=31536000; includeSubDomains; preload",
   "Content-Security-Policy":
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' " +
-    "googletagmanager.com *.google-analytics.com; " +
-    "connect-src 'self' googletagmanager.com *.google-analytics.com " +
-    "stats.g.doubleclick.net *.cdc.gov; " +
-    "img-src 'self' googletagmanager.com *.google-analytics.com " +
-    "*.doubleclick.net www.google.com *.basemaps.cartocdn.com " +
-    "server.arcgisonline.com data:; " +
+    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; " +
+    "connect-src 'self'; " +
+    "img-src 'self' *.basemaps.cartocdn.com server.arcgisonline.com data:; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "manifest-src 'self'; font-src 'self';",
+    "manifest-src 'self'; font-src 'self'; " +
+    "base-uri 'none'; form-action 'none'; object-src 'none';",
 };
 
 for (const [key, value] of Object.entries(securityHeaders)) {

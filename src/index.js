@@ -257,7 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   settings.subscribe("link-show-nn", nn => {
     if (nn) {
-      ga('send', 'event', 'nearest-neighbor', 'trigger', 'on');
       showEpsilon();
       MT.computeMST(get("default-distance-metric")).then(updateNetwork);
     } else {
@@ -288,7 +287,6 @@ document.addEventListener("DOMContentLoaded", () => {
     else updateNetwork();
   });
   settings.subscribe("link-threshold", threshold => {
-    ga('send', 'event', 'threshold', 'update', threshold);
     settings.set("link-thresholds", Object.assign({}, get("link-thresholds"), { [get("link-sort-variable")]: threshold }));
     MT.markThreshold(threshold);
     updateNetwork();

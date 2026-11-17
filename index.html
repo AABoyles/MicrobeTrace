@@ -11,7 +11,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="msapplication-TileColor" content="#ffc40d">
   <meta name="apple-mobile-web-app-title" content="MicrobeTrace">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' googletagmanager.com *.google-analytics.com; connect-src 'self' googletagmanager.com *.google-analytics.com stats.g.doubleclick.net *.cdc.gov; img-src 'self' googletagmanager.com *.google-analytics.com *.doubleclick.net www.google.com *.basemaps.cartocdn.com server.arcgisonline.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' *.basemaps.cartocdn.com server.arcgisonline.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none';">
   <title>MicrobeTrace</title>
   <link rel="manifest" href="manifest.json">
   <link rel="canonical" href="https://aaboyles.github.io/MicrobeTrace/">
@@ -35,14 +35,6 @@
   <link rel="stylesheet" type="text/css" href="src/main.css">
   <link rel="preload" as="script" href="dist/bundle.primary.js">
   <link href="fonts/bootstrap-icons.woff2" crossorigin="anonymous">
-  <script>
-    (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-            (i[r].q = i[r].q || []).push(arguments)
-        }, i[r].l = 1 * new Date(); a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-  </script>
 </head>
 
 <body>
@@ -639,14 +631,8 @@
     </div>
   </div>
 
-  <script async src="https://googletagmanager.com/gtag/js?id=UA-116308624-1"></script>
   <script>
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'https:') window.location.replace('https://' + window.location.hostname + window.location.pathname);
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'UA-116308624-1');
-    window.ga('create', 'UA-116308624-1', 'auto');
   </script>
   <script src="dist/bundle.primary.js" charset="utf-8"></script>
   <script src="src/db.js" charset="utf-8"></script>

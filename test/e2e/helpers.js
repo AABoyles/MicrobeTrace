@@ -4,10 +4,7 @@ const fixtures = ['seqs.fasta', 'links.csv', 'nodes.csv'].map(f => path.join(__d
 
 // Errors that happen on master too, so they don't fail a test. Each is a bug to
 // fix; remove its pattern when it is.
-const KNOWN_ERRORS = [
-  /ga is not defined/,      // Google Analytics, blocked or offline
-  /googletagmanager|google-analytics|doubleclick/
-];
+const KNOWN_ERRORS = [];
 
 // Collects page errors and console errors, minus the known ones above.
 function watchErrors(page) {
