@@ -30,6 +30,7 @@ self.addEventListener('install', function(event) {
         'src/graph.js',
         'src/nodes.js',
         'src/settings.js',
+        'src/aligner.js',
         'dist/index.js',
         'dist/main.css',
         'workers/README.md',

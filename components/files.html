@@ -359,6 +359,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const table = $('#file-table');
     const launchButton = $('#launch');
     const number = selector => parseFloat($(selector).value);
+    const alignerInputs = { match: '.aligner-match', mismatch: '.aligner-mismatch', gapOpen: '.aligner-gap-open', gapExtend: '.aligner-gap-extend' };
+    const alignerCosts = () => Object.fromEntries(Object.keys(alignerInputs).map(k => [k, number(alignerInputs[k])]));
+    // The aligner's {match, gap} scores; the preview and the launch both use these
+    const alignerScoring = () => MTAlignerScoring(alignerCosts());
     const show = (elements, visible) => [].concat(elements).forEach(el => { el.hidden = !visible; });
 
     const dropZone = $('.drop-zone');
@@ -642,8 +646,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         data = await MT.align({
           nodes: data,
           reference: session.data.reference,
-          match: [number('.aligner-match'), -number('.aligner-mismatch')],
-          gap: [-number('.aligner-gap-open'), -number('.aligner-gap-extend')]
+          ...alignerScoring()
         });
       }
       const canvas = await alignmentViewer(data, { showID: false });
@@ -1136,8 +1139,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           let output = await MT.align({
             reference: session.data.reference,
             isLocal: false,
-            match: [number('.aligner-match'), number('.aligner-mismatch')],
-            gap: [number('.aligner-gap-open'), number('.aligner-gap-extend')],
+            ...alignerScoring(),
             nodes: subset
           });
           const start = Date.now();
@@ -1337,9 +1339,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       readFastas,
       // The alignment scores {match, mismatch, gapOpen, gapExtend}, after setting any given
       aligner(values) {
-        const inputs = { match: '.aligner-match', mismatch: '.aligner-mismatch', gapOpen: '.aligner-gap-open', gapExtend: '.aligner-gap-extend' };
-        Object.keys(inputs).forEach(k => { if (values && values[k] !== undefined) $(inputs[k]).value = values[k]; });
-        return Object.fromEntries(Object.keys(inputs).map(k => [k, number(inputs[k])]));
+        Object.keys(alignerInputs).forEach(k => { if (values && values[k] !== undefined) $(alignerInputs[k]).value = values[k]; });
+        return alignerCosts();
       },
       // Redraws the controls that follow other settings, after those were set
       refresh() {
