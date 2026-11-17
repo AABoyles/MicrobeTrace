@@ -58,7 +58,13 @@ async function allowing(page, fn) {
   const allow = page.locator('#webmcp-confirm-allow');
   const clicker = (async () => {
     while (!done) {
-      try { await allow.click({ timeout: 200 }); } catch (e) { /* none showing */ }
+      // Poll briefly for the dialog, but give the click itself time: it waits
+      // for the button to hold still over two animation frames, and with
+      // software WebGL (CI) a busy network can make frames slower than 200 ms
+      try {
+        await allow.waitFor({ state: 'visible', timeout: 200 });
+        await allow.click({ timeout: 10000 });
+      } catch (e) { /* none showing, or it closed */ }
       if (page.isClosed()) return;
     }
   })();
