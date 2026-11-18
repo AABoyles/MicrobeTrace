@@ -249,3 +249,20 @@ test('a distance exactly at the threshold is visible in dense and sparse storage
     assert.strictEqual(sparse.computeVisible('distance', threshold, false, () => true).length, 1, 'sparse ' + d);
   });
 });
+
+test('unmeasured links pass any threshold; other links with no value do not (#220)', () => {
+  const g = new MTGraph();
+  g.addLink({ source: 'a', target: 'b', origin: ['contacts.csv'], unmeasured: true });
+  g.addLink({ source: 'c', target: 'd', origin: ['links.csv'] });
+  const ids = vis => Array.from(vis).map(e => g.link(e).source + g.link(e).target).sort();
+  // No link has the field at all
+  assert.deepStrictEqual(ids(g.computeVisible('distance', 0.01, false, () => true)), ['ab']);
+  g.addLink({ source: 'e', target: 'f', origin: ['links.csv'], distance: 0.005 });
+  g.addLink({ source: 'g', target: 'h', origin: ['links.csv'], distance: 0.5 });
+  assert.deepStrictEqual(ids(g.computeVisible('distance', 0.01, false, () => true)), ['ab', 'ef']);
+  // The flag survives the link object, so a saved session keeps it
+  assert.strictEqual(g.link(g.computeVisible('distance', 0.01, false, () => true)[0]).unmeasured, true);
+  // A distance from another file makes it an ordinary link again
+  g.addLink({ source: 'a', target: 'b', origin: ['seqs.fasta'], distance: 0.5 });
+  assert.deepStrictEqual(ids(g.computeVisible('distance', 0.01, false, () => true)), ['ef']);
+});
