@@ -7,8 +7,17 @@ const { runWorker } = require('../golden/harness.js');
 
 const A = [{ id: 'a', seq: 'ACGT' }];
 
-test('normal multi-record file, N becomes a gap, headers trimmed', () => {
-  assert.deepStrictEqual(parseFasta('>a \nacgn\nT\n>b\nGG\n'), [{ id: 'a', seq: 'ACG-T' }, { id: 'b', seq: 'GG' }]);
+test('normal multi-record file, N is kept as an ambiguity code, headers trimmed', () => {
+  assert.deepStrictEqual(parseFasta('>a \nacgn\nT\n>b\nGG\n'), [{ id: 'a', seq: 'ACGNT' }, { id: 'b', seq: 'GG' }]);
+});
+// N is an ambiguity code, not a gap: a FASTA sequence must be the same string a
+// node-list CSV sequence would be, so both are treated the same (#232)
+test('N stays N, so FASTA and node-list CSV sequences are the same string', () => {
+  assert.deepStrictEqual(parseFasta('>a\nNNAC\n>b\nnn-t\n'), [{ id: 'a', seq: 'NNAC' }, { id: 'b', seq: 'NN-T' }]);
+});
+test('worker keeps N (#232)', async () => {
+  const out = await runWorker('workers/parse-fasta.js', '>a\nACNGT\n');
+  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'a', seq: 'ACNGT' }]);
 });
 test('leading blank line', () => assert.deepStrictEqual(parseFasta('\n\n>a\nACGT\n'), A));
 test('leading comment', () => assert.deepStrictEqual(parseFasta('; note\n>a\nACGT\n'), A));

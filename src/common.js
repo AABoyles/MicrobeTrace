@@ -1027,7 +1027,7 @@
       let subsetLength = subset.length;
       let computer = new Worker("workers/compute-consensus-distances.js");
       computer.onmessage = response => {
-        let dists = new Uint16Array(response.data.dists);
+        let dists = new Uint32Array(response.data.dists);
         console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         start = Date.now();
         for (let j = 0; j < subsetLength; j++) {
