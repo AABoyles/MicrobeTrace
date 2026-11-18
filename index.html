@@ -656,6 +656,26 @@
     </div>
   </div>
 
+  <div class="modal fade" id="recover-modal" tabindex="-1" role="dialog" aria-labelledby="recoverModalLabel" aria-describedby="recoverModalBody">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="recoverModalLabel">Restore your previous session?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Decide later"></button>
+        </div>
+        <div class="modal-body" id="recoverModalBody">
+          MicrobeTrace found a recovery copy of a session saved in this browser on <strong id="recover-when"></strong>. It may be there because the last session ended unexpectedly.
+          Discarding it deletes it from this browser.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Decide Later</button>
+          <button type="button" id="recover-discard" class="btn btn-danger" data-bs-dismiss="modal">Discard</button>
+          <button type="button" id="recover-restore" class="btn btn-primary" data-bs-dismiss="modal">Restore</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'https:') window.location.replace('https://' + window.location.hostname + window.location.pathname);
   </script>
@@ -667,6 +687,7 @@
   <script src="src/dates.js" charset="utf-8"></script>
   <script src="src/nodes.js" charset="utf-8"></script>
   <script src="src/settings.js" charset="utf-8"></script>
+  <script src="src/session-format.js" charset="utf-8"></script>
   <script src="src/aligner.js" charset="utf-8"></script>
   <script src="src/events.js" charset="utf-8"></script>
   <script src="src/binder.js" charset="utf-8"></script>

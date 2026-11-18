@@ -658,7 +658,10 @@
       if (destroyed) return;
       data = temp.tree.clone();
       draw();
-    })();
+    })().catch(error => {
+      console.error(error);
+      MT.toast.error("The tree couldn't be built: " + MT.escape((error && error.message) || '' + error) + '.');
+    });
 
     const handle = temp.phylogeneticTree = { get tree() { return tree; } };
     return {
