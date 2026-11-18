@@ -13,7 +13,7 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => page.close());
 
-const view = () => page.locator('.lm_content:has(h4:has-text("Clusters"))').first();
+const view = () => page.locator('.lm_content:has(h2:has-text("Clusters"))').first();
 const column = n => view().locator('.list-group').nth(n).locator('.list-group-item');
 // The visible clusters of more than one node
 const clusters = () => page.evaluate(() => session.data.clusters.filter(c => c.visible && c.nodes > 1));

@@ -2488,7 +2488,15 @@
       const root = table.element, holder = root.querySelector(':scope > .tabulator-tableholder');
       root.removeAttribute('aria-owns');
       if (holder) {
-        holder.setAttribute('role', 'rowgroup');
+        // (With no rows, as when nothing is listed, it's neither a group of
+        // them nor worth a stop of its own: there's nothing to scroll)
+        if (holder.querySelector('.tabulator-row')) {
+          holder.setAttribute('role', 'rowgroup');
+          holder.setAttribute('tabindex', '0');
+        } else {
+          holder.setAttribute('role', 'none');
+          holder.removeAttribute('tabindex');
+        }
         holder.querySelectorAll(':scope > .tabulator-table').forEach(body => body.setAttribute('role', 'none'));
       }
       // A group's title heads its columns, which sit beside it in the row

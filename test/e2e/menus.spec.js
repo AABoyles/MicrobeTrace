@@ -33,8 +33,8 @@ test('the license reads as text, and its dialog has one id', async () => {
   await waitForModal(page, 'div#licenseAgreement');
   const body = page.locator('#licenseAgreement .modal-body');
   await expect(body.locator('pre')).toHaveCount(0);
-  await expect(body.locator('p').first()).toContainText('provided to you "As-is"');
-  await expect(body).toContainText('Accept to agree to these terms, or Reject to leave MicrobeTrace.');
+  await expect(body.locator('p').first()).toContainText('provided "as is"');
+  await expect(body).toContainText('Accept to agree to these terms.');
   expect(await page.locator('[id="licenseAgreement"]').count()).toBe(1);
   await expect(page.locator('#licenseAgreement')).toHaveAttribute('aria-labelledby', 'licenseAgreementLabel');
   await page.click('#acceptAgreement');

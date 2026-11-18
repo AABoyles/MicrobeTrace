@@ -222,7 +222,7 @@
     dialog.style.zIndex = 1090; // above the other dialogs and the toasts
     dialog.innerHTML =
       '<div class="modal-dialog" role="document"><div class="modal-content">' +
-      '<div class="modal-header"><h5 class="modal-title" id="webmcp-confirm-title">Allow an AI agent to do this?</h5></div>' +
+      '<div class="modal-header"><h2 class="modal-title h5" id="webmcp-confirm-title">Allow an AI agent to do this?</h2></div>' +
       '<div class="modal-body">' +
       '<p>An AI agent using MicrobeTrace through WebMCP wants to run <code id="webmcp-confirm-tool"></code>:</p>' +
       '<p id="webmcp-confirm-message" class="fw-semibold"></p>' +

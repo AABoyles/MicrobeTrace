@@ -39,7 +39,7 @@
 
 <body>
   <a href="#main-panel" id="skip-link" class="visually-hidden-focusable skip-link">Skip to main content</a>
-  <h1 class="visually-hidden">MicrobeTrace</h1>
+  <header><h1 class="visually-hidden">MicrobeTrace</h1></header>
   <!-- The one polite live region, for announcements (MT.announce) -->
   <div id="mt-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
   <div class="d-none">
@@ -157,7 +157,7 @@
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="licenseAgreementLabel" class="modal-title">License Agreement</h5>
+          <h2 id="licenseAgreementLabel" class="modal-title h5">License Agreement</h2>
         </div>
         <div class="modal-body">
           <p>
@@ -181,7 +181,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="loading-title" class="modal-title">Loading Files</h5>
+          <h2 id="loading-title" class="modal-title h5">Loading Files</h2>
         </div>
         <div class="modal-body">
           <div class="dna" aria-hidden="true">
@@ -309,7 +309,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="global-settings-modal-title" class="modal-title">Settings</h5>
+          <h2 id="global-settings-modal-title" class="modal-title h5">Settings</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -524,7 +524,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="session-save-modal-title" class="modal-title">Save</h5>
+          <h2 id="session-save-modal-title" class="modal-title h5">Save</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -569,7 +569,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="session-stash-modal-title" class="modal-title">Stash in Browser</h5>
+          <h2 id="session-stash-modal-title" class="modal-title h5">Stash in Browser</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -593,7 +593,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="session-recall-modal-title" class="modal-title">Recall from Browser</h5>
+          <h2 id="session-recall-modal-title" class="modal-title h5">Recall from Browser</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -612,7 +612,7 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="help-modal-title">MicrobeTrace Help</h5>
+          <h2 class="modal-title h5" id="help-modal-title">MicrobeTrace Help</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -627,7 +627,7 @@
             <li><a href="#help-shortcuts" data-help="help-shortcuts">Mouse and keyboard shortcuts</a></li>
           </ul>
 
-          <h6 id="help-loading">Loading data</h6>
+          <h3 id="help-loading" class="h6">Loading data</h3>
           <p>Open the Files view (File, Add Data), then drop files on it or choose them with <strong>Add Files</strong>. Each file is read as one of these kinds, which you can change in its row:</p>
           <ul>
             <li><strong>Link list</strong>: a CSV or Excel sheet with a source, a target and, usually, a distance for each link.</li>
@@ -639,7 +639,7 @@
           </ul>
           <p>Press <strong>Launch</strong> to build the network. Where files disagree about a node, the file nearest the top wins; the Conflicts view lists the differences. To look around first, use <strong>Try the demo data</strong> on the Files view.</p>
 
-          <h6 id="help-views">The views</h6>
+          <h3 id="help-views" class="h6">The views</h3>
           <p>The View menu opens each one. A view that needs data the session doesn't have says what it needs when it opens.</p>
           <ul>
             <li><strong>Network</strong>: nodes and links; color, size and filter them by any column.</li>
@@ -650,20 +650,20 @@
             <li><strong>Waterfall</strong>: each cluster's links. <strong>Conflicts</strong>: where files disagree.</li>
           </ul>
 
-          <h6 id="help-thresholds">Thresholds and links</h6>
+          <h3 id="help-thresholds" class="h6">Thresholds and links</h3>
           <p>Nodes are linked when their distance is at or below the <strong>Link Threshold</strong> (in the global settings, with a sparkline of the distances you can click or drag). Lowering it keeps only closer links; raising it adds more. Clusters are the groups of nodes that are connected, so they change with the threshold. The link settings also choose which distance metric to use, and how to prune links.</p>
 
-          <h6 id="help-saving">Saving, stashing and exporting</h6>
+          <h3 id="help-saving" class="h6">Saving, stashing and exporting</h3>
           <ul>
             <li><strong>File, Save</strong> writes the whole session to a <code>.microbetrace</code> file you can open later (File, Open), or just its style. Nothing is sent anywhere.</li>
             <li><strong>Stash in Browser</strong> keeps a named copy in this browser, on this computer, and <strong>Recall from Browser</strong> brings it back. Clearing the browser's site data deletes stashes, so save a file for anything you need to keep. If automatic stashing is on, MicrobeTrace offers to restore the last session at startup.</li>
             <li>Each view's download button exports what it shows: an image (PNG, JPEG, SVG), or for the tree a Newick file. The Table view exports its rows.</li>
           </ul>
 
-          <h6 id="help-maps">Maps and tiles</h6>
+          <h3 id="help-maps" class="h6">Maps and tiles</h3>
           <p>The map's boundaries and places come with MicrobeTrace and work offline. The background map layers (street, satellite and so on) are <strong>tiles downloaded from the Internet</strong> when you turn them on, so they show nothing without a connection. Draw nodes and links on a blank background, or with the country, state and county outlines, to stay offline.</p>
 
-          <h6 id="help-shortcuts">Mouse and keyboard shortcuts</h6>
+          <h3 id="help-shortcuts" class="h6">Mouse and keyboard shortcuts</h3>
           <ul>
             <li><kbd>Ctrl</kbd>+<kbd>F</kbd> (<kbd>&#8984;</kbd>+<kbd>F</kbd> on a Mac): search nodes by ID.</li>
             <li><kbd>Ctrl</kbd>+<kbd>S</kbd> (<kbd>&#8984;</kbd>+<kbd>S</kbd>): save.</li>
@@ -699,7 +699,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="aboutModalLabel">About MicrobeTrace</h5>
+          <h2 class="modal-title h5" id="aboutModalLabel">About MicrobeTrace</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -750,7 +750,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="deleteEverythingLabel">Delete everything stored in this browser?</h5>
+          <h2 class="modal-title h5" id="deleteEverythingLabel">Delete everything stored in this browser?</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -769,7 +769,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exitModalLabel">Start a new session?</h5>
+          <h2 class="modal-title h5" id="exitModalLabel">Start a new session?</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -788,7 +788,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="replaceModalLabel">Replace the current session?</h5>
+          <h2 class="modal-title h5" id="replaceModalLabel">Replace the current session?</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="replaceModalBody">
@@ -807,7 +807,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="recoverModalLabel">Restore your previous session?</h5>
+          <h2 class="modal-title h5" id="recoverModalLabel">Restore your previous session?</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Decide later"></button>
         </div>
         <div class="modal-body" id="recoverModalBody">
