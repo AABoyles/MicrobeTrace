@@ -2268,36 +2268,68 @@
     layout.on("focus", e => bringForward(e.target));
   };
 
-  // Fetches a view's HTML into temp.componentCache. A failed fetch (offline,
-  // 404, or a server answering with something other than HTML) is not cached,
-  // so the next attempt tries again, and rejects with a message naming the view.
+  // Fetches a view's HTML into temp.componentCache, and its script (so that
+  // it is cached for the worker and a missing or wrong file shows up here, not
+  // when the view opens). A failed fetch (offline, 404, or a server answering
+  // with something other than HTML or script) is not cached, so the next attempt
+  // tries again, and rejects with a message naming the view.
   const fetchView = view => {
     if (temp.componentCache[view]) return Promise.resolve();
     const fail = () => {
       throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
     };
-    return fetch("components/" + view + ".html").then(response => {
+    // server.js answers unknown paths with the app shell (index.html)
+    const get = url => fetch(url).then(response => {
       if (!response.ok) fail();
       return response.text();
-    }, fail).then(html => {
-      // server.js answers unknown paths with the app shell (index.html)
-      if (/^\s*<!doctype/i.test(html)) fail();
-      temp.componentCache[view] = html;
+    }, fail).then(text => {
+      if (/^\s*<!doctype/i.test(text)) fail();
+      return text;
     });
+    return Promise.all([get("components/" + view + ".html"), get("components/" + view + ".js")])
+      .then(([html]) => { temp.componentCache[view] = html; });
   };
   const viewFailed = error => MT.toast.error(error.message);
 
   // Renders a view's HTML into its (newly attached) layout item
   // (Scripts set as HTML don't run, so each is replaced by a copy that does.)
+  // The page's content security policy allows no inline scripts, so a view's
+  // script is a file, named by a <script src> in its HTML. Scripts added like
+  // this run as soon as they load, in no set order, unless marked not async;
+  // they are, so they run in the order added. The view is only set up once its
+  // scripts have run, which is what the returned promise waits for (it rejects
+  // if one fails to load).
   const renderView = contentItem => {
     const element = contentItem.container.element;
     element.innerHTML = temp.componentCache[contentItem.componentType];
-    element.querySelectorAll("script").forEach(old => {
+    return Promise.all(Array.from(element.querySelectorAll("script"), old => new Promise((resolve, reject) => {
       const script = document.createElement("script");
       Array.from(old.attributes).forEach(a => script.setAttribute(a.name, a.value));
+      script.async = false;
       script.textContent = old.textContent;
+      if (script.src) {
+        script.addEventListener("load", resolve);
+        script.addEventListener("error", () => reject(new Error("Could not load the " + MT.titleize(contentItem.componentType) + " view. Check your connection and try again.")));
+      }
       old.replaceWith(script);
-    });
+      if (!script.src) resolve();
+    })));
+  };
+
+  // Renders a view and, once its scripts have run, sets it up and mounts it.
+  // A view closed while its script loaded is left alone. A view whose script
+  // couldn't load is closed, with a message.
+  const openView = contentItem => {
+    const ready = renderView(contentItem).then(() => {
+      if (!contentItem.container.element.isConnected) return;
+      setupView(contentItem);
+      mountView(contentItem);
+    }, error => {
+      viewFailed(error);
+      if (contentItem.container.element.isConnected) contentItem.remove();
+    }).finally(() => { if (contentItem.ready === ready) contentItem.ready = null; });
+    contentItem.ready = ready;
+    return ready;
   };
 
   // The settings store and event bus that views use (see src/settings.js and
@@ -3347,14 +3379,18 @@
       let contentItem = layout.contentItems.find(item => item.componentType == view);
       if (contentItem) {
         contentItem.parent.setActiveComponentItem(contentItem, true);
-        setupView(contentItem);
+        // A view still loading its script is set up when it has
+        if (!contentItem.ready) setupView(contentItem);
+        else if (callback) { contentItem.ready.then(() => callback(contentItem)); return; }
       } else {
         if (!layout.rootItem) layout.loadLayout(emptyLayout);
         let lastStack = peek(stacks(layout.rootItem)) || layout.rootItem;
         contentItem = lastStack.newComponent(view, undefined, MT.titleize(view));
-        renderView(contentItem);
-        setupView(contentItem);
-        mountView(contentItem);
+        // The item is in the layout now; it is set up once its script has run
+        // (the callback waits for that too)
+        const ready = openView(contentItem);
+        if (callback) { ready.then(() => callback(contentItem)); return; }
+        return contentItem;
       }
       if (callback) {
         callback(contentItem);
@@ -3517,11 +3553,8 @@
     const root = toConfig(component || emptyLayout.root);
     return Promise.all(views.map(fetchView)).then(() => {
       layout.loadLayout(Object.assign({}, emptyLayout, { root }));
-      layout.contentItems.forEach(item => {
-        renderView(item);
-        setupView(item);
-        mountView(item);
-      });
+      // One at a time and in order, as each view's script runs when it loads
+      return layout.contentItems.reduce((done, item) => done.then(() => openView(item)), Promise.resolve());
     }, viewFailed);
   };
   

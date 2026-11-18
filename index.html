@@ -11,7 +11,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="msapplication-TileColor" content="#ffc40d">
   <meta name="apple-mobile-web-app-title" content="MicrobeTrace">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' *.basemaps.cartocdn.com server.arcgisonline.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' *.basemaps.cartocdn.com server.arcgisonline.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none';">
   <title>MicrobeTrace</title>
   <link rel="manifest" href="manifest.json">
   <link rel="canonical" href="https://aaboyles.github.io/MicrobeTrace/">
@@ -21,16 +21,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48x48.png">
   <link rel="mask-icon" href="img/safari-pinned-tab.svg" color="#5bbad5">
-  <script>
-    // The interface is light or dark as the system is, and follows it when it
-    // changes (the views draw in their own colors)
-    (() => {
-      const dark = matchMedia('(prefers-color-scheme: dark)');
-      const apply = () => document.documentElement.setAttribute('data-bs-theme', dark.matches ? 'dark' : 'light');
-      apply();
-      dark.addEventListener('change', apply);
-    })();
-  </script>
+  <script src="src/theme.js"></script>
   <link rel="stylesheet" type="text/css" href="dist/bundle.primary.css">
   <link rel="stylesheet" type="text/css" href="src/main.css">
   <link rel="preload" as="script" href="dist/bundle.primary.js">
@@ -45,7 +36,7 @@
   <div class="d-none">
     <h1>Sorry!</h1>
     <h4>MicrobeTrace requires CSS to run, but it looks like the appropriate CSS files weren't loaded for some reason.
-      Please try <a href="#" onclick="location.reload();">Refreshing the Page</a></h4>
+      Please try <a href="#" id="reload-link">Refreshing the Page</a></h4>
   </div>
 
   <nav class="navbar fixed-top navbar-expand-xl bg-body-tertiary">
@@ -823,9 +814,7 @@
     </div>
   </div>
 
-  <script>
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'https:') window.location.replace('https://' + window.location.hostname + window.location.pathname);
-  </script>
+  <script src="src/https.js" charset="utf-8"></script>
   <script src="dist/bundle.primary.js" charset="utf-8"></script>
   <script src="src/db.js" charset="utf-8"></script>
   <script src="src/d3-compat.js" charset="utf-8"></script>

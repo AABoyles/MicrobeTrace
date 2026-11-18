@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const escape = value => String(value).replace(/[&<>'"/\\]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "\\": "&#x5C;" })[c]);
   MT.escape = escape;
 
+  // The link in the notice shown when the stylesheets don't load
+  byId("reload-link").addEventListener("click", e => { e.preventDefault(); location.reload(); });
+
   // The features the app needs from startup on: WebAssembly (the distance
   // workers), Web Workers (every computation) and IndexedDB (stashed sessions
   // and the license). WebGL is only needed when the 2D network opens, which

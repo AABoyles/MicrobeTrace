@@ -168,7 +168,7 @@ test('no menu of fields is built as markup any more', () => {
   // (The HXB2 reference is a constant)
   const unsafe = /<option value="(?:'\s*\+|\$\{(?!MT\.escape\(|text\(|MT\.HXB2))/;
   const files = ['src/common.js', 'src/index.js']
-    .concat(fs.readdirSync(path.join(root, 'components')).filter(f => f.endsWith('.html')).map(f => 'components/' + f));
+    .concat(fs.readdirSync(path.join(root, 'components')).filter(f => /\.(html|js)$/.test(f)).map(f => 'components/' + f));
   const found = [];
   files.forEach(file => fs.readFileSync(path.join(root, file), 'utf8').split('\n').forEach((line, i) => {
     if (unsafe.test(line)) found.push(file + ':' + (i + 1) + ': ' + line.trim());
