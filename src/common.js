@@ -263,10 +263,10 @@
     },
     style: {
       linkAlphas: [1],
-      linkColors: d3.schemePaired,
+      linkColors: MT.COLOR_BLIND_SAFE.slice(),
       linkValueNames: {},
       nodeAlphas: [1],
-      nodeColors: [d3.schemeCategory10[0]].concat(d3.schemeCategory10.slice(2)),
+      nodeColors: MT.COLOR_BLIND_SAFE.slice(),
       nodeColorsTable: {},
       nodeColorsTableKeys: {},
       linkColorsTable: {},
@@ -1825,6 +1825,32 @@
   // A value as legends and tables show it: as it is in the data, or (Empty)
   MT.valueLabel = value => value === undefined || value === null || value === '' || value === 'null' || value === 'undefined' ? '(Empty)' : '' + value;
 
+  // The default palette: Okabe-Ito, which stays distinguishable under the common
+  // colour-vision deficiencies (the last grey stands in for its black).
+  MT.COLOR_BLIND_SAFE = ['#0072b2', '#e69f00', '#009e73', '#cc79a7', '#56b4e9', '#d55e00', '#f0e442', '#999999'];
+
+  // A palette stretched to n colours. Beyond its own colours, each further
+  // round is a lighter, then a darker, shade of them, so no two values look
+  // the same, and the user is told once that the later ones are only shades.
+  MT.extendPalette = (colors, n, kind, variable) => {
+    if (n <= colors.length) return colors;
+    const out = colors.slice();
+    for (let i = colors.length; i < n; i++) {
+      const round = Math.floor(i / colors.length), base = colors[i % colors.length];
+      const mixed = d3.interpolateRgb(base, round % 2 ? '#ffffff' : '#000000')(Math.min(0.2 + 0.12 * Math.ceil(round / 2), 0.7));
+      out.push(d3.color(mixed).formatHex());
+    }
+    if (kind) {
+      const seen = temp.extendedPalettes || (temp.extendedPalettes = {});
+      const key = kind + ':' + variable;
+      if (!seen[key]) {
+        seen[key] = true;
+        if (MT.toast && MT.toast.warning) MT.toast.warning(`"${variable}" has ${n} values but the palette has ${colors.length} colours, so the extra values use lighter and darker shades. Edit the colours in the ${kind} colour table, or add a shape, to tell them apart.`, 12);
+      }
+    }
+    return out;
+  };
+
   MT.createNodeColorMap = () => {
     let variable = session.style.widgets["node-color-variable"];
     if (variable == "None") {
@@ -1854,12 +1880,7 @@
     }
     let values = Object.keys(aggregates);
     if (values.length > nodeColors.length) {
-      let colors = [];
-      let m = Math.ceil(values.length / nodeColors.length);
-      while (m-- > 0) {
-        colors = colors.concat(nodeColors);
-      }
-      nodeColors = colors;
+      nodeColors = MT.extendPalette(nodeColors, values.length, 'node', variable);
     }
     if(!session.style.nodeAlphas) session.style.nodeAlphas = new Array(values.length).fill(1);
     if (values.length > session.style.nodeAlphas.length) {
@@ -1891,12 +1912,7 @@
         }
         let valuesTL = Object.keys(aggregatesTL);
         if (valuesTL.length > nodeColorsTL.length) {
-          let colors = [];
-          let m = Math.ceil(valuesTL.length / nodeColorsTL.length);
-          while (m-- > 0) {
-            colors = colors.concat(nodeColorsTL);
-          }
-          nodeColorsTL = colors;
+          nodeColorsTL = MT.extendPalette(nodeColorsTL, valuesTL.length);
         }
         session.style.nodeColorsTableKeys[variable] = valuesTL;
         session.style.nodeColorsTable[variable] = nodeColorsTL;
@@ -1977,10 +1993,7 @@
     }
     let values = Object.keys(aggregates);      
     if (values.length > linkColors.length) {
-      let colors = [];
-      let cycles = Math.ceil(values.length / linkColors.length);
-      while (cycles-- > 0) colors = colors.concat(linkColors);
-      linkColors = colors;
+      linkColors = MT.extendPalette(linkColors, values.length, 'link', variable);
     }
     if(!session.style.linkAlphas) session.style.linkAlphas = new Array(values.length).fill(1);
     if (values.length > session.style.linkAlphas.length) {
@@ -2036,10 +2049,7 @@
         }       
         let valuesTL = Object.keys(aggregatesTL);      
         if (valuesTL.length > linkColorsTL.length) {
-          let colors = [];
-          let cycles = Math.ceil(valuesTL.length / linkColorsTL.length);
-          while (cycles-- > 0) colors = colors.concat(linkColorsTL);
-          linkColorsTL = colors;
+          linkColorsTL = MT.extendPalette(linkColorsTL, valuesTL.length);
         }
         session.style.linkColorsTableKeys[variable] = valuesTL;
         session.style.linkColorsTable[variable] = linkColorsTL;

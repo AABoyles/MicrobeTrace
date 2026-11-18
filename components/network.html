@@ -1024,7 +1024,10 @@ Note that this may cause slow performance on larger networks.">
       const d = points[index];
       if (!d) return;
       if (get('node-highlight')) highlightNeighbors(index);
-      const variables = tooltipVariables();
+      // With no tooltip variable chosen, the tooltip gives the value the node
+      // is colored by, so a category is never told by its color alone
+      let variables = tooltipVariables();
+      if (!variables.length && get('node-color-variable') && get('node-color-variable') != 'None') variables = [get('node-color-variable')];
       if (!variables.length) return;
       const html = variables.length == 1 ? MT.escape(d[variables[0]] == null ? '' : d[variables[0]]) :
         '<table><tbody>' + variables.map(v => `<tr><td>${MT.escape(MT.titleize(v))}</td><td>${MT.escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
@@ -1039,7 +1042,8 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function showLinkTooltip(index) {
-      const v = get('link-tooltip-variable'), d = links[index];
+      let v = get('link-tooltip-variable'); const d = links[index];
+      if ((!v || v == 'None') && get('link-color-variable') && get('link-color-variable') != 'None') v = get('link-color-variable');
       if (!v || v == 'None' || !d) return;
       MT.tooltip(MT.escape(d[v] == null ? '' : d[v]), mouse);
     }
