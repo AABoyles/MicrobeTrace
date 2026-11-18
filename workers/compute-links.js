@@ -5,10 +5,12 @@ importScripts('../vendor/bx_distance_models.js');
 // i < j, row by row. MT.computeLinks splits the rows across several of these
 // workers and concatenates their results.
 //
-// mode is 'skip', 'resolve' or 'average'. 'hivtrace-g' resolves ambiguities
-// unless either sequence is too ambiguous, in which case it averages them: the
-// caller puts the too-ambiguous sequences first, so the first averageRows rows
-// hold exactly the pairs that must be averaged.
+// mode is 'skip', 'resolve', 'average' or 'hivtrace-g'. 'hivtrace-g' is HIV-TRACE's
+// `tn93 -a resolve -g F` (F is `fraction`), decided pair by pair: a pair's
+// ambiguities are resolved, unless the sites in it with a resolvable IUPAC
+// ambiguity code (RYMKWSBDHV; gaps and N are not ambiguity) are at least F times
+// the sites compared in it (those where neither sequence has a gap), in which
+// case they are averaged.
 //
 // metrics are computed from one parsed set of sequences, and returned in
 // order as results. With thresholds (one per metric), only the pairs at or
@@ -20,30 +22,54 @@ const ready = wasm_bindgen({ module_or_path: '../vendor/bx_distance_models_bg.wa
 onmessage = async function(e) {
   await ready;
   let start = Date.now();
-  const { seqs, metrics, mode, averageRows, rowStart, rowEnd } = e.data;
+  const { seqs, metrics, mode, fraction, rowStart, rowEnd } = e.data;
   const thresholds = e.data.thresholds ? e.data.thresholds.map(parseFloat) : null;
-
-  const ranges = mode == 'hivtrace-g' ? [
-    ['average', rowStart, Math.min(rowEnd, averageRows)],
-    ['resolve', Math.max(rowStart, averageRows), rowEnd]
-  ] : [[mode, rowStart, rowEnd]];
 
   // Each metric's parts, range by range
   const parts = metrics.map(() => []);
-  ranges.forEach(([ambiguity, a, b]) => {
-    if (a >= b) return;
-    const set = new wasm_bindgen.SequenceSet(seqs, ambiguity);
-    metrics.forEach((metric, m) => {
-      if (!thresholds) {
-        parts[m].push(set.distances(metric, a, b));
-      } else {
-        const links = set.links(metric, thresholds[m], a, b);
-        parts[m].push({ source: links.source, target: links.target, distance: links.distance });
-        links.free();
-      }
-    });
+  const hivtrace = mode == 'hivtrace-g';
+  if (!hivtrace) {
+    const set = new wasm_bindgen.SequenceSet(seqs, mode);
+    metrics.forEach((metric, m) => parts[m].push(distancesOrLinks(set, metric, thresholds && thresholds[m], rowStart, rowEnd)));
     set.free();
-  });
+  } else {
+    const resolve = new wasm_bindgen.SequenceSet(seqs, 'resolve');
+    const average = new wasm_bindgen.SequenceSet(seqs, 'average');
+    const kinds = seqs.map(siteKinds);
+    const n = seqs.length;
+    // Rows in chunks, so the two sets of distances held at once stay small
+    for (let a = rowStart; a < rowEnd;) {
+      let b = a, pairs = 0;
+      while (b < rowEnd && (pairs == 0 || pairs < 1e6)) pairs += n - 1 - b++;
+      const r = metrics.map(metric => resolve.distances(metric, a, b));
+      const v = metrics.map(metric => average.distances(metric, a, b));
+      const chosen = metrics.map(() => new Float64Array(pairs));
+      let k = 0;
+      for (let i = a; i < b; i++) {
+        for (let j = i + 1; j < n; j++, k++) {
+          const useAverage = tooAmbiguous(kinds[i], kinds[j], fraction);
+          metrics.forEach((metric, m) => { chosen[m][k] = (useAverage ? v : r)[m][k]; });
+        }
+      }
+      metrics.forEach((metric, m) => {
+        if (!thresholds) {
+          parts[m].push(chosen[m]);
+        } else {
+          const source = [], target = [], distance = [];
+          let k = 0;
+          for (let i = a; i < b; i++) {
+            for (let j = i + 1; j < n; j++, k++) {
+              if (chosen[m][k] <= thresholds[m]) { source.push(i); target.push(j); distance.push(chosen[m][k]); }
+            }
+          }
+          parts[m].push({ source: Uint32Array.from(source), target: Uint32Array.from(target), distance: Float64Array.from(distance) });
+        }
+      });
+      a = b;
+    }
+    resolve.free();
+    average.free();
+  }
 
   const results = parts.map(metricParts => !thresholds
     // Float32 is what the graph stores, and halves the transfer
@@ -59,6 +85,41 @@ onmessage = async function(e) {
   postMessage({ results, start: Date.now() }, buffers);
   close();
 };
+
+// One metric's distances (as an array) or, with a threshold, its links (as arrays)
+function distancesOrLinks(set, metric, threshold, a, b) {
+  if (threshold === null || threshold === undefined) return set.distances(metric, a, b);
+  const links = set.links(metric, threshold, a, b);
+  const part = { source: links.source, target: links.target, distance: links.distance };
+  links.free();
+  return part;
+}
+
+// Per site: 0 for a gap (or N, which the parser makes a gap too), 1 for an
+// unambiguous base, 2 for a resolvable IUPAC ambiguity code
+const AMBIGUOUS = new Set('RYMKWSBDHV');
+function siteKinds(seq) {
+  const kinds = new Uint8Array(seq.length);
+  for (let i = 0; i < seq.length; i++) {
+    const c = seq[i].toUpperCase();
+    kinds[i] = AMBIGUOUS.has(c) ? 2 : 'ACGTU'.includes(c) ? 1 : 0;
+  }
+  return kinds;
+}
+
+// tn93 -g: average when the ambiguous sites resolved in the pair are at least
+// fraction of the sites compared
+function tooAmbiguous(x, y, fraction) {
+  const len = Math.min(x.length, y.length);
+  let compared = 0, ambiguous = 0;
+  for (let s = 0; s < len; s++) {
+    if (x[s] && y[s]) {
+      compared++;
+      if (x[s] == 2 || y[s] == 2) ambiguous++;
+    }
+  }
+  return compared > 0 && ambiguous >= fraction * compared;
+}
 
 function concat(Type, arrays) {
   if (arrays.length == 1) return arrays[0];

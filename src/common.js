@@ -1067,15 +1067,10 @@
       throw new Error('The GapMM ambiguity strategy is only available for TN93.');
     }
 
-    // HIV-TRACE -g averages ambiguities for pairs with a too-ambiguous sequence:
-    // putting those sequences first makes those pairs the first rows.
-    let order = subset, averageRows = 0;
-    if (strategy == 'HIVTRACE-G') {
-      const t = parseFloat(widgets['ambiguity-threshold']);
-      const high = subset.filter(d => !(d['_ambiguity'] < t));
-      order = high.concat(subset.filter(d => d['_ambiguity'] < t));
-      averageRows = high.length;
-    }
+    // HIV-TRACE -g (tn93 -a resolve -g F) decides pair by pair, in the worker:
+    // a pair is averaged when its resolvable ambiguity codes (not gaps or N) are
+    // at least F times its compared sites, and resolved otherwise.
+    const order = subset;
 
     const n = order.length;
     const pairs = n * (n - 1) / 2;
@@ -1096,7 +1091,7 @@
       metric,
       metrics,
       mode: strategy == 'HIVTRACE-G' ? 'hivtrace-g' : strategy.toLowerCase(),
-      averageRows,
+      fraction: parseFloat(widgets['ambiguity-threshold']),
       threshold: thresholds && thresholds[0],
       thresholds
     };
