@@ -39,6 +39,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  on("rejectAgreement", "click", function() { byId("reject-message").hidden = false; });
+
+  // Delete everything this app keeps in the browser (#262)
+  on("delete-everything", "click", function() {
+    byId("delete-everything-error").hidden = true;
+    modal("about-modal").hide();
+    modal("delete-everything-modal").show();
+  });
+  on("delete-everything-confirm", "click", async function() {
+    const button = byId("delete-everything-confirm");
+    button.disabled = true;
+    try {
+      if (self.temp && self.temp.autostash) clearInterval(self.temp.autostash.interval);
+      await db.deleteAll();
+      try { localStorage.clear(); } catch (e) { /* unavailable */ }
+      try { sessionStorage.clear(); } catch (e) { /* unavailable */ }
+      if (self.caches) await caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
+      if (navigator.serviceWorker) await navigator.serviceWorker.getRegistrations().then(all => Promise.all(all.map(r => r.unregister())));
+      if (navigator.storage && navigator.storage.getDirectory) {
+        const root = await navigator.storage.getDirectory();
+        for await (const name of root.keys()) await root.removeEntry(name, { recursive: true });
+      }
+      MT.reload();
+    } catch (error) {
+      button.disabled = false;
+      const message = byId("delete-everything-error");
+      message.textContent = "Couldn't delete everything: " + ((error && error.message) || error);
+      message.hidden = false;
+    }
+  });
+
   if ("serviceWorker" in navigator) {
     // A new version is installed in the background but waits, so a session in
     // progress isn't swapped under the user: they choose when to reload (#194)

@@ -37,7 +37,7 @@ Then, with the server running, [launch MicrobeTrace](http://localhost:5000) and
 load any of the files in this directory. If you recieve an alert that
 "ya been pwned", it means that somewhere in the program, an unsanitized user
 input has been leaked into the DOM. This is a security bug.
-Please contact microbetrace@cdc.gov with a description of how you got the
+Please report it as described in [SECURITY.md](../../SECURITY.md), with a description of how you got the
 message (which file you were using and what part of the program you were
 interacting with). Please do NOT post this as an issue on Github.
 

@@ -149,19 +149,16 @@
         </div>
         <div class="modal-body">
           <p>
-            The material embodied in this software is provided to you "As-is" and without warranty of any kind,
-            express, implied or otherwise, including without limitation, any warranty of fitness for a particular
-            purpose. In no event shall the Centers for Disease Control and Prevention (CDC) or the United States
-            (U.S.) government be liable to you or anyone else for any direct, special, incidental, indirect or
-            consequential damages of any kind, or any damages whatsoever, including without limitation, loss of
-            profit, loss of use, savings or revenue, or the claims of third parties, whether or not CDC or the U.S.
-            Government has been advised of the possibility of such loss, however caused and on any theory of
-            liability, arising out of or in connection with the possession, use or performance of this software.
+            MicrobeTrace is provided "as is" under the Apache License, Version 2.0, without warranties or conditions
+            of any kind, express or implied. In no event shall the authors or contributors be liable for any claim,
+            damages or other liability arising out of or in connection with the use of this software. MicrobeTrace
+            began at the US Centers for Disease Control and Prevention (CDC); CDC does not operate or endorse this copy.
           </p>
-          <p class="mb-0">Accept to agree to these terms, or Reject to leave MicrobeTrace.</p>
+          <p class="mb-0">Accept to agree to these terms. MicrobeTrace can't be used without accepting; to leave, close this tab.</p>
+          <p id="reject-message" class="mb-0 mt-2 text-danger" role="alert" hidden>You need to accept these terms to use MicrobeTrace. If you don't accept, close this tab.</p>
         </div>
         <div class="modal-footer">
-          <a href="https://www.cdc.gov/" id="rejectAgreement" class="btn btn-danger" role="button">Reject</a>
+          <button id="rejectAgreement" type="button" class="btn btn-danger">Reject</button>
           <button id="acceptAgreement" type="button" class="btn btn-primary" data-bs-dismiss="modal">Accept</button>
         </div>
       </div><!-- /.modal-content -->
@@ -602,8 +599,21 @@
             <a href="https://github.com/aaboyles/MicrobeTrace/wiki" target="_blank" rel="noreferrer noopener">Read the MicrobeTrace wiki</a>
           </p>
           <p>
-            MicrobeTrace was built by the Molecular Epidemiology and Bionformatics Team at the CDC in Atlanta.
-            <a href="https://aaboyles.github.io/MEBT" target="_blank" rel="noreferrer noopener" class="ifOnline">See the team's other tools</a>
+            MicrobeTrace was originally built by the Molecular Epidemiology and Bioinformatics Team at the US Centers
+            for Disease Control and Prevention (CDC) in Atlanta. This copy is maintained independently at
+            <a href="https://aaboyles.github.io/MicrobeTrace/" target="_blank" rel="noreferrer noopener" class="ifOnline">aaboyles.github.io/MicrobeTrace</a>;
+            CDC does not operate or endorse it. Report problems at
+            <a href="https://github.com/AABoyles/MicrobeTrace/issues" target="_blank" rel="noreferrer noopener" class="ifOnline">GitHub Issues</a>.
+          </p>
+          <h4 id="privacy-heading" class="h5">Privacy</h4>
+          <ul id="privacy-statement" aria-labelledby="privacy-heading">
+            <li><strong>Your data stays in this browser.</strong> Files you load are processed on this computer and are never uploaded.</li>
+            <li><strong>Stored on this computer:</strong> stashed sessions (and autostashes, if you turn Session Recovery on) are kept unencrypted in this browser's IndexedDB, with your accepted license. They include sequences and case attributes, last after the tab closes, and can be read by anyone using this browser profile. The app's offline copy is kept in the browser cache, and the WebMCP switch is remembered for the tab only.</li>
+            <li><strong>Third parties:</strong> only when you turn on a map base layer, tiles are requested from CARTO (street map) or Esri (satellite), who can see your IP address and the area you view. Nothing else is sent anywhere, and there is no analytics or tracking.</li>
+            <li><strong>AI agents:</strong> if you switch on WebMCP, agents in this browser can read and change the whole session, including its data. It is off by default and lasts for this tab only.</li>
+          </ul>
+          <p>
+            <button type="button" id="delete-everything" class="btn btn-outline-danger btn-sm">Delete everything stored in this browser…</button>
           </p>
           <p class="text-end">
             <a href="humans.txt">
@@ -613,6 +623,25 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="delete-everything-modal" tabindex="-1" role="dialog" aria-labelledby="deleteEverythingLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteEverythingLabel">Delete everything stored in this browser?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          This permanently deletes all stashed and autostashed sessions, your accepted license and the offline copy of MicrobeTrace kept by this browser, then reloads the page. Unsaved work in this tab will be lost. This cannot be undone.
+          <p id="delete-everything-error" class="text-danger mb-0 mt-2" role="alert" hidden></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="delete-everything-confirm" class="btn btn-danger">Delete Everything</button>
         </div>
       </div>
     </div>
