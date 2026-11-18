@@ -289,7 +289,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="global-settings-modal-title" class="modal-title">Global Settings</h5>
+          <h5 id="global-settings-modal-title" class="modal-title">Settings</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -316,20 +316,21 @@
                     <label class="btn btn-light active col" title="Show all links within threshold">
                       <input type="radio" name="NNOptions" data-setting="link-prune" value="none" autocomplete="off" checked> None
                     </label>
-                    <label class="btn btn-light col" title="Keep only each node's links to its nearest neighbors (and near-ties, see Filtering Epsilon), by the link filter variable. Can split clusters.">
+                    <label class="btn btn-light col" title="Keep only each node's links to its nearest neighbors (and near-ties, see Tie Tolerance), by the link filter variable. Can split clusters.">
                       <input type="radio" name="NNOptions" data-setting="link-prune" value="nn" autocomplete="off"> Nearest Neighbor
                     </label>
-                    <label class="btn btn-light col" title="Keep only the links of the minimum spanning tree (and near-ties, see Filtering Epsilon), by the link filter variable. Keeps clusters connected.">
+                    <label class="btn btn-light col" title="Keep only the links of the minimum spanning tree (and near-ties, see Tie Tolerance), by the link filter variable. Keeps clusters connected.">
                       <input type="radio" name="NNOptions" data-setting="link-prune" value="mst" autocomplete="off"> MST
                     </label>
                   </div>
                 </div>
               </div>
               <div class="form-group row filtering-epsilon-row" title="How close two distances must be to count as a tie when pruning: within this fraction of each other (10 to this power)">
-                <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
+                <div class="col-4"><label for="filtering-epsilon">Tie Tolerance</label></div>
                 <div class="col-8">
                   <input type="range" class="form-range" id="filtering-epsilon" data-setting="filtering-epsilon" data-setting-on="change" min="-3" max="2" step=".01" value="-3">
-                  <input type="number" id="filtering-epsilon-copy" aria-label="Filtering Epsilon" class="form-control form-control-sm" disabled>
+                  <input type="number" id="filtering-epsilon-copy" aria-label="Tie Tolerance, as a fraction" class="form-control form-control-sm" disabled aria-describedby="filtering-epsilon-help">
+                  <div id="filtering-epsilon-help" class="form-text small">Distances within this fraction of each other count as tied when pruning. The slider sets a power of ten; the box shows the value used.</div>
                 </div>
               </div>
               <div class="form-group row" title="What's the minimum number of nodes a cluster must have in order to be visible?">
@@ -349,19 +350,20 @@
                     </select>
                   </div>
                 </div>
-                <div class="form-group row" title="What's the maximum genetic distance you're willing to call a link?">
+                <div class="form-group row" title="The largest distance that still counts as a link. Same setting as Link Threshold when loading files.">
                   <div class="col-4"><label for="link-threshold">Link Threshold</label></div>
                   <div class="col-8">
                     <svg id="link-threshold-sparkline" title="Click or drag to set the threshold"></svg>
-                    <input type="number" class="form-control form-control-sm" id="link-threshold" data-setting="link-threshold" data-setting-on="change" step="0.001">
+                    <input type="number" class="form-control form-control-sm" id="link-threshold" data-setting="link-threshold" data-setting-on="change" step="0.001" aria-describedby="link-threshold-unit">
+                    <div id="link-threshold-unit" class="form-text small"></div>
                     <div id="link-threshold-note" class="form-text small" hidden></div>
                   </div>
                 </div>
               </div>
               <div class="form-group row" title="Click to reveal all hidden elements of the network.">
-                <div class="col-4"><label for="RevealAllTab">Reveal</label></div>
+                <div class="col-4"><label for="RevealAllTab">Hidden Elements</label></div>
                 <div class="col-8">
-                  <button id="RevealAllTab" type="button" class="btn btn-light btn-sm w-100">Everything</button>
+                  <button id="RevealAllTab" type="button" class="btn btn-light btn-sm w-100">Show All Hidden</button>
                 </div>
               </div>
               <hr>
@@ -467,7 +469,7 @@
               </div>
             </div>
             <div class="tab-pane fade" id="timeline-config" role="tabpanel" aria-labelledby="timeline-tab">
-              <div class="form-group row" title="By what variable timeline applied?">
+              <div class="form-group row" title="Which node date or number the timeline slider runs along. None turns the timeline off.">
                 <div class="col-4"><label for="node-timeline-variable">Timeline By</label></div>
                 <div class="col-8">
                   <select id="node-timeline-variable" class="form-select form-select-sm nodeVariables" data-setting="node-timeline-variable">
@@ -491,9 +493,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <div class="btn-group" data-toggle="buttons">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
-          </div>
+          <span class="form-text me-auto">Changes apply immediately.</span>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
@@ -548,7 +549,8 @@
         <div class="modal-body">
           <div class="form-group row" title="What would you like to call this Stash?">
             <div class="col">
-              <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Stash name" aria-label="Stash name" aria-describedby="stash-help">
+              <label for="stash-name" class="form-label">Stash name</label>
+              <input type="text" id="stash-name" class="form-control form-control-sm" placeholder="Stash name" aria-describedby="stash-help">
               <div id="stash-help" class="form-text">Stashes are kept in this browser, on this computer. Recall them from the File menu.</div>
             </div>
           </div>
@@ -572,7 +574,7 @@
           <div id="recall-stashes-available" class="table-sm"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" id="recall-delete-stash">Delete</button>
+          <button type="button" class="btn btn-outline-danger me-auto" id="recall-delete-stash">Delete</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-primary" id="recall-load-stash">Recall</button>
         </div>

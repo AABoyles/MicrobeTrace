@@ -24,6 +24,20 @@ please submit a pull request. In order for us to merge a pull request, it must:
   If there is significant dissent between the team, a meeting will be held to
   discuss a plan of action for the pull request.
 
+## Dialog conventions
+
+Two kinds of dialog, and no others:
+
+- Settings dialogs (Settings, Sequence Settings) apply changes live. They are
+  non-blocking (`data-bs-backdrop="false"`, draggable), say "Changes apply
+  immediately." and have one primary "Close" button.
+- Action dialogs (Save, Stash, Recall, exports, the exit and replace prompts) are
+  modal and dim the page (Bootstrap's backdrop; a view's export dialogs, which live
+  inside the view, dim with their own layer, see main.css). The primary action is the rightmost button, with Cancel
+  beside it on its left. A destructive primary action is `btn-danger`; a
+  destructive side action (Recall's Delete) is `btn-outline-danger` on the far left
+  (`me-auto`). Every input has a visible label, not only a placeholder.
+
 ## Legal Stuff
 Before contributing, we encourage you to also read or [LICENSE](https://github.com/aaboyles/template/blob/master/LICENSE),
 [README](https://github.com/aaboyles/template/blob/master/README.md), and

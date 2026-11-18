@@ -51,7 +51,7 @@
           <select id="default-distance-metric" data-setting="default-distance-metric" class="form-select form-select-sm">
             <optgroup label="Evolutionary Models">
               <option value="tn93" selected title="Tamura-Nei 1993">TN93 (Tamura-Nei)</option>
-              <option value="tn92" title="Tamura-Nei 1992">TN92 (Tamura-Nei)</option>
+              <option value="tn92" title="Tamura-Nei 1992">TN92 (Tamura 1992)</option>
               <option value="k2p" title="Kimura 2-Parameter">K2P (Kimura)</option>
               <option value="jc69" title="Jukes-Cantor">JC69 (Jukes-Cantor)</option>
             </optgroup>
@@ -66,6 +66,7 @@
               <option value="ts_tv_ratio">Ts/Tv Ratio</option>
             </optgroup>
           </select>
+          <div id="distance-metric-help" class="form-text small"></div>
         </div>
       </div>
       <div class="form-group row distance-metrics-also-row" title="Which other metrics should MicrobeTrace compute for the same sequences? Each is kept on the links beside the distance metric, to filter links on, color or plot by.">
@@ -74,6 +75,7 @@
         </div>
         <div class="col-7">
           <select id="distance-metrics-also" multiple></select>
+          <div class="form-text small">Extra metrics kept on each link, to filter or color by later.</div>
         </div>
       </div>
       <div class="form-group row">
@@ -90,26 +92,29 @@
             <option value="GAPMM" title="TN93 only. Uses the slower tn93.js engine.">GapMM (TN93 only)</option>
             <option value="HIVTRACE-G">HIV-TRACE -g</option>
           </select>
+          <div id="ambiguity-help" class="form-text small"></div>
         </div>
       </div>
       <div class="form-group row ambiguity-threshold-row">
         <div class="col-5">
-          <label for="ambiguity-threshold" class="me-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+          <label for="ambiguity-threshold" class="me-2" title="HIV-TRACE -g only: the fraction of ambiguous sites in a pair above which they are averaged instead of resolved.">
             Ambiguity Threshold
           </label>
         </div>
         <div class="col-7">
-          <input type="number" id="ambiguity-threshold" data-setting="ambiguity-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
+          <input type="number" id="ambiguity-threshold" data-setting="ambiguity-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001" aria-describedby="ambiguity-threshold-help">
+          <div id="ambiguity-threshold-help" class="form-text small">Fraction of ambiguous sites in a pair (0.015 = 1.5%).</div>
         </div>
       </div>
       <div class="form-group row">
         <div class="col-5">
-          <label for="default-distance-threshold" class="me-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+          <label for="default-distance-threshold" class="me-2" title="The largest distance that still counts as a link. It can be changed later.">
             Link Threshold
           </label>
         </div>
         <div class="col-7">
-          <input type="number" id="default-distance-threshold" data-setting="link-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
+          <input type="number" id="default-distance-threshold" data-setting="link-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001" aria-describedby="default-distance-threshold-unit">
+          <div id="default-distance-threshold-unit" class="form-text small">Same setting as Link Threshold in Settings.</div>
         </div>
       </div>
       <div class="form-group row">
@@ -124,6 +129,7 @@
             <option value="all">All Pairs</option>
             <option value="threshold">Within Link Threshold</option>
           </select>
+          <div class="form-text small">Automatic keeps every pair unless there are too many. Within Link Threshold uses less memory.</div>
         </div>
       </div>
       <div class="form-group row">
@@ -348,7 +354,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         </div>
       </div>
       <div class="modal-footer clearfix">
-        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+        <span class="form-text me-auto">Changes apply immediately.</span>
+        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -1314,7 +1321,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         session.data.graph.forEachValue(get('default-distance-metric'), v => { if (v <= threshold) within++; });
         message(` - Computed ${k.toLocaleString()} distances between sequences; ${within.toLocaleString()} links are within the link threshold (${threshold}).`);
         const also = MT.computedMetrics().slice(1);
-        if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Global Settings.`);
+        if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Settings.`);
         step = 'drawing the network';
         return MT.runHamsters();
       };
@@ -1349,7 +1356,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const showMetricName = () => {
       const option = metricMenu.selectedOptions[0];
       metricMenu.title = option ? option.title || option.text : '';
+      // Visible help, not only the tooltip (#272)
+      const help = MT.metricHelp[get('default-distance-metric')];
+      $('#distance-metric-help').textContent = help ? help[0] : '';
+      $('#default-distance-threshold-unit').textContent = help ? 'In ' + help[1] + '. Same setting as Link Threshold in Settings.' : '';
     };
+    const AMBIGUITY_HELP = {
+      AVERAGE: 'Ambiguous bases (N, R, Y...) count as the average over every base they could be.',
+      RESOLVE: 'Ambiguous bases are taken as whichever base they could be that matches the other sequence.',
+      SKIP: 'Sites with an ambiguous base are left out of the comparison.',
+      GAPMM: 'Treats a gap as a mismatch (the original MicrobeTrace way). TN93 only, and slower.',
+      'HIVTRACE-G': 'As HIV-TRACE does: resolve ambiguities, unless too many sites in a pair are ambiguous (see Ambiguity Threshold), then average.'
+    };
+    const showAmbiguityHelp = () => { $('#ambiguity-help').textContent = AMBIGUITY_HELP[get('ambiguity-resolution-strategy')] || ''; };
 
     MT.paneToggle($('.settings-toggle'), pane, false, { push: [$('.file-panel'), $('.file-footer')] });
     const stop = [
@@ -1364,6 +1383,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         showAlso();
       }),
       settings.subscribe('ambiguity-resolution-strategy', () => {
+        showAmbiguityHelp();
         showAmbiguityRows();
         showAlso();
       }),
@@ -1379,6 +1399,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     ];
     applyMetric(false);
     showMetricName();
+    showAmbiguityHelp();
     showAlso();
     showAmbiguityRows();
     showAlignmentRows();
@@ -1490,6 +1511,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       },
       // Redraws the controls that follow other settings, after those were set
       refresh() {
+        showMetricName();
+        showAmbiguityHelp();
         showAlso();
         showAmbiguityRows();
         showAlignmentRows();

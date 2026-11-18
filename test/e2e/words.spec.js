@@ -137,7 +137,7 @@ test('each thing has one name', async () => {
   expect(await page.evaluate(() => Array.from(document.querySelectorAll('.sequence-controls-button, #sequence-controls-title'), el => el.textContent.trim()))).not.toContain('Sequence Controls');
 });
 
-test('dialogs’ main actions are blue, and settings dialogs close with Done', async () => {
+test('dialogs’ main actions are blue, and settings dialogs close with Close', async () => {
   expect(await page.locator('#recall-load-stash').getAttribute('class')).toContain('btn-primary');
   const dialogs = await page.evaluate(() => Array.from(document.querySelectorAll('.modal-footer .btn-success'), b => b.textContent.trim()));
   expect(dialogs).toEqual([]);
@@ -174,4 +174,19 @@ test('settings are named for what they do, and the tree’s menus turn labels an
   await expect.poll(() => page.evaluate(() => session.style.widgets['tree-tooltip-show'])).toBe(false);
   await set('tree-leaf-tooltip-variable', '_id');
   expect(errors).toEqual([]);
+});
+
+test('one setting has one name, units and visible help, and the dialogs follow one convention (#271 #272 #274)', async () => {
+  await opened('files');
+  await expect(page.locator('#global-settings-modal-title')).toHaveText('Settings');
+  await expect(page.locator('#link-threshold-unit')).toContainText('substitutions per site');
+  expect(await page.locator('label[for="default-distance-threshold"]').first().textContent()).toMatch(/^\s*Link Threshold\s*$/);
+  await expect(page.locator('#distance-metric-help')).toContainText(/Substitutions per site/);
+  await expect(page.locator('#ambiguity-help')).not.toBeEmpty();
+  await expect(page.locator('#filtering-epsilon-help')).toContainText('power of ten');
+  await expect(page.locator('#global-settings-modal .modal-footer')).toContainText('Changes apply immediately');
+  expect(await page.locator('#global-settings-modal .modal-footer button').allTextContents()).toEqual(['Close']);
+  expect(await page.locator('#global-settings-modal').getAttribute('data-bs-backdrop')).toBe('false');
+  await expect(page.locator('#recall-delete-stash')).toHaveClass(/btn-outline-danger/);
+  await expect(page.locator('label[for="stash-name"]')).toHaveText('Stash name');
 });

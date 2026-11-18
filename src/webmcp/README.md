@@ -268,7 +268,7 @@ All of these are read-only.
 
 | Tool | Read-only? | What it does |
 |---|---|---|
-| `list_settings` | Yes | Lists the settings behind the global settings dialog and the views' controls. |
+| `list_settings` | Yes | Lists the settings behind the Settings dialog and the views' controls. |
 | `get_settings` | Yes | Reads the value, default and type of settings by key. |
 | `set_settings` | No | Changes settings by key, through the settings store, so views react as they would to a control. |
 | `get_filter_state` | Yes | Reports the link filter variable and threshold, nearest-neighbor pruning, minimum cluster size, timeline, and visible counts. |

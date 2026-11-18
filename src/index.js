@@ -450,6 +450,14 @@ document.addEventListener("DOMContentLoaded", () => {
     updateNetwork();
   });
   settings.subscribe(["link-sort-variable", "link-stored-thresholds"], () => showStoredRange(false));
+  // The threshold's unit follows what links are filtered on (#272)
+  const showThresholdUnit = () => {
+    const help = MT.metricHelp[MT.fieldMetric(get("link-sort-variable"))];
+    const el = byId("link-threshold-unit");
+    if (el) el.textContent = help ? "In " + help[1] + ". Same setting as Link Threshold when loading files." : "In the units of the field. Same setting as Link Threshold when loading files.";
+  };
+  settings.subscribe("link-sort-variable", showThresholdUnit);
+  showThresholdUnit();
 
   // Rows of the settings that only apply with some settings
   const showRows = () => {

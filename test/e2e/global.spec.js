@@ -61,7 +61,7 @@ test('the minimum cluster size hides small clusters, and Reveal shows everything
   await size.press('Enter');
   await expect.poll(visible).toBeLessThan(310);
   await expect(page.locator('#filtering-wrapper')).toBeHidden();
-  await dialog().locator('button', { hasText: 'Everything' }).click();
+  await dialog().locator('button', { hasText: 'Show All Hidden' }).click();
   await expect.poll(visible).toBe(310);
   await expect(size).toHaveValue('1');
   await expect(page.locator('#filtering-wrapper')).toBeVisible();
