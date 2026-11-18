@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const offerUpdate = worker => {
       MT.toast.info("A new version is available. Click here to reload (unsaved work will be lost).", 0, clicked => {
         if (clicked) worker.postMessage({ type: "SKIP_WAITING" });
-      });
+      }, { action: "Reload" });
     };
     navigator.serviceWorker.register("sw.js").then(registration => {
       if (!registration) return;
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateStashes();
         MT.toast.warning(`Deleted "${MT.escape(stashName(stash))}". Click here to undo.`, 10, clicked => {
           if (clicked) db.setItem(stash.key, json).then(updateStashes);
-        });
+        }, { action: "Undo" });
       });
   });
 
@@ -323,6 +323,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // File > Open: a button (it can take focus) that opens the file input's picker
+  on("OpenButton", "click", () => byId("OpenTab").click());
+  // The skip link moves focus to the main region (a bare #main-panel link
+  // would also change the address, which a "#demo" start reads)
+  on("skip-link", "click", e => {
+    e.preventDefault();
+    byId("main-panel").focus();
+  });
   on("OpenTab", "change", e => {
     const [file] = e.target.files;
     // (So choosing the same file again, after cancelling, is a change)
@@ -621,8 +629,20 @@ document.addEventListener("DOMContentLoaded", () => {
   MT.floatingTable(statistics, byId("network-statistics-context"), {
     onHide: () => settings.set("network-statistics-show", false)
   });
+  // Selection changes are announced (with the search's count, when a search made
+  // them, so one message says both)
+  let searchNote = "", announcedSelection = 0;
   events.on("node-selected", () => {
-    byId("numberOfSelectedNodes").textContent = session.data.nodes.filter(d => d.selected).length.toLocaleString();
+    const selected = session.data.nodes.filter(d => d.selected).length;
+    byId("numberOfSelectedNodes").textContent = selected.toLocaleString();
+    const parts = [searchNote];
+    if (selected != announcedSelection || searchNote) {
+      parts.push(selected ? `${selected.toLocaleString()} node${selected == 1 ? "" : "s"} selected` : "No nodes selected");
+    }
+    announcedSelection = selected;
+    searchNote = "";
+    const message = parts.filter(Boolean).join(". ");
+    if (message) MT.announce(message);
   });
 
   // An SVG copy of a table, for exports, where the table sits over origin (the
@@ -1072,9 +1092,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // Search ----------------------------------------------------------------
 
   const search = byId("search"), results = byId("search-results");
+  // The box is a combobox over its suggestions (the list is never focused:
+  // the active suggestion is named by aria-activedescendant)
+  const options = () => Array.from(results.querySelectorAll("li"));
+  const setActive = li => {
+    options().forEach(o => {
+      o.classList.toggle("active", o == li);
+      o.setAttribute("aria-selected", o == li);
+    });
+    if (li) {
+      search.setAttribute("aria-activedescendant", li.id);
+      li.scrollIntoView({ block: "nearest" });
+    } else {
+      search.removeAttribute("aria-activedescendant");
+    }
+  };
   const hideResults = () => {
     results.innerHTML = "";
     results.style.display = "none";
+    search.setAttribute("aria-expanded", "false");
+    search.removeAttribute("aria-activedescendant");
+  };
+  const showResults = () => {
+    results.style.display = "block";
+    search.setAttribute("aria-expanded", "true");
   };
 
   //#298: match case and match whole words, then search again. The buttons
@@ -1112,8 +1153,40 @@ document.addEventListener("DOMContentLoaded", () => {
       if (typeof node[field] == "number") node.selected = node[field] + "" == value;
     });
   };
+  // Choosing a suggestion searches for exactly it
+  const choose = li => {
+    const v = li.dataset.value;
+    search.value = v;
+    hideResults();
+    selectMatches(pattern(v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), v);
+    events.emit("node-selected");
+  };
 
   search.addEventListener("blur", () => setTimeout(hideResults, 300));
+  // (A click on a suggestion shouldn't take focus from the box)
+  results.addEventListener("mousedown", e => e.preventDefault());
+  search.addEventListener("keydown", e => {
+    const open = results.style.display == "block";
+    const items = options().filter(li => !li.classList.contains("no-matches"));
+    const at = items.findIndex(li => li.classList.contains("active"));
+    if (e.key == "ArrowDown" || e.key == "ArrowUp") {
+      if (!open || !items.length) return;
+      e.preventDefault();
+      const step = e.key == "ArrowDown" ? 1 : -1;
+      setActive(items[at < 0 ? (step > 0 ? 0 : items.length - 1) : (at + step + items.length) % items.length]);
+    } else if (e.key == "Enter") {
+      if (open && at >= 0) {
+        e.preventDefault();
+        choose(items[at]);
+      }
+    } else if (e.key == "Escape") {
+      if (open) {
+        e.preventDefault();
+        e.stopPropagation();
+        hideResults();
+      }
+    }
+  });
   search.addEventListener("input", () => {
     const nodes = session.data.nodes;
     const value = search.value;
@@ -1131,18 +1204,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return; // not yet a whole pattern
       }
       // Suggestions, each of which searches for itself
+      let count = 0;
       values.filter(v => v.match(re)).forEach(v => {
         const li = document.createElement("li");
         li.textContent = v;
         li.dataset.value = v;
-        li.addEventListener("click", () => {
-          search.value = v;
-          hideResults();
-          selectMatches(pattern(v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), v);
-          events.emit("node-selected");
-        });
+        li.id = "search-option-" + (count++);
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", "false");
+        li.addEventListener("click", () => choose(li));
         results.append(li);
-        results.style.display = "block";
+        showResults();
       });
       selectMatches(re, value);
       // Nothing matches: the box says so, where the suggestions would be
@@ -1150,10 +1222,14 @@ document.addEventListener("DOMContentLoaded", () => {
         search.classList.add("is-invalid");
         const li = document.createElement("li");
         li.className = "no-matches";
+        li.id = "search-no-matches";
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-disabled", "true");
         li.textContent = "No matches";
         results.append(li);
-        results.style.display = "block";
+        showResults();
       }
+      searchNote = count ? `${count.toLocaleString()} suggestion${count == 1 ? "" : "s"}` : "No matches";
     }
     events.emit("node-selected");
   });

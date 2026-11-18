@@ -1431,6 +1431,11 @@ body.timeline-open #main-panel {
         background: var(--mt-hover);
         cursor: pointer;
 }
+.autocomplete-wrapper #search-results li.active {
+  background: var(--mt-hover);
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
 .autocomplete-wrapper #search-results li.no-matches {
   color: var(--bs-danger-text-emphasis);
   cursor: default;
@@ -1665,4 +1670,65 @@ body.timeline-open #main-panel {
     width: 100%;
     max-width: 13rem;
   }
+}
+
+/* A skip link, shown (over the menu bar) only while it has focus (#187); the
+   main region is focused by it, and needs no ring */
+.skip-link:focus {
+  position: fixed;
+  top: 6px;
+  left: 6px;
+  z-index: 2000;
+  padding: 0.5rem 1rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border: 2px solid var(--bs-primary);
+  border-radius: 0.25rem;
+}
+#main-panel:focus {
+  outline: none;
+}
+
+/* Toasts: a message, an optional action and a close button (#189) */
+.mt-toast-container .toast-custom .toast-inner {
+  display: flex;
+  align-items: flex-start;
+}
+.mt-toast-container .toast-custom .toast-body {
+  flex: 1 1 auto;
+}
+.mt-toast-container .toast-custom .toast-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.5rem 0.5rem 0;
+}
+.mt-toast-container .toast-custom .btn-close {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+/* A name on keyboard focus for icon-only buttons (#192), as the title shows
+   on hover; Escape dismisses it */
+#mt-focus-tip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 20rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--bs-emphasis-color);
+  color: var(--bs-body-bg);
+  font-size: 0.8125rem;
+  pointer-events: none;
+}
+/* Icon-only buttons are at least 24 by 24 px (WCAG 2.5.8) */
+button[data-mt-name], a[data-mt-name] {
+  min-width: 24px;
+  min-height: 24px;
+}
+a[data-mt-name].icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }

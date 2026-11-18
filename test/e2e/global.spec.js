@@ -123,10 +123,10 @@ test("the node color table's menu toggles counts and hides it", async () => {
   const wrapper = page.locator('#node-color-table-wrapper');
   await expect(wrapper.locator('th', { hasText: 'Count' })).toHaveCount(1);
   await wrapper.dispatchEvent('contextmenu');
-  await page.locator('#node-color-table-context a', { hasText: 'Toggle Counts' }).click();
+  await page.locator('#node-color-table-context button', { hasText: 'Toggle Counts' }).click();
   await expect(wrapper.locator('th', { hasText: 'Count' })).toHaveCount(0);
   await wrapper.dispatchEvent('contextmenu');
-  await page.locator('#node-color-table-context a', { hasText: 'Hide' }).click();
+  await page.locator('#node-color-table-context button', { hasText: 'Hide' }).click();
   await expect(wrapper).toBeHidden();
   expect(await get('node-color-table-show')).toBe(false);
   await set('node-color-table-show', true);
@@ -154,7 +154,7 @@ test('the statistics panel hides from its menu', async () => {
   const wrapper = page.locator('#network-statistics-wrapper');
   await expect(wrapper).toBeVisible();
   await wrapper.dispatchEvent('contextmenu');
-  await page.locator('#network-statistics-context a', { hasText: 'Hide' }).click();
+  await page.locator('#network-statistics-context button', { hasText: 'Hide' }).click();
   await expect(wrapper).toBeHidden();
   await set('network-statistics-show', true);
   await expect(wrapper).toBeVisible();

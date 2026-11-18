@@ -1508,7 +1508,7 @@
     if (!oldSession) {
       const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
       if (differ) MT.toast.warning(`${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files. Click to review them.`, 15,
-        clicked => { if (clicked) MT.launchView("conflicts"); });
+        clicked => { if (clicked) MT.launchView("conflicts"); }, { action: "Review" });
       MT.reportDateColumns(session.data.nodes, session.data.nodeFields);
     }
     // Links are done loading: swap the graph's pair lookup for its compact index.
@@ -3669,9 +3669,15 @@
       }
     }
 
-    function show(message, type, duration, callback) {
+    // options.action names the button a toast with a callback shows (default
+    // "Open"). A toast with a callback is an offer the user may want to take
+    // after reading, so it stays until dismissed (WCAG 2.2.1); other toasts
+    // time out, but not while the pointer or focus is in them (Bootstrap holds
+    // the timer then).
+    function show(message, type, duration, callback, options) {
       init();
       if (!duration && duration !== 0) duration = 5000;
+      if (callback) duration = 0;
 
       var id = 'mt-toast-' + (++nextId);
       var bgClass = {
@@ -3680,23 +3686,30 @@
         warning: 'bg-warning text-dark',
         info: 'bg-info text-white'
       }[type] || 'bg-secondary text-white';
-
-      var html = [
-        '<div id="' + id + '" class="toast toast-custom" role="alert" data-bs-delay="' + duration + '">',
-        '  <div class="toast-body ' + bgClass + '" data-bs-dismiss="toast">' + message + '</div>',
-        '</div>'
-      ].join('\n');
+      var light = !/text-dark/.test(bgClass);
 
       var el = document.createElement('div');
-      el.innerHTML = html.trim();
-      el = el.firstChild;
+      el.id = id;
+      el.className = 'toast toast-custom ' + bgClass;
+      el.setAttribute('role', 'alert');
+      el.setAttribute('aria-atomic', 'true');
+      el.setAttribute('data-bs-delay', duration);
+      // (message is markup, as it always was: callers escape what they include)
+      el.innerHTML = '<div class="toast-inner">' +
+        '<div class="toast-body" data-bs-dismiss="toast">' + message + '</div>' +
+        '<div class="toast-actions">' +
+        (callback ? '<button type="button" class="btn btn-sm ' + (light ? 'btn-light' : 'btn-dark') + ' toast-action" data-bs-dismiss="toast"></button>' : '') +
+        '<button type="button" class="btn-close' + (light ? ' btn-close-white' : '') + ' toast-close" data-bs-dismiss="toast" aria-label="Dismiss notification"></button>' +
+        '</div></div>';
+      if (callback) el.querySelector('.toast-action').textContent = (options && options.action) || 'Open';
       container.appendChild(el);
 
       var bsToast = new bootstrap.Toast(el, { autohide: duration > 0 });
       var callbackFired = false, clicked = false;
-      // The body dismisses the toast on click (data-bs-dismiss); the callback is
-      // told whether that is why it closed, as alertify's was
-      el.addEventListener('click', function () { clicked = true; });
+      // The message and the action button dismiss the toast, and the callback
+      // is told whether that is why it closed, as alertify's was; the close
+      // button is a dismissal that isn't an answer
+      el.addEventListener('click', function (e) { clicked = !e.target.closest('.toast-close'); });
       el.addEventListener('hidden.bs.toast', function () {
         if (callback && !callbackFired) {
           callbackFired = true;
@@ -3712,7 +3725,7 @@
 
     // Simple alertify-compatible API: success, error, warning
     function createSimple(type) {
-      return function (message, duration, callback) {
+      return function (message, duration, callback, options) {
         // Normalize arguments like alertify does
         // alertify signatures:
         //   warning(message, callback)        → duration is the callback (no autohide)
@@ -3720,19 +3733,19 @@
         //   warning(message, 3000)             → duration is ms, no callback
         if (typeof duration === 'function') {
           // message + callback only, no autohide
-          show('' + message, type, 0, duration);
+          show('' + message, type, 0, duration, callback);
         } else if (typeof duration === 'number') {
           // Could be ms (large number like 3000) or seconds (small number like 10)
           // alertify uses seconds, so treat as seconds → ms
           if (duration < 60000) {
             // Likely seconds: convert to ms
-            show('' + message, type, duration * 1000, callback);
+            show('' + message, type, duration * 1000, callback, options);
           } else {
             // Already in ms, no callback
             show('' + message, type, duration);
           }
         } else {
-          show('' + message, type, 0, duration);
+          show('' + message, type, 0, duration, callback);
         }
       };
     }
@@ -3742,6 +3755,72 @@
     MT.toast.error = createSimple('danger');
     MT.toast.warning = createSimple('warning');
     MT.toast.info = createSimple('info');
+  })();
+
+  // Announcements: the one polite live region (#mt-status), for what changes
+  // without moving focus (search results, selection). Repeats are announced
+  // again, and a burst of changes is announced once, as its last.
+  (function () {
+    var timer;
+    MT.announce = function (message) {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        var region = document.getElementById('mt-status');
+        if (!region) return;
+        region.textContent = '';
+        // (Emptied first, in its own turn, so an unchanged message is a change)
+        setTimeout(function () { region.textContent = message; }, 50);
+      }, 400);
+    };
+  })();
+
+  // Icon-only buttons (a gear, a camera) have a title and nothing else: that is
+  // a name for the accessibility tree, but only on hover. Each gets an
+  // aria-label from its title, its icon is hidden from assistive technology,
+  // and its name shows beside it while it has keyboard focus (Escape hides it).
+  // Done for whatever is in the page, and for what is added to it later.
+  (function () {
+    var tip;
+    var hideTip = function () { if (tip) tip.hidden = true; };
+    MT.nameIconButtons = function (root) {
+      (root || document).querySelectorAll('button[title], a[role="button"][title], a.btn[title]').forEach(function (el) {
+        if (el.dataset.mtName) return;
+        var title = el.getAttribute('title').trim();
+        if (!title || el.textContent.trim()) return; // has a name in its text
+        if (!el.hasAttribute('aria-label') && !el.hasAttribute('aria-labelledby')) el.setAttribute('aria-label', title);
+        el.dataset.mtName = title;
+        el.querySelectorAll('.bi, .fa, .fas, .far, [class*="bi-"]').forEach(function (icon) { icon.setAttribute('aria-hidden', 'true'); });
+      });
+    };
+    document.addEventListener('focusin', function (e) {
+      var el = e.target.closest && e.target.closest('[data-mt-name]');
+      if (!el) return hideTip();
+      var visible = false;
+      try { visible = el.matches(':focus-visible'); } catch (error) { visible = true; }
+      if (!visible) return hideTip();
+      if (!tip) {
+        tip = document.createElement('div');
+        tip.id = 'mt-focus-tip';
+        tip.setAttribute('role', 'tooltip');
+        document.body.appendChild(tip);
+      }
+      tip.textContent = el.dataset.mtName;
+      tip.hidden = false;
+      var box = el.getBoundingClientRect();
+      var below = box.bottom + 6;
+      tip.style.top = (below + tip.offsetHeight > window.innerHeight ? Math.max(0, box.top - tip.offsetHeight - 6) : below) + 'px';
+      tip.style.left = Math.max(0, Math.min(box.left, window.innerWidth - tip.offsetWidth - 4)) + 'px';
+    });
+    document.addEventListener('focusout', hideTip);
+    document.addEventListener('keydown', function (e) { if (e.key == 'Escape') hideTip(); });
+    var pending = false;
+    var sweep = function () {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; MT.nameIconButtons(document); });
+    };
+    MT.nameIconButtons(document);
+    new MutationObserver(sweep).observe(document.body, { childList: true, subtree: true });
   })();
 
   self.MT = MT;
