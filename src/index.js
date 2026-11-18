@@ -11,11 +11,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const escape = value => String(value).replace(/[&<>'"/\\]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "\\": "&#x5C;" })[c]);
   MT.escape = escape;
 
-  if (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.appName.indexOf("Microsoft Internet Explorer") >= 0) {
-    byId("ie-warning").style.display = "block";
-    throw new Error("MicrobeTrace does not work on Internet Explorer.");
+  // The features the app needs from startup on: WebAssembly (the distance
+  // workers), Web Workers (every computation) and IndexedDB (stashed sessions
+  // and the license). WebGL is only needed when the 2D network opens, which
+  // reports its own failure, so it isn't checked here (#232).
+  const missing = [];
+  if (typeof WebAssembly === "undefined") missing.push("WebAssembly");
+  if (typeof Worker === "undefined") missing.push("Web Workers");
+  if (typeof indexedDB === "undefined") missing.push("IndexedDB");
+  if (missing.length) {
+    byId("unsupported-features").textContent = " (it lacks " + missing.join(", ") + ")";
+    byId("unsupported-browser").classList.add("shown");
+    throw new Error("MicrobeTrace needs " + missing.join(", ") + ", which this browser lacks.");
   } else {
-    byId("ie-warning").remove();
+    byId("unsupported-browser").remove();
   }
 
   // Mark local and preview deployments, so they aren't mistaken for the real site
