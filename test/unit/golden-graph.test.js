@@ -112,7 +112,7 @@ test('MT.tagClusters on computed TN93 distances (distances.fasta, threshold 0.03
 
   const { MT, session } = loadApp({ 'ambiguity-resolution-strategy': 'RESOLVE', 'link-storage': 'all', 'link-threshold': 0.03 });
   const seqs = await parseFasta('distances.fasta');
-  const nodes = session.data.nodes = seqs.map((s, i) => ({ _id: s.id, seq: s.seq, index: i, _seqInt: tn93js.toInts(s.seq) }));
+  const nodes = session.data.nodes = seqs.map((s, i) => ({ _id: s.id, seq: s.seq, index: i }));
   await MT.computeLinks(nodes.slice());
   MT.setLinkVisibility(true);
   await MT.tagClusters();

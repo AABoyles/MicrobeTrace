@@ -928,17 +928,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let timeDomainStart, timeDomainEnd;
       let field = variable;
-      let times = [],
-      vnodes = JSON.parse(JSON.stringify(session.data.nodes));
-      const order = MTDates.dateOrderOf(session.data.nodes.map(d => d[field])).order;
-      vnodes.forEach(d => {
-        let time = MT.parseDate(d[field], order);
-        if (time) {
-          d[field] = time;
-          times.push(d[field]);
-        } else {
-          d[field] = null;
-        }
+      let times = [];
+      const values = session.data.nodes.map(d => d[field]);
+      const order = MTDates.dateOrderOf(values).order;
+      values.forEach(value => {
+        let time = MT.parseDate(value, order);
+        if (time) times.push(time);
       });
       if (times.length < 2) {
         times = [new Date(2000, 1, 1), new Date()];

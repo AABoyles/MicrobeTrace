@@ -632,7 +632,8 @@
           links = oldSession.data.links,
           n = nodes.length,
           m = links.length;
-    for(let i = 0; i < n; i++) MT.addNode(nodes[i]);
+    // (Older sessions saved each node's encoded sequence, which is rebuilt when needed)
+    for(let i = 0; i < n; i++) { delete nodes[i]._seqInt; MT.addNode(nodes[i]); }
     for(let j = 0; j < m; j++) MT.addLink(links[j]);
     // Where the nodes' values came from (sessions from before this have none)
     if (oldSession.data.nodeSources) session.data.nodeSources = oldSession.data.nodeSources;
@@ -1078,7 +1079,10 @@
       let nodes = session.data.nodes;
       let subset = nodes.filter(d => d.seq);
       const subsetLength = subset.length;
-      MT.runWorker("workers/compute-ambiguity-counts.js", subset, { name: "The ambiguity count" }).then(response => {
+      // The encoded sequences go to the worker alone: kept on the nodes they
+      // would be saved with the session
+      const encoded = subset.map(d => ({ _seqInt: tn93.toInts(d.seq) }));
+      MT.runWorker("workers/compute-ambiguity-counts.js", encoded, { name: "The ambiguity count" }).then(response => {
         console.log("Ambiguity Count Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
         const dists = new Float32Array(response.counts);
@@ -1588,7 +1592,14 @@
         try {
           const newKey = "stash-" + Date.now() + "-autostash";
           MT.syncLayout();
-          await db.setItem(newKey, JSON.stringify(session));
+          const text = JSON.stringify(session);
+          // Nothing has changed since the last copy: it stays, and isn't written again
+          if (state.key && text === state.text) {
+            state.time = Date.now();
+            return;
+          }
+          await db.setItem(newKey, text);
+          state.text = text;
           const oldKey = state.key;
           state.key = newKey;
           state.time = Date.now();
@@ -1984,6 +1995,7 @@
       // During timeline mode, user Pause and switch to a different Node varaible but nodeColorsTableKeys[variable] is not available
       if(!session.style.nodeColorsTableKeys[variable]) {
         let aggregatesTL = {};
+        const timelineIndex = byId(session.network.timelineNodes);
         let nodesTL = session.network.timelineNodes;
         let n = nodesTL.length;
         let nodeColorsTL = [...session.style.nodeColors];
@@ -2037,6 +2049,20 @@
       linkColors = session.style.linkColorsTable[variable] = [...session.style.linkColors];
     }
 
+    // A node is found by either its _id or its id (as text, so 1 and "1" match);
+    // the first node in the list wins, as it did with a linear search
+    const byId = nodes => {
+      const index = new Map();
+      for (let k = 0; k < nodes.length; k++) {
+        const d = nodes[k];
+        if (d._id != null && !index.has(String(d._id))) index.set(String(d._id), d);
+        if (d.id != null && !index.has(String(d.id))) index.set(String(d.id), d);
+      }
+      return index;
+    };
+    const find = (index, id) => id == null ? undefined : index.get(String(id));
+    const nodeIndex = byId(session.data.nodes);
+
     let aggregates = {};
     let links = MT.getVisibleLinks();
     let i = 0,
@@ -2047,8 +2073,8 @@
         l = links[i++];
         if (!l.visible) continue;
 
-        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
-        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        let src = find(nodeIndex, l.source);
+        let tgt = find(nodeIndex, l.target);
         if (src === undefined || src.visible === false) continue;
         if (tgt === undefined || tgt.visible === false) continue;
         
@@ -2065,8 +2091,8 @@
         l = links[i++];
         if (!l.visible) continue;
         
-        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
-        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        let src = find(nodeIndex, l.source);
+        let tgt = find(nodeIndex, l.target);
         if (src === undefined || src.visible === false) continue;
         if (tgt === undefined || tgt.visible === false) continue;  
 
@@ -2106,8 +2132,8 @@
           while (i < n) {
             l = linksTL[i++];
             if (!l.visible) continue;
-            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
-            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            let src = find(timelineIndex, l.source);
+            let tgt = find(timelineIndex, l.target);
             if (src === undefined || src.visible === false) continue;
             if (tgt === undefined || tgt.visible === false) continue;
             l.origin.forEach(o => {
@@ -2122,8 +2148,8 @@
           while (i < n) {
             l = linksTL[i++];
             if (!l.visible) continue;
-            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
-            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            let src = find(timelineIndex, l.source);
+            let tgt = find(timelineIndex, l.target);
             if (src === undefined || src.visible === false) continue;
             if (tgt === undefined || tgt.visible === false) continue;  
             let lv = l[variable];

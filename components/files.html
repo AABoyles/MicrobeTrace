@@ -1455,12 +1455,6 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         } else {
           reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));
         }
-        const start = Date.now();
-        for(let k = 0; k < n; k++){
-          let node = nodes[k];
-          node['_seqInt'] = tn93.toInts(node['seq']);
-        }
-        console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
         // Nodes without a sequence hold only gaps; they are left out of the consensus
         step = 'computing the consensus sequence';
         MT.progress('Computing the consensus sequence');
