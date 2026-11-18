@@ -138,6 +138,24 @@
           </select>
         </div>
       </div>
+      <div class="form-group row"
+        title="Should MicrobeTrace keep a recovery copy of your session in this browser, so you can restore it if your computer or the browser crashes?
+Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
+        <div class="col-5" id="stash-auto-label">Session Recovery</div>
+        <div class="col-7">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons" role="group" aria-labelledby="stash-auto-label" aria-describedby="stash-auto-help">
+            <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
+              <input type="radio" name="stash-auto" value="false" autocomplete="off" checked> Off
+            </label>
+            <label class="btn btn-light col" title="Automatically Stash Sessions">
+              <input type="radio" name="stash-auto" value="true" autocomplete="off"> On
+            </label>
+          </div>
+        </div>
+        <div class="col-12">
+          <small id="stash-auto-help" class="form-text text-muted">When on, the session is stashed in this browser every minute, and MicrobeTrace offers to restore it the next time it starts. This stores data on this computer's disk, which may matter for PII, so it is off unless you turn it on.</small>
+        </div>
+      </div>
     </div>
     <div id="experimental-settings" class="tab-pane fade" role="tabpanel" aria-labelledby="experimental-tab">
       <div class="form-group row">
@@ -166,21 +184,6 @@
             </label>
             <label class="btn btn-light col" title="Attempt to infer transmission directionality?">
               <input type="radio" name="infer-directionality" data-setting="infer-directionality-false" value="false" autocomplete="off"> Inferred
-            </label>
-          </div>
-        </div>
-      </div>
-      <div class="form-group row"
-        title="Should MicrobeTrace automatically stash your session so if your computer crashes you can recover your session?
-Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
-        <div class="col-4">Autostashing</div>
-        <div class="col-8">
-          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-            <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
-              <input type="radio" name="stash-auto" value="false" autocomplete="off" checked> Off
-            </label>
-            <label class="btn btn-light col" title="Automatically Stash Sessions">
-              <input type="radio" name="stash-auto" value="true" autocomplete="off"> On
             </label>
           </div>
         </div>

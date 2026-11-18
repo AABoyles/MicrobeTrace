@@ -817,7 +817,7 @@
   define({
     name: 'set_autostash',
     title: 'Set autostash',
-    description: 'Turns autostash on or off (as the Files view\'s experimental setting does). Turning it on takes effect the next time a network loads; turning it off stops it immediately. Autostash writes the session to this browser\'s storage every minute.',
+    description: 'Turns autostash on or off (as the Files view\'s Session Recovery setting does). Turning it on takes effect the next time a network loads; turning it off stops it immediately. Autostash writes the session to this browser\'s storage every minute.',
     inputSchema: obj({ enabled: { type: 'boolean' } }, ['enabled']),
     untrusted: false,
     // Turning it off stores less, so only turning it on asks

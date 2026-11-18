@@ -101,7 +101,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const stashSession = name => {
     MT.syncLayout();
     return db.setItem("stash-" + Date.now() + "-" + name, JSON.stringify(session))
-      .then(() => MT.toast.success("Stashed in this browser"));
+      .then(() => MT.toast.success("Stashed in this browser"), error => {
+        console.error(error);
+        MT.toast.error("Couldn't stash the session: " + MT.escape(db.describeError(error)), 15);
+        throw error;
+      });
   };
   on("stash-data", "click", () => stashSession(byId("stash-name").value));
 
@@ -207,6 +211,58 @@ document.addEventListener("DOMContentLoaded", () => {
           if (clicked) db.setItem(stash.key, json).then(updateStashes);
         });
       });
+  });
+
+  // Recovering an autostashed session ---------------------------------------
+  // An autostash copy that is still here at startup is work that was not
+  // closed out (or a session left running): offer to restore or discard it,
+  // once the license has been dealt with. "Decide Later" keeps it.
+  const autostashes = () => db.keys().then(keys => keys.filter(key => /^stash-\d+-autostash$/.test(key)).sort((a, b) => stashOf(b).time - stashOf(a).time));
+  const offerRecovery = () => autostashes().then(keys => {
+    if (!keys.length) return;
+    const newest = keys[0];
+    let answer = "later";
+    const choose = choice => () => { answer = choice; };
+    const restore = choose("restore"), discard = choose("discard");
+    byId("recover-restore").addEventListener("click", restore);
+    byId("recover-discard").addEventListener("click", discard);
+    byId("recover-when").textContent = new Date(stashOf(newest).time).toLocaleString();
+    const dialog = byId("recover-modal");
+    // The primary action has the focus, so Enter restores and Escape decides later
+    dialog.addEventListener("shown.bs.modal", () => byId("recover-restore").focus(), { once: true });
+    dialog.addEventListener("hidden.bs.modal", () => {
+      byId("recover-restore").removeEventListener("click", restore);
+      byId("recover-discard").removeEventListener("click", discard);
+      if (answer == "discard") {
+        Promise.all(keys.map(key => db.removeItem(key)))
+          .then(() => MT.toast.success("Discarded the recovery copy"), error => {
+            console.error(error);
+            MT.toast.error("Couldn't discard the recovery copy: " + escape(db.describeError(error)), 15);
+          });
+      } else if (answer == "restore") {
+        // Keep the copy as an ordinary stash (so it is not offered again, and
+        // is still there if the restore goes wrong), written before the
+        // autostash copy is removed
+        db.getItem(newest).then(json => {
+          const data = JSON.parse(json);
+          return db.setItem("stash-" + Date.now() + "-Recovered session", json)
+            .then(() => Promise.all(keys.map(key => db.removeItem(key))))
+            .then(() => {
+              MT.applySession(data);
+              MT.toast.success("Restored your previous session");
+            });
+        }).catch(error => {
+          console.error(error);
+          MT.toast.error("The recovery copy couldn't be restored: " + escape(db.describeError(error)) + " It was kept (File > Recall from Browser).", 15);
+        });
+      }
+    }, { once: true });
+    modal("recover-modal", { backdrop: "static", keyboard: true }).show();
+  }).catch(error => console.error("Couldn't look for a recovery copy:", error));
+  // (After the license agreement: the two dialogs would stack)
+  db.getItem("licenseAccepted").then(accepted => {
+    if (accepted) return offerRecovery();
+    byId("licenseAgreement").addEventListener("hidden.bs.modal", offerRecovery, { once: true });
   });
 
   MT.defaultFilename(byId("save-file-name"));
