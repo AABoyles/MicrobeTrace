@@ -21,7 +21,8 @@ function filesIn(dir) {
   return fs.readdirSync(path.join(root, dir), { withFileTypes: true })
     .flatMap(entry => {
       const rel = dir + "/" + entry.name;
-      return entry.isDirectory() ? filesIn(rel) : entry.isFile() ? [rel] : [];
+      // Notes such as data/README.md describe the files; the app doesn't fetch them
+      return entry.isDirectory() ? filesIn(rel) : entry.isFile() && !entry.name.endsWith(".md") ? [rel] : [];
     });
 }
 

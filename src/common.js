@@ -3820,7 +3820,10 @@
       requestAnimationFrame(function () { pending = false; MT.nameIconButtons(document); });
     };
     MT.nameIconButtons(document);
-    new MutationObserver(sweep).observe(document.body, { childList: true, subtree: true });
+    // Only in a browser: the unit tests load this file in Node, without a DOM
+    if (typeof MutationObserver == 'function' && document.body) {
+      new MutationObserver(sweep).observe(document.body, { childList: true, subtree: true });
+    }
   })();
 
   self.MT = MT;
