@@ -1488,6 +1488,7 @@
       ["cluster", "link", "node"].forEach(thing => MT.events.emit(thing + "-visibility"));
       MT.showStatistics();
       MT.events.emit("session-loaded");
+      MT.updateAllViewNeeds();
     });
     db.getItem("stash-auto").then(autostash => {
       if (autostash != "true") return;
@@ -3139,12 +3140,92 @@
     fill("select.branch-variables", ["id", "depth", "height", "length", "value"]);
     element.querySelectorAll(".launch-color-options").forEach(button => button.addEventListener("click", MT.showColorOptions));
     if (navigator.onLine) MT.showOnline(element);
+    MT.updateViewNeeds(contentItem);
   };
 
   // Shows the parts of a page that need the internet
   MT.showOnline = element => element.querySelectorAll(".ifOnline").forEach(el => {
     el.style.display = el.classList.contains("row") ? "flex" : "block";
   });
+
+  // Loads the demo outbreak, as the #demo address does
+  MT.loadDemo = () => fetch("demo/Demo_outbreak_session.microbetrace")
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(MT.applySession)
+    .catch(error => {
+      console.error(error);
+      MT.toast.error(navigator.onLine ? "The demo data couldn't be loaded." : "The demo data couldn't be loaded. This browser is offline and hasn't saved it yet.");
+    });
+
+  // What each view needs of the session. A view lacking it opens with a short
+  // note (see MT.updateViewNeeds) saying what to add, rather than blank. Each
+  // entry returns the note's text, or "" when the session has what the view needs.
+  const hasLinks = () => session.data.graph.edgeCount > 0;
+  const hasSequences = () => session.data.nodes.some(d => d.seq);
+  const FILES_HINT = "Add them in the Files view (the File menu's Add Data).";
+  const chosenField = key => { const v = MT.settings.get(key); return v != null && v != "None" && v !== ""; };
+  const MAP_NEEDS = name => "The " + name + " places nodes by latitude and longitude columns, or by country, state, county, zipcode or census tract. Choose the columns that hold them in this view's settings (the gear). If the data has none, add a node list that does.";
+  MT.viewNeeds = {
+    sequences: () => hasSequences() ? "" : "This view lines up nodes' sequences, and none of these nodes has one. Add a FASTA file, or a node list with a sequence column. " + FILES_HINT,
+    phylogenetic_tree: () => hasLinks() || hasSequences() || session.files.some(f => f.format == "newick") ? "" :
+      "A tree needs sequences, a distance matrix, or a Newick tree file. " + FILES_HINT,
+    heatmap: () => hasLinks() || hasSequences() ? "" : "The heatmap draws the distances between nodes, which needs sequences (a FASTA file) or a distance matrix. " + FILES_HINT,
+    waterfall: () => hasLinks() ? "" : "This view lists each cluster's links, and there are none. Links come from a link list, a distance matrix, or sequences close enough to link. " + FILES_HINT,
+    geo_map: () => MT.settingsHaveLocation("map-field-") ? "" : MAP_NEEDS("map"),
+    globe: () => MT.settingsHaveLocation("globe-field-") ? "" : MAP_NEEDS("globe"),
+    choropleth: () => chosenField("choropleth-aggregate-on") ? "" :
+      "The choropleth shades regions by how many nodes are in each, so it needs a column of countries, states or counties. Choose it in this view's settings (the gear), or load a GeoJSON file there. If the data has none, add a node list that does.",
+    timeline: () => MT.dateFields(session.data.nodes, session.data.nodeFields).length || chosenField("timeline-date-field") ? "" :
+      "The epi curve counts nodes by date, and no column holds dates. Add a node list with a date column. " + FILES_HINT,
+    gantt: () => MT.dateFields(session.data.nodes, session.data.nodeFields).length || (MT.settings.get("gantt-dates") || []).length ? "" :
+      "This view draws each node's dates as bars, and no column holds dates. Add a node list with a date column. " + FILES_HINT
+  };
+
+  // Whether a map view's settings (the prefix then a kind of location) name a
+  // field of places or coordinates, once fields named for them are taken up
+  MT.settingsHaveLocation = prefix => {
+    MT.pickLocationFields(MT.settings, prefix);
+    return [...MT.locationKinds, "lat", "lon"].some(kind => chosenField(prefix + kind));
+  };
+
+  // Shows or hides a view's note of what it needs. With no data at all every
+  // view says so, and offers the demo; otherwise a view says what it lacks.
+  MT.updateViewNeeds = contentItem => {
+    if (!contentItem || !contentItem.container) return;
+    const view = contentItem.componentType, element = contentItem.container.element;
+    if (view == "files" || view == "conflicts" || !element) return;
+    // A change in the view's own settings (choosing a field) may meet its need
+    if (!element.dataset.needsWatched) {
+      element.dataset.needsWatched = "1";
+      element.addEventListener("change", () => setTimeout(() => MT.updateViewNeeds(contentItem)));
+    }
+    let text = "";
+    if (!session.data.nodes.length) {
+      text = "There's no data yet. Add files in the Files view (link or node lists, a distance matrix, FASTA or Newick), or look around with the demo data.";
+    } else if (MT.viewNeeds[view]) {
+      try { text = MT.viewNeeds[view](); } catch (error) { console.error(error); }
+    }
+    let note = element.querySelector(":scope > .view-needs");
+    element.classList.toggle("view-needed", !!text);
+    if (!text) { if (note) note.remove(); return; }
+    if (!note) {
+      note = document.createElement("div");
+      note.className = "view-needs";
+      note.setAttribute("role", "status");
+      note.innerHTML = '<div class="view-needs-title"></div><p class="view-needs-text"></p>' +
+        '<div class="view-needs-actions"><button type="button" class="btn btn-primary btn-sm view-needs-files">Open Files</button> ' +
+        '<button type="button" class="btn btn-light btn-sm view-needs-demo">Try the demo data</button></div>';
+      note.querySelector(".view-needs-files").addEventListener("click", () => MT.launchView("files"));
+      note.querySelector(".view-needs-demo").addEventListener("click", () => MT.loadDemo());
+      element.appendChild(note);
+    }
+    const empty = !session.data.nodes.length;
+    note.querySelector(".view-needs-title").textContent = empty ? "No data yet" : MT.titleize(view) + " needs more data";
+    note.querySelector(".view-needs-text").textContent = text;
+    // The demo replaces the session, so only an empty one offers it
+    note.querySelector(".view-needs-demo").hidden = !empty;
+  };
+  MT.updateAllViewNeeds = () => layout.contentItems.forEach(MT.updateViewNeeds);
 
   MT.cacheLayout = contentItem => {
     if (!contentItem) return { type: "stack", content: [] };

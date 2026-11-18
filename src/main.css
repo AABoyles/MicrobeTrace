@@ -123,6 +123,43 @@ body {
   text-align: center;
   color: var(--mt-muted);
 }
+/* A view's note of the data it needs (MT.updateViewNeeds), over its empty body */
+.view-needs {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  width: min(32rem, calc(100% - 3rem));
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  color: var(--mt-muted-strong);
+  background-color: var(--mt-surface);
+  border: 1px solid var(--mt-border);
+  border-radius: 0.5rem;
+}
+.view-needs-title {
+  font-size: 1.125rem;
+  color: var(--mt-strong);
+}
+.view-needs-text {
+  margin: 0.5rem 0 1rem;
+}
+.view-needed .view-message {
+  display: none;
+}
+/* The demo button under the Files view's drop zone */
+.drop-zone-demo {
+  text-align: center;
+  color: var(--mt-muted);
+}
+/* The Help dialog's sections */
+#help-modal .modal-body h6 {
+  margin-top: 1.25rem;
+}
+#help-modal .modal-body kbd {
+  white-space: nowrap;
+}
 /* The Recall dialog's note when nothing is stashed, as the views' notes */
 #recall-stashes-available .tabulator-placeholder-contents {
   font-size: inherit;

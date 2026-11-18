@@ -1,10 +1,13 @@
 <div class="container-fluid file-panel">
   <div id="file-table" class="container">
-    <label for="data-files" class="drop-zone">
-      <span class="bi bi-cloud-arrow-up" aria-hidden="true"></span>
-      <span class="drop-zone-title">Drop files here, or <span class="link-primary">add files</span></span>
-      <span class="drop-zone-hint">Link or node lists (CSV or Excel), distance matrices, FASTA, Newick, or a saved MicrobeTrace session</span>
-    </label>
+    <div class="drop-zone-group">
+      <label for="data-files" class="drop-zone">
+        <span class="bi bi-cloud-arrow-up" aria-hidden="true"></span>
+        <span class="drop-zone-title">Drop files here, or <span class="link-primary">add files</span></span>
+        <span class="drop-zone-hint">Link or node lists (CSV or Excel), distance matrices, FASTA, Newick, or a saved MicrobeTrace session</span>
+      </label>
+      <p class="drop-zone-demo">No data to hand? <button type="button" class="btn btn-outline-primary btn-sm demo-button">Try the demo data</button></p>
+    </div>
     <p class="file-order-hint" hidden>Where files disagree about a node, the file nearest the top wins. Drag <span class="bi bi-grip-vertical"></span> to reorder them.</p>
   </div>
 </div>
@@ -371,7 +374,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const alignerScoring = () => MTAlignerScoring(alignerCosts());
     const show = (elements, visible) => [].concat(elements).forEach(el => { el.hidden = !visible; });
 
-    const dropZone = $('.drop-zone');
+    const dropZone = $('.drop-zone-group');
+    $('.demo-button').addEventListener('click', () => MT.loadDemo());
 
     // The files' order, which ranks them where they disagree, follows their
     // rows, which can be dragged by their grips
