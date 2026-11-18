@@ -2459,8 +2459,26 @@
     });
   };
 
+  // Loads a script once, on demand: the promise is cached by URL, and a failed
+  // load is forgotten so it can be tried again
+  const scripts = {};
+  MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => {
+      delete scripts[src];
+      script.remove();
+      reject(new Error('Could not load ' + src));
+    };
+    document.head.appendChild(script);
+  }));
+
+  // pdfmake and its fonts (1.9 MB) are only fetched when a PDF is first made
+  MT.loadPDF = () => self.pdfMake ? Promise.resolve() : MT.loadScript('dist/bundle.pdf.js');
+
   // A PDF of tables ({ title, headers, rows })
-  MT.tablesPDF = (heading, tables, filename) => pdfMake.createPdf({
+  MT.tablesPDF = (heading, tables, filename) => MT.loadPDF().then(() => pdfMake.createPdf({
     content: [
       { text: heading, style: 'header', alignment: 'center' },
       ...tables.map(t => ({
@@ -2473,7 +2491,7 @@
       header: { fontSize: 22, bold: true },
       paddedTable: { margin: [10, 10, 10, 10] }
     }
-  }).download(filename + '.pdf');
+  }).download(filename + '.pdf')).catch(() => MT.toast.error("The PDF library couldn't be loaded, so the PDF wasn't made. Check your connection and try again."));
 
   // Turns a <select multiple> into a searchable menu of removable choices (Tom
   // Select). To change its options, destroy() it and make a new one. Its menu

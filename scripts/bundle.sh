@@ -34,6 +34,10 @@ secondaryscripts=(
   "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
   "node_modules/html5sortable/dist/html5sortable.min.js"
   "node_modules/alignment-viewer/dist/alignment-viewer.min.js"
+)
+
+# pdfscripts are fetched the first time a PDF is made (MT.loadPDF in src/common.js)
+pdfscripts=(
   "node_modules/pdfmake/build/pdfmake.min.js"
   "node_modules/pdfmake/build/vfs_fonts.js"
 )
@@ -127,6 +131,12 @@ done
 for i in ${secondaryscripts[@]}; do
   cat $i >> dist/bundle.secondary.js
   printf "\n;\n" >> dist/bundle.secondary.js
+done
+
+: > dist/bundle.pdf.js
+for i in ${pdfscripts[@]}; do
+  cat $i >> dist/bundle.pdf.js
+  printf "\n;\n" >> dist/bundle.pdf.js
 done
 
 echo 'Recording Versions...'
