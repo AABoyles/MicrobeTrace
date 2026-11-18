@@ -31,7 +31,14 @@
     // Calls fn(detail) on each event of this type. Returns a function that stops.
     on(type, fn) {
       if (!(type in EVENTS)) throw new Error('Unknown MicrobeTrace event: ' + type);
-      const listener = e => fn(e.detail === null ? undefined : e.detail);
+      const listener = e => {
+        // (In emitTogether, a function that listens to several of its events runs once)
+        if (this.together) {
+          if (this.together.has(fn)) return;
+          this.together.add(fn);
+        }
+        fn(e.detail === null ? undefined : e.detail);
+      };
       this.target.addEventListener(type, listener);
       return () => this.target.removeEventListener(type, listener);
     }
@@ -41,6 +48,18 @@
       this.target.dispatchEvent(new CustomEvent(type, { detail }));
     }
   }
+
+  // Emits events of several types as one change: a function that listens to
+  // more than one of them (a view that redraws on each) runs once, not once per
+  // event. Where they are listened to for different things, use emit.
+  MTEvents.prototype.emitTogether = function(types, detail) {
+    this.together = new Set();
+    try {
+      types.forEach(type => this.emit(type, detail));
+    } finally {
+      this.together = null;
+    }
+  };
 
   MTEvents.EVENTS = EVENTS;
 

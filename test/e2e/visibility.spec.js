@@ -68,6 +68,33 @@ test('links that stay visible and in their cluster keep their objects, and the l
   expect(result).toEqual({ listed: true, reused: true, some: true, shrank: true, fresh: true, statistics: true });
 });
 
+test('a run of changes is applied once, with the last value', async () => {
+  const events = await page.evaluate(() => {
+    window.updates = 0;
+    MT.events.on('link-visibility', () => updates++);
+    [0.01, 0.02, 0.012, 0.03, 0.015].forEach(v => MT.settings.set('link-threshold', v));
+    return updates;
+  });
+  expect(events).toBe(0);
+  await expect.poll(() => page.evaluate(() => updates)).toBeGreaterThan(0);
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => updates)).toBe(1);
+  expect(await page.evaluate(() => MT.getVisibleLinks().length == session.data.graph.visibleCount && session.style.widgets['link-threshold'])).toBe(0.015);
+});
+
+test('a view that listens to node and link visibility redraws once for a change', async () => {
+  const draws = await page.evaluate(() => {
+    window.drawn = 0;
+    const redraw = () => drawn++;
+    const offs = ['node-visibility', 'link-visibility'].map(type => MT.events.on(type, redraw));
+    window.offRedraw = () => offs.forEach(off => off());
+  });
+  await setThreshold(0.01);
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => { offRedraw(); return drawn; })).toBe(1);
+  await setThreshold(0.015);
+});
+
 test('the timeline reads the dates once, and shows the nodes dated up to its date', async () => {
   await page.evaluate(() => MT.settings.set('node-timeline-variable', 'date'));
   await page.waitForFunction(() => MT.scrubTimeline);
