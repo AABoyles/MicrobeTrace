@@ -1,4 +1,4 @@
-// The entry screen's demo button (#266), the notes views show when the session
+// The entry screen's demo button (#266), which says when it needs a connection (#296), the notes views show when the session
 // lacks what they need (#268), and the built-in Help that works offline (#276).
 const { test, expect } = require('@playwright/test');
 const { fixtures, watchErrors, waitForModal, open } = require('./helpers');
@@ -20,6 +20,22 @@ test('the empty Files view offers the demo data', async () => {
   await expect(button).toHaveText('Try the demo data');
   await button.click();
   await page.waitForFunction(() => session.data.nodes.length > 10);
+});
+
+test('offline, with no copy of the demo saved, the demo button says it needs a connection', async ({ browser }) => {
+  // Service workers are blocked in these tests, so nothing caches the demo
+  const context = await browser.newContext();
+  const p = await context.newPage();
+  await start(p);
+  const button = p.locator('#file-table .demo-button');
+  await expect(button).toBeEnabled();
+  await context.setOffline(true);
+  await expect(button).toHaveText('Demo data needs a connection');
+  await expect(button).toBeDisabled();
+  await context.setOffline(false);
+  await expect(button).toHaveText('Try the demo data');
+  await expect(button).toBeEnabled();
+  await context.close();
 });
 
 test('#demo still loads the demo', async () => {

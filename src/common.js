@@ -3386,7 +3386,31 @@
   });
 
   // Loads the demo outbreak, as the #demo address does
-  MT.loadDemo = () => fetch("demo/Demo_outbreak_session.microbetrace")
+  MT.demoURL = "demo/Demo_outbreak_session.microbetrace";
+
+  // Whether the demo can load now: always online, and offline once the service
+  // worker has kept a copy (it caches the demo on first use, #296)
+  MT.demoAvailable = async () => {
+    if (navigator.onLine) return true;
+    try { return !!(self.caches && await caches.match(new URL(MT.demoURL, location.href).href)); }
+    catch (error) { return false; }
+  };
+
+  // The demo buttons say when they need a connection, rather than failing
+  MT.updateDemoButtons = async () => {
+    const available = await MT.demoAvailable();
+    document.querySelectorAll(".demo-button, .view-needs-demo").forEach(button => {
+      button.disabled = !available;
+      button.textContent = available ? "Try the demo data" : "Demo data needs a connection";
+    });
+  };
+  // Only in a browser: the unit tests load this file in Node, without a DOM
+  if (typeof self.addEventListener == "function") {
+    self.addEventListener("online", () => MT.updateDemoButtons());
+    self.addEventListener("offline", () => MT.updateDemoButtons());
+  }
+
+  MT.loadDemo = () => fetch(MT.demoURL)
     .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
     .then(MT.applySession)
     .catch(error => {
@@ -3461,6 +3485,7 @@
     note.querySelector(".view-needs-text").textContent = text;
     // The demo replaces the session, so only an empty one offers it
     note.querySelector(".view-needs-demo").hidden = !empty;
+    if (empty) MT.updateDemoButtons();
   };
   MT.updateAllViewNeeds = () => layout.contentItems.forEach(MT.updateViewNeeds);
 
