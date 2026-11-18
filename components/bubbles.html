@@ -208,7 +208,19 @@
         simulation.force(axis, force.strength(0.03)[axis](b => place(b.node[field])));
       });
       simulation.force('charge', d3.forceManyBody().strength(-settings.get('bubble-charge')));
-      simulation.alpha(1).restart();
+      heat(1);
+    }
+
+    // Starts the layout moving; with reduced motion preferred it is settled at once
+    function heat(alpha) {
+      simulation.alpha(alpha);
+      if (MT.reducedMotion()) {
+        simulation.stop();
+        simulation.tick(300);
+        svg.selectAll('circle').attr('cx', d => d.x).attr('cy', d => d.y);
+      } else {
+        simulation.restart();
+      }
     }
 
     function resize() {
@@ -234,7 +246,7 @@
       settings.subscribe(['bubble-x', 'bubble-y', 'bubble-charge'], group),
       settings.subscribe('bubble-size', () => {
         resizeBubbles();
-        simulation.alpha(0.3).restart();
+        heat(0.3);
       }),
       events.on('background-color-change', setBackground),
       ...['node-color-change', 'selected-color-change', 'node-selected'].map(type => events.on(type, setColors)),

@@ -1805,6 +1805,9 @@
     show("numberOfDisjointComponents", clusterCount); // #187
   };
   
+  // Whether the user asked their system for less motion (#191)
+  MT.reducedMotion = () => !!(self.matchMedia && self.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
   // A color (or transparency) for each value, as the color tables list them.
   // Their values are text ("0", "null"), so a value is looked up as text too:
   // a d3 scale would give 0 or null a new color of its own, unlike its row's.

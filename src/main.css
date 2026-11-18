@@ -1565,3 +1565,25 @@ body.timeline-open #main-panel {
 .mt-toast-container .toast-custom.show {
   opacity: 1;
 }
+
+/* Less motion for those who ask for it (#191): no transitions, and the loader
+   and any other animation hold still (the views check MT.reducedMotion for
+   their own continuous motion) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  #main-panel {
+    transition: none;
+  }
+  .ele {
+    animation: none;
+  }
+}
