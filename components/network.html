@@ -659,7 +659,7 @@ Note that this may cause slow performance on larger networks.">
           // (The layout is read back from the GPU when it settles, or when
           // something needs it: see MT.syncLayout)
           // Kept in view as the layout spreads, until the user zooms or pans
-          if (autoFit && Date.now() - lastFit > 700) fit(300);
+          if (autoFit && Date.now() - lastFit > 700) fit(MT.reducedMotion() ? 0 : 300);
           drawOverlays();
         },
         onSimulationEnd: () => {
@@ -699,7 +699,21 @@ Note that this may cause slow performance on larger networks.">
     function reheat(alpha) {
       if (!graph) return;
       graph.setConfigPartial(physics());
-      graph.start(alpha || 0.3);
+      startLayout(alpha || 0.3);
+    }
+
+    // Runs the force layout. With reduced motion preferred, it is given a
+    // moment to spread out and then held still, rather than left drifting.
+    let calmTimer = null;
+    function startLayout(alpha) {
+      graph.start(alpha);
+      clearTimeout(calmTimer);
+      if (MT.reducedMotion()) calmTimer = setTimeout(() => {
+        if (!graph) return;
+        graph.pause();
+        syncPositions();
+        drawOverlays();
+      }, 1500);
     }
 
     // Copies the current layout into session.network.nodes, which the timeline,
@@ -807,7 +821,7 @@ Note that this may cause slow performance on larger networks.">
       updatePins();
       updateGroups();
       updateTracking();
-      refresh().then(() => graph && graph.start(0.3));
+      refresh().then(() => graph && startLayout(0.3));
       console.log('Network render time:', (Date.now() - start).toLocaleString(), 'ms');
     }
 
@@ -1003,7 +1017,10 @@ Note that this may cause slow performance on larger networks.">
       const d = points[index];
       if (!d) return;
       if (get('node-highlight')) highlightNeighbors(index);
-      const variables = tooltipVariables();
+      // With no tooltip variable chosen, the tooltip gives the value the node
+      // is colored by, so a category is never told by its color alone
+      let variables = tooltipVariables();
+      if (!variables.length && get('node-color-variable') && get('node-color-variable') != 'None') variables = [get('node-color-variable')];
       if (!variables.length) return;
       const html = variables.length == 1 ? MT.escape(d[variables[0]] == null ? '' : d[variables[0]]) :
         '<table><tbody>' + variables.map(v => `<tr><td>${MT.escape(MT.titleize(v))}</td><td>${MT.escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
@@ -1018,7 +1035,8 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function showLinkTooltip(index) {
-      const v = get('link-tooltip-variable'), d = links[index];
+      let v = get('link-tooltip-variable'); const d = links[index];
+      if ((!v || v == 'None') && get('link-color-variable') && get('link-color-variable') != 'None') v = get('link-color-variable');
       if (!v || v == 'None' || !d) return;
       MT.tooltip(MT.escape(d[v] == null ? '' : d[v]), mouse);
     }
