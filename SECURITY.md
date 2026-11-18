@@ -1,12 +1,8 @@
 # Security Policy
 
-This is the Historical project from which CDC's MicrobeTrace has evolved. It is NOT supported by CDC. Development directions
-between the CDC's version and this on have diverged, and changes to this fork will not be merged to the CDC version.
-
-If you require the CDC's version of MicrobeTrace, please go to:
-
-* https://microbetrace.cdc.gov/MicrobeTrace for the application, or
-* https://github.com/CDCgov/MicrobeTrace for the code.
+MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC). This copy, at
+https://aaboyles.github.io/MicrobeTrace/ and https://github.com/AABoyles/MicrobeTrace, is maintained
+independently. CDC does not operate, support or endorse it, so please do not send reports about it to CDC.
 
 ## Reporting a Vulnerability
 

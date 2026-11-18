@@ -22,8 +22,8 @@ test('the license agreement shows and closes', async () => {
 
 test('the development label shows only off the production site', async () => {
   await expect(page.locator('#development-version')).toBeVisible();
-  expect(await page.evaluate(() => ['localhost', 'microbetrace-git-main-team.vercel.app', 'microbetrace.cdc.gov', 'microbetrace.vercel.app', ''].map(MT.isDevelopmentHost)))
-    .toEqual([true, true, false, false, false]);
+  expect(await page.evaluate(() => ['localhost', 'microbetrace-git-main-team.vercel.app', 'microbetrace.vercel.app', ''].map(MT.isDevelopmentHost)))
+    .toEqual([true, true, false, false]);
 });
 
 test('Help opens in a new tab', async () => {
