@@ -897,6 +897,48 @@
     return seqs;
   };
   
+  // Puts aligned sequences (nodes with _seq and _padding) on the reference's
+  // length: leading gaps for the padding, then cut or padded with gaps at the
+  // end. Returns how many had no sequence, lost bases off the end (cut here,
+  // or by the aligner, which drops what overhangs the reference; originals
+  // are the sequences as they were before alignment, to tell), or were padded
+  // with trailing gaps.
+  MT.fitToReference = (nodes, referenceLength, minPadding = 0, originals = []) => {
+    const fit = { empty: 0, truncated: 0, padded: 0, referenceLength };
+    const bases = q => q.replace(/-/g, "").length;
+    nodes.forEach((d, i) => {
+      if (!d._seq) fit.empty++;
+      d._seq = "-".repeat((d._padding || 0) - minPadding) + (d._seq || "");
+      let cut = false;
+      if (d._seq.length > referenceLength) {
+        d._seq = d._seq.substring(0, referenceLength);
+        cut = true;
+      } else {
+        d._seq = d._seq.padEnd(referenceLength, "-");
+      }
+      if (originals[i] && bases(originals[i]) > bases(d._seq)) cut = true;
+      if (cut) fit.truncated++;
+      else if (/-$/.test(d._seq) && bases(d._seq) > 0) fit.padded++;
+    });
+    return fit;
+  };
+
+  // Plain-text warnings for what MT.fitToReference reports, or for sequences
+  // of differing lengths when nothing aligned them (unaligned: array of lengths)
+  MT.lengthWarnings = (fit, unaligned) => {
+    const plural = (n, w) => `${n.toLocaleString()} ${w}${n == 1 ? '' : 's'}`;
+    const warnings = [];
+    if (fit) {
+      if (fit.truncated) warnings.push(`${plural(fit.truncated, 'sequence')} extended past the end of the reference and had the excess cut off before distances were computed.`);
+      if (fit.padded) warnings.push(`${plural(fit.padded, 'sequence')} did not reach the end of the reference; ${fit.padded == 1 ? 'its' : 'their'} end was filled with gaps.`);
+    }
+    if (unaligned && unaligned.length) {
+      const min = Math.min(...unaligned), max = Math.max(...unaligned);
+      if (min != max) warnings.push(`Alignment is off but the sequences differ in length (${min.toLocaleString()} to ${max.toLocaleString()}). Positions will not correspond between sequences, so distances may be wrong. Turn on alignment or align them beforehand.`);
+    }
+    return warnings;
+  };
+
   MT.align = params => {
     return new Promise(resolve => {
       if (params.aligner == "none") {
@@ -904,6 +946,7 @@
       }
       let n = params.nodes.length;
       let referenceLength = params.reference.length;
+      const originals = params.nodes.map(d => d.seq || "");
       let aligner = new Worker("workers/align-sw.js");
       aligner.onmessage = response => {
         let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
@@ -916,17 +959,10 @@
           if (!d._seq) d._seq = "";
           if (minPadding > d._padding) minPadding = d._padding;
         }
-        for (let j = 0; j < n; j++) {
-          d = subset[j];
-          d._seq = "-".repeat(d._padding - minPadding) + d._seq;
-          if (d._seq.length > referenceLength){
-            d._seq = d._seq.substring(0, referenceLength);
-          } else {
-            d._seq = d._seq.padEnd(referenceLength, "-");
-          }
-        }
+        const fit = MT.fitToReference(subset, referenceLength, minPadding, originals);
         MT.addNodeField('_score', '_padding', '_cigar');
         console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
+        subset.fit = fit;
         resolve(subset);
       };
       aligner.postMessage(params);
