@@ -140,8 +140,8 @@
       rows = data.map(row => [row.col].concat(xValues.map((x, i) => row['v' + i])));
       await built;
       table.setColumns([
-        { title: MT.titleize(yVar), field: 'col', cssClass: 'fw-bold', sorter: 'alphanum' },
-        { title: MT.titleize(xVar), columns: xValues.map((x, i) => ({ title: MT.valueLabel(x), field: 'v' + i })) }
+        MT.columnTitle(MT.titleize(yVar), { field: 'col', cssClass: 'fw-bold', sorter: 'alphanum' }),
+        MT.columnTitle(MT.titleize(xVar), { columns: xValues.map((x, i) => MT.columnTitle(MT.valueLabel(x), { field: 'v' + i })) })
       ]);
       table.replaceData(data);
     }

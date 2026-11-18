@@ -1,4 +1,4 @@
-// Link-list headers with characters that get escaped keep their values (#217);
+// Link-list headers with characters like / keep their values, under their names as written (#217, #218);
 // node fields are listed once each (#235); a view that fails to load says so,
 // is not cached, and loads on the next try (#237).
 const { test, expect } = require('@playwright/test');
@@ -14,7 +14,7 @@ test('link-list columns whose headers contain / keep their values, and are usabl
   await page.waitForFunction(() => session.data.nodes.length > 0 && !layout.contentItems.some(i => i.componentType == 'files'), null, { timeout: 60000 });
   const result = await page.evaluate(() => ({
     nodes: session.data.nodes.map(n => n._id).sort(),
-    dates: session.data.links.map(l => l[MT.escape('Date/Time')]).sort()
+    dates: session.data.links.map(l => l['Date/Time']).sort()
   }));
   expect(result.nodes).toEqual(['A', 'B', 'C']);
   expect(result.dates).toEqual(['2024-01-02', '2024-01-03']);

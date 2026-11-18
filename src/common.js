@@ -389,9 +389,14 @@
     names.forEach(name => { if (!fields.includes(name)) fields.push(name); });
   };
 
+  // An ID as the app keeps it: text, without the spaces around it. Every
+  // path that loads data goes through this, so one ID from two sources is one
+  // node. (Matching stays case-sensitive: "a" and "A" are different IDs.)
+  MT.cleanID = id => id == null ? "" : String(id).trim();
+
   MT.addNode = (newNode, check, source) => {
     if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
-    if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
+    newNode._id = MT.cleanID(newNode._id);
     if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
     const index = session.data.nodeIndex;
     let node = index.get(newNode._id);
@@ -462,7 +467,11 @@
   
   // Adds a link, or merges it into the link between the same two nodes (its
   // fields win, origins are combined). Returns 1 if the link is new.
-  MT.addLink = newLink => session.data.graph.addLink(newLink);
+  MT.addLink = newLink => {
+    newLink.source = MT.cleanID(newLink.source);
+    newLink.target = MT.cleanID(newLink.target);
+    return session.data.graph.addLink(newLink);
+  };
 
   // The link between two node IDs, or undefined.
   MT.getLink = (source, target) => {
@@ -747,7 +756,7 @@
         const tn = nodes.length;
         for (let i = 0; i < tn; i++) {
           nn += MT.addNode({
-            _id: MT.escape(nodes[i]),
+            _id: nodes[i],
             origin: ['Genetic Distance']
           }, check, source);
         }
@@ -760,7 +769,7 @@
           nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field), check);
         }
         console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-        resolve({ nn, nl, tn, tl });
+        resolve({ nn, nl, tn, tl, ids: nodes });
       };
       computer.postMessage(file.contents);
     })
@@ -1457,8 +1466,12 @@
     }, 1200);
   };
   
+  // A column heading for a Tabulator table, shown as text (Tabulator reads a
+  // plain title as markup, and names come from the loaded files)
+  MT.columnTitle = (title, definition) => ({ ...definition, title, titleFormatter: () => document.createTextNode(title) });
+
   MT.titleize = title => {
-    let small = title.toLowerCase().replace(/_/g, " ");
+    let small = String(title).toLowerCase().replace(/_/g, " ");
     if (small == "null") return "(Empty)";
     if (small == "id" || small == " id") return "ID";
     for (const key in MT.distanceMetrics) {
@@ -1469,12 +1482,6 @@
     if (small == "nn") return "Nearest Neighbor";
     return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
   };
-
-  // Undoes MT.escape (src/index.js), which CSV and Excel loading apply to
-  // names and values, for text that's shown as text: "a&amp;b" reads "a&b".
-  // (Its result must only ever go to textContent or a property, never markup.)
-  const unescapes = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&#x2F;": "/", "&#x5C;": "\\" };
-  MT.unescape = value => String(value).replace(/&(?:amp|lt|gt|quot|#39|#x2F|#x5C);/g, entity => unescapes[entity]);
 
   // Fills a menu with an option per field: its value prefix + the field, its
   // text label + the field's title. They're built as elements, not markup, so
@@ -1493,7 +1500,7 @@
     };
     if (!append) select.replaceChildren();
     if (none) add("None", "None");
-    (fields || []).forEach(field => add(prefix + field, label + MT.titleize(MT.unescape(field))));
+    (fields || []).forEach(field => add(prefix + field, label + MT.titleize(field)));
     return select;
   };
 

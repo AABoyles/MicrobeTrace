@@ -120,7 +120,7 @@
       await built;
       // In the order they were chosen
       const columns = columnsMenu.getValue();
-      table.setColumns(columns.map(c => ({ title: MT.titleize(c), field: c, formatter: listed })));
+      table.setColumns(columns.map(c => MT.columnTitle(MT.titleize(c), { field: c, formatter: listed })));
       await table.replaceData(items());
       table.getRows().forEach(row => { if (row.getData().selected) row.freeze(); });
     }

@@ -1,4 +1,4 @@
-// Unit tests for MT.fillSelect and MT.unescape in src/common.js (#204): field
+// Unit tests for MT.fillSelect in src/common.js (#204): field
 // names from loaded files (sessions, HIV-TRACE and GHOST output, which aren't
 // escaped as they load) must reach the variable menus as text, never markup.
 // Run with: npm test
@@ -97,21 +97,14 @@ test('fillSelect gives a field that is markup as text, and the field itself as i
   assert.strictEqual(el.children[2].value, '7'); // a number for a name doesn't break it
 });
 
-test('fillSelect shows a CSV field (escaped as it loaded) as it was written, not as entities', () => {
+test('fillSelect shows a field as it was written (names are stored as loaded, #218)', () => {
   const { MT } = load();
-  const field = MT.escape('HIV+ & HCV+ <2y / "risk"');
-  assert.strictEqual(field, 'HIV+ &amp; HCV+ &lt;2y &#x2F; &quot;risk&quot;');
+  const field = 'HIV+ & HCV+ <2y / "risk"';
   const option = MT.fillSelect(select(), [field]).children[0];
   assert.strictEqual(option.value, field); // the field's name, as the nodes have it
   assert.strictEqual(option.textContent, 'Hiv+ & Hcv+ <2y / "risk"');
-  assert.ok(!/&amp;|&lt;|&#x2F;|&quot;/.test(option.textContent));
-});
-
-test('unescape undoes escape, and only that', () => {
-  const { MT } = load();
-  ['a&b', '<b>', '"\'/\\', payload, '&amp;', 'plain'].forEach(s => assert.strictEqual(MT.unescape(MT.escape(s)), s));
-  assert.strictEqual(MT.unescape('&nbsp;&#60;'), '&nbsp;&#60;');
-  assert.strictEqual(MT.unescape(42), '42');
+  // A name that happens to contain an entity is just text too
+  assert.strictEqual(MT.fillSelect(select(), ['a&amp;b']).children[0].textContent, 'A&amp;b');
 });
 
 test('an HIV-TRACE file keeps its attribute names as they are, and its menus show them as text', () => {
@@ -152,6 +145,21 @@ test('a session keeps its names and values as saved (they are not escaped again)
   assert.strictEqual(mixed.children.length, 1 + ctx.session.data.linkFields.length + ctx.session.data.nodeFields.length);
   assert.ok(mixed.children.some(o => o.value == 'nodes-' + nodeField && o.textContent.startsWith('Node Gender"><img')));
   assert.ok(mixed.children.some(o => o.value == 'links-' + linkField && o.textContent.startsWith('Link Kind"><img')));
+});
+
+test('IDs are text without surrounding spaces, however they arrive (#219), and are not escaped (#218)', () => {
+  const { MT, ctx } = load();
+  ctx.session = MT.sessionSkeleton();
+  ctx.temp = MT.tempSkeleton();
+  assert.strictEqual(MT.cleanID(' 007 '), '007');
+  assert.strictEqual(MT.cleanID(7), '7');
+  assert.strictEqual(MT.cleanID(null), '');
+  MT.addNode({ _id: ' A/California/07/2009 ' });
+  MT.addNode({ id: 'A/California/07/2009' });
+  assert.deepStrictEqual(Array.from(ctx.session.data.nodes, d => d._id), ['A/California/07/2009']);
+  MT.addLink({ source: ' A/California/07/2009', target: 'B ' });
+  assert.ok(MT.getLink('A/California/07/2009', 'B'));
+  assert.strictEqual(MT.addLink({ source: 'B', target: ' B' }), 0); // a self-link
 });
 
 test('no menu of fields is built as markup any more', () => {
