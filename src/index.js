@@ -1264,7 +1264,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (e.key == "s") {
       e.preventDefault();
-      modal("session-save-modal").show();
+      // Bootstrap ignores show() while the dialog is still fading out (right
+      // after a save), so it opens again once it has gone
+      const save = modal("session-save-modal");
+      if (save._isTransitioning && !byId("session-save-modal").classList.contains("show")) {
+        byId("session-save-modal").addEventListener("hidden.bs.modal", () => save.show(), { once: true });
+      } else {
+        save.show();
+      }
     }
   });
 
