@@ -128,7 +128,7 @@ test('the audit flags odd sequences, which can be excluded', async () => {
   await expect(flagged.filter({ hasText: 'rna appears to be RNA' }).locator('button')).toHaveText('Include');
   await flagged.filter({ hasText: 'rna appears to be RNA' }).locator('button').click();
   expect(await page.evaluate(() => session.data.nodeExclusions)).not.toContain('rna');
-  await modal.locator('button', { hasText: 'Done' }).click();
+  await modal.locator('button', { hasText: 'Close' }).click();
   await expect(modal).toBeHidden();
   await row('odd.fasta').locator('a[title="Remove this file"]').click();
   await expect(rows()).toHaveCount(3);

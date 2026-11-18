@@ -1418,7 +1418,7 @@ body.timeline-open #main-panel {
   border-left: 1px solid var(--mt-border-control);
 }
 /* A pane's sections open and close: an arrow says which. Colors isn't one
-   (it opens Global Settings), so it looks like the button it is. */
+   (it opens Settings), so it looks like the button it is. */
 .left-pane .card-header button[data-bs-toggle="collapse"]::after {
   content: "\F282"; /* bi-chevron-down */
   font-family: bootstrap-icons;

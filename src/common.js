@@ -1103,6 +1103,21 @@
     ts_tv_ratio: { label: 'Ts/Tv Ratio', threshold: 2 }
   };
 
+  // What a distance metric measures, in plain words, and the unit its link
+  // threshold is in (shown under the metric and threshold controls, #272)
+  MT.metricHelp = {
+    tn93: ['Substitutions per site, correcting for multiple hits and unequal base frequencies. The usual choice for HIV.', 'substitutions per site (0.015 = 1.5%)'],
+    tn92: ['Like TN93 but assuming equal base frequencies.', 'substitutions per site (0.015 = 1.5%)'],
+    k2p: ['Substitutions per site, with transitions and transversions counted separately.', 'substitutions per site (0.015 = 1.5%)'],
+    jc69: ['Substitutions per site, assuming every change is equally likely.', 'substitutions per site (0.015 = 1.5%)'],
+    snps: ['The number of sites that differ.', 'differing sites (a count)'],
+    hamming: ['The fraction of sites that differ.', 'fraction of sites that differ (0.015 = 1.5%)'],
+    p_distance: ['The fraction of compared sites that differ.', 'fraction of sites that differ (0.015 = 1.5%)'],
+    transitions: ['The number of purine-purine or pyrimidine-pyrimidine changes (A/G, C/T).', 'transition sites (a count)'],
+    transversions: ['The number of purine-pyrimidine changes.', 'transversion sites (a count)'],
+    ts_tv_ratio: ['Transitions divided by transversions. A diagnostic, not a distance.', 'a ratio']
+  };
+
   // The step of a threshold for a metric's values
   MT.thresholdStep = metric => metric.count ? 1 : metric.threshold < 1 ? 0.001 : 0.1;
 
