@@ -16,6 +16,12 @@ const files = [
   'sessionInjection.microbetrace', 'hivtraceInjection.json'
 ];
 
+// A file added to test/security/ must be loaded by the loop below (#173)
+test('every file in test/security/ is loaded by this spec', () => {
+  const present = fs.readdirSync(path.join(__dirname, '../security')).filter(name => !/^(README\.md|pwn\.js)$/.test(name));
+  expect(present.sort()).toEqual([...files].sort());
+});
+
 for (const name of files) {
   test(`loading ${name} runs no script and adds no element`, async ({ browser }) => {
     const page = await browser.newPage();
