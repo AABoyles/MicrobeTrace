@@ -152,7 +152,7 @@ for (const scheme of themes) {
       const root = page.locator('[data-audit]'), toggle = root.locator('.settings-toggle').first();
       const pane = await toggle.count() > 0;
       if (pane && !(await toggle.evaluate(b => b.classList.contains('active')))) await toggle.click();
-      if (pane) await root.locator('.left-pane').evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)));
+      if (pane) await root.locator('.left-pane').evaluate(el => Promise.allSettled(el.getAnimations().map(a => a.finished)));
       found.push(...(await axe(page, view == 'network' ? null : '[data-audit]')).map(v => `${view} › ${v}`));
       if (pane) await toggle.click();
     }
@@ -206,7 +206,7 @@ for (const scheme of themes) {
     await fresh.evaluate(() => MT.launchView('timeline'));
     await expect(fresh.locator('.view-needs')).toBeVisible();
     // (A pane still sliding in would be scanned partway across the window)
-    await fresh.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished)));
+    await fresh.evaluate(() => Promise.allSettled(document.getAnimations().map(a => a.finished)));
     expect(await axe(fresh)).toEqual([]);
     await fresh.close();
   });

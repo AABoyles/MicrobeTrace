@@ -25,7 +25,7 @@ const box = locator => locator.evaluate(el => { const r = el.getBoundingClientRe
 // A view's root, and its settings pane opened
 const view = name => page.locator(`.lm_content:has(.left-pane)`).filter({ visible: true }).last();
 // Once the pane (or whatever else is moving) has finished sliding
-const settled = locator => locator.evaluate(el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished)));
+const settled = locator => locator.evaluate(el => Promise.allSettled(el.getAnimations({ subtree: true }).map(a => a.finished)));
 // The files launched, for the tests that need a network
 async function launched() {
   if (await page.evaluate(() => session.data.clusters.length > 0)) return;
