@@ -459,7 +459,14 @@
 
     // Recomputes the visible edge list: a value in field at or under threshold,
     // the NN flag if nnOnly, and keep(source) for the cluster filter.
+    // One comparison rule for both storage modes: a distance is within the
+    // threshold if it is <= threshold. Dense storage keeps distances as Float32
+    // (and the values copied onto explicit edges from it are Float32 values),
+    // so there the threshold is rounded to Float32 too; otherwise a distance
+    // like 3/200 against 0.015 could be left out in dense mode and kept in
+    // sparse mode (#227).
     computeVisible(field, threshold, nnOnly, keep) {
+      if (this.denseValues(field)) threshold = Math.fround(threshold);
       let out = this.visible, c = 0;
       const push = e => {
         if (c >= out.length) out = grow(out, c + 1);

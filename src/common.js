@@ -115,6 +115,9 @@
     "link-show-nn": false,
     "link-sort-variable": "tn93",
     "link-storage": "auto",
+    // The threshold each field's links were kept within, where only those were
+    // kept (sparse storage); raising the threshold past it reveals no new links
+    "link-stored-thresholds": {},
     "link-threshold": 0.015,
     "link-thresholds": {},
     "link-tooltip-variable": "None",
@@ -530,8 +533,7 @@
             color: node.getAttribute("fill"),
             size: parseFloat(node.getAttribute("r")),
             origin: ["Scraped Gephi SVG"]
-          },
-          false
+          }
         );
       });
       MT.addNodeField("color", "size");
@@ -544,13 +546,13 @@
           origin: ["Scraped MicrobeTrace SVG"]
         };
         base[session.style.widgets['default-distance-metric']] = 0;
-        MT.addLink(base, true);
+        MT.addLink(base);
       });
       session.data.linkFields.push("color");
     } else {
       all(".nodes g").forEach((node, i) => {
         nodes.push(node.getAttribute("transform").slice(10, -1).split(",").map(parseFloat));
-        MT.addNode({ id: i + "", origin: ["Scraped SVG"] }, false);
+        MT.addNode({ id: i + "", origin: ["Scraped SVG"] });
       });
       all("line").forEach(link => {
         const at = name => parseFloat(link.getAttribute(name));
@@ -563,7 +565,7 @@
           origin: ["Scraped SVG"]
         };
         base[session.style.widgets['default-distance-metric']] = 0;
-        MT.addLink(base, true);
+        MT.addLink(base);
       });
     }
     MT.runHamsters();
@@ -653,7 +655,7 @@
       let newNode = JSON.parse(JSON.stringify(node.patient_attributes));
       newNode._id = node._id;
       newNode.origin = "HIVTRACE Import";
-      MT.addNode(newNode, false);
+      MT.addNode(newNode);
     });
     Object.keys(
       hivtrace["trace_results"]["Nodes"][0]["patient_attributes"]
@@ -671,7 +673,7 @@
         visible: true
       };
       newLink[metric] = parseFloat(link.length);
-      MT.addLink(newLink, false);
+      MT.addLink(newLink);
     }
     session.data.linkFields.push(metric);
     MT.runHamsters();
@@ -685,7 +687,7 @@
       newNode.origin = ["GHOST Import"];     
       newNode.genotypes = Object.keys(newNode.genotypes)[0];     
       newNode.id = "" + newNode.id;     
-      MT.addNode(newNode, false);   
+      MT.addNode(newNode);   
     });
     // (A sample's id is its ID, _id, so isn't listed as a field too)
     MT.addNodeField("genotypes", "group", "name");
@@ -698,7 +700,7 @@
         target: "" + link.target, 
         [session.style.widgets['default-distance-metric']]: parseFloat(link.dist), 
         origin: ["GHOST Import"], visible: true });     
-      MT.addLink(newLink, false);   
+      MT.addLink(newLink);   
     }
     [ session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
   //	MT.finishUp(); 
@@ -757,7 +759,7 @@
         const field = session.style.widgets["default-distance-metric"];
         if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
         for (let j = 0; j < tl; j++) {
-          nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field), check);
+          nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field));
         }
         console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve({ nn, nl, tn, tl });
@@ -1058,6 +1060,13 @@
   // distance metric's as distance, which they filter on.
   MT.fieldMetric = field => MT.distanceMetrics[field] ? field : null;
 
+  // The threshold the stored links of a field were limited to, if a threshold
+  // above it would show fewer links than the data has (sparse storage), else null.
+  MT.storedThresholdBelow = (field, threshold) => {
+    const stored = (session.style.widgets['link-stored-thresholds'] || {})[field];
+    return stored != null && parseFloat(threshold) > stored ? stored : null;
+  };
+
   MT.computeLinks = async subset => {
     const widgets = session.style.widgets;
     const metrics = MT.computedMetrics(widgets), metric = metrics[0];
@@ -1086,6 +1095,11 @@
     // own default thresholds for the others
     const thresholds = sparse ? metrics.map((m, i) => i == 0 ? parseFloat(widgets['link-threshold']) : MT.distanceMetrics[m].threshold) : null;
     if (sparse) console.log(`Keeping only links with ${metrics.map((m, i) => `${m} <= ${thresholds[i]}`).join(', ')} (${pairs.toLocaleString()} pairs)`);
+
+    // Where only links within a threshold are kept, remember it (#228)
+    const stored = Object.assign({}, widgets['link-stored-thresholds']);
+    metrics.forEach((m, i) => { if (sparse) stored[m] = thresholds[i]; else delete stored[m]; });
+    if (MT.settings) MT.settings.set('link-stored-thresholds', stored); else widgets['link-stored-thresholds'] = stored;
 
     const seqs = order.map(d => d.seq);
     const cores = Math.min(navigator.hardwareConcurrency || 4, 8);
@@ -1280,10 +1294,12 @@
   // Runs a worker that takes the condensed distance matrix for the link sort
   // variable and returns pairs of node positions, and flags those links as
   // nearest neighbors.
-  MT.computeNNFlags = (script, name) => {
+  // The metric is the link sort variable (the field the threshold filters on)
+  // unless one is given.
+  MT.computeNNFlags = (script, name, metric) => {
     return new Promise((resolve, reject) => {
       const g = session.data.graph;
-      const metric = session.style.widgets['link-sort-variable'];
+      metric = metric || session.style.widgets['link-sort-variable'];
       const labels = g.ids.slice();
       const { tri } = MT.getCondensedDM(metric, labels);
       let machine = new Worker(script);
@@ -1315,9 +1331,12 @@
     });
   };
 
-  MT.computeMST = () => MT.computeNNFlags("workers/compute-mst.js", "MST");
+  // The "Nearest Neighbor" pruning option runs this: the minimum spanning tree
+  // plus near-ties (see workers/compute-mst.js), which keeps every component
+  // connected. MT.computeNN flags each node's own nearest neighbours instead.
+  MT.computeMST = metric => MT.computeNNFlags("workers/compute-mst.js", "MST", metric);
 
-  MT.computeNN = () => MT.computeNNFlags("workers/compute-nn.js", "NN");
+  MT.computeNN = metric => MT.computeNNFlags("workers/compute-nn.js", "NN", metric);
   
   MT.computeTriangulation = () => {
     return new Promise((resolve, reject) => {
@@ -1496,6 +1515,10 @@
     (fields || []).forEach(field => add(prefix + field, label + MT.titleize(MT.unescape(field))));
     return select;
   };
+
+  // A component of one node is a singleton, not a cluster: the statistics count
+  // a cluster as having more than one node (visible ones, when filtered by date).
+  MT.isCluster = nodeCount => nodeCount > 1;
 
   // Clusters are the connected components of the visible links.
   MT.tagClusters = () => {
@@ -1710,23 +1733,18 @@
     let clusterCount = 0;
     if (session.style.widgets["timeline-date-field"]== 'None') {
       linkCount = vlinks.length;
-      clusterCount = session.data.clusters.filter(cluster => cluster.visible && cluster.nodes > 1).length;
+      clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(cluster.nodes)).length;
     } else {
-      let n = vlinks.length;
-      for (let i = 0; i < n; i++) {
-        let src = vnodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source);
-        let tgt = vnodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target);
-        if (src && tgt) linkCount++;
-      }
-	  
-      n = vnodes.length;
-      let clusters = {};
-      for (let i = 0; i < n; i++) {
-        let id = vnodes[i].cluster;
-        if (clusters[id]) clusters[id]++;
-        else clusters[id] = 1;
-      }
-      clusterCount = session.data.clusters.filter(cluster => clusters[cluster.id] && clusters[cluster.id]>2 && cluster.visible && cluster.nodes > 1).length;
+      // (Looked up by ID, as the links name nodes by their ID)
+      const visibleIds = new Set();
+      vnodes.forEach(d => { visibleIds.add('' + d._id); if (d.id != null) visibleIds.add('' + d.id); });
+      vlinks.forEach(l => {
+        if (visibleIds.has('' + l.source) && visibleIds.has('' + l.target)) linkCount++;
+      });
+
+      const sizes = new Map();
+      vnodes.forEach(d => sizes.set(d.cluster, (sizes.get(d.cluster) || 0) + 1));
+      clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(sizes.get(cluster.id))).length;
     }
     let singletons = vnodes.filter(d => d.degree == 0).length;
     const show = (id, n) => { document.getElementById(id).textContent = n.toLocaleString(); };

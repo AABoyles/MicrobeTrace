@@ -321,14 +321,14 @@ document.addEventListener("DOMContentLoaded", () => {
   settings.subscribe("link-show-nn", nn => {
     if (nn) {
       showEpsilon();
-      MT.computeMST(get("default-distance-metric")).then(updateNetwork);
+      MT.computeMST().then(updateNetwork);
     } else {
       updateNetwork();
     }
   });
   settings.subscribe("filtering-epsilon", () => {
     showEpsilon();
-    MT.computeMST(get("default-distance-metric")).then(updateNetwork);
+    MT.computeMST().then(updateNetwork);
   });
   settings.subscribe("cluster-minimum-size", () => {
     MT.setClusterVisibility(true);
@@ -349,11 +349,36 @@ document.addEventListener("DOMContentLoaded", () => {
     if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
     else updateNetwork();
   });
+  // With sparse storage, only links within the threshold at load were kept:
+  // say so beside the threshold, and when it's raised past that (#228)
+  let warnedStored = null;
+  const showStoredRange = warn => {
+    const note = byId("link-threshold-note");
+    if (!note) return;
+    const field = get("link-sort-variable"), stored = (get("link-stored-thresholds") || {})[field];
+    if (stored == null) {
+      note.hidden = true;
+      warnedStored = null;
+      return;
+    }
+    const over = MT.storedThresholdBelow(field, get("link-threshold")) != null;
+    note.hidden = false;
+    note.classList.toggle("text-danger", over);
+    note.textContent = over
+      ? `Only links up to ${stored} were kept, so a higher threshold shows no more. Reload with a higher threshold, or Keep Links: All Pairs.`
+      : `Only links up to ${stored} were kept (Keep Links: Within Link Threshold).`;
+    if (over && warn && warnedStored !== stored) {
+      warnedStored = stored;
+      MT.toast.warning(`This threshold is above ${stored}, the one the links were computed with, so no new links appear. Reload the data with a higher threshold, or Keep Links: All Pairs.`, 10);
+    } else if (!over) warnedStored = null;
+  };
   settings.subscribe("link-threshold", threshold => {
     settings.set("link-thresholds", Object.assign({}, get("link-thresholds"), { [get("link-sort-variable")]: threshold }));
     MT.markThreshold(threshold);
+    showStoredRange(true);
     updateNetwork();
   });
+  settings.subscribe(["link-sort-variable", "link-stored-thresholds"], () => showStoredRange(false));
 
   // Rows of the settings that only apply with some settings
   const showRows = () => {
