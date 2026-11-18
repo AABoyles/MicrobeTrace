@@ -487,10 +487,11 @@
   };
 
   // A plain link object for edge e of the graph.
-  MT.linkObject = (e, visible, data) => {
+  // (With shareOrigin, its origin list is the graph's own, which must be left alone.)
+  MT.linkObject = (e, visible, data, shareOrigin) => {
     data = data || session.data;
     const g = data.graph;
-    const link = g.link(e);
+    const link = g.link(e, shareOrigin);
     data.linkFields.forEach(field => {
       if (!(field in link)) link[field] = null;
     });
@@ -1700,8 +1701,10 @@
         nodeCluster[x] = clusterOf[component[x]];
         if (nodeCluster[x] >= 0) clusters[nodeCluster[x]].nodes++;
       }
-      g.nodeCluster = nodeCluster;
-      g.version++;
+      // (The same clusters as before keep the same array, and what was built
+      // from it stays good)
+      const before = g.nodeCluster;
+      if (!before || before.length != nodeCluster.length || nodeCluster.some((c, x) => c !== before[x])) g.nodeCluster = nodeCluster;
 
       const degree = new Uint32Array(g.nodeCount);
       for (let x = 0; x < g.visibleCount; x++) {
@@ -1727,6 +1730,29 @@
     });
   };
   
+  // The dates of the nodes' field as times (NaN for the undated), read once
+  // and again only when a value, the nodes or the field change (stepping the
+  // timeline asks for them at each step). The order of a date like 3/4/2020
+  // is that of all the field's values (see MTDates.dateOrderOf).
+  MT.nodeTimes = field => {
+    const nodes = session.data.nodes, n = nodes.length;
+    const cache = temp.nodeTimes;
+    if (cache && cache.field === field && cache.raw.length == n) {
+      let i = 0;
+      while (i < n && nodes[i][field] === cache.raw[i]) i++;
+      if (i == n) return cache.times;
+    }
+    const raw = nodes.map(d => d[field]);
+    const order = MTDates.dateOrderOf(raw).order;
+    const times = new Float64Array(n);
+    raw.forEach((value, i) => {
+      const date = MTDates.parseDate(value, order);
+      times[i] = date ? +date : NaN;
+    });
+    temp.nodeTimes = { field, raw, times };
+    return times;
+  };
+
   MT.setNodeVisibility = silent => { 
     let start = Date.now();
     let dateField = session.style.widgets["timeline-date-field"];
@@ -1734,7 +1760,8 @@
       clusters = session.data.clusters;
     let n = nodes.length;
     let timeEnd = dateField != "None" && MT.parseDate(session.state.timeEnd);
-    const order = MTDates.dateOrderOf(nodes.map(d => d[dateField])).order;
+    const times = timeEnd ? MT.nodeTimes(dateField) : null;
+    const until = timeEnd ? +timeEnd : 0;
     for (let i = 0; i < n; i++) {
       let node = nodes[i];
       node.visible = true;
@@ -1743,7 +1770,7 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd, order);
+      if (timeEnd) node.visible = node.visible && !(times[i] > until);
     }
     if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
@@ -1788,14 +1815,9 @@
 
   MT.getNetworkNodes = () => {
     MT.syncLayout();
-    let nodes = session.network.nodes;
-    let n = nodes.length;
-    let out = [];
-      for (let i = 0; i < n; i++) {
-        let node = nodes[i];
-        out.push(JSON.parse(JSON.stringify(node)));
-      }
-    return out;
+    // Their own fields, not the values those hold: the places and pins are
+    // kept in the copies, and nothing changes what's inside a node
+    return session.network.nodes.map(node => Object.assign({}, node));
   };
 
   MT.updatePinNodes = copy => {
@@ -1838,57 +1860,56 @@
     return out;
   };
 
-  // Link objects for the visible links, built once per change to the graph.
+  // Link objects for the visible links, built again only when what they hold
+  // changes: the visible links (a link in both lists keeps its object), their
+  // data or their clusters. They're shared by every caller, which must not
+  // change them (nor their origin lists); with copy they're copies of their
+  // own fields, to place or to change.
   MT.getVisibleLinks = copy => {
     const g = session.data.graph;
+    const fields = session.data.linkFields.length;
     let cache = temp.visibleLinks;
-    if (!cache || cache.graph !== g || cache.version !== g.version) {
+    // (The data of the links is the same: what's changed is which are visible, or their clusters)
+    const kept = cache && cache.graph === g && cache.version === g.version && cache.fields === fields;
+    if (!kept || cache.visibleVersion !== g.visibleVersion || cache.nodeCluster !== g.nodeCluster) {
+      const old = kept ? new Map(Array.from(cache.edges, (e, x) => [e, cache.links[x]])) : null;
       const links = new Array(g.visibleCount);
-      for (let x = 0; x < g.visibleCount; x++) links[x] = MT.linkObject(g.visible[x], true);
-      cache = temp.visibleLinks = { graph: g, version: g.version, links };
+      for (let x = 0; x < g.visibleCount; x++) {
+        const e = g.visible[x];
+        const link = old && old.get(e);
+        links[x] = link && link.cluster === (g.nodeCluster ? g.nodeCluster[g.source(e)] : 1) ? link : MT.linkObject(e, true, undefined, true);
+      }
+      cache = temp.visibleLinks = { graph: g, version: g.version, nodeCluster: g.nodeCluster, fields, visibleVersion: g.visibleVersion, edges: g.visible.slice(0, g.visibleCount), links };
     }
-    if (copy) return cache.links.map(link => JSON.parse(JSON.stringify(link)));
+    if (copy) return cache.links.map(link => Object.assign({}, link, { origin: link.origin.slice() }));
     return cache.links.slice();
   };
   
+  // The visible clusters (the clusters themselves, or with copy copies of
+  // their own fields)
   MT.getVisibleClusters = copy => {
-    let clusters = session.data.clusters;
-    let n = clusters.length;
-    let out = [];
-    if (copy) {
-      for (let i = 0; i < n; i++) {
-        let cluster = clusters[i];
-        if (cluster.visible){
-          out.push(JSON.parse(JSON.stringify(cluster)));
-        }
-      }
-    } else {
-      for (let j = 0; j < n; j++) {
-        let cluster = clusters[j];
-        if (cluster.visible){
-          out.push(cluster);
-        }
-      }
-    }
-    return out;
+    const out = session.data.clusters.filter(cluster => cluster.visible);
+    return copy ? out.map(cluster => Object.assign({}, cluster)) : out;
   };
   
   MT.updateStatistics = () => {
     if (!session.style.widgets["network-statistics-show"]) return;
     let vnodes = MT.getVisibleNodes();
-    let vlinks = MT.getVisibleLinks();
+    const g = session.data.graph;
     let linkCount = 0;
     let clusterCount = 0;
     if (session.style.widgets["timeline-date-field"]== 'None') {
-      linkCount = vlinks.length;
+      linkCount = g.visibleCount;
       clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(cluster.nodes)).length;
     } else {
       // (Looked up by ID, as the links name nodes by their ID)
       const visibleIds = new Set();
       vnodes.forEach(d => { visibleIds.add('' + d._id); if (d.id != null) visibleIds.add('' + d.id); });
-      vlinks.forEach(l => {
-        if (visibleIds.has('' + l.source) && visibleIds.has('' + l.target)) linkCount++;
-      });
+      // (From the graph, with no link object made for each)
+      for (let x = 0; x < g.visibleCount; x++) {
+        const e = g.visible[x];
+        if (visibleIds.has('' + g.ids[g.source(e)]) && visibleIds.has('' + g.ids[g.target(e)])) linkCount++;
+      }
 
       const sizes = new Map();
       vnodes.forEach(d => sizes.set(d.cluster, (sizes.get(d.cluster) || 0) + 1));

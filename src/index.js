@@ -411,19 +411,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // Filtering ----------------------------------------------------------------
 
   // Applies the link settings to the network, then tells the views
-  const updateNetwork = () => {
+  const hiddenClusters = () => session.data.clusters.some(cluster => !cluster.visible);
+  const applyFilters = () => {
+    // Links are filtered by the clusters as they were (and, below, as they
+    // are): with every one shown, the second pass would find the first's links
+    const filtered = hiddenClusters();
     MT.setLinkVisibility(true);
     MT.tagClusters().then(() => {
       MT.setClusterVisibility(true);
       //To catch links that should be filtered out based on cluster size:
-      MT.setLinkVisibility(true);
+      if (filtered || hiddenClusters()) MT.setLinkVisibility(true);
       MT.setNodeVisibility(true);
       //Because the network isn't robust to the order in which these operations
       //take place, we just do them all silently and then react as though we did
       //them each after all of them are already done.
-      ["cluster", "link", "node"].forEach(thing => events.emit(thing + "-visibility"));
+      events.emitTogether(["cluster", "link", "node"].map(thing => thing + "-visibility"));
       MT.updateStatistics();
     });
+  };
+  // Changes that come close together (the arrow keys held on the threshold, a
+  // setting changed twice) are applied once, with the last values, a frame later
+  let updateQueued = false;
+  const updateNetwork = () => {
+    if (updateQueued) return;
+    updateQueued = true;
+    let ran = false;
+    const run = () => {
+      if (ran) return;
+      ran = true;
+      updateQueued = false;
+      applyFilters();
+    };
+    // (A tab in the background draws no frames)
+    requestAnimationFrame(run);
+    setTimeout(run, 100);
   };
   MT.updateNetwork = updateNetwork;
 
@@ -450,7 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
     MT.setClusterVisibility(true);
     MT.setLinkVisibility(true);
     MT.setNodeVisibility(true);
-    ["cluster", "link", "node"].forEach(thing => events.emit(thing + "-visibility"));
+    events.emitTogether(["cluster", "link", "node"].map(thing => thing + "-visibility"));
     MT.updateStatistics();
   });
   // Each link field keeps its own threshold: filtering on another brings back
@@ -928,18 +949,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let timeDomainStart, timeDomainEnd;
       let field = variable;
-      let times = [];
-      const values = session.data.nodes.map(d => d[field]);
-      const order = MTDates.dateOrderOf(values).order;
-      values.forEach(value => {
-        let time = MT.parseDate(value, order);
-        if (time) times.push(time);
-      });
-      if (times.length < 2) {
-        times = [new Date(2000, 1, 1), new Date()];
+      // (From the dates read once for the steps, not from copies of the nodes)
+      const dated = Array.from(MT.nodeTimes(field)).filter(time => !isNaN(time));
+      if (dated.length < 2) {
+        dated.length = 0;
+        dated.push(+new Date(2000, 1, 1), +new Date());
       }
-      timeDomainStart = Math.min(...times);
-      timeDomainEnd = Math.max(...times);
+      timeDomainStart = dated.reduce((a, b) => Math.min(a, b));
+      timeDomainEnd = dated.reduce((a, b) => Math.max(a, b));
 
       var days = Math.floor((timeDomainEnd - timeDomainStart) / 864e5);
       // Each year named where it starts (or on the first tick)
@@ -1067,8 +1084,10 @@ document.addEventListener("DOMContentLoaded", () => {
           .attr("x", x(h))
           .text(handleDateFormat(h));
         session.state.timeEnd = h;
-        MT.setNodeVisibility(false);
-        MT.setLinkVisibility(false);
+        // The visible links don't depend on the date (only which of them have
+        // both nodes shown), so they aren't worked out again at each step
+        MT.setNodeVisibility(true);
+        events.emitTogether(["node-visibility", "link-visibility"]);
         MT.updateStatistics();
       }
   };
