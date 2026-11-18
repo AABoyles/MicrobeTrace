@@ -34,29 +34,18 @@ MicrobeTrace offers its features as tools for AI agents through [WebMCP](https:/
 * [Deploy Your Own Instance of MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/z-Deployment)
 * [Help us Develop MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/z-Development)
 
-## Public Domain
-This project constitutes a work of the United States Government and is not
-subject to domestic copyright protection under 17 USC § 105. This project is in
-the public domain within the United States, and copyright and related rights in
-the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
-All contributions to this project will be released under the CC0 dedication. By
-submitting a pull request you are agreeing to comply with this waiver of
-copyright interest.
-
 ## License
-The project utilizes code licensed under the terms of the Apache Software
-License and therefore is licensed under ASL v2 or later.
+MicrobeTrace is licensed under the [Apache License, Version 2.0](LICENSE).
+See also the [NOTICE](NOTICE) file.
 
-This program is free software: you can redistribute it and/or modify it under
-the terms of the Apache Software License version 2, or (at your option) any
-later version.
+MicrobeTrace was originally developed at the US Centers for Disease Control and
+Prevention; that original work was released into the public domain, and
+subsequent work in this repository is licensed under Apache-2.0.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE. See the Apache Software License for more details.
-
-You should have received a copy of the Apache Software License along with this
-program. If not, see http://www.apache.org/licenses/LICENSE-2.0.html
+Unless required by applicable law or agreed to in writing, the software is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
+See the [LICENSE](LICENSE) for the specific language governing permissions and
+limitations.
 
 ## Privacy
 This project contains only non-sensitive, publicly available data and
@@ -69,10 +58,9 @@ For more information about CDC's privacy policy, please visit [http://www.cdc.go
 Anyone is encouraged to contribute to the project by [forking](https://help.github.com/articles/fork-a-repo)
 and submitting a pull request. (If you are new to GitHub, you might start with a
 [basic tutorial](https://help.github.com/articles/set-up-git).) By contributing
-to this project, you grant a world-wide, royalty-free, perpetual, irrevocable,
-non-exclusive, transferable license to all users under the terms of the
-[Apache Software License v2](http://www.apache.org/licenses/LICENSE-2.0.html) or
-later.
+to this project, you agree that your contribution is submitted under the
+[Apache License, Version 2.0](LICENSE), as described in section 5 of that
+license (inbound = outbound).
 
 Before you get started, please read the [Developer's Guide to MicrobeTrace.](https://github.com/aaboyles/MicrobeTrace/wiki/z-Development)
 
