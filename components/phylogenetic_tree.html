@@ -10,6 +10,9 @@
   <button type="button" class="btn btn-light btn-sm fit-button" title="Center and Scale Phylogenetic Tree">
     <span class="bi bi-bullseye"></span>
   </button>
+  <button type="button" class="btn btn-light btn-sm tree-menu-button" title="Tree Menu: rotate, flip or reroot at the selected leaf (or the root). Same as right-click." aria-haspopup="menu" aria-label="Tree menu">
+    <span class="bi bi-three-dots"></span>
+  </button>
 </div>
 
 <div class="left-pane">
@@ -449,6 +452,13 @@
       const variable = settings.get('node-color-variable'), color = settings.get('node-color'), selected = settings.get('selected-color');
       const tooltip = settings.get('tree-leaf-tooltip-variable'), label = settings.get('tree-leaf-label-variable');
       const radius = radiusOf(nodes);
+      leafCircles().forEach((c, i) => {
+        const d = d3.select(c).datum();
+        c.setAttribute('tabindex', i == 0 ? 0 : -1);
+        c.setAttribute('role', 'button');
+        c.setAttribute('aria-haspopup', 'menu');
+        c.setAttribute('aria-label', 'Tree branch ' + d.data.id + ', press Enter for its menu');
+      });
       tree.eachLeafNode((circle, d) => {
         const node = nodes.get(d.data.id);
         d3.select(circle)
@@ -551,14 +561,65 @@
 
     // The context menu: rotate, flip or reroot at a branch
     let target = null;
-    function showMenu(args) {
-      const e = eventOf(args), box = root.getBoundingClientRect();
-      e.preventDefault();
+    let menuOpener = null;
+    function openMenu(branch, x, y, opener) {
+      const box = root.getBoundingClientRect();
       MT.tooltip(null);
-      target = branchOf(args).data;
-      Object.assign(menu.style, { display: 'block', opacity: 1, zIndex: 1000, left: (e.clientX - box.left) + 'px', top: (e.clientY - box.top) + 'px' });
+      target = branch;
+      menuOpener = opener || null;
+      Object.assign(menu.style, { display: 'block', opacity: 1, zIndex: 1000, left: (x - box.left) + 'px', top: (y - box.top) + 'px' });
+    }
+    function showMenu(args) {
+      const e = eventOf(args);
+      e.preventDefault();
+      openMenu(branchOf(args).data, e.clientX, e.clientY);
     }
     const hideMenu = () => { menu.style.display = 'none'; };
+    // The same menu from the keyboard (#185): the leaves are a list to arrow
+    // through (one tab stop), Enter, the menu key or Shift+F10 opens the menu
+    // for the one in focus, and so does the Tree menu button (for the root if no
+    // leaf has been chosen)
+    const leafCircles = () => Array.from(container.querySelectorAll('svg circle')).filter(c => { const d = d3.select(c).datum(); return d && d.data; });
+    const openMenuAt = (circle, opener) => {
+      const box = (circle || opener).getBoundingClientRect();
+      openMenu(circle ? d3.select(circle).datum().data : data, box.left, box.bottom, opener || circle);
+      const first = menu.querySelector('[data-action]');
+      if (first) first.focus();
+    };
+    container.addEventListener('keydown', e => {
+      const circles = leafCircles(), at = circles.indexOf(e.target);
+      if (at < 0) return;
+      const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+      if (step) {
+        e.preventDefault();
+        circles.forEach(c => c.setAttribute('tabindex', -1));
+        const next = circles[(at + step + circles.length) % circles.length];
+        next.setAttribute('tabindex', 0);
+        next.focus();
+      } else if (e.key == 'Enter' || e.key == 'ContextMenu' || (e.key == 'F10' && e.shiftKey)) {
+        e.preventDefault();
+        openMenuAt(e.target);
+      }
+    });
+    $('.tree-menu-button').addEventListener('click', e => {
+      const circle = leafCircles().find(c => c.getAttribute('tabindex') == '0' && c === document.activeElement) || null;
+      openMenuAt(circle, e.currentTarget);
+    });
+    // (Taken before Bootstrap's dropdown keys, which look for a toggle this menu doesn't have)
+    const menuKeys = e => {
+      if (!menu.contains(e.target)) return;
+      if (['ArrowDown', 'ArrowUp', 'Escape', 'Tab'].includes(e.key)) e.stopPropagation();
+      const items = Array.from(menu.querySelectorAll('[data-action]')), at = items.indexOf(document.activeElement);
+      if (e.key == 'ArrowDown' || e.key == 'ArrowUp') {
+        e.preventDefault();
+        items[(at + (e.key == 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+      } else if (e.key == 'Escape' || e.key == 'Tab') {
+        if (e.key == 'Escape') e.preventDefault();
+        hideMenu();
+        if (menuOpener) menuOpener.focus();
+      }
+    };
+    window.addEventListener('keydown', menuKeys, true);
     menu.addEventListener('click', e => {
       const item = e.target.closest('[data-action]');
       if (!item || !target) return;
@@ -675,6 +736,7 @@
         destroyed = true;
         labelWatcher.disconnect();
         stop.forEach(fn => fn());
+        window.removeEventListener('keydown', menuKeys, true);
         MT.tooltip(null);
         if (tree) tree.destroy();
         if (temp.phylogeneticTree === handle) delete temp.phylogeneticTree;

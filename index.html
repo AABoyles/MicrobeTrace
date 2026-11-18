@@ -109,6 +109,7 @@
           <a href="https://github.com/aaboyles/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank" rel="noreferrer noopener">Help</a>
           <a href="https://github.com/aaboyles/MicrobeTrace/wiki/Troubleshooting---Caching" id="TroubleshootTab" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Troubleshoot Caching</a>
           <a href="https://github.com/aaboyles/MicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Report Bug</a>
+          <a href="#" id="ShortcutsTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#shortcuts-modal">Keyboard and Mouse Tips</a>
           <div class="dropdown-divider ifOnline"></div>
           <a href="#" id="AboutTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#about-modal">About</a>
         </div>
@@ -231,12 +232,14 @@
     <table id="link-color-table"></table>
   </div>
 
-  <div id="link-color-table-context" class="dropdown-menu">
+  <div id="link-color-table-context" class="dropdown-menu" role="menu">
     <a href="#" class="dropdown-item" data-action="drag">Drag</a>
+    <a href="#" class="dropdown-item" data-action="rename">Rename a Value</a>
     <a href="#" class="dropdown-item" data-action="hide">Hide</a>
     <a href="#" class="dropdown-item" data-action="expand">Expand</a>
     <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
     <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
+    <span class="dropdown-item-text small text-body-secondary">Double-click a value, or press F2, to rename it.</span>
   </div>
 
   <div id="node-color-table-wrapper" class="floater">
@@ -244,12 +247,14 @@
     <table id="node-color-table"></table>
   </div>
 
-  <div id="node-color-table-context" class="dropdown-menu">
+  <div id="node-color-table-context" class="dropdown-menu" role="menu">
     <a href="#" class="dropdown-item" data-action="drag">Drag</a>
+    <a href="#" class="dropdown-item" data-action="rename">Rename a Value</a>
     <a href="#" class="dropdown-item" data-action="hide">Hide</a>
     <a href="#" class="dropdown-item" data-action="expand">Expand</a>
     <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
     <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
+    <span class="dropdown-item-text small text-body-secondary">Double-click a value, or press F2, to rename it.</span>
   </div>
 
   <div id="color-transparency-wrapper" class="floater">
@@ -575,6 +580,37 @@
           <button type="button" class="btn btn-danger" id="recall-delete-stash">Delete</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-primary" id="recall-load-stash">Recall</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div class="modal fade" id="shortcuts-modal" tabindex="-1" role="dialog" aria-labelledby="shortcuts-modal-title">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="shortcuts-modal-title" class="modal-title">Keyboard and Mouse Tips</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Some actions are reached by a mouse gesture. Each has a keyboard way too.</p>
+          <table class="table table-sm shortcuts-table">
+            <thead><tr><th scope="col">Where</th><th scope="col">With the mouse</th><th scope="col">What it does</th><th scope="col">From the keyboard</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Network</th><td>Ctrl + drag</td><td>Select the nodes in a rectangle (they toggle)</td><td>Focus the network, then C selects the focused node's cluster (Shift+C adds it), A selects every node</td></tr>
+              <tr><th scope="row">Network</th><td>Ctrl + click a node</td><td>Add it to, or remove it from, the selection</td><td>Ctrl + Enter on the focused node</td></tr>
+              <tr><th scope="row">Network</th><td>Right-click a node</td><td>The node menu</td><td>M, the menu key or Shift+F10 on the focused node</td></tr>
+              <tr><th scope="row">Network</th><td>Click a node</td><td>Select it</td><td>Arrow keys, N and P move between nodes; Enter or Space selects</td></tr>
+              <tr><th scope="row">Color, shape and polygon tables</th><td>Right-click the table</td><td>Menu: Drag or Pin, Rename a Value, Hide, Expand, Toggle Counts, Toggle Frequencies</td><td>The ... button on the table, or the menu key or Shift+F10 inside it</td></tr>
+              <tr><th scope="row">Color and polygon tables</th><td>Double-click a value</td><td>Rename it</td><td>F2 or Enter on the focused value (Enter keeps the name, Escape cancels), or Rename a Value in the menu</td></tr>
+              <tr><th scope="row">Network statistics</th><td>Right-click the box</td><td>Menu: Drag or Pin, Hide</td><td>The ... button, or the menu key or Shift+F10</td></tr>
+              <tr><th scope="row">Phylogenetic tree</th><td>Right-click a branch</td><td>Rotate, flip or set as root</td><td>Arrow keys move between branches, then Enter, the menu key or Shift+F10; or the ... Tree menu button</td></tr>
+              <tr><th scope="row">Files</th><td>Drag the grip</td><td>Reorder the files (the top file wins where they disagree)</td><td>The move up and move down buttons, or Alt+Up and Alt+Down on a file</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

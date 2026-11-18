@@ -5,7 +5,8 @@
       <span class="drop-zone-title">Drop files here, or <span class="link-primary">add files</span></span>
       <span class="drop-zone-hint">Link or node lists (CSV or Excel), distance matrices, FASTA, Newick, or a saved MicrobeTrace session</span>
     </label>
-    <p class="file-order-hint" hidden>Where files disagree about a node, the file nearest the top wins. Drag <span class="bi bi-grip-vertical"></span> to reorder them.</p>
+    <p class="file-order-hint" hidden>Where files disagree about a node, the file nearest the top wins. Drag <span class="bi bi-grip-vertical"></span>, or use the move up and move down buttons (Alt+Up and Alt+Down on a file), to reorder them.</p>
+    <p class="file-order-live visually-hidden" role="status" aria-live="polite"></p>
   </div>
 </div>
 
@@ -380,9 +381,47 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const headersOf = new WeakMap();
     const showOrderHint = () => { $('.file-order-hint').hidden = $$('.file-table-row').length < 2; };
     MT.sortable(table, { items: '.file-table-row', handle: '.file-grip', forcePlaceholderSize: true });
-    table.addEventListener('sortupdate', () => {
+    const saveOrder = () => {
       const order = $$('.file-table-row').map(row => fileOf.get(row));
       session.files.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    };
+    table.addEventListener('sortupdate', saveOrder);
+    // Moving a file up or down without dragging (#185): each row's buttons, or
+    // Alt+Up and Alt+Down on the row. The first can't go up and the last can't
+    // go down.
+    function refreshMoves() {
+      const rows = $$('.file-table-row');
+      rows.forEach((row, i) => {
+        row.querySelector('.file-move-up').disabled = i == 0;
+        row.querySelector('.file-move-down').disabled = i == rows.length - 1;
+      });
+    }
+    const moveRow = (row, by) => {
+      const rows = $$('.file-table-row'), i = rows.indexOf(row), j = i + by;
+      if (j < 0 || j >= rows.length) return false;
+      if (by < 0) rows[j].before(row); else rows[j].after(row);
+      saveOrder();
+      refreshMoves();
+      $('.file-order-live').textContent = `${row.querySelector('.file-title').textContent} moved to position ${j + 1} of ${rows.length}.`;
+      return true;
+    };
+    new MutationObserver(refreshMoves).observe(table, { childList: true });
+    table.addEventListener('click', e => {
+      const button = e.target.closest('.file-move-up, .file-move-down');
+      if (!button) return;
+      const by = button.classList.contains('file-move-up') ? -1 : 1, row = button.closest('.file-table-row');
+      moveRow(row, by);
+      // A button that can't go further hands the focus to the other
+      (button.disabled ? row.querySelector(by < 0 ? '.file-move-down' : '.file-move-up') : button).focus();
+    });
+    table.addEventListener('keydown', e => {
+      if (!e.altKey || (e.key != 'ArrowUp' && e.key != 'ArrowDown')) return;
+      const row = e.target.closest('.file-table-row');
+      if (!row) return;
+      e.preventDefault();
+      moveRow(row, e.key == 'ArrowUp' ? -1 : 1);
+      // (A button that can't go further hands the focus to the other)
+      (e.target.disabled ? row.querySelector(e.target.classList.contains('file-move-up') ? '.file-move-down' : '.file-move-up') : e.target).focus();
     });
 
     const ready = () => {
@@ -529,6 +568,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         <div class="row w-100">
           <div class="file-name col">
             <span class="bi bi-grip-vertical file-grip" title="Drag to reorder"></span>
+            <button type="button" class="btn btn-light btn-sm file-move-up" title="Move this file up" aria-label="Move this file up"><span class="bi bi-arrow-up" aria-hidden="true"></span></button>
+            <button type="button" class="btn btn-light btn-sm file-move-down" title="Move this file down" aria-label="Move this file down"><span class="bi bi-arrow-down" aria-hidden="true"></span></button>
             <span class="file-title p-1"></span>
             <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
               ${kinds.map(([value, label]) => `<label class="btn btn-light${value == kind ? ' active' : ''}">

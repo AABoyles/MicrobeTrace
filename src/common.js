@@ -2533,11 +2533,61 @@
   // from its place there. Returns a function that disconnects it.
   MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies } = {}) => {
     const handle = wrapper.querySelector('.draghandle');
+    let opener = null, row = null;
     const closeMenu = () => { menu.style.display = 'none'; };
+    const items = () => Array.from(menu.querySelectorAll('[data-action]'));
+    const openMenu = (x, y, from) => {
+      opener = from || null;
+      Object.assign(menu.style, { display: 'block', position: 'fixed', left: x + 'px', top: y + 'px', zIndex: 1060 });
+    };
     wrapper.addEventListener('contextmenu', e => {
       e.preventDefault();
-      Object.assign(menu.style, { display: 'block', position: 'fixed', left: e.clientX + 'px', top: e.clientY + 'px', zIndex: 1060 });
+      row = e.target.closest('[data-value]');
+      openMenu(e.clientX, e.clientY, row);
     });
+    // The same menu without a mouse (#185): an options button on the table, and
+    // the menu key or Shift+F10 on anything in it. The menu takes the focus, its
+    // arrows move between the items, and Escape closes it and gives the focus back.
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'floater-menu-button btn btn-light btn-sm';
+    button.title = 'Table options: hide, expand, rename values (or right-click the table)';
+    button.setAttribute('aria-label', 'Table options');
+    button.setAttribute('aria-haspopup', 'menu');
+    button.innerHTML = '<span class="bi bi-three-dots" aria-hidden="true"></span>';
+    wrapper.prepend(button);
+    const openFrom = (target, box) => {
+      row = target.closest && target.closest('[data-value]');
+      openMenu(box.left, box.bottom, target);
+      const first = items()[0];
+      if (first) first.focus();
+    };
+    button.addEventListener('click', e => { e.stopPropagation(); openFrom(button, button.getBoundingClientRect()); });
+    wrapper.addEventListener('keydown', e => {
+      if (e.key == 'ContextMenu' || (e.key == 'F10' && e.shiftKey)) {
+        e.preventDefault();
+        openFrom(e.target, e.target.getBoundingClientRect());
+      }
+    });
+    // (Taken before Bootstrap's own dropdown keys, which look for a toggle this
+    // menu doesn't have)
+    const menuKeys = e => {
+      if (!menu.contains(e.target)) return;
+      const list = items(), at = list.indexOf(document.activeElement);
+      if (['ArrowDown', 'ArrowUp', 'Escape', 'Tab', ' '].includes(e.key)) e.stopPropagation();
+      if (e.key == 'ArrowDown' || e.key == 'ArrowUp') {
+        e.preventDefault();
+        list[(at + (e.key == 'ArrowDown' ? 1 : list.length - 1)) % list.length].focus();
+      } else if (e.key == ' ') {
+        e.preventDefault();
+        document.activeElement.click();
+      } else if (e.key == 'Escape' || e.key == 'Tab') {
+        if (e.key == 'Escape') e.preventDefault();
+        closeMenu();
+        if (opener) opener.focus();
+      }
+    };
+    window.addEventListener('keydown', menuKeys, true);
     const outside = e => { if (!menu.contains(e.target)) closeMenu(); };
     document.addEventListener('click', outside);
     menu.addEventListener('click', e => {
@@ -2551,6 +2601,11 @@
         item.textContent = handle.hidden ? 'Drag' : 'Pin';
       } else if (action == 'hide') {
         if (onHide) onHide();
+      } else if (action == 'rename') {
+        // The value the menu was opened on, or the first
+        const cell = (row && row.isConnected ? row : null) || wrapper.querySelector('[data-value]');
+        if (cell) cell.dispatchEvent(new Event('mt-rename'));
+        return;
       } else if (action == 'expand') {
         const expand = item.textContent == 'Expand';
         wrapper.classList.toggle('expanded', expand);
@@ -2560,6 +2615,7 @@
       } else if (action == 'frequencies' && onFrequencies) {
         onFrequencies();
       }
+      if (action != 'hide' && opener && opener.isConnected) opener.focus();
     });
     let offset = [0, 0];
     handle.addEventListener('mousedown', e => {
@@ -2571,7 +2627,42 @@
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', () => document.removeEventListener('mousemove', move), { once: true });
     });
-    return () => document.removeEventListener('click', outside);
+    return () => {
+      document.removeEventListener('click', outside);
+      window.removeEventListener('keydown', menuKeys, true);
+    };
+  };
+
+  // A legend value you can rename (#185): double-click it, or focus it and press
+  // F2 or Enter (or choose Rename in the table's menu). Enter keeps the new
+  // name and Escape puts the old one back; the caller keeps the name on focusout.
+  MT.renamable = cell => {
+    let before = '';
+    const start = () => {
+      before = cell.textContent;
+      cell.contentEditable = true;
+      cell.focus();
+      getSelection().selectAllChildren(cell);
+    };
+    cell.tabIndex = 0;
+    cell.title = 'Double-click to rename';
+    cell.setAttribute('aria-keyshortcuts', 'F2 Enter');
+    cell.addEventListener('dblclick', start);
+    cell.addEventListener('mt-rename', start);
+    cell.addEventListener('keydown', e => {
+      const editing = cell.isContentEditable;
+      if (!editing && (e.key == 'F2' || e.key == 'Enter')) {
+        e.preventDefault();
+        start();
+      } else if (editing && (e.key == 'Enter' || e.key == 'Escape')) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.key == 'Escape') cell.textContent = before;
+        cell.blur();
+        cell.focus();
+      }
+    });
+    return start;
   };
 
   // A color table's controls: a header's sort button, and a row's
@@ -3073,12 +3164,65 @@
     tooltip.style.opacity = 1;
   };
 
+  // Names a view's graphic for assistive technology (#184): a region with a
+  // label, and a visually hidden summary (what's plotted, how much, and that the
+  // Table view lists the same data) that its description points to. Pass the
+  // element, its name, and a function that gives the summary's first sentence(s);
+  // it is written again when the data's visibility changes. Returns the refresh.
+  let summaryCount = 0;
+  MT.describeView = (element, name, summary, { role = 'region' } = {}) => {
+    if (!element) return () => {};
+    element.setAttribute('role', role);
+    element.setAttribute('aria-label', name);
+    const note = document.createElement('p');
+    note.className = 'visually-hidden view-summary';
+    note.id = 'view-summary-' + (++summaryCount);
+    element.insertAdjacentElement('afterend', note);
+    element.setAttribute('aria-describedby', note.id);
+    const nodes = () => session.data.nodes.filter(d => d.visible !== false).length;
+    const links = () => session.data.links.filter(d => d.visible !== false).length;
+    const refresh = () => {
+      let text = '';
+      try { text = summary ? summary({ nodes: nodes(), links: links() }) : ''; } catch (e) { /* the name stands alone */ }
+      note.textContent = (text ? text + ' ' : '') + 'The Table view lists the same data.';
+    };
+    refresh();
+    const events = MT.events, names = ['node-visibility', 'link-visibility', 'session-loaded'];
+    const offs = names.map(n => events.on(n, refresh));
+    return () => { offs.forEach(off => typeof off == 'function' && off()); note.remove(); };
+  };
+  const nodesOf = n => n.toLocaleString() + (n == 1 ? ' node' : ' nodes');
+  const linksOf = n => n.toLocaleString() + (n == 1 ? ' link' : ' links');
+  const variableName = value => String(value || '').replace(/^(links|nodes)-/, '');
+  // Each view's graphic: where it is, what it's called, and what it plots
+  MT.viewGraphics = {
+    histogram: ['.histogram-plot', 'Histogram of link distances', c => `Histogram of ${variableName(MT.settings.get('histogram-variable'))} across ${linksOf(c.links)} and ${nodesOf(c.nodes)}.`],
+    scatterplot: ['.scatterplot-plot', 'Scatterplot of node values', c => `Scatterplot of ${variableName(MT.settings.get('scatterplot-yVar'))} against ${variableName(MT.settings.get('scatterplot-xVar'))}, for ${nodesOf(c.nodes)}.`],
+    heatmap: ['.heatmap-plot', 'Heatmap of pairwise distances', c => `Heatmap of the distances between ${nodesOf(c.nodes)}.`],
+    bubbles: ['svg.bubbles', 'Bubble chart of node groups', c => `Bubbles for the groups of ${nodesOf(c.nodes)}.`],
+    timeline: ['.timeline-chart', 'Epidemic curve over time', c => `Counts over time for ${nodesOf(c.nodes)}.`],
+    flow_diagram: ['.flow-plot', 'Flow diagram between node groups', c => `Flows between the groups of ${nodesOf(c.nodes)}.`],
+    geo_map: ['.map-canvas', 'Map of node locations', c => `Map of ${nodesOf(c.nodes)} by location.`],
+    choropleth: ['.map-canvas', 'Choropleth map of regions', c => `Regions shaded by counts of ${nodesOf(c.nodes)}.`],
+    globe: ['canvas.globe', 'Globe of node locations', c => `Globe of ${nodesOf(c.nodes)} by location.`, 'img'],
+    phylogenetic_tree: ['.tree', 'Phylogenetic tree', c => `Tree of ${nodesOf(c.nodes)}. Right-click or press Shift+F10 on a branch for its menu.`],
+    sequences: ['.sequences-panel', 'Sequence alignment', c => `Alignment of the sequences of ${nodesOf(c.nodes)}.`]
+  };
+
   const mountView = contentItem => {
     const mount = MT.views[contentItem.componentType];
     if (!mount) return;
     const container = contentItem.container;
     const handle = mount(container.element, { settings: MT.settings, events: MT.events, container }) || {};
     contentItem.panels = handle.panels || [];
+    const graphic = MT.viewGraphics[contentItem.componentType];
+    if (graphic) {
+      const element = container.element.querySelector(graphic[0]);
+      if (element && !element.hasAttribute('aria-label')) {
+        const undescribe = MT.describeView(element, graphic[1], graphic[2], { role: graphic[3] });
+        container.on('destroy', undescribe);
+      }
+    }
     const resize = () => handle.resize && handle.resize();
     container.on('resize', resize);
     container.on('show', resize);

@@ -104,7 +104,7 @@ test("a file's row ends with resave and a red remove, and the drop zone returns 
   const row = rows().first();
   const order = await row.locator('.file-name').evaluate(el => Array.from(el.children).map(c => c.title || c.className.split(' ')[0]));
   // (After the grip that reorders files)
-  expect(order).toEqual(['Drag to reorder', 'file-title', 'btn-group', 'Resave this file', 'Remove this file']);
+  expect(order).toEqual(['Drag to reorder', 'Move this file up', 'Move this file down', 'file-title', 'btn-group', 'Resave this file', 'Remove this file']);
   const red = await row.locator('a[title="Remove this file"]').evaluate(el => getComputedStyle(el).color);
   expect(red).toBe('rgb(220, 53, 69)');
   // Removing every file empties the view again
