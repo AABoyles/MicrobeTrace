@@ -192,7 +192,7 @@
 
   // Settings that drive the network filter: setting them reruns clustering and
   // visibility, which finishes a moment later
-  const FILTER_KEYS = ['link-show-nn', 'filtering-epsilon', 'link-sort-variable', 'link-threshold', 'cluster-minimum-size'];
+  const FILTER_KEYS = ['link-prune', 'filtering-epsilon', 'link-sort-variable', 'link-threshold', 'cluster-minimum-size'];
 
   function visibilityWaiter(timeout = 120000) {
     let off, timer;
@@ -235,7 +235,7 @@
     return { changes, warnings };
   }
 
-  const PRIORITY = ['link-show-nn', 'filtering-epsilon', 'link-sort-variable', 'link-threshold', 'cluster-minimum-size', 'node-timeline-variable'];
+  const PRIORITY = ['link-prune', 'filtering-epsilon', 'link-sort-variable', 'link-threshold', 'cluster-minimum-size', 'node-timeline-variable'];
   const rank = key => PRIORITY.includes(key) ? PRIORITY.indexOf(key) : /-variable$/.test(key) ? 10 : 20;
 
   T.define({
@@ -287,7 +287,7 @@
     description: 'Changes one or more settings by key, through MicrobeTrace\'s settings store so views and the page react exactly as if a control had been used. ' +
       'Values are checked against each setting\'s type and, where a control exists, its options (an invalid value fails the whole call with nothing applied); out-of-range numbers are applied with a warning. ' +
       'Unknown keys are skipped with a warning unless allowNew is true. Settings are applied in a sensible order (filter settings first, then variable choices, then the rest), ' +
-      'and filter settings (link-threshold, link-sort-variable, link-show-nn, filtering-epsilon, cluster-minimum-size) wait for the network to finish updating. ' +
+      'and filter settings (link-threshold, link-sort-variable, link-prune, filtering-epsilon, cluster-minimum-size) wait for the network to finish updating. ' +
       'Returns {applied: {key: {old, new}}, unchanged, warnings, counts}. Prefer the dedicated tools for common changes; use list_settings to discover keys.',
     inputSchema: obj({
       values: { type: 'object', description: 'Map of setting key to new value, e.g. {"node-color": "#ff0000", "link-width": 4}', additionalProperties: true },
@@ -334,7 +334,7 @@
       linkVariable: w['link-sort-variable'],
       linkThreshold: w['link-threshold'],
       thresholdsByVariable: w['link-thresholds'] || {},
-      nearestNeighbors: !!w['link-show-nn'],
+      pruning: w['link-prune'],
       epsilonExponent: w['filtering-epsilon'],
       epsilon: Math.pow(10, w['filtering-epsilon']),
       clusterMinimumSize: w['cluster-minimum-size'],
@@ -357,7 +357,7 @@
   T.define({
     name: 'get_filter_state',
     title: 'Get filter state',
-    description: 'Reports how the network is currently filtered: the link filter variable and threshold (and each variable\'s remembered threshold), nearest-neighbor pruning and epsilon, minimum cluster size, ' +
+    description: 'Reports how the network is currently filtered: the link filter variable and threshold (and each variable\'s remembered threshold), pruning (none, nearest neighbor or minimum spanning tree) and epsilon, minimum cluster size, ' +
       'the timeline variable, visible/total counts of nodes, links and clusters, the numeric link fields that can be filtered on (with default thresholds of distance metrics), ' +
       'the range of the current variable\'s link values with an optional histogram (useful for choosing a threshold), and the largest clusters. Requires loaded data.',
     inputSchema: obj({ bins: { type: 'integer', minimum: 0, maximum: 200, description: 'Histogram bins for the link values of the filter variable (default 20; 0 for none)' } }),
@@ -375,8 +375,8 @@
     inputSchema: obj({
       variable: str('Numeric link field to filter on (link-sort-variable), e.g. "tn93", "snps", "distance". See get_filter_state.numericLinkFields'),
       threshold: num('Maximum link value that still counts as a link (link-threshold); must be >= 0', { minimum: 0 }),
-      showNearestNeighbors: bool('Prune links to nearest neighbors only (link-show-nn). Computes a minimum spanning tree; may take a while for big networks'),
-      epsilon: num('Filtering epsilon exponent (filtering-epsilon): distances within 10^epsilon of each other count as ties when pruning to nearest neighbors. UI range -3..2')
+      prune: { type: 'string', enum: ['none', 'nn', 'mst'], description: 'How to prune links (link-prune): "none" keeps every link within the threshold; "nn" keeps each node\'s links to its nearest neighbors (can split clusters); "mst" keeps the minimum spanning tree (keeps clusters connected). Both keep near-ties (see epsilon) and may take a while for big networks' },
+      epsilon: num('Filtering epsilon exponent (filtering-epsilon): distances within a fraction 10^epsilon of each other count as ties when pruning. UI range -3..2')
     }),
     execute: async args => {
       T.requireData();
@@ -390,12 +390,15 @@
         if (typeof args.threshold != 'number' || !isFinite(args.threshold) || args.threshold < 0) fail('threshold must be a number >= 0');
         map['link-threshold'] = args.threshold;
       }
-      if (args.showNearestNeighbors !== undefined) map['link-show-nn'] = !!args.showNearestNeighbors;
+      if (args.prune !== undefined) {
+        if (!['none', 'nn', 'mst'].includes(args.prune)) fail('prune must be "none", "nn" or "mst"');
+        map['link-prune'] = args.prune;
+      }
       if (args.epsilon !== undefined) {
         if (typeof args.epsilon != 'number' || !isFinite(args.epsilon)) fail('epsilon must be a number');
         map['filtering-epsilon'] = args.epsilon;
       }
-      if (!Object.keys(map).length) fail('Give at least one of variable, threshold, showNearestNeighbors, epsilon (get_filter_state reads the current state)');
+      if (!Object.keys(map).length) fail('Give at least one of variable, threshold, prune, epsilon (get_filter_state reads the current state)');
       const keys = Object.keys(map).sort((a, b) => rank(a) - rank(b));
       const changes = {};
       for (const k of keys) {

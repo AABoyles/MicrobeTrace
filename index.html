@@ -314,15 +314,18 @@
                 <div class="col-8">
                   <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
                     <label class="btn btn-light active col" title="Show all links within threshold">
-                      <input type="radio" name="NNOptions" data-setting="link-show-nn" value="false" autocomplete="off" checked> None
+                      <input type="radio" name="NNOptions" data-setting="link-prune" value="none" autocomplete="off" checked> None
                     </label>
-                    <label class="btn btn-light col" title="Keep only the minimum spanning tree of the links (plus near-ties, see Filtering Epsilon), by the link sort variable">
-                      <input type="radio" name="NNOptions" data-setting="link-show-nn" value="true" autocomplete="off"> Nearest Neighbor (MST)
+                    <label class="btn btn-light col" title="Keep only each node's links to its nearest neighbors (and near-ties, see Filtering Epsilon), by the link filter variable. Can split clusters.">
+                      <input type="radio" name="NNOptions" data-setting="link-prune" value="nn" autocomplete="off"> Nearest Neighbor
+                    </label>
+                    <label class="btn btn-light col" title="Keep only the links of the minimum spanning tree (and near-ties, see Filtering Epsilon), by the link filter variable. Keeps clusters connected.">
+                      <input type="radio" name="NNOptions" data-setting="link-prune" value="mst" autocomplete="off"> MST
                     </label>
                   </div>
                 </div>
               </div>
-              <div class="form-group row filtering-epsilon-row" title="How close two distances must be to count as a tie, when pruning to nearest neighbors (10 to this power)">
+              <div class="form-group row filtering-epsilon-row" title="How close two distances must be to count as a tie when pruning: within this fraction of each other (10 to this power)">
                 <div class="col-4"><label for="filtering-epsilon">Filtering Epsilon</label></div>
                 <div class="col-8">
                   <input type="range" class="form-range" id="filtering-epsilon" data-setting="filtering-epsilon" data-setting-on="change" min="-3" max="2" step=".01" value="-3">

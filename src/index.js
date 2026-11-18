@@ -327,17 +327,13 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   byId("filtering-epsilon").addEventListener("input", showEpsilon);
 
-  settings.subscribe("link-show-nn", nn => {
-    if (nn) {
-      showEpsilon();
-      MT.computeMST().then(updateNetwork);
-    } else {
-      updateNetwork();
-    }
+  settings.subscribe("link-prune", prune => {
+    if (prune != "none") showEpsilon();
+    MT.computePruning().then(updateNetwork);
   });
   settings.subscribe("filtering-epsilon", () => {
     showEpsilon();
-    MT.computeMST().then(updateNetwork);
+    if (get("link-prune") != "none") MT.computePruning().then(updateNetwork);
   });
   settings.subscribe("cluster-minimum-size", () => {
     MT.setClusterVisibility(true);
@@ -355,8 +351,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const threshold = saved != null ? saved : metric ? metric.threshold : null;
     if (metric) byId("link-threshold").step = MT.thresholdStep(metric);
     MT.updateThresholdHistogram();
-    if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
-    else updateNetwork();
+    // Pruning is by the filter variable, so its flags are recomputed first
+    const pruned = get("link-prune") != "none" ? MT.computePruning() : Promise.resolve();
+    pruned.then(() => {
+      if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
+      else updateNetwork();
+    });
   });
   // With sparse storage, only links within the threshold at load were kept:
   // say so beside the threshold, and when it's raised past that (#228)
@@ -392,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Rows of the settings that only apply with some settings
   const showRows = () => {
     const rows = (selector, show) => all(selector).forEach(row => row.hidden = !show);
-    rows(".filtering-epsilon-row", get("link-show-nn"));
+    rows(".filtering-epsilon-row", get("link-prune") != "none");
     rows("#filtering-wrapper", !(get("cluster-minimum-size") > 1));
     ["node", "link"].forEach(kind => {
       const none = get(kind + "-color-variable") == "None";
@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
       rows(`.${kind}-color-value-row`, none);
     });
   };
-  settings.subscribe(["link-show-nn", "cluster-minimum-size", "node-color-variable", "link-color-variable"], showRows, { reload: true });
+  settings.subscribe(["link-prune", "cluster-minimum-size", "node-color-variable", "link-color-variable"], showRows, { reload: true });
 
   // A histogram of the links' values, marking the threshold, on which a click
   // or drag sets it. It's drawn 280 wide and stretched to fit its column.

@@ -112,7 +112,7 @@
     "link-label-variable": "None",
     "link-length": 0.125,
     "link-opacity": 0,
-    "link-show-nn": false,
+    "link-prune": "none",
     "link-sort-variable": "tn93",
     "link-storage": "auto",
     // The threshold each field's links were kept within, where only those were
@@ -647,6 +647,13 @@
   
   MT.applyStyle = style => {
     session.style = style;
+    // Sessions from before there were two ways to prune (#236) had an on/off
+    // link-show-nn, which ran the minimum spanning tree
+    const old = style.widgets && style.widgets["link-show-nn"];
+    if (old !== undefined) {
+      if (style.widgets["link-prune"] === undefined) style.widgets["link-prune"] = (old === true || old === "true") ? "mst" : "none";
+      delete style.widgets["link-show-nn"];
+    }
     session.style.widgets = Object.assign({},
       MT.defaultWidgets,
       style.widgets
@@ -1381,12 +1388,22 @@
     });
   };
 
-  // The "Nearest Neighbor" pruning option runs this: the minimum spanning tree
-  // plus near-ties (see workers/compute-mst.js), which keeps every component
-  // connected. MT.computeNN flags each node's own nearest neighbours instead.
+  // The two ways of pruning links (the link-prune setting, #236):
+  // "mst" keeps the minimum spanning tree plus near-ties (workers/compute-mst.js),
+  // which keeps every cluster connected; "nn" keeps each node's links to its own
+  // nearest neighbours plus near-ties (workers/compute-nn.js), which can split a
+  // cluster. Both flag the links they keep with MTGraph.NN.
   MT.computeMST = metric => MT.computeNNFlags("workers/compute-mst.js", "MST", metric);
 
   MT.computeNN = metric => MT.computeNNFlags("workers/compute-nn.js", "NN", metric);
+
+  // Flags the links the link-prune setting keeps (nothing to do for "none")
+  MT.computePruning = () => {
+    const prune = session.style.widgets["link-prune"];
+    if (prune == "nn") return MT.computeNN();
+    if (prune == "mst") return MT.computeMST();
+    return Promise.resolve();
+  };
   
   MT.computeTriangulation = () => {
     return new Promise((resolve, reject) => {
@@ -1655,7 +1672,7 @@
     let start = Date.now();
     let metric = session.style.widgets["link-sort-variable"],
       threshold = parseFloat(session.style.widgets["link-threshold"]),
-      showNN = session.style.widgets["link-show-nn"];
+      showNN = session.style.widgets["link-prune"] != "none";
     const g = session.data.graph;
     const clusters = session.data.clusters;
     const nodeCluster = g.nodeCluster;

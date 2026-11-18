@@ -67,13 +67,41 @@ test('the minimum cluster size hides small clusters, and Reveal shows everything
   await expect(page.locator('#filtering-wrapper')).toBeVisible();
 });
 
-test('nearest neighbor pruning keeps fewer links', async () => {
-  await dialog().locator('label', { hasText: 'Nearest Neighbor' }).click();
-  await expect(dialog().locator('.filtering-epsilon-row')).toBeVisible();
-  await expect.poll(() => stat('numberOfVisibleLinks'), { timeout: 30000 }).toBeLessThan(476);
-  await dialog().locator('label', { has: page.locator('input[data-setting="link-show-nn"][value="false"]') }).click();
+test('nearest neighbor and minimum spanning tree pruning each keep fewer links', async () => {
+  const prune = value => dialog().locator('label', { has: page.locator(`input[data-setting="link-prune"][value="${value}"]`) }).click();
+  const clusters = () => page.evaluate(() => session.data.clusters.filter(c => c.visible !== false).length);
+  const unpruned = await clusters();
+  // The links each method keeps, computed directly (the flags are left as they would be)
+  const expected = value => page.evaluate(async value => {
+    await (value == 'nn' ? MT.computeNN() : MT.computeMST());
+    const g = session.data.graph;
+    return g.computeVisible(MT.settings.get('link-sort-variable'), parseFloat(MT.settings.get('link-threshold')), true, () => true).length;
+  }, value);
+  for (const value of ['nn', 'mst']) {
+    await prune(value);
+    await expect(dialog().locator('.filtering-epsilon-row')).toBeVisible();
+    const want = await expected(value);
+    expect(want).toBeLessThan(476);
+    await expect.poll(() => stat('numberOfVisibleLinks'), { timeout: 30000 }).toBe(want);
+    // The minimum spanning tree keeps every cluster connected
+    if (value == 'mst') expect(await clusters()).toBe(unpruned);
+  }
+  await prune('none');
   await expect(dialog().locator('.filtering-epsilon-row')).toBeHidden();
   await expect.poll(() => stat('numberOfVisibleLinks')).toBe(476);
+});
+
+test('a session saved with the old Nearest Neighbor switch prunes by minimum spanning tree', async () => {
+  const prune = await page.evaluate(() => {
+    const style = JSON.parse(JSON.stringify(session.style));
+    delete style.widgets['link-prune'];
+    style.widgets['link-show-nn'] = true;
+    MT.applyStyle(style);
+    return [session.style.widgets['link-prune'], 'link-show-nn' in session.style.widgets];
+  });
+  expect(prune).toEqual(['mst', false]);
+  await page.evaluate(() => MT.settings.set('link-prune', 'none'));
+  await expect.poll(() => stat('numberOfVisibleLinks'), { timeout: 30000 }).toBe(476);
 });
 
 test('coloring nodes by a variable lists its values in the node color table', async () => {

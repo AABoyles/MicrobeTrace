@@ -88,7 +88,10 @@ const nearest_neighbour_graph = (V, weight, mst_parents, epsilon) => {
   for (let i=0; i<V; ++i) {
     for (let j=0; j<V; ++j) {
       const w = weight(i, j);
-      if ((w > 0 ) && (w <= (longest_edge[i * V + j] * (1.0 + epsilon)))) {
+      // Any link (zero-length ones too: identical sequences are each other's
+      // nearest neighbours) no longer than the longest MST edge on the path
+      // between its ends, give or take a fraction epsilon
+      if (i != j && w < Infinity && w <= longest_edge[i * V + j] * (1.0 + epsilon)) {
           nng[i].push(j);
           nng[j].push(i);
       } 

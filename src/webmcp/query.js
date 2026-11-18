@@ -364,7 +364,7 @@
       out.clusters = { total: d.clusters.length, visible: d.clusters.filter(c => c.visible).length, withMultipleNodes: d.clusters.filter(c => c.nodes > 1).length, singletons: d.clusters.filter(c => c.nodes == 1).length };
       out.filters = {
         linkMetric: s['link-sort-variable'], linkThreshold: s['link-threshold'], clusterMinimumSize: s['cluster-minimum-size'],
-        nearestNeighborLinksOnly: !!s['link-show-nn'], timelineDateField: s['timeline-date-field'],
+        linkPruning: s['link-prune'], timelineDateField: s['timeline-date-field'],
         timelineEnd: s['timeline-date-field'] != 'None' && sess.state ? sess.state.timeEnd : undefined
       };
       out.defaultDistanceMetric = s['default-distance-metric'];
