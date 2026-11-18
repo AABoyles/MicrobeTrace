@@ -93,11 +93,12 @@
               </div>
               <div class="col-9">
                 <input type="number" id="timeline-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <div class="form-text">Multiplies the size of the picture as shown. 1 = as shown; 2 = twice as wide and tall.</div>
               </div>
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div class="col-9 text-end export-dimensions"></div>
+              <div class="col-9 text-end"><span class="export-dimensions"></span><div class="form-text">Size of the image in pixels (width x height).</div></div>
             </div>
             <div class="row">
               <div class="col-3">
@@ -107,14 +108,6 @@
                 <input type="range" class="form-range" id="timeline-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
-          </div>
-        </div>
-        <div class="row" style="margin-top: 10px;">
-          <div class="col-3">
-            <label for="timeline-export-opacity">Watermark Opacity</label>
-          </div>
-          <div class="col-9">
-            <input type="range" class="form-range" id="timeline-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>

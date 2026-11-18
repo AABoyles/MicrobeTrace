@@ -161,7 +161,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       <div class="form-group row">
         <div class="col-12">
           <div class="alert alert-warning alert-dismissible" role="alert">
-            <p>The following settings are experimental! Use at your own risk!</p>
+            <p>These settings are experimental and may change or misbehave. <strong>Generate</strong> adds random, made-up sequences to your data, so do not use it with real data you will report.</p>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         </div>
@@ -864,7 +864,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         setTimeout(() => reject(new Error('Problem loading information modal!')), 5000);
       }).then(
         () => launch(),
-        error => { alert(error); launch(); } // the information dialog didn't open
+        error => { console.error(error); MT.toast.error('The information window did not open, so the files are loading anyway. If anything looks wrong, reload the page and try again.'); launch(); } // the information dialog didn't open
       );
     });
 
