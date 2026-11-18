@@ -2491,7 +2491,7 @@
       header: { fontSize: 22, bold: true },
       paddedTable: { margin: [10, 10, 10, 10] }
     }
-  }).download(filename + '.pdf'));
+  }).download(filename + '.pdf')).catch(() => MT.toast.error("The PDF library couldn't be loaded, so the PDF wasn't made. Check your connection and try again."));
 
   // Turns a <select multiple> into a searchable menu of removable choices (Tom
   // Select). To change its options, destroy() it and make a new one. Its menu
