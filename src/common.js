@@ -232,6 +232,7 @@
   };
   
   MT.sessionSkeleton = () => ({
+    formatVersion: MTSessionFormat.CURRENT_VERSION,
     data: MT.dataSkeleton(),
     files: [],
     layout: {
@@ -602,22 +603,30 @@
     }
   };
   
+  // Returns true if the session opened. A file that is not a valid session is
+  // refused before anything is reset, so the current session stays as it is.
   MT.applySession = oldSession => {
     //If anything here seems eccentric, assume it's to maintain compatibility with
     //session files from older versions of MicrobeTrace.
+    const check = MTSessionFormat.validate(oldSession);
+    if (!check.ok) {
+      MT.toast.error(check.error);
+      console.error(check.error);
+      return false;
+    }
   
     MT.events.emit("stop-force-simulation"); // stop previous network ticks so previous polygon won't show up
 
     MT.reset();
     const launch = document.getElementById("launch");
     if (launch) launch.disabled = true;
-    session.files = oldSession.files;
-    session.state = oldSession.state;
+    session.files = oldSession.files || [];
+    session.state = oldSession.state || session.state;
     session.style = Object.assign({},
       session.style,
       oldSession.style
     );
-    session.layout = oldSession.layout;
+    if (oldSession.layout) session.layout = oldSession.layout;
     session.meta.startTime = Date.now();
     const nodes = oldSession.data.nodes,
           links = oldSession.data.links,
@@ -643,6 +652,7 @@
     }
     MT.applyStyle(session.style);
     MT.finishUp(true);
+    return true;
   };
   
   MT.applyStyle = style => {

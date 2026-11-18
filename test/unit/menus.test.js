@@ -45,6 +45,7 @@ function load() {
     console: { log() {}, error() {}, warn() {} },
     TextDecoder, TextEncoder,
     MTSettings: require('../../src/settings.js'),
+    MTSessionFormat: require('../../src/session-format.js'),
     MTDates: require('../../src/dates.js'),
     MTEvents: require('../../src/events.js'),
     MTGraph: require('../../src/graph.js'),

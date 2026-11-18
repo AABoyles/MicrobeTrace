@@ -141,6 +141,12 @@
     hint: 'Use launch to build the network once no file has a problem.'
   });
 
+  // Fails (leaving the current session alone) unless data is a session this version can open
+  function checkSession(data) {
+    const check = self.MTSessionFormat.validate(data);
+    if (!check.ok) fail(check.error);
+  }
+
   // Opens a session or HIV-TRACE/GHOST JSON, from text and an extension
   function openJSON(text, extension) {
     let data;
@@ -153,7 +159,7 @@
       extension = data && data.data && data.style ? 'microbetrace' : data && (data.trace_results || data.samples) ? 'hivtrace' : '';
       if (!extension) fail('Could not tell what kind of file this is. A MicrobeTrace session has "data" and "style"; HIV-TRACE output has "trace_results". Set extension to microbetrace or hivtrace.');
     }
-    if (extension == 'microbetrace' && !(data && data.data && data.data.nodes && data.style)) fail('That JSON is not a MicrobeTrace session (it needs "data" with nodes, and "style").');
+    if (extension == 'microbetrace') checkSession(data);
     if (extension != 'microbetrace' && !(data && (data.trace_results || data.samples))) fail('That JSON is not HIV-TRACE (trace_results) or GHOST (samples) output.');
     self.MT.processJSON(text, extension);
   }
@@ -521,6 +527,7 @@
         const response = await fetch('demo/Demo_outbreak_session.microbetrace');
         if (!response.ok) fail('Could not fetch the demo session (HTTP ' + response.status + ')');
         const session = await response.json();
+        checkSession(session);
         await loading(() => self.MT.applySession(session), timeout);
         return summary();
       }
@@ -777,6 +784,7 @@
       const json = await self.db.getItem(stash.key);
       let data;
       try { data = JSON.parse(json); } catch (error) { fail('That stash could not be read: ' + error.message); }
+      checkSession(data);
       await loading(() => self.MT.applySession(data), args.timeoutMs || 300000);
       return Object.assign({ recalled: stash }, summary());
     }
