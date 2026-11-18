@@ -32,6 +32,7 @@
     "node": ">=26"
   },
   "scripts": {
+    "start": "node server.js",
     "build": "npm run bundle && npm run cache && npm run compress",
     "bundle": "scripts/bundle.sh",
     "cache": "node scripts/build-sw.js",
