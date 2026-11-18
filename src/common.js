@@ -1523,19 +1523,35 @@
       MT.events.emit("session-loaded");
     });
     db.getItem("stash-auto").then(autostash => {
-      if (autostash == "true") {
-        temp.autostash = {
-          time: Date.now(),
-          interval: setInterval(() => {
-            let newTime = Date.now();
-            MT.syncLayout();
-            db.setItem("stash-" + newTime + "-autostash", JSON.stringify(session));
-            db.removeItem("stash-" + temp.autostash.time + "-autostash");
-            temp.autostash.time = newTime;
-          }, 60000)
-        };
-      }  
-    })
+      if (autostash != "true") return;
+      if (temp.autostash) clearInterval(temp.autostash.interval);
+      // The new copy is written first, and the previous one removed only once
+      // it has committed, so a failed write (the quota, say) keeps the old copy.
+      // The user is told the first time it fails, not every minute.
+      const state = temp.autostash = { time: Date.now(), key: null, warned: false, busy: false };
+      state.interval = setInterval(async () => {
+        if (state.busy) return;
+        state.busy = true;
+        try {
+          const newKey = "stash-" + Date.now() + "-autostash";
+          MT.syncLayout();
+          await db.setItem(newKey, JSON.stringify(session));
+          const oldKey = state.key;
+          state.key = newKey;
+          state.time = Date.now();
+          state.warned = false;
+          if (oldKey) await db.removeItem(oldKey).catch(error => console.warn("Couldn't remove the previous autostash:", error));
+        } catch (error) {
+          console.error("Autostash failed:", error);
+          if (!state.warned) {
+            state.warned = true;
+            MT.toast.error("Autostash couldn't save your session, so the last copy was kept. " + MT.escape(db.describeError(error)), 15);
+          }
+        } finally {
+          state.busy = false;
+        }
+      }, 60000);
+    });
     document.querySelectorAll(".hideForHIVTrace").forEach(el => el.style.display = "flex");
     setTimeout(() => {
       let files = layout.contentItems.find(item => item.componentType == "files");

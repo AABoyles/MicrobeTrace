@@ -101,7 +101,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const stashSession = name => {
     MT.syncLayout();
     return db.setItem("stash-" + Date.now() + "-" + name, JSON.stringify(session))
-      .then(() => MT.toast.success("Stashed in this browser"));
+      .then(() => MT.toast.success("Stashed in this browser"), error => {
+        console.error(error);
+        MT.toast.error("Couldn't stash the session: " + MT.escape(db.describeError(error)), 15);
+        throw error;
+      });
   };
   on("stash-data", "click", () => stashSession(byId("stash-name").value));
 
