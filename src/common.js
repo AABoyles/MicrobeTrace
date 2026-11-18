@@ -632,7 +632,8 @@
           links = oldSession.data.links,
           n = nodes.length,
           m = links.length;
-    for(let i = 0; i < n; i++) MT.addNode(nodes[i]);
+    // (Older sessions saved each node's encoded sequence, which is rebuilt when needed)
+    for(let i = 0; i < n; i++) { delete nodes[i]._seqInt; MT.addNode(nodes[i]); }
     for(let j = 0; j < m; j++) MT.addLink(links[j]);
     // Where the nodes' values came from (sessions from before this have none)
     if (oldSession.data.nodeSources) session.data.nodeSources = oldSession.data.nodeSources;
@@ -1081,7 +1082,10 @@
       let nodes = session.data.nodes;
       let subset = nodes.filter(d => d.seq);
       const subsetLength = subset.length;
-      MT.runWorker("workers/compute-ambiguity-counts.js", subset, { name: "The ambiguity count" }).then(response => {
+      // The encoded sequences go to the worker alone: kept on the nodes they
+      // would be saved with the session
+      const encoded = subset.map(d => ({ _seqInt: tn93.toInts(d.seq) }));
+      MT.runWorker("workers/compute-ambiguity-counts.js", encoded, { name: "The ambiguity count" }).then(response => {
         console.log("Ambiguity Count Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
         const dists = new Float32Array(response.counts);
