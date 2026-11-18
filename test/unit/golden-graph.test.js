@@ -185,3 +185,41 @@ test('the Smith-Waterman worker gaps a two-base deletion where it is', async () 
   assert.strictEqual(node._score, a.score);
   assert.strictEqual(node._padding, 0);
 });
+
+// #232: a pair with no distance is no edge, not a zero-weight one
+test('MT.computeMST treats a missing link as no edge', async () => {
+  const toy = { nodes: ['a', 'b', 'c', 'd'], distances: [['a', 'b', 0.5], ['c', 'd', 0.4]] };
+  const app = load(toy);
+  await app.MT.computeMST();
+  assert.deepStrictEqual(flagged(app), pairSet([['a', 'b'], ['c', 'd']]));
+});
+
+// #236: the metric argument is honoured
+test('MT.computeMST and MT.computeNN use the metric they are given', async () => {
+  const app = load(golden.toy);
+  const g = app.session.data.graph, n = golden.toy.nodes.length;
+  // A second field holding the same distances negated would flip the tree
+  const tri = g.denseValues('tn93').map(v => 1 - v);
+  g.setDistances(golden.toy.nodes, tri, 'other', 'Genetic Distance');
+  await app.MT.computeMST('tn93');
+  const byTn93 = flagged(app);
+  await app.MT.computeMST('other');
+  assert.notDeepStrictEqual(flagged(app), byTn93);
+  assert.deepStrictEqual(byTn93, pairSet(golden.toy.mst));
+});
+
+// #228
+test('a threshold above the one links were stored within is reported', () => {
+  const { MT, session } = loadApp({ 'link-sort-variable': 'tn93', 'link-stored-thresholds': { tn93: 0.015 } });
+  assert.strictEqual(MT.storedThresholdBelow('tn93', 0.02), 0.015);
+  assert.strictEqual(MT.storedThresholdBelow('tn93', 0.015), null);
+  assert.strictEqual(MT.storedThresholdBelow('snps', 5), null);
+});
+
+// #229
+test('MT.isCluster counts components of more than one node', () => {
+  const { MT } = loadApp({});
+  assert.strictEqual(MT.isCluster(1), false);
+  assert.strictEqual(MT.isCluster(2), true);
+  assert.strictEqual(MT.isCluster(undefined), false);
+});

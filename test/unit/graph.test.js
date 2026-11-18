@@ -225,11 +225,27 @@ test('several metrics over the same sequences are kept side by side', () => {
   assert.strictEqual(sum, snps.reduce((a, b) => a + b, 0));
   const within = Array.from(snps).filter(v => v <= 10).length;
   assert.strictEqual(g.computeVisible('snps', 10, false, () => true).length, within);
-  assert.strictEqual(g.computeVisible('distance', 0.05, false, () => true).length, Array.from(tn93).filter(v => v <= 0.05).length);
+  assert.strictEqual(g.computeVisible('distance', 0.05, false, () => true).length, Array.from(tn93).filter(v => v <= Math.fround(0.05)).length);
 
   // Distances over other sequences replace them all
   const others = ['m1', 'm2', 'm3'];
   g.setDistances(others, new Float32Array([0.1, 0.2, 0.3]), 'distance', 'Genetic Distance');
   assert.strictEqual(g.denseValues('snps'), null);
   assert.strictEqual(g.link(at('m1', 'm2')).distance, Math.fround(0.1));
+});
+
+// #227: a distance exactly at the threshold is within it, in both storage modes
+test('a distance exactly at the threshold is visible in dense and sparse storage', () => {
+  // 0.016 rounds up in Float32 (0.01600000075...), so it is over 0.016 there
+  assert.ok(Math.fround(0.016) > 0.016);
+  [[3 / 200, 0.015], [0.016, 0.016], [0.1, 0.1]].forEach(([d, threshold]) => {
+    const dense = new MTGraph();
+    dense.setDistances(['a', 'b', 'c'], new Float32Array([d, d + 1, d + 1]), 'distance', 'Genetic Distance');
+    dense.freeze();
+    const sparse = new MTGraph();
+    sparse.addLink({ source: 'a', target: 'b', distance: d, origin: ['Genetic Distance'] });
+    sparse.freeze();
+    assert.strictEqual(dense.computeVisible('distance', threshold, false, () => true).length, 1, 'dense ' + d);
+    assert.strictEqual(sparse.computeVisible('distance', threshold, false, () => true).length, 1, 'sparse ' + d);
+  });
 });

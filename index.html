@@ -314,8 +314,8 @@
                     <label class="btn btn-light active col" title="Show all links within threshold">
                       <input type="radio" name="NNOptions" data-setting="link-show-nn" value="false" autocomplete="off" checked> None
                     </label>
-                    <label class="btn btn-light col" title="Prune links by Nearest Neighbor">
-                      <input type="radio" name="NNOptions" data-setting="link-show-nn" value="true" autocomplete="off"> Nearest Neighbor
+                    <label class="btn btn-light col" title="Keep only the minimum spanning tree of the links (plus near-ties, see Filtering Epsilon), by the link sort variable">
+                      <input type="radio" name="NNOptions" data-setting="link-show-nn" value="true" autocomplete="off"> Nearest Neighbor (MST)
                     </label>
                   </div>
                 </div>
@@ -349,6 +349,7 @@
                   <div class="col-8">
                     <svg id="link-threshold-sparkline" title="Click or drag to set the threshold"></svg>
                     <input type="number" class="form-control form-control-sm" id="link-threshold" data-setting="link-threshold" data-setting-on="change" step="0.001">
+                    <div id="link-threshold-note" class="form-text small" hidden></div>
                   </div>
                 </div>
               </div>

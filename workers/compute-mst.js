@@ -7,11 +7,11 @@ onmessage = function(e){
     const tri = e.data.matrix;
     const epsilon = Math.pow(10, e.data.epsilon);
 
-    // Missing links weigh 0, as they always have here
+    // A missing link is no edge (Infinity), not a zero-weight one
     const weight = (u, v) => {
       if (u == v) return 0;
       const w = u < v ? tri[u * n - u * (u + 1) / 2 + v - u - 1] : tri[v * n - v * (v + 1) / 2 + u - v - 1];
-      return w == w ? w : 0;
+      return w == w ? w : Infinity;
     };
 
     const mst = primMST(n, weight);
@@ -41,26 +41,25 @@ const minKey = (key, mstSet, V) => {
   return min_index;
 }
 
+// A minimum spanning forest: where nodes have no links to the rest, each
+// component gets its own root, whose parent is -1.
 const primMST = (V, weight) => {
-  let parent = new Int32Array(V);
+  let parent = new Int32Array(V).fill(-1);
   let key = new Float64Array(V).fill(Number.MAX_VALUE);
   let mstSet = new Uint8Array(V);
-  key[0] = 0.0; 
-  parent[0] = -1;
-  for (let count = 0; count < V-1; count++) {
-      let u = minKey(key, mstSet, V);
-      if (u < 0) continue;
-      mstSet[u] = 1;
-
-      let rowSum = 0;
-      for (let v = 0; v < V; v++) rowSum += weight(u, v);
-      if (rowSum === 0 && u != 0) continue;
-
-      for (let v = 0; v < V; v++) {
-          const w = weight(u, v);
-          if (w >= 0 && !mstSet[v] && w < key[v]) {
-              parent[v]  = u;
-              key[v] = w;
+  for (let root = 0; root < V; root++) {
+      if (mstSet[root]) continue;
+      key[root] = 0.0;
+      for (;;) {
+          const u = minKey(key, mstSet, V);
+          if (u < 0) break;
+          mstSet[u] = 1;
+          for (let v = 0; v < V; v++) {
+              const w = weight(u, v);
+              if (w >= 0 && w < Infinity && !mstSet[v] && w < key[v]) {
+                  parent[v]  = u;
+                  key[v] = w;
+              }
           }
       }
   }
@@ -72,7 +71,8 @@ const nearest_neighbour_graph = (V, weight, mst_parents, epsilon) => {
   for (let i=0; i<V; ++i) {
     mst.push([]);
   }
-  for (let i=1; i<V; ++i) {
+  for (let i=0; i<V; ++i) {
+    if (mst_parents[i] < 0) continue;
     mst[i].push(mst_parents[i]);
     mst[mst_parents[i]].push(i);
   }
