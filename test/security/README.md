@@ -19,7 +19,12 @@ use `<img src=x onerror=...>`, which does run through `innerHTML`, in field
 names, values, node IDs and (in the session) a color. Unlike CSV and Excel
 files, sessions and HIV-TRACE/GHOST output aren't escaped as they load, so
 every place their names and values are shown has to treat them as text (#204).
-`test/unit/menus.test.js` loads both through MicrobeTrace's loaders.
+Since #218 no loader escapes what it reads: values are stored as loaded and
+escaped (or set as text) where they are shown. `test/e2e/injection.spec.js`
+loads every file here, opens the views that show IDs, names and values, and
+fails if a script runs, a request is made or an element appears.
+`test/unit/menus.test.js` loads the session and HIV-TRACE files through
+MicrobeTrace's loaders.
 
 To test MicrobeTrace's security using these files, launch the MicrobeTrace
 webserver:

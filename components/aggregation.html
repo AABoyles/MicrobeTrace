@@ -114,7 +114,7 @@
           layout: 'fitColumns',
           columns: [
             // A natural sort, so numbers (cluster IDs, say) don't sort as text
-            { title: MT.titleize(dataset) + ' ' + MT.titleize(column), field: column, sorter: 'alphanum' },
+            MT.columnTitle(MT.titleize(dataset) + ' ' + MT.titleize(column), { field: column, sorter: 'alphanum' }),
             { title: `Number of ${MT.titleize(dataset)}s`, field: 'n', sorter: 'number', hozAlign: 'right', headerHozAlign: 'right' },
             { title: 'Percentage', field: 'percent', headerSort: false, hozAlign: 'right', headerHozAlign: 'right' }
           ],
