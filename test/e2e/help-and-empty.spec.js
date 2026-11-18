@@ -64,7 +64,7 @@ test('Help opens the built-in help with no connection', async () => {
   await waitForModal(page, '#help-modal');
   const body = page.locator('#help-modal .modal-body');
   for (const heading of ['Loading data', 'The views', 'Thresholds and links', 'Saving, stashing and exporting', 'Mouse and keyboard shortcuts']) {
-    await expect(body.locator('h6', { hasText: heading })).toHaveCount(1);
+    await expect(body.locator('h3', { hasText: heading })).toHaveCount(1);
   }
   await page.locator('#help-modal .btn-close').click();
   await page.context().setOffline(false);

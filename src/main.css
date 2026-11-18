@@ -1257,7 +1257,10 @@ body.timeline-open #main-panel {
 }
 
 /* Waterfall View */
+/* (The view draws on its own background, white unless it's set, so its text
+   is dark whatever the theme) */
 .waterfall {
+  color: #212529;
   padding: 30px;
   height: 100%;
 }
@@ -1265,9 +1268,9 @@ body.timeline-open #main-panel {
 .waterfall-note {
   margin: 0.75rem 0.25rem;
   font-size: 0.875rem;
-  color: var(--mt-muted);
+  color: #5c636a;
 }
-.waterfall h4 {
+.waterfall h2 {
   padding: 0.75rem 1.25rem;
   border: 1px solid lightgray;
   border-radius: 0.25rem;
@@ -1534,6 +1537,30 @@ body.timeline-open #main-panel {
 }
 
 /* Dark: what Bootstrap's and the libraries' own themes leave light */
+/* (Bootstrap's primary and danger are too dark to read as text on dark) */
+[data-bs-theme="dark"] .btn-outline-primary {
+  --bs-btn-color: #6ea8fe;
+  --bs-btn-border-color: #6ea8fe;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #6ea8fe;
+  --bs-btn-hover-border-color: #6ea8fe;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #8bb9fe;
+  --bs-btn-active-border-color: #8bb9fe;
+}
+[data-bs-theme="dark"] .btn-outline-danger {
+  --bs-btn-color: #ea868f;
+  --bs-btn-border-color: #ea868f;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #ea868f;
+  --bs-btn-hover-border-color: #ea868f;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #f1aeb5;
+  --bs-btn-active-border-color: #f1aeb5;
+}
+[data-bs-theme="dark"] .link-primary {
+  color: #6ea8fe !important;
+}
 [data-bs-theme="dark"] .btn-light {
   --bs-btn-color: #dee2e6;
   --bs-btn-bg: #343a40;
@@ -1648,6 +1675,12 @@ body.timeline-open #main-panel {
   #navbar-menus .nav {
     flex-wrap: wrap;
   }
+  /* An open menu pushes the others down instead of covering them */
+  #navbar-menus .dropdown-menu.show {
+    position: static !important;
+    transform: none !important;
+    margin: 0;
+  }
   #search-form {
     flex-wrap: wrap;
     padding-top: 0.25rem;
@@ -1731,4 +1764,11 @@ a[data-mt-name].icon-action {
   align-items: center;
   justify-content: center;
   vertical-align: middle;
+}
+
+/* The Help dialog's list of topics: links at least 24 px tall (WCAG 2.5.8) */
+#help-modal ul.small a {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
 }
