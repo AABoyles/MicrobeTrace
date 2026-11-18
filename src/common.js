@@ -383,6 +383,12 @@
   // Given the source it came from (session.data.sources), the node's values
   // are recorded there, and where files disagree the top file's win. Without
   // a source (a saved session, an import), its values replace any already set.
+  // Lists node fields (once each) so they appear in variable menus and sessions
+  MT.addNodeField = (...names) => {
+    const fields = session.data.nodeFields;
+    names.forEach(name => { if (!fields.includes(name)) fields.push(name); });
+  };
+
   MT.addNode = (newNode, check, source) => {
     if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
     if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
@@ -528,8 +534,7 @@
           false
         );
       });
-      session.data.nodeFields.push("color");
-      session.data.nodeFields.push("size");
+      MT.addNodeField("color", "size");
       all("#edges path").forEach(link => {
         const coords = link.getAttribute("class").split(" ");
         let base = {
@@ -653,8 +658,7 @@
     Object.keys(
       hivtrace["trace_results"]["Nodes"][0]["patient_attributes"]
     ).forEach(key => {
-      if (!session.data.nodeFields.includes(key))
-        session.data.nodeFields.push(key);
+      MT.addNodeField(key);
     });
     let n = hivtrace["trace_results"]["Edges"].length;
     let metric = session.style.widgets['default-distance-metric'];
@@ -684,11 +688,7 @@
       MT.addNode(newNode, false);   
     });
     // (A sample's id is its ID, _id, so isn't listed as a field too)
-    ["genotypes", "group", "name"].forEach(key => {     
-      if (!session.data.nodeFields.includes(key)){
-        session.data.nodeFields.push(key);     
-      }   
-    });
+    MT.addNodeField("genotypes", "group", "name");
     let links = ghost["links"];   
     let n = links.length;   
     for (let i = 0; i < n; i++) {     
@@ -925,9 +925,7 @@
             d._seq = d._seq.padEnd(referenceLength, "-");
           }
         }
-        session.data.nodeFields.push('_score');
-        session.data.nodeFields.push('_padding');
-        session.data.nodeFields.push('_cigar');
+        MT.addNodeField('_score', '_padding', '_cigar');
         console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve(subset);
       };
@@ -960,7 +958,7 @@
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._ambiguity = dists[j];
         }
-        session.data.nodeFields.push('_ambiguity');
+        MT.addNodeField('_ambiguity');
         console.log("Ambiguity Count Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
@@ -997,7 +995,7 @@
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._diff = dists[j];
         }
-        session.data.nodeFields.push('_diff');
+        MT.addNodeField('_diff');
         console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
