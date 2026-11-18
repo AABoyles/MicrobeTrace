@@ -325,7 +325,7 @@ svg#link-threshold-sparkline line.threshold-mark {
   top: 0px;
   left: -400px;
   display: none;
-  width: 400px;
+  width: min(400px, 100%);
   max-width: 100%;
   padding: 10px;
   background: var(--mt-pane);
@@ -351,6 +351,7 @@ svg#link-threshold-sparkline line.threshold-mark {
 /* The table's text size, in a menu from its toolbar */
 .table-text-size {
   width: 14rem;
+  max-width: 100%;
 }
 /* Beside the pane, in a view wide enough (MT.paneToggle's `beside`) */
 .pane-beside {
@@ -767,6 +768,7 @@ td {
 .dna {
   margin: 40px auto;
   width: 360px;
+  max-width: 100%;
   height: 70px;
   perspective: 466px;
   transform-style: preserve-3d;
@@ -1310,6 +1312,7 @@ body.timeline-open #main-panel {
 
 .choropleth-legend {
   width: 14rem;
+  max-width: 100%;
   padding: 0.375rem 0.5rem;
   font-size: 0.8125rem;
   color: #212529;
@@ -1585,5 +1588,35 @@ body.timeline-open #main-panel {
   }
   .ele {
     animation: none;
+  }
+}
+
+/* Small screens and large zoom (#275): the menus fold behind the navbar's
+   toggler below the expand breakpoint, and the panes give way to the view */
+@media (max-width: 1199.98px) {
+  #navbar-menus .nav {
+    flex-wrap: wrap;
+  }
+  #search-form {
+    flex-wrap: wrap;
+    padding-top: 0.25rem;
+  }
+  .navbar {
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+}
+@media (max-width: 640px) {
+  .left-pane {
+    width: 100%;
+    border-right: none;
+  }
+  .floater,
+  .floating-table {
+    max-width: 100%;
+  }
+  #search {
+    width: 100%;
+    max-width: 13rem;
   }
 }
