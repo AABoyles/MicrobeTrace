@@ -293,6 +293,18 @@ input[type="color"].form-control {
   border: 1px solid var(--mt-border);
   border-radius: 0.25rem;
 }
+/* A floating table's options button (the keyboard's way to its right-click menu) */
+.floater > .floater-menu-button {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 1;
+  /* (Over the table's corner, taking no room of its own) */
+  width: 1.5rem;
+  margin-left: -1.5rem;
+  padding: 0;
+  line-height: 1.2;
+}
 .nodeVariables,
 .linkVariables {
   width: 100%;

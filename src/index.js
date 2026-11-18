@@ -749,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     values.forEach((value, i) => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
+      row.innerHTML = `<td data-value="${MT.escape(value)}">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
         `<td><input type="color">${MT.transparencyButton}</td>`;
@@ -780,12 +780,9 @@ document.addEventListener("DOMContentLoaded", () => {
           events.emit(kind + "-color-change");
         }, { once: true });
       });
-      // Double-click a value to rename it
+      // Double-click a value (or press F2 or Enter on it) to rename it
       const name = row.querySelector("td");
-      name.addEventListener("dblclick", () => {
-        name.contentEditable = true;
-        name.focus();
-      });
+      MT.renamable(name);
       name.addEventListener("focusout", () => {
         name.contentEditable = false;
         names[value] = name.textContent;

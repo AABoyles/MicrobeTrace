@@ -10,7 +10,7 @@
   </div>
 </div>
 <div class="network-live visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
-<p id="network-keys-summary" class="visually-hidden">Arrow keys move to the nearest node in that direction, N and P step through every node, L follows the focused node's links, Enter selects, F pins, M opens the node menu, Escape clears the selection, and question mark lists the keys. The Table view lists the same nodes.</p>
+<p id="network-keys-summary" class="visually-hidden">Arrow keys move to the nearest node in that direction, N and P step through every node, L follows the focused node's links, Enter selects, C selects the node's cluster, A selects every node, F pins, M opens the node menu, Escape clears the selection, and question mark lists the keys. The Table view lists the same nodes.</p>
 <div id="network-keys" class="network-keys" hidden>
   <h2 class="h6">Network keys</h2>
   <p class="small mb-1">Click the network or Tab to it, then:</p>
@@ -19,6 +19,8 @@
     <dt>N / P, Home / End</dt><dd>Next / previous node, first / last</dd>
     <dt>L / Shift+L</dt><dd>Next / previous linked node</dd>
     <dt>Enter or Space</dt><dd>Select the node (Ctrl: add or remove it)</dd>
+    <dt>C / Shift+C</dt><dd>Select the node's cluster (Shift: add it to the selection)</dd>
+    <dt>A</dt><dd>Select every node</dd>
     <dt>F</dt><dd>Pin or unpin the node</dd>
     <dt>M, Shift+F10</dt><dd>Node menu (copy ID, attributes…)</dd>
     <dt>I</dt><dd>Describe the node again</dd>
@@ -286,6 +288,7 @@
           </div>
           <div id="network-controls-labels" class="collapse show" data-bs-parent="#network-controls-accordion">
             <div class="card-body">
+              <p class="small text-body-secondary network-gesture-hint">Tip: Ctrl + drag on the network selects the nodes in a rectangle, and Ctrl + click adds a node to the selection. Right-click a node for its menu. From the keyboard, focus the network and press ? for the keys.</p>
               <div class="form-group row" title="Should MicrobeTrace highlight a node's neighbors when you hover over it?">
                 <div class="col-4">Neighbors</div>
                 <div class="col-8">
@@ -462,8 +465,9 @@ Note that this may cause slow performance on larger networks.">
   <table class="polygon-color-table"></table>
 </div>
 
-<div class="dropdown-menu floater-menu polygon-color-table-menu">
+<div class="dropdown-menu floater-menu polygon-color-table-menu" role="menu">
   <a href="#" class="dropdown-item" data-action="drag">Drag</a>
+  <a href="#" class="dropdown-item" data-action="rename">Rename a Value</a>
   <a href="#" class="dropdown-item" data-action="hide">Hide</a>
   <a href="#" class="dropdown-item" data-action="expand">Expand</a>
   <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
@@ -1147,14 +1151,14 @@ Note that this may cause slow performance on larger networks.">
       const title = session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : 'Node ' + MT.titleize(variable);
       const counts = get('node-symbol-table-counts'), frequencies = get('node-symbol-table-frequencies');
       symbolTable.innerHTML = '<tr>' +
-        `<th class="p-1" contenteditable>${MT.escape(title)}</th>` +
+        `<th class="p-1" contenteditable title="Edit to rename the heading">${MT.escape(title)}</th>` +
         (counts ? '<th>Count</th>' : '') +
         (frequencies ? '<th>Frequency</th>' : '') +
         '<th>Shape</th></tr>';
       const options = $('[data-setting="node-symbol"]').innerHTML;
       values.forEach((v, i) => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td contenteditable>${MT.escape(MT.valueLabel(v))}</td>` +
+        row.innerHTML = `<td contenteditable title="Edit to rename the value">${MT.escape(MT.valueLabel(v))}</td>` +
           (counts ? `<td>${aggregates[v]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[v] / count).toLocaleString()}</td>` : '') +
           `<td><select>${options}</select></td>`;
@@ -1361,7 +1365,7 @@ Note that this may cause slow performance on larger networks.">
         session.style.polygonColors.splice(i, 1, temp.style.polygonColorMap(value));
         session.style.polygonAlphas.splice(i, 1, temp.style.polygonAlphaMap(value));
         const row = document.createElement('tr');
-        row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
+        row.innerHTML = `<td data-value="${MT.escape(value)}">${MT.escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
           (counts ? `<td>${aggregates[value]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
           `<td><input type="color">${MT.transparencyButton}</td>`;
@@ -1386,12 +1390,9 @@ Note that this may cause slow performance on larger networks.">
             drawOverlays();
           }, { once: true });
         });
-        // Double-click a value to rename it
+        // Double-click a value (or press F2 or Enter on it) to rename it
         const name = row.querySelector('td');
-        name.addEventListener('dblclick', () => {
-          name.contentEditable = true;
-          name.focus();
-        });
+        MT.renamable(name);
         name.addEventListener('focusout', () => {
           name.contentEditable = false;
           session.style.polygonValueNames[value] = name.textContent;
@@ -1936,6 +1937,11 @@ Note that this may cause slow performance on larger networks.">
       return best !== undefined ? best : wide;
     }
 
+    function selectGroup(ids, add) {
+      session.data.nodes.forEach(d => { d.selected = ids.has(d._id) || (add && !!d.selected); });
+      events.emit('node-selected', 'network');
+    }
+
     const directions = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
     const noFocus = () => announce('No node is focused. Use the arrow keys or N to choose one.');
 
@@ -1978,6 +1984,17 @@ Note that this may cause slow performance on larger networks.">
         showContextMenu(focused, null, new MouseEvent('contextmenu', { clientX: box.left + x, clientY: box.top + y }));
         menu.querySelector('.dropdown-item').focus();
       });
+      // A group of nodes without the mouse (#185): the focused node's cluster
+      // (Shift adds it to the selection), or every node drawn
+      else if (key == 'c' && !ctrl) action = needsFocus(d => {
+        const ids = new Set(points.filter(p => p.cluster === d.cluster).map(p => p._id));
+        selectGroup(ids, e.shiftKey);
+        announce(`Cluster ${d.cluster} selected, ${plural(ids.size, 'node')}. ${plural(session.data.nodes.filter(node => node.selected).length, 'node')} selected in all.`);
+      });
+      else if (key == 'a') action = () => {
+        selectGroup(new Set(points.map(p => p._id)), false);
+        announce(`All ${plural(points.length, 'node')} selected.`);
+      };
       else if (key == 'i' && !ctrl) action = needsFocus(() => announce(describe(focused)));
       else if (key == '?') action = () => toggleKeys();
       if (!action) return;
