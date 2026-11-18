@@ -191,10 +191,10 @@ test('hivtrace-g.fasta, HIVTRACE-G: MT.computeLinks against tn93 -a resolve -g 0
   }, () => checkMetric('tn93', other.map(i => tri[i]), other.map(i => g.tn93[i]), other.map(i => exp.pairs[i]), 1e-6));
 });
 
-test('the FASTA parser reads N as a gap (a MicrobeTrace convention; tn93 reads it as A/C/G/T)', async () => {
+test('the FASTA parser keeps N as an ambiguity code, as tn93 reads it (#232)', async () => {
   const seqs = await parseFasta('distances.fasta');
   assert.strictEqual(seqs.length, 8);
   assert.ok(seqs.every(s => s.seq.length == 40));
   const out = await runWorker('workers/parse-fasta.js', '>n\nACGNN\nNT\n');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'n', seq: 'ACG---T' }]);
+  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'n', seq: 'ACGNNNT' }]);
 });

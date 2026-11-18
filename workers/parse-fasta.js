@@ -12,10 +12,7 @@ function parseFasta(text){
     let line = lines[i].trim();  // issue 189, 190
     if(isblank.test(line) || line[0] == ';') continue;
     if(line[0] == '>'){
-      if(currentSeq){
-        currentSeq.seq = currentSeq.seq.replace(/N/g, "-");   // replace all "N" with "-"
-        seqs.push(currentSeq);
-      }
+      if(currentSeq) seqs.push(currentSeq);
       currentSeq = {
         id: line.slice(1).trim(),
         seq: ''
@@ -24,10 +21,7 @@ function parseFasta(text){
       currentSeq.seq += line.toUpperCase();
     }
   }
-  if(currentSeq){
-    currentSeq.seq = currentSeq.seq.replace(/N/g, "-");   // replace all "N" with "-"
-    seqs.push(currentSeq);
-  }
+  if(currentSeq) seqs.push(currentSeq);
   return seqs;
 }
 
