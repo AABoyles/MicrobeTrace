@@ -2516,6 +2516,13 @@
   // doesn't have (and puts their columns' headers inside the group's)
   MT.table = (element, options) => {
     const table = new Tabulator(element, options);
+    // A view can be resized (its tab brought forward, say) between mounting and
+    // its table being built, or after the table is destroyed. Tabulator's
+    // redraw throws then; building lays the table out anyway, so skip it.
+    let ready = false;
+    table.on('tableBuilt', () => { ready = true; });
+    const redraw = table.redraw.bind(table);
+    table.redraw = force => ready && !table.destroyed ? redraw(force) : undefined;
     const mend = () => {
       const root = table.element, holder = root.querySelector(':scope > .tabulator-tableholder');
       root.removeAttribute('aria-owns');
@@ -3553,8 +3560,16 @@
     const root = toConfig(component || emptyLayout.root);
     return Promise.all(views.map(fetchView)).then(() => {
       layout.loadLayout(Object.assign({}, emptyLayout, { root }));
-      // One at a time and in order, as each view's script runs when it loads
-      return layout.contentItems.reduce((done, item) => done.then(() => openView(item)), Promise.resolve());
+      // One at a time and in order, as each view's script runs when it loads.
+      // Each item is marked as loading from the start, so a launchView for a
+      // view still waiting its turn waits too, rather than setting up an empty
+      // element (openView replaces the mark with its own when it starts).
+      return layout.contentItems.reduce((done, item) => {
+        const opened = done.then(() => openView(item));
+        item.ready = opened;
+        opened.finally(() => { if (item.ready === opened) item.ready = null; });
+        return opened;
+      }, Promise.resolve());
     }, viewFailed);
   };
   
