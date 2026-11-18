@@ -40,6 +40,15 @@ test('without dates it says what to choose, and adding a date draws a bar per no
   await expect(bars()).toHaveCount(await visibleDated());
 });
 
+test('dates take their colours from the colour-blind-safe palette (#294)', async () => {
+  const colour = () => rows().last().locator('input[type=color]').inputValue();
+  expect(await rows().first().locator('input[type=color]').inputValue()).toBe('#0072b2');
+  await pane().locator('button', { hasText: 'Add Date' }).click();
+  expect(await colour()).toBe('#e69f00');
+  await rows().last().locator('a[title="Remove this date"]').click();
+  await expect(rows()).toHaveCount(1);
+});
+
 test('a date\'s color and transparency apply to its bars', async () => {
   await rows().first().locator('input[type=color]').evaluate(el => { el.value = '#ff0000'; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); });
   await expect(bars().first()).toHaveAttribute('fill', '#ff0000');

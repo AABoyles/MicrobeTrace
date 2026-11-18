@@ -266,8 +266,9 @@
     }
 
     $('.add-date').addEventListener('click', () => {
-      const colors = d3.schemeCategory10;
-      setDates(dates().concat([{ start: 'None', end: 'None', color: colors[dates().length % colors.length], transparency: 0.4 }]));
+      // The colour-blind-safe default palette (#294), in shades beyond its own colours
+      const colors = MT.extendPalette(MT.COLOR_BLIND_SAFE, dates().length + 1);
+      setDates(dates().concat([{ start: 'None', end: 'None', color: colors[dates().length], transparency: 0.4 }]));
       showDates();
     });
 
@@ -284,7 +285,7 @@
     // With no dates chosen, it starts on the data's first field of dates
     if (!dates().length) {
       const [field] = MT.dateFields(session.data.nodes, session.data.nodeFields);
-      if (field) setDates([{ start: field, end: 'None', color: d3.schemeCategory10[0], transparency: 0.4 }]);
+      if (field) setDates([{ start: field, end: 'None', color: MT.COLOR_BLIND_SAFE[0], transparency: 0.4 }]);
     }
 
     // The settings start open when there's nothing to draw
