@@ -111,10 +111,21 @@ self.addEventListener("message", event => {
   if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
+// Files cached on first use rather than precached (the map boundaries in data/
+// and the demo session in demo/) are carried into the new version's cache
+// before the old one goes, so offline use keeps them across updates (#296).
+// They are data, not code, so an older copy can't mix versions of the app.
+const CARRIED = /\/(data|demo)\//;
+
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k.startsWith(PREFIX) && k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => keys.filter(k => k.startsWith(PREFIX) && k !== CACHE))
+      .then(old => caches.open(CACHE).then(cache =>
+        Promise.all(old.map(name => caches.open(name).then(previous => previous.keys().then(requests =>
+          Promise.all(requests.filter(r => CARRIED.test(new URL(r.url).pathname)).map(r =>
+            cache.match(r).then(hit => hit || previous.match(r).then(response => response && cache.put(r, response)))))))))
+        .then(() => Promise.all(old.map(k => caches.delete(k))))))
       .then(() => self.clients.claim())
   );
 });
@@ -126,7 +137,7 @@ self.addEventListener("activate", event => {
 // how a new version is found; it then waits for the user (see src/index.js).
 // Everything else from this origin: cache first, since the cache holds one
 // consistent version (replaced as a whole on update); files not precached
-// (e.g. data/) are fetched, then kept for next time.
+// (data/, demo/) are fetched, then kept for next time and across updates.
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET" || !request.url.startsWith(self.location.origin)) return;
