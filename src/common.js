@@ -734,14 +734,24 @@
     });
   };
   
-  MT.parseCSVMatrix = (file, source) => {
-    return new Promise(resolve => {
+  // Reads a distance matrix (CSV text in file.contents) into the graph. Rejects
+  // with an Error saying why when the file cannot be read as one.
+  MT.parseCSVMatrix = (file, source, nodeOrigin) => {
+    return new Promise((resolve, reject) => {
       let check = session.files.length > 1;
       const origin = [file.name];
       let nn = 0,
           nl = 0;
       let computer = new Worker("workers/parse-csv-matrix.js");
+      computer.onerror = event => {
+        computer.terminate();
+        reject(new Error((event && event.message) || "the matrix worker failed"));
+      };
       computer.onmessage = response => {
+        if (response.data.error) {
+          computer.terminate();
+          return reject(new Error(response.data.error));
+        }
         const data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
         console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         const start = Date.now();
@@ -750,7 +760,7 @@
         for (let i = 0; i < tn; i++) {
           nn += MT.addNode({
             _id: MT.escape(nodes[i]),
-            origin: ['Genetic Distance']
+            origin: nodeOrigin || ['Genetic Distance']
           }, check, source);
         }
         const links = data.links;
@@ -762,7 +772,7 @@
           nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field));
         }
         console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-        resolve({ nn, nl, tn, tl });
+        resolve({ nn, nl, tn, tl, unparseable: data.unparseable || 0, example: data.example });
       };
       computer.postMessage(file.contents);
     })

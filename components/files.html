@@ -866,6 +866,30 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       const check = session.files.length > 1;
 
+      // Says (in the log and a warning) how many links a file gave without a usable distance (#220)
+      const reportDistances = (file, noColumn, missing, bad, example) => {
+        const name = shownName(file);
+        const parts = [];
+        if (noColumn) parts.push(`${noColumn.toLocaleString()} link${noColumn == 1 ? ' has' : 's have'} no distance (no distance column was chosen), so the link threshold cannot select ${noColumn == 1 ? 'it' : 'them'}`);
+        if (missing) parts.push(`${missing.toLocaleString()} link${missing == 1 ? ' has' : 's have'} an empty distance`);
+        if (bad) parts.push(`${bad.toLocaleString()} distance${bad == 1 ? ' is' : 's are'} not numbers (for example "${example}")`);
+        if (!parts.length) return;
+        message(` - ${name}: ${parts.join('; ')}. Such links are kept without a distance and are not shown by the link threshold.`);
+        MT.toast.warning(`${name}: ${parts.join('; ')}. Choose the distance column, or fix the values, and load it again.`);
+      };
+
+      // A file that cannot be read stops the load, with the reason (the dialog is not left up)
+      const fail = (file, kind, error) => {
+        const reason = (error && error.message) || error;
+        console.error(error);
+        const text = `Could not read ${shownName(file)} as ${kind}: ${reason}.`;
+        message(text);
+        MT.toast.error(text);
+        clearTimeout(temp.messageTimeout);
+        MT.hideModal('loading-information-modal');
+        checkLaunch();
+      };
+
       // Files are read in the order their kinds need, but where they disagree
       // about a node, the values of the file nearest the top of the list win
       const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
@@ -908,7 +932,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         } else if (file.format == 'link') {
 
           message(`Parsing ${shownName(file)} as Link List...`);
-          let l = 0;
+          let l = 0, noColumn = 0, missing = 0, bad = 0, badExample = null;
           if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
 
           let forEachLink = link => {
@@ -924,14 +948,26 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 session.data.linkFields.push(key);
               }
             }
-            l += MT.addLink(Object.assign({
+            const out = Object.assign({
               source: '' + safeLink[MT.escape(file.field1)],
               target: '' + safeLink[MT.escape(file.field2)],
               origin: origin,
-              visible: true,
-              // A file's distances are taken to be the distance metric's
-              [get('default-distance-metric')]: file.field3 == 'None' ? 0 : parseFloat(safeLink[MT.escape(file.field3)])
-            }, safeLink), check);
+              visible: true
+            }, safeLink);
+            // A file's distances are taken to be the distance metric's. A link with
+            // no distance has none (not 0, which every threshold would pass), and
+            // one with an unreadable distance has none rather than NaN (#220)
+            const metric = get('default-distance-metric');
+            const distance = file.field3 == 'None' ? null : MTGraph.parseDistance(safeLink[MT.escape(file.field3)]);
+            if (distance === null || distance !== distance) {
+              if (file.field3 == 'None') noColumn++;
+              else if (distance === null) missing++;
+              else { bad++; if (badExample === null) badExample = '' + safeLink[MT.escape(file.field3)]; }
+              if (file.field3 == 'None' || MT.escape(file.field3) == metric) delete out[metric];
+            } else {
+              out[metric] = distance;
+            }
+            l += MT.addLink(out, check);
           };
 
           if (file.extension == 'xls' || file.extension == 'xlsx') {
@@ -940,6 +976,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
             data.map(forEachLink);
             message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
+            reportDistances(file, noColumn, missing, bad, badExample);
             let n = 0, t = 0;
             const nodeIDs = new Set();
             const k = data.length;
@@ -971,6 +1008,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 let data = results.data;
                 data.map(forEachLink);
                 message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+                reportDistances(file, noColumn, missing, bad, badExample);
                 results.meta.fields.forEach(key => {
                   const safeKey = MT.escape(key);
                   if (!session.data.linkFields.includes(safeKey)) {
@@ -1068,61 +1106,30 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           message(`Parsing ${shownName(file)} as Distance Matrix...`);
 
+          // Excel sheets are read as CSV text by the same parser as CSV files, which
+          // finds the shape (square, or either triangle) from the first row
+          let matrixFile = file, nodeOrigin;
           if (file.extension == 'xls' || file.extension == 'xlsx') {
-
-            let workbook = XLSX.read(file.contents, { type: 'array' });
-            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1, raw: false, dateNF: 'yyyy-mm-dd'});
-            let nodeIDs = [], nn = 0, nl = 0;
-            if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
-
-            if (data[0][0].replace(/\"/g, '').replace(/\'/g, '')) { // triangle matrix
-              let topNodeIDs = [''];
-              data.forEach((row, i) => {
-                const nodeID = row[0];
-                topNodeIDs.push(nodeID);
-              })
-              data.unshift(topNodeIDs);
+            try {
+              const workbook = XLSX.read(file.contents, { type: 'array' });
+              const sheet = workbook.Sheets[workbook.SheetNames[0]];
+              if (!sheet) throw new Error('the workbook has no sheets');
+              matrixFile = Object.assign({}, file, { contents: XLSX.utils.sheet_to_csv(sheet, { rawNumbers: true, dateNF: 'yyyy-mm-dd' }) });
+              nodeOrigin = origin;
+            } catch (error) {
+              return fail(file, 'a distance matrix', error);
             }
-
-            data.forEach((row, i) => {
-              if (i == 0) {
-                nodeIDs = row;
-                nodeIDs.forEach((cell, k) => {
-                  if (k > 0) {
-                    nn += MT.addNode({
-                      _id: MT.escape('' + cell),
-                      origin: origin
-                    }, check, source);
-                  }
-                });
-              } else {
-                const source = MT.escape('' + row[0]);
-                row.forEach((cell, j) => {
-                  if (j == 0) return;
-                  const target = MT.escape('' + nodeIDs[j]);
-                  if (source == target) return;
-                  nl += MT.addLink({
-                    source: source,
-                    target: target,
-                    origin: origin,
-                    [get('default-distance-metric')]: parseFloat(cell)
-                  }, check);
-                });
-              }
-            });
-            console.log('Distance Matrix Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
-            message(` - Parsed ${nn} New, ${data.length - 1} Total Nodes from Excel Distance Matrix.`);
-            message(` - Parsed ${nl} New, ${((data.length - 1) ** 2 - (data.length - 1)) / 2} Total Links from Excel Distance Matrix.`);
-            parsed();
-
-          } else {
-
-            MT.parseCSVMatrix(file, source).then(o => {
-              message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
-              message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
-              parsed();
-            });
           }
+          MT.parseCSVMatrix(matrixFile, source, nodeOrigin).then(o => {
+            message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
+            message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
+            if (o.unparseable) {
+              const text = `${shownName(file)}: ${o.unparseable.toLocaleString()} matrix cell${o.unparseable == 1 ? ' is' : 's are'} not numbers (for example "${o.example}") and ${o.unparseable == 1 ? 'was' : 'were'} skipped.`;
+              message(' - ' + text);
+              MT.toast.warning(text);
+            }
+            parsed();
+          }, error => fail(file, 'a distance matrix', error));
 
         } else { // if(file.format == 'newick'){
 

@@ -576,6 +576,21 @@
   MTGraph.pairIndex = pairIndex;
   MTGraph.pairRows = pairRows;
 
+  // A distance as a number; null for an empty value (no distance); NaN for text
+  // that is not a distance. "0,015" is read as 0.015 (a decimal comma); other
+  // comma forms ("1,234") could be a thousands separator and are not guessed.
+  // (Copied in workers/parse-csv-matrix.js, which cannot load this file.)
+  MTGraph.parseDistance = v => {
+    if (v == null) return null;
+    if (typeof v == 'number') return isFinite(v) ? v : NaN;
+    const s = ('' + v).trim();
+    if (s === '') return null;
+    if (/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(s)) return Number(s);
+    const comma = /^([+-]?)0?,(\d+)$/.exec(s);
+    if (comma) return Number(comma[1] + '0.' + comma[2]);
+    return NaN;
+  };
+
   // A link read from a distance matrix or tree, with its distance kept under
   // the field the network filters on (the distance metric's, as for sequences
   // and link lists) rather than under "distance" (#213)
