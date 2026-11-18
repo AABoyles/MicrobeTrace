@@ -327,13 +327,19 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   byId("filtering-epsilon").addEventListener("input", showEpsilon);
 
+  // Pruning that fails (a worker that throws) leaves the links as they were, and says so (#222)
+  const pruningFailed = error => {
+    console.error(error);
+    MT.toast.error("Couldn't prune the links: " + MT.escape((error && error.message) || "" + error) + ". They are shown unpruned.", 10);
+    updateNetwork();
+  };
   settings.subscribe("link-prune", prune => {
     if (prune != "none") showEpsilon();
-    MT.computePruning().then(updateNetwork);
+    MT.computePruning().then(updateNetwork, pruningFailed);
   });
   settings.subscribe("filtering-epsilon", () => {
     showEpsilon();
-    if (get("link-prune") != "none") MT.computePruning().then(updateNetwork);
+    if (get("link-prune") != "none") MT.computePruning().then(updateNetwork, pruningFailed);
   });
   settings.subscribe("cluster-minimum-size", () => {
     MT.setClusterVisibility(true);
@@ -356,7 +362,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pruned.then(() => {
       if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
       else updateNetwork();
-    });
+    }, pruningFailed);
   });
   // With sparse storage, only links within the threshold at load were kept:
   // say so beside the threshold, and when it's raised past that (#228)

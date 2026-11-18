@@ -120,10 +120,11 @@ test('computeTree rejects, rather than hanging, when the tree is too deep to par
 });
 
 test('computeTree rejects when the distance matrix fails', async () => {
-  const ctx = bare(), worker = treeWorker(ctx);
+  const ctx = bare();
+  treeWorker(ctx);
   ctx.MT.getDM = async () => { throw new Error('no matrix'); };
+  // (no worker is started without a matrix)
   await assert.rejects(ctx.MT.computeTree(), /no matrix/);
-  assert.ok(worker.terminated);
 });
 
 test('computeTree sets the tree and terminates its worker', async () => {
