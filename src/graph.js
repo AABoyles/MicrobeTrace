@@ -129,6 +129,7 @@
     }
 
     setValue(e, field, value) {
+      this.version++;
       let col = this.column(field);
       if (col.numeric && !(value == null || typeof value == 'number')) {
         col.numeric = false;
@@ -382,6 +383,7 @@
     }
 
     setFlag(e, flag, on) {
+      this.version++;
       const f = on ? this.getFlags(e) | flag : this.getFlags(e) & ~flag;
       if (e < IMPLICIT) {
         this.flags[e] = f;
@@ -393,6 +395,7 @@
     }
 
     clearFlag(flag) {
+      this.version++;
       for (let e = 0; e < this.m; e++) this.flags[e] &= ~flag;
       if (this.implicitFlags) {
         this.implicitFlags.forEach((f, k) => {
@@ -410,6 +413,7 @@
         this.addLink({ source: this.ids[t], target: this.ids[s] });
         return this.explicitEdge(s, t);
       }
+      this.version++;
       const s = this.src[e];
       this.src[e] = this.tgt[e];
       this.tgt[e] = s;
@@ -466,11 +470,18 @@
     // so there the threshold is rounded to Float32 too; otherwise a distance
     // like 3/200 against 0.015 could be left out in dense mode and kept in
     // sparse mode (#227).
+    // visibleVersion changes only when the visible list does (the same
+    // threshold, or a second pass over the same clusters, leaves it), so what
+    // is built from it can be kept. (version is for the data of the links.)
     computeVisible(field, threshold, nnOnly, keep) {
       if (this.denseValues(field)) threshold = Math.fround(threshold);
       let out = this.visible, c = 0;
+      const before = this.visibleCount;
+      let same = true;
       const push = e => {
         if (c >= out.length) out = grow(out, c + 1);
+        // (out still holds the previous list from c on)
+        if (same && !(c < before && out[c] === e)) same = false;
         out[c++] = e;
       };
       const col = this.columns.get(field);
@@ -506,8 +517,7 @@
       }
       this.visible = out;
       this.visibleCount = c;
-      this.visibleVersion++;
-      this.version++;
+      if (!same || c != before) this.visibleVersion++;
       return out.subarray(0, c);
     }
 
@@ -543,7 +553,9 @@
     // Link objects -----------------------------------------------------------
 
     // A plain link object for edge e, the shape MicrobeTrace has always used.
-    link(e) {
+    // With shareOrigin, origin is the store's own list (for many links, read
+    // only) rather than a copy.
+    link(e, shareOrigin) {
       const out = {
         index: e,
         source: this.ids[this.source(e)],
@@ -553,7 +565,7 @@
         out[field] = this.getValue(e, field);
       });
       const f = this.getFlags(e);
-      out.origin = this.origins(e).slice();
+      out.origin = shareOrigin ? this.origins(e) : this.origins(e).slice();
       out.nn = !!(f & NN);
       out.directed = !!(f & DIRECTED);
       if (f & UNMEASURED) out.unmeasured = true;
