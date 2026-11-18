@@ -1388,6 +1388,7 @@
       const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
       if (differ) MT.toast.warning(`${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files. Click to review them.`, 15,
         clicked => { if (clicked) MT.launchView("conflicts"); });
+      MT.reportDateColumns(session.data.nodes, session.data.nodeFields);
     }
     // Links are done loading: swap the graph's pair lookup for its compact index.
     // (Link objects get null for missing link fields as they're built.)
@@ -1564,6 +1565,7 @@
       clusters = session.data.clusters;
     let n = nodes.length;
     let timeEnd = dateField != "None" && MT.parseDate(session.state.timeEnd);
+    const order = MTDates.dateOrderOf(nodes.map(d => d[dateField])).order;
     for (let i = 0; i < n; i++) {
       let node = nodes[i];
       node.visible = true;
@@ -1572,7 +1574,7 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd);
+      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd, order);
     }
     if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
@@ -2417,18 +2419,45 @@
     return values.length > 0 && values.every(v => typeof v == 'number' && isFinite(v)) && new Set(values).size >= 3;
   });
 
-  // Whether a value is a date: a Date, or text that reads as one. Numbers
-  // aren't, nor text that's just a number (as spreadsheets give), though
-  // MT.parseDate reads them as times.
-  MT.isDate = value => value instanceof Date ? !isNaN(value) :
-    typeof value == 'string' && isNaN(value) && !!MT.parseDate(value);
+  // Whether a value is a date: a Date, or text that reads as one (in the given
+  // order, see MTDates.dateOrderOf). Numbers aren't, nor text that's just a
+  // number (as spreadsheets give), though MT.parseDate reads them as times.
+  MT.isDate = (value, order) => value instanceof Date ? !isNaN(value) :
+    typeof value == 'string' && isNaN(value) && !!MT.parseDate(value, order);
 
-  // Fields of dates: all dates, with at least 2. Those named for dates come
-  // first.
+  // A column's values read as dates: how many are present, how many read, and
+  // how many distinct dates they are, all in the column's order
+  MT.dateColumn = values => {
+    const present = values.filter(v => v != null && v !== '');
+    const { order, status } = MTDates.dateOrderOf(present);
+    const dates = present.filter(v => MT.isDate(v, order));
+    return { order, status, present: present.length, readable: dates.length, distinct: new Set(dates).size };
+  };
+
+  // Fields of dates: at least half the values are dates, with at least 2
+  // distinct. The rest are undated (see MT.reportDateColumns). Those named for
+  // dates come first.
   MT.dateFields = (items, fields) => choosable(fields).filter(field => {
-    const values = valuesOf(items, field);
-    return values.length > 0 && values.every(MT.isDate) && new Set(values).size >= 2;
+    const { present, readable, distinct } = MT.dateColumn(valuesOf(items, field));
+    return readable > 0 && readable * 2 >= present && distinct >= 2;
   }).sort((a, b) => /date|time|day/i.test(b) - /date|time|day/i.test(a));
+
+  // Says, when a file is read, how each date field was read: values that
+  // couldn't be (so are undated), and columns whose day-first and month-first
+  // dates are mixed or can't be told apart
+  MT.reportDateColumns = (items, fields) => {
+    const lines = [];
+    MT.dateFields(items, fields).forEach(field => {
+      const { status, present, readable } = MT.dateColumn(valuesOf(items, field));
+      const notes = [];
+      if (status == 'inconsistent') notes.push('mixes day-first and month-first dates, so it is read month-first');
+      if (status == 'ambiguous') notes.push('has dates that could be day-first or month-first (such as 03/04/2020), so it is read month-first');
+      const unreadable = present - readable;
+      if (unreadable) notes.push(`${unreadable.toLocaleString()} value${unreadable == 1 ? ' could' : 's could'} not be read as ${unreadable == 1 ? 'a date' : 'dates'} and ${unreadable == 1 ? 'is' : 'are'} undated`);
+      if (notes.length) lines.push(`<strong>${MT.escape(field)}</strong>: ${notes.join('; ')}.`);
+    });
+    if (lines.length) MT.toast.warning(lines.join('<br>'), 15);
+  };
 
   // A floating table (such as a view's legend) with a drag handle and a
   // context menu. The menu's items say what they do with data-action: drag
