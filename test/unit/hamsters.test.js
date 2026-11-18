@@ -107,7 +107,7 @@ function treeWorker(ctx) {
     terminate() { worker.terminated = true; }
   };
   ctx.MT.getDMLabels = () => ['a', 'b'];
-  ctx.MT.getDM = async () => [[0, 1], [1, 0]];
+  ctx.MT.getDM = async () => new Float64Array([0, 1, 1, 0]);
   return worker;
 }
 
