@@ -327,6 +327,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   Malformed
                 </label>
               </div>
+              <div class="form-check col" title="Check to see if a sequence's length is more than 20% away from the median length.">
+                <input class="form-check-input" type="checkbox" id="audit-length" name="audit-length" checked>
+                <label class="form-check-label" for="audit-length">
+                  Length
+                </label>
+              </div>
               <div class="col">
                 <button type="button" class="btn btn-outline-primary btn-sm w-100 audit-launcher">Run</button>
               </div>
@@ -742,6 +748,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const isMalformed = /[^ACGTURYMKWSBDHVNQEILFPZX0-9-]+/;
       const found = [];
       const log = (id, type) => found.push({ id, type });
+      // The length of most sequences, to find ones far from it
+      const lengths = data.map(d => d.seq.replace(/-/g, '').length).sort((a, b) => a - b);
+      const median = lengths[Math.floor(lengths.length / 2)];
       data.forEach(({ seq, id }) => {
         if (check('empty') && seq == '') log(id, 'empty');
         if (check('gaps') && isGaps.test(seq)) log(id, 'all gaps');
@@ -749,6 +758,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         if (check('amino-acids') && isAA.test(seq) && !isDNA.test(seq)) log(id, 'amino acids');
         if (check('CIGAR') && isCIGAR.test(seq)) log(id, 'a CIGAR');
         if (check('malformed') && isMalformed.test(seq)) log(id, 'malformed');
+        if (check('length') && data.length >= 10 && seq && !isGaps.test(seq) && Math.abs(seq.replace(/-/g, '').length - median) > median * 0.2) log(id, 'an outlier in length (median ' + median.toLocaleString() + ')');
       });
       return found;
     }
@@ -820,6 +830,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         if (i) information.appendChild(document.createElement('br'));
         information.appendChild(document.createTextNode(text));
       });
+    }
+
+    // Sequence length problems go in the log and in a warning
+    function reportLengths(warnings) {
+      warnings.forEach(w => { message(' - Warning: ' + w); MT.toast.warning(w, 20); });
     }
 
     launchButton.addEventListener('click', () => {
@@ -1174,6 +1189,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             Object.assign(subset[j], output[j]);
           }
           console.log("Alignment Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+          reportLengths(MT.lengthWarnings(output.fit));
+        } else {
+          reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));
         }
         const start = Date.now();
         for(let k = 0; k < n; k++){
@@ -1181,7 +1199,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           node['_seqInt'] = tn93.toInts(node['seq']);
         }
         console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
-        session.data.consensus = await MT.computeConsensus();
+        // Nodes without a sequence hold only gaps; they are left out of the consensus
+        session.data.consensus = await MT.computeConsensus(subset);
         await MT.computeConsensusDistances();
         subset.sort((a, b) => a['_diff'] - b['_diff']);
         if(session.style.widgets['ambiguity-resolution-strategy']){

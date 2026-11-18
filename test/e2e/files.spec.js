@@ -123,10 +123,10 @@ test('the audit flags odd sequences, which can be excluded', async () => {
   const flagged = modal.locator('.audited-sequences .alert');
   await expect(flagged.filter({ hasText: 'gaps appears to be all gaps' })).toHaveCount(1);
   await expect(flagged.filter({ hasText: 'rna appears to be RNA' })).toHaveCount(1);
-  await flagged.filter({ hasText: 'rna appears' }).locator('button').click();
+  await flagged.filter({ hasText: 'rna appears to be RNA' }).locator('button').click();
   expect(await page.evaluate(() => session.data.nodeExclusions)).toContain('rna');
-  await expect(flagged.filter({ hasText: 'rna appears' }).locator('button')).toHaveText('Include');
-  await flagged.filter({ hasText: 'rna appears' }).locator('button').click();
+  await expect(flagged.filter({ hasText: 'rna appears to be RNA' }).locator('button')).toHaveText('Include');
+  await flagged.filter({ hasText: 'rna appears to be RNA' }).locator('button').click();
   expect(await page.evaluate(() => session.data.nodeExclusions)).not.toContain('rna');
   await modal.locator('button', { hasText: 'Done' }).click();
   await expect(modal).toBeHidden();
