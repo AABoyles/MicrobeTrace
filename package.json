@@ -37,6 +37,7 @@
     "bundle": "scripts/bundle.sh",
     "cache": "node scripts/build-sw.js",
     "clean": "scripts/cleanup.sh",
+    "site": "node scripts/build-site.js",
     "compress": "scripts/compress.sh",
     "test": "node --test test/unit/*.test.js",
     "test:e2e": "playwright test",
