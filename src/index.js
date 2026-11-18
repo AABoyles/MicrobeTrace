@@ -1178,6 +1178,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Links to a section of the built-in Help (data-help="section-id") open it
+  // there, offline too
+  document.addEventListener("click", e => {
+    const link = e.target.closest && e.target.closest("[data-help]");
+    if (!link) return;
+    e.preventDefault();
+    const dialog = byId("help-modal");
+    const open = () => {
+      const target = byId(link.dataset.help);
+      if (target) target.scrollIntoView({ block: "start" });
+    };
+    if (dialog.classList.contains("show")) return open();
+    dialog.addEventListener("shown.bs.modal", open, { once: true });
+    modal("help-modal").show();
+  });
+
   // The color tables follow what's visible
   events.on("node-visibility", () => {
     if (get("node-color-variable") !== "None") showColorTable("node");
@@ -1200,7 +1216,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (navigator.onLine) MT.showOnline(document);
 
   if (location.hash == "#demo") {
-    fetch("demo/Demo_outbreak_session.microbetrace").then(r => r.json()).then(MT.applySession);
+    MT.loadDemo();
   } else {
     MT.launchView("files");
   }

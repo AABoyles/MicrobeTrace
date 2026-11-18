@@ -138,13 +138,14 @@ test('files move up and down with buttons and Alt+Arrow', async ({ browser }) =>
   await p.close();
 });
 
-test('the tips are in the Help menu and the network settings', async () => {
+test('the tips are in the Help (from the Help menu) and the network settings', async () => {
   await page.locator('.nav-link.dropdown-toggle', { hasText: 'Help' }).click();
   await page.locator('#ShortcutsTab').click();
-  await waitForModal(page, '#shortcuts-modal');
-  await expect(page.locator('#shortcuts-modal')).toContainText('Ctrl + drag');
-  await expect(page.locator('#shortcuts-modal')).toContainText('Double-click a value');
-  await page.locator('#shortcuts-modal [data-bs-dismiss="modal"]').first().click();
+  await waitForModal(page, '#help-modal');
+  await expect(page.locator('#help-shortcuts-table')).toBeInViewport();
+  await expect(page.locator('#help-shortcuts-table')).toContainText('Ctrl + drag');
+  await expect(page.locator('#help-shortcuts-table')).toContainText('Double-click a value');
+  await page.locator('#help-modal [data-bs-dismiss="modal"]').first().click();
   expect(await page.locator('.network-gesture-hint').count()).toBeGreaterThan(0);
 });
 

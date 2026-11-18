@@ -110,10 +110,11 @@
       <li class="nav-item dropdown">
         <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
         <div class="dropdown-menu">
-          <a href="https://github.com/aaboyles/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank" rel="noreferrer noopener">Help</a>
+          <a href="#" id="HelpTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#help-modal">Help</a>
+          <a href="https://github.com/aaboyles/MicrobeTrace/wiki" id="WikiTab" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Online Help (wiki)</a>
           <a href="https://github.com/aaboyles/MicrobeTrace/wiki/Troubleshooting---Caching" id="TroubleshootTab" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Troubleshoot Caching</a>
           <a href="https://github.com/aaboyles/MicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Report Bug</a>
-          <a href="#" id="ShortcutsTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#shortcuts-modal">Keyboard and Mouse Tips</a>
+          <a href="#help-shortcuts" id="ShortcutsTab" class="dropdown-item" data-help="help-shortcuts">Keyboard and Mouse Tips</a>
           <div class="dropdown-divider ifOnline"></div>
           <a href="#" id="AboutTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#about-modal">About</a>
         </div>
@@ -602,31 +603,87 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div class="modal fade" id="shortcuts-modal" tabindex="-1" role="dialog" aria-labelledby="shortcuts-modal-title">
-    <div class="modal-dialog modal-lg" role="document">
+  <div class="modal fade" id="help-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-title">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 id="shortcuts-modal-title" class="modal-title">Keyboard and Mouse Tips</h5>
+          <h5 class="modal-title" id="help-modal-title">MicrobeTrace Help</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>Some actions are reached by a mouse gesture. Each has a keyboard way too.</p>
-          <table class="table table-sm shortcuts-table">
-            <thead><tr><th scope="col">Where</th><th scope="col">With the mouse</th><th scope="col">What it does</th><th scope="col">From the keyboard</th></tr></thead>
-            <tbody>
-              <tr><th scope="row">Network</th><td>Ctrl + drag</td><td>Select the nodes in a rectangle (they toggle)</td><td>Focus the network, then C selects the focused node's cluster (Shift+C adds it), A selects every node</td></tr>
-              <tr><th scope="row">Network</th><td>Ctrl + click a node</td><td>Add it to, or remove it from, the selection</td><td>Ctrl + Enter on the focused node</td></tr>
-              <tr><th scope="row">Network</th><td>Right-click a node</td><td>The node menu</td><td>M, the menu key or Shift+F10 on the focused node</td></tr>
-              <tr><th scope="row">Network</th><td>Click a node</td><td>Select it</td><td>Arrow keys, N and P move between nodes; Enter or Space selects</td></tr>
-              <tr><th scope="row">Color, shape and polygon tables</th><td>Right-click the table</td><td>Menu: Drag or Pin, Rename a Value, Hide, Expand, Toggle Counts, Toggle Frequencies</td><td>The ... button on the table, or the menu key or Shift+F10 inside it</td></tr>
-              <tr><th scope="row">Color and polygon tables</th><td>Double-click a value</td><td>Rename it</td><td>F2 or Enter on the focused value (Enter keeps the name, Escape cancels), or Rename a Value in the menu</td></tr>
-              <tr><th scope="row">Network statistics</th><td>Right-click the box</td><td>Menu: Drag or Pin, Hide</td><td>The ... button, or the menu key or Shift+F10</td></tr>
-              <tr><th scope="row">Phylogenetic tree</th><td>Right-click a branch</td><td>Rotate, flip or set as root</td><td>Arrow keys move between branches, then Enter, the menu key or Shift+F10; or the ... Tree menu button</td></tr>
-              <tr><th scope="row">Files</th><td>Drag the grip</td><td>Reorder the files (the top file wins where they disagree)</td><td>The move up and move down buttons, or Alt+Up and Alt+Down on a file</td></tr>
-            </tbody>
-          </table>
+          <p>This help is part of the app, so it works without a connection.</p>
+          <p class="ifOnline">The <a href="https://github.com/aaboyles/MicrobeTrace/wiki" target="_blank" rel="noreferrer noopener">MicrobeTrace wiki</a> has more, and needs a connection.</p>
+          <ul class="small">
+            <li><a href="#help-loading" data-help="help-loading">Loading data</a></li>
+            <li><a href="#help-views" data-help="help-views">The views</a></li>
+            <li><a href="#help-thresholds" data-help="help-thresholds">Thresholds and links</a></li>
+            <li><a href="#help-saving" data-help="help-saving">Saving, stashing and exporting</a></li>
+            <li><a href="#help-maps" data-help="help-maps">Maps and tiles</a></li>
+            <li><a href="#help-shortcuts" data-help="help-shortcuts">Mouse and keyboard shortcuts</a></li>
+          </ul>
+
+          <h6 id="help-loading">Loading data</h6>
+          <p>Open the Files view (File, Add Data), then drop files on it or choose them with <strong>Add Files</strong>. Each file is read as one of these kinds, which you can change in its row:</p>
+          <ul>
+            <li><strong>Link list</strong>: a CSV or Excel sheet with a source, a target and, usually, a distance for each link.</li>
+            <li><strong>Node list</strong>: a CSV or Excel sheet with one row per node, whose columns (dates, places, groups and so on) color and filter the views.</li>
+            <li><strong>Distance matrix</strong>: a CSV of distances between every pair of nodes.</li>
+            <li><strong>FASTA</strong>: sequences. MicrobeTrace computes the distances between them (the distance metric is in the Files settings), and can align them first.</li>
+            <li><strong>Newick</strong>: a phylogenetic tree.</li>
+            <li><strong>A saved MicrobeTrace session</strong> (<code>.microbetrace</code>): opens the whole session as it was saved.</li>
+          </ul>
+          <p>Press <strong>Launch</strong> to build the network. Where files disagree about a node, the file nearest the top wins; the Conflicts view lists the differences. To look around first, use <strong>Try the demo data</strong> on the Files view.</p>
+
+          <h6 id="help-views">The views</h6>
+          <p>The View menu opens each one. A view that needs data the session doesn't have says what it needs when it opens.</p>
+          <ul>
+            <li><strong>Network</strong>: nodes and links; color, size and filter them by any column.</li>
+            <li><strong>Table</strong>: the nodes or links as rows. <strong>Aggregation</strong>, <strong>Crosstab</strong>, <strong>Bubbles</strong>, <strong>Histogram</strong>, <strong>Scatterplot</strong> and <strong>Flow Diagram</strong>: summaries of columns.</li>
+            <li><strong>Sequences</strong>: the aligned sequences. <strong>Phylogenetic Tree</strong> and <strong>Heatmap</strong>: need sequences or a distance matrix (the tree can also come from a Newick file).</li>
+            <li><strong>Map</strong>, <strong>Globe</strong> and <strong>Choropleth</strong>: need latitude and longitude, or country, state, county, zipcode or tract columns.</li>
+            <li><strong>Timeline</strong> and <strong>Gantt</strong>: need a column of dates.</li>
+            <li><strong>Waterfall</strong>: each cluster's links. <strong>Conflicts</strong>: where files disagree.</li>
+          </ul>
+
+          <h6 id="help-thresholds">Thresholds and links</h6>
+          <p>Nodes are linked when their distance is at or below the <strong>Link Threshold</strong> (in the global settings, with a sparkline of the distances you can click or drag). Lowering it keeps only closer links; raising it adds more. Clusters are the groups of nodes that are connected, so they change with the threshold. The link settings also choose which distance metric to use, and how to prune links.</p>
+
+          <h6 id="help-saving">Saving, stashing and exporting</h6>
+          <ul>
+            <li><strong>File, Save</strong> writes the whole session to a <code>.microbetrace</code> file you can open later (File, Open), or just its style. Nothing is sent anywhere.</li>
+            <li><strong>Stash in Browser</strong> keeps a named copy in this browser, on this computer, and <strong>Recall from Browser</strong> brings it back. Clearing the browser's site data deletes stashes, so save a file for anything you need to keep. If automatic stashing is on, MicrobeTrace offers to restore the last session at startup.</li>
+            <li>Each view's download button exports what it shows: an image (PNG, JPEG, SVG), or for the tree a Newick file. The Table view exports its rows.</li>
+          </ul>
+
+          <h6 id="help-maps">Maps and tiles</h6>
+          <p>The map's boundaries and places come with MicrobeTrace and work offline. The background map layers (street, satellite and so on) are <strong>tiles downloaded from the Internet</strong> when you turn them on, so they show nothing without a connection. Draw nodes and links on a blank background, or with the country, state and county outlines, to stay offline.</p>
+
+          <h6 id="help-shortcuts">Mouse and keyboard shortcuts</h6>
+          <ul>
+            <li><kbd>Ctrl</kbd>+<kbd>F</kbd> (<kbd>&#8984;</kbd>+<kbd>F</kbd> on a Mac): search nodes by ID.</li>
+            <li><kbd>Ctrl</kbd>+<kbd>S</kbd> (<kbd>&#8984;</kbd>+<kbd>S</kbd>): save.</li>
+            <li>Network view, with the view focused: arrow keys move between nodes, <kbd>N</kbd> and <kbd>P</kbd> step through them, <kbd>L</kbd> follows links, <kbd>Enter</kbd> selects, <kbd>F</kbd> pins, <kbd>M</kbd> opens the node menu, <kbd>Esc</kbd> clears, and <kbd>?</kbd> lists the keys.</li>
+          </ul>
+          <div id="help-shortcuts-table">
+            <p>Some actions are reached by a mouse gesture. Each has a keyboard way too.</p>
+            <table class="table table-sm shortcuts-table">
+              <thead><tr><th scope="col">Where</th><th scope="col">With the mouse</th><th scope="col">What it does</th><th scope="col">From the keyboard</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Network</th><td>Ctrl + drag</td><td>Select the nodes in a rectangle (they toggle)</td><td>Focus the network, then C selects the focused node's cluster (Shift+C adds it), A selects every node</td></tr>
+                <tr><th scope="row">Network</th><td>Ctrl + click a node</td><td>Add it to, or remove it from, the selection</td><td>Ctrl + Enter on the focused node</td></tr>
+                <tr><th scope="row">Network</th><td>Right-click a node</td><td>The node menu</td><td>M, the menu key or Shift+F10 on the focused node</td></tr>
+                <tr><th scope="row">Network</th><td>Click a node</td><td>Select it</td><td>Arrow keys, N and P move between nodes; Enter or Space selects</td></tr>
+                <tr><th scope="row">Color, shape and polygon tables</th><td>Right-click the table</td><td>Menu: Drag or Pin, Rename a Value, Hide, Expand, Toggle Counts, Toggle Frequencies</td><td>The ... button on the table, or the menu key or Shift+F10 inside it</td></tr>
+                <tr><th scope="row">Color and polygon tables</th><td>Double-click a value</td><td>Rename it</td><td>F2 or Enter on the focused value (Enter keeps the name, Escape cancels), or Rename a Value in the menu</td></tr>
+                <tr><th scope="row">Network statistics</th><td>Right-click the box</td><td>Menu: Drag or Pin, Hide</td><td>The ... button, or the menu key or Shift+F10</td></tr>
+                <tr><th scope="row">Phylogenetic tree</th><td>Right-click a branch</td><td>Rotate, flip or set as root</td><td>Arrow keys move between branches, then Enter, the menu key or Shift+F10; or the ... Tree menu button</td></tr>
+                <tr><th scope="row">Files</th><td>Drag the grip</td><td>Reorder the files (the top file wins where they disagree)</td><td>The move up and move down buttons, or Alt+Up and Alt+Down on a file</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <div class="modal-footer">
+          <div class="ifOnline me-auto"><a href="https://github.com/aaboyles/MicrobeTrace/wiki" class="btn btn-light" target="_blank" rel="noreferrer noopener">Open the wiki</a></div>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div><!-- /.modal-content -->
