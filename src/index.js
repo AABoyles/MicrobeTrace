@@ -793,8 +793,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let field = variable;
       let times = [],
       vnodes = JSON.parse(JSON.stringify(session.data.nodes));
+      const order = MTDates.dateOrderOf(session.data.nodes.map(d => d[field])).order;
       vnodes.forEach(d => {
-        let time = MT.parseDate(d[field]);
+        let time = MT.parseDate(d[field], order);
         if (time) {
           d[field] = time;
           times.push(d[field]);

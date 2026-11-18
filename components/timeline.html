@@ -176,9 +176,10 @@
       svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.bottom);
 
       const field = dateField();
-      const dates = field ? session.data.nodes.map(d => dateOf(d[field])).filter(d => d) : [];
+      const order = field ? MTDates.dateOrderOf(session.data.nodes.map(d => d[field])).order : 'mdy';
+      const dates = field ? session.data.nodes.map(d => dateOf(d[field], order)).filter(d => d) : [];
       // Nodes with no date aren't in the curve; say how many
-      const undated = field ? MTDates.countUndated(session.data.nodes, field) : 0;
+      const undated = field ? MTDates.countUndated(session.data.nodes, field, order) : 0;
       undatedNote
         .attr('x', margin.left + width).attr('y', margin.top - 30)
         .text(dates.length && undated ? `${undated.toLocaleString()} undated ${undated == 1 ? 'node' : 'nodes'} not shown` : '');
