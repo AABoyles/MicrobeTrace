@@ -298,8 +298,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   MT.defaultFilename(byId("save-file-name"));
   on("save-data", "click", () => {
-    const name = byId("save-file-name").value;
     const format = byId("save-file-format").value;
+    // An empty or hidden-file name, or a typed extension, is put right
+    const name = MT.cleanFilename(byId("save-file-name").value, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
     let data;
     if (format == "microbetracestyle") {
       data = JSON.stringify(session.style);
@@ -309,13 +310,16 @@ document.addEventListener("DOMContentLoaded", () => {
       MT.syncLayout();
       data = JSON.stringify(session);
     }
+    const saved = file => MT.toast.success("Saved as " + MT.escape(file));
     if (byId("save-file-compress").checked) {
       const zip = new JSZip();
       zip.file(name + "." + format, data);
       zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } })
-        .then(content => MT.saveAs(content, name + ".zip"));
+        .then(content => { MT.saveAs(content, name + ".zip"); saved(name + ".zip"); },
+          error => { console.error(error); MT.toast.error("The file couldn't be compressed. Try again with \"Compress the file\" unticked."); });
     } else {
       MT.saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), name + "." + format);
+      saved(name + "." + format);
     }
   });
 
@@ -328,9 +332,15 @@ document.addEventListener("DOMContentLoaded", () => {
     MT.confirmReplace(() => {
       if (extension == "zip") {
         new JSZip().loadAsync(file).then(zip => {
+          const entries = [];
           zip.forEach((relativePath, zipEntry) => {
-            zipEntry.async("string").then(c => MT.processJSON(c, zipEntry.name.split(".").pop()));
+            if (!zipEntry.dir && /\.(microbetrace|hivtrace|json)$/i.test(zipEntry.name)) entries.push(zipEntry);
           });
+          if (!entries.length) return MT.toast.error('"' + MT.escape(file.name) + '" has no MicrobeTrace session in it. Open a .zip made by File > Save, or open the .microbetrace file itself.');
+          entries.forEach(zipEntry => zipEntry.async("string").then(c => MT.processJSON(c, zipEntry.name.split(".").pop().toLowerCase())));
+        }, error => {
+          console.error(error);
+          MT.toast.error('"' + MT.escape(file.name) + '" is not a readable .zip file.');
         });
       } else {
         file.text().then(text => MT.processJSON(text, extension));

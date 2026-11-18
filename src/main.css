@@ -1057,9 +1057,6 @@ body.timeline-open #main-panel {
 #link-max-width-row, #link-min-width-row {
   display: none;
 }
-.watermark {
-  font: bold 20px sans-serif;
-}
 
 /* FLOW DIAGRAM */
 .flow-plot {

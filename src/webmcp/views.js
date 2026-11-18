@@ -783,7 +783,7 @@
 
   // Runs a view's own export dialog with these settings, taking the file it
   // saves (MT.saveAs) when `download` is false instead of letting it download
-  async function runExport(item, { format, filename, scale, quality, opacity, download }) {
+  async function runExport(item, { format, filename, scale, quality, download }) {
     const root = rootOf(item);
     const parts = exportParts(root);
     if (!parts) fail('The ' + item.componentType + ' view has no export dialog.');
@@ -796,7 +796,6 @@
     else if (!parts.field('export-filename').value) setField(parts.field('export-filename'), 'microbetrace-' + item.componentType);
     if (scale !== undefined) setField(parts.field('export-scale'), scale);
     if (quality !== undefined) setField(parts.field('export-quality'), quality);
-    if (opacity !== undefined) setField(parts.field('export-opacity'), opacity);
     const m = MT(), original = m.saveAs;
     let saved = null;
     const got = new Promise(resolve => {
@@ -867,7 +866,7 @@
   define({
     name: 'get_view_image',
     title: 'Get view image',
-    description: 'Renders a view as an image that you can see, to check what it actually draws (network layout and colors, chart shapes, map, tree, table). Uses the view\'s own export (the same picture its Export dialog saves, with legends and watermark) where it has one, and otherwise a snapshot of its canvases/DOM. Nothing is downloaded. The view is brought to the front first. Large images are scaled down to maxWidth (default 1200 px) to keep them small. Returns the image plus its size and how it was made.',
+    description: 'Renders a view as an image that you can see, to check what it actually draws (network layout and colors, chart shapes, map, tree, table). Uses the view\'s own export (the same picture its Export dialog saves, with legends) where it has one, and otherwise a snapshot of its canvases/DOM. Nothing is downloaded. The view is brought to the front first. Large images are scaled down to maxWidth (default 1200 px) to keep them small. Returns the image plus its size and how it was made.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -890,7 +889,7 @@
       const parts = exportParts(root);
       if (method != 'dom' && parts && IMAGE_TYPES.some(t => Array.from(parts.type.options).some(o => o.value == t))) {
         try {
-          const result = await runExport(item, { format: 'png', scale, opacity: 0.4, download: false });
+          const result = await runExport(item, { format: 'png', scale, download: false });
           dataURL = await blobToDataURL(result.blob);
           used = 'export';
         } catch (e) {
@@ -922,7 +921,6 @@
         download: { type: 'boolean', description: 'Save a file (default true), or return the content (false)' },
         scale: { type: 'number', minimum: 0.1, maximum: 8, description: 'Image scale (image formats; default 1)' },
         quality: { type: 'number', minimum: 0.1, maximum: 1, description: 'JPEG/WebP quality' },
-        opacity: { type: 'number', minimum: 0, maximum: 1, description: 'Watermark opacity on images' },
         maxChars: { type: 'integer', minimum: 1000, description: 'With download false, the most text characters to return (default 200000)' },
         maxWidth: { type: 'integer', minimum: 100, description: 'With download false and an image format, scale down to this width (default 1200)' }
       },
@@ -932,10 +930,10 @@
     confirm: ({ view, format, filename, download = true }) => download ?
       'Download an export of the ' + (view ? String(view).slice(0, 50) + ' view' : 'active view') + (format ? ' as ' + String(format).slice(0, 20) : '') +
       (filename ? ', named ' + JSON.stringify(String(filename).slice(0, 100)) : '') + ', to this computer.' : null,
-    execute: async ({ view, open, format, filename, download = true, scale, quality, opacity, maxChars = 200000, maxWidth = 1200 }) => {
+    execute: async ({ view, open, format, filename, download = true, scale, quality, maxChars = 200000, maxWidth = 1200 }) => {
       const item = await need(view, { open, show: true });
       await settle(100);
-      const result = await runExport(item, { format, filename, scale, quality, opacity, download });
+      const result = await runExport(item, { format, filename, scale, quality, download });
       if (download) {
         return { view: item.componentType, downloaded: true, filename: result.name || result.filename, format: result.format, size: result.blob ? result.blob.size : null, note: result.note, formats: result.formats };
       }

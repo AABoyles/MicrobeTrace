@@ -256,6 +256,7 @@
   <div id="network-statistics-wrapper" class="floater">
     <div class="draghandle" hidden><span class="bi bi-arrows-move"></span></div>
     <table id="network-statistics-table">
+      <caption class="small fw-bold text-body" style="caption-side: top">Network summary</caption>
       <tr>
         <td class="text-end"><span id="numberOfNodes"></span></td>
         <td>nodes, <span id="numberOfSelectedNodes"></span> selected</td>
@@ -519,12 +520,18 @@
               </select>
             </div>
           </div>
+          <ul id="save-format-help" class="small text-muted ps-3 mb-2">
+            <li><strong>MicrobeTrace session</strong>: everything, to carry on later. Reopen it with File &gt; Open.</li>
+            <li><strong>HIV-TRACE</strong>: the network in the format HIV-TRACE writes, to use with other tools.</li>
+            <li><strong>Style only</strong>: just the colors and settings, to apply to another session.</li>
+          </ul>
           <div class="form-group row" title="Should MicrobeTrace compress this save file?">
             <div class="col">
               <div class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" id="save-file-compress" checked>
+                <input class="form-check-input" type="checkbox" id="save-file-compress" checked aria-describedby="save-compress-help">
                 <label class="form-check-label" for="save-file-compress">Compress the file</label>
               </div>
+              <div id="save-compress-help" class="form-text">Saves a smaller .zip. You can open the .zip directly with File &gt; Open; there is no need to unzip it.</div>
             </div>
           </div>
         </div>
