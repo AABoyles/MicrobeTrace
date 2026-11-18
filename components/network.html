@@ -181,7 +181,7 @@
               </div>
               <div class="form-group row" title="How wide should the node border be?">
                 <div class="col-4"><label for="node-border-width">Border Width</label></div>
-                <div class="col-8"><input type="number" class="form-control form-control-sm" id="node-border-width" data-setting="node-border-width" min="0" step="0.1" value="2">
+                <div class="col-8"><input type="number" class="form-control form-control-sm" id="node-border-width" data-setting="node-border-width" min="0" step="0.1" value="2" aria-describedby="node-border-width-help"><div id="node-border-width-help" class="form-text small">Thickness of the node outline, in pixels.</div>
                 </div>
               </div>            
             </div>
@@ -253,7 +253,7 @@
               </div>
               <div class="form-group row" title="How long should links be?">
                 <div class="col-4"><label for="link-length">Length</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="link-length" data-setting="link-length" min="0" max="200" value="50"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-length" data-setting="link-length" min="0" max="200" value="50" aria-describedby="link-length-help"><div id="link-length-help" class="form-text small">How far apart linked nodes settle.</div></div>
               </div>
               <div class="form-group row hideForHIVTrace" title="Should links show arrowheads pointing to their targets?">
                 <div class="col-4">Arrows</div>
@@ -333,25 +333,25 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
                 <div class="col-4"><label for="node-charge">Charge</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="node-charge" data-setting="node-charge" min="0" max="400" value="200">
+                  <input type="range" class="form-range" id="node-charge" data-setting="node-charge" min="0" max="400" value="200" aria-describedby="node-charge-help"><div id="node-charge-help" class="form-text small">How hard nodes push each other apart. Higher spreads the network out.</div>
                 </div>
               </div>
               <div class="form-group row" title="How attractive is the mass of the graph?">
                 <div class="col-4"><label for="network-gravity">Gravity</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-gravity" data-setting="network-gravity" min="0.025" max="1" value="0.05" step="0.025">
+                  <input type="range" class="form-range" id="network-gravity" data-setting="network-gravity" min="0.025" max="1" value="0.05" step="0.025" aria-describedby="network-gravity-help"><div id="network-gravity-help" class="form-text small">How hard nodes are pulled toward the center. Higher packs the network tighter.</div>
                 </div>
               </div>
               <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
                 <div class="col-4"><label for="network-friction">Friction</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-friction" data-setting="network-friction" min="0" max="1" value="0.4" step="0.025">
+                  <input type="range" class="form-range" id="network-friction" data-setting="network-friction" min="0" max="1" value="0.4" step="0.025" aria-describedby="network-friction-help"><div id="network-friction-help" class="form-text small">How fast moving nodes slow down. Higher settles the layout sooner.</div>
                 </div>
               </div>
               <div class="form-group row" title="How strong is the link?">
                 <div class="col-4"><label for="network-link-strength">Link Strength</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-link-strength" data-setting="network-link-strength" min="0" max="1" value="0.125" step="0.025">
+                  <input type="range" class="form-range" id="network-link-strength" data-setting="network-link-strength" min="0" max="1" value="0.125" step="0.025" aria-describedby="network-link-strength-help"><div id="network-link-strength-help" class="form-text small">How hard a link pulls its two nodes together. Higher makes links stiffer.</div>
                 </div>
               </div>
             </div>
@@ -390,9 +390,9 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row polygons-settings-row" title="What Foci should be used when creating convex hulls?">
                 <div class="col-4"><label for="polygons-foci">Center</label></div>
                 <div class="col-8">
-                  <select id="polygons-foci" data-setting="polygons-foci" class="form-select form-select-sm nodeVariables">
+                  <select id="polygons-foci" data-setting="polygons-foci" class="form-select form-select-sm nodeVariables" aria-describedby="polygons-foci-help">
                     <option>None</option>
-                  </select>
+                  </select><div id="polygons-foci-help" class="form-text small">Nodes that share a value of this field are grouped into one shape.</div>
                 </div>
               </div>
               <div class="form-group row polygons-settings-row" title="What amount of gather force should be used?">
@@ -400,7 +400,7 @@ Note that this may cause slow performance on larger networks.">
                   <label for="polygons-gather-force">Gather</label>
                 </div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="polygons-gather-force" data-setting="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
+                  <input type="range" class="form-range" id="polygons-gather-force" data-setting="polygons-gather-force" min="0" max=".02" value="0" step="0.0001" aria-describedby="polygons-gather-help"><div id="polygons-gather-help" class="form-text small">Pulls the nodes of one shape together. 0 is off.</div>
                 </div>
               </div>
               <div class="form-group row polygons-settings-row" title="Show polygons colored?">

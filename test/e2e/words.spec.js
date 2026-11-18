@@ -190,3 +190,31 @@ test('one setting has one name, units and visible help, and the dialogs follow o
   await expect(page.locator('#recall-delete-stash')).toHaveClass(/btn-outline-danger/);
   await expect(page.locator('label[for="stash-name"]')).toHaveText('Stash name');
 });
+
+test('the force-layout and sequence settings explain themselves in visible text (#291)', async () => {
+  // Sequence Settings: the alignment scores and the audit's checks
+  await opened('files');
+  await page.locator('button', { hasText: 'Sequence Settings' }).first().click();
+  await waitForModal(page, '#sequence-controls-modal');
+  await expect(page.locator('#align-help')).toBeVisible();
+  await page.locator('#sequence-auditor-tab').click();
+  await expect(page.locator('#audit-CIGAR-help')).toBeVisible();
+  await expect(page.locator('#audit-CIGAR-help')).toContainText('alignment code');
+  await expect(page.locator('#audit-gaps-help')).toContainText('gap characters');
+  await expect(page.locator('#audit-malformed-help')).toBeVisible();
+  expect(await page.locator('#audit-CIGAR').getAttribute('aria-describedby')).toBe('audit-CIGAR-help');
+  await page.locator('#sequence-controls-modal .modal-footer button', { hasText: 'Close' }).click();
+  await expect(page.locator('#sequence-controls-modal')).toBeHidden();
+  // The network's Physics settings
+  await opened('network');
+  const net = page.locator('.lm_content:has(button[title="Export Network"])').first();
+  if (!await net.locator('.left-pane').isVisible()) await net.locator('button[title="Network Settings"]').click();
+  await net.locator('.left-pane .nav-link', { hasText: 'Network' }).click();
+  await net.locator('button[data-bs-target="#network-controls-physics"]').click();
+  for (const id of ['node-charge', 'network-gravity', 'network-friction', 'network-link-strength']) {
+    await expect(page.locator(`#${id}-help`)).toBeVisible();
+    expect(await page.locator(`#${id}`).getAttribute('aria-describedby')).toBe(`${id}-help`);
+  }
+  await expect(page.locator('#node-charge-help')).toContainText('push each other apart');
+  expect(errors).toEqual([]);
+});

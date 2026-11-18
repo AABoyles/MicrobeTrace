@@ -247,6 +247,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     Smith-Waterman
                   </label>
                 </div>
+                <div id="align-help" class="form-text small">Smith-Waterman lines every sequence up against the reference before distances are computed.</div>
               </div>
             </div>
             <div class="form-group row align-config-row">
@@ -266,6 +267,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     Consensus
                   </label>
                 </div>
+                <div id="reference-source-help" class="form-text small">The sequence the others are aligned to.</div>
               </div>
             </div>
             <div class="form-group row reference-file-row">
@@ -281,21 +283,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <div class="row align-config-row">
               <div class="form-group col offset-2" title="How much should MicrobeTrace reward matching bases?">
                 <label>Match Reward</label>
-                <input type="number" class="form-control aligner-match" value="1" min="0">
+                <input type="number" class="form-control aligner-match" value="1" min="0" aria-describedby="aligner-match-help"><div id="aligner-match-help" class="form-text small">Score added for each matching base.</div>
               </div>
               <div class="form-group col" title="How much should MicrobeTrace penalize non-matching bases?">
                 <label>Mismatch Cost</label>
-                <input type="number" class="form-control aligner-mismatch" value="1" min="0">
+                <input type="number" class="form-control aligner-mismatch" value="1" min="0" aria-describedby="aligner-mismatch-help"><div id="aligner-mismatch-help" class="form-text small">Score taken off for each mismatched base.</div>
               </div>
             </div>
             <div class="row align-config-row">
               <div class="form-group col offset-2" title="How much should MicrobeTrace Penalize opening a gap?">
                 <label>Gap Opening Cost</label>
-                <input type="number" class="form-control aligner-gap-open" value="5" min="0">
+                <input type="number" class="form-control aligner-gap-open" value="5" min="0" aria-describedby="aligner-gap-open-help"><div id="aligner-gap-open-help" class="form-text small">Score taken off for starting a gap.</div>
               </div>
               <div class="form-group col" title="How much should MicrobeTrace Penalize extending a gap?">
                 <label>Gap Extension Cost</label>
-                <input type="number" class="form-control aligner-gap-extend" value="2" min="0">
+                <input type="number" class="form-control aligner-gap-extend" value="2" min="0" aria-describedby="aligner-gap-extend-help"><div id="aligner-gap-extend-help" class="form-text small">Score taken off for each further position in a gap.</div>
               </div>
             </div>
             <div class="row alignPreviewRow">
@@ -304,49 +306,56 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           </div>
           <div class="tab-pane fade" id="sequence-auditor" role="tabpanel" aria-labelledby="sequence-auditor-tab">
             <div class="row mb-3">
-              <div class="form-check col" title="Checks to see if a Sequence is empty.">
-                <input class="form-check-input" type="checkbox" id="audit-empty" name="audit-empty" checked>
+              <div class="form-check col-6 mb-2" title="Checks to see if a Sequence is empty.">
+                <input class="form-check-input" type="checkbox" id="audit-empty" name="audit-empty" checked aria-describedby="audit-empty-help">
                 <label class="form-check-label" for="audit-empty">
                   Empty
                 </label>
+                <div id="audit-empty-help" class="form-text small">Sequences with no characters.</div>
               </div>
-              <div class="form-check col" title="Checks to see if a Sequence is all gaps.">
-                <input class="form-check-input" type="checkbox" id="audit-gaps" name="audit-gaps" checked>
+              <div class="form-check col-6 mb-2" title="Checks to see if a Sequence is all gaps.">
+                <input class="form-check-input" type="checkbox" id="audit-gaps" name="audit-gaps" checked aria-describedby="audit-gaps-help">
                 <label class="form-check-label" for="audit-gaps">
                   Gaps
                 </label>
+                <div id="audit-gaps-help" class="form-text small">Sequences made only of gap characters (-).</div>
               </div>
-              <div class="form-check col" title="Check to see if sequence contains any characters that are RNA instead of DNA.">
-                <input class="form-check-input" type="checkbox" id="audit-RNA" name="audit-RNA" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if sequence contains any characters that are RNA instead of DNA.">
+                <input class="form-check-input" type="checkbox" id="audit-RNA" name="audit-RNA" checked aria-describedby="audit-RNA-help">
                 <label class="form-check-label" for="audit-RNA">
                   RNA
                 </label>
+                <div id="audit-RNA-help" class="form-text small">Sequences with a U, which DNA does not have.</div>
               </div>
-              <div class="form-check col" title="Check to see if Sequence contains any characters that represent Amino Acids.">
-                <input class="form-check-input" type="checkbox" id="audit-amino-acids" name="audit-amino-acids" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if Sequence contains any characters that represent Amino Acids.">
+                <input class="form-check-input" type="checkbox" id="audit-amino-acids" name="audit-amino-acids" checked aria-describedby="audit-amino-acids-help">
                 <label class="form-check-label" for="audit-amino-acids">
                   Amino Acids
                 </label>
+                <div id="audit-amino-acids-help" class="form-text small">Sequences that read as protein, not DNA.</div>
               </div>
-              <div class="form-check col" title="Check to see if Sequence contains any characters describing an alignment.">
-                <input class="form-check-input" type="checkbox" id="audit-CIGAR" name="audit-CIGAR" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if Sequence contains any characters describing an alignment.">
+                <input class="form-check-input" type="checkbox" id="audit-CIGAR" name="audit-CIGAR" checked aria-describedby="audit-CIGAR-help">
                 <label class="form-check-label" for="audit-CIGAR">
                   CIGAR
                 </label>
+                <div id="audit-CIGAR-help" class="form-text small">Sequences that are an alignment code (like 12M2I8M), not bases.</div>
               </div>
-              <div class="form-check col" title="Check to see if Sequence contains any characters that are illegal in any genomic or proteomic alphabet.">
-                <input class="form-check-input" type="checkbox" id="audit-malformed" name="audit-malformed" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if Sequence contains any characters that are illegal in any genomic or proteomic alphabet.">
+                <input class="form-check-input" type="checkbox" id="audit-malformed" name="audit-malformed" checked aria-describedby="audit-malformed-help">
                 <label class="form-check-label" for="audit-malformed">
                   Malformed
                 </label>
+                <div id="audit-malformed-help" class="form-text small">Sequences with characters no DNA, RNA or protein alphabet uses.</div>
               </div>
-              <div class="form-check col" title="Check to see if a sequence's length is more than 20% away from the median length.">
-                <input class="form-check-input" type="checkbox" id="audit-length" name="audit-length" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if a sequence's length is more than 20% away from the median length.">
+                <input class="form-check-input" type="checkbox" id="audit-length" name="audit-length" checked aria-describedby="audit-length-help">
                 <label class="form-check-label" for="audit-length">
                   Length
                 </label>
+                <div id="audit-length-help" class="form-text small">Sequences over 20% shorter or longer than the median (needs 10 or more).</div>
               </div>
-              <div class="col">
+              <div class="col-6">
                 <button type="button" class="btn btn-outline-primary btn-sm w-100 audit-launcher">Run</button>
               </div>
             </div>
