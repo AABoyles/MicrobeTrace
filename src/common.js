@@ -1967,6 +1967,7 @@
       // During timeline mode, user Pause and switch to a different Node varaible but nodeColorsTableKeys[variable] is not available
       if(!session.style.nodeColorsTableKeys[variable]) {
         let aggregatesTL = {};
+        const timelineIndex = byId(session.network.timelineNodes);
         let nodesTL = session.network.timelineNodes;
         let n = nodesTL.length;
         let nodeColorsTL = [...session.style.nodeColors];
@@ -2020,6 +2021,20 @@
       linkColors = session.style.linkColorsTable[variable] = [...session.style.linkColors];
     }
 
+    // A node is found by either its _id or its id (as text, so 1 and "1" match);
+    // the first node in the list wins, as it did with a linear search
+    const byId = nodes => {
+      const index = new Map();
+      for (let k = 0; k < nodes.length; k++) {
+        const d = nodes[k];
+        if (d._id != null && !index.has(String(d._id))) index.set(String(d._id), d);
+        if (d.id != null && !index.has(String(d.id))) index.set(String(d.id), d);
+      }
+      return index;
+    };
+    const find = (index, id) => id == null ? undefined : index.get(String(id));
+    const nodeIndex = byId(session.data.nodes);
+
     let aggregates = {};
     let links = MT.getVisibleLinks();
     let i = 0,
@@ -2030,8 +2045,8 @@
         l = links[i++];
         if (!l.visible) continue;
 
-        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
-        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        let src = find(nodeIndex, l.source);
+        let tgt = find(nodeIndex, l.target);
         if (src === undefined || src.visible === false) continue;
         if (tgt === undefined || tgt.visible === false) continue;
         
@@ -2048,8 +2063,8 @@
         l = links[i++];
         if (!l.visible) continue;
         
-        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
-        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        let src = find(nodeIndex, l.source);
+        let tgt = find(nodeIndex, l.target);
         if (src === undefined || src.visible === false) continue;
         if (tgt === undefined || tgt.visible === false) continue;  
 
@@ -2089,8 +2104,8 @@
           while (i < n) {
             l = linksTL[i++];
             if (!l.visible) continue;
-            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
-            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            let src = find(timelineIndex, l.source);
+            let tgt = find(timelineIndex, l.target);
             if (src === undefined || src.visible === false) continue;
             if (tgt === undefined || tgt.visible === false) continue;
             l.origin.forEach(o => {
@@ -2105,8 +2120,8 @@
           while (i < n) {
             l = linksTL[i++];
             if (!l.visible) continue;
-            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
-            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            let src = find(timelineIndex, l.source);
+            let tgt = find(timelineIndex, l.target);
             if (src === undefined || src.visible === false) continue;
             if (tgt === undefined || tgt.visible === false) continue;  
             let lv = l[variable];

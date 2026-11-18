@@ -152,3 +152,37 @@ test('aggregation calls empty values (Empty) too', async () => {
   await closeView(page, 'aggregation');
   expect(errors).toEqual([]);
 });
+
+test('the link color table counts the links between visible nodes, finding nodes by _id or id (#244)', async () => {
+  const result = await page.evaluate(() => {
+    const variable = 'origin';
+    session.style.widgets['link-color-variable'] = variable;
+    const hidden = session.data.nodes[0];
+    const wasVisible = hidden.visible;
+    const actual = () => {
+      MT.createLinkColorMap();
+      return session.style.linkColorsTableKeys[variable].slice().sort().join('|');
+    };
+    // What a search over all the nodes finds
+    const expected = () => {
+      const seen = new Set();
+      const find = id => session.data.nodes.find(d => d._id == id || d.id == id);
+      MT.getVisibleLinks().forEach(l => {
+        const s = find(l.source), t = find(l.target);
+        if (!l.visible || !s || s.visible === false || !t || t.visible === false) return;
+        l.origin.forEach(v => seen.add(String(v)));
+      });
+      return Array.from(seen).sort().join('|');
+    };
+    const out = { all: [actual(), expected()] };
+    hidden.visible = false;
+    out.hidden = [actual(), expected()];
+    hidden.visible = wasVisible;
+    actual();
+    return out;
+  });
+  expect(result.all[0]).toBe(result.all[1]);
+  expect(result.hidden[0]).toBe(result.hidden[1]);
+  expect(result.all[0]).not.toBe('');
+  expect(errors).toEqual([]);
+});
