@@ -101,8 +101,8 @@ costs (match 1, mismatch 1, gap open 5, gap extend 2).
 
 ## Conventions where MicrobeTrace and tn93 differ by design
 
-- The FASTA parser turns every `N` into a gap, so an N is never compared; tn93 resolves or averages
-  it as A/C/G/T. The golden FASTA files have no N.
+- The FASTA parser keeps every `N` as an ambiguity code, as node-list CSV sequences do (#232), so
+  tn93 and MicrobeTrace resolve or average it the same way. The golden FASTA files have no N.
 - A Ts/Tv ratio with neither transitions nor transversions has no value; MicrobeTrace gives 0.
 - When a base is missing from a pair, tn93 falls back to K2P, while bx-distance-models drops the
   TN93 terms that vanish. Every pair here has all four bases (each at least 20% of the pair's

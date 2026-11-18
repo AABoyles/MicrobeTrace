@@ -217,3 +217,27 @@ test('the PNG export has the ids beside the alignment', async () => {
   expect(png.readUInt32BE(16)).toBe(widths[0] + widths[1]);
   expect(errors).toEqual([]);
 });
+
+test('a column of mostly dates is a date field, and the values that are not dates are reported', async () => {
+  const result = await page.evaluate(() => {
+    const items = [
+      { when: '13/04/2020', amb: '03/04/2020', name: 'Alpha' },
+      { when: '03/04/2020', amb: '05/06/2020', name: 'Beta' },
+      { when: 'unknown', amb: '05/06/2021', name: 'Gamma' },
+      { when: '20/11/2019', amb: 'n/a', name: 'Alpha' }
+    ];
+    const fields = ['name', 'when', 'amb'];
+    const found = MT.dateFields(items, fields);
+    const order = MT.dateColumn(items.map(d => d.when)).order;
+    MT.reportDateColumns(items, fields);
+    return { found, order, april: MT.parseDate('03/04/2020', order).getMonth() };
+  });
+  expect(result.found).toEqual(['when', 'amb']);
+  expect(result.order).toBe('dmy');
+  expect(result.april).toBe(3);
+  const toast = page.locator('.mt-toast-container .toast', { hasText: 'could not be read' });
+  await expect(toast).toContainText('when');
+  await expect(toast).toContainText('1 value could not be read as a date and is undated');
+  await expect(toast).toContainText('could be day-first or month-first');
+  expect(errors).toEqual([]);
+});

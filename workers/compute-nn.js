@@ -1,5 +1,5 @@
-// Flags each node's nearest neighbors (every link within epsilon of its shortest
-// link). Takes the condensed distance matrix (NaN where there's no link) of n
+// Flags each node's nearest neighbors: its shortest link, and any other within
+// a fraction epsilon of it (the same tie rule as workers/compute-mst.js). Takes the condensed distance matrix (NaN where there's no link) of n
 // nodes and returns the flagged links as pairs of node positions.
 onmessage = function(e){
   const start = Date.now();
@@ -18,7 +18,7 @@ onmessage = function(e){
     for(let h = 0; h < n; h++){
       if(h == i) continue;
       const v = value(i, h);
-      if(v == v && Math.abs(v - minDist) < epsilon) pairs.push(i, h);
+      if(v == v && v <= minDist * (1 + epsilon)) pairs.push(i, h);
     }
   }
   const output = Uint32Array.from(pairs);

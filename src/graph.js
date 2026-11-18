@@ -23,9 +23,9 @@
   // smaller, and adding another link thaws it again.
 
   const IMPLICIT = 2 ** 31;
-  const NN = 1, DIRECTED = 2;
+  const NN = 1, DIRECTED = 2, UNMEASURED = 4;
   // Fields that describe a link's place in the store rather than its data.
-  const RESERVED = new Set(['source', 'target', 'origin', 'index', 'visible', 'cluster', 'nn', 'directed']);
+  const RESERVED = new Set(['source', 'target', 'origin', 'index', 'visible', 'cluster', 'nn', 'directed', 'unmeasured']);
 
   const grow = (array, size) => {
     if (size <= array.length) return array;
@@ -210,6 +210,7 @@
       this.combo[e] = this.mergeOrigins(this.combo[e], origins || []);
       if ('nn' in link) this.setFlag(e, NN, link.nn);
       if ('directed' in link) this.setFlag(e, DIRECTED, link.directed);
+      if ('unmeasured' in link) this.setFlag(e, UNMEASURED, link.unmeasured);
       for (const field in link) {
         if (!RESERVED.has(field)) this.setValue(e, field, link[field]);
       }
@@ -459,21 +460,30 @@
 
     // Recomputes the visible edge list: a value in field at or under threshold,
     // the NN flag if nnOnly, and keep(source) for the cluster filter.
+    // One comparison rule for both storage modes: a distance is within the
+    // threshold if it is <= threshold. Dense storage keeps distances as Float32
+    // (and the values copied onto explicit edges from it are Float32 values),
+    // so there the threshold is rounded to Float32 too; otherwise a distance
+    // like 3/200 against 0.015 could be left out in dense mode and kept in
+    // sparse mode (#227).
     computeVisible(field, threshold, nnOnly, keep) {
+      if (this.denseValues(field)) threshold = Math.fround(threshold);
       let out = this.visible, c = 0;
       const push = e => {
         if (c >= out.length) out = grow(out, c + 1);
         out[c++] = e;
       };
       const col = this.columns.get(field);
-      if (col) {
-        for (let e = 0; e < this.m; e++) {
-          const v = col.data[e];
-          if (v == null || !(v <= threshold)) continue;
-          if (nnOnly && !(this.flags[e] & NN)) continue;
-          if (!keep(this.src[e])) continue;
-          push(e);
-        }
+      for (let e = 0; e < this.m; e++) {
+        const v = col ? col.data[e] : null;
+        // A link from a file with no distance column (flagged unmeasured) has
+        // no value the threshold could judge, so it is shown; any other link
+        // with no value for the field is not (#220)
+        // (a numeric column holds NaN where a link has no value)
+        if (v == null || v != v ? !(this.flags[e] & UNMEASURED) : !(v <= threshold)) continue;
+        if (nnOnly && !(this.flags[e] & NN)) continue;
+        if (!keep(this.src[e])) continue;
+        push(e);
       }
       const d = this.dense, tri = this.denseValues(field);
       if (tri) {
@@ -546,6 +556,7 @@
       out.origin = this.origins(e).slice();
       out.nn = !!(f & NN);
       out.directed = !!(f & DIRECTED);
+      if (f & UNMEASURED) out.unmeasured = true;
       return out;
     }
 
@@ -566,8 +577,24 @@
   MTGraph.IMPLICIT = IMPLICIT;
   MTGraph.NN = NN;
   MTGraph.DIRECTED = DIRECTED;
+  MTGraph.UNMEASURED = UNMEASURED;
   MTGraph.pairIndex = pairIndex;
   MTGraph.pairRows = pairRows;
+
+  // A distance as a number; null for an empty value (no distance); NaN for text
+  // that is not a distance. "0,015" is read as 0.015 (a decimal comma); other
+  // comma forms ("1,234") could be a thousands separator and are not guessed.
+  // (Copied in workers/parse-csv-matrix.js, which cannot load this file.)
+  MTGraph.parseDistance = v => {
+    if (v == null) return null;
+    if (typeof v == 'number') return isFinite(v) ? v : NaN;
+    const s = ('' + v).trim();
+    if (s === '') return null;
+    if (/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(s)) return Number(s);
+    const comma = /^([+-]?)0?,(\d+)$/.exec(s);
+    if (comma) return Number(comma[1] + '0.' + comma[2]);
+    return NaN;
+  };
 
   // A link read from a distance matrix or tree, with its distance kept under
   // the field the network filters on (the distance metric's, as for sequences

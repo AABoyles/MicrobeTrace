@@ -196,12 +196,23 @@ body {
 .icon-action:focus-visible {
   color: var(--mt-strong);
 }
-#ie-warning {
+#unsupported-browser {
   display: none;
+}
+#unsupported-browser.shown {
+  display: block;
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  background-color: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #212529);
+  padding: 2rem;
+  text-align: center;
+  z-index: 1000000;
 }
 @media screen and (-ms-high-contrast: active),
   screen and (-ms-high-contrast: none) {
-  #ie-warning {
+  #unsupported-browser {
     display: block;
     position: fixed;
     top: 0;

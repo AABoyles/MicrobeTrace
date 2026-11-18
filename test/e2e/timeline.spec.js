@@ -61,7 +61,9 @@ test('brushing hides the nodes after the brushed range', async () => {
 
 test('clearing the brush shows them again', async () => {
   const box = await view().locator('svg .brush .overlay').boundingBox();
-  // (Away from the link color table, which floats at the top right)
+  // (Away from the link color table, which floats at the top right, and with
+  // the load's warning toasts, at the bottom right, out of the way)
+  await page.evaluate(() => document.querySelectorAll('#mt-toast-container .toast').forEach(t => t.remove()));
   await page.mouse.click(box.x + box.width * 0.75, box.y + box.height - 10);
   await expect.poll(visible).toBe(310);
 });

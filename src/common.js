@@ -112,9 +112,12 @@
     "link-label-variable": "None",
     "link-length": 0.125,
     "link-opacity": 0,
-    "link-show-nn": false,
+    "link-prune": "none",
     "link-sort-variable": "tn93",
     "link-storage": "auto",
+    // The threshold each field's links were kept within, where only those were
+    // kept (sparse storage); raising the threshold past it reveals no new links
+    "link-stored-thresholds": {},
     "link-threshold": 0.015,
     "link-thresholds": {},
     "link-tooltip-variable": "None",
@@ -389,9 +392,14 @@
     names.forEach(name => { if (!fields.includes(name)) fields.push(name); });
   };
 
+  // An ID as the app keeps it: text, without the spaces around it. Every
+  // path that loads data goes through this, so one ID from two sources is one
+  // node. (Matching stays case-sensitive: "a" and "A" are different IDs.)
+  MT.cleanID = id => id == null ? "" : String(id).trim();
+
   MT.addNode = (newNode, check, source) => {
     if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
-    if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
+    newNode._id = MT.cleanID(newNode._id);
     if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
     const index = session.data.nodeIndex;
     let node = index.get(newNode._id);
@@ -462,7 +470,11 @@
   
   // Adds a link, or merges it into the link between the same two nodes (its
   // fields win, origins are combined). Returns 1 if the link is new.
-  MT.addLink = newLink => session.data.graph.addLink(newLink);
+  MT.addLink = newLink => {
+    newLink.source = MT.cleanID(newLink.source);
+    newLink.target = MT.cleanID(newLink.target);
+    return session.data.graph.addLink(newLink);
+  };
 
   // The link between two node IDs, or undefined.
   MT.getLink = (source, target) => {
@@ -530,8 +542,7 @@
             color: node.getAttribute("fill"),
             size: parseFloat(node.getAttribute("r")),
             origin: ["Scraped Gephi SVG"]
-          },
-          false
+          }
         );
       });
       MT.addNodeField("color", "size");
@@ -544,13 +555,13 @@
           origin: ["Scraped MicrobeTrace SVG"]
         };
         base[session.style.widgets['default-distance-metric']] = 0;
-        MT.addLink(base, true);
+        MT.addLink(base);
       });
       session.data.linkFields.push("color");
     } else {
       all(".nodes g").forEach((node, i) => {
         nodes.push(node.getAttribute("transform").slice(10, -1).split(",").map(parseFloat));
-        MT.addNode({ id: i + "", origin: ["Scraped SVG"] }, false);
+        MT.addNode({ id: i + "", origin: ["Scraped SVG"] });
       });
       all("line").forEach(link => {
         const at = name => parseFloat(link.getAttribute(name));
@@ -563,7 +574,7 @@
           origin: ["Scraped SVG"]
         };
         base[session.style.widgets['default-distance-metric']] = 0;
-        MT.addLink(base, true);
+        MT.addLink(base);
       });
     }
     MT.runHamsters();
@@ -636,6 +647,13 @@
   
   MT.applyStyle = style => {
     session.style = style;
+    // Sessions from before there were two ways to prune (#236) had an on/off
+    // link-show-nn, which ran the minimum spanning tree
+    const old = style.widgets && style.widgets["link-show-nn"];
+    if (old !== undefined) {
+      if (style.widgets["link-prune"] === undefined) style.widgets["link-prune"] = (old === true || old === "true") ? "mst" : "none";
+      delete style.widgets["link-show-nn"];
+    }
     session.style.widgets = Object.assign({},
       MT.defaultWidgets,
       style.widgets
@@ -653,7 +671,7 @@
       let newNode = JSON.parse(JSON.stringify(node.patient_attributes));
       newNode._id = node._id;
       newNode.origin = "HIVTRACE Import";
-      MT.addNode(newNode, false);
+      MT.addNode(newNode);
     });
     Object.keys(
       hivtrace["trace_results"]["Nodes"][0]["patient_attributes"]
@@ -671,7 +689,7 @@
         visible: true
       };
       newLink[metric] = parseFloat(link.length);
-      MT.addLink(newLink, false);
+      MT.addLink(newLink);
     }
     session.data.linkFields.push(metric);
     MT.runHamsters();
@@ -685,7 +703,7 @@
       newNode.origin = ["GHOST Import"];     
       newNode.genotypes = Object.keys(newNode.genotypes)[0];     
       newNode.id = "" + newNode.id;     
-      MT.addNode(newNode, false);   
+      MT.addNode(newNode);   
     });
     // (A sample's id is its ID, _id, so isn't listed as a field too)
     MT.addNodeField("genotypes", "group", "name");
@@ -698,7 +716,7 @@
         target: "" + link.target, 
         [session.style.widgets['default-distance-metric']]: parseFloat(link.dist), 
         origin: ["GHOST Import"], visible: true });     
-      MT.addLink(newLink, false);   
+      MT.addLink(newLink);   
     }
     [ session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
   //	MT.finishUp(); 
@@ -732,14 +750,24 @@
     });
   };
   
-  MT.parseCSVMatrix = (file, source) => {
-    return new Promise(resolve => {
+  // Reads a distance matrix (CSV text in file.contents) into the graph. Rejects
+  // with an Error saying why when the file cannot be read as one.
+  MT.parseCSVMatrix = (file, source, nodeOrigin) => {
+    return new Promise((resolve, reject) => {
       let check = session.files.length > 1;
       const origin = [file.name];
       let nn = 0,
           nl = 0;
       let computer = new Worker("workers/parse-csv-matrix.js");
+      computer.onerror = event => {
+        computer.terminate();
+        reject(new Error((event && event.message) || "the matrix worker failed"));
+      };
       computer.onmessage = response => {
+        if (response.data.error) {
+          computer.terminate();
+          return reject(new Error(response.data.error));
+        }
         const data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
         console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         const start = Date.now();
@@ -747,8 +775,8 @@
         const tn = nodes.length;
         for (let i = 0; i < tn; i++) {
           nn += MT.addNode({
-            _id: MT.escape(nodes[i]),
-            origin: ['Genetic Distance']
+            _id: nodes[i],
+            origin: nodeOrigin || ['Genetic Distance']
           }, check, source);
         }
         const links = data.links;
@@ -757,10 +785,10 @@
         const field = session.style.widgets["default-distance-metric"];
         if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
         for (let j = 0; j < tl; j++) {
-          nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field), check);
+          nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field));
         }
         console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-        resolve({ nn, nl, tn, tl });
+        resolve({ nn, nl, tn, tl, ids: nodes, unparseable: data.unparseable || 0, example: data.example });
       };
       computer.postMessage(file.contents);
     })
@@ -897,6 +925,48 @@
     return seqs;
   };
   
+  // Puts aligned sequences (nodes with _seq and _padding) on the reference's
+  // length: leading gaps for the padding, then cut or padded with gaps at the
+  // end. Returns how many had no sequence, lost bases off the end (cut here,
+  // or by the aligner, which drops what overhangs the reference; originals
+  // are the sequences as they were before alignment, to tell), or were padded
+  // with trailing gaps.
+  MT.fitToReference = (nodes, referenceLength, minPadding = 0, originals = []) => {
+    const fit = { empty: 0, truncated: 0, padded: 0, referenceLength };
+    const bases = q => q.replace(/-/g, "").length;
+    nodes.forEach((d, i) => {
+      if (!d._seq) fit.empty++;
+      d._seq = "-".repeat((d._padding || 0) - minPadding) + (d._seq || "");
+      let cut = false;
+      if (d._seq.length > referenceLength) {
+        d._seq = d._seq.substring(0, referenceLength);
+        cut = true;
+      } else {
+        d._seq = d._seq.padEnd(referenceLength, "-");
+      }
+      if (originals[i] && bases(originals[i]) > bases(d._seq)) cut = true;
+      if (cut) fit.truncated++;
+      else if (/-$/.test(d._seq) && bases(d._seq) > 0) fit.padded++;
+    });
+    return fit;
+  };
+
+  // Plain-text warnings for what MT.fitToReference reports, or for sequences
+  // of differing lengths when nothing aligned them (unaligned: array of lengths)
+  MT.lengthWarnings = (fit, unaligned) => {
+    const plural = (n, w) => `${n.toLocaleString()} ${w}${n == 1 ? '' : 's'}`;
+    const warnings = [];
+    if (fit) {
+      if (fit.truncated) warnings.push(`${plural(fit.truncated, 'sequence')} extended past the end of the reference and had the excess cut off before distances were computed.`);
+      if (fit.padded) warnings.push(`${plural(fit.padded, 'sequence')} did not reach the end of the reference; ${fit.padded == 1 ? 'its' : 'their'} end was filled with gaps.`);
+    }
+    if (unaligned && unaligned.length) {
+      const min = Math.min(...unaligned), max = Math.max(...unaligned);
+      if (min != max) warnings.push(`Alignment is off but the sequences differ in length (${min.toLocaleString()} to ${max.toLocaleString()}). Positions will not correspond between sequences, so distances may be wrong. Turn on alignment or align them beforehand.`);
+    }
+    return warnings;
+  };
+
   MT.align = params => {
     return new Promise(resolve => {
       if (params.aligner == "none") {
@@ -904,6 +974,7 @@
       }
       let n = params.nodes.length;
       let referenceLength = params.reference.length;
+      const originals = params.nodes.map(d => d.seq || "");
       let aligner = new Worker("workers/align-sw.js");
       aligner.onmessage = response => {
         let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
@@ -916,17 +987,10 @@
           if (!d._seq) d._seq = "";
           if (minPadding > d._padding) minPadding = d._padding;
         }
-        for (let j = 0; j < n; j++) {
-          d = subset[j];
-          d._seq = "-".repeat(d._padding - minPadding) + d._seq;
-          if (d._seq.length > referenceLength){
-            d._seq = d._seq.substring(0, referenceLength);
-          } else {
-            d._seq = d._seq.padEnd(referenceLength, "-");
-          }
-        }
+        const fit = MT.fitToReference(subset, referenceLength, minPadding, originals);
         MT.addNodeField('_score', '_padding', '_cigar');
         console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
+        subset.fit = fit;
         resolve(subset);
       };
       aligner.postMessage(params);
@@ -989,7 +1053,7 @@
       let subsetLength = subset.length;
       let computer = new Worker("workers/compute-consensus-distances.js");
       computer.onmessage = response => {
-        let dists = new Uint16Array(response.data.dists);
+        let dists = new Uint32Array(response.data.dists);
         console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
         start = Date.now();
         for (let j = 0; j < subsetLength; j++) {
@@ -1058,6 +1122,13 @@
   // distance metric's as distance, which they filter on.
   MT.fieldMetric = field => MT.distanceMetrics[field] ? field : null;
 
+  // The threshold the stored links of a field were limited to, if a threshold
+  // above it would show fewer links than the data has (sparse storage), else null.
+  MT.storedThresholdBelow = (field, threshold) => {
+    const stored = (session.style.widgets['link-stored-thresholds'] || {})[field];
+    return stored != null && parseFloat(threshold) > stored ? stored : null;
+  };
+
   MT.computeLinks = async subset => {
     const widgets = session.style.widgets;
     const metrics = MT.computedMetrics(widgets), metric = metrics[0];
@@ -1067,15 +1138,10 @@
       throw new Error('The GapMM ambiguity strategy is only available for TN93.');
     }
 
-    // HIV-TRACE -g averages ambiguities for pairs with a too-ambiguous sequence:
-    // putting those sequences first makes those pairs the first rows.
-    let order = subset, averageRows = 0;
-    if (strategy == 'HIVTRACE-G') {
-      const t = parseFloat(widgets['ambiguity-threshold']);
-      const high = subset.filter(d => !(d['_ambiguity'] < t));
-      order = high.concat(subset.filter(d => d['_ambiguity'] < t));
-      averageRows = high.length;
-    }
+    // HIV-TRACE -g (tn93 -a resolve -g F) decides pair by pair, in the worker:
+    // a pair is averaged when its resolvable ambiguity codes (not gaps or N) are
+    // at least F times its compared sites, and resolved otherwise.
+    const order = subset;
 
     const n = order.length;
     const pairs = n * (n - 1) / 2;
@@ -1087,6 +1153,11 @@
     const thresholds = sparse ? metrics.map((m, i) => i == 0 ? parseFloat(widgets['link-threshold']) : MT.distanceMetrics[m].threshold) : null;
     if (sparse) console.log(`Keeping only links with ${metrics.map((m, i) => `${m} <= ${thresholds[i]}`).join(', ')} (${pairs.toLocaleString()} pairs)`);
 
+    // Where only links within a threshold are kept, remember it (#228)
+    const stored = Object.assign({}, widgets['link-stored-thresholds']);
+    metrics.forEach((m, i) => { if (sparse) stored[m] = thresholds[i]; else delete stored[m]; });
+    if (MT.settings) MT.settings.set('link-stored-thresholds', stored); else widgets['link-stored-thresholds'] = stored;
+
     const seqs = order.map(d => d.seq);
     const cores = Math.min(navigator.hardwareConcurrency || 4, 8);
     const workers = Math.max(1, Math.min(cores, Math.ceil(pairs / 1e5)));
@@ -1096,7 +1167,7 @@
       metric,
       metrics,
       mode: strategy == 'HIVTRACE-G' ? 'hivtrace-g' : strategy.toLowerCase(),
-      averageRows,
+      fraction: parseFloat(widgets['ambiguity-threshold']),
       threshold: thresholds && thresholds[0],
       thresholds
     };
@@ -1280,10 +1351,12 @@
   // Runs a worker that takes the condensed distance matrix for the link sort
   // variable and returns pairs of node positions, and flags those links as
   // nearest neighbors.
-  MT.computeNNFlags = (script, name) => {
+  // The metric is the link sort variable (the field the threshold filters on)
+  // unless one is given.
+  MT.computeNNFlags = (script, name, metric) => {
     return new Promise((resolve, reject) => {
       const g = session.data.graph;
-      const metric = session.style.widgets['link-sort-variable'];
+      metric = metric || session.style.widgets['link-sort-variable'];
       const labels = g.ids.slice();
       const { tri } = MT.getCondensedDM(metric, labels);
       let machine = new Worker(script);
@@ -1315,9 +1388,22 @@
     });
   };
 
-  MT.computeMST = () => MT.computeNNFlags("workers/compute-mst.js", "MST");
+  // The two ways of pruning links (the link-prune setting, #236):
+  // "mst" keeps the minimum spanning tree plus near-ties (workers/compute-mst.js),
+  // which keeps every cluster connected; "nn" keeps each node's links to its own
+  // nearest neighbours plus near-ties (workers/compute-nn.js), which can split a
+  // cluster. Both flag the links they keep with MTGraph.NN.
+  MT.computeMST = metric => MT.computeNNFlags("workers/compute-mst.js", "MST", metric);
 
-  MT.computeNN = () => MT.computeNNFlags("workers/compute-nn.js", "NN");
+  MT.computeNN = metric => MT.computeNNFlags("workers/compute-nn.js", "NN", metric);
+
+  // Flags the links the link-prune setting keeps (nothing to do for "none")
+  MT.computePruning = () => {
+    const prune = session.style.widgets["link-prune"];
+    if (prune == "nn") return MT.computeNN();
+    if (prune == "mst") return MT.computeMST();
+    return Promise.resolve();
+  };
   
   MT.computeTriangulation = () => {
     return new Promise((resolve, reject) => {
@@ -1388,6 +1474,7 @@
       const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
       if (differ) MT.toast.warning(`${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files. Click to review them.`, 15,
         clicked => { if (clicked) MT.launchView("conflicts"); });
+      MT.reportDateColumns(session.data.nodes, session.data.nodeFields);
     }
     // Links are done loading: swap the graph's pair lookup for its compact index.
     // (Link objects get null for missing link fields as they're built.)
@@ -1457,8 +1544,12 @@
     }, 1200);
   };
   
+  // A column heading for a Tabulator table, shown as text (Tabulator reads a
+  // plain title as markup, and names come from the loaded files)
+  MT.columnTitle = (title, definition) => ({ ...definition, title, titleFormatter: () => document.createTextNode(title) });
+
   MT.titleize = title => {
-    let small = title.toLowerCase().replace(/_/g, " ");
+    let small = String(title).toLowerCase().replace(/_/g, " ");
     if (small == "null") return "(Empty)";
     if (small == "id" || small == " id") return "ID";
     for (const key in MT.distanceMetrics) {
@@ -1469,12 +1560,6 @@
     if (small == "nn") return "Nearest Neighbor";
     return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
   };
-
-  // Undoes MT.escape (src/index.js), which CSV and Excel loading apply to
-  // names and values, for text that's shown as text: "a&amp;b" reads "a&b".
-  // (Its result must only ever go to textContent or a property, never markup.)
-  const unescapes = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&#x2F;": "/", "&#x5C;": "\\" };
-  MT.unescape = value => String(value).replace(/&(?:amp|lt|gt|quot|#39|#x2F|#x5C);/g, entity => unescapes[entity]);
 
   // Fills a menu with an option per field: its value prefix + the field, its
   // text label + the field's title. They're built as elements, not markup, so
@@ -1493,9 +1578,13 @@
     };
     if (!append) select.replaceChildren();
     if (none) add("None", "None");
-    (fields || []).forEach(field => add(prefix + field, label + MT.titleize(MT.unescape(field))));
+    (fields || []).forEach(field => add(prefix + field, label + MT.titleize(field)));
     return select;
   };
+
+  // A component of one node is a singleton, not a cluster: the statistics count
+  // a cluster as having more than one node (visible ones, when filtered by date).
+  MT.isCluster = nodeCount => nodeCount > 1;
 
   // Clusters are the connected components of the visible links.
   MT.tagClusters = () => {
@@ -1564,6 +1653,7 @@
       clusters = session.data.clusters;
     let n = nodes.length;
     let timeEnd = dateField != "None" && MT.parseDate(session.state.timeEnd);
+    const order = MTDates.dateOrderOf(nodes.map(d => d[dateField])).order;
     for (let i = 0; i < n; i++) {
       let node = nodes[i];
       node.visible = true;
@@ -1572,7 +1662,7 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd);
+      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd, order);
     }
     if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
@@ -1582,7 +1672,7 @@
     let start = Date.now();
     let metric = session.style.widgets["link-sort-variable"],
       threshold = parseFloat(session.style.widgets["link-threshold"]),
-      showNN = session.style.widgets["link-show-nn"];
+      showNN = session.style.widgets["link-prune"] != "none";
     const g = session.data.graph;
     const clusters = session.data.clusters;
     const nodeCluster = g.nodeCluster;
@@ -1710,23 +1800,18 @@
     let clusterCount = 0;
     if (session.style.widgets["timeline-date-field"]== 'None') {
       linkCount = vlinks.length;
-      clusterCount = session.data.clusters.filter(cluster => cluster.visible && cluster.nodes > 1).length;
+      clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(cluster.nodes)).length;
     } else {
-      let n = vlinks.length;
-      for (let i = 0; i < n; i++) {
-        let src = vnodes.find(d => d._id == vlinks[i].source || d.id == vlinks[i].source);
-        let tgt = vnodes.find(d => d._id == vlinks[i].target || d.id == vlinks[i].target);
-        if (src && tgt) linkCount++;
-      }
-	  
-      n = vnodes.length;
-      let clusters = {};
-      for (let i = 0; i < n; i++) {
-        let id = vnodes[i].cluster;
-        if (clusters[id]) clusters[id]++;
-        else clusters[id] = 1;
-      }
-      clusterCount = session.data.clusters.filter(cluster => clusters[cluster.id] && clusters[cluster.id]>2 && cluster.visible && cluster.nodes > 1).length;
+      // (Looked up by ID, as the links name nodes by their ID)
+      const visibleIds = new Set();
+      vnodes.forEach(d => { visibleIds.add('' + d._id); if (d.id != null) visibleIds.add('' + d.id); });
+      vlinks.forEach(l => {
+        if (visibleIds.has('' + l.source) && visibleIds.has('' + l.target)) linkCount++;
+      });
+
+      const sizes = new Map();
+      vnodes.forEach(d => sizes.set(d.cluster, (sizes.get(d.cluster) || 0) + 1));
+      clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(sizes.get(cluster.id))).length;
     }
     let singletons = vnodes.filter(d => d.degree == 0).length;
     const show = (id, n) => { document.getElementById(id).textContent = n.toLocaleString(); };
@@ -2417,18 +2502,45 @@
     return values.length > 0 && values.every(v => typeof v == 'number' && isFinite(v)) && new Set(values).size >= 3;
   });
 
-  // Whether a value is a date: a Date, or text that reads as one. Numbers
-  // aren't, nor text that's just a number (as spreadsheets give), though
-  // MT.parseDate reads them as times.
-  MT.isDate = value => value instanceof Date ? !isNaN(value) :
-    typeof value == 'string' && isNaN(value) && !!MT.parseDate(value);
+  // Whether a value is a date: a Date, or text that reads as one (in the given
+  // order, see MTDates.dateOrderOf). Numbers aren't, nor text that's just a
+  // number (as spreadsheets give), though MT.parseDate reads them as times.
+  MT.isDate = (value, order) => value instanceof Date ? !isNaN(value) :
+    typeof value == 'string' && isNaN(value) && !!MT.parseDate(value, order);
 
-  // Fields of dates: all dates, with at least 2. Those named for dates come
-  // first.
+  // A column's values read as dates: how many are present, how many read, and
+  // how many distinct dates they are, all in the column's order
+  MT.dateColumn = values => {
+    const present = values.filter(v => v != null && v !== '');
+    const { order, status } = MTDates.dateOrderOf(present);
+    const dates = present.filter(v => MT.isDate(v, order));
+    return { order, status, present: present.length, readable: dates.length, distinct: new Set(dates).size };
+  };
+
+  // Fields of dates: at least half the values are dates, with at least 2
+  // distinct. The rest are undated (see MT.reportDateColumns). Those named for
+  // dates come first.
   MT.dateFields = (items, fields) => choosable(fields).filter(field => {
-    const values = valuesOf(items, field);
-    return values.length > 0 && values.every(MT.isDate) && new Set(values).size >= 2;
+    const { present, readable, distinct } = MT.dateColumn(valuesOf(items, field));
+    return readable > 0 && readable * 2 >= present && distinct >= 2;
   }).sort((a, b) => /date|time|day/i.test(b) - /date|time|day/i.test(a));
+
+  // Says, when a file is read, how each date field was read: values that
+  // couldn't be (so are undated), and columns whose day-first and month-first
+  // dates are mixed or can't be told apart
+  MT.reportDateColumns = (items, fields) => {
+    const lines = [];
+    MT.dateFields(items, fields).forEach(field => {
+      const { status, present, readable } = MT.dateColumn(valuesOf(items, field));
+      const notes = [];
+      if (status == 'inconsistent') notes.push('mixes day-first and month-first dates, so it is read month-first');
+      if (status == 'ambiguous') notes.push('has dates that could be day-first or month-first (such as 03/04/2020), so it is read month-first');
+      const unreadable = present - readable;
+      if (unreadable) notes.push(`${unreadable.toLocaleString()} value${unreadable == 1 ? ' could' : 's could'} not be read as ${unreadable == 1 ? 'a date' : 'dates'} and ${unreadable == 1 ? 'is' : 'are'} undated`);
+      if (notes.length) lines.push(`<strong>${MT.escape(field)}</strong>: ${notes.join('; ')}.`);
+    });
+    if (lines.length) MT.toast.warning(lines.join('<br>'), 15);
+  };
 
   // A floating table (such as a view's legend) with a drag handle and a
   // context menu. The menu's items say what they do with data-action: drag

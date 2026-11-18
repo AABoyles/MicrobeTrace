@@ -11,11 +11,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const escape = value => String(value).replace(/[&<>'"/\\]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "\\": "&#x5C;" })[c]);
   MT.escape = escape;
 
-  if (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.appName.indexOf("Microsoft Internet Explorer") >= 0) {
-    byId("ie-warning").style.display = "block";
-    throw new Error("MicrobeTrace does not work on Internet Explorer.");
+  // The features the app needs from startup on: WebAssembly (the distance
+  // workers), Web Workers (every computation) and IndexedDB (stashed sessions
+  // and the license). WebGL is only needed when the 2D network opens, which
+  // reports its own failure, so it isn't checked here (#232).
+  const missing = [];
+  if (typeof WebAssembly === "undefined") missing.push("WebAssembly");
+  if (typeof Worker === "undefined") missing.push("Web Workers");
+  if (typeof indexedDB === "undefined") missing.push("IndexedDB");
+  if (missing.length) {
+    byId("unsupported-features").textContent = " (it lacks " + missing.join(", ") + ")";
+    byId("unsupported-browser").classList.add("shown");
+    throw new Error("MicrobeTrace needs " + missing.join(", ") + ", which this browser lacks.");
   } else {
-    byId("ie-warning").remove();
+    byId("unsupported-browser").remove();
   }
 
   // Mark local and preview deployments, so they aren't mistaken for the real site
@@ -318,17 +327,13 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   byId("filtering-epsilon").addEventListener("input", showEpsilon);
 
-  settings.subscribe("link-show-nn", nn => {
-    if (nn) {
-      showEpsilon();
-      MT.computeMST(get("default-distance-metric")).then(updateNetwork);
-    } else {
-      updateNetwork();
-    }
+  settings.subscribe("link-prune", prune => {
+    if (prune != "none") showEpsilon();
+    MT.computePruning().then(updateNetwork);
   });
   settings.subscribe("filtering-epsilon", () => {
     showEpsilon();
-    MT.computeMST(get("default-distance-metric")).then(updateNetwork);
+    if (get("link-prune") != "none") MT.computePruning().then(updateNetwork);
   });
   settings.subscribe("cluster-minimum-size", () => {
     MT.setClusterVisibility(true);
@@ -346,19 +351,48 @@ document.addEventListener("DOMContentLoaded", () => {
     const threshold = saved != null ? saved : metric ? metric.threshold : null;
     if (metric) byId("link-threshold").step = MT.thresholdStep(metric);
     MT.updateThresholdHistogram();
-    if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
-    else updateNetwork();
+    // Pruning is by the filter variable, so its flags are recomputed first
+    const pruned = get("link-prune") != "none" ? MT.computePruning() : Promise.resolve();
+    pruned.then(() => {
+      if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
+      else updateNetwork();
+    });
   });
+  // With sparse storage, only links within the threshold at load were kept:
+  // say so beside the threshold, and when it's raised past that (#228)
+  let warnedStored = null;
+  const showStoredRange = warn => {
+    const note = byId("link-threshold-note");
+    if (!note) return;
+    const field = get("link-sort-variable"), stored = (get("link-stored-thresholds") || {})[field];
+    if (stored == null) {
+      note.hidden = true;
+      warnedStored = null;
+      return;
+    }
+    const over = MT.storedThresholdBelow(field, get("link-threshold")) != null;
+    note.hidden = false;
+    note.classList.toggle("text-danger", over);
+    note.textContent = over
+      ? `Only links up to ${stored} were kept, so a higher threshold shows no more. Reload with a higher threshold, or Keep Links: All Pairs.`
+      : `Only links up to ${stored} were kept (Keep Links: Within Link Threshold).`;
+    if (over && warn && warnedStored !== stored) {
+      warnedStored = stored;
+      MT.toast.warning(`This threshold is above ${stored}, the one the links were computed with, so no new links appear. Reload the data with a higher threshold, or Keep Links: All Pairs.`, 10);
+    } else if (!over) warnedStored = null;
+  };
   settings.subscribe("link-threshold", threshold => {
     settings.set("link-thresholds", Object.assign({}, get("link-thresholds"), { [get("link-sort-variable")]: threshold }));
     MT.markThreshold(threshold);
+    showStoredRange(true);
     updateNetwork();
   });
+  settings.subscribe(["link-sort-variable", "link-stored-thresholds"], () => showStoredRange(false));
 
   // Rows of the settings that only apply with some settings
   const showRows = () => {
     const rows = (selector, show) => all(selector).forEach(row => row.hidden = !show);
-    rows(".filtering-epsilon-row", get("link-show-nn"));
+    rows(".filtering-epsilon-row", get("link-prune") != "none");
     rows("#filtering-wrapper", !(get("cluster-minimum-size") > 1));
     ["node", "link"].forEach(kind => {
       const none = get(kind + "-color-variable") == "None";
@@ -366,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
       rows(`.${kind}-color-value-row`, none);
     });
   };
-  settings.subscribe(["link-show-nn", "cluster-minimum-size", "node-color-variable", "link-color-variable"], showRows, { reload: true });
+  settings.subscribe(["link-prune", "cluster-minimum-size", "node-color-variable", "link-color-variable"], showRows, { reload: true });
 
   // A histogram of the links' values, marking the threshold, on which a click
   // or drag sets it. It's drawn 280 wide and stretched to fit its column.
@@ -768,8 +802,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let field = variable;
       let times = [],
       vnodes = JSON.parse(JSON.stringify(session.data.nodes));
+      const order = MTDates.dateOrderOf(session.data.nodes.map(d => d[field])).order;
       vnodes.forEach(d => {
-        let time = MT.parseDate(d[field]);
+        let time = MT.parseDate(d[field], order);
         if (time) {
           d[field] = time;
           times.push(d[field]);

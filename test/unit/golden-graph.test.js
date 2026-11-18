@@ -185,3 +185,94 @@ test('the Smith-Waterman worker gaps a two-base deletion where it is', async () 
   assert.strictEqual(node._score, a.score);
   assert.strictEqual(node._padding, 0);
 });
+
+// #232: a pair with no distance is no edge, not a zero-weight one
+test('MT.computeMST treats a missing link as no edge', async () => {
+  const toy = { nodes: ['a', 'b', 'c', 'd'], distances: [['a', 'b', 0.5], ['c', 'd', 0.4]] };
+  const app = load(toy);
+  await app.MT.computeMST();
+  assert.deepStrictEqual(flagged(app), pairSet([['a', 'b'], ['c', 'd']]));
+});
+
+// #236: the metric argument is honoured
+test('MT.computeMST and MT.computeNN use the metric they are given', async () => {
+  const app = load(golden.toy);
+  const g = app.session.data.graph, n = golden.toy.nodes.length;
+  // A second field holding the same distances negated would flip the tree
+  const tri = g.denseValues('tn93').map(v => 1 - v);
+  g.setDistances(golden.toy.nodes, tri, 'other', 'Genetic Distance');
+  await app.MT.computeMST('tn93');
+  const byTn93 = flagged(app);
+  await app.MT.computeMST('other');
+  assert.notDeepStrictEqual(flagged(app), byTn93);
+  assert.deepStrictEqual(byTn93, pairSet(golden.toy.mst));
+});
+
+// #228
+test('a threshold above the one links were stored within is reported', () => {
+  const { MT, session } = loadApp({ 'link-sort-variable': 'tn93', 'link-stored-thresholds': { tn93: 0.015 } });
+  assert.strictEqual(MT.storedThresholdBelow('tn93', 0.02), 0.015);
+  assert.strictEqual(MT.storedThresholdBelow('tn93', 0.015), null);
+  assert.strictEqual(MT.storedThresholdBelow('snps', 5), null);
+});
+
+// #229
+test('MT.isCluster counts components of more than one node', () => {
+  const { MT } = loadApp({});
+  assert.strictEqual(MT.isCluster(1), false);
+  assert.strictEqual(MT.isCluster(2), true);
+  assert.strictEqual(MT.isCluster(undefined), false);
+});
+
+// #236: the two pruning options, and the tie rule they share
+const triangle = { nodes: ['P', 'Q', 'R', 'S'], distances: [['P', 'Q', 0], ['Q', 'R', 0], ['P', 'R', 0], ['R', 'S', 0.01]] };
+
+test('MT.computeMST keeps every zero-length link among identical sequences', async () => {
+  const app = load(triangle);
+  await app.MT.computeMST();
+  assert.deepStrictEqual(flagged(app), pairSet([['P', 'Q'], ['Q', 'R'], ['P', 'R'], ['R', 'S']]));
+});
+
+test('MT.computeNN keeps each node\'s nearest neighbours among identical sequences', async () => {
+  const app = load(triangle);
+  await app.MT.computeNN();
+  // S's nearest is R; R's are P and Q, at 0
+  assert.deepStrictEqual(flagged(app), pairSet([['P', 'Q'], ['Q', 'R'], ['P', 'R'], ['R', 'S']]));
+});
+
+test('pruning treats distances within a fraction epsilon as ties, in both workers', async () => {
+  // A's nearest is B (0.0100); C (0.0105) is within 10% of it, D (0.0120) is not
+  const toy = { nodes: ['A', 'B', 'C', 'D'], distances: [['A', 'B', 0.0100], ['A', 'C', 0.0105], ['A', 'D', 0.0120]] };
+  for (const compute of ['computeNN', 'computeMST']) {
+    const strict = load(toy);
+    await strict.MT[compute]();
+    const loose = load(toy, { 'filtering-epsilon': -1 });
+    await loose.MT[compute]();
+    // The star is its own spanning tree, so the MST keeps all three; NN drops none that are nearest to the leaves
+    assert.deepStrictEqual(flagged(strict), pairSet([['A', 'B'], ['A', 'C'], ['A', 'D']]), compute);
+    assert.deepStrictEqual(flagged(loose), pairSet([['A', 'B'], ['A', 'C'], ['A', 'D']]), compute);
+  }
+  // With another way round from A, the MST and NN differ: C-B (0.003) replaces A-C in the MST
+  const ring = { nodes: ['A', 'B', 'C'], distances: [['A', 'B', 0.0100], ['A', 'C', 0.0105], ['B', 'C', 0.003]] };
+  const nn = load(ring, { 'filtering-epsilon': -1 });
+  await nn.MT.computeNN();
+  // A's nearest is B and C ties within 10%; B's and C's is each other
+  assert.deepStrictEqual(flagged(nn), pairSet([['A', 'B'], ['A', 'C'], ['B', 'C']]));
+  const nnStrict = load(ring);
+  await nnStrict.MT.computeNN();
+  assert.deepStrictEqual(flagged(nnStrict), pairSet([['A', 'B'], ['B', 'C']]));
+  const mst = load(ring);
+  await mst.MT.computeMST();
+  assert.deepStrictEqual(flagged(mst), pairSet([['A', 'B'], ['B', 'C']]));
+});
+
+test('MT.computePruning runs the method the link-prune setting names', async () => {
+  // The toy's nearest-neighbour graph and minimum spanning tree differ
+  const nn = load(golden.toy, { 'link-prune': 'nn' });
+  await nn.MT.computePruning();
+  assert.deepStrictEqual(flagged(nn), pairSet(golden.toy.nearestNeighbours));
+  const mst = load(golden.toy, { 'link-prune': 'mst' });
+  await mst.MT.computePruning();
+  assert.deepStrictEqual(flagged(mst), pairSet(golden.toy.mst));
+  assert.notDeepStrictEqual(golden.toy.mst, golden.toy.nearestNeighbours);
+});

@@ -59,7 +59,7 @@ test('the stored expected values are the reference implementation\'s', async () 
 async function workerDistances(seqs, mode) {
   const n = seqs.length;
   const out = await runWorker('workers/compute-links.js', {
-    seqs: seqs.map(s => s.seq), metrics: METRICS, mode, averageRows: 0, rowStart: 0, rowEnd: n,
+    seqs: seqs.map(s => s.seq), metrics: METRICS, mode, rowStart: 0, rowEnd: n,
     thresholds: METRICS.map(() => 'Infinity')
   });
   return out.results.map(({ source, target, distance }) => {
@@ -171,30 +171,32 @@ test('tn93.min.js resolutionsCount matches resolutions', () => {
 });
 
 // HIV-TRACE -g: hivtrace runs tn93 -a resolve -g FRACTION, which decides pair by
-// pair whether to average. MicrobeTrace decides sequence by sequence: a pair is
-// averaged when either sequence's share of non-ACGT characters (gaps included)
-// reaches the fraction.
+// pair whether to average: when the pair's resolvable ambiguity codes (not gaps)
+// are at least FRACTION of the sites compared.
 test('hivtrace-g.fasta, HIVTRACE-G: MT.computeLinks against tn93 -a resolve -g 0.015', async t => {
   const exp = expected('hivtrace-g.expected.json');
   const g = exp.modes['hivtrace-g'];
   const { MT, ids } = await pipeline('hivtrace-g', 'HIVTRACE-G', { 'distance-metrics-also': [], 'ambiguity-threshold': g.fraction });
   const { tri } = MT.getCondensedDM('tn93', ids);
-  const differ = ['h0-h4', 'h1-h2'];
-  const k = exp.pairs.map((p, i) => i);
-  const same = k.filter(i => !differ.includes(exp.pairs[i].join('-')));
-  const other = k.filter(i => differ.includes(exp.pairs[i].join('-')));
-  await t.test('pairs where averaging by sequence and by pair agree', () =>
-    checkMetric('tn93', same.map(i => tri[i]), same.map(i => g.tn93[i]), same.map(i => exp.pairs[i]), 1e-6));
-  await t.test('pairs where they disagree', {
-    todo: 'h1-h2 (one resolvable code each, 2 of 100 sites): tn93 averages (0.0205196), app resolves (0.0102056); ' +
-      'h0-h4 (h4: one code, 20 gaps): tn93 resolves (0), app averages (0.0063275)'
-  }, () => checkMetric('tn93', other.map(i => tri[i]), other.map(i => g.tn93[i]), other.map(i => exp.pairs[i]), 1e-6));
+  checkMetric('tn93', Array.from(tri), g.tn93, exp.pairs, 1e-6);
 });
 
-test('the FASTA parser reads N as a gap (a MicrobeTrace convention; tn93 reads it as A/C/G/T)', async () => {
+test('hivtrace-g.fasta, HIVTRACE-G with sparse storage keeps the same per-pair distances', async () => {
+  const exp = expected('hivtrace-g.expected.json');
+  const g = exp.modes['hivtrace-g'];
+  const { MT, ids } = await pipeline('hivtrace-g', 'HIVTRACE-G', {
+    'distance-metrics-also': [], 'ambiguity-threshold': g.fraction, 'link-storage': 'threshold', 'link-threshold': 0.03
+  });
+  const { tri } = MT.getCondensedDM('tn93', ids);
+  const k = exp.pairs.map((p, i) => i).filter(i => g.tn93[i] <= 0.03);
+  assert.ok(k.length > 0 && k.some(i => exp.pairs[i].join('-') == 'h1-h2'));
+  checkMetric('tn93', k.map(i => tri[i]), k.map(i => g.tn93[i]), k.map(i => exp.pairs[i]), 1e-6);
+});
+
+test('the FASTA parser keeps N as an ambiguity code, as tn93 reads it (#232)', async () => {
   const seqs = await parseFasta('distances.fasta');
   assert.strictEqual(seqs.length, 8);
   assert.ok(seqs.every(s => s.seq.length == 40));
   const out = await runWorker('workers/parse-fasta.js', '>n\nACGNN\nNT\n');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'n', seq: 'ACG---T' }]);
+  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'n', seq: 'ACGNNNT' }]);
 });

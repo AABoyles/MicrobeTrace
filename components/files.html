@@ -327,6 +327,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   Malformed
                 </label>
               </div>
+              <div class="form-check col" title="Check to see if a sequence's length is more than 20% away from the median length.">
+                <input class="form-check-input" type="checkbox" id="audit-length" name="audit-length" checked>
+                <label class="form-check-label" for="audit-length">
+                  Length
+                </label>
+              </div>
               <div class="col">
                 <button type="button" class="btn btn-outline-primary btn-sm w-100 audit-launcher">Run</button>
               </div>
@@ -492,8 +498,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false, dateNF: 'yyyy-mm-dd' });
         const headers = [];
         data.forEach(row => Object.keys(row).forEach(key => {
-          const safeKey = MT.escape(key);
-          if (!headers.includes(safeKey)) headers.push(safeKey);
+          if (!headers.includes(key)) headers.push(key);
         }));
         addRow(file, kind, headers);
       } else {
@@ -505,7 +510,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           delimiter: ',',
           header: true,
           preview: 1,
-          complete: output => addRow(file, kind, tabular ? output.meta.fields.map(MT.escape) : [])
+          complete: output => addRow(file, kind, tabular ? output.meta.fields : [])
         });
       }
     }
@@ -689,7 +694,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${MT.escape(d.seq)}"${i == 0 ? ' selected' : ''}>${MT.escape(d.id)}</option>`).join('');
         referenceSelect.dispatchEvent(new Event('change'));
       });
-      $('.reference-file-name').textContent = MT.escape(file.name);
+      $('.reference-file-name').textContent = file.name;
     });
 
     referenceSelect.innerHTML = `
@@ -742,6 +747,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const isMalformed = /[^ACGTURYMKWSBDHVNQEILFPZX0-9-]+/;
       const found = [];
       const log = (id, type) => found.push({ id, type });
+      // The length of most sequences, to find ones far from it
+      const lengths = data.map(d => d.seq.replace(/-/g, '').length).sort((a, b) => a - b);
+      const median = lengths[Math.floor(lengths.length / 2)];
       data.forEach(({ seq, id }) => {
         if (check('empty') && seq == '') log(id, 'empty');
         if (check('gaps') && isGaps.test(seq)) log(id, 'all gaps');
@@ -749,6 +757,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         if (check('amino-acids') && isAA.test(seq) && !isDNA.test(seq)) log(id, 'amino acids');
         if (check('CIGAR') && isCIGAR.test(seq)) log(id, 'a CIGAR');
         if (check('malformed') && isMalformed.test(seq)) log(id, 'malformed');
+        if (check('length') && data.length >= 10 && seq && !isGaps.test(seq) && Math.abs(seq.replace(/-/g, '').length - median) > median * 0.2) log(id, 'an outlier in length (median ' + median.toLocaleString() + ')');
       });
       return found;
     }
@@ -822,6 +831,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
     }
 
+    // Sequence length problems go in the log and in a warning
+    function reportLengths(warnings) {
+      warnings.forEach(w => { message(' - Warning: ' + w); MT.toast.warning(w, 20); });
+    }
+
     launchButton.addEventListener('click', () => {
       session.meta.startTime = Date.now();
       launchButton.disabled = true;
@@ -851,6 +865,34 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       const check = session.files.length > 1;
 
+      // Says (in the log and a warning) how many links a file gave without a usable distance (#220)
+      const reportDistances = (file, noColumn, missing, bad, example) => {
+        const name = shownName(file);
+        if (noColumn) {
+          const text = `${name}: no distance column was chosen, so its ${noColumn.toLocaleString()} link${noColumn == 1 ? ' has' : 's have'} no distance and ${noColumn == 1 ? 'is' : 'are'} shown at any link threshold.`;
+          message(' - ' + text);
+          MT.toast.warning(text);
+        }
+        const parts = [];
+        if (missing) parts.push(`${missing.toLocaleString()} link${missing == 1 ? ' has' : 's have'} an empty distance`);
+        if (bad) parts.push(`${bad.toLocaleString()} distance${bad == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(example)}")`);
+        if (!parts.length) return;
+        message(` - ${name}: ${parts.join('; ')}. Such links are kept without a distance and are not shown by the link threshold.`);
+        MT.toast.warning(`${name}: ${parts.join('; ')}. Such links are not shown by the link threshold; fix the values and load the file again.`);
+      };
+
+      // A file that cannot be read stops the load, with the reason (the dialog is not left up)
+      const fail = (file, kind, error) => {
+        const reason = (error && error.message) || error;
+        console.error(error);
+        const text = `Could not read ${shownName(file)} as ${kind}: ${MT.escape('' + reason)}.`;
+        message(text);
+        MT.toast.error(text);
+        clearTimeout(temp.messageTimeout);
+        MT.hideModal('loading-information-modal');
+        checkLaunch();
+      };
+
       // Files are read in the order their kinds need, but where they disagree
       // about a node, the values of the file nearest the top of the list win
       const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
@@ -862,6 +904,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       // Parsers finish in any order (FASTA and matrix parsing is asynchronous), so
       // processing waits for every file, not for the last one in the list (#212)
       const parsedFiles = [];
+
+      // What reading the files merged, dropped or overwrote without a word
+      // (#219): reported once they are all read
+      const report = { duplicates: 0, blanks: 0, selfLinks: 0, repeatedLinks: 0 };
+      const taken = new Set(), linked = new Set(); // IDs from node and sequence files, and from files of links
+      // A node's ID as it is kept; a repeat within its file is counted, and a blank one is not a node
+      const idOf = (value, seen) => {
+        const id = MT.cleanID(value);
+        if (id == '') { report.blanks++; return null; }
+        if (seen.has(id)) report.duplicates++;
+        seen.add(id);
+        return id;
+      };
 
       files.forEach(file => {
         let parsed;
@@ -876,15 +931,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           let newNodes = 0;
           MT.parseFASTA(file.contents).then(seqs => {
             const n = seqs.length;
+            const seen = new Set();
             for (let i = 0; i < n; i++) {
               let node = seqs[i];
               if (!node) continue;
+              const id = idOf(node.id, seen);
+              if (id === null) continue;
               newNodes += MT.addNode({
-                _id: MT.escape(node.id),
-                seq: MT.escape(node.seq),
+                _id: id,
+                seq: node.seq,
                 origin: origin
               }, check, source);
             }
+            seen.forEach(id => taken.add(id));
             console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
             parsed();
@@ -893,7 +952,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         } else if (file.format == 'link') {
 
           message(`Parsing ${shownName(file)} as Link List...`);
-          let l = 0;
+          let l = 0, noColumn = 0, missing = 0, bad = 0, badExample = null;
           if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
 
           let forEachLink = link => {
@@ -901,22 +960,36 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             const n = keys.length;
             let safeLink = {};
             for (let i = 0; i < n; i++) {
-              // Read the row by its own header; store under the escaped name (#217)
+              // Read the row by its own header; store under its name as written (#217)
               const value = link[keys[i]];
-              let key = MT.escape(keys[i]);
-              safeLink[key] = (typeof value === 'string') ? MT.escape(value) : value;  // #195
+              const key = keys[i];
+              safeLink[key] = value;
               if (!session.data.linkFields.includes(key)) {
                 session.data.linkFields.push(key);
               }
             }
-            l += MT.addLink(Object.assign({
-              source: '' + safeLink[MT.escape(file.field1)],
-              target: '' + safeLink[MT.escape(file.field2)],
-              origin: origin,
-              visible: true,
-              // A file's distances are taken to be the distance metric's
-              [get('default-distance-metric')]: file.field3 == 'None' ? 0 : parseFloat(safeLink[MT.escape(file.field3)])
-            }, safeLink), check);
+            const source = MT.cleanID(safeLink[file.field1]), target = MT.cleanID(safeLink[file.field2]);
+            if (source == '' || target == '') { report.blanks++; return; }
+            const out = Object.assign({ origin: origin, visible: true }, safeLink, { source, target });
+            // A file's distances are taken to be the distance metric's. A link with
+            // no distance has none (not 0, which every threshold would pass), and
+            // one with an unreadable distance has none rather than NaN (#220). Links
+            // from a file with no distance column are flagged unmeasured, so the
+            // threshold shows them rather than hiding them all
+            const metric = get('default-distance-metric');
+            const distance = file.field3 == 'None' ? null : MTGraph.parseDistance(safeLink[file.field3]);
+            if (distance === null || distance !== distance) {
+              if (file.field3 == 'None') { noColumn++; out.unmeasured = true; }
+              else if (distance === null) missing++;
+              else { bad++; if (badExample === null) badExample = '' + safeLink[file.field3]; }
+              if (file.field3 == 'None' || file.field3 == metric) delete out[metric];
+            } else {
+              out[metric] = distance;
+            }
+            const added = MT.addLink(out, check);
+            l += added;
+            if (!added) report[source == target ? 'selfLinks' : 'repeatedLinks']++;
+            linked.add(source).add(target);
           };
 
           if (file.extension == 'xls' || file.extension == 'xlsx') {
@@ -925,17 +998,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
             data.map(forEachLink);
             message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
+            reportDistances(file, noColumn, missing, bad, badExample);
             let n = 0, t = 0;
             const nodeIDs = new Set();
             const k = data.length;
             for (let i = 0; i < k; i++) {
               const l = data[i];
-              [l[file.field1], l[file.field2]].forEach(id => {
-                if (nodeIDs.has(id)) return;
+              [l[file.field1], l[file.field2]].forEach(value => {
+                const id = MT.cleanID(value);
+                if (id == '' || nodeIDs.has(id)) return;
                 t++;
                 nodeIDs.add(id);
                 n += MT.addNode({
-                  _id: '' + id,
+                  _id: id,
                   origin: origin
                 }, true, source);
               });
@@ -950,16 +1025,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               delimiter: ",",
               // newline: "\r\n",
               header: true,
-              dynamicTyping: true,
+              // Numbers are read as numbers, except IDs: 007 and 1E3 are names (#219)
+              dynamicTyping: field => field != file.field1 && field != file.field2,
               skipEmptyLines: true,
               complete: results => {
                 let data = results.data;
                 data.map(forEachLink);
                 message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+                reportDistances(file, noColumn, missing, bad, badExample);
                 results.meta.fields.forEach(key => {
-                  const safeKey = MT.escape(key);
-                  if (!session.data.linkFields.includes(safeKey)) {
-                    session.data.linkFields.push(safeKey);
+                  if (!session.data.linkFields.includes(key)) {
+                    session.data.linkFields.push(key);
                   }
                 });
                 let newNodes = 0, totalNodes = 0;
@@ -968,12 +1044,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 const nodeIDs = new Set();
                 for (let i = 0; i < n; i++) {
                   const l = data[i];
-                  [l[file.field1], l[file.field2]].forEach(id => {
-                    if (nodeIDs.has(id)) return;
+                  [l[file.field1], l[file.field2]].forEach(value => {
+                    const id = MT.cleanID(value);
+                    if (id == '' || nodeIDs.has(id)) return;
                     totalNodes++;
                     nodeIDs.add(id);
                     newNodes += MT.addNode({
-                      _id: '' + id,
+                      _id: id,
                       origin: origin
                     }, true, source);
                   });
@@ -995,53 +1072,58 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             let workbook = XLSX.read(file.contents, { type: 'array' });
             let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
             n = data.length;
+            const seen = new Set();
             data.forEach(node => {
+              const id = idOf(node[file.field1], seen);
+              if (id === null) return;
               let safeNode = {
-                _id: MT.escape('' + node[file.field1]),
-                seq: (file.field2 == 'None') ? '' : MT.escape(node[file.field2]),
+                _id: id,
+                seq: (file.field2 == 'None') ? '' : node[file.field2],
                 origin: origin
               };
               Object.keys(node).forEach(key => {
                 // The columns chosen as the ID and sequence are those, not fields too
                 if (key == file.field1 || key == file.field2) return;
-                let safeKey = MT.escape(key);
-                MT.addNodeField(safeKey);
-                safeNode[safeKey] = MT.escape(node[key]);
+                MT.addNodeField(key);
+                safeNode[key] = node[key];
               });
               m += MT.addNode(safeNode, check, source);
             });
+            seen.forEach(id => taken.add(id));
             console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
             parsed();
 
           } else {
 
+            const seen = new Set();
             Papa.parse(file.contents, {
               delimiter: ",",
               // newline: "\r\n",
               header: true,
-              dynamicTyping: true,
+              // Numbers are read as numbers, except IDs and sequences: 007 and 1E3 are names (#219)
+              dynamicTyping: field => field != file.field1 && field != file.field2,
               skipEmptyLines: true,
               step: data => {
                 let node = data.data;
                 n++;
+                const id = idOf(node[file.field1], seen);
+                if (id === null) return;
                 let safeNode = {
-                  _id: MT.escape('' + node[file.field1]),
-                  seq: (file.field2 == 'None') ? '' : MT.escape(node[file.field2]),
+                  _id: id,
+                  seq: (file.field2 == 'None') ? '' : node[file.field2],
                   origin: origin
                 };
                 Object.keys(node).forEach(key => {
                   // The columns chosen as the ID and sequence are those, not fields too
                   if (key == file.field1 || key == file.field2) return;
-                  let safeKey = MT.escape(key);
-                  MT.addNodeField(safeKey);
-                  // safeNode[safeKey] = MT.escape(node[key]);
-                  safeNode[safeKey] =  (typeof node[key] === 'string')  ?   MT.escape(node[key]) : node[key]; //#173
-
+                  MT.addNodeField(key);
+                  safeNode[key] = node[key]; //#173
                 });
                 m += MT.addNode(safeNode, check, source);
               },
               complete: () => {
+                seen.forEach(id => taken.add(id));
                 console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
                 message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
                 parsed();
@@ -1053,61 +1135,31 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           message(`Parsing ${shownName(file)} as Distance Matrix...`);
 
+          // Excel sheets are read as CSV text by the same parser as CSV files, which
+          // finds the shape (square, or either triangle) from the first row
+          let matrixFile = file, nodeOrigin;
           if (file.extension == 'xls' || file.extension == 'xlsx') {
-
-            let workbook = XLSX.read(file.contents, { type: 'array' });
-            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1, raw: false, dateNF: 'yyyy-mm-dd'});
-            let nodeIDs = [], nn = 0, nl = 0;
-            if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
-
-            if (data[0][0].replace(/\"/g, '').replace(/\'/g, '')) { // triangle matrix
-              let topNodeIDs = [''];
-              data.forEach((row, i) => {
-                const nodeID = row[0];
-                topNodeIDs.push(nodeID);
-              })
-              data.unshift(topNodeIDs);
+            try {
+              const workbook = XLSX.read(file.contents, { type: 'array' });
+              const sheet = workbook.Sheets[workbook.SheetNames[0]];
+              if (!sheet) throw new Error('the workbook has no sheets');
+              matrixFile = Object.assign({}, file, { contents: XLSX.utils.sheet_to_csv(sheet, { rawNumbers: true, dateNF: 'yyyy-mm-dd' }) });
+              nodeOrigin = origin;
+            } catch (error) {
+              return fail(file, 'a distance matrix', error);
             }
-
-            data.forEach((row, i) => {
-              if (i == 0) {
-                nodeIDs = row;
-                nodeIDs.forEach((cell, k) => {
-                  if (k > 0) {
-                    nn += MT.addNode({
-                      _id: MT.escape('' + cell),
-                      origin: origin
-                    }, check, source);
-                  }
-                });
-              } else {
-                const source = MT.escape('' + row[0]);
-                row.forEach((cell, j) => {
-                  if (j == 0) return;
-                  const target = MT.escape('' + nodeIDs[j]);
-                  if (source == target) return;
-                  nl += MT.addLink({
-                    source: source,
-                    target: target,
-                    origin: origin,
-                    [get('default-distance-metric')]: parseFloat(cell)
-                  }, check);
-                });
-              }
-            });
-            console.log('Distance Matrix Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
-            message(` - Parsed ${nn} New, ${data.length - 1} Total Nodes from Excel Distance Matrix.`);
-            message(` - Parsed ${nl} New, ${((data.length - 1) ** 2 - (data.length - 1)) / 2} Total Links from Excel Distance Matrix.`);
-            parsed();
-
-          } else {
-
-            MT.parseCSVMatrix(file, source).then(o => {
-              message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
-              message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
-              parsed();
-            });
           }
+          MT.parseCSVMatrix(matrixFile, source, nodeOrigin).then(o => {
+            o.ids.forEach(id => linked.add(MT.cleanID(id)));
+            message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
+            message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
+            if (o.unparseable) {
+              const text = `${shownName(file)}: ${o.unparseable.toLocaleString()} matrix cell${o.unparseable == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(o.example)}") and ${o.unparseable == 1 ? 'was' : 'were'} skipped.`;
+              message(' - ' + text);
+              MT.toast.warning(text);
+            }
+            parsed();
+          }, error => fail(file, 'a distance matrix', error));
 
         } else { // if(file.format == 'newick'){
 
@@ -1117,7 +1169,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           let newNodes = 0;
           const tree = patristic.parseNewick(file.contents);
           temp.tree = tree;
-          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids.map(MT.escape), n = labels.length;
+          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids, n = labels.length;
           for (let i = 0; i < n; i++) {
             const source = labels[i];
             newNodes += MT.addNode({
@@ -1137,11 +1189,29 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           console.log('Newick Tree Parse time:', (Date.now() - start).toLocaleString(), 'ms');
           message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
           message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
+          labels.forEach(id => linked.add(MT.cleanID(id)));
           parsed();
         }
       });
 
-      Promise.all(parsedFiles).then(() => processSequences());
+      Promise.all(parsedFiles).then(() => {
+        reportMerges();
+        return processSequences();
+      });
+
+      // Merged, dropped and overwritten rows are said, not silent (#219)
+      function reportMerges() {
+        const unmatched = taken.size ? Array.from(linked).filter(id => !taken.has(id)).length : 0;
+        const plural = (n, one, many) => n.toLocaleString() + ' ' + (n == 1 ? one : many);
+        const notes = [];
+        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the last row's values are kept)`);
+        if (report.blanks) notes.push(`${plural(report.blanks, 'row with a blank ID was', 'rows with a blank ID were')} skipped`);
+        if (report.selfLinks) notes.push(`${plural(report.selfLinks, 'link from a node to itself was', 'links from a node to itself were')} dropped`);
+        if (report.repeatedLinks) notes.push(`${plural(report.repeatedLinks, 'link repeated', 'links repeated')} a pair of nodes already linked (in either direction), so overwrote its values`);
+        if (unmatched) notes.push(`${plural(unmatched, 'node in the links is', 'nodes in the links are')} not in the node or sequence files`);
+        notes.forEach(note => message(' - ' + note[0].toUpperCase() + note.slice(1) + '.'));
+        if (notes.length) MT.toast.warning(notes.map(note => note[0].toUpperCase() + note.slice(1)).join('. ') + '. See the loading log for details.', 15);
+      }
 
       async function processSequences() {
         // Where files disagree about nodes, say so (the top file's values are used)
@@ -1174,6 +1244,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             Object.assign(subset[j], output[j]);
           }
           console.log("Alignment Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+          reportLengths(MT.lengthWarnings(output.fit));
+        } else {
+          reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));
         }
         const start = Date.now();
         for(let k = 0; k < n; k++){
@@ -1181,7 +1254,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           node['_seqInt'] = tn93.toInts(node['seq']);
         }
         console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
-        session.data.consensus = await MT.computeConsensus();
+        // Nodes without a sequence hold only gaps; they are left out of the consensus
+        session.data.consensus = await MT.computeConsensus(subset);
         await MT.computeConsensusDistances();
         subset.sort((a, b) => a['_diff'] - b['_diff']);
         if(session.style.widgets['ambiguity-resolution-strategy']){
