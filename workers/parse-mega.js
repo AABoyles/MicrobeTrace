@@ -1,26 +1,35 @@
 const isblank = /^\s*$/;
 
-onmessage = function (e) {
-  let start = Date.now();
-  let text = e.data;
-  if (!text || text.length == 0) return [];
-  let seqs = [], currentSeq = {};
+// Parses MEGA text into [{id, seq}]; tolerates a BOM, CRLF and leading
+// blank/comment lines (#223); sequence lines before the first '#' are ignored.
+function parseMega(text){
+  let seqs = [], currentSeq = null;
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
   let lines = text.split(/[\r\n]+/g);
   let n = lines.length;
   for (let i = 0; i < n; i++) {
     let line = lines[i];
     if (isblank.test(line) || line[0] == ';') continue;
     if (line[0] == '#') {
-      if (i > 0) seqs.push(currentSeq);
+      if (currentSeq) seqs.push(currentSeq);
       currentSeq = {
         id: line.slice(1),
         seq: '#'
       };
-    } else {
+    } else if (currentSeq) {
       currentSeq.seq += line.toUpperCase();
     }
   }
-  seqs.push(currentSeq);
+  if (currentSeq) seqs.push(currentSeq);
+  return seqs;
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { parseMega };
+
+if (typeof onmessage !== 'undefined' || typeof self !== 'undefined') onmessage = function (e) {
+  let start = Date.now();
+  let text = e.data;
+  let seqs = (!text || text.length == 0) ? [] : parseMega(text);   // an empty file still answers (#222)
   console.log('MEGA Parse time: ', (Date.now() - start).toLocaleString(), 'ms');
   start = Date.now();
   let encoder = new TextEncoder();

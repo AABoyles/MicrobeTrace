@@ -10,3 +10,4 @@ yarn.lock
 .cache
 test-results
 playwright-report
+_site

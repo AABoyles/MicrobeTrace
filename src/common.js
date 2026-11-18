@@ -383,6 +383,12 @@
   // Given the source it came from (session.data.sources), the node's values
   // are recorded there, and where files disagree the top file's win. Without
   // a source (a saved session, an import), its values replace any already set.
+  // Lists node fields (once each) so they appear in variable menus and sessions
+  MT.addNodeField = (...names) => {
+    const fields = session.data.nodeFields;
+    names.forEach(name => { if (!fields.includes(name)) fields.push(name); });
+  };
+
   MT.addNode = (newNode, check, source) => {
     if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
     if (isNumber(newNode._id)) newNode._id = "" + newNode._id;
@@ -528,8 +534,7 @@
           false
         );
       });
-      session.data.nodeFields.push("color");
-      session.data.nodeFields.push("size");
+      MT.addNodeField("color", "size");
       all("#edges path").forEach(link => {
         const coords = link.getAttribute("class").split(" ");
         let base = {
@@ -653,8 +658,7 @@
     Object.keys(
       hivtrace["trace_results"]["Nodes"][0]["patient_attributes"]
     ).forEach(key => {
-      if (!session.data.nodeFields.includes(key))
-        session.data.nodeFields.push(key);
+      MT.addNodeField(key);
     });
     let n = hivtrace["trace_results"]["Edges"].length;
     let metric = session.style.widgets['default-distance-metric'];
@@ -684,11 +688,7 @@
       MT.addNode(newNode, false);   
     });
     // (A sample's id is its ID, _id, so isn't listed as a field too)
-    ["genotypes", "group", "name"].forEach(key => {     
-      if (!session.data.nodeFields.includes(key)){
-        session.data.nodeFields.push(key);     
-      }   
-    });
+    MT.addNodeField("genotypes", "group", "name");
     let links = ghost["links"];   
     let n = links.length;   
     for (let i = 0; i < n; i++) {     
@@ -925,9 +925,7 @@
             d._seq = d._seq.padEnd(referenceLength, "-");
           }
         }
-        session.data.nodeFields.push('_score');
-        session.data.nodeFields.push('_padding');
-        session.data.nodeFields.push('_cigar');
+        MT.addNodeField('_score', '_padding', '_cigar');
         console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve(subset);
       };
@@ -960,7 +958,7 @@
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._ambiguity = dists[j];
         }
-        session.data.nodeFields.push('_ambiguity');
+        MT.addNodeField('_ambiguity');
         console.log("Ambiguity Count Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
@@ -997,7 +995,7 @@
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._diff = dists[j];
         }
-        session.data.nodeFields.push('_diff');
+        MT.addNodeField('_diff');
         console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
       };
@@ -2119,14 +2117,24 @@
     layout.on("focus", e => bringForward(e.target));
   };
 
-  // Fetches a view's HTML into temp.componentCache
-  const fetchView = view => new Promise(resolve => {
-    if (temp.componentCache[view]) return resolve();
-    fetch("components/" + view + ".html").then(response => response.text()).then(response => {
-      temp.componentCache[view] = response;
-      resolve();
+  // Fetches a view's HTML into temp.componentCache. A failed fetch (offline,
+  // 404, or a server answering with something other than HTML) is not cached,
+  // so the next attempt tries again, and rejects with a message naming the view.
+  const fetchView = view => {
+    if (temp.componentCache[view]) return Promise.resolve();
+    const fail = () => {
+      throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
+    };
+    return fetch("components/" + view + ".html").then(response => {
+      if (!response.ok) fail();
+      return response.text();
+    }, fail).then(html => {
+      // server.js answers unknown paths with the app shell (index.html)
+      if (/^\s*<!doctype/i.test(html)) fail();
+      temp.componentCache[view] = html;
     });
-  });
+  };
+  const viewFailed = error => MT.toast.error(error.message);
 
   // Renders a view's HTML into its (newly attached) layout item
   // (Scripts set as HTML don't run, so each is replaced by a copy that does.)
@@ -2607,7 +2615,10 @@
           backgroundColor: settings.get('background-color'),
           type: 'image/' + filetype,
           quality: parseFloat(field('export-quality').value)
-        }).then(blob => MT.saveAs(blob, filename + '.' + filetype), console.error).finally(() => {
+        }).then(blob => MT.saveImage(blob, filename + '.' + filetype), error => {
+          console.error(error);
+          MT.toast.error('The image could not be made (' + error.message + '). Try a smaller scale.');
+        }).finally(() => {
           watermark.remove();
           if (done) done(svg);
         });
@@ -2824,6 +2835,32 @@
     setTimeout(() => URL.revokeObjectURL(link.href), 60000);
   };
 
+  // Papa.unparse with the settings every export needs. escapeFormulae stops a
+  // cell such as =HYPERLINK(...) from being evaluated when a spreadsheet opens
+  // the file. Rows that are objects get the union of their keys as columns, in
+  // first-seen order (Papa would use the first row's alone), unless opts.columns
+  // says otherwise. Rows that are arrays, or {fields, data}, pass through.
+  MT.toCSV = (rows, opts = {}) => {
+    const config = { escapeFormulae: true, ...opts };
+    if (Array.isArray(rows) && !config.columns && rows.some(r => r && typeof r == 'object' && !Array.isArray(r))) {
+      const seen = new Set();
+      rows.forEach(r => { if (r && typeof r == 'object') Object.keys(r).forEach(k => seen.add(k)); });
+      config.columns = Array.from(seen);
+    }
+    return Papa.unparse(rows, config);
+  };
+
+  // Saves an image Blob; a null one (canvas.toBlob gives null for a canvas too
+  // large to encode) is reported to the user instead of thrown.
+  MT.saveImage = (blob, filename) => {
+    if (!blob) {
+      MT.toast.error('The image could not be made. It may be too large: try a smaller scale.');
+      return false;
+    }
+    MT.saveAs(blob, filename);
+    return true;
+  };
+
   // Loads an image, crossOrigin so that drawing it leaves a canvas readable.
   // Resolves to null if it doesn't load.
   const loadImage = src => new Promise(resolve => {
@@ -2923,7 +2960,7 @@
     });
     context.globalAlpha = 1;
     if (draw) draw(context, canvas);
-    canvas.toBlob(blob => MT.saveAs(blob, filename + '.' + filetype), 'image/' + filetype);
+    canvas.toBlob(blob => MT.saveImage(blob, filename + '.' + filetype), 'image/' + filetype);
   };
 
   // Shows the shared tooltip at a mouse event, or hides it (html == null)
@@ -2972,7 +3009,7 @@
   MT.launchView = (view, callback) => {
     view = MT.viewName(view);
     if (!temp.componentCache[view]) {
-      fetchView(view).then(() => MT.launchView(view, callback));
+      fetchView(view).then(() => MT.launchView(view, callback), viewFailed);
     } else {
       let contentItem = layout.contentItems.find(item => item.componentType == view);
       if (contentItem) {
@@ -3047,7 +3084,7 @@
         setupView(item);
         mountView(item);
       });
-    });
+    }, viewFailed);
   };
   
   MT.unparseSVG = svgNode => {

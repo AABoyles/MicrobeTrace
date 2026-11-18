@@ -31,9 +31,9 @@ Before contributing, we encourage you to also read or [LICENSE](https://github.c
 files, also found in this repository. If you have any inquiries or questions not
 answered by the content of this repository, feel free to [contact us](mailto:chiic@cdc.gov).
 
-## Public Domain
-This project is in the public domain within the United States, and copyright and
-related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
-All contributions to this project will be released under the CC0 dedication. By
-submitting a pull request you are agreeing to comply with this waiver of
-copyright interest.
+## License
+This project is licensed under the [Apache License, Version 2.0](LICENSE).
+Unless you explicitly state otherwise, any contribution you intentionally submit
+for inclusion in this project is licensed under Apache-2.0, without any
+additional terms or conditions, as described in section 5 of the license. By
+submitting a pull request you agree to these terms.

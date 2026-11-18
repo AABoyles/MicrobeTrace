@@ -30,17 +30,18 @@
     "url": "https://github.com/aaboyles/MicrobeTrace/issues"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "scripts": {
-    "build": "npm run compress",
+    "build": "npm run bundle && npm run cache && npm run compress",
     "bundle": "scripts/bundle.sh",
     "cache": "node scripts/build-sw.js",
     "clean": "scripts/cleanup.sh",
+    "site": "node scripts/build-site.js",
     "compress": "scripts/compress.sh",
     "test": "node --test test/unit/*.test.js",
     "test:e2e": "playwright test",
-    "update": "npm update && npm run bundle"
+    "update": "npm update && npm run bundle && npm run cache"
   },
   "directories": {
     "doc": "docs",
@@ -49,8 +50,7 @@
   "dependencies": {
     "express": "^5.3.0",
     "express-http-to-https": "^1.1.4",
-    "express-static-gzip": "^3.0.2",
-    "gzipper": "^8.3.0"
+    "express-static-gzip": "^3.0.2"
   },
   "devDependencies": {
     "@cosmos.gl/graph": "^3.6.0",
@@ -66,6 +66,7 @@
     "d3-symbol-extra": "^0.1.0",
     "esbuild": "^0.28.2",
     "golden-layout": "^2.6.0",
+    "gzipper": "^8.3.0",
     "html5sortable": "^0.14.0",
     "jszip": "^3.10.2",
     "leaflet": "^1.9.4",
@@ -73,14 +74,12 @@
     "papaparse": "^5.7.0",
     "patristic": "^0.6.0",
     "pdfmake": "^0.3.11",
-    "playwright": "^1.64.0",
     "plotly.js": "^4.1.2",
     "postcss": "^8.5.29",
-    "postcss-cli": "^12.0.0",
     "tabulator-tables": "^6.6.1",
     "tidytree": "^0.7.0",
-    "tom-select": "^2.6.2",
     "tn93": "^0.3.5",
+    "tom-select": "^2.6.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

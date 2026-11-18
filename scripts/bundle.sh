@@ -1,4 +1,11 @@
 #!/bin/bash
+# Builds dist/ and vendor/ from node_modules (run `npm ci` first). The output is
+# committed, and CI re-runs this and fails if it differs from what was committed
+# (#200), so run it (npm run bundle) after changing a dependency or this file.
+
+set -euo pipefail
+cd "$(dirname "$0")/.."
+trap 'rm -f temp.*.css temp.*.js' EXIT
 
 # primaryscripts is where you put scripts that must be loaded immediately.
 # It is unlikely that you should need to modify this, unless you're working on
@@ -10,7 +17,7 @@ primaryscripts=(
   "node_modules/papaparse/papaparse.min.js"
   "node_modules/jszip/dist/jszip.min.js"
   "node_modules/xlsx/dist/xlsx.core.min.js"
-  "node_modules/tn93/dist/tn93.min.js"
+  "vendor/tn93.min.js"
   "node_modules/d3/dist/d3.min.js"
   "node_modules/tabulator-tables/dist/js/tabulator.min.js"
 )
@@ -61,13 +68,13 @@ sed 's#url("fonts/#url("../fonts/#g' node_modules/bootstrap-icons/font/bootstrap
 
 echo 'Assembling Stylesheets...'
 
-touch temp.primary.css
+: > temp.primary.css
 for i in ${primarystyles[@]}; do
   cat $i >> temp.primary.css
   printf "\n" >> temp.primary.css
 done
 
-touch temp.secondary.css
+: > temp.secondary.css
 for i in ${secondarystyles[@]}; do
   cat $i >> temp.secondary.css
   printf "\n" >> temp.secondary.css
@@ -75,8 +82,8 @@ done
 
 echo 'Minifying Stylesheets...'
 
-npx postcss temp.primary.css > dist/bundle.primary.css
-npx postcss temp.secondary.css > dist/bundle.secondary.css
+node scripts/minify-css.js temp.primary.css dist/bundle.primary.css
+node scripts/minify-css.js temp.secondary.css dist/bundle.secondary.css
 
 echo 'Copying Unbundlable Dependencies...'
 
@@ -85,14 +92,17 @@ cp node_modules/bioseq/dist/bioseq.min.js vendor/
 npx esbuild node_modules/@cosmos.gl/graph/dist/index.js --bundle --minify --format=iife --global-name=Cosmos \
   --target=es2020 --log-level=warning --outfile=vendor/cosmos.min.js
 cp node_modules/patristic/dist/patristic.min.js vendor/
-cp node_modules/tn93/dist/tn93.min.js vendor/
 cp node_modules/papaparse/papaparse.min.js vendor/
 mkdir -p fonts && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* fonts/
 
 echo 'Building Dependencies...'
 
+# tn93, with GapMM's resolution weights fixed (see scripts/patch-tn93.js). The
+# primary bundle includes this copy too, so it must be built first.
+node scripts/patch-tn93.js vendor/tn93.min.js
+
 # TidyTree, with interrupted redraws no longer rejecting (see scripts/patch-tidytree.js)
-node scripts/patch-tidytree.js temp.tidytree.js || exit 1
+node scripts/patch-tidytree.js temp.tidytree.js
 
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.
@@ -105,7 +115,7 @@ npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --for
 
 echo 'Assembling Javascript Bundle...'
 
-rm dist/bundle.primary.js && touch dist/bundle.primary.js
+: > dist/bundle.primary.js
 # A semicolon after each script, so one ending without its own can't run into
 # the next (a script starting with "(" would call the previous one's last value)
 for i in ${primaryscripts[@]}; do
@@ -113,12 +123,18 @@ for i in ${primaryscripts[@]}; do
   printf "\n;\n" >> dist/bundle.primary.js
 done
 
-rm dist/bundle.secondary.js && touch dist/bundle.secondary.js
+: > dist/bundle.secondary.js
 for i in ${secondaryscripts[@]}; do
   cat $i >> dist/bundle.secondary.js
   printf "\n;\n" >> dist/bundle.secondary.js
 done
 
-echo "Cleaning up..."
+echo 'Recording Versions...'
 
-rm temp.*.css temp.*.js
+# Every package whose code ends up in dist/ or vendor/
+node scripts/write-versions.js dist/versions.json \
+  @cosmos.gl/graph alignment-viewer bioseq bootstrap bootstrap-icons d3 d3-polygon d3-symbol-extra \
+  golden-layout html5sortable jszip leaflet leaflet.markercluster papaparse patristic pdfmake \
+  plotly.js tabulator-tables tidytree tom-select tn93 xlsx
+
+echo 'Done.'

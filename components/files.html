@@ -901,19 +901,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             const n = keys.length;
             let safeLink = {};
             for (let i = 0; i < n; i++) {
+              // Read the row by its own header; store under the escaped name (#217)
+              const value = link[keys[i]];
               let key = MT.escape(keys[i]);
-              safeLink[key] =  (typeof link[key] === 'string')  ?   MT.escape(link[key]) : link[key];  // #195
+              safeLink[key] = (typeof value === 'string') ? MT.escape(value) : value;  // #195
               if (!session.data.linkFields.includes(key)) {
                 session.data.linkFields.push(key);
               }
             }
             l += MT.addLink(Object.assign({
-              source: '' + safeLink[file.field1],
-              target: '' + safeLink[file.field2],
+              source: '' + safeLink[MT.escape(file.field1)],
+              target: '' + safeLink[MT.escape(file.field2)],
               origin: origin,
               visible: true,
               // A file's distances are taken to be the distance metric's
-              [get('default-distance-metric')]: file.field3 == 'None' ? 0 : parseFloat(safeLink[file.field3])
+              [get('default-distance-metric')]: file.field3 == 'None' ? 0 : parseFloat(safeLink[MT.escape(file.field3)])
             }, safeLink), check);
           };
 
@@ -1003,9 +1005,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 // The columns chosen as the ID and sequence are those, not fields too
                 if (key == file.field1 || key == file.field2) return;
                 let safeKey = MT.escape(key);
-                if (!session.data.nodeFields.includes(safeKey)) {
-                  session.data.nodeFields.push(safeKey);
-                }
+                MT.addNodeField(safeKey);
                 safeNode[safeKey] = MT.escape(node[key]);
               });
               m += MT.addNode(safeNode, check, source);
@@ -1034,9 +1034,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                   // The columns chosen as the ID and sequence are those, not fields too
                   if (key == file.field1 || key == file.field2) return;
                   let safeKey = MT.escape(key);
-                  if (!session.data.nodeFields.includes(safeKey)) {
-                    session.data.nodeFields.push(safeKey);
-                  }
+                  MT.addNodeField(safeKey);
                   // safeNode[safeKey] = MT.escape(node[key]);
                   safeNode[safeKey] =  (typeof node[key] === 'string')  ?   MT.escape(node[key]) : node[key]; //#173
 
@@ -1150,7 +1148,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
         if (differ) message(` - ${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files; the top file's are used.`);
         if (!session.meta.anySequences) return MT.runHamsters();
-        session.data.nodeFields.push('seq');
+        MT.addNodeField('seq');
         let nodes = session.data.nodes, subset = [];
         const n = nodes.length;
         const gapString = '-'.repeat(session.data.reference.length);

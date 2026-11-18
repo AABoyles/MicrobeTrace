@@ -167,7 +167,7 @@
 
     const title = () => MT.titleize(fieldX.value) + ' by ' + MT.titleize(fieldY.value);
     MT.tableExport(root, {
-      csv: name => MT.saveAs(new Blob([Papa.unparse({ fields: headers, data: rows })], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
+      csv: name => MT.saveAs(new Blob([MT.toCSV({ fields: headers, data: rows })], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
       xlsx: name => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([headers].concat(rows)), title().slice(0, 31));
