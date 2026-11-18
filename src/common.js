@@ -726,29 +726,55 @@
   let decoder = new TextDecoder("utf-8");
   MT.decode = x => decoder.decode(x);
   
-  MT.parseFASTA = text => {
-    return new Promise(resolve => {
-      let computer = new Worker("workers/parse-fasta.js");
-      computer.onmessage = response => {
-        let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-        console.log("FASTA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-        resolve(nodes);
+  // Runs a worker on one message and resolves with its reply (the message's
+  // data). It rejects, with an Error, when the worker throws (onerror), when
+  // its reply cannot be read (onmessageerror), or when it replies with an
+  // error ({error: "..."} or the string "Error"); it settles once, and the
+  // worker is terminated either way, so a failing worker can't leave the
+  // caller waiting (#222). name says what the worker was doing, for the message.
+  MT.runWorker = (script, message, { transfer, name, worker } = {}) => {
+    return new Promise((resolve, reject) => {
+      const computer = worker || new Worker(script);
+      let settled = false;
+      const settle = (fn, value) => {
+        if (settled) return;
+        settled = true;
+        try { computer.terminate(); } catch (e) { /* already gone */ }
+        fn(value);
       };
-      computer.postMessage(text);
+      const what = name || script;
+      const fail = reason => settle(reject, reason instanceof Error ? reason : new Error(reason));
+      computer.onmessage = response => {
+        const data = response && response.data;
+        if (data === "Error") return fail(what + " failed");
+        if (data && typeof data == "object" && data.error) return fail(data.error);
+        settle(resolve, data);
+      };
+      computer.onerror = event => {
+        if (event && event.preventDefault) event.preventDefault();
+        fail((event && event.message) || what + " failed");
+      };
+      computer.onmessageerror = () => fail(what + " sent a reply that could not be read");
+      try {
+        computer.postMessage(message, transfer);
+      } catch (error) {
+        fail(error);
+      }
     });
   };
 
-  MT.parseMEGA = text => {
-    return new Promise(resolve => {
-      let computer = new Worker("workers/parse-mega.js");
-      computer.onmessage = response => {
-        let nodes = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-        console.log("MEGA Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-        resolve(nodes);
-      };
-      computer.postMessage(text);
-    });
-  };
+  // A reply's JSON bytes, parsed
+  const decodeJSON = bytes => JSON.parse(MT.decode(new Uint8Array(bytes)));
+
+  MT.parseFASTA = text => MT.runWorker("workers/parse-fasta.js", text, { name: "The FASTA parser" }).then(data => {
+    console.log("FASTA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
+    return decodeJSON(data.nodes);
+  });
+
+  MT.parseMEGA = text => MT.runWorker("workers/parse-mega.js", text, { name: "The MEGA parser" }).then(data => {
+    console.log("MEGA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
+    return decodeJSON(data.nodes);
+  });
   
   // Reads a distance matrix (CSV text in file.contents) into the graph. Rejects
   // with an Error saying why when the file cannot be read as one.
@@ -758,18 +784,9 @@
       const origin = [file.name];
       let nn = 0,
           nl = 0;
-      let computer = new Worker("workers/parse-csv-matrix.js");
-      computer.onerror = event => {
-        computer.terminate();
-        reject(new Error((event && event.message) || "the matrix worker failed"));
-      };
-      computer.onmessage = response => {
-        if (response.data.error) {
-          computer.terminate();
-          return reject(new Error(response.data.error));
-        }
-        const data = JSON.parse(MT.decode(new Uint8Array(response.data.data)));
-        console.log("CSV Matrix Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      MT.runWorker("workers/parse-csv-matrix.js", file.contents, { name: "The matrix parser" }).then(response => {
+        const data = decodeJSON(response.data);
+        console.log("CSV Matrix Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         const start = Date.now();
         const nodes = data.nodes;
         const tn = nodes.length;
@@ -789,8 +806,7 @@
         }
         console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve({ nn, nl, tn, tl, ids: nodes, unparseable: data.unparseable || 0, example: data.example });
-      };
-      computer.postMessage(file.contents);
+      }).catch(reject);
     })
   };
   
@@ -968,17 +984,16 @@
   };
 
   MT.align = params => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       if (params.aligner == "none") {
         return resolve(params.nodes);
       }
       let n = params.nodes.length;
       let referenceLength = params.reference.length;
       const originals = params.nodes.map(d => d.seq || "");
-      let aligner = new Worker("workers/align-sw.js");
-      aligner.onmessage = response => {
-        let subset = JSON.parse(MT.decode(new Uint8Array(response.data.nodes)));
-        console.log("Alignment transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      MT.runWorker("workers/align-sw.js", params, { name: "The aligner" }).then(response => {
+        let subset = decodeJSON(response.nodes);
+        console.log("Alignment transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
         let minPadding = Infinity,
         d = null;
@@ -992,46 +1007,39 @@
         console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
         subset.fit = fit;
         resolve(subset);
-      };
-      aligner.postMessage(params);
+      }).catch(reject);
     });
   };
   
   MT.computeConsensus = nodes => {
     if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
-    return new Promise(resolve => {
-      let computer = new Worker("workers/compute-consensus.js");
-      computer.onmessage = response => {
-        console.log("Consensus Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-        resolve(MT.decode(new Uint8Array(response.data.consensus)));
-      };
-      computer.postMessage(nodes);
+    return MT.runWorker("workers/compute-consensus.js", nodes, { name: "The consensus computation" }).then(response => {
+      console.log("Consensus Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+      return MT.decode(new Uint8Array(response.consensus));
     });
   };
   
   MT.computeAmbiguityCounts = () => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       let nodes = session.data.nodes;
       let subset = nodes.filter(d => d.seq);
       const subsetLength = subset.length;
-      let computer = new Worker("workers/compute-ambiguity-counts.js");
-      computer.onmessage = response => {
-        console.log("Ambiguity Count Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      MT.runWorker("workers/compute-ambiguity-counts.js", subset, { name: "The ambiguity count" }).then(response => {
+        console.log("Ambiguity Count Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
-        const dists = new Float32Array(response.data.counts);
+        const dists = new Float32Array(response.counts);
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._ambiguity = dists[j];
         }
         MT.addNodeField('_ambiguity');
         console.log("Ambiguity Count Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
-      };
-      computer.postMessage(subset);
+      }).catch(reject);
     });
   };
   
   MT.computeConsensusDistances = () => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       let start = Date.now();
       let nodes = session.data.nodes;
       let nodesLength = nodes.length;
@@ -1051,10 +1059,13 @@
         }
       }
       let subsetLength = subset.length;
-      let computer = new Worker("workers/compute-consensus-distances.js");
-      computer.onmessage = response => {
-        let dists = new Uint32Array(response.data.dists);
-        console.log("Consensus Difference Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      MT.runWorker("workers/compute-consensus-distances.js", {
+        consensus: session.data.consensus,
+        subset: subset,
+        start: start
+      }, { name: "The consensus distance computation" }).then(response => {
+        let dists = new Uint32Array(response.dists);
+        console.log("Consensus Difference Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         start = Date.now();
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._diff = dists[j];
@@ -1062,12 +1073,7 @@
         MT.addNodeField('_diff');
         console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
-      };
-      computer.postMessage({
-        consensus: session.data.consensus,
-        subset: subset,
-        start: start
-      });
+      }).catch(reject);
     });
   };
   
@@ -1173,10 +1179,9 @@
     };
     // Each worker's results, a part per metric (the legacy worker computes one)
     const parts = await Promise.all(splits.slice(1).map((rowEnd, w) => new Promise((resolve, reject) => {
-      const computer = new Worker(legacy ? 'workers/compute-links-legacy.js' : 'workers/compute-links.js');
-      computer.onmessage = response => resolve(legacy ? { results: [response.data], start: response.data.start } : response.data);
-      computer.onerror = reject;
-      computer.postMessage(Object.assign({ rowStart: splits[w], rowEnd }, message));
+      MT.runWorker(legacy ? 'workers/compute-links-legacy.js' : 'workers/compute-links.js',
+        Object.assign({ rowStart: splits[w], rowEnd }, message), { name: "The distance computation" })
+        .then(data => resolve(legacy ? { results: [data], start: data.start } : data), reject);
     })));
 
     console.log('Links Transit time: ', (Date.now() - Math.min(...parts.map(p => p.start))).toLocaleString(), 'ms');
@@ -1267,35 +1272,15 @@
   };
   
   MT.computeTree = () => {
-    return new Promise((resolve, reject) => {
-      let computer = new Worker("workers/compute-tree.js");
-      // Every way out settles the promise, as MT.runHamsters waits on it:
-      // parsing a tree too deep for patristic throws here, on the main thread (#250)
-      const fail = e => {
-        computer.terminate();
-        reject(e);
-      };
-      computer.onmessage = response => {
-        try {
-          temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.data.tree)));
-        } catch (e) {
-          return fail(e);
-        }
-        computer.terminate();
-        console.log("Tree Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
-        resolve();
-      };
-      computer.onerror = e => {
-        console.error(e);
-        fail(e);
-      };
-      MT.getDM().then(dm => {
-        computer.postMessage({
-          labels: MT.getDMLabels(),
-          matrix: dm,
-          round: session.style.widgets["tree-round"]
-        });
-      }).catch(fail);
+    // Every way out settles the promise, as MT.runHamsters waits on it:
+    // parsing a tree too deep for patristic throws here, on the main thread (#250)
+    return MT.getDM().then(dm => MT.runWorker("workers/compute-tree.js", {
+      labels: MT.getDMLabels(),
+      matrix: dm,
+      round: session.style.widgets["tree-round"]
+    }, { name: "The tree computation" })).then(response => {
+      temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.tree)));
+      console.log("Tree Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
     });
   };
   
@@ -1311,10 +1296,13 @@
         sources.push(g.ids[s]);
         targets.push(g.ids[t]);
       });
-      let computer = new Worker("workers/compute-directionality.js");
-      computer.onmessage = response => {
-        let flips = new Uint8Array(response.data.output);
-        console.log("Directionality Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      MT.runWorker("workers/compute-directionality.js", {
+        sources: sources,
+        targets: targets,
+        tree: temp.tree
+      }, { name: "The directionality computation" }).then(response => {
+        let flips = new Uint8Array(response.output);
+        console.log("Directionality Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
         let n = flips.length;
         try {
@@ -1324,27 +1312,12 @@
               if (e >= 0) g.setFlag(e, MTGraph.DIRECTED, true);
             }
           }
-        } catch (e) {
-          computer.terminate();
-          return reject(e);
         } finally {
           g.version++;
         }
-        computer.terminate();
         console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
-      };
-      // (Without this a worker that throws, say on a tree too deep for
-      // patristic, would leave the load waiting forever.)
-      computer.onerror = e => {
-        computer.terminate();
-        reject(e);
-      };
-      computer.postMessage({
-        sources: sources,
-        targets: targets,
-        tree: temp.tree
-      });
+      }).catch(reject); // (a worker that throws, say on a tree too deep for patristic, rejects)
     });
   };
 
@@ -1359,13 +1332,13 @@
       metric = metric || session.style.widgets['link-sort-variable'];
       const labels = g.ids.slice();
       const { tri } = MT.getCondensedDM(metric, labels);
-      let machine = new Worker(script);
-      machine.onmessage = response => {
-        if (response.data == "Error") {
-          return reject(name + " washed out");
-        }
-        let pairs = new Uint32Array(response.data.pairs);
-        console.log(name + " Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      MT.runWorker(script, {
+        n: labels.length,
+        matrix: tri,
+        epsilon: session.style.widgets["filtering-epsilon"]
+      }, { transfer: [tri.buffer], name }).then(response => {
+        let pairs = new Uint32Array(response.pairs);
+        console.log(name + " Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         const start = Date.now();
         g.clearFlag(MTGraph.NN);
         for (let i = 0; i < pairs.length; i += 2) {
@@ -1375,16 +1348,7 @@
         g.version++;
         console.log(name + " Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
-      };
-      machine.onerror = (e) => {
-        console.log(e);
-        resolve();
-      };
-      machine.postMessage({
-        n: labels.length,
-        matrix: tri,
-        epsilon: session.style.widgets["filtering-epsilon"]
-      }, [tri.buffer]);
+      }).catch(reject);
     });
   };
 
@@ -1408,12 +1372,10 @@
   MT.computeTriangulation = () => {
     return new Promise((resolve, reject) => {
       const metric = session.style.widgets['link-sort-variable'];
-      let machine = new Worker("workers/compute-triangulation.js");
-      machine.onmessage = response => {
-        if (response.data == "Error") return reject("Triangulation washed out");
-        console.log("Triangulation Transit time: ", (Date.now() - response.data.start).toLocaleString(), "ms");
+      MT.getDM().then(dm => MT.runWorker("workers/compute-triangulation.js", { matrix: dm }, { name: "Triangulation" })).then(response => {
+        console.log("Triangulation Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
-        let matrix = JSON.parse(MT.decode(new Uint8Array(response.data.matrix)));
+        let matrix = decodeJSON(response.matrix);
         const g = session.data.graph;
         let labels = MT.getDMLabels();
         const n = labels.length;
@@ -1436,12 +1398,7 @@
         g.version++;
         console.log("Triangulation Merge time: ", (Date.now() - start).toLocaleString(), "ms");
         resolve();
-      };
-      MT.getDM().then(dm => {
-        machine.postMessage({
-          matrix: dm
-        });
-      });
+      }).catch(reject);
     });
   };
   

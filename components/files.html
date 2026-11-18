@@ -655,6 +655,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       return data;
     }
 
+    function previewFailed(error) {
+      console.error(error);
+      preview.innerHTML = '';
+      MT.toast.error(`The sequences could not be previewed: ${MT.escape((error && error.message) || '' + error)}.`);
+    }
+
     async function updatePreview(data) {
       preview.innerHTML = '<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>';
       if (get('align-sw')) {
@@ -691,9 +697,10 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const file = e.target.files[0];
       if (!file) return;
       file.text().then(text => MT.parseFASTA(text)).then(nodes => {
+        if (!nodes.length) return MT.toast.error(`${MT.escape(file.name)} holds no sequences, so it can't be the reference.`);
         referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${MT.escape(d.seq)}"${i == 0 ? ' selected' : ''}>${MT.escape(d.id)}</option>`).join('');
         referenceSelect.dispatchEvent(new Event('change'));
-      });
+      }).catch(error => MT.toast.error(`Could not read ${MT.escape(file.name)} as FASTA: ${MT.escape((error && error.message) || '' + error)}.`));
       $('.reference-file-name').textContent = file.name;
     });
 
@@ -705,9 +712,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // Opening the controls (or clicking the preview) previews the sequences
     const showPreview = () => readFastas().then(data => {
       if (get('reference-source-first') && data.length) session.data.reference = data[0].seq;
-      if (get('reference-source-consensus')) MT.computeConsensus().then(consensus => session.data.reference = consensus);
-      updatePreview(data);
-    });
+      if (get('reference-source-consensus')) MT.computeConsensus().then(consensus => session.data.reference = consensus).catch(previewFailed);
+      return updatePreview(data);
+    }).catch(previewFailed);
     $('.sequence-controls-button').addEventListener('click', showPreview);
     preview.addEventListener('click', showPreview);
 
@@ -858,7 +865,28 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       );
     });
 
-    const launch = async () => {
+    // What the load is doing, for the message when it fails (#222)
+    let step = 'reading the files';
+
+    // Whatever goes wrong in the load stops it with a message: the dialog is
+    // closed and the user told what failed, not left to close it by hand.
+    // (fail, below, is for one file; this is for anything else, such as a
+    // worker that throws.)
+    const loadFailed = error => {
+      const reason = (error && error.message) || error;
+      console.error(error);
+      const text = `The load failed while ${step}: ${MT.escape('' + reason)}.`;
+      message(text);
+      MT.toast.error(text, 20);
+      clearTimeout(temp.messageTimeout);
+      MT.hideModal('loading-information-modal');
+      checkLaunch();
+    };
+
+    const launch = () => load().catch(loadFailed);
+
+    const load = async () => {
+      step = 'reading the files';
       temp.messageTimeout = setTimeout(() => {
         MT.toast.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
       }, 20000);
@@ -893,6 +921,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         checkLaunch();
       };
 
+      const kindName = { fasta: 'FASTA', link: 'a link list', node: 'a node list', matrix: 'a distance matrix', newick: 'a Newick tree' };
+
       // Files are read in the order their kinds need, but where they disagree
       // about a node, the values of the file nearest the top of the list win
       const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
@@ -925,11 +955,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const origin = [file.name];
         const source = session.data.sources.add(file.name, session.files.indexOf(file));
 
+        // An empty file is said to be, not loaded as nothing (#222)
+        const contents = file.contents;
+        if (contents == null || (typeof contents == 'string' ? contents.trim() === '' : contents.byteLength === 0)) {
+          return fail(file, kindName[file.format] || 'a network file', 'the file is empty');
+        }
+
         if (file.format == 'fasta') {
 
           message(`Parsing ${shownName(file)} as FASTA...`);
           let newNodes = 0;
           MT.parseFASTA(file.contents).then(seqs => {
+            if (!seqs.length) return fail(file, 'FASTA', 'it holds no sequences (a sequence starts with a ">" line)');
             const n = seqs.length;
             const seen = new Set();
             for (let i = 0; i < n; i++) {
@@ -947,7 +984,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
             parsed();
-          });
+          }).catch(error => fail(file, 'FASTA', error));
 
         } else if (file.format == 'link') {
 
@@ -1194,7 +1231,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
       });
 
-      Promise.all(parsedFiles).then(() => {
+      // (A synchronous parse that throws rejects here and is caught by launch)
+      return Promise.all(parsedFiles).then(() => {
         reportMerges();
         return processSequences();
       });
@@ -1214,6 +1252,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       }
 
       async function processSequences() {
+        if (!session.data.nodes.length) throw new Error('no nodes were found in the files (are they empty, or the wrong kind of file?)');
         // Where files disagree about nodes, say so (the top file's values are used)
         const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
         if (differ) message(` - ${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files; the top file's are used.`);
@@ -1232,6 +1271,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
         if (session.style.widgets['align-sw']){
           message('Aligning Sequences...');
+          step = 'aligning the sequences';
           let output = await MT.align({
             reference: session.data.reference,
             isLocal: false,
@@ -1255,6 +1295,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
         console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
         // Nodes without a sequence hold only gaps; they are left out of the consensus
+        step = 'computing the consensus sequence';
         session.data.consensus = await MT.computeConsensus(subset);
         await MT.computeConsensusDistances();
         subset.sort((a, b) => a['_diff'] - b['_diff']);
@@ -1262,6 +1303,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           await MT.computeAmbiguityCounts();
         }
         message('Computing Links based on Genomic Proximity...');
+        step = 'computing the links';
         const k = await MT.computeLinks(subset);
         // Every pair has a distance; the network shows those within the threshold
         const threshold = parseFloat(session.style.widgets['link-threshold']);
@@ -1270,7 +1312,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         message(` - Computed ${k.toLocaleString()} distances between sequences; ${within.toLocaleString()} links are within the link threshold (${threshold}).`);
         const also = MT.computedMetrics().slice(1);
         if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Global Settings.`);
-        MT.runHamsters();
+        step = 'drawing the network';
+        return MT.runHamsters();
       };
     };
 
