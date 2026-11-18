@@ -33,7 +33,7 @@
     "node": ">=26"
   },
   "scripts": {
-    "build": "npm run compress",
+    "build": "npm run bundle && npm run cache && npm run compress",
     "bundle": "scripts/bundle.sh",
     "cache": "node scripts/build-sw.js",
     "clean": "scripts/cleanup.sh",
@@ -41,7 +41,7 @@
     "compress": "scripts/compress.sh",
     "test": "node --test test/unit/*.test.js",
     "test:e2e": "playwright test",
-    "update": "npm update && npm run bundle"
+    "update": "npm update && npm run bundle && npm run cache"
   },
   "directories": {
     "doc": "docs",

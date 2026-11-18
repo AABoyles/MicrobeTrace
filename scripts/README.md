@@ -14,6 +14,14 @@ _A directory for shell scripts_
   so it carries exactly the traces MicrobeTrace draws (Plotly's prebuilt partial
   bundles leave out the sankey trace the flow diagram needs).
 
+  It also applies the local patches (`patch-tn93.js`, `patch-tidytree.js`) and
+  writes `dist/versions.json` (via `write-versions.js`), which records the
+  version of every library in `dist/` and `vendor/`. Run it with `npm run
+  bundle` after `npm ci`, then `npm run cache`, and commit the result: CI
+  rebuilds both and fails if they differ from what was committed.
+
+- `npm run build` runs `bundle`, `cache` and `compress` in that order.
+
 - [`compress.sh`](https://github.com/aaboyles/MicrobeTrace/blob/dev/scripts/compress.sh) -
   Generates compressed versions of the largest, most important files to
   MicrobeTrace. On systems that run

@@ -27,6 +27,30 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  bundle:
+    # dist/ and vendor/ are committed; rebuild them from the lockfile and fail
+    # if they differ, so a dependency or bundle.sh change can't land without
+    # its bundle, or a bundle without its source (#200)
+    name: Bundles match the lockfile
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: npm run bundle
+      - run: npm run cache
+      - name: Check for differences
+        run: |
+          if [ -n "$(git status --porcelain -- dist vendor fonts sw.js)" ]; then
+            git status --short -- dist vendor fonts sw.js
+            echo "::error::dist/, vendor/, fonts/ or sw.js differ from a fresh build. Run npm ci, npm run bundle and npm run cache, and commit the result."
+            exit 1
+          fi
+
   e2e:
     name: E2E tests (Chromium)
     runs-on: ubuntu-latest
