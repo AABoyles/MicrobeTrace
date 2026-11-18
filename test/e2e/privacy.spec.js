@@ -24,7 +24,7 @@ test('About states the privacy facts and deletes everything stored in the browse
   await page.evaluate(() => db.setItem('stash-1-test', 'x'));
   await page.evaluate(() => { localStorage.setItem('probe', '1'); });
 
-  await page.click('a.nav-link:text-is("Help")');
+  await page.click('.nav-link:text-is("Help")');
   await page.click('#AboutTab');
   await waitForModal(page, '#about-modal');
   const statement = page.locator('#privacy-statement');
@@ -39,7 +39,7 @@ test('About states the privacy facts and deletes everything stored in the browse
   await page.locator('#delete-everything-modal').waitFor({ state: 'hidden' });
   expect(await page.evaluate(() => db.getItem('stash-1-test'))).toBe('x');
 
-  await page.click('a.nav-link:text-is("Help")');
+  await page.click('.nav-link:text-is("Help")');
   await page.click('#AboutTab');
   await waitForModal(page, '#about-modal');
   await page.click('#delete-everything');
