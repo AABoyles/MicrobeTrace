@@ -95,7 +95,7 @@ function distancesOrLinks(set, metric, threshold, a, b) {
   return part;
 }
 
-// Per site: 0 for a gap (or N, which the parser makes a gap too), 1 for an
+// Per site: 0 for a gap (or N, which the distance code treats like a gap), 1 for an
 // unambiguous base, 2 for a resolvable IUPAC ambiguity code
 const AMBIGUOUS = new Set('RYMKWSBDHV');
 function siteKinds(seq) {
