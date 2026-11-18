@@ -75,8 +75,8 @@ done
 
 echo 'Minifying Stylesheets...'
 
-npx postcss temp.primary.css > dist/bundle.primary.css
-npx postcss temp.secondary.css > dist/bundle.secondary.css
+node scripts/minify-css.js temp.primary.css dist/bundle.primary.css
+node scripts/minify-css.js temp.secondary.css dist/bundle.secondary.css
 
 echo 'Copying Unbundlable Dependencies...'
 

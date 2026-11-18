@@ -76,7 +76,6 @@
     "pdfmake": "^0.3.11",
     "plotly.js": "^4.1.2",
     "postcss": "^8.5.29",
-    "postcss-cli": "^12.0.0",
     "tabulator-tables": "^6.6.1",
     "tidytree": "^0.7.0",
     "tn93": "^0.3.5",
