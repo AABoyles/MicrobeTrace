@@ -26,8 +26,9 @@ test('the development label shows only off the production site', async () => {
     .toEqual([true, true, false, false, false]);
 });
 
-test('Help opens in a new tab', async () => {
-  await expect(page.locator('#HelpTab')).toHaveAttribute('target', '_blank');
+test('Help opens the built-in help, and the wiki is a separate link', async () => {
+  await expect(page.locator('#HelpTab')).toHaveAttribute('data-bs-target', '#help-modal');
+  await expect(page.locator('#WikiTab')).toHaveAttribute('target', '_blank');
 });
 
 const asksBeforeLeaving = () => page.evaluate(() => {
