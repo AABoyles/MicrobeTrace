@@ -106,8 +106,9 @@ node scripts/patch-tidytree.js temp.tidytree.js
 
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.
+# scattergl needs a stand-in for Node's buffer module (scripts/buffer-shim.js).
 npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-name=Plotly \
-  --target=es2019 --define:global=globalThis --loader:.css=empty --log-level=warning --outfile=temp.plotly.js
+  --target=es2019 --define:global=globalThis --loader:.css=empty --alias:buffer=./scripts/buffer-shim.js --log-level=warning --outfile=temp.plotly.js
 
 # golden-layout 2 ships only ES and CommonJS modules
 npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --format=iife --global-name=goldenLayout \
