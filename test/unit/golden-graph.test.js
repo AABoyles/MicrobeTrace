@@ -150,7 +150,7 @@ function treeSummary(tree) {
 
 test('the tree worker recovers the tree behind an additive matrix', async () => {
   const t = golden.tree;
-  const out = await runWorker('workers/compute-tree.js', { matrix: t.matrix, labels: t.labels });
+  const out = await runWorker('workers/compute-tree.js', { matrix: Float64Array.from(t.matrix.flat()), labels: t.labels });
   const tree = JSON.parse(new TextDecoder().decode(out.tree));
   const { leaves, dist, adj } = treeSummary(tree);
   assert.deepStrictEqual(leaves.slice().sort(), t.labels);

@@ -1323,45 +1323,62 @@
   // The row order of MT.getDM (every node, in session order).
   MT.getDMLabels = () => session.data.nodes.map(d => d._id);
 
-  // The full distance matrix (arrays of arrays, null where there's no link) for
-  // the link sort variable, in the order of MT.getDMLabels().
-  MT.getDM = () => {
-    let start = Date.now();
+  // The most nodes MT.getDM builds a matrix for by default: a Float64Array of
+  // n * n is 200 MB at 5,000 nodes, and 800 MB at 10,000 (#248).
+  MT.DM_MAX_NODES = 5000;
+
+  // The distance matrix computed last, kept while the graph, the metric and the
+  // nodes are as they were, so restyling a view doesn't compute it again.
+  let dmCache = null;
+
+  // The full distance matrix for the link sort variable, in the order of
+  // MT.getDMLabels(): a Float64Array of n * n, row by row, NaN where there's no
+  // link, 0 on the diagonal. It is shared (don't change it; copy it to hand it to
+  // a worker). Rejects, saying why, when there are more than maxNodes nodes.
+  MT.getDM = (maxNodes = MT.DM_MAX_NODES) => {
     return new Promise(resolve => {
-      const { labels, tri } = MT.getCondensedDM();
-      const n = labels.length;
-      let dm = new Array(n);
-      for (let i = 0; i < n; i++) {
-        dm[i] = new Array(n);
-        dm[i][i] = 0;
+      const g = session.data.graph, nodes = session.data.nodes;
+      const n = nodes.length, metric = session.style.widgets['link-sort-variable'];
+      if (n > maxNodes) {
+        throw new Error('The distance matrix of ' + n.toLocaleString() + ' nodes (' + (n * n / 1e6).toLocaleString(undefined, { maximumFractionDigits: 0 }) +
+          ' million cells) is too large to build; the limit is ' + maxNodes.toLocaleString() + ' nodes. Filter the data to fewer nodes to use it.');
       }
+      const c = dmCache;
+      if (c && c.graph === g && c.version === g.version && c.metric === metric && c.nodes === nodes && c.n === n) return resolve(c.dm);
+      let start = Date.now();
+      const { tri } = MT.getCondensedDM(metric, MT.getDMLabels());
+      const dm = new Float64Array(n * n).fill(NaN);
       let k = 0;
       for (let i = 0; i < n; i++) {
-        const row = dm[i];
+        dm[i * n + i] = 0;
         for (let j = i + 1; j < n; j++, k++) {
           const v = tri[k];
           // NaN (no link) and Infinity (a saturated distance) are both missing
-          row[j] = dm[j][i] = isFinite(v) ? v : null;
+          if (isFinite(v)) dm[i * n + j] = dm[j * n + i] = v;
         }
       }
+      dmCache = { graph: g, version: g.version, metric, nodes, n, dm };
       console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
       resolve(dm);
     });
   };
-  
+
   MT.computeTree = () => {
     // Every way out settles the promise, as MT.runHamsters waits on it:
     // parsing a tree too deep for patristic throws here, on the main thread (#250)
-    return MT.getDM().then(dm => MT.runWorker("workers/compute-tree.js", {
-      labels: MT.getDMLabels(),
-      matrix: dm,
-      round: session.style.widgets["tree-round"]
-    }, { name: "The tree computation" })).then(response => {
+    return MT.getDM().then(dm => {
+      const matrix = dm.slice(); // the worker takes this copy; the cached one stays
+      return MT.runWorker("workers/compute-tree.js", {
+        labels: MT.getDMLabels(),
+        matrix,
+        round: session.style.widgets["tree-round"]
+      }, { transfer: [matrix.buffer], name: "The tree computation" });
+    }).then(response => {
       temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.tree)));
       console.log("Tree Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
     });
   };
-  
+
   MT.computeDirectionality = () => {
     return new Promise((resolve, reject) => {
       // Directions are inferred from the tree (see MT.runHamsters).
@@ -1450,17 +1467,20 @@
   MT.computeTriangulation = () => {
     return new Promise((resolve, reject) => {
       const metric = session.style.widgets['link-sort-variable'];
-      MT.getDM().then(dm => MT.runWorker("workers/compute-triangulation.js", { matrix: dm }, { name: "Triangulation" })).then(response => {
+      MT.getDM().then(dm => {
+        const matrix = dm.slice(); // the worker takes this copy; the cached one stays
+        return MT.runWorker("workers/compute-triangulation.js", { matrix }, { transfer: [matrix.buffer], name: "Triangulation" });
+      }).then(response => {
         console.log("Triangulation Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
-        let matrix = decodeJSON(response.matrix);
+        const matrix = new Float64Array(response.matrix);
         const g = session.data.graph;
         let labels = MT.getDMLabels();
         const n = labels.length;
         for(let i = 0; i < n; i++){
           const source = labels[i], a = g.node(source);
           for(let j = 0; j < i; j++){
-            const target = labels[j], v = matrix[i][j];
+            const target = labels[j], v = isNaN(matrix[i * n + j]) ? null : matrix[i * n + j];
             const e = g.edgeBetween(a, g.node(target));
             if (e < 0) {
               g.addLink({ source: source, target: target, origin: ['Triangulation'], [metric]: v });
