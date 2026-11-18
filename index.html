@@ -38,6 +38,10 @@
 </head>
 
 <body>
+  <a href="#main-panel" id="skip-link" class="visually-hidden-focusable skip-link">Skip to main content</a>
+  <h1 class="visually-hidden">MicrobeTrace</h1>
+  <!-- The one polite live region, for announcements (MT.announce) -->
+  <div id="mt-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
   <div class="d-none">
     <h1>Sorry!</h1>
     <h4>MicrobeTrace requires CSS to run, but it looks like the appropriate CSS files weren't loaded for some reason.
@@ -47,70 +51,70 @@
   <nav class="navbar fixed-top navbar-expand-xl bg-body-tertiary">
     <ul class="nav me-auto">
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
+        <button type="button" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">File</button>
         <div class="dropdown-menu">
-          <a href="#" id="NewTab" class="dropdown-item">New</a>
-          <label class="dropdown-item" for="OpenTab">Open…</label><input type="file" class="d-none" id="OpenTab">
-          <a href="#" id="SaveDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-save-modal">Save… <span class="shortcut" data-key="S"></span></a>
+          <button type="button" id="NewTab" class="dropdown-item">New</button>
+          <button type="button" id="OpenButton" class="dropdown-item">Open…</button><input type="file" class="d-none" id="OpenTab" tabindex="-1" aria-hidden="true" aria-label="Open a session file">
+          <button type="button" id="SaveDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-save-modal">Save… <span class="shortcut" data-key="S"></span></button>
           <div class="dropdown-divider"></div>
-          <a href="#" id="StashDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-stash-modal">Stash in Browser…</a>
-          <a href="#" id="RecallDataTab" class="dropdown-item">Recall from Browser…</a>
+          <button type="button" id="StashDataTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#session-stash-modal">Stash in Browser…</button>
+          <button type="button" id="RecallDataTab" class="dropdown-item">Recall from Browser…</button>
           <div class="dropdown-divider"></div>
-          <a href="#" id="AddDataTab" class="dropdown-item">Add Data</a>
+          <button type="button" id="AddDataTab" class="dropdown-item">Add Data</button>
         </div>
       </li>
       <li class="nav-item">
-        <a href="#" id="SettingsTab" class="nav-link py-0" data-bs-toggle="modal" data-bs-target="#global-settings-modal">Settings</a>
+        <button type="button" id="SettingsTab" class="nav-link py-0" data-bs-toggle="modal" data-bs-target="#global-settings-modal">Settings</button>
       </li>
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View</a>
+        <button type="button" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">View</button>
         <div class="dropdown-menu view-menu">
           <div class="view-menu-top">
-            <a href="#" class="dropdown-item viewbutton" data-href="network">Network</a>
+            <button type="button" class="dropdown-item viewbutton" data-href="network">Network</button>
             <div class="dropdown-divider"></div>
           </div>
           <div>
             <h6 class="dropdown-header">Charts</h6>
-            <a href="#" class="dropdown-item viewbutton" data-href="histogram">Histogram</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="bubbles">Bubbles</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="heatmap">Heatmap</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="timeline">Epi Curve</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="gantt">Gantt</a>
+            <button type="button" class="dropdown-item viewbutton" data-href="histogram">Histogram</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="scatterplot">Scatterplot</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="bubbles">Bubbles</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="flow_diagram">Flow Diagram</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="heatmap">Heatmap</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="timeline">Epi Curve</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="gantt">Gantt</button>
           </div>
           <div>
             <h6 class="dropdown-header">Tables</h6>
-            <a href="#" class="dropdown-item viewbutton" data-href="table">Table</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="aggregation">Aggregation</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="crosstab">Crosstab</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="conflicts">Conflicts</a>
+            <button type="button" class="dropdown-item viewbutton" data-href="table">Table</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="aggregation">Aggregation</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="crosstab">Crosstab</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="waterfall">Waterfall</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="conflicts">Conflicts</button>
             <h6 class="dropdown-header">Maps</h6>
-            <a href="#" class="dropdown-item viewbutton" data-href="geo_map">Map</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="choropleth">Choropleth</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="globe">Globe</a>
+            <button type="button" class="dropdown-item viewbutton" data-href="geo_map">Map</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="choropleth">Choropleth</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="globe">Globe</button>
             <h6 class="dropdown-header">Phylogenetics</h6>
-            <a href="#" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</a>
-            <a href="#" class="dropdown-item viewbutton" data-href="sequences">Sequences</a>
+            <button type="button" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</button>
+            <button type="button" class="dropdown-item viewbutton" data-href="sequences">Sequences</button>
           </div>
         </div>
       </li>
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Window</a>
+        <button type="button" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Window</button>
         <div class="dropdown-menu">
-          <a href="#" id="ReloadTab" class="dropdown-item">Reload</a>
-          <a href="#" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</a>
+          <button type="button" id="ReloadTab" class="dropdown-item">Reload</button>
+          <button type="button" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</button>
         </div>
       </li>
       <li class="nav-item dropdown">
-        <a href="#" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
+        <button type="button" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Help</button>
         <div class="dropdown-menu">
           <a href="https://github.com/aaboyles/MicrobeTrace/wiki" id="HelpTab" class="dropdown-item" target="_blank" rel="noreferrer noopener">Help</a>
           <a href="https://github.com/aaboyles/MicrobeTrace/wiki/Troubleshooting---Caching" id="TroubleshootTab" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Troubleshoot Caching</a>
           <a href="https://github.com/aaboyles/MicrobeTrace/issues/new" class="dropdown-item ifOnline" target="_blank" rel="noreferrer noopener">Report Bug</a>
           <div class="dropdown-divider ifOnline"></div>
-          <a href="#" id="AboutTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#about-modal">About</a>
+          <button type="button" id="AboutTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#about-modal">About</button>
         </div>
       </li>
 
@@ -120,8 +124,9 @@
     <div id="search-form" class="d-flex align-items-center navbar-form">
       <label for="search" class="visually-hidden">Search nodes</label>
       <div class="autocomplete-wrapper">
-        <input type="search" id="search" class="form-control form-control-sm" placeholder="Search nodes by ID" autocomplete="off" disabled>
-        <ul id="search-results"></ul>
+        <input type="search" id="search" class="form-control form-control-sm" placeholder="Search nodes by ID" autocomplete="off" disabled
+          role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-results" aria-activedescendant="">
+        <ul id="search-results" role="listbox" aria-label="Matching values"></ul>
       </div>
       <!-- #298 -->
       <button id="casesensitivebutton" type="button" class="btn btn-light btn-sm search-option" aria-pressed="false" title="Match case">Aa</button>
@@ -210,14 +215,14 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="main-panel" class="pane-container pane-horizontal">
+  <main id="main-panel" class="pane-container pane-horizontal" tabindex="-1">
     <noscript class="container-fluid">
       <div class="p-5 mb-4 bg-body-tertiary rounded-3">
         <h1>Sorry!</h1>
         <p class="lead">MicrobeTrace requires Javascript to run. Please <a href="https://www.enable-javascript.com/">enable Javascript</a> and refresh MicrobeTrace.</p>
       </div>
     </noscript>
-  </div>
+  </main>
 
   <div id="global-timeline-wrapper" style="display: none;">
     <div id="global-timeline" align="center">
@@ -232,11 +237,11 @@
   </div>
 
   <div id="link-color-table-context" class="dropdown-menu">
-    <a href="#" class="dropdown-item" data-action="drag">Drag</a>
-    <a href="#" class="dropdown-item" data-action="hide">Hide</a>
-    <a href="#" class="dropdown-item" data-action="expand">Expand</a>
-    <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
-    <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
+    <button type="button" class="dropdown-item" data-action="drag">Drag</button>
+    <button type="button" class="dropdown-item" data-action="hide">Hide</button>
+    <button type="button" class="dropdown-item" data-action="expand">Expand</button>
+    <button type="button" class="dropdown-item" data-action="counts">Toggle Counts</button>
+    <button type="button" class="dropdown-item" data-action="frequencies">Toggle Frequencies</button>
   </div>
 
   <div id="node-color-table-wrapper" class="floater">
@@ -245,11 +250,11 @@
   </div>
 
   <div id="node-color-table-context" class="dropdown-menu">
-    <a href="#" class="dropdown-item" data-action="drag">Drag</a>
-    <a href="#" class="dropdown-item" data-action="hide">Hide</a>
-    <a href="#" class="dropdown-item" data-action="expand">Expand</a>
-    <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
-    <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
+    <button type="button" class="dropdown-item" data-action="drag">Drag</button>
+    <button type="button" class="dropdown-item" data-action="hide">Hide</button>
+    <button type="button" class="dropdown-item" data-action="expand">Expand</button>
+    <button type="button" class="dropdown-item" data-action="counts">Toggle Counts</button>
+    <button type="button" class="dropdown-item" data-action="frequencies">Toggle Frequencies</button>
   </div>
 
   <div id="color-transparency-wrapper" class="floater">
@@ -279,8 +284,8 @@
   </div>
 
   <div id="network-statistics-context" class="dropdown-menu">
-    <a href="#" class="dropdown-item" data-action="drag">Drag</a>
-    <a href="#" class="dropdown-item" data-action="hide">Hide</a>
+    <button type="button" class="dropdown-item" data-action="drag">Drag</button>
+    <button type="button" class="dropdown-item" data-action="hide">Hide</button>
   </div>
 
   <span id="tooltip"></span>
