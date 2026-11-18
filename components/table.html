@@ -151,7 +151,7 @@
 
 
     // Exports every row shown, with all its fields, not just the columns shown
-    const rows = () => JSON.parse(JSON.stringify(items()));
+    const rows = () => items();
     MT.tableExport(root, {
       csv: name => MT.saveAs(new Blob([MT.toCSV(rows())], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
       xlsx: name => {

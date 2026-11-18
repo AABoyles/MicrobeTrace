@@ -1575,7 +1575,14 @@
         try {
           const newKey = "stash-" + Date.now() + "-autostash";
           MT.syncLayout();
-          await db.setItem(newKey, JSON.stringify(session));
+          const text = JSON.stringify(session);
+          // Nothing has changed since the last copy: it stays, and isn't written again
+          if (state.key && text === state.text) {
+            state.time = Date.now();
+            return;
+          }
+          await db.setItem(newKey, text);
+          state.text = text;
           const oldKey = state.key;
           state.key = newKey;
           state.time = Date.now();

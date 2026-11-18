@@ -71,3 +71,42 @@ test('a copy can be discarded, or left for later', async ({ page }) => {
   await page.waitForSelector('#data-files', { state: 'attached' });
   await expect(page.locator('#recover-modal.show')).toHaveCount(0);
 });
+
+test('an unchanged session is not written again (#254)', async ({ page }) => {
+  const errors = watchErrors(page);
+  await open(page);
+  await page.evaluate(() => db.setItem('stash-auto', 'true'));
+  await page.clock.install();
+  await page.setInputFiles('#data-files', [links]);
+  await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
+  await page.click('#launch');
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  // (Nodes still settling make the session change, so the first copies are left out)
+  await page.evaluate(() => { MT.events.emit('stop-force-simulation'); MT.syncLayout = () => {}; });
+  await page.clock.runFor(61000);
+  await expect.poll(async () => (await keys(page)).length).toBe(1);
+  await page.clock.runFor(61000);
+  await page.waitForTimeout(500);
+  const settled = await keys(page);
+  await page.clock.runFor(61000);
+  await page.clock.runFor(61000);
+  expect(await keys(page)).toEqual(settled);
+  expect(errors).toEqual([]);
+});
+
+test('reopening a session drops any saved encoded sequences (#224)', async ({ page }) => {
+  await open(page);
+  await page.setInputFiles('#data-files', [links]);
+  await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
+  await page.click('#launch');
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  const left = await page.evaluate(async () => {
+    MT.syncLayout();
+    const saved = JSON.parse(JSON.stringify(session));
+    saved.data.nodes.forEach(d => { d._seqInt = { 0: 1, 1: 2 }; });
+    MT.applySession(saved);
+    await new Promise(r => setTimeout(r, 500));
+    return session.data.nodes.filter(d => '_seqInt' in d).length + ':' + JSON.stringify(session).includes('_seqInt');
+  });
+  expect(left).toBe('0:false');
+});
