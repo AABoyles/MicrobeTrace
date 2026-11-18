@@ -1,6 +1,6 @@
 // Distance values from files (#220, #221): an Excel matrix whose top-left cell
 // is empty loads; a matrix that cannot be read is reported by name and the
-// loading dialog goes; links with no distance column have no distance (not 0).
+// loading dialog goes; links with no distance column have no distance (not 0) but are still shown.
 const XLSX = require('xlsx');
 const { test, expect } = require('@playwright/test');
 const { watchErrors, open } = require('./helpers');
@@ -40,7 +40,7 @@ test('a matrix that cannot be read is reported by name, and the dialog goes', as
   await expect(page.locator('#launch')).toBeEnabled();
 });
 
-test('links with no distance column have no distance, and are reported', async () => {
+test('links with no distance column have no distance, are reported, and are shown', async () => {
   await page.setInputFiles('#data-files', [file('l.csv', 'a,b\nA,B\nB,C\n')]);
   await expect(rows()).toHaveCount(1);
   await page.click('#launch');
@@ -52,4 +52,6 @@ test('links with no distance column have no distance, and are reported', async (
     return out;
   });
   expect(values).toEqual([null, null]);
+  // ...but they are shown: the threshold has nothing to judge them by
+  await page.waitForFunction(() => session.data.graph.visibleCount == 2, null, { timeout: 20000 });
 });
