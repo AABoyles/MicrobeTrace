@@ -67,3 +67,28 @@ test('links that stay visible and in their cluster keep their objects, and the l
   });
   expect(result).toEqual({ listed: true, reused: true, some: true, shrank: true, fresh: true, statistics: true });
 });
+
+test('the timeline reads the dates once, and shows the nodes dated up to its date', async () => {
+  await page.evaluate(() => MT.settings.set('node-timeline-variable', 'date'));
+  await page.waitForFunction(() => MT.scrubTimeline);
+  const result = await page.evaluate(() => {
+    const first = MT.nodeTimes('date');
+    const read = MT.nodeTimes('date') === first;
+    const dates = session.data.nodes.map(d => MT.parseDate(d.date));
+    const sorted = dates.filter(Boolean).sort((a, b) => a - b);
+    const middle = sorted[Math.floor(sorted.length / 2)];
+    window.scrubbed = middle;
+    MT.scrubTimeline(middle);
+    const shown = session.data.nodes.every((d, i) => d.visible == (!dates[i] || dates[i] <= middle));
+    const linksKept = MT.getVisibleLinks().length == session.data.graph.visibleCount;
+    // A node's date changed: the next step reads it
+    const node = session.data.nodes.find((d, i) => dates[i] && dates[i] > middle);
+    node.date = '1900-01-01';
+    MT.scrubTimeline(middle);
+    const changed = node.visible === true && MT.nodeTimes('date') !== first;
+    return { read, shown, linksKept, changed, dated: sorted.length > 10 };
+  });
+  expect(result).toEqual({ read: true, shown: true, linksKept: true, changed: true, dated: true });
+  await page.evaluate(() => MT.settings.set('node-timeline-variable', 'None'));
+  expect(errors).toEqual([]);
+});

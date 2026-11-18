@@ -928,23 +928,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let timeDomainStart, timeDomainEnd;
       let field = variable;
-      let times = [],
-      vnodes = JSON.parse(JSON.stringify(session.data.nodes));
-      const order = MTDates.dateOrderOf(session.data.nodes.map(d => d[field])).order;
-      vnodes.forEach(d => {
-        let time = MT.parseDate(d[field], order);
-        if (time) {
-          d[field] = time;
-          times.push(d[field]);
-        } else {
-          d[field] = null;
-        }
-      });
-      if (times.length < 2) {
-        times = [new Date(2000, 1, 1), new Date()];
+      // (From the dates read once for the steps, not from copies of the nodes)
+      const dated = Array.from(MT.nodeTimes(field)).filter(time => !isNaN(time));
+      if (dated.length < 2) {
+        dated.length = 0;
+        dated.push(+new Date(2000, 1, 1), +new Date());
       }
-      timeDomainStart = Math.min(...times);
-      timeDomainEnd = Math.max(...times);
+      timeDomainStart = dated.reduce((a, b) => Math.min(a, b));
+      timeDomainEnd = dated.reduce((a, b) => Math.max(a, b));
 
       var days = Math.floor((timeDomainEnd - timeDomainStart) / 864e5);
       // Each year named where it starts (or on the first tick)
@@ -1072,8 +1063,10 @@ document.addEventListener("DOMContentLoaded", () => {
           .attr("x", x(h))
           .text(handleDateFormat(h));
         session.state.timeEnd = h;
+        // The visible links don't depend on the date (only which of them have
+        // both nodes shown), so they aren't worked out again at each step
         MT.setNodeVisibility(false);
-        MT.setLinkVisibility(false);
+        events.emit("link-visibility");
         MT.updateStatistics();
       }
   };

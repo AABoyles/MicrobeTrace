@@ -1702,6 +1702,29 @@
     });
   };
   
+  // The dates of the nodes' field as times (NaN for the undated), read once
+  // and again only when a value, the nodes or the field change (stepping the
+  // timeline asks for them at each step). The order of a date like 3/4/2020
+  // is that of all the field's values (see MTDates.dateOrderOf).
+  MT.nodeTimes = field => {
+    const nodes = session.data.nodes, n = nodes.length;
+    const cache = temp.nodeTimes;
+    if (cache && cache.field === field && cache.raw.length == n) {
+      let i = 0;
+      while (i < n && nodes[i][field] === cache.raw[i]) i++;
+      if (i == n) return cache.times;
+    }
+    const raw = nodes.map(d => d[field]);
+    const order = MTDates.dateOrderOf(raw).order;
+    const times = new Float64Array(n);
+    raw.forEach((value, i) => {
+      const date = MTDates.parseDate(value, order);
+      times[i] = date ? +date : NaN;
+    });
+    temp.nodeTimes = { field, raw, times };
+    return times;
+  };
+
   MT.setNodeVisibility = silent => { 
     let start = Date.now();
     let dateField = session.style.widgets["timeline-date-field"];
@@ -1709,7 +1732,8 @@
       clusters = session.data.clusters;
     let n = nodes.length;
     let timeEnd = dateField != "None" && MT.parseDate(session.state.timeEnd);
-    const order = MTDates.dateOrderOf(nodes.map(d => d[dateField])).order;
+    const times = timeEnd ? MT.nodeTimes(dateField) : null;
+    const until = timeEnd ? +timeEnd : 0;
     for (let i = 0; i < n; i++) {
       let node = nodes[i];
       node.visible = true;
@@ -1718,7 +1742,7 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd, order);
+      if (timeEnd) node.visible = node.visible && !(times[i] > until);
     }
     if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
