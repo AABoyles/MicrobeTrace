@@ -32,7 +32,7 @@ const securityHeaders = {
     "max-age=31536000; includeSubDomains; preload",
   "Content-Security-Policy":
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; " +
+    "script-src 'self' 'wasm-unsafe-eval'; " +
     "connect-src 'self'; " +
     "img-src 'self' *.basemaps.cartocdn.com server.arcgisonline.com data:; " +
     "style-src 'self' 'unsafe-inline'; " +
