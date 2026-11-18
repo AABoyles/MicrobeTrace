@@ -71,6 +71,21 @@
     }
   };
 
+  // Deletes the whole database (stashes, autostashes, the accepted license
+  // and the settings kept with them). Resolves once it is gone.
+  db.deleteAll = function () {
+    var open = _db;
+    _db = undefined;
+    return (open ? open.then(function (d) { d.close(); }, function () {}) : Promise.resolve()).then(function () {
+      return new Promise(function (resolve, reject) {
+        var req = indexedDB.deleteDatabase(DB_NAME);
+        req.onsuccess = function () { resolve(); };
+        req.onerror = function () { reject(req.error); };
+        req.onblocked = function () { reject(new Error('Another MicrobeTrace tab is open; close it and try again.')); };
+      });
+    });
+  };
+
   // A sentence on why a write failed, for the user
   db.describeError = function (error) {
     if (error && (error.name === 'QuotaExceededError' || error.name === 'QuotaExceeded')) {
