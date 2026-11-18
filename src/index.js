@@ -170,8 +170,8 @@ document.addEventListener("DOMContentLoaded", () => {
     db.getItem(stash.key).then(json => {
       const data = JSON.parse(json);
       const load = () => {
-        MT.applySession(data);
-        modal("session-recall-modal").hide();
+        // A stash that is not a valid session is refused (with a message), and Recall stays open
+        if (MT.applySession(data)) modal("session-recall-modal").hide();
       };
       if (!session.data.nodes.length) return load();
       // Ask once the Recall dialog is out of the way (and bring it back on Cancel)
@@ -248,8 +248,8 @@ document.addEventListener("DOMContentLoaded", () => {
           return db.setItem("stash-" + Date.now() + "-Recovered session", json)
             .then(() => Promise.all(keys.map(key => db.removeItem(key))))
             .then(() => {
-              MT.applySession(data);
-              MT.toast.success("Restored your previous session");
+              // (applySession says why when it refuses the copy, which stays in Recall)
+              if (MT.applySession(data)) MT.toast.success("Restored your previous session");
             });
         }).catch(error => {
           console.error(error);
