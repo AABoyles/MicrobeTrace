@@ -16,7 +16,7 @@ function parse(text, chunkSize) {
   const ctx = {
     importScripts() {}, console, TextEncoder, JSON, Date, Number,
     Papa: chunkSize ? { parse: (t, config) => Papa.parse(t, Object.assign({ chunkSize }, config)) } : Papa,
-    postMessage: msg => { out = msg.error !== undefined ? msg : JSON.parse(Buffer.from(msg.data).toString()); },
+    postMessage: msg => { out = msg.error !== undefined ? msg : JSON.parse(JSON.stringify(msg.data)); }, // into this realm
     close() {}
   };
   vm.createContext(ctx);

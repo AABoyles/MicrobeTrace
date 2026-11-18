@@ -59,7 +59,7 @@ test('runs a real worker, and rejects when one throws', async () => {
   const { MT, ctx } = loadApp();
   ctx.Worker = Worker;
   const out = await MT.runWorker('workers/parse-fasta.js', '');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), []);
+  assert.deepStrictEqual(out.nodes, []);
   // compute-nn reads e.data.matrix; a null message makes it throw
   await assert.rejects(MT.runWorker('workers/compute-nn.js', null, { name: 'NN' }));
 });

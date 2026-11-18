@@ -820,17 +820,14 @@
     if (modal) modal.setAttribute("aria-busy", "false");
   };
 
-  // A reply's JSON bytes, parsed
-  const decodeJSON = bytes => JSON.parse(MT.decode(new Uint8Array(bytes)));
-
   MT.parseFASTA = text => MT.runWorker("workers/parse-fasta.js", text, { name: "The FASTA parser" }).then(data => {
     console.log("FASTA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
-    return decodeJSON(data.nodes);
+    return data.nodes;
   });
 
   MT.parseMEGA = text => MT.runWorker("workers/parse-mega.js", text, { name: "The MEGA parser" }).then(data => {
     console.log("MEGA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
-    return decodeJSON(data.nodes);
+    return data.nodes;
   });
   
   // Reads a distance matrix (CSV text in file.contents) into the graph. Rejects
@@ -842,7 +839,7 @@
       let nn = 0,
           nl = 0;
       MT.runWorker("workers/parse-csv-matrix.js", file.contents, { name: "The matrix parser" }).then(response => {
-        const data = decodeJSON(response.data);
+        const data = response.data;
         console.log("CSV Matrix Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         const start = Date.now();
         const nodes = data.nodes;
@@ -1049,7 +1046,7 @@
       let referenceLength = params.reference.length;
       const originals = params.nodes.map(d => d.seq || "");
       MT.runWorker("workers/align-sw.js", params, { name: "The aligner" }).then(response => {
-        let subset = decodeJSON(response.nodes);
+        let subset = response.nodes;
         console.log("Alignment transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
         let minPadding = Infinity,
@@ -1072,7 +1069,7 @@
     if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
     return MT.runWorker("workers/compute-consensus.js", nodes, { name: "The consensus computation" }).then(response => {
       console.log("Consensus Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
-      return MT.decode(new Uint8Array(response.consensus));
+      return response.consensus;
     });
   };
   
@@ -1374,7 +1371,7 @@
         round: session.style.widgets["tree-round"]
       }, { transfer: [matrix.buffer], name: "The tree computation" });
     }).then(response => {
-      temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.tree)));
+      temp.tree = patristic.parseJSON(response.tree);
       console.log("Tree Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
     });
   };

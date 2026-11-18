@@ -89,10 +89,7 @@ onmessage = function(e) {
       if (!nodes.length) return fail("it names no nodes");
       console.log("CSV Matrix Parse time: ", (Date.now() - start).toLocaleString(), "ms");
       start = Date.now();
-      const output = new TextEncoder().encode(
-        JSON.stringify({ links: links, nodes: nodes, unparseable: unparseable, example: example })
-      ).buffer;
-      postMessage({ data: output, start: start }, [output]);
+      postMessage({ data: { links: links, nodes: nodes, unparseable: unparseable, example: example }, start: start });
       close();
     },
     error: err => fail((err && err.message) || "it could not be parsed")

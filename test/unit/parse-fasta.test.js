@@ -17,7 +17,7 @@ test('N stays N, so FASTA and node-list CSV sequences are the same string', () =
 });
 test('worker keeps N (#232)', async () => {
   const out = await runWorker('workers/parse-fasta.js', '>a\nACNGT\n');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'a', seq: 'ACNGT' }]);
+  assert.deepStrictEqual(out.nodes, [{ id: 'a', seq: 'ACNGT' }]);
 });
 test('leading blank line', () => assert.deepStrictEqual(parseFasta('\n\n>a\nACGT\n'), A));
 test('leading comment', () => assert.deepStrictEqual(parseFasta('; note\n>a\nACGT\n'), A));
@@ -32,13 +32,13 @@ test('empty / blank input yields no records', () => {
 
 test('worker answers an empty file with an empty result (#222)', async () => {
   const out = await runWorker('workers/parse-fasta.js', '');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), []);
+  assert.deepStrictEqual(out.nodes, []);
   const m = await runWorker('workers/parse-mega.js', '');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(m.nodes)), []);
+  assert.deepStrictEqual(m.nodes, []);
 });
 test('worker parses a file with a BOM and leading comment', async () => {
   const out = await runWorker('workers/parse-fasta.js', '﻿; c\r\n\r\n>a\r\nACGT\r\n');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), A);
+  assert.deepStrictEqual(out.nodes, A);
 });
 
 test('MEGA: leading blank/comment/BOM, CRLF, multi-record, empty', () => {

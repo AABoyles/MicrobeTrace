@@ -16,8 +16,6 @@ onmessage = function(e){
   const RNJ = patristic.parseMatrix(matrix, e.data.labels);
   console.log('Tree Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
-  const encoder = new TextEncoder();
-  const output = encoder.encode(JSON.stringify(RNJ.toObject())).buffer;
-  postMessage({tree: output, start: start}, [output]);
+  postMessage({tree: RNJ.toObject(), start: start});
   close();
 };

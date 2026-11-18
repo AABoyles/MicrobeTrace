@@ -1163,6 +1163,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           let l = 0, noColumn = 0, missing = 0, bad = 0, badExample = null;
           if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
 
+          // Known fields, looked up as a Set (the list is searched only for a miss)
+          const knownFields = new Set(session.data.linkFields);
+          const noteField = key => {
+            if (knownFields.has(key)) return;
+            knownFields.add(key);
+            if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key);
+          };
+
           let forEachLink = link => {
             const keys = Object.keys(link);
             const n = keys.length;
@@ -1172,9 +1180,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               const value = link[keys[i]];
               const key = keys[i];
               safeLink[key] = value;
-              if (!session.data.linkFields.includes(key)) {
-                session.data.linkFields.push(key);
-              }
+              noteField(key);
             }
             const source = MT.cleanID(safeLink[file.field1]), target = MT.cleanID(safeLink[file.field2]);
             if (source == '' || target == '') { report.blanks++; return; }
@@ -1229,45 +1235,34 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
           } else {
 
-            Papa.parse(file.contents, {
-              delimiter: file.delimiter || ",",
-              // newline: "\r\n",
-              header: true,
-              // Numbers are read as numbers, except IDs: 007 and 1E3 are names (#219)
-              dynamicTyping: field => field != file.field1 && field != file.field2,
-              skipEmptyLines: true,
-              complete: results => {
-                let data = results.data;
-                data.map(forEachLink);
-                message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
-                reportDistances(file, noColumn, missing, bad, badExample);
-                results.meta.fields.forEach(key => {
-                  if (!session.data.linkFields.includes(key)) {
-                    session.data.linkFields.push(key);
-                  }
+            // The text is parsed in a worker, so a large list does not freeze the page
+            MT.runWorker('workers/parse-links.js', { text: file.contents, delimiter: file.delimiter, field1: file.field1, field2: file.field2 }, { name: 'The link list parser' }).then(results => {
+              let data = results.rows;
+              data.map(forEachLink);
+              message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+              reportDistances(file, noColumn, missing, bad, badExample);
+              results.fields.forEach(noteField);
+              let newNodes = 0, totalNodes = 0;
+              const n = data.length;
+              // Each endpoint once (it used to count, and look up, every one)
+              const nodeIDs = new Set();
+              for (let i = 0; i < n; i++) {
+                const l = data[i];
+                [l[file.field1], l[file.field2]].forEach(value => {
+                  const id = MT.cleanID(value);
+                  if (id == '' || nodeIDs.has(id)) return;
+                  totalNodes++;
+                  nodeIDs.add(id);
+                  newNodes += MT.addNode({
+                    _id: id,
+                    origin: origin
+                  }, true, source);
                 });
-                let newNodes = 0, totalNodes = 0;
-                const n = data.length;
-                // Each endpoint once (it used to count, and look up, every one)
-                const nodeIDs = new Set();
-                for (let i = 0; i < n; i++) {
-                  const l = data[i];
-                  [l[file.field1], l[file.field2]].forEach(value => {
-                    const id = MT.cleanID(value);
-                    if (id == '' || nodeIDs.has(id)) return;
-                    totalNodes++;
-                    nodeIDs.add(id);
-                    newNodes += MT.addNode({
-                      _id: id,
-                      origin: origin
-                    }, true, source);
-                  });
-                }
-                console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
-                message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
-                parsed();
               }
-            });
+              console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+              message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
+              parsed();
+            }).catch(error => fail(file, 'a link list', error));
           }
         } else if (file.format == 'node') {
 
