@@ -1,3 +1,9 @@
+/* ORIGIN */
+  MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC).
+  CDC does not operate or endorse this copy; the people below are credited
+  for their work on the original project, and their current involvement is
+  not implied.
+
 /* TEAM */
   Chief Developer: Tony Boyles <aaboyles@gmail.com>
 

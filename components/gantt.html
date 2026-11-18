@@ -30,7 +30,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="gantt-export-modal-title" class="modal-title">Export Gantt</h5>
+        <h2 id="gantt-export-modal-title" class="modal-title h5">Export Gantt</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -60,11 +60,12 @@
               </div>
               <div class="col-9">
                 <input type="number" id="gantt-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <div class="form-text">Multiplies the size of the picture as shown. 1 = as shown; 2 = twice as wide and tall.</div>
               </div>
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div class="col-9 text-end export-dimensions"></div>
+              <div class="col-9 text-end"><span class="export-dimensions"></span><div class="form-text">Size of the image in pixels (width x height).</div></div>
             </div>
             <div class="row">
               <div class="col-3">
@@ -74,14 +75,6 @@
                 <input type="range" class="form-range" id="gantt-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
-          </div>
-        </div>
-        <div class="row" style="margin-top: 10px;">
-          <div class="col-3">
-            <label for="gantt-export-opacity">Watermark Opacity</label>
-          </div>
-          <div class="col-9">
-            <input type="range" class="form-range" id="gantt-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
@@ -273,8 +266,9 @@
     }
 
     $('.add-date').addEventListener('click', () => {
-      const colors = d3.schemeCategory10;
-      setDates(dates().concat([{ start: 'None', end: 'None', color: colors[dates().length % colors.length], transparency: 0.4 }]));
+      // The colour-blind-safe default palette (#294), in shades beyond its own colours
+      const colors = MT.extendPalette(MT.COLOR_BLIND_SAFE, dates().length + 1);
+      setDates(dates().concat([{ start: 'None', end: 'None', color: colors[dates().length], transparency: 0.4 }]));
       showDates();
     });
 
@@ -291,7 +285,7 @@
     // With no dates chosen, it starts on the data's first field of dates
     if (!dates().length) {
       const [field] = MT.dateFields(session.data.nodes, session.data.nodeFields);
-      if (field) setDates([{ start: field, end: 'None', color: d3.schemeCategory10[0], transparency: 0.4 }]);
+      if (field) setDates([{ start: field, end: 'None', color: MT.COLOR_BLIND_SAFE[0], transparency: 0.4 }]);
     }
 
     // The settings start open when there's nothing to draw

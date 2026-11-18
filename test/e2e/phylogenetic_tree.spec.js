@@ -125,7 +125,7 @@ test('the context menu rotates the tree', async () => {
   await branch.dispatchEvent('contextmenu');
   const menu = view().locator('.tree-context-menu');
   await expect(menu).toBeVisible();
-  await menu.locator('a', { hasText: 'Flip' }).click();
+  await menu.locator('button', { hasText: 'Flip' }).click();
   await expect(menu).toBeHidden();
   await expect.poll(order).not.toBe(before);
 });

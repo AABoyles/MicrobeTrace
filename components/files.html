@@ -1,11 +1,15 @@
 <div class="container-fluid file-panel">
   <div id="file-table" class="container">
-    <label for="data-files" class="drop-zone">
-      <span class="bi bi-cloud-arrow-up" aria-hidden="true"></span>
-      <span class="drop-zone-title">Drop files here, or <span class="link-primary">add files</span></span>
-      <span class="drop-zone-hint">Link or node lists (CSV or Excel), distance matrices, FASTA, Newick, or a saved MicrobeTrace session</span>
-    </label>
-    <p class="file-order-hint" hidden>Where files disagree about a node, the file nearest the top wins. Drag <span class="bi bi-grip-vertical"></span> to reorder them.</p>
+    <div class="drop-zone-group">
+      <label for="data-files" class="drop-zone">
+        <span class="bi bi-cloud-arrow-up" aria-hidden="true"></span>
+        <span class="drop-zone-title">Drop files here, or <span class="link-primary">add files</span></span>
+        <span class="drop-zone-hint">Link or node lists (CSV or Excel), distance matrices, FASTA, Newick, or a saved MicrobeTrace session</span>
+      </label>
+      <p class="drop-zone-demo">No data to hand? <button type="button" class="btn btn-outline-primary btn-sm demo-button">Try the demo data</button></p>
+    </div>
+    <p class="file-order-hint" hidden>Where files disagree about a node, the file nearest the top wins. Drag <span class="bi bi-grip-vertical"></span>, or use the move up and move down buttons (Alt+Up and Alt+Down on a file), to reorder them.</p>
+    <p class="file-order-live visually-hidden" role="status" aria-live="polite"></p>
   </div>
 </div>
 
@@ -51,7 +55,7 @@
           <select id="default-distance-metric" data-setting="default-distance-metric" class="form-select form-select-sm">
             <optgroup label="Evolutionary Models">
               <option value="tn93" selected title="Tamura-Nei 1993">TN93 (Tamura-Nei)</option>
-              <option value="tn92" title="Tamura-Nei 1992">TN92 (Tamura-Nei)</option>
+              <option value="tn92" title="Tamura-Nei 1992">TN92 (Tamura 1992)</option>
               <option value="k2p" title="Kimura 2-Parameter">K2P (Kimura)</option>
               <option value="jc69" title="Jukes-Cantor">JC69 (Jukes-Cantor)</option>
             </optgroup>
@@ -66,6 +70,7 @@
               <option value="ts_tv_ratio">Ts/Tv Ratio</option>
             </optgroup>
           </select>
+          <div id="distance-metric-help" class="form-text small"></div>
         </div>
       </div>
       <div class="form-group row distance-metrics-also-row" title="Which other metrics should MicrobeTrace compute for the same sequences? Each is kept on the links beside the distance metric, to filter links on, color or plot by.">
@@ -74,6 +79,7 @@
         </div>
         <div class="col-7">
           <select id="distance-metrics-also" multiple></select>
+          <div class="form-text small">Extra metrics kept on each link, to filter or color by later.</div>
         </div>
       </div>
       <div class="form-group row">
@@ -90,26 +96,29 @@
             <option value="GAPMM" title="TN93 only. Uses the slower tn93.js engine.">GapMM (TN93 only)</option>
             <option value="HIVTRACE-G">HIV-TRACE -g</option>
           </select>
+          <div id="ambiguity-help" class="form-text small"></div>
         </div>
       </div>
       <div class="form-group row ambiguity-threshold-row">
         <div class="col-5">
-          <label for="ambiguity-threshold" class="me-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+          <label for="ambiguity-threshold" class="me-2" title="HIV-TRACE -g only: the fraction of ambiguous sites in a pair above which they are averaged instead of resolved.">
             Ambiguity Threshold
           </label>
         </div>
         <div class="col-7">
-          <input type="number" id="ambiguity-threshold" data-setting="ambiguity-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
+          <input type="number" id="ambiguity-threshold" data-setting="ambiguity-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001" aria-describedby="ambiguity-threshold-help">
+          <div id="ambiguity-threshold-help" class="form-text small">Fraction of ambiguous sites in a pair (0.015 = 1.5%).</div>
         </div>
       </div>
       <div class="form-group row">
         <div class="col-5">
-          <label for="default-distance-threshold" class="me-2" title="What's the maximum genetic distance you wish to consider linked? Please note that this can be changed later.">
+          <label for="default-distance-threshold" class="me-2" title="The largest distance that still counts as a link. It can be changed later.">
             Link Threshold
           </label>
         </div>
         <div class="col-7">
-          <input type="number" id="default-distance-threshold" data-setting="link-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001">
+          <input type="number" id="default-distance-threshold" data-setting="link-threshold" class="form-control form-control-sm" min="0" value="0.015" step="0.001" aria-describedby="default-distance-threshold-unit">
+          <div id="default-distance-threshold-unit" class="form-text small">Same setting as Link Threshold in Settings.</div>
         </div>
       </div>
       <div class="form-group row">
@@ -124,6 +133,7 @@
             <option value="all">All Pairs</option>
             <option value="threshold">Within Link Threshold</option>
           </select>
+          <div class="form-text small">Automatic keeps every pair unless there are too many. Within Link Threshold uses less memory.</div>
         </div>
       </div>
       <div class="form-group row">
@@ -161,7 +171,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       <div class="form-group row">
         <div class="col-12">
           <div class="alert alert-warning alert-dismissible" role="alert">
-            <p>The following settings are experimental! Use at your own risk!</p>
+            <p>These settings are experimental and may change or misbehave. <strong>Generate</strong> adds random, made-up sequences to your data, so do not use it with real data you will report.</p>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         </div>
@@ -196,7 +206,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="sequence-controls-title" class="modal-title">Sequence Settings</h5>
+        <h2 id="sequence-controls-title" class="modal-title h5">Sequence Settings</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -237,6 +247,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     Smith-Waterman
                   </label>
                 </div>
+                <div id="align-help" class="form-text small">Smith-Waterman lines every sequence up against the reference before distances are computed.</div>
               </div>
             </div>
             <div class="form-group row align-config-row">
@@ -256,6 +267,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     Consensus
                   </label>
                 </div>
+                <div id="reference-source-help" class="form-text small">The sequence the others are aligned to.</div>
               </div>
             </div>
             <div class="form-group row reference-file-row">
@@ -271,21 +283,21 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <div class="row align-config-row">
               <div class="form-group col offset-2" title="How much should MicrobeTrace reward matching bases?">
                 <label>Match Reward</label>
-                <input type="number" class="form-control aligner-match" value="1" min="0">
+                <input type="number" class="form-control aligner-match" value="1" min="0" aria-describedby="aligner-match-help"><div id="aligner-match-help" class="form-text small">Score added for each matching base.</div>
               </div>
               <div class="form-group col" title="How much should MicrobeTrace penalize non-matching bases?">
                 <label>Mismatch Cost</label>
-                <input type="number" class="form-control aligner-mismatch" value="1" min="0">
+                <input type="number" class="form-control aligner-mismatch" value="1" min="0" aria-describedby="aligner-mismatch-help"><div id="aligner-mismatch-help" class="form-text small">Score taken off for each mismatched base.</div>
               </div>
             </div>
             <div class="row align-config-row">
               <div class="form-group col offset-2" title="How much should MicrobeTrace Penalize opening a gap?">
                 <label>Gap Opening Cost</label>
-                <input type="number" class="form-control aligner-gap-open" value="5" min="0">
+                <input type="number" class="form-control aligner-gap-open" value="5" min="0" aria-describedby="aligner-gap-open-help"><div id="aligner-gap-open-help" class="form-text small">Score taken off for starting a gap.</div>
               </div>
               <div class="form-group col" title="How much should MicrobeTrace Penalize extending a gap?">
                 <label>Gap Extension Cost</label>
-                <input type="number" class="form-control aligner-gap-extend" value="2" min="0">
+                <input type="number" class="form-control aligner-gap-extend" value="2" min="0" aria-describedby="aligner-gap-extend-help"><div id="aligner-gap-extend-help" class="form-text small">Score taken off for each further position in a gap.</div>
               </div>
             </div>
             <div class="row alignPreviewRow">
@@ -294,49 +306,56 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           </div>
           <div class="tab-pane fade" id="sequence-auditor" role="tabpanel" aria-labelledby="sequence-auditor-tab">
             <div class="row mb-3">
-              <div class="form-check col" title="Checks to see if a Sequence is empty.">
-                <input class="form-check-input" type="checkbox" id="audit-empty" name="audit-empty" checked>
+              <div class="form-check col-6 mb-2" title="Checks to see if a Sequence is empty.">
+                <input class="form-check-input" type="checkbox" id="audit-empty" name="audit-empty" checked aria-describedby="audit-empty-help">
                 <label class="form-check-label" for="audit-empty">
                   Empty
                 </label>
+                <div id="audit-empty-help" class="form-text small">Sequences with no characters.</div>
               </div>
-              <div class="form-check col" title="Checks to see if a Sequence is all gaps.">
-                <input class="form-check-input" type="checkbox" id="audit-gaps" name="audit-gaps" checked>
+              <div class="form-check col-6 mb-2" title="Checks to see if a Sequence is all gaps.">
+                <input class="form-check-input" type="checkbox" id="audit-gaps" name="audit-gaps" checked aria-describedby="audit-gaps-help">
                 <label class="form-check-label" for="audit-gaps">
                   Gaps
                 </label>
+                <div id="audit-gaps-help" class="form-text small">Sequences made only of gap characters (-).</div>
               </div>
-              <div class="form-check col" title="Check to see if sequence contains any characters that are RNA instead of DNA.">
-                <input class="form-check-input" type="checkbox" id="audit-RNA" name="audit-RNA" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if sequence contains any characters that are RNA instead of DNA.">
+                <input class="form-check-input" type="checkbox" id="audit-RNA" name="audit-RNA" checked aria-describedby="audit-RNA-help">
                 <label class="form-check-label" for="audit-RNA">
                   RNA
                 </label>
+                <div id="audit-RNA-help" class="form-text small">Sequences with a U, which DNA does not have.</div>
               </div>
-              <div class="form-check col" title="Check to see if Sequence contains any characters that represent Amino Acids.">
-                <input class="form-check-input" type="checkbox" id="audit-amino-acids" name="audit-amino-acids" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if Sequence contains any characters that represent Amino Acids.">
+                <input class="form-check-input" type="checkbox" id="audit-amino-acids" name="audit-amino-acids" checked aria-describedby="audit-amino-acids-help">
                 <label class="form-check-label" for="audit-amino-acids">
                   Amino Acids
                 </label>
+                <div id="audit-amino-acids-help" class="form-text small">Sequences that read as protein, not DNA.</div>
               </div>
-              <div class="form-check col" title="Check to see if Sequence contains any characters describing an alignment.">
-                <input class="form-check-input" type="checkbox" id="audit-CIGAR" name="audit-CIGAR" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if Sequence contains any characters describing an alignment.">
+                <input class="form-check-input" type="checkbox" id="audit-CIGAR" name="audit-CIGAR" checked aria-describedby="audit-CIGAR-help">
                 <label class="form-check-label" for="audit-CIGAR">
                   CIGAR
                 </label>
+                <div id="audit-CIGAR-help" class="form-text small">Sequences that are an alignment code (like 12M2I8M), not bases.</div>
               </div>
-              <div class="form-check col" title="Check to see if Sequence contains any characters that are illegal in any genomic or proteomic alphabet.">
-                <input class="form-check-input" type="checkbox" id="audit-malformed" name="audit-malformed" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if Sequence contains any characters that are illegal in any genomic or proteomic alphabet.">
+                <input class="form-check-input" type="checkbox" id="audit-malformed" name="audit-malformed" checked aria-describedby="audit-malformed-help">
                 <label class="form-check-label" for="audit-malformed">
                   Malformed
                 </label>
+                <div id="audit-malformed-help" class="form-text small">Sequences with characters no DNA, RNA or protein alphabet uses.</div>
               </div>
-              <div class="form-check col" title="Check to see if a sequence's length is more than 20% away from the median length.">
-                <input class="form-check-input" type="checkbox" id="audit-length" name="audit-length" checked>
+              <div class="form-check col-6 mb-2" title="Check to see if a sequence's length is more than 20% away from the median length.">
+                <input class="form-check-input" type="checkbox" id="audit-length" name="audit-length" checked aria-describedby="audit-length-help">
                 <label class="form-check-label" for="audit-length">
                   Length
                 </label>
+                <div id="audit-length-help" class="form-text small">Sequences over 20% shorter or longer than the median (needs 10 or more).</div>
               </div>
-              <div class="col">
+              <div class="col-6">
                 <button type="button" class="btn btn-outline-primary btn-sm w-100 audit-launcher">Run</button>
               </div>
             </div>
@@ -348,7 +367,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         </div>
       </div>
       <div class="modal-footer clearfix">
-        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+        <span class="form-text me-auto">Changes apply immediately.</span>
+        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -371,7 +391,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const alignerScoring = () => MTAlignerScoring(alignerCosts());
     const show = (elements, visible) => [].concat(elements).forEach(el => { el.hidden = !visible; });
 
-    const dropZone = $('.drop-zone');
+    const dropZone = $('.drop-zone-group');
+    $('.demo-button').addEventListener('click', () => MT.loadDemo());
+    MT.updateDemoButtons();
 
     // The files' order, which ranks them where they disagree, follows their
     // rows, which can be dragged by their grips
@@ -380,9 +402,47 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const headersOf = new WeakMap();
     const showOrderHint = () => { $('.file-order-hint').hidden = $$('.file-table-row').length < 2; };
     MT.sortable(table, { items: '.file-table-row', handle: '.file-grip', forcePlaceholderSize: true });
-    table.addEventListener('sortupdate', () => {
+    const saveOrder = () => {
       const order = $$('.file-table-row').map(row => fileOf.get(row));
       session.files.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    };
+    table.addEventListener('sortupdate', saveOrder);
+    // Moving a file up or down without dragging (#185): each row's buttons, or
+    // Alt+Up and Alt+Down on the row. The first can't go up and the last can't
+    // go down.
+    function refreshMoves() {
+      const rows = $$('.file-table-row');
+      rows.forEach((row, i) => {
+        row.querySelector('.file-move-up').disabled = i == 0;
+        row.querySelector('.file-move-down').disabled = i == rows.length - 1;
+      });
+    }
+    const moveRow = (row, by) => {
+      const rows = $$('.file-table-row'), i = rows.indexOf(row), j = i + by;
+      if (j < 0 || j >= rows.length) return false;
+      if (by < 0) rows[j].before(row); else rows[j].after(row);
+      saveOrder();
+      refreshMoves();
+      $('.file-order-live').textContent = `${row.querySelector('.file-title').textContent} moved to position ${j + 1} of ${rows.length}.`;
+      return true;
+    };
+    new MutationObserver(refreshMoves).observe(table, { childList: true });
+    table.addEventListener('click', e => {
+      const button = e.target.closest('.file-move-up, .file-move-down');
+      if (!button) return;
+      const by = button.classList.contains('file-move-up') ? -1 : 1, row = button.closest('.file-table-row');
+      moveRow(row, by);
+      // A button that can't go further hands the focus to the other
+      (button.disabled ? row.querySelector(by < 0 ? '.file-move-down' : '.file-move-up') : button).focus();
+    });
+    table.addEventListener('keydown', e => {
+      if (!e.altKey || (e.key != 'ArrowUp' && e.key != 'ArrowDown')) return;
+      const row = e.target.closest('.file-table-row');
+      if (!row) return;
+      e.preventDefault();
+      moveRow(row, e.key == 'ArrowUp' ? -1 : 1);
+      // (A button that can't go further hands the focus to the other)
+      (e.target.disabled ? row.querySelector(e.target.classList.contains('file-move-up') ? '.file-move-down' : '.file-move-up') : e.target).focus();
     });
 
     const ready = () => {
@@ -488,6 +548,74 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
     }
 
+    // What a file is, from what it holds rather than what it is called (#267):
+    // FASTA starts with ">", a Newick tree is parenthesised, a distance matrix is
+    // a square or triangular table whose header row repeats its first column, a
+    // node list has an ID column and no Source and Target. Anything else is a link
+    // list. The file's name only decides what the contents can't. Also the
+    // delimiter of a table (a comma, tab, semicolon or bar). The kind is a guess:
+    // the buttons in the file's row change it.
+    const kindLabel = { fasta: 'FASTA', node: 'a node list', matrix: 'a distance matrix', newick: 'a Newick tree' };
+    const delimiterNames = { ',': 'comma', '\t': 'tab', ';': 'semicolon', '|': 'bar' };
+    const blankCell = c => c == null || ('' + c).trim() === '';
+    const isNumber = c => !blankCell(c) && /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$|^[+-]?0?,\d+$/.test(('' + c).trim());
+    const balanced = text => {
+      let depth = 0;
+      for (const c of text) {
+        if (c == '(') depth++;
+        else if (c == ')' && --depth < 0) return false;
+      }
+      return depth == 0;
+    };
+
+    function detect(file, extension) {
+      let text = file.contents;
+      if (extension == 'xlsx' || extension == 'xls') {
+        try {
+          const workbook = XLSX.read(file.contents, { type: 'array' });
+          text = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]], { rawNumbers: true });
+        } catch (error) {
+          return { delimiter: ',' };
+        }
+      }
+      if (typeof text != 'string') return { delimiter: ',' };
+      text = text.replace(/^﻿/, '');
+      const head = text.trimStart();
+      if (head.startsWith('>')) return { kind: 'fasta', delimiter: ',' };
+      if (head.startsWith('(') && /;\s*$/.test(text) && balanced(text)) return { kind: 'newick', delimiter: ',' };
+
+      const sample = Papa.parse(text, { preview: 60, skipEmptyLines: 'greedy', delimitersToGuess: [',', '\t', ';', '|'] });
+      const delimiter = sample.meta.delimiter && delimiterNames[sample.meta.delimiter] ? sample.meta.delimiter : ',';
+      const rows = sample.data;
+      const found = { delimiter };
+      if (rows.length < 2 || rows[0].length < 2) return found;
+
+      // A matrix: its header names (all of) its rows, in order, below an empty corner
+      const lines = text.split(/\r\n|\r|\n/).filter(l => l.trim() !== '').length;
+      const header = rows[0].slice();
+      while (header.length && blankCell(header[header.length - 1])) header.pop();
+      const clean = c => blankCell(c) ? '' : ('' + c).replace(/^[\s"']+|[\s"']+$/g, '');
+      const values = rows.slice(1).reduce((all, r) => all.concat(r.slice(1)), []).filter(c => !blankCell(c));
+      const mostlyNumbers = values.length > 0 && values.filter(isNumber).length >= 0.9 * values.length;
+      const k = Math.min(rows.length - 1, header.length - 1);
+      if (blankCell(rows[0][0]) && header.length - 1 == lines - 1 && k >= 2 && mostlyNumbers
+        && rows.slice(1, k + 1).every((r, i) => clean(r[0]) !== '' && clean(r[0]) == clean(header[i + 1]))) {
+        return Object.assign(found, { kind: 'matrix' });
+      }
+      // Or without a header row: a square table of numbers below a column of names
+      if (!blankCell(rows[0][0]) && !isNumber(rows[0][0]) && rows[0].length - 1 == lines && lines >= 3
+        && rows.every(r => r.length == rows[0].length && !isNumber(r[0])) && mostlyNumbers
+        && rows.slice(1).flat().length > 0 && rows[0].slice(1).every(isNumber)) {
+        return Object.assign(found, { kind: 'matrix' });
+      }
+
+      // A node list has an ID column and no source and target; a link list names both
+      const names = rows[0].map(c => clean(c).toLowerCase());
+      const has = list => list.some(n => names.includes(n));
+      if (has(['id', '_id']) && !(has(['source']) && has(['target']))) return Object.assign(found, { kind: 'node' });
+      return found;
+    }
+
     // A file's row: its name, what kind of file it is, and the fields to read
     function addToTable(file) {
       const extension = file.extension ? file.extension : MT.escape(file.name).split('.').pop().toLowerCase();
@@ -495,7 +623,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const isFasta = 'fasta' == file.format || extension.indexOf('fas') > -1;
       const isNewick = 'newick' == file.format || extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
       const isNode = 'node' == file.format || file.name.toLowerCase().includes('node');
-      const kind = file.format || (isFasta ? 'fasta' : isNewick ? 'newick' : isNode ? 'node' : 'link');
+      const guess = detect(file, extension);
+      if (!file.delimiter) file.delimiter = guess.delimiter;
+      const nameKind = isFasta ? 'fasta' : isNewick ? 'newick' : isNode ? 'node' : 'link';
+      const kind = file.format || guess.kind || nameKind;
+      const detected = !file.format && guess.kind ? `Read as ${kindLabel[guess.kind]} from its contents` : '';
       if (extension == 'xlsx' || extension == 'xls') {
         const workbook = XLSX.read(file.contents, { type: 'array' });
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false, dateNF: 'yyyy-mm-dd' });
@@ -503,17 +635,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         data.forEach(row => Object.keys(row).forEach(key => {
           if (!headers.includes(key)) headers.push(key);
         }));
-        addRow(file, kind, headers);
+        addRow(file, kind, headers, detected);
       } else {
         // A table's rows have as many columns as its header: prose (notes, say)
         // doesn't, however its commas fall
-        const sample = Papa.parse(file.contents, { delimiter: ',', preview: 20, skipEmptyLines: true }).data;
+        const sample = Papa.parse(file.contents, { delimiter: file.delimiter, preview: 20, skipEmptyLines: true }).data;
         const tabular = sample.length > 1 && sample.slice(1).filter(r => r.length == sample[0].length).length >= 0.8 * (sample.length - 1);
         Papa.parse(file.contents, {
-          delimiter: ',',
+          delimiter: file.delimiter,
           header: true,
           preview: 1,
-          complete: output => addRow(file, kind, tabular ? output.meta.fields : [])
+          complete: output => addRow(file, kind, tabular ? output.meta.fields : [], detected)
         });
       }
     }
@@ -521,7 +653,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const kinds = [['link', 'Link'], ['node', 'Node'], ['matrix', 'Matrix'], ['fasta', 'FASTA'], ['newick', 'Newick']];
     let rowCount = 0;
 
-    function addRow(file, kind, headers) {
+    function addRow(file, kind, headers, detected) {
       const row = document.createElement('div');
       row.className = 'file-table-row';
       const group = 'file-kind-' + (rowCount++);
@@ -529,6 +661,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         <div class="row w-100">
           <div class="file-name col">
             <span class="bi bi-grip-vertical file-grip" title="Drag to reorder"></span>
+            <button type="button" class="btn btn-light btn-sm file-move-up" title="Move this file up" aria-label="Move this file up"><span class="bi bi-arrow-up" aria-hidden="true"></span></button>
+            <button type="button" class="btn btn-light btn-sm file-move-down" title="Move this file down" aria-label="Move this file down"><span class="bi bi-arrow-down" aria-hidden="true"></span></button>
             <span class="file-title p-1"></span>
             <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
               ${kinds.map(([value, label]) => `<label class="btn btn-light${value == kind ? ' active' : ''}">
@@ -539,6 +673,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <a href="#" class="icon-action icon-remove bi bi-x-circle p-1" title="Remove this file" aria-label="Remove this file"></a>
           </div>
         </div>
+        <p class="file-detected small text-body-secondary mb-0 mt-1" hidden></p>
         <p class="file-problem small text-danger mb-0 mt-1" hidden></p>
         <div class="row w-100">
           ${[1, 2, 3].map(i => `<div class="col-4 file-field">
@@ -547,6 +682,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           </div>`).join('')}
         </div>`;
       row.querySelector('.file-title').textContent = file.name;
+      // Say how the kind was chosen, so it can be checked (and changed with the buttons)
+      const note = row.querySelector('.file-detected');
+      if (detected) {
+        const d = delimiterNames[file.delimiter];
+        note.textContent = detected + (d && d != 'comma' && !['fasta', 'newick'].includes(kind) ? ` (${d}-separated)` : '') + '. Change it with the buttons if that is wrong.';
+        note.hidden = false;
+      }
       rowOf.set(file, row);
       headersOf.set(file, headers);
       const fields = Array.from(row.querySelectorAll('.file-field'));
@@ -612,12 +754,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       problems.set(row, () => {
         const type = kindOf(), [first, second] = selects.map(select => select.value);
         if (type == 'link') {
-          if (headers.length < 2) return 'No columns were found in this file, so it can’t be read as a link list.';
+          if (headers.length < 2) return `No columns were found in this file (read as ${delimiterNames[file.delimiter] || 'comma'}-separated), so it can’t be read as a link list.`;
           if (first == 'None' || second == 'None') return 'Choose the Source and Target columns.';
           if (first == second) return 'Source and Target need to be different columns.';
         }
         if (type == 'node') {
-          if (!headers.length) return 'No columns were found in this file, so it can’t be read as a node list.';
+          if (!headers.length) return `No columns were found in this file (read as ${delimiterNames[file.delimiter] || 'comma'}-separated), so it can’t be read as a node list.`;
           if (first == 'None') return 'Choose the ID column.';
         }
         return '';
@@ -833,6 +975,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // Log lines are plain text (file names included), so they are never parsed as HTML
     function message(msg) {
       session.messages.push(msg);
+      // A line that starts a step (not a detail of one) is the dialog's progress text
+      if (!msg.startsWith(' - ')) MT.progress(msg.replace(/\.+$/, ''));
       const information = document.getElementById('loading-information');
       information.replaceChildren();
       session.messages.forEach((text, i) => {
@@ -849,6 +993,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     launchButton.addEventListener('click', () => {
       session.meta.startTime = Date.now();
       launchButton.disabled = true;
+      MT.startWork();
+      document.getElementById('loading-progress').hidden = true;
       const information = document.getElementById('loading-information');
       information.innerHTML = '<p>Processing file(s)...</p>';
       const loading = document.getElementById('loading-information-modal');
@@ -864,7 +1010,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         setTimeout(() => reject(new Error('Problem loading information modal!')), 5000);
       }).then(
         () => launch(),
-        error => { alert(error); launch(); } // the information dialog didn't open
+        error => { console.error(error); MT.toast.error('The information window did not open, so the files are loading anyway. If anything looks wrong, reload the page and try again.'); launch(); } // the information dialog didn't open
       );
     });
 
@@ -876,6 +1022,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // (fail, below, is for one file; this is for anything else, such as a
     // worker that throws.)
     const loadFailed = error => {
+      MT.progressDone();
+      if (error && error.cancelled) return; // the user cancelled; the cancel said so
       const reason = (error && error.message) || error;
       console.error(error);
       const text = `The load failed while ${step}: ${MT.escape('' + reason)}.`;
@@ -888,10 +1036,28 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     const launch = () => load().catch(loadFailed);
 
+    // Cancel stops the work (the workers are terminated), drops what the load
+    // had read so far and goes back to the files, which stay listed. The dialog
+    // has no Close: the work never goes on without it.
+    document.getElementById('loading-cancel').addEventListener('click', () => {
+      MT.cancelWork();
+      clearTimeout(temp.messageTimeout);
+      const reference = session.data.reference;
+      session.data = MT.dataSkeleton();
+      session.data.reference = reference;
+      temp.tree = null;
+      session.messages = [];
+      MT.progressDone();
+      MT.hideModal('loading-information-modal');
+      checkLaunch();
+      MT.toast.info('Loading was cancelled. Your files are still listed.', 8);
+    });
+
     const load = async () => {
       step = 'reading the files';
+      MT.progress('Reading the files');
       temp.messageTimeout = setTimeout(() => {
-        MT.toast.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
+        MT.toast.info('Still working. Large sets of sequences can take several minutes to align and compare. Cancel in the loading dialog stops the work and keeps your files listed.', 15);
       }, 20000);
 
       const check = session.files.length > 1;
@@ -914,12 +1080,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       // A file that cannot be read stops the load, with the reason (the dialog is not left up)
       const fail = (file, kind, error) => {
+        if (error && error.cancelled) return; // the user cancelled; the cancel said so
         const reason = (error && error.message) || error;
         console.error(error);
         const text = `Could not read ${shownName(file)} as ${kind}: ${MT.escape('' + reason)}.`;
         message(text);
         MT.toast.error(text);
         clearTimeout(temp.messageTimeout);
+        MT.progressDone();
         MT.hideModal('loading-information-modal');
         checkLaunch();
       };
@@ -1062,7 +1230,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           } else {
 
             Papa.parse(file.contents, {
-              delimiter: ",",
+              delimiter: file.delimiter || ",",
               // newline: "\r\n",
               header: true,
               // Numbers are read as numbers, except IDs: 007 and 1E3 are names (#219)
@@ -1138,7 +1306,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
             const seen = new Set();
             Papa.parse(file.contents, {
-              delimiter: ",",
+              delimiter: file.delimiter || ",",
               // newline: "\r\n",
               header: true,
               // Numbers are read as numbers, except IDs and sequences: 007 and 1E3 are names (#219)
@@ -1236,6 +1404,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       // (A synchronous parse that throws rejects here and is caught by launch)
       return Promise.all(parsedFiles).then(() => {
+        if (MT.workCancelled()) throw Object.assign(new Error('it was cancelled'), { cancelled: true });
         reportMerges();
         return processSequences();
       });
@@ -1299,6 +1468,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
         // Nodes without a sequence hold only gaps; they are left out of the consensus
         step = 'computing the consensus sequence';
+        MT.progress('Computing the consensus sequence');
         session.data.consensus = await MT.computeConsensus(subset);
         await MT.computeConsensusDistances();
         subset.sort((a, b) => a['_diff'] - b['_diff']);
@@ -1307,6 +1477,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
         message('Computing Links based on Genomic Proximity...');
         step = 'computing the links';
+        MT.progress('Computing distances');
         const k = await MT.computeLinks(subset);
         // Every pair has a distance; the network shows those within the threshold
         const threshold = parseFloat(session.style.widgets['link-threshold']);
@@ -1314,8 +1485,9 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         session.data.graph.forEachValue(get('default-distance-metric'), v => { if (v <= threshold) within++; });
         message(` - Computed ${k.toLocaleString()} distances between sequences; ${within.toLocaleString()} links are within the link threshold (${threshold}).`);
         const also = MT.computedMetrics().slice(1);
-        if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Global Settings.`);
+        if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Settings.`);
         step = 'drawing the network';
+        MT.progress('Drawing the network');
         return MT.runHamsters();
       };
     };
@@ -1349,7 +1521,19 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const showMetricName = () => {
       const option = metricMenu.selectedOptions[0];
       metricMenu.title = option ? option.title || option.text : '';
+      // Visible help, not only the tooltip (#272)
+      const help = MT.metricHelp[get('default-distance-metric')];
+      $('#distance-metric-help').textContent = help ? help[0] : '';
+      $('#default-distance-threshold-unit').textContent = help ? 'In ' + help[1] + '. Same setting as Link Threshold in Settings.' : '';
     };
+    const AMBIGUITY_HELP = {
+      AVERAGE: 'Ambiguous bases (N, R, Y...) count as the average over every base they could be.',
+      RESOLVE: 'Ambiguous bases are taken as whichever base they could be that matches the other sequence.',
+      SKIP: 'Sites with an ambiguous base are left out of the comparison.',
+      GAPMM: 'Treats a gap as a mismatch (the original MicrobeTrace way). TN93 only, and slower.',
+      'HIVTRACE-G': 'As HIV-TRACE does: resolve ambiguities, unless too many sites in a pair are ambiguous (see Ambiguity Threshold), then average.'
+    };
+    const showAmbiguityHelp = () => { $('#ambiguity-help').textContent = AMBIGUITY_HELP[get('ambiguity-resolution-strategy')] || ''; };
 
     MT.paneToggle($('.settings-toggle'), pane, false, { push: [$('.file-panel'), $('.file-footer')] });
     const stop = [
@@ -1364,6 +1548,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         showAlso();
       }),
       settings.subscribe('ambiguity-resolution-strategy', () => {
+        showAmbiguityHelp();
         showAmbiguityRows();
         showAlso();
       }),
@@ -1379,6 +1564,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     ];
     applyMetric(false);
     showMetricName();
+    showAmbiguityHelp();
     showAlso();
     showAmbiguityRows();
     showAlignmentRows();
@@ -1490,6 +1676,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       },
       // Redraws the controls that follow other settings, after those were set
       refresh() {
+        showMetricName();
+        showAmbiguityHelp();
         showAlso();
         showAmbiguityRows();
         showAlignmentRows();

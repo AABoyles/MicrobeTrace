@@ -33,8 +33,8 @@ test('the license reads as text, and its dialog has one id', async () => {
   await waitForModal(page, 'div#licenseAgreement');
   const body = page.locator('#licenseAgreement .modal-body');
   await expect(body.locator('pre')).toHaveCount(0);
-  await expect(body.locator('p').first()).toContainText('provided to you "As-is"');
-  await expect(body).toContainText('Accept to agree to these terms, or Reject to leave MicrobeTrace.');
+  await expect(body.locator('p').first()).toContainText('provided "as is"');
+  await expect(body).toContainText('Accept to agree to these terms.');
   expect(await page.locator('[id="licenseAgreement"]').count()).toBe(1);
   await expect(page.locator('#licenseAgreement')).toHaveAttribute('aria-labelledby', 'licenseAgreementLabel');
   await page.click('#acceptAgreement');
@@ -104,7 +104,7 @@ test("a file's row ends with resave and a red remove, and the drop zone returns 
   const row = rows().first();
   const order = await row.locator('.file-name').evaluate(el => Array.from(el.children).map(c => c.title || c.className.split(' ')[0]));
   // (After the grip that reorders files)
-  expect(order).toEqual(['Drag to reorder', 'file-title', 'btn-group', 'Resave this file', 'Remove this file']);
+  expect(order).toEqual(['Drag to reorder', 'Move this file up', 'Move this file down', 'file-title', 'btn-group', 'Resave this file', 'Remove this file']);
   const red = await row.locator('a[title="Remove this file"]').evaluate(el => getComputedStyle(el).color);
   expect(red).toBe('rgb(220, 53, 69)');
   // Removing every file empties the view again

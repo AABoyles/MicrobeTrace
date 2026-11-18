@@ -9,15 +9,15 @@
   --mt-hover: #eeeeee;
   --mt-text: #303030;
   --mt-strong: #212529;
-  --mt-muted: #6c757d;
+  --mt-muted: #5c636a;
   --mt-muted-strong: #495057;
-  --mt-faint: #adb5bd;
-  --mt-border: #cccccc;
+  --mt-faint: #7a828a;
+  --mt-border: #8c8c8c;
   --mt-border-soft: #dee2e6;
-  --mt-border-control: #ced4da;
+  --mt-border-control: #80888f;
   --mt-rule: rgba(0, 0, 0, 0.1);
-  --mt-tab: #888888;
-  --mt-tab-text: #575858;
+  --mt-tab: #d3d8dc;
+  --mt-tab-text: #343a40;
   --mt-notice-bg: #fbefd8;
   --mt-notice-text: #7a4a00;
   --mt-track: #000000;
@@ -36,10 +36,10 @@
   --mt-strong: #f8f9fa;
   --mt-muted: #adb5bd;
   --mt-muted-strong: #ced4da;
-  --mt-faint: #6c757d;
-  --mt-border: #495057;
+  --mt-faint: #8f979e;
+  --mt-border: #7f878e;
   --mt-border-soft: #495057;
-  --mt-border-control: #495057;
+  --mt-border-control: #7f878e;
   --mt-rule: rgba(255, 255, 255, 0.12);
   --mt-tab: #343a40;
   --mt-tab-text: #adb5bd;
@@ -122,6 +122,43 @@ body {
   padding: 0 2rem;
   text-align: center;
   color: var(--mt-muted);
+}
+/* A view's note of the data it needs (MT.updateViewNeeds), over its empty body */
+.view-needs {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  width: min(32rem, calc(100% - 3rem));
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  color: var(--mt-muted-strong);
+  background-color: var(--mt-surface);
+  border: 1px solid var(--mt-border);
+  border-radius: 0.5rem;
+}
+.view-needs-title {
+  font-size: 1.125rem;
+  color: var(--mt-strong);
+}
+.view-needs-text {
+  margin: 0.5rem 0 1rem;
+}
+.view-needed .view-message {
+  display: none;
+}
+/* The demo button under the Files view's drop zone */
+.drop-zone-demo {
+  text-align: center;
+  color: var(--mt-muted);
+}
+/* The Help dialog's sections */
+#help-modal .modal-body h6 {
+  margin-top: 1.25rem;
+}
+#help-modal .modal-body kbd {
+  white-space: nowrap;
 }
 /* The Recall dialog's note when nothing is stashed, as the views' notes */
 #recall-stashes-available .tabulator-placeholder-contents {
@@ -293,6 +330,18 @@ input[type="color"].form-control {
   border: 1px solid var(--mt-border);
   border-radius: 0.25rem;
 }
+/* A floating table's options button (the keyboard's way to its right-click menu) */
+.floater > .floater-menu-button {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 1;
+  /* (Over the table's corner, taking no room of its own) */
+  width: 1.5rem;
+  margin-left: -1.5rem;
+  padding: 0;
+  line-height: 1.2;
+}
 .nodeVariables,
 .linkVariables {
   width: 100%;
@@ -325,7 +374,7 @@ svg#link-threshold-sparkline line.threshold-mark {
   top: 0px;
   left: -400px;
   display: none;
-  width: 400px;
+  width: min(400px, 100%);
   max-width: 100%;
   padding: 10px;
   background: var(--mt-pane);
@@ -351,6 +400,7 @@ svg#link-threshold-sparkline line.threshold-mark {
 /* The table's text size, in a menu from its toolbar */
 .table-text-size {
   width: 14rem;
+  max-width: 100%;
 }
 /* Beside the pane, in a view wide enough (MT.paneToggle's `beside`) */
 .pane-beside {
@@ -767,6 +817,7 @@ td {
 .dna {
   margin: 40px auto;
   width: 360px;
+  max-width: 100%;
   height: 70px;
   perspective: 466px;
   transform-style: preserve-3d;
@@ -1057,9 +1108,6 @@ body.timeline-open #main-panel {
 #link-max-width-row, #link-min-width-row {
   display: none;
 }
-.watermark {
-  font: bold 20px sans-serif;
-}
 
 /* FLOW DIAGRAM */
 .flow-plot {
@@ -1209,7 +1257,10 @@ body.timeline-open #main-panel {
 }
 
 /* Waterfall View */
+/* (The view draws on its own background, white unless it's set, so its text
+   is dark whatever the theme) */
 .waterfall {
+  color: #212529;
   padding: 30px;
   height: 100%;
 }
@@ -1217,9 +1268,9 @@ body.timeline-open #main-panel {
 .waterfall-note {
   margin: 0.75rem 0.25rem;
   font-size: 0.875rem;
-  color: var(--mt-muted);
+  color: #5c636a;
 }
-.waterfall h4 {
+.waterfall h2 {
   padding: 0.75rem 1.25rem;
   border: 1px solid lightgray;
   border-radius: 0.25rem;
@@ -1310,6 +1361,7 @@ body.timeline-open #main-panel {
 
 .choropleth-legend {
   width: 14rem;
+  max-width: 100%;
   padding: 0.375rem 0.5rem;
   font-size: 0.8125rem;
   color: #212529;
@@ -1382,6 +1434,11 @@ body.timeline-open #main-panel {
         background: var(--mt-hover);
         cursor: pointer;
 }
+.autocomplete-wrapper #search-results li.active {
+  background: var(--mt-hover);
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
 .autocomplete-wrapper #search-results li.no-matches {
   color: var(--bs-danger-text-emphasis);
   cursor: default;
@@ -1418,7 +1475,7 @@ body.timeline-open #main-panel {
   border-left: 1px solid var(--mt-border-control);
 }
 /* A pane's sections open and close: an arrow says which. Colors isn't one
-   (it opens Global Settings), so it looks like the button it is. */
+   (it opens Settings), so it looks like the button it is. */
 .left-pane .card-header button[data-bs-toggle="collapse"]::after {
   content: "\F282"; /* bi-chevron-down */
   font-family: bootstrap-icons;
@@ -1480,6 +1537,30 @@ body.timeline-open #main-panel {
 }
 
 /* Dark: what Bootstrap's and the libraries' own themes leave light */
+/* (Bootstrap's primary and danger are too dark to read as text on dark) */
+[data-bs-theme="dark"] .btn-outline-primary {
+  --bs-btn-color: #6ea8fe;
+  --bs-btn-border-color: #6ea8fe;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #6ea8fe;
+  --bs-btn-hover-border-color: #6ea8fe;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #8bb9fe;
+  --bs-btn-active-border-color: #8bb9fe;
+}
+[data-bs-theme="dark"] .btn-outline-danger {
+  --bs-btn-color: #ea868f;
+  --bs-btn-border-color: #ea868f;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #ea868f;
+  --bs-btn-hover-border-color: #ea868f;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #f1aeb5;
+  --bs-btn-active-border-color: #f1aeb5;
+}
+[data-bs-theme="dark"] .link-primary {
+  color: #6ea8fe !important;
+}
 [data-bs-theme="dark"] .btn-light {
   --bs-btn-color: #dee2e6;
   --bs-btn-bg: #343a40;
@@ -1564,4 +1645,130 @@ body.timeline-open #main-panel {
 }
 .mt-toast-container .toast-custom.show {
   opacity: 1;
+}
+
+/* Less motion for those who ask for it (#191): no transitions, and the loader
+   and any other animation hold still (the views check MT.reducedMotion for
+   their own continuous motion) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  #main-panel {
+    transition: none;
+  }
+  .ele {
+    animation: none;
+  }
+}
+
+/* Small screens and large zoom (#275): the menus fold behind the navbar's
+   toggler below the expand breakpoint, and the panes give way to the view */
+@media (max-width: 1199.98px) {
+  #navbar-menus .nav {
+    flex-wrap: wrap;
+  }
+  /* An open menu pushes the others down instead of covering them */
+  #navbar-menus .dropdown-menu.show {
+    position: static !important;
+    transform: none !important;
+    margin: 0;
+  }
+  #search-form {
+    flex-wrap: wrap;
+    padding-top: 0.25rem;
+  }
+  .navbar {
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+}
+@media (max-width: 640px) {
+  .left-pane {
+    width: 100%;
+    border-right: none;
+  }
+  .floater,
+  .floating-table {
+    max-width: 100%;
+  }
+  #search {
+    width: 100%;
+    max-width: 13rem;
+  }
+}
+
+/* A skip link, shown (over the menu bar) only while it has focus (#187); the
+   main region is focused by it, and needs no ring */
+.skip-link:focus {
+  position: fixed;
+  top: 6px;
+  left: 6px;
+  z-index: 2000;
+  padding: 0.5rem 1rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border: 2px solid var(--bs-primary);
+  border-radius: 0.25rem;
+}
+#main-panel:focus {
+  outline: none;
+}
+
+/* Toasts: a message, an optional action and a close button (#189) */
+.mt-toast-container .toast-custom .toast-inner {
+  display: flex;
+  align-items: flex-start;
+}
+.mt-toast-container .toast-custom .toast-body {
+  flex: 1 1 auto;
+}
+.mt-toast-container .toast-custom .toast-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.5rem 0.5rem 0;
+}
+.mt-toast-container .toast-custom .btn-close {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+/* A name on keyboard focus for icon-only buttons (#192), as the title shows
+   on hover; Escape dismisses it */
+#mt-focus-tip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 20rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--bs-emphasis-color);
+  color: var(--bs-body-bg);
+  font-size: 0.8125rem;
+  pointer-events: none;
+}
+/* Icon-only buttons are at least 24 by 24 px (WCAG 2.5.8) */
+button[data-mt-name], a[data-mt-name] {
+  min-width: 24px;
+  min-height: 24px;
+}
+a[data-mt-name].icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+/* The Help dialog's list of topics: links at least 24 px tall (WCAG 2.5.8) */
+#help-modal ul.small a {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
 }

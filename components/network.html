@@ -10,7 +10,7 @@
   </div>
 </div>
 <div class="network-live visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
-<p id="network-keys-summary" class="visually-hidden">Arrow keys move to the nearest node in that direction, N and P step through every node, L follows the focused node's links, Enter selects, F pins, M opens the node menu, Escape clears the selection, and question mark lists the keys. The Table view lists the same nodes.</p>
+<p id="network-keys-summary" class="visually-hidden">Arrow keys move to the nearest node in that direction, N and P step through every node, L follows the focused node's links, Enter selects, C selects the node's cluster, A selects every node, F pins, M opens the node menu, Escape clears the selection, and question mark lists the keys. The Table view lists the same nodes.</p>
 <div id="network-keys" class="network-keys" hidden>
   <h2 class="h6">Network keys</h2>
   <p class="small mb-1">Click the network or Tab to it, then:</p>
@@ -19,6 +19,8 @@
     <dt>N / P, Home / End</dt><dd>Next / previous node, first / last</dd>
     <dt>L / Shift+L</dt><dd>Next / previous linked node</dd>
     <dt>Enter or Space</dt><dd>Select the node (Ctrl: add or remove it)</dd>
+    <dt>C / Shift+C</dt><dd>Select the node's cluster (Shift: add it to the selection)</dd>
+    <dt>A</dt><dd>Select every node</dd>
     <dt>F</dt><dd>Pin or unpin the node</dd>
     <dt>M, Shift+F10</dt><dd>Node menu (copy ID, attributes…)</dd>
     <dt>I</dt><dd>Describe the node again</dd>
@@ -179,7 +181,7 @@
               </div>
               <div class="form-group row" title="How wide should the node border be?">
                 <div class="col-4"><label for="node-border-width">Border Width</label></div>
-                <div class="col-8"><input type="number" class="form-control form-control-sm" id="node-border-width" data-setting="node-border-width" min="0" step="0.1" value="2">
+                <div class="col-8"><input type="number" class="form-control form-control-sm" id="node-border-width" data-setting="node-border-width" min="0" step="0.1" value="2" aria-describedby="node-border-width-help"><div id="node-border-width-help" class="form-text small">Thickness of the node outline, in pixels.</div>
                 </div>
               </div>            
             </div>
@@ -187,7 +189,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" title="Open Global Settings, Styling">Colors…</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" title="Open Settings, Styling">Colors…</button>
           </div>
         </div>
       </div>
@@ -251,7 +253,7 @@
               </div>
               <div class="form-group row" title="How long should links be?">
                 <div class="col-4"><label for="link-length">Length</label></div>
-                <div class="col-8"><input type="range" class="form-range" id="link-length" data-setting="link-length" min="0" max="200" value="50"></div>
+                <div class="col-8"><input type="range" class="form-range" id="link-length" data-setting="link-length" min="0" max="200" value="50" aria-describedby="link-length-help"><div id="link-length-help" class="form-text small">How far apart linked nodes settle.</div></div>
               </div>
               <div class="form-group row hideForHIVTrace" title="Should links show arrowheads pointing to their targets?">
                 <div class="col-4">Arrows</div>
@@ -273,7 +275,7 @@
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" title="Open Global Settings, Styling">Colors…</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" title="Open Settings, Styling">Colors…</button>
           </div>
         </div>
       </div>
@@ -286,6 +288,7 @@
           </div>
           <div id="network-controls-labels" class="collapse show" data-bs-parent="#network-controls-accordion">
             <div class="card-body">
+              <p class="small text-body-secondary network-gesture-hint">Tip: Ctrl + drag on the network selects the nodes in a rectangle, and Ctrl + click adds a node to the selection. Right-click a node for its menu. From the keyboard, focus the network and press ? for the keys.</p>
               <div class="form-group row" title="Should MicrobeTrace highlight a node's neighbors when you hover over it?">
                 <div class="col-4">Neighbors</div>
                 <div class="col-8">
@@ -330,25 +333,25 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row" title="How strongly are the nodes repulsed by each other?">
                 <div class="col-4"><label for="node-charge">Charge</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="node-charge" data-setting="node-charge" min="0" max="400" value="200">
+                  <input type="range" class="form-range" id="node-charge" data-setting="node-charge" min="0" max="400" value="200" aria-describedby="node-charge-help"><div id="node-charge-help" class="form-text small">How hard nodes push each other apart. Higher spreads the network out.</div>
                 </div>
               </div>
               <div class="form-group row" title="How attractive is the mass of the graph?">
                 <div class="col-4"><label for="network-gravity">Gravity</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-gravity" data-setting="network-gravity" min="0.025" max="1" value="0.05" step="0.025">
+                  <input type="range" class="form-range" id="network-gravity" data-setting="network-gravity" min="0.025" max="1" value="0.05" step="0.025" aria-describedby="network-gravity-help"><div id="network-gravity-help" class="form-text small">How hard nodes are pulled toward the center. Higher packs the network tighter.</div>
                 </div>
               </div>
               <div class="form-group row" title="How quickly should moving nodes lose their momentum?">
                 <div class="col-4"><label for="network-friction">Friction</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-friction" data-setting="network-friction" min="0" max="1" value="0.4" step="0.025">
+                  <input type="range" class="form-range" id="network-friction" data-setting="network-friction" min="0" max="1" value="0.4" step="0.025" aria-describedby="network-friction-help"><div id="network-friction-help" class="form-text small">How fast moving nodes slow down. Higher settles the layout sooner.</div>
                 </div>
               </div>
               <div class="form-group row" title="How strong is the link?">
                 <div class="col-4"><label for="network-link-strength">Link Strength</label></div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="network-link-strength" data-setting="network-link-strength" min="0" max="1" value="0.125" step="0.025">
+                  <input type="range" class="form-range" id="network-link-strength" data-setting="network-link-strength" min="0" max="1" value="0.125" step="0.025" aria-describedby="network-link-strength-help"><div id="network-link-strength-help" class="form-text small">How hard a link pulls its two nodes together. Higher makes links stiffer.</div>
                 </div>
               </div>
             </div>
@@ -356,7 +359,7 @@ Note that this may cause slow performance on larger networks.">
         </div>
         <div class="card">
           <div class="card-header p-0">
-            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" title="Open Global Settings, Styling">Colors…</button>
+            <button class="bg-transparent border-0 w-100 launch-color-options" type="button" title="Open Settings, Styling">Colors…</button>
           </div>
         </div>
       </div>
@@ -387,9 +390,9 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row polygons-settings-row" title="What Foci should be used when creating convex hulls?">
                 <div class="col-4"><label for="polygons-foci">Center</label></div>
                 <div class="col-8">
-                  <select id="polygons-foci" data-setting="polygons-foci" class="form-select form-select-sm nodeVariables">
+                  <select id="polygons-foci" data-setting="polygons-foci" class="form-select form-select-sm nodeVariables" aria-describedby="polygons-foci-help">
                     <option>None</option>
-                  </select>
+                  </select><div id="polygons-foci-help" class="form-text small">Nodes that share a value of this field are grouped into one shape.</div>
                 </div>
               </div>
               <div class="form-group row polygons-settings-row" title="What amount of gather force should be used?">
@@ -397,7 +400,7 @@ Note that this may cause slow performance on larger networks.">
                   <label for="polygons-gather-force">Gather</label>
                 </div>
                 <div class="col-8">
-                  <input type="range" class="form-range" id="polygons-gather-force" data-setting="polygons-gather-force" min="0" max=".02" value="0" step="0.0001">
+                  <input type="range" class="form-range" id="polygons-gather-force" data-setting="polygons-gather-force" min="0" max=".02" value="0" step="0.0001" aria-describedby="polygons-gather-help"><div id="polygons-gather-help" class="form-text small">Pulls the nodes of one shape together. 0 is off.</div>
                 </div>
               </div>
               <div class="form-group row polygons-settings-row" title="Show polygons colored?">
@@ -450,11 +453,11 @@ Note that this may cause slow performance on larger networks.">
 </div>
 
 <div class="dropdown-menu floater-menu node-symbol-table-menu">
-  <a href="#" class="dropdown-item" data-action="drag">Pin</a>
-  <a href="#" class="dropdown-item" data-action="hide">Hide</a>
-  <a href="#" class="dropdown-item" data-action="expand">Expand</a>
-  <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
-  <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
+  <button type="button" class="dropdown-item" data-action="drag">Pin</button>
+  <button type="button" class="dropdown-item" data-action="hide">Hide</button>
+  <button type="button" class="dropdown-item" data-action="expand">Expand</button>
+  <button type="button" class="dropdown-item" data-action="counts">Toggle Counts</button>
+  <button type="button" class="dropdown-item" data-action="frequencies">Toggle Frequencies</button>
 </div>
 
 <div class="floater polygon-color-table-wrapper" hidden>
@@ -463,11 +466,12 @@ Note that this may cause slow performance on larger networks.">
 </div>
 
 <div class="dropdown-menu floater-menu polygon-color-table-menu">
-  <a href="#" class="dropdown-item" data-action="drag">Drag</a>
-  <a href="#" class="dropdown-item" data-action="hide">Hide</a>
-  <a href="#" class="dropdown-item" data-action="expand">Expand</a>
-  <a href="#" class="dropdown-item" data-action="counts">Toggle Counts</a>
-  <a href="#" class="dropdown-item" data-action="frequencies">Toggle Frequencies</a>
+  <button type="button" class="dropdown-item" data-action="drag">Drag</button>
+  <button type="button" class="dropdown-item" data-action="rename">Rename a Value</button>
+  <button type="button" class="dropdown-item" data-action="hide">Hide</button>
+  <button type="button" class="dropdown-item" data-action="expand">Expand</button>
+  <button type="button" class="dropdown-item" data-action="counts">Toggle Counts</button>
+  <button type="button" class="dropdown-item" data-action="frequencies">Toggle Frequencies</button>
 </div>
 
 <div class="dropdown-menu network-context-menu" role="menu" aria-label="Node">
@@ -481,7 +485,7 @@ Note that this may cause slow performance on larger networks.">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="network-attribute-modal-title" class="modal-title">Node Attributes</h5>
+        <h2 id="network-attribute-modal-title" class="modal-title h5">Node Attributes</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="overflow: auto">
@@ -500,7 +504,7 @@ Note that this may cause slow performance on larger networks.">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="network-export-modal-title" class="modal-title">Export Network</h5>
+        <h2 id="network-export-modal-title" class="modal-title h5">Export Network</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -530,11 +534,12 @@ Note that this may cause slow performance on larger networks.">
               </div>
               <div class="col-9">
                 <input type="number" id="network-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <div class="form-text">Multiplies the size of the picture as shown. 1 = as shown; 2 = twice as wide and tall.</div>
               </div>
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div class="col-9 text-end export-dimensions"></div>
+              <div class="col-9 text-end"><span class="export-dimensions"></span><div class="form-text">Size of the image in pixels (width x height).</div></div>
             </div>
             <div class="row">
               <div class="col-3">
@@ -544,14 +549,6 @@ Note that this may cause slow performance on larger networks.">
                 <input type="range" class="form-range" id="network-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
-          </div>
-        </div>
-        <div class="row" style="margin-top: 10px;">
-          <div class="col-3">
-            <label for="network-export-opacity">Watermark Opacity</label>
-          </div>
-          <div class="col-9">
-            <input type="range" class="form-range" id="network-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
@@ -666,7 +663,7 @@ Note that this may cause slow performance on larger networks.">
           // (The layout is read back from the GPU when it settles, or when
           // something needs it: see MT.syncLayout)
           // Kept in view as the layout spreads, until the user zooms or pans
-          if (autoFit && Date.now() - lastFit > 700) fit(300);
+          if (autoFit && Date.now() - lastFit > 700) fit(MT.reducedMotion() ? 0 : 300);
           drawOverlays();
         },
         onSimulationEnd: () => {
@@ -706,7 +703,21 @@ Note that this may cause slow performance on larger networks.">
     function reheat(alpha) {
       if (!graph) return;
       graph.setConfigPartial(physics());
-      graph.start(alpha || 0.3);
+      startLayout(alpha || 0.3);
+    }
+
+    // Runs the force layout. With reduced motion preferred, it is given a
+    // moment to spread out and then held still, rather than left drifting.
+    let calmTimer = null;
+    function startLayout(alpha) {
+      graph.start(alpha);
+      clearTimeout(calmTimer);
+      if (MT.reducedMotion()) calmTimer = setTimeout(() => {
+        if (!graph) return;
+        graph.pause();
+        syncPositions();
+        drawOverlays();
+      }, 1500);
     }
 
     // Copies the current layout into session.network.nodes, which the timeline,
@@ -814,7 +825,7 @@ Note that this may cause slow performance on larger networks.">
       updatePins();
       updateGroups();
       updateTracking();
-      refresh().then(() => graph && graph.start(0.3));
+      refresh().then(() => graph && startLayout(0.3));
       console.log('Network render time:', (Date.now() - start).toLocaleString(), 'ms');
     }
 
@@ -1010,7 +1021,10 @@ Note that this may cause slow performance on larger networks.">
       const d = points[index];
       if (!d) return;
       if (get('node-highlight')) highlightNeighbors(index);
-      const variables = tooltipVariables();
+      // With no tooltip variable chosen, the tooltip gives the value the node
+      // is colored by, so a category is never told by its color alone
+      let variables = tooltipVariables();
+      if (!variables.length && get('node-color-variable') && get('node-color-variable') != 'None') variables = [get('node-color-variable')];
       if (!variables.length) return;
       const html = variables.length == 1 ? MT.escape(d[variables[0]] == null ? '' : d[variables[0]]) :
         '<table><tbody>' + variables.map(v => `<tr><td>${MT.escape(MT.titleize(v))}</td><td>${MT.escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
@@ -1025,7 +1039,8 @@ Note that this may cause slow performance on larger networks.">
     }
 
     function showLinkTooltip(index) {
-      const v = get('link-tooltip-variable'), d = links[index];
+      let v = get('link-tooltip-variable'); const d = links[index];
+      if ((!v || v == 'None') && get('link-color-variable') && get('link-color-variable') != 'None') v = get('link-color-variable');
       if (!v || v == 'None' || !d) return;
       MT.tooltip(MT.escape(d[v] == null ? '' : d[v]), mouse);
     }
@@ -1136,14 +1151,14 @@ Note that this may cause slow performance on larger networks.">
       const title = session.style.overwrite && session.style.overwrite.nodeSymbolHeaderTitle ? session.style.overwrite.nodeSymbolHeaderTitle : 'Node ' + MT.titleize(variable);
       const counts = get('node-symbol-table-counts'), frequencies = get('node-symbol-table-frequencies');
       symbolTable.innerHTML = '<tr>' +
-        `<th class="p-1" contenteditable>${MT.escape(title)}</th>` +
+        `<th class="p-1" contenteditable title="Edit to rename the heading">${MT.escape(title)}</th>` +
         (counts ? '<th>Count</th>' : '') +
         (frequencies ? '<th>Frequency</th>' : '') +
         '<th>Shape</th></tr>';
       const options = $('[data-setting="node-symbol"]').innerHTML;
       values.forEach((v, i) => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td contenteditable>${MT.escape(MT.valueLabel(v))}</td>` +
+        row.innerHTML = `<td contenteditable title="Edit to rename the value">${MT.escape(MT.valueLabel(v))}</td>` +
           (counts ? `<td>${aggregates[v]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[v] / count).toLocaleString()}</td>` : '') +
           `<td><select>${options}</select></td>`;
@@ -1350,7 +1365,7 @@ Note that this may cause slow performance on larger networks.">
         session.style.polygonColors.splice(i, 1, temp.style.polygonColorMap(value));
         session.style.polygonAlphas.splice(i, 1, temp.style.polygonAlphaMap(value));
         const row = document.createElement('tr');
-        row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
+        row.innerHTML = `<td data-value="${MT.escape(value)}">${MT.escape(session.style.polygonValueNames[value] || MT.valueLabel(value))}</td>` +
           (counts ? `<td>${aggregates[value]}</td>` : '') +
           (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : '') +
           `<td><input type="color">${MT.transparencyButton}</td>`;
@@ -1375,12 +1390,9 @@ Note that this may cause slow performance on larger networks.">
             drawOverlays();
           }, { once: true });
         });
-        // Double-click a value to rename it
+        // Double-click a value (or press F2 or Enter on it) to rename it
         const name = row.querySelector('td');
-        name.addEventListener('dblclick', () => {
-          name.contentEditable = true;
-          name.focus();
-        });
+        MT.renamable(name);
         name.addEventListener('focusout', () => {
           name.contentEditable = false;
           session.style.polygonValueNames[value] = name.textContent;
@@ -1925,6 +1937,11 @@ Note that this may cause slow performance on larger networks.">
       return best !== undefined ? best : wide;
     }
 
+    function selectGroup(ids, add) {
+      session.data.nodes.forEach(d => { d.selected = ids.has(d._id) || (add && !!d.selected); });
+      events.emit('node-selected', 'network');
+    }
+
     const directions = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
     const noFocus = () => announce('No node is focused. Use the arrow keys or N to choose one.');
 
@@ -1967,6 +1984,17 @@ Note that this may cause slow performance on larger networks.">
         showContextMenu(focused, null, new MouseEvent('contextmenu', { clientX: box.left + x, clientY: box.top + y }));
         menu.querySelector('.dropdown-item').focus();
       });
+      // A group of nodes without the mouse (#185): the focused node's cluster
+      // (Shift adds it to the selection), or every node drawn
+      else if (key == 'c' && !ctrl) action = needsFocus(d => {
+        const ids = new Set(points.filter(p => p.cluster === d.cluster).map(p => p._id));
+        selectGroup(ids, e.shiftKey);
+        announce(`Cluster ${d.cluster} selected, ${plural(ids.size, 'node')}. ${plural(session.data.nodes.filter(node => node.selected).length, 'node')} selected in all.`);
+      });
+      else if (key == 'a') action = () => {
+        selectGroup(new Set(points.map(p => p._id)), false);
+        announce(`All ${plural(points.length, 'node')} selected.`);
+      };
       else if (key == 'i' && !ctrl) action = needsFocus(() => announce(describe(focused)));
       else if (key == '?') action = () => toggleKeys();
       if (!action) return;

@@ -3,7 +3,11 @@
 // settings panes' tabs are wired to their panels; draggable rows and tables
 // have no roles they don't play; and the timeline's Play button and the
 // warnings' links can be read. axe (https://github.com/dequelabs/axe-core)
-// checks each view, with its settings pane open, against WCAG 2.1 A and AA.
+// checks them against WCAG 2.0 to 2.2 A and AA and axe's best practices, in
+// light and dark: each view with its settings pane open, the dialogs (Settings,
+// Save, Stash, Recall, Help, About and its confirmation, loading, licence,
+// Sequence Settings and an export dialog from every view), a view with no data,
+// a toast with an action, and the narrow window with the menus open.
 const { test, expect } = require('@playwright/test');
 const { watchErrors, open, loadNetwork, launchView, waitForModal } = require('./helpers');
 
@@ -18,14 +22,15 @@ test.beforeAll(async ({ browser }) => {
 test.afterAll(() => page.close());
 
 const AXE = require.resolve('axe-core/axe.min.js');
-// What axe finds against WCAG 2.1 A and AA, as "rule: element" lines
+const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
+// What axe finds against those tags, as "rule: element" lines
 async function axe(page, context = null, rules) {
   if (!(await page.evaluate(() => !!window.axe))) await page.addScriptTag({ path: AXE });
-  return page.evaluate(async ([context, rules]) => {
-    const options = rules ? { runOnly: { type: 'rule', values: rules } } : { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } };
+  return page.evaluate(async ([context, rules, tags]) => {
+    const options = rules ? { runOnly: { type: 'rule', values: rules } } : { runOnly: { type: 'tag', values: tags } };
     const { violations } = await window.axe.run(context || document, { ...options, resultTypes: ['violations'] });
     return violations.flatMap(v => v.nodes.map(n => `${v.id}: ${n.target.join(' ')}`));
-  }, [context, rules]);
+  }, [context, rules, TAGS]);
 }
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 const views = ['table', 'aggregation', 'crosstab', 'histogram', 'scatterplot', 'heatmap', 'timeline', 'gantt', 'bubbles',
@@ -106,7 +111,8 @@ test('draggable rows and tables have only the roles they play', async () => {
     options: document.querySelectorAll('[role="option"][draggable], [aria-grabbed]').length,
     groups: document.querySelectorAll('[role="columngroup"], [aria-title]').length,
     owns: document.querySelectorAll('.tabulator[aria-owns]').length,
-    holders: Array.from(document.querySelectorAll('.tabulator > .tabulator-tableholder'), h => h.getAttribute('role'))
+    // (An empty table's holder, with no rows to group, has no role)
+    holders: Array.from(document.querySelectorAll('.tabulator > .tabulator-tableholder'), h => h.querySelector('.tabulator-row') ? h.getAttribute('role') : 'rowgroup')
   }));
   expect(roles.options).toBe(0);
   expect(roles.groups).toBe(0);
@@ -115,36 +121,116 @@ test('draggable rows and tables have only the roles they play', async () => {
   expect(roles.holders.every(r => r == 'rowgroup')).toBe(true);
 });
 
-test('axe finds nothing in each view, with its settings pane open', async () => {
-  const found = [];
-  for (const view of ['network', ...views]) {
-    await opened(view);
-    // The whole page once, then each view on its own
-    await page.evaluate(view => {
-      document.querySelectorAll('[data-audit]').forEach(el => el.removeAttribute('data-audit'));
-      layout.contentItems.find(i => i.componentType == view).element.setAttribute('data-audit', '');
-    }, view);
-    const root = page.locator('[data-audit]'), toggle = root.locator('.settings-toggle').first();
-    const pane = await toggle.count() > 0;
-    if (pane && !(await toggle.evaluate(b => b.classList.contains('active')))) await toggle.click();
-    if (pane) await root.locator('.left-pane').evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)));
-    found.push(...(await axe(page, view == 'network' ? null : '[data-audit]')).map(v => `${view} › ${v}`));
-    if (pane) await toggle.click();
-  }
-  expect(found).toEqual([]);
-});
+// The scans below run in both themes; the app follows the system's setting
+const themes = ['light', 'dark'];
+async function theme(page, scheme) {
+  await page.emulateMedia({ colorScheme: scheme });
+  await expect(page.locator('html')).toHaveAttribute('data-bs-theme', scheme);
+  // (Some colors ease in when the theme changes)
+  await page.evaluate(() => new Promise(r => setTimeout(r, 400)));
+}
+// Shows a dialog, scans it, and closes it
+async function scanDialog(page, selector, found, label) {
+  await page.evaluate(selector => bootstrap.Modal.getOrCreateInstance(document.querySelector(selector)).show(), selector);
+  await waitForModal(page, selector);
+  found.push(...(await axe(page, selector)).map(v => `${label || selector} › ${v}`));
+  await page.evaluate(selector => bootstrap.Modal.getOrCreateInstance(document.querySelector(selector)).hide(), selector);
+  await expect(page.locator(selector)).toBeHidden();
+}
 
-test('axe finds nothing in an export dialog', async () => {
-  await opened('histogram');
-  const view = page.locator('.lm_content:has(.histogram-plot)');
-  await view.locator('button[title="Export Histogram"]').click();
-  await waitForModal(page, '#histogram-export-modal');
-  expect(await axe(page, '#histogram-export-modal')).toEqual([]);
-  await page.locator('#histogram-export-modal .btn-close').click();
-  await expect(page.locator('#histogram-export-modal')).toBeHidden();
-});
+for (const scheme of themes) {
+  test(`axe finds nothing in each view, with its settings pane open (${scheme})`, async () => {
+    await theme(page, scheme);
+    const found = [];
+    for (const view of ['network', ...views]) {
+      await opened(view);
+      // The whole page once, then each view on its own
+      await page.evaluate(view => {
+        document.querySelectorAll('[data-audit]').forEach(el => el.removeAttribute('data-audit'));
+        layout.contentItems.find(i => i.componentType == view).element.setAttribute('data-audit', '');
+      }, view);
+      const root = page.locator('[data-audit]'), toggle = root.locator('.settings-toggle').first();
+      const pane = await toggle.count() > 0;
+      if (pane && !(await toggle.evaluate(b => b.classList.contains('active')))) await toggle.click();
+      if (pane) await root.locator('.left-pane').evaluate(el => Promise.allSettled(el.getAnimations().map(a => a.finished)));
+      found.push(...(await axe(page, view == 'network' ? null : '[data-audit]')).map(v => `${view} › ${v}`));
+      if (pane) await toggle.click();
+    }
+    expect(found).toEqual([]);
+  });
+
+  test(`axe finds nothing in the main dialogs (${scheme})`, async () => {
+    await theme(page, scheme);
+    const found = [];
+    for (const dialog of ['#global-settings-modal', '#session-save-modal', '#session-stash-modal', '#session-recall-modal',
+      '#help-modal', '#about-modal', '#delete-everything-modal', '#licenseAgreement', '#loading-information-modal',
+      '#exit-modal', '#replace-modal', '#recover-modal']) await scanDialog(page, dialog, found);
+    // Sequence Settings is part of the Files view
+    await launchView(page, 'files');
+    await scanDialog(page, '#sequence-controls-modal', found);
+    await page.evaluate(() => layout.contentItems.find(i => i.componentType == 'files').remove());
+    expect(found).toEqual([]);
+  });
+
+  test(`axe finds nothing in each view's export dialog (${scheme})`, async () => {
+    await theme(page, scheme);
+    const found = [];
+    for (const view of ['network', ...views]) {
+      await opened(view);
+      const root = page.locator('.lm_content:visible', { has: page.locator('button[title^="Export"]') }).first();
+      const button = root.locator('button[title^="Export"]').first();
+      if (!(await button.count())) continue;
+      await button.click();
+      await waitForModal(page, '.modal.show');
+      const id = await page.locator('.modal.show').first().getAttribute('id');
+      found.push(...(await axe(page, '.modal.show')).map(v => `${view} export › ${v}`));
+      await page.locator('.modal.show .btn-close').first().click();
+      await expect(page.locator('#' + id)).toBeHidden();
+    }
+    expect(found).toEqual([]);
+  });
+
+  test(`axe finds nothing in a toast with an action (${scheme})`, async () => {
+    await theme(page, scheme);
+    await page.evaluate(scheme => MT.toast.warning(`Two things differ (${scheme}).`, 0, () => {}, { action: 'Review' }), scheme);
+    const toast = page.locator('.mt-toast-container .toast', { hasText: `Two things differ (${scheme}).` });
+    await expect(toast.locator('.toast-action')).toBeVisible();
+    expect(await axe(page, '.mt-toast-container')).toEqual([]);
+    await toast.locator('.toast-close').click();
+    await expect(toast).toBeHidden();
+  });
+
+  test(`axe finds nothing in the empty state of a view (${scheme})`, async ({ browser }) => {
+    const fresh = await browser.newPage({ colorScheme: scheme });
+    await open(fresh);
+    await fresh.evaluate(() => MT.launchView('timeline'));
+    await expect(fresh.locator('.view-needs')).toBeVisible();
+    // (A pane still sliding in would be scanned partway across the window)
+    await fresh.evaluate(() => Promise.allSettled(document.getAnimations().map(a => a.finished)));
+    expect(await axe(fresh)).toEqual([]);
+    await fresh.close();
+  });
+
+  test(`axe finds nothing in a narrow window with the menus open (${scheme})`, async () => {
+    await theme(page, scheme);
+    await page.setViewportSize({ width: 320, height: 800 });
+    const toggler = page.locator('.navbar-toggler');
+    await toggler.click();
+    await expect(page.locator('#navbar-menus')).toBeVisible();
+    await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
+    const found = (await axe(page)).map(v => `menus › ${v}`);
+    await page.locator('#navbar-menus .nav-link.dropdown-toggle', { hasText: 'File' }).click();
+    await expect(page.locator('#NewTab')).toBeVisible();
+    found.push(...(await axe(page)).map(v => `File menu › ${v}`));
+    await page.locator('#navbar-menus .nav-link.dropdown-toggle', { hasText: 'File' }).click();
+    await toggler.click();
+    await page.setViewportSize({ width: 1280, height: 720 });
+    expect(found).toEqual([]);
+  });
+}
 
 test('the timeline’s Play button can be read', async () => {
+  await theme(page, 'light');
   await set('node-timeline-variable', 'date');
   await expect(page.locator('#timeline-play-button')).toBeVisible();
   expect(await axe(page, '#timeline-play-button', ['color-contrast'])).toEqual([]);

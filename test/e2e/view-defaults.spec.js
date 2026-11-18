@@ -100,15 +100,14 @@ test('without a field of dates, the date views say what to choose', async () => 
   await page.evaluate(() => { MT._dateFields = MT.dateFields; MT.dateFields = () => []; });
   await launchView(page, 'timeline');
   const curve = view('#timeline-export-modal');
-  await expect(curve.locator('.view-message')).toBeVisible();
-  await expect(curve.locator('.view-message')).toContainText('Date Field');
+  // The shared note says what the view needs; the view's own prompt waits behind it
+  await expect(curve.locator('.view-needs')).toContainText('no column holds dates');
   await expect(curve.locator('.left-pane')).toBeVisible();
   await closeView(page, 'timeline');
   await page.evaluate(() => MT.settings.set('gantt-dates', []));
   await launchView(page, 'gantt');
   const gantt = view('#gantt-export-modal');
-  await expect(gantt.locator('.view-message')).toBeVisible();
-  await expect(gantt.locator('.view-message')).toContainText('Add Date');
+  await expect(gantt.locator('.view-needs')).toContainText('no column holds dates');
   await closeView(page, 'gantt');
   await page.evaluate(() => { MT.dateFields = MT._dateFields; delete MT._dateFields; });
 });

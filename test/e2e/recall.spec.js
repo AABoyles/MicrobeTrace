@@ -80,8 +80,8 @@ test('deleting a stash can be undone', async () => {
   for (const button of await buttons().all()) await expect(button).toBeDisabled();
   const notice = page.locator('.mt-toast-container .toast', { hasText: 'Deleted' });
   await expect(notice).toBeVisible({ timeout: 20000 });
-  await expect(notice).toHaveText('Deleted "Outbreak A, first look". Click here to undo.');
-  await notice.click();
+  await expect(notice).toContainText('Deleted "Outbreak A, first look". Click here to undo.');
+  await notice.getByRole("button", { name: "Undo" }).click();
   await expect(rows()).toHaveCount(3);
   expect((await stashKeys()).sort()).toEqual(before.sort());
 });

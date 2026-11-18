@@ -35,15 +35,15 @@
     <div class="tab-pane fade" id="bubble-physics-configurations" role="tabpanel" aria-labelledby="bubble-physics-tab">
       <div class="form-group row" title="Which variable should group the bubbles across, in columns?">
         <div class="col-3"><label for="bubble-x">X</label></div>
-        <div class="col-9"><select id="bubble-x" class="form-select form-select-sm nodeVariables" data-setting="bubble-x"></select></div>
+        <div class="col-9"><select id="bubble-x" class="form-select form-select-sm nodeVariables" data-setting="bubble-x" aria-describedby="bubble-x-help"></select><div id="bubble-x-help" class="form-text small">Bubbles with the same value are grouped into one column.</div></div>
       </div>
       <div class="form-group row" title="Which variable should group the bubbles down, in rows?">
         <div class="col-3"><label for="bubble-y">Y</label></div>
-        <div class="col-9"><select id="bubble-y" class="form-select form-select-sm nodeVariables" data-setting="bubble-y"></select></div>
+        <div class="col-9"><select id="bubble-y" class="form-select form-select-sm nodeVariables" data-setting="bubble-y" aria-describedby="bubble-y-help"></select><div id="bubble-y-help" class="form-text small">Bubbles with the same value are grouped into one row.</div></div>
       </div>
       <div class="form-group row" title="How much should the bubbles repulse each other?">
         <div class="col-3"><label for="bubble-charge">Charge</label></div>
-        <div class="col-9"><input type="range" id="bubble-charge" class="form-range" data-setting="bubble-charge" min="0" value="1.5" max="10" step="0.1"></div>
+        <div class="col-9"><input type="range" id="bubble-charge" class="form-range" data-setting="bubble-charge" min="0" value="1.5" max="10" step="0.1" aria-describedby="bubble-charge-help"><div id="bubble-charge-help" class="form-text small">How hard bubbles push each other apart. Higher spreads them out.</div></div>
       </div>
     </div>
   </div>
@@ -53,7 +53,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="bubbles-export-modal-title" class="modal-title">Export Bubbles</h5>
+        <h2 id="bubbles-export-modal-title" class="modal-title h5">Export Bubbles</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -83,11 +83,12 @@
               </div>
               <div class="col-9">
                 <input type="number" id="bubbles-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <div class="form-text">Multiplies the size of the picture as shown. 1 = as shown; 2 = twice as wide and tall.</div>
               </div>
             </div>
             <div class="form-group row">
               <div class="col-3">Resolution</div>
-              <div class="col-9 text-end export-dimensions"></div>
+              <div class="col-9 text-end"><span class="export-dimensions"></span><div class="form-text">Size of the image in pixels (width x height).</div></div>
             </div>
             <div class="row">
               <div class="col-3">
@@ -97,14 +98,6 @@
                 <input type="range" class="form-range" id="bubbles-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
               </div>
             </div>
-          </div>
-        </div>
-        <div class="row" style="margin-top: 10px;">
-          <div class="col-3">
-            <label for="bubbles-export-opacity">Watermark Opacity</label>
-          </div>
-          <div class="col-9">
-            <input type="range" class="form-range" id="bubbles-export-opacity" name="export-opacity" min="0.0" max="1.0" value="0.4" step="0.01">
           </div>
         </div>
       </div>
@@ -208,7 +201,19 @@
         simulation.force(axis, force.strength(0.03)[axis](b => place(b.node[field])));
       });
       simulation.force('charge', d3.forceManyBody().strength(-settings.get('bubble-charge')));
-      simulation.alpha(1).restart();
+      heat(1);
+    }
+
+    // Starts the layout moving; with reduced motion preferred it is settled at once
+    function heat(alpha) {
+      simulation.alpha(alpha);
+      if (MT.reducedMotion()) {
+        simulation.stop();
+        simulation.tick(300);
+        svg.selectAll('circle').attr('cx', d => d.x).attr('cy', d => d.y);
+      } else {
+        simulation.restart();
+      }
     }
 
     function resize() {
@@ -234,7 +239,7 @@
       settings.subscribe(['bubble-x', 'bubble-y', 'bubble-charge'], group),
       settings.subscribe('bubble-size', () => {
         resizeBubbles();
-        simulation.alpha(0.3).restart();
+        heat(0.3);
       }),
       events.on('background-color-change', setBackground),
       ...['node-color-change', 'selected-color-change', 'node-selected'].map(type => events.on(type, setColors)),

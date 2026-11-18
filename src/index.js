@@ -39,6 +39,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  on("rejectAgreement", "click", function() { byId("reject-message").hidden = false; });
+
+  // Delete everything this app keeps in the browser (#262)
+  on("delete-everything", "click", function() {
+    byId("delete-everything-error").hidden = true;
+    modal("about-modal").hide();
+    modal("delete-everything-modal").show();
+  });
+  on("delete-everything-confirm", "click", async function() {
+    const button = byId("delete-everything-confirm");
+    button.disabled = true;
+    try {
+      if (self.temp && self.temp.autostash) clearInterval(self.temp.autostash.interval);
+      await db.deleteAll();
+      try { localStorage.clear(); } catch (e) { /* unavailable */ }
+      try { sessionStorage.clear(); } catch (e) { /* unavailable */ }
+      if (self.caches) await caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
+      if (navigator.serviceWorker) await navigator.serviceWorker.getRegistrations().then(all => Promise.all(all.map(r => r.unregister())));
+      if (navigator.storage && navigator.storage.getDirectory) {
+        const root = await navigator.storage.getDirectory();
+        for await (const name of root.keys()) await root.removeEntry(name, { recursive: true });
+      }
+      MT.reload();
+    } catch (error) {
+      button.disabled = false;
+      const message = byId("delete-everything-error");
+      message.textContent = "Couldn't delete everything: " + ((error && error.message) || error);
+      message.hidden = false;
+    }
+  });
+
   if ("serviceWorker" in navigator) {
     // A new version is installed in the background but waits, so a session in
     // progress isn't swapped under the user: they choose when to reload (#194)
@@ -53,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const offerUpdate = worker => {
       MT.toast.info("A new version is available. Click here to reload (unsaved work will be lost).", 0, clicked => {
         if (clicked) worker.postMessage({ type: "SKIP_WAITING" });
-      });
+      }, { action: "Reload" });
     };
     navigator.serviceWorker.register("sw.js").then(registration => {
       if (!registration) return;
@@ -209,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateStashes();
         MT.toast.warning(`Deleted "${MT.escape(stashName(stash))}". Click here to undo.`, 10, clicked => {
           if (clicked) db.setItem(stash.key, json).then(updateStashes);
-        });
+        }, { action: "Undo" });
       });
   });
 
@@ -267,8 +298,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   MT.defaultFilename(byId("save-file-name"));
   on("save-data", "click", () => {
-    const name = byId("save-file-name").value;
     const format = byId("save-file-format").value;
+    // An empty or hidden-file name, or a typed extension, is put right
+    const name = MT.cleanFilename(byId("save-file-name").value, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
     let data;
     if (format == "microbetracestyle") {
       data = JSON.stringify(session.style);
@@ -278,16 +310,27 @@ document.addEventListener("DOMContentLoaded", () => {
       MT.syncLayout();
       data = JSON.stringify(session);
     }
+    const saved = file => MT.toast.success("Saved as " + MT.escape(file));
     if (byId("save-file-compress").checked) {
       const zip = new JSZip();
       zip.file(name + "." + format, data);
       zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } })
-        .then(content => MT.saveAs(content, name + ".zip"));
+        .then(content => { MT.saveAs(content, name + ".zip"); saved(name + ".zip"); },
+          error => { console.error(error); MT.toast.error("The file couldn't be compressed. Try again with \"Compress the file\" unticked."); });
     } else {
       MT.saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), name + "." + format);
+      saved(name + "." + format);
     }
   });
 
+  // File > Open: a button (it can take focus) that opens the file input's picker
+  on("OpenButton", "click", () => byId("OpenTab").click());
+  // The skip link moves focus to the main region (a bare #main-panel link
+  // would also change the address, which a "#demo" start reads)
+  on("skip-link", "click", e => {
+    e.preventDefault();
+    byId("main-panel").focus();
+  });
   on("OpenTab", "change", e => {
     const [file] = e.target.files;
     // (So choosing the same file again, after cancelling, is a change)
@@ -297,9 +340,15 @@ document.addEventListener("DOMContentLoaded", () => {
     MT.confirmReplace(() => {
       if (extension == "zip") {
         new JSZip().loadAsync(file).then(zip => {
+          const entries = [];
           zip.forEach((relativePath, zipEntry) => {
-            zipEntry.async("string").then(c => MT.processJSON(c, zipEntry.name.split(".").pop()));
+            if (!zipEntry.dir && /\.(microbetrace|hivtrace|json)$/i.test(zipEntry.name)) entries.push(zipEntry);
           });
+          if (!entries.length) return MT.toast.error('"' + MT.escape(file.name) + '" has no MicrobeTrace session in it. Open a .zip made by File > Save, or open the .microbetrace file itself.');
+          entries.forEach(zipEntry => zipEntry.async("string").then(c => MT.processJSON(c, zipEntry.name.split(".").pop().toLowerCase())));
+        }, error => {
+          console.error(error);
+          MT.toast.error('"' + MT.escape(file.name) + '" is not a readable .zip file.');
         });
       } else {
         file.text().then(text => MT.processJSON(text, extension));
@@ -450,6 +499,14 @@ document.addEventListener("DOMContentLoaded", () => {
     updateNetwork();
   });
   settings.subscribe(["link-sort-variable", "link-stored-thresholds"], () => showStoredRange(false));
+  // The threshold's unit follows what links are filtered on (#272)
+  const showThresholdUnit = () => {
+    const help = MT.metricHelp[MT.fieldMetric(get("link-sort-variable"))];
+    const el = byId("link-threshold-unit");
+    if (el) el.textContent = help ? "In " + help[1] + ". Same setting as Link Threshold when loading files." : "In the units of the field. Same setting as Link Threshold when loading files.";
+  };
+  settings.subscribe("link-sort-variable", showThresholdUnit);
+  showThresholdUnit();
 
   // Rows of the settings that only apply with some settings
   const showRows = () => {
@@ -572,8 +629,20 @@ document.addEventListener("DOMContentLoaded", () => {
   MT.floatingTable(statistics, byId("network-statistics-context"), {
     onHide: () => settings.set("network-statistics-show", false)
   });
+  // Selection changes are announced (with the search's count, when a search made
+  // them, so one message says both)
+  let searchNote = "", announcedSelection = 0;
   events.on("node-selected", () => {
-    byId("numberOfSelectedNodes").textContent = session.data.nodes.filter(d => d.selected).length.toLocaleString();
+    const selected = session.data.nodes.filter(d => d.selected).length;
+    byId("numberOfSelectedNodes").textContent = selected.toLocaleString();
+    const parts = [searchNote];
+    if (selected != announcedSelection || searchNote) {
+      parts.push(selected ? `${selected.toLocaleString()} node${selected == 1 ? "" : "s"} selected` : "No nodes selected");
+    }
+    announcedSelection = selected;
+    searchNote = "";
+    const message = parts.filter(Boolean).join(". ");
+    if (message) MT.announce(message);
   });
 
   // An SVG copy of a table, for exports, where the table sits over origin (the
@@ -700,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     values.forEach((value, i) => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td data-value="${MT.escape(value)}" title="Double-click to rename">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
+      row.innerHTML = `<td data-value="${MT.escape(value)}">${MT.escape(names[value] || MT.valueLabel(value))}</td>` +
         (counts ? `<td>${aggregates[value]}</td>` : "") +
         (frequencies ? `<td>${(aggregates[value] / total).toLocaleString()}</td>` : "") +
         `<td><input type="color">${MT.transparencyButton}</td>`;
@@ -731,12 +800,9 @@ document.addEventListener("DOMContentLoaded", () => {
           events.emit(kind + "-color-change");
         }, { once: true });
       });
-      // Double-click a value to rename it
+      // Double-click a value (or press F2 or Enter on it) to rename it
       const name = row.querySelector("td");
-      name.addEventListener("dblclick", () => {
-        name.contentEditable = true;
-        name.focus();
-      });
+      MT.renamable(name);
       name.addEventListener("focusout", () => {
         name.contentEditable = false;
         names[value] = name.textContent;
@@ -1026,9 +1092,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // Search ----------------------------------------------------------------
 
   const search = byId("search"), results = byId("search-results");
+  // The box is a combobox over its suggestions (the list is never focused:
+  // the active suggestion is named by aria-activedescendant)
+  const options = () => Array.from(results.querySelectorAll("li"));
+  const setActive = li => {
+    options().forEach(o => {
+      o.classList.toggle("active", o == li);
+      o.setAttribute("aria-selected", o == li);
+    });
+    if (li) {
+      search.setAttribute("aria-activedescendant", li.id);
+      li.scrollIntoView({ block: "nearest" });
+    } else {
+      search.removeAttribute("aria-activedescendant");
+    }
+  };
   const hideResults = () => {
     results.innerHTML = "";
     results.style.display = "none";
+    search.setAttribute("aria-expanded", "false");
+    search.removeAttribute("aria-activedescendant");
+  };
+  const showResults = () => {
+    results.style.display = "block";
+    search.setAttribute("aria-expanded", "true");
   };
 
   //#298: match case and match whole words, then search again. The buttons
@@ -1066,8 +1153,40 @@ document.addEventListener("DOMContentLoaded", () => {
       if (typeof node[field] == "number") node.selected = node[field] + "" == value;
     });
   };
+  // Choosing a suggestion searches for exactly it
+  const choose = li => {
+    const v = li.dataset.value;
+    search.value = v;
+    hideResults();
+    selectMatches(pattern(v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), v);
+    events.emit("node-selected");
+  };
 
   search.addEventListener("blur", () => setTimeout(hideResults, 300));
+  // (A click on a suggestion shouldn't take focus from the box)
+  results.addEventListener("mousedown", e => e.preventDefault());
+  search.addEventListener("keydown", e => {
+    const open = results.style.display == "block";
+    const items = options().filter(li => !li.classList.contains("no-matches"));
+    const at = items.findIndex(li => li.classList.contains("active"));
+    if (e.key == "ArrowDown" || e.key == "ArrowUp") {
+      if (!open || !items.length) return;
+      e.preventDefault();
+      const step = e.key == "ArrowDown" ? 1 : -1;
+      setActive(items[at < 0 ? (step > 0 ? 0 : items.length - 1) : (at + step + items.length) % items.length]);
+    } else if (e.key == "Enter") {
+      if (open && at >= 0) {
+        e.preventDefault();
+        choose(items[at]);
+      }
+    } else if (e.key == "Escape") {
+      if (open) {
+        e.preventDefault();
+        e.stopPropagation();
+        hideResults();
+      }
+    }
+  });
   search.addEventListener("input", () => {
     const nodes = session.data.nodes;
     const value = search.value;
@@ -1085,18 +1204,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return; // not yet a whole pattern
       }
       // Suggestions, each of which searches for itself
+      let count = 0;
       values.filter(v => v.match(re)).forEach(v => {
         const li = document.createElement("li");
         li.textContent = v;
         li.dataset.value = v;
-        li.addEventListener("click", () => {
-          search.value = v;
-          hideResults();
-          selectMatches(pattern(v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), v);
-          events.emit("node-selected");
-        });
+        li.id = "search-option-" + (count++);
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", "false");
+        li.addEventListener("click", () => choose(li));
         results.append(li);
-        results.style.display = "block";
+        showResults();
       });
       selectMatches(re, value);
       // Nothing matches: the box says so, where the suggestions would be
@@ -1104,10 +1222,14 @@ document.addEventListener("DOMContentLoaded", () => {
         search.classList.add("is-invalid");
         const li = document.createElement("li");
         li.className = "no-matches";
+        li.id = "search-no-matches";
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-disabled", "true");
         li.textContent = "No matches";
         results.append(li);
-        results.style.display = "block";
+        showResults();
       }
+      searchNote = count ? `${count.toLocaleString()} suggestion${count == 1 ? "" : "s"}` : "No matches";
     }
     events.emit("node-selected");
   });
@@ -1132,6 +1254,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Links to a section of the built-in Help (data-help="section-id") open it
+  // there, offline too
+  document.addEventListener("click", e => {
+    const link = e.target.closest && e.target.closest("[data-help]");
+    if (!link) return;
+    e.preventDefault();
+    const dialog = byId("help-modal");
+    const open = () => {
+      const target = byId(link.dataset.help);
+      if (target) target.scrollIntoView({ block: "start" });
+    };
+    if (dialog.classList.contains("show")) return open();
+    dialog.addEventListener("shown.bs.modal", open, { once: true });
+    modal("help-modal").show();
+  });
+
   // The color tables follow what's visible
   events.on("node-visibility", () => {
     if (get("node-color-variable") !== "None") showColorTable("node");
@@ -1154,7 +1292,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (navigator.onLine) MT.showOnline(document);
 
   if (location.hash == "#demo") {
-    fetch("demo/Demo_outbreak_session.microbetrace").then(r => r.json()).then(MT.applySession);
+    MT.loadDemo();
   } else {
     MT.launchView("files");
   }

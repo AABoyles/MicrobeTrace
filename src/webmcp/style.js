@@ -241,7 +241,7 @@
   T.define({
     name: 'list_settings',
     title: 'List settings',
-    description: 'Lists MicrobeTrace\'s settings (the values behind the global settings dialog and every view\'s controls, stored in session.style.widgets). ' +
+    description: 'Lists MicrobeTrace\'s settings (the values behind the Settings dialog and every view\'s controls, stored in session.style.widgets). ' +
       'Each entry has: key, current value, default, type (boolean, number, string, array, object, null), whether it was modified from the default, and, when a control for it exists in the page right now ' +
       '(the global settings always; each view\'s controls only while that view is open), its control type (select, range, number, checkbox, radio, color, text, multiselect), ' +
       'options (select/radio values with labels), min/max/step, a human label and the view it belongs to. Filter by key prefix (e.g. "node-", "link-", "network-", "timeline-"), search text, view, or modified-only. ' +
@@ -368,7 +368,7 @@
   T.define({
     name: 'set_link_filter',
     title: 'Set link filter',
-    description: 'Sets how links are filtered, as the Filtering tab of the global settings does: links are visible when the filter variable\'s value is at or below the threshold. ' +
+    description: 'Sets how links are filtered, as the Filtering tab of the Settings dialog does: links are visible when the filter variable\'s value is at or below the threshold. ' +
       'All arguments are optional; give any. Changes rerun clustering and visibility and this waits until the network has finished updating. ' +
       'Changing the variable restores that variable\'s last threshold (or its metric\'s default, e.g. TN93 0.015, SNPs 16) unless you also pass threshold. ' +
       'Returns the old/new settings and the new visible counts of nodes, links and clusters. Requires loaded data. Use get_filter_state first to see the variables and value ranges.',
@@ -376,7 +376,7 @@
       variable: str('Numeric link field to filter on (link-sort-variable), e.g. "tn93", "snps", "distance". See get_filter_state.numericLinkFields'),
       threshold: num('Maximum link value that still counts as a link (link-threshold); must be >= 0', { minimum: 0 }),
       prune: { type: 'string', enum: ['none', 'nn', 'mst'], description: 'How to prune links (link-prune): "none" keeps every link within the threshold; "nn" keeps each node\'s links to its nearest neighbors (can split clusters); "mst" keeps the minimum spanning tree (keeps clusters connected). Both keep near-ties (see epsilon) and may take a while for big networks' },
-      epsilon: num('Filtering epsilon exponent (filtering-epsilon): distances within a fraction 10^epsilon of each other count as ties when pruning. UI range -3..2')
+      epsilon: num('Tie tolerance exponent (filtering-epsilon, shown as Tie Tolerance): distances within a fraction 10^epsilon of each other count as ties when pruning. UI range -3..2')
     }),
     execute: async args => {
       T.requireData();
@@ -427,12 +427,12 @@
   T.define({
     name: 'reveal_all',
     title: 'Reveal everything',
-    description: 'Does what Settings > Filtering > Reveal Everything does: sets the minimum cluster size to 1 and makes every cluster, node and link visible regardless of the cluster-size filter (the link threshold setting is unchanged). Returns the visible counts.',
+    description: 'Does what Settings > Filtering > Hidden Elements > Show All Hidden does: sets the minimum cluster size to 1 and makes every cluster, node and link visible regardless of the cluster-size filter (the link threshold setting is unchanged). Returns the visible counts.',
     inputSchema: obj({}),
     execute: async () => {
       T.requireData();
       const button = document.getElementById('RevealAllTab');
-      if (!button) fail('The Reveal Everything control is not available');
+      if (!button) fail('The Show All Hidden control is not available');
       button.click();
       return { counts: counts() };
     }

@@ -1,5 +1,6 @@
 // The service worker (#194): it registers and activates, caches everything it
-// lists, serves the page with the network down, deletes old caches, and the
+// lists, serves the page with the network down, deletes old caches (keeping
+// data/ and demo/ files cached on first use), and the
 // server revalidates files rather than caching them for a year (#211).
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
@@ -23,14 +24,24 @@ test('the worker caches every listed file and the app loads offline', async ({ p
   }, cacheName);
   for (const file of precache) expect(cached, file).toContain(file);
 
-  // Activating deletes the caches of other versions
+  // Activating deletes the caches of other versions, but keeps what they had
+  // cached on first use from data/ and demo/ (#296); app code is not carried
   await page.evaluate(async () => {
-    await caches.open('microbetrace-old');
+    const old = await caches.open('microbetrace-old');
+    await old.put(new URL('demo/carried.json', location.href).href, new Response('{"demo":1}'));
+    await old.put(new URL('data/carried.json', location.href).href, new Response('{"data":1}'));
+    await old.put(new URL('src/stale.js', location.href).href, new Response('// old code'));
     await (await navigator.serviceWorker.getRegistration()).unregister();
   });
   await page.reload();
   await page.evaluate(() => navigator.serviceWorker.ready);
   await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([cacheName]);
+  const carried = await page.evaluate(async name => {
+    const cache = await caches.open(name);
+    const text = async file => { const hit = await cache.match(new URL(file, location.href).href); return hit ? hit.text() : null; };
+    return { demo: await text('demo/carried.json'), data: await text('data/carried.json'), code: await text('src/stale.js') };
+  }, cacheName);
+  expect(carried).toEqual({ demo: '{"demo":1}', data: '{"data":1}', code: null });
 
   // A navigation is answered from the cache even online (no new index.html with
   // old scripts): plant a marker in the cached page and see it served

@@ -1,14 +1,14 @@
-[![MicrobeTrace](https://raw.githubusercontent.com/aaboyles/MicrobeTrace/master/img/android-chrome-192x192.png "MicrobeTrace")](https://microbetrace.cdc.gov/MicrobeTrace/)
+[![MicrobeTrace](https://raw.githubusercontent.com/aaboyles/MicrobeTrace/master/img/android-chrome-192x192.png "MicrobeTrace")](https://aaboyles.github.io/MicrobeTrace/)
 
 # MicrobeTrace [![MicrobeTrace DOI](https://img.shields.io/badge/DOI-10.1101%2F2020.07.22.216275-blue)](https://doi.org/10.1101/2020.07.22.216275)
 
 *The Visualization Multitool for Molecular Epidemiology and Bioinformatics*
 
-Developed By ([some folks](https://github.com/aaboyles/MicrobeTrace/blob/master/humans.txt) at) CDC.
+MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC), where it was developed by [some folks](https://github.com/aaboyles/MicrobeTrace/blob/master/humans.txt). This copy is maintained independently at <https://aaboyles.github.io/MicrobeTrace/>. CDC does not operate or endorse it.
 
 ## To Use MicrobeTrace:
 
-* **[Launch MicrobeTrace](https://microbetrace.cdc.gov/MicrobeTrace/)**
+* **[Launch MicrobeTrace](https://aaboyles.github.io/MicrobeTrace/)**
 * [Download Sample Data](https://github.com/aaboyles/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
 * [Download Sample COVID Data](https://github.com/aaboyles/MicrobeTrace/raw/master/demo/COVID%20Dummy%20Data.zip)
 * [View the Help Wiki](https://github.com/aaboyles/MicrobeTrace/wiki)
@@ -30,7 +30,6 @@ MicrobeTrace offers its features as tools for AI agents through [WebMCP](https:/
 ## To Help Us Build:
 
 * [Report Bugs or Request Features](https://github.com/aaboyles/MicrobeTrace/issues)
-* [Request Access to Our Slack](mailto:microbetrace@cdc.gov?subject=Slack%20Request&body=Hello!%0AI'd%20like%20an%20invitation%20to%20join%20the%20MicrobeTrace%20Slack%20Channel%2C%20please.%0AThank%20you!)
 * [Deploy Your Own Instance of MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/z-Deployment)
 * [Help us Develop MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/z-Development)
 
@@ -48,11 +47,12 @@ See the [LICENSE](LICENSE) for the specific language governing permissions and
 limitations.
 
 ## Privacy
-This project contains only non-sensitive, publicly available data and
-information. All material and community participation is covered by the
-Surveillance Platform [Disclaimer](https://github.com/aaboyles/template/blob/master/DISCLAIMER.md)
-and [Code of Conduct](https://github.com/aaboyles/template/blob/master/code-of-conduct.md).
-For more information about CDC's privacy policy, please visit [http://www.cdc.gov/privacy.html](http://www.cdc.gov/privacy.html).
+
+* **Your data stays in your browser.** Files you load are processed on your computer by the page's own scripts and workers. They are not uploaded anywhere.
+* **What is stored locally.** Stashed sessions, and autostashes if you turn Session Recovery on, are complete sessions (sequences and case attributes included). They are kept unencrypted in this browser's IndexedDB (database `MicrobeTrace`, which also holds your accepted license), persist after the tab closes, and can be read by anyone with access to the browser profile. If that matters, such as on a shared workstation, don't stash, or delete them. The service worker keeps an offline copy of the app in the browser's Cache Storage. The WebMCP on/off choice is kept in `sessionStorage` for the tab only. Nothing is kept in `localStorage` or the origin-private file system.
+* **Delete it all.** In the app, open Help > About and choose "Delete everything stored in this browser". It clears the IndexedDB stashes, the caches, the service worker and the other storage listed above, after asking you to confirm.
+* **Third parties.** Only when you turn on a map base layer (in the map views), map tiles are requested from CARTO (street map) or Esri ArcGIS (satellite). Those providers can see your IP address and the area you are viewing. Nothing else is sent to any third party, and there is no analytics or tracking (the Content-Security-Policy in `index.html` allows no other hosts). If you deploy your own copy, your web host will see ordinary access logs for the page itself.
+* **AI agents.** If you switch on [WebMCP](src/webmcp/README.md) (off by default, and for the current tab only), AI agents running in your browser can read and change the whole session, including its data. Leave it off when you don't want that.
 
 ## Contributing
 Anyone is encouraged to contribute to the project by [forking](https://help.github.com/articles/fork-a-repo)
@@ -64,17 +64,10 @@ license (inbound = outbound).
 
 Before you get started, please read the [Developer's Guide to MicrobeTrace.](https://github.com/aaboyles/MicrobeTrace/wiki/z-Development)
 
-All comments, messages, pull requests, and other submissions received through
-CDC including this GitHub page are subject to the [Presidential Records Act](http://www.archives.gov/about/laws/presidential-records.html)
-and may be archived. Learn more at [http://www.cdc.gov/other/privacy.html](http://www.cdc.gov/other/privacy.html).
-
-## Records
-This project is not a source of government records, but is a copy to increase
-collaboration and collaborative potential. All government records will be
-published through the [CDC web site](http://www.cdc.gov).
-
-## Notices
-Please refer to [CDC's Template Repository](https://github.com/aaboyles/template)
-for more information about [contributing to this repository](https://github.com/aaboyles/template/blob/master/CONTRIBUTING.md),
-[public domain notices and disclaimers](https://github.com/aaboyles/template/blob/master/DISCLAIMER.md),
-and [code of conduct](https://github.com/aaboyles/template/blob/master/code-of-conduct.md).
+## Origin and Disclaimer
+MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC).
+This copy is maintained independently by its contributors. It is not operated,
+supported or endorsed by CDC. Get help or report bugs through
+[GitHub Issues](https://github.com/AABoyles/MicrobeTrace/issues), and report
+security problems as described in [SECURITY.md](SECURITY.md). The software is
+provided "as is", without warranty of any kind; see [DISCLAIMER.md](DISCLAIMER.md).

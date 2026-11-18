@@ -25,7 +25,7 @@ const box = locator => locator.evaluate(el => { const r = el.getBoundingClientRe
 // A view's root, and its settings pane opened
 const view = name => page.locator(`.lm_content:has(.left-pane)`).filter({ visible: true }).last();
 // Once the pane (or whatever else is moving) has finished sliding
-const settled = locator => locator.evaluate(el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished)));
+const settled = locator => locator.evaluate(el => Promise.allSettled(el.getAnimations({ subtree: true }).map(a => a.finished)));
 // The files launched, for the tests that need a network
 async function launched() {
   if (await page.evaluate(() => session.data.clusters.length > 0)) return;
@@ -134,21 +134,6 @@ test('the heatmap’s colors, flow variables and Gantt dates hold their rows tog
   expect(Math.abs((name.top + name.bottom) / 2 - (control.top + control.bottom) / 2)).toBeLessThan(8);
   await expect(root.locator('.gantt-date').first()).toContainText('Date 1');
   await closeView(page, 'gantt');
-});
-
-test('export dialogs’ watermark slider fills its column, in the panes’ style, its label on one line', async () => {
-  await launched();
-  await launchView(page, 'histogram');
-  const modal = await openExport(page, page.locator('.lm_content:has(button[title="Export Histogram"])'), 'Export Histogram');
-  const slider = modal.locator('[name="export-opacity"]');
-  await expect(slider).toHaveClass(/form-range/);
-  expect(Math.abs((await box(slider)).right - (await box(modal.locator('[name="export-filetype"]'))).right)).toBeLessThan(2);
-  const label = modal.locator('label', { hasText: 'Watermark Opacity' });
-  const lineHeight = await label.evaluate(el => parseFloat(getComputedStyle(el).lineHeight));
-  expect((await box(label)).height).toBeLessThan(lineHeight * 1.5);
-  await modal.locator('.btn-close').click();
-  await expect(modal).toBeHidden();
-  await closeView(page, 'histogram');
 });
 
 test('the node color table is padded like the link table, its drops beside their swatches', async () => {

@@ -22,12 +22,13 @@ test('the license agreement shows and closes', async () => {
 
 test('the development label shows only off the production site', async () => {
   await expect(page.locator('#development-version')).toBeVisible();
-  expect(await page.evaluate(() => ['localhost', 'microbetrace-git-main-team.vercel.app', 'microbetrace.cdc.gov', 'microbetrace.vercel.app', ''].map(MT.isDevelopmentHost)))
-    .toEqual([true, true, false, false, false]);
+  expect(await page.evaluate(() => ['localhost', 'microbetrace-git-main-team.vercel.app', 'microbetrace.vercel.app', ''].map(MT.isDevelopmentHost)))
+    .toEqual([true, true, false, false]);
 });
 
-test('Help opens in a new tab', async () => {
-  await expect(page.locator('#HelpTab')).toHaveAttribute('target', '_blank');
+test('Help opens the built-in help, and the wiki is a separate link', async () => {
+  await expect(page.locator('#HelpTab')).toHaveAttribute('data-bs-target', '#help-modal');
+  await expect(page.locator('#WikiTab')).toHaveAttribute('target', '_blank');
 });
 
 const asksBeforeLeaving = () => page.evaluate(() => {

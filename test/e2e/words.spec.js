@@ -137,7 +137,7 @@ test('each thing has one name', async () => {
   expect(await page.evaluate(() => Array.from(document.querySelectorAll('.sequence-controls-button, #sequence-controls-title'), el => el.textContent.trim()))).not.toContain('Sequence Controls');
 });
 
-test('dialogs’ main actions are blue, and settings dialogs close with Done', async () => {
+test('dialogs’ main actions are blue, and settings dialogs close with Close', async () => {
   expect(await page.locator('#recall-load-stash').getAttribute('class')).toContain('btn-primary');
   const dialogs = await page.evaluate(() => Array.from(document.querySelectorAll('.modal-footer .btn-success'), b => b.textContent.trim()));
   expect(dialogs).toEqual([]);
@@ -173,5 +173,48 @@ test('settings are named for what they do, and the tree’s menus turn labels an
   await set('tree-leaf-tooltip-variable', 'None');
   await expect.poll(() => page.evaluate(() => session.style.widgets['tree-tooltip-show'])).toBe(false);
   await set('tree-leaf-tooltip-variable', '_id');
+  expect(errors).toEqual([]);
+});
+
+test('one setting has one name, units and visible help, and the dialogs follow one convention (#271 #272 #274)', async () => {
+  await opened('files');
+  await expect(page.locator('#global-settings-modal-title')).toHaveText('Settings');
+  await expect(page.locator('#link-threshold-unit')).toContainText('substitutions per site');
+  expect(await page.locator('label[for="default-distance-threshold"]').first().textContent()).toMatch(/^\s*Link Threshold\s*$/);
+  await expect(page.locator('#distance-metric-help')).toContainText(/Substitutions per site/);
+  await expect(page.locator('#ambiguity-help')).not.toBeEmpty();
+  await expect(page.locator('#filtering-epsilon-help')).toContainText('power of ten');
+  await expect(page.locator('#global-settings-modal .modal-footer')).toContainText('Changes apply immediately');
+  expect(await page.locator('#global-settings-modal .modal-footer button').allTextContents()).toEqual(['Close']);
+  expect(await page.locator('#global-settings-modal').getAttribute('data-bs-backdrop')).toBe('false');
+  await expect(page.locator('#recall-delete-stash')).toHaveClass(/btn-outline-danger/);
+  await expect(page.locator('label[for="stash-name"]')).toHaveText('Stash name');
+});
+
+test('the force-layout and sequence settings explain themselves in visible text (#291)', async () => {
+  // Sequence Settings: the alignment scores and the audit's checks
+  await opened('files');
+  await page.locator('button', { hasText: 'Sequence Settings' }).first().click();
+  await waitForModal(page, '#sequence-controls-modal');
+  await expect(page.locator('#align-help')).toBeVisible();
+  await page.locator('#sequence-auditor-tab').click();
+  await expect(page.locator('#audit-CIGAR-help')).toBeVisible();
+  await expect(page.locator('#audit-CIGAR-help')).toContainText('alignment code');
+  await expect(page.locator('#audit-gaps-help')).toContainText('gap characters');
+  await expect(page.locator('#audit-malformed-help')).toBeVisible();
+  expect(await page.locator('#audit-CIGAR').getAttribute('aria-describedby')).toBe('audit-CIGAR-help');
+  await page.locator('#sequence-controls-modal .modal-footer button', { hasText: 'Close' }).click();
+  await expect(page.locator('#sequence-controls-modal')).toBeHidden();
+  // The network's Physics settings
+  await opened('network');
+  const net = page.locator('.lm_content:has(button[title="Export Network"])').first();
+  if (!await net.locator('.left-pane').isVisible()) await net.locator('button[title="Network Settings"]').click();
+  await net.locator('.left-pane .nav-link', { hasText: 'Network' }).click();
+  await net.locator('button[data-bs-target="#network-controls-physics"]').click();
+  for (const id of ['node-charge', 'network-gravity', 'network-friction', 'network-link-strength']) {
+    await expect(page.locator(`#${id}-help`)).toBeVisible();
+    expect(await page.locator(`#${id}`).getAttribute('aria-describedby')).toBe(`${id}-help`);
+  }
+  await expect(page.locator('#node-charge-help')).toContainText('push each other apart');
   expect(errors).toEqual([]);
 });

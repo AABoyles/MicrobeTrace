@@ -81,7 +81,7 @@ test('a panel\'s menu opens where it was clicked, and dragging moves the panel',
   const at = await menu.boundingBox();
   expect(Math.abs(at.x - (box.x + 20))).toBeLessThan(3);
   expect(Math.abs(at.y - (box.y + 10))).toBeLessThan(3);
-  await menu.locator('a', { hasText: 'Drag' }).click();
+  await menu.locator('button', { hasText: 'Drag' }).click();
   const handle = wrapper.locator('.draghandle');
   await expect(handle).toBeVisible();
   const grip = await handle.boundingBox();
@@ -95,7 +95,7 @@ test('a panel\'s menu opens where it was clicked, and dragging moves the panel',
   // Back where it was, and pinned
   await wrapper.evaluate(el => { el.style.translate = ''; });
   await wrapper.click({ button: 'right', position: { x: 20, y: 30 } });
-  await menu.locator('a', { hasText: 'Pin' }).click();
+  await menu.locator('button', { hasText: 'Pin' }).click();
   await expect(handle).toBeHidden();
 });
 

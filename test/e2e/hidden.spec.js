@@ -33,6 +33,9 @@ const menuBarCovered = () => page.evaluate(() => {
 
 test('in a narrow window, the menu bar wraps above the view tabs, not over them', async () => {
   await page.setViewportSize({ width: 960, height: 640 });
+  // (The menus fold behind the toggler here, #275; open, they wrap)
+  await page.locator('.navbar-toggler').click();
+  await expect(page.locator('#navbar-menus.collapse.show')).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.querySelector('nav.navbar').offsetHeight)).toBeGreaterThan(50);
   const tab = page.locator('.lm_tab').first();
   await expect.poll(() => onTop(tab)).toBe(true);
@@ -43,6 +46,7 @@ test('in a narrow window, the menu bar wraps above the view tabs, not over them'
   await expect.poll(() => page.evaluate(() => layout.contentItems.find(i => i.componentType == 'network').parent.getActiveComponentItem().componentType)).toBe('network');
   await closeView(page, 'histogram');
   await page.setViewportSize({ width: 1400, height: 900 });
+  await expect(page.locator('.navbar-toggler')).toBeHidden();
 });
 
 test('the table views’ export dialogs cover the menu bar', async () => {

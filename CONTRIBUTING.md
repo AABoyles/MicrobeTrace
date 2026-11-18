@@ -1,14 +1,13 @@
 # Contributing to MicrobeTrace
-Thank you for contributing to CDC's Open Source projects! If you have any
+Thank you for contributing to MicrobeTrace! If you have any
 questions or doubts, don't be afraid to send them our way. We appreciate all
 contributions, and we are looking forward to fostering an open, transparent, and
 collaborative environment.
 
 ## Requesting Changes
-Our pull request/merging process is designed to give the CDC Surveillance Team
-and other in our space an opportunity to consider and discuss any suggested
-changes. This policy affects all CDC spaces, both on-line and off, and all users
-are expected to abide by it.
+Our pull request/merging process is designed to give the maintainers
+and other contributors an opportunity to consider and discuss any suggested
+changes. All users are expected to abide by it.
 
 ## Open an issue in the repository
 If you don't have specific language to submit but would like to suggest a change
@@ -24,12 +23,25 @@ please submit a pull request. In order for us to merge a pull request, it must:
   If there is significant dissent between the team, a meeting will be held to
   discuss a plan of action for the pull request.
 
-## Legal Stuff
-Before contributing, we encourage you to also read or [LICENSE](https://github.com/aaboyles/template/blob/master/LICENSE),
-[README](https://github.com/aaboyles/template/blob/master/README.md), and
-[code-of-conduct](https://github.com/aaboyles/template/blob/master/code-of-conduct.md)
-files, also found in this repository. If you have any inquiries or questions not
-answered by the content of this repository, feel free to [contact us](mailto:chiic@cdc.gov).
+## Questions
+MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC) but this copy is
+maintained independently, and CDC does not operate or endorse it. For questions not answered by
+this repository, [open an issue](https://github.com/AABoyles/MicrobeTrace/issues). Report security
+problems as described in [SECURITY.md](SECURITY.md).
+
+## Dialog conventions
+
+Two kinds of dialog, and no others:
+
+- Settings dialogs (Settings, Sequence Settings) apply changes live. They are
+  non-blocking (`data-bs-backdrop="false"`, draggable), say "Changes apply
+  immediately." and have one primary "Close" button.
+- Action dialogs (Save, Stash, Recall, exports, the exit and replace prompts) are
+  modal and dim the page (Bootstrap's backdrop; a view's export dialogs, which live
+  inside the view, dim with their own layer, see main.css). The primary action is the rightmost button, with Cancel
+  beside it on its left. A destructive primary action is `btn-danger`; a
+  destructive side action (Recall's Delete) is `btn-outline-danger` on the far left
+  (`me-auto`). Every input has a visible label, not only a placeholder.
 
 ## License
 This project is licensed under the [Apache License, Version 2.0](LICENSE).

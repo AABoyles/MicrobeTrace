@@ -36,9 +36,9 @@
       <div class="form-group row" title="Select the variable that corresponds to the value selected above.">
         <div class="col-4"><label for="choropleth-aggregate-on">Field</label></div>
         <div class="col-8">
-          <select id="choropleth-aggregate-on" class="nodeVariables form-select form-select-sm" data-setting="choropleth-aggregate-on">
+          <select id="choropleth-aggregate-on" class="nodeVariables form-select form-select-sm" data-setting="choropleth-aggregate-on" aria-describedby="choropleth-aggregate-on-help">
             <option selected>None</option>
-          </select>
+          </select><div id="choropleth-aggregate-on-help" class="form-text small">The node field that holds each node's county FIPS code, state or country, as chosen above.</div>
         </div>
       </div>
     </div>
@@ -82,8 +82,8 @@
               <div class="row">
                 <div class="col-12">
                   <div class="alert alert-warning alert-dismissible" role="alert">
-                    Enabling any of the layers below will download tiles from the Internet.
-                    <a href="https://github.com/aaboyles/MicrobeTrace/wiki/Tile-maps" class="alert-link">Read More.</a>
+                    Enabling any of the layers below will download tiles from the Internet, so they show nothing offline.
+                    <a href="#help-maps" data-help="help-maps" class="alert-link">Read More.</a>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                 </div>
@@ -149,7 +149,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="choropleth-export-modal-title" class="modal-title">Export Choropleth</h5>
+        <h2 id="choropleth-export-modal-title" class="modal-title h5">Export Choropleth</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
