@@ -2117,14 +2117,24 @@
     layout.on("focus", e => bringForward(e.target));
   };
 
-  // Fetches a view's HTML into temp.componentCache
-  const fetchView = view => new Promise(resolve => {
-    if (temp.componentCache[view]) return resolve();
-    fetch("components/" + view + ".html").then(response => response.text()).then(response => {
-      temp.componentCache[view] = response;
-      resolve();
+  // Fetches a view's HTML into temp.componentCache. A failed fetch (offline,
+  // 404, or a server answering with something other than HTML) is not cached,
+  // so the next attempt tries again, and rejects with a message naming the view.
+  const fetchView = view => {
+    if (temp.componentCache[view]) return Promise.resolve();
+    const fail = () => {
+      throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
+    };
+    return fetch("components/" + view + ".html").then(response => {
+      if (!response.ok) fail();
+      return response.text();
+    }, fail).then(html => {
+      // server.js answers unknown paths with the app shell (index.html)
+      if (/^\s*<!doctype/i.test(html)) fail();
+      temp.componentCache[view] = html;
     });
-  });
+  };
+  const viewFailed = error => MT.toast.error(error.message);
 
   // Renders a view's HTML into its (newly attached) layout item
   // (Scripts set as HTML don't run, so each is replaced by a copy that does.)
@@ -2970,7 +2980,7 @@
   MT.launchView = (view, callback) => {
     view = MT.viewName(view);
     if (!temp.componentCache[view]) {
-      fetchView(view).then(() => MT.launchView(view, callback));
+      fetchView(view).then(() => MT.launchView(view, callback), viewFailed);
     } else {
       let contentItem = layout.contentItems.find(item => item.componentType == view);
       if (contentItem) {
@@ -3045,7 +3055,7 @@
         setupView(item);
         mountView(item);
       });
-    });
+    }, viewFailed);
   };
   
   MT.unparseSVG = svgNode => {
