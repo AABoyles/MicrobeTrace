@@ -488,6 +488,74 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       });
     }
 
+    // What a file is, from what it holds rather than what it is called (#267):
+    // FASTA starts with ">", a Newick tree is parenthesised, a distance matrix is
+    // a square or triangular table whose header row repeats its first column, a
+    // node list has an ID column and no Source and Target. Anything else is a link
+    // list. The file's name only decides what the contents can't. Also the
+    // delimiter of a table (a comma, tab, semicolon or bar). The kind is a guess:
+    // the buttons in the file's row change it.
+    const kindLabel = { fasta: 'FASTA', node: 'a node list', matrix: 'a distance matrix', newick: 'a Newick tree' };
+    const delimiterNames = { ',': 'comma', '\t': 'tab', ';': 'semicolon', '|': 'bar' };
+    const blankCell = c => c == null || ('' + c).trim() === '';
+    const isNumber = c => !blankCell(c) && /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$|^[+-]?0?,\d+$/.test(('' + c).trim());
+    const balanced = text => {
+      let depth = 0;
+      for (const c of text) {
+        if (c == '(') depth++;
+        else if (c == ')' && --depth < 0) return false;
+      }
+      return depth == 0;
+    };
+
+    function detect(file, extension) {
+      let text = file.contents;
+      if (extension == 'xlsx' || extension == 'xls') {
+        try {
+          const workbook = XLSX.read(file.contents, { type: 'array' });
+          text = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]], { rawNumbers: true });
+        } catch (error) {
+          return { delimiter: ',' };
+        }
+      }
+      if (typeof text != 'string') return { delimiter: ',' };
+      text = text.replace(/^﻿/, '');
+      const head = text.trimStart();
+      if (head.startsWith('>')) return { kind: 'fasta', delimiter: ',' };
+      if (head.startsWith('(') && /;\s*$/.test(text) && balanced(text)) return { kind: 'newick', delimiter: ',' };
+
+      const sample = Papa.parse(text, { preview: 60, skipEmptyLines: 'greedy', delimitersToGuess: [',', '\t', ';', '|'] });
+      const delimiter = sample.meta.delimiter && delimiterNames[sample.meta.delimiter] ? sample.meta.delimiter : ',';
+      const rows = sample.data;
+      const found = { delimiter };
+      if (rows.length < 2 || rows[0].length < 2) return found;
+
+      // A matrix: its header names (all of) its rows, in order, below an empty corner
+      const lines = text.split(/\r\n|\r|\n/).filter(l => l.trim() !== '').length;
+      const header = rows[0].slice();
+      while (header.length && blankCell(header[header.length - 1])) header.pop();
+      const clean = c => blankCell(c) ? '' : ('' + c).replace(/^[\s"']+|[\s"']+$/g, '');
+      const values = rows.slice(1).reduce((all, r) => all.concat(r.slice(1)), []).filter(c => !blankCell(c));
+      const mostlyNumbers = values.length > 0 && values.filter(isNumber).length >= 0.9 * values.length;
+      const k = Math.min(rows.length - 1, header.length - 1);
+      if (blankCell(rows[0][0]) && header.length - 1 == lines - 1 && k >= 2 && mostlyNumbers
+        && rows.slice(1, k + 1).every((r, i) => clean(r[0]) !== '' && clean(r[0]) == clean(header[i + 1]))) {
+        return Object.assign(found, { kind: 'matrix' });
+      }
+      // Or without a header row: a square table of numbers below a column of names
+      if (!blankCell(rows[0][0]) && !isNumber(rows[0][0]) && rows[0].length - 1 == lines && lines >= 3
+        && rows.every(r => r.length == rows[0].length && !isNumber(r[0])) && mostlyNumbers
+        && rows.slice(1).flat().length > 0 && rows[0].slice(1).every(isNumber)) {
+        return Object.assign(found, { kind: 'matrix' });
+      }
+
+      // A node list has an ID column and no source and target; a link list names both
+      const names = rows[0].map(c => clean(c).toLowerCase());
+      const has = list => list.some(n => names.includes(n));
+      if (has(['id', '_id']) && !(has(['source']) && has(['target']))) return Object.assign(found, { kind: 'node' });
+      return found;
+    }
+
     // A file's row: its name, what kind of file it is, and the fields to read
     function addToTable(file) {
       const extension = file.extension ? file.extension : MT.escape(file.name).split('.').pop().toLowerCase();
@@ -495,7 +563,11 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       const isFasta = 'fasta' == file.format || extension.indexOf('fas') > -1;
       const isNewick = 'newick' == file.format || extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
       const isNode = 'node' == file.format || file.name.toLowerCase().includes('node');
-      const kind = file.format || (isFasta ? 'fasta' : isNewick ? 'newick' : isNode ? 'node' : 'link');
+      const guess = detect(file, extension);
+      if (!file.delimiter) file.delimiter = guess.delimiter;
+      const nameKind = isFasta ? 'fasta' : isNewick ? 'newick' : isNode ? 'node' : 'link';
+      const kind = file.format || guess.kind || nameKind;
+      const detected = !file.format && guess.kind ? `Read as ${kindLabel[guess.kind]} from its contents` : '';
       if (extension == 'xlsx' || extension == 'xls') {
         const workbook = XLSX.read(file.contents, { type: 'array' });
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false, dateNF: 'yyyy-mm-dd' });
@@ -503,17 +575,17 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         data.forEach(row => Object.keys(row).forEach(key => {
           if (!headers.includes(key)) headers.push(key);
         }));
-        addRow(file, kind, headers);
+        addRow(file, kind, headers, detected);
       } else {
         // A table's rows have as many columns as its header: prose (notes, say)
         // doesn't, however its commas fall
-        const sample = Papa.parse(file.contents, { delimiter: ',', preview: 20, skipEmptyLines: true }).data;
+        const sample = Papa.parse(file.contents, { delimiter: file.delimiter, preview: 20, skipEmptyLines: true }).data;
         const tabular = sample.length > 1 && sample.slice(1).filter(r => r.length == sample[0].length).length >= 0.8 * (sample.length - 1);
         Papa.parse(file.contents, {
-          delimiter: ',',
+          delimiter: file.delimiter,
           header: true,
           preview: 1,
-          complete: output => addRow(file, kind, tabular ? output.meta.fields : [])
+          complete: output => addRow(file, kind, tabular ? output.meta.fields : [], detected)
         });
       }
     }
@@ -521,7 +593,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     const kinds = [['link', 'Link'], ['node', 'Node'], ['matrix', 'Matrix'], ['fasta', 'FASTA'], ['newick', 'Newick']];
     let rowCount = 0;
 
-    function addRow(file, kind, headers) {
+    function addRow(file, kind, headers, detected) {
       const row = document.createElement('div');
       row.className = 'file-table-row';
       const group = 'file-kind-' + (rowCount++);
@@ -539,6 +611,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <a href="#" class="icon-action icon-remove bi bi-x-circle p-1" title="Remove this file" aria-label="Remove this file"></a>
           </div>
         </div>
+        <p class="file-detected small text-body-secondary mb-0 mt-1" hidden></p>
         <p class="file-problem small text-danger mb-0 mt-1" hidden></p>
         <div class="row w-100">
           ${[1, 2, 3].map(i => `<div class="col-4 file-field">
@@ -547,6 +620,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           </div>`).join('')}
         </div>`;
       row.querySelector('.file-title').textContent = file.name;
+      // Say how the kind was chosen, so it can be checked (and changed with the buttons)
+      const note = row.querySelector('.file-detected');
+      if (detected) {
+        const d = delimiterNames[file.delimiter];
+        note.textContent = detected + (d && d != 'comma' && !['fasta', 'newick'].includes(kind) ? ` (${d}-separated)` : '') + '. Change it with the buttons if that is wrong.';
+        note.hidden = false;
+      }
       rowOf.set(file, row);
       headersOf.set(file, headers);
       const fields = Array.from(row.querySelectorAll('.file-field'));
@@ -612,12 +692,12 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       problems.set(row, () => {
         const type = kindOf(), [first, second] = selects.map(select => select.value);
         if (type == 'link') {
-          if (headers.length < 2) return 'No columns were found in this file, so it can’t be read as a link list.';
+          if (headers.length < 2) return `No columns were found in this file (read as ${delimiterNames[file.delimiter] || 'comma'}-separated), so it can’t be read as a link list.`;
           if (first == 'None' || second == 'None') return 'Choose the Source and Target columns.';
           if (first == second) return 'Source and Target need to be different columns.';
         }
         if (type == 'node') {
-          if (!headers.length) return 'No columns were found in this file, so it can’t be read as a node list.';
+          if (!headers.length) return `No columns were found in this file (read as ${delimiterNames[file.delimiter] || 'comma'}-separated), so it can’t be read as a node list.`;
           if (first == 'None') return 'Choose the ID column.';
         }
         return '';
@@ -833,6 +913,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // Log lines are plain text (file names included), so they are never parsed as HTML
     function message(msg) {
       session.messages.push(msg);
+      // A line that starts a step (not a detail of one) is the dialog's progress text
+      if (!msg.startsWith(' - ')) MT.progress(msg.replace(/\.+$/, ''));
       const information = document.getElementById('loading-information');
       information.replaceChildren();
       session.messages.forEach((text, i) => {
@@ -849,6 +931,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     launchButton.addEventListener('click', () => {
       session.meta.startTime = Date.now();
       launchButton.disabled = true;
+      MT.startWork();
+      document.getElementById('loading-progress').hidden = true;
       const information = document.getElementById('loading-information');
       information.innerHTML = '<p>Processing file(s)...</p>';
       const loading = document.getElementById('loading-information-modal');
@@ -876,6 +960,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // (fail, below, is for one file; this is for anything else, such as a
     // worker that throws.)
     const loadFailed = error => {
+      MT.progressDone();
+      if (error && error.cancelled) return; // the user cancelled; the cancel said so
       const reason = (error && error.message) || error;
       console.error(error);
       const text = `The load failed while ${step}: ${MT.escape('' + reason)}.`;
@@ -888,10 +974,28 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
     const launch = () => load().catch(loadFailed);
 
+    // Cancel stops the work (the workers are terminated), drops what the load
+    // had read so far and goes back to the files, which stay listed. The dialog
+    // has no Close: the work never goes on without it.
+    document.getElementById('loading-cancel').addEventListener('click', () => {
+      MT.cancelWork();
+      clearTimeout(temp.messageTimeout);
+      const reference = session.data.reference;
+      session.data = MT.dataSkeleton();
+      session.data.reference = reference;
+      temp.tree = null;
+      session.messages = [];
+      MT.progressDone();
+      MT.hideModal('loading-information-modal');
+      checkLaunch();
+      MT.toast.info('Loading was cancelled. Your files are still listed.', 8);
+    });
+
     const load = async () => {
       step = 'reading the files';
+      MT.progress('Reading the files');
       temp.messageTimeout = setTimeout(() => {
-        MT.toast.warning('If you stare long enough, you can reverse the DNA Molecule\'s spin direction');
+        MT.toast.info('Still working. Large sets of sequences can take several minutes to align and compare. Cancel in the loading dialog stops the work and keeps your files listed.', 15);
       }, 20000);
 
       const check = session.files.length > 1;
@@ -914,12 +1018,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       // A file that cannot be read stops the load, with the reason (the dialog is not left up)
       const fail = (file, kind, error) => {
+        if (error && error.cancelled) return; // the user cancelled; the cancel said so
         const reason = (error && error.message) || error;
         console.error(error);
         const text = `Could not read ${shownName(file)} as ${kind}: ${MT.escape('' + reason)}.`;
         message(text);
         MT.toast.error(text);
         clearTimeout(temp.messageTimeout);
+        MT.progressDone();
         MT.hideModal('loading-information-modal');
         checkLaunch();
       };
@@ -1062,7 +1168,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
           } else {
 
             Papa.parse(file.contents, {
-              delimiter: ",",
+              delimiter: file.delimiter || ",",
               // newline: "\r\n",
               header: true,
               // Numbers are read as numbers, except IDs: 007 and 1E3 are names (#219)
@@ -1138,7 +1244,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
             const seen = new Set();
             Papa.parse(file.contents, {
-              delimiter: ",",
+              delimiter: file.delimiter || ",",
               // newline: "\r\n",
               header: true,
               // Numbers are read as numbers, except IDs and sequences: 007 and 1E3 are names (#219)
@@ -1236,6 +1342,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
 
       // (A synchronous parse that throws rejects here and is caught by launch)
       return Promise.all(parsedFiles).then(() => {
+        if (MT.workCancelled()) throw Object.assign(new Error('it was cancelled'), { cancelled: true });
         reportMerges();
         return processSequences();
       });
@@ -1299,6 +1406,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
         // Nodes without a sequence hold only gaps; they are left out of the consensus
         step = 'computing the consensus sequence';
+        MT.progress('Computing the consensus sequence');
         session.data.consensus = await MT.computeConsensus(subset);
         await MT.computeConsensusDistances();
         subset.sort((a, b) => a['_diff'] - b['_diff']);
@@ -1307,6 +1415,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         }
         message('Computing Links based on Genomic Proximity...');
         step = 'computing the links';
+        MT.progress('Computing distances');
         const k = await MT.computeLinks(subset);
         // Every pair has a distance; the network shows those within the threshold
         const threshold = parseFloat(session.style.widgets['link-threshold']);
@@ -1316,6 +1425,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         const also = MT.computedMetrics().slice(1);
         if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Global Settings.`);
         step = 'drawing the network';
+        MT.progress('Drawing the network');
         return MT.runHamsters();
       };
     };

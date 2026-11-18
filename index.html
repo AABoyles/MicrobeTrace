@@ -175,7 +175,7 @@
           <h5 id="loading-title" class="modal-title">Loading Files</h5>
         </div>
         <div class="modal-body">
-          <div class="dna">
+          <div class="dna" aria-hidden="true">
             <div class="ele"></div>
             <div class="ele"></div>
             <div class="ele"></div>
@@ -196,6 +196,12 @@
             <div class="ele"></div>
             <div class="ele"></div>
             <div class="ele"></div>
+          </div>
+          <div id="loading-progress" class="mb-3" hidden>
+            <p id="loading-progress-text" class="mb-1" role="status" aria-live="polite"></p>
+            <div class="progress" aria-hidden="true">
+              <div id="loading-progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+            </div>
           </div>
           <a class="btn btn-link px-0" data-bs-toggle="collapse" href="#loading-information-collapse" role="button"
             aria-expanded="true" aria-controls="loading-information-collapse">Details</a>
@@ -204,7 +210,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" id="loading-cancel" class="btn btn-secondary" title="Stop loading and go back to the files">Cancel</button>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

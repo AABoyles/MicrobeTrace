@@ -39,6 +39,7 @@ onmessage = async function(e) {
     const n = seqs.length;
     // Rows in chunks, so the two sets of distances held at once stay small
     for (let a = rowStart; a < rowEnd;) {
+      postMessage({ progress: (a - rowStart) / Math.max(1, rowEnd - rowStart) });
       let b = a, pairs = 0;
       while (b < rowEnd && (pairs == 0 || pairs < 1e6)) pairs += n - 1 - b++;
       const r = metrics.map(metric => resolve.distances(metric, a, b));

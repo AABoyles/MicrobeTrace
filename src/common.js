@@ -742,22 +742,46 @@
   // error ({error: "..."} or the string "Error"); it settles once, and the
   // worker is terminated either way, so a failing worker can't leave the
   // caller waiting (#222). name says what the worker was doing, for the message.
-  MT.runWorker = (script, message, { transfer, name, worker } = {}) => {
+  //
+  // Running workers can be stopped: MT.cancelWork() terminates them all and
+  // rejects their promises with an Error whose .cancelled is true, and until
+  // MT.startWork() runs again, no new worker starts (so the step that was
+  // waiting on one doesn't go on to start the next). A worker may report its
+  // progress by posting {progress: fraction} (0 to 1); onProgress gets it.
+  const running = new Set();
+  let cancelled = false;
+  const cancelError = () => Object.assign(new Error("it was cancelled"), { cancelled: true });
+  MT.startWork = () => { cancelled = false; };
+  MT.cancelWork = () => {
+    cancelled = true;
+    Array.from(running).forEach(cancel => cancel());
+  };
+  MT.workCancelled = () => cancelled;
+
+  MT.runWorker = (script, message, { transfer, name, worker, onProgress } = {}) => {
     return new Promise((resolve, reject) => {
+      if (cancelled) return reject(cancelError());
       const computer = worker || new Worker(script);
       let settled = false;
       const settle = (fn, value) => {
         if (settled) return;
         settled = true;
+        running.delete(stop);
         try { computer.terminate(); } catch (e) { /* already gone */ }
         fn(value);
       };
       const what = name || script;
       const fail = reason => settle(reject, reason instanceof Error ? reason : new Error(reason));
+      const stop = () => fail(cancelError());
+      running.add(stop);
       computer.onmessage = response => {
         const data = response && response.data;
         if (data === "Error") return fail(what + " failed");
         if (data && typeof data == "object" && data.error) return fail(data.error);
+        if (data && typeof data == "object" && Object.keys(data).length == 1 && typeof data.progress == "number") {
+          if (onProgress) onProgress(data.progress);
+          return;
+        }
         settle(resolve, data);
       };
       computer.onerror = event => {
@@ -771,6 +795,29 @@
         fail(error);
       }
     });
+  };
+
+  // The loading dialog's progress: the step being done and, where known, how
+  // far along it is (done of total). It is announced (the text is a live region).
+  MT.progress = (text, done, total) => {
+    const label = document.getElementById("loading-progress-text");
+    const bar = document.getElementById("loading-progress-bar");
+    const wrap = document.getElementById("loading-progress");
+    if (!label || !bar || !wrap) return;
+    const known = typeof total == "number" && total > 0;
+    const percent = known ? Math.max(0, Math.min(100, Math.round(100 * done / total))) : null;
+    label.textContent = text + (known ? ` (${percent}%)` : "...");
+    wrap.hidden = false;
+    bar.classList.toggle("progress-bar-striped", !known);
+    bar.classList.toggle("progress-bar-animated", !known);
+    bar.style.width = known ? percent + "%" : "100%";
+    bar.setAttribute("aria-valuenow", known ? percent : 0);
+    const modal = document.getElementById("loading-information-modal");
+    if (modal) modal.setAttribute("aria-busy", "true");
+  };
+  MT.progressDone = () => {
+    const modal = document.getElementById("loading-information-modal");
+    if (modal) modal.setAttribute("aria-busy", "false");
   };
 
   // A reply's JSON bytes, parsed
@@ -1188,10 +1235,16 @@
       thresholds
     };
     // Each worker's results, a part per metric (the legacy worker computes one)
+    // Progress is the share of the distance workers done: a worker reports its
+    // part as it goes (where it can) and counts as done when it replies
+    const done = splits.slice(1).map(() => 0);
+    const report = () => MT.progress('Computing distances', done.reduce((a, b) => a + b, 0), done.length);
+    report();
     const parts = await Promise.all(splits.slice(1).map((rowEnd, w) => new Promise((resolve, reject) => {
       MT.runWorker(legacy ? 'workers/compute-links-legacy.js' : 'workers/compute-links.js',
-        Object.assign({ rowStart: splits[w], rowEnd }, message), { name: "The distance computation" })
-        .then(data => resolve(legacy ? { results: [data], start: data.start } : data), reject);
+        Object.assign({ rowStart: splits[w], rowEnd }, message), { name: "The distance computation",
+          onProgress: fraction => { done[w] = fraction; report(); } })
+        .then(data => { done[w] = 1; report(); resolve(legacy ? { results: [data], start: data.start } : data); }, reject);
     })));
 
     console.log('Links Transit time: ', (Date.now() - Math.min(...parts.map(p => p.start))).toLocaleString(), 'ms');
@@ -1523,6 +1576,7 @@
     setTimeout(() => {
       let files = layout.contentItems.find(item => item.componentType == "files");
       if (files) files.remove();
+      MT.progressDone();
       MT.hideModal("loading-information-modal");
     }, 1200);
   };
