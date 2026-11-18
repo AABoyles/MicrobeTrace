@@ -101,7 +101,7 @@ function treeWorker(ctx) {
   const worker = { terminated: false };
   ctx.Worker = class {
     postMessage() {
-      const tree = new TextEncoder().encode('{"id":"root"}').buffer;
+      const tree = { id: 'root' };
       setTimeout(() => this.onmessage({ data: { tree, start: Date.now() } }), 1);
     }
     terminate() { worker.terminated = true; }
@@ -129,7 +129,7 @@ test('computeTree rejects when the distance matrix fails', async () => {
 
 test('computeTree sets the tree and terminates its worker', async () => {
   const ctx = bare(), worker = treeWorker(ctx);
-  ctx.patristic = { parseJSON: json => JSON.parse(json) };
+  ctx.patristic = { parseJSON: tree => tree };
   await ctx.MT.computeTree();
   assert.strictEqual(ctx.temp.tree.id, 'root');
   assert.ok(worker.terminated);

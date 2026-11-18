@@ -79,7 +79,7 @@ function loadApp(widgets = {}) {
 async function parseFasta(file) {
   const text = fs.readFileSync(path.join(__dirname, file), 'utf8');
   const out = await runWorker('workers/parse-fasta.js', text);
-  return JSON.parse(new TextDecoder().decode(out.nodes));
+  return out.nodes;
 }
 
 const expected = file => JSON.parse(fs.readFileSync(path.join(__dirname, file), 'utf8'));

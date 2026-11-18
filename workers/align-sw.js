@@ -27,8 +27,6 @@ onmessage = function(e) {
   }
   console.log("Alignment time: ", (Date.now() - start).toLocaleString(), "ms");
   start = Date.now();
-  let encoder = new TextEncoder();
-  let output = encoder.encode(JSON.stringify(subset)).buffer;
-  postMessage({ nodes: output, start: start }, [output]);
+  postMessage({ nodes: subset, start: start });
   close();
 };

@@ -198,5 +198,5 @@ test('the FASTA parser keeps N as an ambiguity code, as tn93 reads it (#232)', a
   assert.strictEqual(seqs.length, 8);
   assert.ok(seqs.every(s => s.seq.length == 40));
   const out = await runWorker('workers/parse-fasta.js', '>n\nACGNN\nNT\n');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'n', seq: 'ACGNNNT' }]);
+  assert.deepStrictEqual(out.nodes, [{ id: 'n', seq: 'ACGNNNT' }]);
 });

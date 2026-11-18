@@ -29,8 +29,6 @@ onmessage = function(e){
   }
   console.log('Triangulation Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
-  let encoder = new TextEncoder();
-  let output = encoder.encode(JSON.stringify(m)).buffer;
-  postMessage({matrix: output, start: start}, [output]);
+  postMessage({ matrix: m, start: start });
   close();
 };
