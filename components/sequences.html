@@ -185,7 +185,7 @@ For large sets of sequences, this can take a long time.">
 
     MT.paneToggle($('.settings-toggle'), pane);
     MT.tableExport(root, {
-      png: filename => canvas && image().toBlob(blob => MT.saveAs(blob, filename + '.png')),
+      png: filename => canvas && image().toBlob(blob => MT.saveImage(blob, filename + '.png')),
       fasta: saveText('>', 'fasta'),
       mega: saveText('#', 'mega')
     });

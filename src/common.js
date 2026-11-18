@@ -2615,7 +2615,10 @@
           backgroundColor: settings.get('background-color'),
           type: 'image/' + filetype,
           quality: parseFloat(field('export-quality').value)
-        }).then(blob => MT.saveAs(blob, filename + '.' + filetype), console.error).finally(() => {
+        }).then(blob => MT.saveImage(blob, filename + '.' + filetype), error => {
+          console.error(error);
+          MT.toast.error('The image could not be made (' + error.message + '). Try a smaller scale.');
+        }).finally(() => {
           watermark.remove();
           if (done) done(svg);
         });
@@ -2832,6 +2835,32 @@
     setTimeout(() => URL.revokeObjectURL(link.href), 60000);
   };
 
+  // Papa.unparse with the settings every export needs. escapeFormulae stops a
+  // cell such as =HYPERLINK(...) from being evaluated when a spreadsheet opens
+  // the file. Rows that are objects get the union of their keys as columns, in
+  // first-seen order (Papa would use the first row's alone), unless opts.columns
+  // says otherwise. Rows that are arrays, or {fields, data}, pass through.
+  MT.toCSV = (rows, opts = {}) => {
+    const config = { escapeFormulae: true, ...opts };
+    if (Array.isArray(rows) && !config.columns && rows.some(r => r && typeof r == 'object' && !Array.isArray(r))) {
+      const seen = new Set();
+      rows.forEach(r => { if (r && typeof r == 'object') Object.keys(r).forEach(k => seen.add(k)); });
+      config.columns = Array.from(seen);
+    }
+    return Papa.unparse(rows, config);
+  };
+
+  // Saves an image Blob; a null one (canvas.toBlob gives null for a canvas too
+  // large to encode) is reported to the user instead of thrown.
+  MT.saveImage = (blob, filename) => {
+    if (!blob) {
+      MT.toast.error('The image could not be made. It may be too large: try a smaller scale.');
+      return false;
+    }
+    MT.saveAs(blob, filename);
+    return true;
+  };
+
   // Loads an image, crossOrigin so that drawing it leaves a canvas readable.
   // Resolves to null if it doesn't load.
   const loadImage = src => new Promise(resolve => {
@@ -2931,7 +2960,7 @@
     });
     context.globalAlpha = 1;
     if (draw) draw(context, canvas);
-    canvas.toBlob(blob => MT.saveAs(blob, filename + '.' + filetype), 'image/' + filetype);
+    canvas.toBlob(blob => MT.saveImage(blob, filename + '.' + filetype), 'image/' + filetype);
   };
 
   // Shows the shared tooltip at a mouse event, or hides it (html == null)

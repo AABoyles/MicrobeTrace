@@ -145,7 +145,7 @@
     MT.tableExport(root, {
       'csv.zip': name => {
         const zip = new JSZip();
-        data.forEach(t => zip.file(t.dataset + '_' + t.column + '.csv', Papa.unparse(t.data)));
+        data.forEach(t => zip.file(t.dataset + '_' + t.column + '.csv', MT.toCSV(t.data)));
         zip.generateAsync({ type: 'blob' }).then(content => MT.saveAs(content, name + '.zip'));
       },
       xlsx: name => {
