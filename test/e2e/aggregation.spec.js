@@ -18,10 +18,12 @@ const view = () => page.locator('.lm_content:has(button[title="Export Aggregatio
 const pane = () => view().locator('.left-pane');
 const selectors = () => pane().locator('li select');
 // Each table: its first column's title, its rows and its total count
-const tables = () => view().locator('.tabulator').evaluateAll(els => els.map(el => {
-  const all = Tabulator.findTable(el), t = all[all.length - 1]; // the newest, if the element was redrawn
+// (A table caught mid-redraw has no Tabulator yet, and is skipped until it has)
+const tables = () => view().locator('.tabulator').evaluateAll(els => els.flatMap(el => {
+  const all = Tabulator.findTable(el) || [], t = all[all.length - 1]; // the newest, if the element was redrawn
+  if (!t) return [];
   const data = t.getData();
-  return { title: t.getColumns()[0].getDefinition().title, rows: data.length, total: data.reduce((s, r) => s + r.n, 0) };
+  return [{ title: t.getColumns()[0].getDefinition().title, rows: data.length, total: data.reduce((s, r) => s + r.n, 0) }];
 }));
 const distinct = field => page.evaluate(field => new Set(session.data.nodes.map(d => d[field])).size, field);
 
@@ -63,10 +65,11 @@ test('removing a variable removes its table', async () => {
 test('link variables count the visible links', async () => {
   await selectors().nth(0).selectOption('link contact');
   await expect.poll(async () => (await tables())[0].total).toBe(476);
+  // (The network follows a moment after the change, the tables redrawn then)
   await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(async () => (await tables())[0].total).toBeLessThan(476);
+  await expect.poll(async () => (await tables())[0]?.total ?? 476).toBeLessThan(476);
   await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(async () => (await tables())[0].total).toBe(476);
+  await expect.poll(async () => (await tables())[0]?.total).toBe(476);
 });
 
 for (const [filetype, filename] of [['csv.zip', 'aggregation-test.zip'], ['xlsx', 'aggregation-test.xlsx']]) {

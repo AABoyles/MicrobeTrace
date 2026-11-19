@@ -37,6 +37,10 @@ secondaryscripts=(
   "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
   "node_modules/html5sortable/dist/html5sortable.min.js"
   "node_modules/alignment-viewer/dist/alignment-viewer.min.js"
+)
+
+# pdfscripts are fetched the first time a PDF is made (MT.loadPDF in src/common.js)
+pdfscripts=(
   "node_modules/pdfmake/build/pdfmake.min.js"
   "node_modules/pdfmake/build/vfs_fonts.js"
 )
@@ -109,8 +113,9 @@ node scripts/patch-tidytree.js "$tmp/tidytree.js"
 
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.
+# scattergl needs a stand-in for Node's buffer module (scripts/buffer-shim.js).
 npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-name=Plotly \
-  --target=es2019 --define:global=globalThis --loader:.css=empty --log-level=warning --outfile="$tmp/plotly.js"
+  --target=es2019 --define:global=globalThis --loader:.css=empty --alias:buffer=./scripts/buffer-shim.js --log-level=warning --outfile="$tmp/plotly.js"
 
 # golden-layout 2 ships only ES and CommonJS modules
 npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --format=iife --global-name=goldenLayout \
@@ -130,6 +135,12 @@ done
 for i in "${secondaryscripts[@]}"; do
   cat "$i" >> dist/bundle.secondary.js
   printf "\n;\n" >> dist/bundle.secondary.js
+done
+
+: > dist/bundle.pdf.js
+for i in ${pdfscripts[@]}; do
+  cat $i >> dist/bundle.pdf.js
+  printf "\n;\n" >> dist/bundle.pdf.js
 done
 
 echo 'Recording Versions...'

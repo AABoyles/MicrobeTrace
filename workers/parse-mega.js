@@ -32,8 +32,6 @@ if (typeof onmessage !== 'undefined' || typeof self !== 'undefined') onmessage =
   let seqs = (!text || text.length == 0) ? [] : parseMega(text);   // an empty file still answers (#222)
   console.log('MEGA Parse time: ', (Date.now() - start).toLocaleString(), 'ms');
   start = Date.now();
-  let encoder = new TextEncoder();
-  let output = encoder.encode(JSON.stringify(seqs)).buffer;
-  postMessage({ nodes: output, start: start }, [output]);
+  postMessage({ nodes: seqs, start: start });
   close();
 };

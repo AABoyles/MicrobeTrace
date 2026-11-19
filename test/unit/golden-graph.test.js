@@ -112,7 +112,7 @@ test('MT.tagClusters on computed TN93 distances (distances.fasta, threshold 0.03
 
   const { MT, session } = loadApp({ 'ambiguity-resolution-strategy': 'RESOLVE', 'link-storage': 'all', 'link-threshold': 0.03 });
   const seqs = await parseFasta('distances.fasta');
-  const nodes = session.data.nodes = seqs.map((s, i) => ({ _id: s.id, seq: s.seq, index: i, _seqInt: tn93js.toInts(s.seq) }));
+  const nodes = session.data.nodes = seqs.map((s, i) => ({ _id: s.id, seq: s.seq, index: i }));
   await MT.computeLinks(nodes.slice());
   MT.setLinkVisibility(true);
   await MT.tagClusters();
@@ -150,8 +150,8 @@ function treeSummary(tree) {
 
 test('the tree worker recovers the tree behind an additive matrix', async () => {
   const t = golden.tree;
-  const out = await runWorker('workers/compute-tree.js', { matrix: t.matrix, labels: t.labels });
-  const tree = JSON.parse(new TextDecoder().decode(out.tree));
+  const out = await runWorker('workers/compute-tree.js', { matrix: Float64Array.from(t.matrix.flat()), labels: t.labels });
+  const tree = out.tree;
   const { leaves, dist, adj } = treeSummary(tree);
   assert.deepStrictEqual(leaves.slice().sort(), t.labels);
   // Its path lengths are the matrix, so its unrooted topology and branch lengths are the tree's
@@ -180,7 +180,7 @@ test('the Smith-Waterman worker gaps a two-base deletion where it is', async () 
     nodes: [{ seq: a.query }],
     ...MTAlignerScoring({ match: 1, mismatch: 1, gapOpen: 5, gapExtend: 2 })
   });
-  const [node] = JSON.parse(new TextDecoder().decode(out.nodes));
+  const [node] = out.nodes;
   assert.strictEqual(node._seq, a.aligned);
   assert.strictEqual(node._score, a.score);
   assert.strictEqual(node._padding, 0);

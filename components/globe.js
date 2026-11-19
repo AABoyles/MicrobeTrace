@@ -31,6 +31,7 @@
       const located = await MT.locateNodes(MT.getVisibleNodes(), field);
       if (ticket != request || destroyed) return;
       positions = located;
+      cache = null;
       // The first time there are nodes to show, turn and zoom to them
       if (!faced && positions.size) {
         faced = true;
@@ -74,6 +75,45 @@
 
     // What the last frame drew (for tests)
     let drawn = {};
+
+    // Everything about the links and nodes that doesn't change as the globe
+    // turns: node coordinates ([lon, lat], by _id), each link's ends, middle
+    // and color, and the nodes grouped by color. Thrown away by redraw when a
+    // position, color or visibility may have changed.
+    let cache = null;
+    function geometry() {
+      if (cache) return cache;
+      const points = new Map(), links = [], nodes = new Map();
+      const point = id => {
+        if (!points.has(id)) { const [lat, lon] = at(id); points.set(id, [lon, lat]); }
+        return points.get(id);
+      };
+      const linkVariable = settings.get('link-color-variable'), linkColor = settings.get('link-color');
+      MT.getVisibleLinks().forEach(d => {
+        if (!positions.has(d.source) || !positions.has(d.target)) return;
+        const s = point(d.source), t = point(d.target);
+        links.push({
+          source: d.source,
+          target: d.target,
+          s,
+          t,
+          m: d3.geoInterpolate(s, t)(0.5),
+          stroke: linkVariable == 'None' ? linkColor : temp.style.linkColorMap(MT.linkColorValue(d, linkVariable))
+        });
+      });
+      const nodeVariable = settings.get('node-color-variable'), nodeColor = settings.get('node-color');
+      MT.getVisibleNodes().forEach(d => {
+        if (!positions.has(d._id)) return;
+        const fill = nodeVariable == 'None' ? nodeColor : temp.style.nodeColorMap(d[nodeVariable]);
+        if (!nodes.has(fill)) nodes.set(fill, []);
+        nodes.get(fill).push({ type: 'Point', coordinates: point(d._id) });
+      });
+      return (cache = { points, links, nodes });
+    }
+    const redraw = () => {
+      cache = null;
+      draw();
+    };
 
     function draw() {
       if (!width || !height || !map.countries) return;
@@ -127,15 +167,17 @@
       if (settings.get('globe-link-show')) {
         // Links between nodes facing the viewer, as arcs over the surface, a
         // path per color (as the link color table gives them)
-        const variable = settings.get('link-color-variable'), color = settings.get('link-color');
-        const arcs = new Map();
-        MT.getVisibleLinks().forEach(d => {
-          if (!positions.has(d.source) || !positions.has(d.target)) return;
-          const s = at(d.source).slice().reverse(), t = at(d.target).slice().reverse();
-          if (!visible(s) || !visible(t)) return;
-          const stroke = variable == 'None' ? color : temp.style.linkColorMap(MT.linkColorValue(d, variable));
+        // The arcs' ends and middles are worked out once (see geometry), not on
+        // every frame of a spin; a frame only projects them.
+        const arcs = new Map(), shown = new Map();
+        const faces = id => {
+          if (!shown.has(id)) shown.set(id, visible(geometry().points.get(id)));
+          return shown.get(id);
+        };
+        geometry().links.forEach(({ source, target, s, m, t, stroke }) => {
+          if (!faces(source) || !faces(target)) return;
           if (!arcs.has(stroke)) arcs.set(stroke, []);
-          arcs.get(stroke).push([projection(s), projection(d3.geoInterpolate(s, t)(0.5)), projection(t)]);
+          arcs.get(stroke).push([projection(s), projection(m), projection(t)]);
         });
         context.globalAlpha = drawn.linkAlpha = 1 - settings.get('globe-link-transparency');
         // Each under a dark casing, so light colors stand out from the ocean
@@ -158,16 +200,8 @@
 
       if (settings.get('globe-node-show')) {
         // The nodes, a path per color
-        const variable = settings.get('node-color-variable'), color = settings.get('node-color');
-        const groups = new Map();
-        MT.getVisibleNodes().forEach(d => {
-          if (!positions.has(d._id)) return;
-          const fill = variable == 'None' ? color : temp.style.nodeColorMap(d[variable]);
-          if (!groups.has(fill)) groups.set(fill, []);
-          const [lat, lon] = at(d._id);
-          groups.get(fill).push({ type: 'Point', coordinates: [lon, lat] });
-          drawn.nodes++;
-        });
+        const groups = geometry().nodes;
+        groups.forEach(points => { drawn.nodes += points.length; });
         context.globalAlpha = drawn.nodeAlpha = 1 - settings.get('globe-node-transparency');
         // Each outlined in a darker shade, so close nodes stay apart
         context.lineWidth = 1;
@@ -227,7 +261,7 @@
 
     $('.reroll-button').addEventListener('click', () => {
       jitter.reroll();
-      draw();
+      redraw();
     });
 
     MT.geoJSONUpload($('.geojson-input'), $('.geojson-layers'), (data, color) => {
@@ -266,9 +300,9 @@
       MTBind(pane, settings),
       settings.subscribe(fieldKeys, place),
       settings.subscribe(['globe-node-show', 'globe-link-show', 'globe-stars-show', 'globe-countries-show', 'globe-graticule-show',
-        'globe-node-transparency', 'globe-link-transparency', 'globe-node-jitter'], draw),
+        'globe-node-transparency', 'globe-link-transparency', 'globe-node-jitter'], redraw),
       events.on('node-visibility', place),
-      ...['node-color-change', 'link-color-change', 'link-visibility'].map(type => events.on(type, draw))
+      ...['node-color-change', 'link-color-change', 'link-visibility'].map(type => events.on(type, redraw))
     ];
     // d3 fills a polygon on the side its winding points to, so one wound the
     // other way covers the rest of the sphere (as Bermuda's does in
@@ -290,7 +324,7 @@
     });
     place();
 
-    const handle = temp.globe = { projection, get countries() { return map.countries; }, get positions() { return positions; }, get drawn() { return drawn; }, at, redraw: draw };
+    const handle = temp.globe = { projection, get countries() { return map.countries; }, get positions() { return positions; }, get drawn() { return drawn; }, at, redraw };
     return {
       // The page's floating panels this view shows (see MT.placePanels)
       panels: ['link-colors', 'node-colors'],

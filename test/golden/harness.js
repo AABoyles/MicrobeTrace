@@ -61,6 +61,7 @@ function loadApp(widgets = {}) {
     MTSettings: require('../../src/settings.js'),
     MTDates: require('../../src/dates.js'),
     MTEvents: require('../../src/events.js'),
+    tn93: require('../../vendor/tn93.min.js'),
     document: stub()
   };
   ctx.self = ctx.window = ctx;
@@ -79,7 +80,7 @@ function loadApp(widgets = {}) {
 async function parseFasta(file) {
   const text = fs.readFileSync(path.join(__dirname, file), 'utf8');
   const out = await runWorker('workers/parse-fasta.js', text);
-  return JSON.parse(new TextDecoder().decode(out.nodes));
+  return out.nodes;
 }
 
 const expected = file => JSON.parse(fs.readFileSync(path.join(__dirname, file), 'utf8'));

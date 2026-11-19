@@ -21,6 +21,11 @@
       });
     }
 
+    // Beyond this many points the plot is drawn on a canvas (WebGL), not as an
+    // SVG element per point, which is too slow to draw and to hover over
+    const GL_POINTS = 2000;
+    let gl = false;
+
     function draw() {
       const width = MT.viewWidth(root), height = root.clientHeight;
       // A view in a background tab has no size; it draws when it's shown
@@ -31,10 +36,11 @@
       const color = settings.get(nodes ? 'node-color' : 'link-color');
       // Faint gridlines, so the points stand out
       const grid = { gridcolor: MT.gridColor(settings), zerolinecolor: MT.gridColor(settings, 0.4) };
+      gl = items.length > GL_POINTS;
       Plotly.react(plot, [{
         x: items.map(d => d[xVar]),
         y: items.map(d => d[yVar]),
-        type: 'scatter',
+        type: gl ? 'scattergl' : 'scatter',
         mode: 'markers',
         // An outline in a darker shade, so light colors stand out from the page
         marker: { color, size: 8, line: { color: d3.color(color).darker(1.5) + '', width: 1 } }
@@ -50,7 +56,31 @@
     }
 
     MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.scatterplot-plot'), resize: draw });
-    MT.plotExport(root, plot, settings);
+    // A plot on a canvas has no SVG to export, so Plotly renders the picture
+    const imageFormats = ['png', 'jpeg', 'webp', 'svg'];
+    MT.plotExport(root, plot, settings, new Proxy({}, {
+      get: (_, type) => gl && imageFormats.includes(type) ? filename => {
+        const scale = parseFloat(root.querySelector('[name="export-scale"]').value) || 1;
+        const quality = root.querySelector('[name="export-quality"]');
+        // As an SVG (the canvas in it as a data: image), drawn by MT.svgImage like
+        // the other views': Plotly draws its pictures through blob: images, which
+        // the Content Security Policy refuses
+        Plotly.toImage(plot, { format: 'svg', width: plot.clientWidth, height: plot.clientHeight }).then(url => {
+          const text = decodeURIComponent(url.slice(url.indexOf(',') + 1));
+          if (type == 'svg') return MT.saveAs(new Blob([text], { type: 'image/svg+xml;charset=utf-8' }), filename + '.svg');
+          const svg = new DOMParser().parseFromString(text, 'image/svg+xml').documentElement;
+          return MT.svgImage(svg, {
+            scale,
+            backgroundColor: settings.get('background-color'),
+            type: 'image/' + type,
+            quality: quality ? parseFloat(quality.value) : undefined
+          }).then(blob => MT.saveImage(blob, filename + '.' + type));
+        }).catch(error => {
+          console.error(error);
+          MT.toast.error('The image could not be made (' + ((error && error.message) || error) + '). Try a smaller scale.');
+        });
+      } : undefined
+    }));
 
     // Older sessions may store the dataset as something other than a boolean
     settings.set('scatterplot-showNodes', !!settings.get('scatterplot-showNodes'));

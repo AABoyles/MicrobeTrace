@@ -574,9 +574,35 @@
       if (first) first.type = view;
     };
 
+    // Generated sequences go in node files of up to about 200 million characters
+    // each: one CSV of hundreds of thousands of sequences is longer than the
+    // longest string a browser can hold (#301)
+    // (Both the Generate button and the generate_sequences tool.) A count that
+    // isn't a whole number from 1 to MT.maxGeneratedSequences is refused
+    const generateCountError = count => Number.isInteger(count) && count >= 1 && count <= MT.maxGeneratedSequences ? null :
+      `Generate makes from 1 to ${MT.maxGeneratedSequences.toLocaleString()} sequences. Enter a whole number in that range.`;
+    const isGenerated = name => /^generatedNodes(-\d+)?\.csv$/.test(name);
+    // [{name, contents}]: the generated sequences, a node file of CSV each
+    const generatedFiles = count => {
+      const nodes = MT.generateSeqs('gen-' + session.meta.readyTime + '-', count, 20);
+      const perFile = Math.max(1, Math.floor(MT.generatedFileChars / ((nodes[0] ? nodes[0].seq.length : 0) + 50)));
+      const files = Math.ceil(nodes.length / perFile);
+      return Array.from({ length: files }, (_, i) => ({
+        name: files == 1 ? 'generatedNodes.csv' : `generatedNodes-${i + 1}.csv`,
+        contents: Papa.unparse(nodes.slice(i * perFile, (i + 1) * perFile))
+      }));
+    };
+
+    $('.generate-number').max = MT.maxGeneratedSequences;
     $('.generate-sequences').addEventListener('click', () => {
+      const count = number('.generate-number'), error = generateCountError(count);
+      if (error) {
+        MT.toast.error(error);
+        $('.generate-number').focus();
+        return;
+      }
       ready();
-      processFile(new File([Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', number('.generate-number'), 20))], 'generatedNodes.csv'));
+      generatedFiles(count).forEach(f => processFile(new File([f.contents], f.name)));
       launchButton.focus();
     });
 
@@ -786,6 +812,14 @@
           let l = 0, noColumn = 0, missing = 0, bad = 0, badExample = null;
           if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
 
+          // Known fields, looked up as a Set (the list is searched only for a miss)
+          const knownFields = new Set(session.data.linkFields);
+          const noteField = key => {
+            if (knownFields.has(key)) return;
+            knownFields.add(key);
+            if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key);
+          };
+
           let forEachLink = link => {
             const keys = Object.keys(link);
             const n = keys.length;
@@ -795,9 +829,7 @@
               const value = link[keys[i]];
               const key = keys[i];
               safeLink[key] = value;
-              if (!session.data.linkFields.includes(key)) {
-                session.data.linkFields.push(key);
-              }
+              noteField(key);
             }
             const source = MT.cleanID(safeLink[file.field1]), target = MT.cleanID(safeLink[file.field2]);
             if (source == '' || target == '') { report.blanks++; return; }
@@ -852,45 +884,34 @@
 
           } else {
 
-            Papa.parse(file.contents, {
-              delimiter: file.delimiter || ",",
-              // newline: "\r\n",
-              header: true,
-              // Numbers are read as numbers, except IDs: 007 and 1E3 are names (#219)
-              dynamicTyping: field => field != file.field1 && field != file.field2,
-              skipEmptyLines: true,
-              complete: results => {
-                let data = results.data;
-                data.map(forEachLink);
-                message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
-                reportDistances(file, noColumn, missing, bad, badExample);
-                results.meta.fields.forEach(key => {
-                  if (!session.data.linkFields.includes(key)) {
-                    session.data.linkFields.push(key);
-                  }
+            // The text is parsed in a worker, so a large list does not freeze the page
+            MT.runWorker('workers/parse-links.js', { text: file.contents, delimiter: file.delimiter, field1: file.field1, field2: file.field2 }, { name: 'The link list parser' }).then(results => {
+              let data = results.rows;
+              data.map(forEachLink);
+              message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+              reportDistances(file, noColumn, missing, bad, badExample);
+              results.fields.forEach(noteField);
+              let newNodes = 0, totalNodes = 0;
+              const n = data.length;
+              // Each endpoint once (it used to count, and look up, every one)
+              const nodeIDs = new Set();
+              for (let i = 0; i < n; i++) {
+                const l = data[i];
+                [l[file.field1], l[file.field2]].forEach(value => {
+                  const id = MT.cleanID(value);
+                  if (id == '' || nodeIDs.has(id)) return;
+                  totalNodes++;
+                  nodeIDs.add(id);
+                  newNodes += MT.addNode({
+                    _id: id,
+                    origin: origin
+                  }, true, source);
                 });
-                let newNodes = 0, totalNodes = 0;
-                const n = data.length;
-                // Each endpoint once (it used to count, and look up, every one)
-                const nodeIDs = new Set();
-                for (let i = 0; i < n; i++) {
-                  const l = data[i];
-                  [l[file.field1], l[file.field2]].forEach(value => {
-                    const id = MT.cleanID(value);
-                    if (id == '' || nodeIDs.has(id)) return;
-                    totalNodes++;
-                    nodeIDs.add(id);
-                    newNodes += MT.addNode({
-                      _id: id,
-                      origin: origin
-                    }, true, source);
-                  });
-                }
-                console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
-                message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
-                parsed();
               }
-            });
+              console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+              message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
+              parsed();
+            }).catch(error => fail(file, 'a link list', error));
           }
         } else if (file.format == 'node') {
 
@@ -1083,12 +1104,6 @@
         } else {
           reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));
         }
-        const start = Date.now();
-        for(let k = 0; k < n; k++){
-          let node = nodes[k];
-          node['_seqInt'] = tn93.toInts(node['seq']);
-        }
-        console.log("Integer Sequence Translation time: ", (Date.now() - start).toLocaleString(), "ms");
         // Nodes without a sequence hold only gaps; they are left out of the consensus
         step = 'computing the consensus sequence';
         MT.progress('Computing the consensus sequence');
@@ -1285,9 +1300,14 @@
         launchButton.click();
         return true;
       },
-      // Adds a file of generated random sequences, as the Generate button does
+      // Adds generated random sequences as the Generate button does (in several
+      // files if there are many), replacing those generated before; throws a
+      // count the button refuses
       generate(count) {
-        return api.add({ name: 'generatedNodes.csv', extension: 'csv', contents: Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', count, 20)) });
+        const error = generateCountError(count);
+        if (error) throw new Error(error);
+        session.files.filter(f => isGenerated(f.rawName || f.name)).forEach(f => api.remove(f.name));
+        return generatedFiles(count).map(f => api.add({ name: f.name, extension: 'csv', contents: f.contents }));
       },
       // The audit's findings for [{id, seq}], given {empty, gaps, RNA, 'amino-acids', CIGAR, malformed} (each on unless false)
       auditSequences: (data, checks) => auditSequences(data, name => checks[name] !== false),

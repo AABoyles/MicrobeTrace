@@ -32,8 +32,6 @@ if(typeof onmessage !== 'undefined' || typeof self !== 'undefined') onmessage = 
   var consensus = consensusOf(e.data);
   console.log('Consensus Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
   start = Date.now();
-  var encoder = new TextEncoder();
-  consensus = encoder.encode(consensus).buffer;
-  postMessage({consensus: consensus, start: start}, [consensus]);
+  postMessage({consensus: consensus, start: start});
   close();
 };

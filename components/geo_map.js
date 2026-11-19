@@ -73,11 +73,17 @@
       if (!settings.get('map-link-show')) return;
       const colorVariable = settings.get('link-color-variable'), color = settings.get('link-color');
       const opacity = 1 - settings.get('map-link-transparency');
+      // Links are drawn on the map's canvas; they're only made to answer the
+      // mouse (which the canvas checks against every one on each move) when
+      // there is a tooltip to show
+      const tooltip = settings.get('map-link-tooltip-variable');
+      const interactive = !!tooltip && tooltip != 'None';
       layers.links = L.featureGroup(MT.getVisibleLinks()
         .filter(d => positions.has(d.source) && positions.has(d.target))
         .map(d => L.polyline([jittered(d.source), jittered(d.target)], {
           color: colorVariable == 'None' ? color : temp.style.linkColorMap(MT.linkColorValue(d, colorVariable)),
           opacity,
+          interactive,
           data: d
         })))
         .on('mouseover', e => showTooltip(e, 'map-link-tooltip-variable'))
@@ -186,7 +192,7 @@
       MTBind(pane, settings),
       settings.subscribe(fieldKeys, place),
       settings.subscribe(['map-node-show', 'map-collapsing-on', 'map-node-transparency'], () => drawNodes()),
-      settings.subscribe(['map-link-show', 'map-link-transparency'], drawLinks),
+      settings.subscribe(['map-link-show', 'map-link-transparency', 'map-link-tooltip-variable'], drawLinks),
       settings.subscribe('map-node-jitter', redraw),
       settings.subscribe(['map-countries-show', 'map-states-show', 'map-counties-show'], showLayers),
       settings.subscribe('map-basemap-show', tiles('map-basemap-show', 'map-satellite-show')),

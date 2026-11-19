@@ -96,8 +96,9 @@ async function pipeline(file, strategy, widgets = {}) {
   }, widgets));
   const seqs = await parseFasta(`${file}.fasta`);
   const nodes = session.data.nodes = seqs.map((s, i) => ({ _id: s.id, seq: s.seq, index: i }));
-  nodes.forEach(d => { d._seqInt = tn93js.toInts(d.seq); });
   await MT.computeAmbiguityCounts();
+  assert.ok(nodes.every(d => !('_seqInt' in d)), 'the encoded sequences are not kept on the nodes (#224)');
+  assert.ok(!JSON.stringify(nodes).includes('_seqInt'));
   await MT.computeLinks(nodes.slice());
   return { MT, session, ids: seqs.map(s => s.id) };
 }
@@ -198,5 +199,5 @@ test('the FASTA parser keeps N as an ambiguity code, as tn93 reads it (#232)', a
   assert.strictEqual(seqs.length, 8);
   assert.ok(seqs.every(s => s.seq.length == 40));
   const out = await runWorker('workers/parse-fasta.js', '>n\nACGNN\nNT\n');
-  assert.deepStrictEqual(JSON.parse(new TextDecoder().decode(out.nodes)), [{ id: 'n', seq: 'ACGNNNT' }]);
+  assert.deepStrictEqual(out.nodes, [{ id: 'n', seq: 'ACGNNNT' }]);
 });

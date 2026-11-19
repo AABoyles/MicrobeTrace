@@ -487,10 +487,11 @@
   };
 
   // A plain link object for edge e of the graph.
-  MT.linkObject = (e, visible, data) => {
+  // (With shareOrigin, its origin list is the graph's own, which must be left alone.)
+  MT.linkObject = (e, visible, data, shareOrigin) => {
     data = data || session.data;
     const g = data.graph;
-    const link = g.link(e);
+    const link = g.link(e, shareOrigin);
     data.linkFields.forEach(field => {
       if (!(field in link)) link[field] = null;
     });
@@ -632,7 +633,8 @@
           links = oldSession.data.links,
           n = nodes.length,
           m = links.length;
-    for(let i = 0; i < n; i++) MT.addNode(nodes[i]);
+    // (Older sessions saved each node's encoded sequence, which is rebuilt when needed)
+    for(let i = 0; i < n; i++) { delete nodes[i]._seqInt; MT.addNode(nodes[i]); }
     for(let j = 0; j < m; j++) MT.addLink(links[j]);
     // Where the nodes' values came from (sessions from before this have none)
     if (oldSession.data.nodeSources) session.data.nodeSources = oldSession.data.nodeSources;
@@ -820,17 +822,14 @@
     if (modal) modal.setAttribute("aria-busy", "false");
   };
 
-  // A reply's JSON bytes, parsed
-  const decodeJSON = bytes => JSON.parse(MT.decode(new Uint8Array(bytes)));
-
   MT.parseFASTA = text => MT.runWorker("workers/parse-fasta.js", text, { name: "The FASTA parser" }).then(data => {
     console.log("FASTA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
-    return decodeJSON(data.nodes);
+    return data.nodes;
   });
 
   MT.parseMEGA = text => MT.runWorker("workers/parse-mega.js", text, { name: "The MEGA parser" }).then(data => {
     console.log("MEGA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
-    return decodeJSON(data.nodes);
+    return data.nodes;
   });
   
   // Reads a distance matrix (CSV text in file.contents) into the graph. Rejects
@@ -842,7 +841,7 @@
       let nn = 0,
           nl = 0;
       MT.runWorker("workers/parse-csv-matrix.js", file.contents, { name: "The matrix parser" }).then(response => {
-        const data = decodeJSON(response.data);
+        const data = response.data;
         console.log("CSV Matrix Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         const start = Date.now();
         const nodes = data.nodes;
@@ -870,6 +869,14 @@
   MT.r01 = Math.random;
   
   // ported from https://github.com/aaboyles/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
+  // The most characters the Generate button puts in one node file (#301): a
+  // browser's longest string is about 500 million, and each is read whole
+  MT.generatedFileChars = 2e8;
+  // The most sequences the Generate button makes: 250,000 load in a few minutes;
+  // 300,000 and more run out of memory computing distances, as each distance
+  // worker gets its own copy of the sequences (#301)
+  MT.maxGeneratedSequences = 250000;
+
   MT.generateSeqs = (idPrefix, count, snps, seed) => {
     let start = Date.now();
     if (!count) count = 1000;
@@ -1034,7 +1041,12 @@
       if (fit.padded) warnings.push(`${plural(fit.padded, 'sequence')} did not reach the end of the reference; ${fit.padded == 1 ? 'its' : 'their'} end was filled with gaps.`);
     }
     if (unaligned && unaligned.length) {
-      const min = Math.min(...unaligned), max = Math.max(...unaligned);
+      // (A loop: spreading hundreds of thousands of lengths into Math.min overflows the stack, #302)
+      let min = Infinity, max = -Infinity;
+      for (const length of unaligned) {
+        if (length < min) min = length;
+        if (length > max) max = length;
+      }
       if (min != max) warnings.push(`Alignment is off but the sequences differ in length (${min.toLocaleString()} to ${max.toLocaleString()}). Positions will not correspond between sequences, so distances may be wrong. Turn on alignment or align them beforehand.`);
     }
     return warnings;
@@ -1049,7 +1061,7 @@
       let referenceLength = params.reference.length;
       const originals = params.nodes.map(d => d.seq || "");
       MT.runWorker("workers/align-sw.js", params, { name: "The aligner" }).then(response => {
-        let subset = decodeJSON(response.nodes);
+        let subset = response.nodes;
         console.log("Alignment transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
         let minPadding = Infinity,
@@ -1072,7 +1084,7 @@
     if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
     return MT.runWorker("workers/compute-consensus.js", nodes, { name: "The consensus computation" }).then(response => {
       console.log("Consensus Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
-      return MT.decode(new Uint8Array(response.consensus));
+      return response.consensus;
     });
   };
   
@@ -1081,7 +1093,10 @@
       let nodes = session.data.nodes;
       let subset = nodes.filter(d => d.seq);
       const subsetLength = subset.length;
-      MT.runWorker("workers/compute-ambiguity-counts.js", subset, { name: "The ambiguity count" }).then(response => {
+      // The encoded sequences go to the worker alone: kept on the nodes they
+      // would be saved with the session
+      const encoded = subset.map(d => ({ _seqInt: tn93.toInts(d.seq) }));
+      MT.runWorker("workers/compute-ambiguity-counts.js", encoded, { name: "The ambiguity count" }).then(response => {
         console.log("Ambiguity Count Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
         const dists = new Float32Array(response.counts);
@@ -1323,45 +1338,62 @@
   // The row order of MT.getDM (every node, in session order).
   MT.getDMLabels = () => session.data.nodes.map(d => d._id);
 
-  // The full distance matrix (arrays of arrays, null where there's no link) for
-  // the link sort variable, in the order of MT.getDMLabels().
-  MT.getDM = () => {
-    let start = Date.now();
+  // The most nodes MT.getDM builds a matrix for by default: a Float64Array of
+  // n * n is 200 MB at 5,000 nodes, and 800 MB at 10,000 (#248).
+  MT.DM_MAX_NODES = 5000;
+
+  // The distance matrix computed last, kept while the graph, the metric and the
+  // nodes are as they were, so restyling a view doesn't compute it again.
+  let dmCache = null;
+
+  // The full distance matrix for the link sort variable, in the order of
+  // MT.getDMLabels(): a Float64Array of n * n, row by row, NaN where there's no
+  // link, 0 on the diagonal. It is shared (don't change it; copy it to hand it to
+  // a worker). Rejects, saying why, when there are more than maxNodes nodes.
+  MT.getDM = (maxNodes = MT.DM_MAX_NODES) => {
     return new Promise(resolve => {
-      const { labels, tri } = MT.getCondensedDM();
-      const n = labels.length;
-      let dm = new Array(n);
-      for (let i = 0; i < n; i++) {
-        dm[i] = new Array(n);
-        dm[i][i] = 0;
+      const g = session.data.graph, nodes = session.data.nodes;
+      const n = nodes.length, metric = session.style.widgets['link-sort-variable'];
+      if (n > maxNodes) {
+        throw new Error('The distance matrix of ' + n.toLocaleString() + ' nodes (' + (n * n / 1e6).toLocaleString(undefined, { maximumFractionDigits: 0 }) +
+          ' million cells) is too large to build; the limit is ' + maxNodes.toLocaleString() + ' nodes. Filter the data to fewer nodes to use it.');
       }
+      const c = dmCache;
+      if (c && c.graph === g && c.version === g.version && c.metric === metric && c.nodes === nodes && c.n === n) return resolve(c.dm);
+      let start = Date.now();
+      const { tri } = MT.getCondensedDM(metric, MT.getDMLabels());
+      const dm = new Float64Array(n * n).fill(NaN);
       let k = 0;
       for (let i = 0; i < n; i++) {
-        const row = dm[i];
+        dm[i * n + i] = 0;
         for (let j = i + 1; j < n; j++, k++) {
           const v = tri[k];
           // NaN (no link) and Infinity (a saturated distance) are both missing
-          row[j] = dm[j][i] = isFinite(v) ? v : null;
+          if (isFinite(v)) dm[i * n + j] = dm[j * n + i] = v;
         }
       }
+      dmCache = { graph: g, version: g.version, metric, nodes, n, dm };
       console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
       resolve(dm);
     });
   };
-  
+
   MT.computeTree = () => {
     // Every way out settles the promise, as MT.runHamsters waits on it:
     // parsing a tree too deep for patristic throws here, on the main thread (#250)
-    return MT.getDM().then(dm => MT.runWorker("workers/compute-tree.js", {
-      labels: MT.getDMLabels(),
-      matrix: dm,
-      round: session.style.widgets["tree-round"]
-    }, { name: "The tree computation" })).then(response => {
-      temp.tree = patristic.parseJSON(MT.decode(new Uint8Array(response.tree)));
+    return MT.getDM().then(dm => {
+      const matrix = dm.slice(); // the worker takes this copy; the cached one stays
+      return MT.runWorker("workers/compute-tree.js", {
+        labels: MT.getDMLabels(),
+        matrix,
+        round: session.style.widgets["tree-round"]
+      }, { transfer: [matrix.buffer], name: "The tree computation" });
+    }).then(response => {
+      temp.tree = patristic.parseJSON(response.tree);
       console.log("Tree Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
     });
   };
-  
+
   MT.computeDirectionality = () => {
     return new Promise((resolve, reject) => {
       // Directions are inferred from the tree (see MT.runHamsters).
@@ -1450,17 +1482,20 @@
   MT.computeTriangulation = () => {
     return new Promise((resolve, reject) => {
       const metric = session.style.widgets['link-sort-variable'];
-      MT.getDM().then(dm => MT.runWorker("workers/compute-triangulation.js", { matrix: dm }, { name: "Triangulation" })).then(response => {
+      MT.getDM().then(dm => {
+        const matrix = dm.slice(); // the worker takes this copy; the cached one stays
+        return MT.runWorker("workers/compute-triangulation.js", { matrix }, { transfer: [matrix.buffer], name: "Triangulation" });
+      }).then(response => {
         console.log("Triangulation Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
         let start = Date.now();
-        let matrix = decodeJSON(response.matrix);
+        const matrix = new Float64Array(response.matrix);
         const g = session.data.graph;
         let labels = MT.getDMLabels();
         const n = labels.length;
         for(let i = 0; i < n; i++){
           const source = labels[i], a = g.node(source);
           for(let j = 0; j < i; j++){
-            const target = labels[j], v = matrix[i][j];
+            const target = labels[j], v = isNaN(matrix[i * n + j]) ? null : matrix[i * n + j];
             const e = g.edgeBetween(a, g.node(target));
             if (e < 0) {
               g.addLink({ source: source, target: target, origin: ['Triangulation'], [metric]: v });
@@ -1565,13 +1600,21 @@
       // it has committed, so a failed write (the quota, say) keeps the old copy.
       // The user is told the first time it fails, not every minute.
       const state = temp.autostash = { time: Date.now(), key: null, warned: false, busy: false };
-      state.interval = setInterval(async () => {
+      // (Each minute's copy; tests call it directly)
+      state.tick = async () => {
         if (state.busy) return;
         state.busy = true;
         try {
           const newKey = "stash-" + Date.now() + "-autostash";
           MT.syncLayout();
-          await db.setItem(newKey, JSON.stringify(session));
+          const text = JSON.stringify(session);
+          // Nothing has changed since the last copy: it stays, and isn't written again
+          if (state.key && text === state.text) {
+            state.time = Date.now();
+            return;
+          }
+          await db.setItem(newKey, text);
+          state.text = text;
           const oldKey = state.key;
           state.key = newKey;
           state.time = Date.now();
@@ -1586,7 +1629,8 @@
         } finally {
           state.busy = false;
         }
-      }, 60000);
+      };
+      state.interval = setInterval(state.tick, 60000);
     });
     document.querySelectorAll(".hideForHIVTrace").forEach(el => el.style.display = "flex");
     setTimeout(() => {
@@ -1672,8 +1716,10 @@
         nodeCluster[x] = clusterOf[component[x]];
         if (nodeCluster[x] >= 0) clusters[nodeCluster[x]].nodes++;
       }
-      g.nodeCluster = nodeCluster;
-      g.version++;
+      // (The same clusters as before keep the same array, and what was built
+      // from it stays good)
+      const before = g.nodeCluster;
+      if (!before || before.length != nodeCluster.length || nodeCluster.some((c, x) => c !== before[x])) g.nodeCluster = nodeCluster;
 
       const degree = new Uint32Array(g.nodeCount);
       for (let x = 0; x < g.visibleCount; x++) {
@@ -1699,6 +1745,29 @@
     });
   };
   
+  // The dates of the nodes' field as times (NaN for the undated), read once
+  // and again only when a value, the nodes or the field change (stepping the
+  // timeline asks for them at each step). The order of a date like 3/4/2020
+  // is that of all the field's values (see MTDates.dateOrderOf).
+  MT.nodeTimes = field => {
+    const nodes = session.data.nodes, n = nodes.length;
+    const cache = temp.nodeTimes;
+    if (cache && cache.field === field && cache.raw.length == n) {
+      let i = 0;
+      while (i < n && nodes[i][field] === cache.raw[i]) i++;
+      if (i == n) return cache.times;
+    }
+    const raw = nodes.map(d => d[field]);
+    const order = MTDates.dateOrderOf(raw).order;
+    const times = new Float64Array(n);
+    raw.forEach((value, i) => {
+      const date = MTDates.parseDate(value, order);
+      times[i] = date ? +date : NaN;
+    });
+    temp.nodeTimes = { field, raw, times };
+    return times;
+  };
+
   MT.setNodeVisibility = silent => { 
     let start = Date.now();
     let dateField = session.style.widgets["timeline-date-field"];
@@ -1706,7 +1775,8 @@
       clusters = session.data.clusters;
     let n = nodes.length;
     let timeEnd = dateField != "None" && MT.parseDate(session.state.timeEnd);
-    const order = MTDates.dateOrderOf(nodes.map(d => d[dateField])).order;
+    const times = timeEnd ? MT.nodeTimes(dateField) : null;
+    const until = timeEnd ? +timeEnd : 0;
     for (let i = 0; i < n; i++) {
       let node = nodes[i];
       node.visible = true;
@@ -1715,7 +1785,7 @@
         node.visible = node.visible && cluster.visible; 
       }
       // Nodes after the epi curve's brushed range are hidden; undated ones stay
-      if (timeEnd) node.visible = node.visible && MTDates.shownAt(node[dateField], timeEnd, order);
+      if (timeEnd) node.visible = node.visible && !(times[i] > until);
     }
     if (!silent) MT.events.emit("node-visibility");
     console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
@@ -1760,14 +1830,9 @@
 
   MT.getNetworkNodes = () => {
     MT.syncLayout();
-    let nodes = session.network.nodes;
-    let n = nodes.length;
-    let out = [];
-      for (let i = 0; i < n; i++) {
-        let node = nodes[i];
-        out.push(JSON.parse(JSON.stringify(node)));
-      }
-    return out;
+    // Their own fields, not the values those hold: the places and pins are
+    // kept in the copies, and nothing changes what's inside a node
+    return session.network.nodes.map(node => Object.assign({}, node));
   };
 
   MT.updatePinNodes = copy => {
@@ -1810,57 +1875,56 @@
     return out;
   };
 
-  // Link objects for the visible links, built once per change to the graph.
+  // Link objects for the visible links, built again only when what they hold
+  // changes: the visible links (a link in both lists keeps its object), their
+  // data or their clusters. They're shared by every caller, which must not
+  // change them (nor their origin lists); with copy they're copies of their
+  // own fields, to place or to change.
   MT.getVisibleLinks = copy => {
     const g = session.data.graph;
+    const fields = session.data.linkFields.length;
     let cache = temp.visibleLinks;
-    if (!cache || cache.graph !== g || cache.version !== g.version) {
+    // (The data of the links is the same: what's changed is which are visible, or their clusters)
+    const kept = cache && cache.graph === g && cache.version === g.version && cache.fields === fields;
+    if (!kept || cache.visibleVersion !== g.visibleVersion || cache.nodeCluster !== g.nodeCluster) {
+      const old = kept ? new Map(Array.from(cache.edges, (e, x) => [e, cache.links[x]])) : null;
       const links = new Array(g.visibleCount);
-      for (let x = 0; x < g.visibleCount; x++) links[x] = MT.linkObject(g.visible[x], true);
-      cache = temp.visibleLinks = { graph: g, version: g.version, links };
+      for (let x = 0; x < g.visibleCount; x++) {
+        const e = g.visible[x];
+        const link = old && old.get(e);
+        links[x] = link && link.cluster === (g.nodeCluster ? g.nodeCluster[g.source(e)] : 1) ? link : MT.linkObject(e, true, undefined, true);
+      }
+      cache = temp.visibleLinks = { graph: g, version: g.version, nodeCluster: g.nodeCluster, fields, visibleVersion: g.visibleVersion, edges: g.visible.slice(0, g.visibleCount), links };
     }
-    if (copy) return cache.links.map(link => JSON.parse(JSON.stringify(link)));
+    if (copy) return cache.links.map(link => Object.assign({}, link, { origin: link.origin.slice() }));
     return cache.links.slice();
   };
   
+  // The visible clusters (the clusters themselves, or with copy copies of
+  // their own fields)
   MT.getVisibleClusters = copy => {
-    let clusters = session.data.clusters;
-    let n = clusters.length;
-    let out = [];
-    if (copy) {
-      for (let i = 0; i < n; i++) {
-        let cluster = clusters[i];
-        if (cluster.visible){
-          out.push(JSON.parse(JSON.stringify(cluster)));
-        }
-      }
-    } else {
-      for (let j = 0; j < n; j++) {
-        let cluster = clusters[j];
-        if (cluster.visible){
-          out.push(cluster);
-        }
-      }
-    }
-    return out;
+    const out = session.data.clusters.filter(cluster => cluster.visible);
+    return copy ? out.map(cluster => Object.assign({}, cluster)) : out;
   };
   
   MT.updateStatistics = () => {
     if (!session.style.widgets["network-statistics-show"]) return;
     let vnodes = MT.getVisibleNodes();
-    let vlinks = MT.getVisibleLinks();
+    const g = session.data.graph;
     let linkCount = 0;
     let clusterCount = 0;
     if (session.style.widgets["timeline-date-field"]== 'None') {
-      linkCount = vlinks.length;
+      linkCount = g.visibleCount;
       clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(cluster.nodes)).length;
     } else {
       // (Looked up by ID, as the links name nodes by their ID)
       const visibleIds = new Set();
       vnodes.forEach(d => { visibleIds.add('' + d._id); if (d.id != null) visibleIds.add('' + d.id); });
-      vlinks.forEach(l => {
-        if (visibleIds.has('' + l.source) && visibleIds.has('' + l.target)) linkCount++;
-      });
+      // (From the graph, with no link object made for each)
+      for (let x = 0; x < g.visibleCount; x++) {
+        const e = g.visible[x];
+        if (visibleIds.has('' + g.ids[g.source(e)]) && visibleIds.has('' + g.ids[g.target(e)])) linkCount++;
+      }
 
       const sizes = new Map();
       vnodes.forEach(d => sizes.set(d.cluster, (sizes.get(d.cluster) || 0) + 1));
@@ -1967,6 +2031,7 @@
       // During timeline mode, user Pause and switch to a different Node varaible but nodeColorsTableKeys[variable] is not available
       if(!session.style.nodeColorsTableKeys[variable]) {
         let aggregatesTL = {};
+        const timelineIndex = byId(session.network.timelineNodes);
         let nodesTL = session.network.timelineNodes;
         let n = nodesTL.length;
         let nodeColorsTL = [...session.style.nodeColors];
@@ -2020,6 +2085,20 @@
       linkColors = session.style.linkColorsTable[variable] = [...session.style.linkColors];
     }
 
+    // A node is found by either its _id or its id (as text, so 1 and "1" match);
+    // the first node in the list wins, as it did with a linear search
+    const byId = nodes => {
+      const index = new Map();
+      for (let k = 0; k < nodes.length; k++) {
+        const d = nodes[k];
+        if (d._id != null && !index.has(String(d._id))) index.set(String(d._id), d);
+        if (d.id != null && !index.has(String(d.id))) index.set(String(d.id), d);
+      }
+      return index;
+    };
+    const find = (index, id) => id == null ? undefined : index.get(String(id));
+    const nodeIndex = byId(session.data.nodes);
+
     let aggregates = {};
     let links = MT.getVisibleLinks();
     let i = 0,
@@ -2030,8 +2109,8 @@
         l = links[i++];
         if (!l.visible) continue;
 
-        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
-        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        let src = find(nodeIndex, l.source);
+        let tgt = find(nodeIndex, l.target);
         if (src === undefined || src.visible === false) continue;
         if (tgt === undefined || tgt.visible === false) continue;
         
@@ -2048,8 +2127,8 @@
         l = links[i++];
         if (!l.visible) continue;
         
-        let src = session.data.nodes.find(dd => dd._id == l.source || dd.id == l.source);
-        let tgt = session.data.nodes.find(dd => dd._id == l.target || dd.id == l.target);
+        let src = find(nodeIndex, l.source);
+        let tgt = find(nodeIndex, l.target);
         if (src === undefined || src.visible === false) continue;
         if (tgt === undefined || tgt.visible === false) continue;  
 
@@ -2089,8 +2168,8 @@
           while (i < n) {
             l = linksTL[i++];
             if (!l.visible) continue;
-            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
-            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            let src = find(timelineIndex, l.source);
+            let tgt = find(timelineIndex, l.target);
             if (src === undefined || src.visible === false) continue;
             if (tgt === undefined || tgt.visible === false) continue;
             l.origin.forEach(o => {
@@ -2105,8 +2184,8 @@
           while (i < n) {
             l = linksTL[i++];
             if (!l.visible) continue;
-            let src = session.network.timelineNodes.find(dd => dd._id == l.source || dd.id == l.source);
-            let tgt = session.network.timelineNodes.find(dd => dd._id == l.target || dd.id == l.target);
+            let src = find(timelineIndex, l.source);
+            let tgt = find(timelineIndex, l.target);
             if (src === undefined || src.visible === false) continue;
             if (tgt === undefined || tgt.visible === false) continue;  
             let lv = l[variable];
@@ -2491,8 +2570,26 @@
     });
   };
 
+  // Loads a script once, on demand: the promise is cached by URL, and a failed
+  // load is forgotten so it can be tried again
+  const scripts = {};
+  MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => {
+      delete scripts[src];
+      script.remove();
+      reject(new Error('Could not load ' + src));
+    };
+    document.head.appendChild(script);
+  }));
+
+  // pdfmake and its fonts (1.9 MB) are only fetched when a PDF is first made
+  MT.loadPDF = () => self.pdfMake ? Promise.resolve() : MT.loadScript('dist/bundle.pdf.js');
+
   // A PDF of tables ({ title, headers, rows })
-  MT.tablesPDF = (heading, tables, filename) => pdfMake.createPdf({
+  MT.tablesPDF = (heading, tables, filename) => MT.loadPDF().then(() => pdfMake.createPdf({
     content: [
       { text: heading, style: 'header', alignment: 'center' },
       ...tables.map(t => ({
@@ -2505,7 +2602,7 @@
       header: { fontSize: 22, bold: true },
       paddedTable: { margin: [10, 10, 10, 10] }
     }
-  }).download(filename + '.pdf');
+  }).download(filename + '.pdf')).catch(() => MT.toast.error("The PDF library couldn't be loaded, so the PDF wasn't made. Check your connection and try again."));
 
   // Turns a <select multiple> into a searchable menu of removable choices (Tom
   // Select). To change its options, destroy() it and make a new one. Its menu

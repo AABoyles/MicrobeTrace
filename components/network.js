@@ -1546,10 +1546,16 @@
     };
 
     // The global timeline replays itself when the window changes size
+    // (once it stops: it's redrawn for every size it passes through otherwise)
+    let resizeTimer = null;
     const onWindowResize = () => {
       if (get('node-timeline-variable') == 'None') return;
-      MT.showTimeline();
-      setTimeout(fit, 0);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (get('node-timeline-variable') == 'None') return;
+        MT.showTimeline();
+        setTimeout(fit, 0);
+      }, 150);
     };
     window.addEventListener('resize', onWindowResize);
 
@@ -1614,6 +1620,7 @@
         window.removeEventListener('keydown', brushPointer);
         window.removeEventListener('keyup', brushPointer);
         window.removeEventListener('resize', onWindowResize);
+        clearTimeout(resizeTimer);
         window.removeEventListener('keydown', onKeyFirst, true);
         tooltipMenu.destroy();
         hideTooltip();

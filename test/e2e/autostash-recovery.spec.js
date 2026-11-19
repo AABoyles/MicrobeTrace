@@ -71,3 +71,48 @@ test('a copy can be discarded, or left for later', async ({ page }) => {
   await page.waitForSelector('#data-files', { state: 'attached' });
   await expect(page.locator('#recover-modal.show')).toHaveCount(0);
 });
+
+test('an unchanged session is not written again (#254)', async ({ page }) => {
+  const errors = watchErrors(page);
+  await open(page);
+  await page.evaluate(() => db.setItem('stash-auto', 'true'));
+  await page.setInputFiles('#data-files', [links]);
+  await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
+  await page.click('#launch');
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '' && temp.autostash, null, { timeout: 120000 });
+  // Each minute's copy, called directly rather than by waiting minutes (or
+  // running a fake clock through every animation frame of those minutes).
+  const tick = () => page.evaluate(() => temp.autostash.tick());
+  await page.evaluate(() => { MT.events.emit('stop-force-simulation'); MT.syncLayout = () => {}; });
+  expect(await page.evaluate(() => typeof temp.autostash.interval)).not.toBe('undefined');
+  // (The views finish opening, and the Files view closes, just after launch)
+  await expect.poll(() => page.evaluate(async () => {
+    const before = JSON.stringify(session);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return JSON.stringify(session) === before;
+  }), { timeout: 30000 }).toBe(true);
+  await tick();
+  const first = await keys(page);
+  expect(first).toHaveLength(1);
+  await tick();
+  await tick();
+  expect(await keys(page)).toEqual(first);
+  expect(errors).toEqual([]);
+});
+
+test('reopening a session drops any saved encoded sequences (#224)', async ({ page }) => {
+  await open(page);
+  await page.setInputFiles('#data-files', [links]);
+  await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
+  await page.click('#launch');
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  const left = await page.evaluate(async () => {
+    MT.syncLayout();
+    const saved = JSON.parse(JSON.stringify(session));
+    saved.data.nodes.forEach(d => { d._seqInt = { 0: 1, 1: 2 }; });
+    MT.applySession(saved);
+    await new Promise(r => setTimeout(r, 500));
+    return session.data.nodes.filter(d => '_seqInt' in d).length + ':' + JSON.stringify(session).includes('_seqInt');
+  });
+  expect(left).toBe('0:false');
+});

@@ -4,10 +4,12 @@
     const pane = $('.left-pane');
     const svg = d3.select($('.bubbles'));
     let width = 0, height = 0, bubbles = [];
+    // The circles, kept rather than searched for on each tick of the layout
+    let circles = svg.selectAll('circle');
 
     const simulation = d3.forceSimulation()
       .velocityDecay(0.2)
-      .on('tick', () => svg.selectAll('circle').attr('cx', d => d.x).attr('cy', d => d.y));
+      .on('tick', () => circles.attr('cx', d => d.x).attr('cy', d => d.y));
 
     // The bubbles' radius: the size setting, or by default one at which they
     // pack a circle about half the view's height. The size slider shows it.
@@ -20,7 +22,7 @@
     }
     function resizeBubbles() {
       const r = radius();
-      svg.selectAll('circle').attr('r', r);
+      circles.attr('r', r);
       // They don't overlap, whatever their size
       simulation.force('collide', d3.forceCollide(r + 1).iterations(4));
       sizeInput.value = r;
@@ -33,7 +35,7 @@
         const old = before.get(d._id);
         return { _id: d._id, node: d, x: old ? old.x : width / 2, y: old ? old.y : height / 2 };
       });
-      svg.selectAll('circle')
+      circles = svg.selectAll('circle')
         .data(bubbles, b => b._id)
         .join(enter => enter.append('circle')
           .attr('stroke-width', 2)
@@ -51,7 +53,7 @@
 
     function setColors() {
       const variable = settings.get('node-color-variable'), color = settings.get('node-color'), selected = settings.get('selected-color');
-      svg.selectAll('circle')
+      circles
         .attr('stroke', b => b.node.selected ? selected : '#ffffff')
         .attr('fill', b => variable == 'None' ? color : temp.style.nodeColorMap(b.node[variable]));
     }
@@ -98,7 +100,7 @@
       if (MT.reducedMotion()) {
         simulation.stop();
         simulation.tick(300);
-        svg.selectAll('circle').attr('cx', d => d.x).attr('cy', d => d.y);
+        circles.attr('cx', d => d.x).attr('cy', d => d.y);
       } else {
         simulation.restart();
       }

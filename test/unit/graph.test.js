@@ -266,3 +266,48 @@ test('unmeasured links pass any threshold; other links with no value do not (#22
   g.addLink({ source: 'a', target: 'b', origin: ['seqs.fasta'], distance: 0.5 });
   assert.deepStrictEqual(ids(g.computeVisible('distance', 0.01, false, () => true)), ['ef']);
 });
+
+test('visibleVersion changes only when the visible links do, version when the links\' data does', () => {
+  const g = new MTGraph();
+  g.addLink({ source: 'a', target: 'b', distance: 1, origin: ['x'] });
+  g.addLink({ source: 'b', target: 'c', distance: 2, origin: ['x'] });
+  g.addLink({ source: 'c', target: 'd', distance: 3, origin: ['x', 'y'] });
+  g.freeze();
+  const all = () => true;
+  g.computeVisible('distance', 2, false, all);
+  const shown = g.visibleVersion, data = g.version;
+  // The same links again, by another threshold or a second pass: nothing new
+  g.computeVisible('distance', 2.5, false, all);
+  g.computeVisible('distance', 2, false, all);
+  assert.strictEqual(g.visibleVersion, shown);
+  assert.strictEqual(g.version, data);
+  // Other links
+  g.computeVisible('distance', 3, false, all);
+  assert.ok(g.visibleVersion > shown);
+  const grown = g.visibleVersion;
+  g.computeVisible('distance', 1, false, all);
+  assert.ok(g.visibleVersion > grown);
+  assert.deepStrictEqual(Array.from(g.visible.subarray(0, g.visibleCount)).map(e => g.link(e).distance), [1]);
+  // A different link in the place of one (as a cluster filter can leave)
+  g.computeVisible('distance', 2, false, () => true);
+  const before = g.visibleVersion;
+  g.computeVisible('distance', 3, false, s => s != 0);
+  assert.ok(g.visibleVersion > before);
+  // Their data
+  const version = g.version;
+  g.setValue(0, 'distance', 5);
+  assert.ok(g.version > version);
+  const flagged = g.version;
+  g.setFlag(0, MTGraph.NN, true);
+  assert.ok(g.version > flagged);
+});
+
+test('a link\'s origin can be the store\'s own list, or a copy', () => {
+  const g = new MTGraph();
+  g.addLink({ source: 'a', target: 'b', distance: 1, origin: ['x', 'y'] });
+  g.freeze();
+  assert.deepStrictEqual(g.link(0).origin, ['x', 'y']);
+  assert.strictEqual(g.link(0, true).origin, g.origins(0));
+  assert.notStrictEqual(g.link(0).origin, g.origins(0));
+  assert.strictEqual(g.link(0).origin.length, 2);
+});

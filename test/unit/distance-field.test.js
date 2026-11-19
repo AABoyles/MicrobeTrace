@@ -13,7 +13,7 @@ function parseMatrix(text) {
   let out;
   const ctx = {
     importScripts() {}, Papa, console, TextEncoder, JSON, Date, parseFloat,
-    postMessage: msg => { out = JSON.parse(Buffer.from(msg.data).toString()); },
+    postMessage: msg => { out = JSON.parse(JSON.stringify(msg.data)); /* into this realm */ },
     close() {}
   };
   vm.createContext(ctx);
