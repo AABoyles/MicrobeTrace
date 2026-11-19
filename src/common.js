@@ -1513,42 +1513,6 @@
     return Promise.resolve();
   };
   
-  MT.computeTriangulation = () => {
-    return new Promise((resolve, reject) => {
-      const metric = session.style.widgets['link-sort-variable'];
-      MT.getDM().then(dm => {
-        const matrix = dm.slice(); // the worker takes this copy; the cached one stays
-        return MT.runWorker("workers/compute-triangulation.js", { matrix }, { transfer: [matrix.buffer], name: "Triangulation" });
-      }).then(response => {
-        console.log("Triangulation Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
-        let start = Date.now();
-        const matrix = new Float64Array(response.matrix);
-        const g = session.data.graph;
-        let labels = MT.getDMLabels();
-        const n = labels.length;
-        for(let i = 0; i < n; i++){
-          const source = labels[i], a = g.node(source);
-          for(let j = 0; j < i; j++){
-            const target = labels[j], v = isNaN(matrix[i * n + j]) ? null : matrix[i * n + j];
-            const e = g.edgeBetween(a, g.node(target));
-            if (e < 0) {
-              g.addLink({ source: source, target: target, origin: ['Triangulation'], [metric]: v });
-            } else if (e < MTGraph.IMPLICIT) {
-              g.setValue(e, metric, v);
-            } else if (g.denseValues(metric)) {
-              g.denseValues(metric)[e - MTGraph.IMPLICIT] = v;
-            } else {
-              g.addLink({ source: g.ids[g.source(e)], target: g.ids[g.target(e)], [metric]: v });
-            }
-          }
-        }
-        g.version++;
-        console.log("Triangulation Merge time: ", (Date.now() - start).toLocaleString(), "ms");
-        resolve();
-      }).catch(reject);
-    });
-  };
-  
   // Directions are inferred from the tree, so with that on, the tree is built
   // first (unless there is one already, from a Newick file) and the links are
   // flipped before finishUp freezes the graph and the views draw it. The tree
@@ -1556,8 +1520,6 @@
   // stack on large datasets (#250), and only the tree view needs it then, which
   // builds it when opened (and reuses the one built here).
   MT.runHamsters = async () => {
-    // if (!session.style.widgets['triangulate-false']) await MT.computeTriangulation(); #236
-    // MT.computeNN();
     // MT.computeMST();
     if (!session.style.widgets['infer-directionality-false']) {
       try {
@@ -1932,13 +1894,6 @@
     }
     if (copy) return cache.links.map(link => Object.assign({}, link, { origin: link.origin.slice() }));
     return cache.links.slice();
-  };
-  
-  // The visible clusters (the clusters themselves, or with copy copies of
-  // their own fields)
-  MT.getVisibleClusters = copy => {
-    const out = session.data.clusters.filter(cluster => cluster.visible);
-    return copy ? out.map(cluster => Object.assign({}, cluster)) : out;
   };
   
   MT.updateStatistics = () => {
@@ -3858,11 +3813,6 @@
     );
   };
   
-  MT.size = thing => {
-    if(!thing) thing = session;
-    return (JSON.stringify(thing).length/1024/1024).toLocaleString()+'MB';
-  };
-  
   (function () {
 
     var container;
@@ -4037,5 +3987,5 @@
   })();
 
   self.MT = MT;
-  })(self ? self : window);
+  })(typeof self !== 'undefined' ? self : window);
   
