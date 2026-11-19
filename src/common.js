@@ -41,6 +41,7 @@
   MT.defaultWidgets = {
     // Which floating tables and panels are shown
     "link-color-table-show": true,
+    "link-dash-table-show": true,
     "network-statistics-show": true,
     "node-color-table-show": true,
     "node-symbol-table-show": true,
@@ -107,6 +108,8 @@
     "link-color-table-counts": true,
     "link-color-table-frequencies": false,
     "link-color-variable": "None",
+    // Links told apart by a dash pattern, as well as their color (#294)
+    "link-dash-variable": "None",
     "link-directed": false,
     "link-label-variable": "None",
     "link-length": 0.125,
@@ -2911,10 +2914,11 @@
   // A floating table (such as a view's legend) with a drag handle and a
   // context menu. The menu's items say what they do with data-action: drag
   // (show or hide the drag handle), hide, expand (or contract), and counts or
-  // frequencies (call onCounts or onFrequencies). onHide hides the table.
-  // Tables sit in their view's panel dock (MT.panelDock); dragging one moves it
-  // from its place there. Returns a function that disconnects it.
-  MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies } = {}) => {
+  // frequencies (call onCounts or onFrequencies), or select (call onSelect with
+  // the value's cell, or null when the menu wasn't opened on a row). onHide hides
+  // the table. Tables sit in their view's panel dock (MT.panelDock); dragging one
+  // moves it from its place there. Returns a function that disconnects it.
+  MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies, onSelect } = {}) => {
     const handle = wrapper.querySelector('.draghandle');
     let opener = null, row = null;
     const closeMenu = () => { menu.style.display = 'none'; };
@@ -2997,6 +3001,8 @@
         onCounts();
       } else if (action == 'frequencies' && onFrequencies) {
         onFrequencies();
+      } else if (action == 'select' && onSelect) {
+        onSelect(row && row.isConnected ? row : null);
       }
       if (action != 'hide' && opener && opener.isConnected) opener.focus();
     });
@@ -4019,7 +4025,8 @@
         success: 'bg-success text-white',
         danger: 'bg-danger text-white',
         warning: 'bg-warning text-dark',
-        info: 'bg-info text-white'
+        // (Dark text: white on Bootstrap's cyan fails the contrast the audit checks)
+        info: 'bg-info text-dark'
       }[type] || 'bg-secondary text-white';
       var light = !/text-dark/.test(bgClass);
 

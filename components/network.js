@@ -18,9 +18,18 @@
     const menu = $('.network-context-menu');
     const symbolWrapper = $('.node-symbol-table-wrapper'), symbolTable = $('.node-symbol-table');
     const polygonWrapper = $('.polygon-color-table-wrapper'), polygonTable = $('.polygon-color-table');
+    const dashWrapper = $('.link-dash-table-wrapper'), dashTable = $('.link-dash-table');
     // The view's own legends stack with the page's in its panel dock
-    MT.panelDock(root).append(symbolWrapper, polygonWrapper);
+    MT.panelDock(root).append(symbolWrapper, polygonWrapper, dashWrapper);
     const SPACE = 4096;
+    // The stroke patterns a link can take, in the order a dash variable's values
+    // get them. cosmos.gl draws each by its LinkStyle; the legend and the export
+    // draw the same patterns with these attributes.
+    const LINK_PATTERNS = ['Solid', 'Dashed', 'Dotted'];
+    const DASH_ATTRIBUTES = {
+      Dashed: { 'stroke-dasharray': '15, 15' },
+      Dotted: { 'stroke-dasharray': '0, 15', 'stroke-linecap': 'round' }
+    };
 
     let graph = null;
     let points = [];
@@ -661,17 +670,53 @@
       return rgba(temp.style.linkColorMap(v), temp.style.linkAlphaMap(v));
     }
 
+    // The dash variable's values, in order, each with its pattern. The patterns
+    // are handed out in turn, so past three values they repeat, and the colors
+    // still tell those values apart.
+    function dashStyles() {
+      const variable = get('link-dash-variable');
+      if (variable == 'None') return null;
+      const values = [...new Set(links.map(l => String(MT.linkColorValue(l, variable))))]
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      return { variable, values, patterns: new Map(values.map((v, i) => [v, LINK_PATTERNS[i % LINK_PATTERNS.length]])) };
+    }
+
+    // A link's pattern: by the dash variable when there is one, else dashed when
+    // it has several origins and is colored by file (as it always was)
+    function linkPattern(l, dash) {
+      if (dash) return dash.patterns.get(String(MT.linkColorValue(l, dash.variable)));
+      return get('link-color-variable') != 'None' && l.origin.length > 1 ? 'Dashed' : 'Solid';
+    }
+
     function updateLinkColor() {
-      if (!graph) return;
-      const variable = get('link-color-variable');
-      const colors = new Float32Array(links.length * 4), styles = new Float32Array(links.length);
-      links.forEach((l, i) => {
-        colors.set(linkColor(l), 4 * i);
-        styles[i] = variable != 'None' && l.origin.length > 1 ? Cosmos.LinkStyle.Dashed : Cosmos.LinkStyle.Solid;
-      });
-      graph.setLinkColors(colors);
-      graph.setLinkStyles(styles);
-      refresh();
+      if (graph) {
+        const colors = new Float32Array(links.length * 4), styles = new Float32Array(links.length);
+        const dash = dashStyles();
+        links.forEach((l, i) => {
+          colors.set(linkColor(l), 4 * i);
+          styles[i] = Cosmos.LinkStyle[linkPattern(l, dash)];
+        });
+        graph.setLinkColors(colors);
+        graph.setLinkStyles(styles);
+        refresh();
+      }
+      showDashTable();
+    }
+
+    // The dash legend: each value of the dash variable, with its line
+    function showDashTable() {
+      const dash = dashStyles();
+      dashWrapper.hidden = !dash || !get('link-dash-table-show');
+      if (!dash) {
+        dashTable.innerHTML = '';
+        return;
+      }
+      dashTable.innerHTML = `<tr><th class="p-1">${MT.escape('Link ' + MT.titleize(dash.variable))}</th><th>Line</th></tr>` +
+        dash.values.map(v => {
+          const attributes = Object.entries(DASH_ATTRIBUTES[dash.patterns.get(v)] || {}).map(([name, value]) => ` ${name}="${value}"`).join('');
+          return `<tr><td>${MT.escape(MT.valueLabel(v))}</td><td><svg width="48" height="10" aria-hidden="true">` +
+            `<line x1="0" y1="5" x2="48" y2="5" stroke="currentColor" stroke-width="2"${attributes}/></svg></td></tr>`;
+        }).join('');
     }
 
     function setLinkOpacity() {
@@ -895,6 +940,7 @@
       const widths = linkWidths() || links.map(() => get('link-width'));
       const linkOpacity = 1 - get('link-opacity');
       const linkGroup = svg.append('g').attr('class', 'links');
+      const dash = dashStyles();
       links.forEach((l, i) => {
         const a = screen[pointIndex.get(l.source)], b = screen[pointIndex.get(l.target)];
         const [r, g, bl, alpha] = linkColor(l);
@@ -903,7 +949,7 @@
           .attr('stroke', d3.rgb(r * 255, g * 255, bl * 255).toString())
           .attr('opacity', alpha * linkOpacity)
           .attr('stroke-width', widths[i] * k);
-        if (get('link-color-variable') != 'None' && l.origin.length > 1) line.attr('stroke-dasharray', '15, 15');
+        Object.entries(DASH_ATTRIBUTES[linkPattern(l, dash)] || {}).forEach(([name, value]) => line.attr(name, value));
         if (get('link-directed')) line.attr('marker-end', 'url(#export-end-arrow)');
       });
 
@@ -1273,6 +1319,7 @@
     let keyed = false;      // the focus came from the keyboard (so it's ringed)
     let adjacency = null;   // each point's links, closest first (built when needed)
     let walk = null;        // following links: the node it started from, which link, where it is
+    let ring = null;        // G: the node the group grew from, how many links out it reaches, and its size
     let spoken = '';
 
     const plural = (n, word) => n.toLocaleString() + ' ' + word + (n == 1 ? '' : 's');
@@ -1334,6 +1381,7 @@
       if (!points[i]) return;
       focused = i;
       focusId = points[i]._id;
+      ring = null;
       keyed = true;
       updateTracking();
       // Off screen, the view pans to it (keeping its zoom)
@@ -1372,6 +1420,24 @@
         } else if (score < wideScore) [wide, wideScore] = [i, score];
       }
       return best !== undefined ? best : wide;
+    }
+
+    // The points within r links of point i, i included: a breadth-first walk
+    // along the links drawn
+    function within(i, r) {
+      const seen = new Set([i]);
+      let frontier = [i];
+      for (let step = 0; step < r && frontier.length; step++) {
+        const next = [];
+        frontier.forEach(p => neighbours(p).forEach(({ index }) => {
+          if (!seen.has(index)) {
+            seen.add(index);
+            next.push(index);
+          }
+        }));
+        frontier = next;
+      }
+      return seen;
     }
 
     function selectGroup(ids, add) {
@@ -1420,6 +1486,19 @@
         const [x, y] = screenOf(focused), box = container.getBoundingClientRect();
         showContextMenu(focused, null, new MouseEvent('contextmenu', { clientX: box.left + x, clientY: box.top + y }));
         menu.querySelector('.dropdown-item').focus();
+      });
+      // A group around the focused node (#295): its neighbours, and each press
+      // after takes in the nodes one more link out. Shift adds them to the
+      // selection, as it does for a cluster.
+      else if (key == 'g' && !ctrl) action = needsFocus(d => {
+        if (!neighbours(focused).length) return announce(`Node ${d._id} has no links.`);
+        const again = !!ring && ring.from === focused;
+        const radius = again ? ring.radius + 1 : 1, members = within(focused, radius);
+        if (again && members.size == ring.size) return announce(`No more nodes within ${ring.radius} link${ring.radius == 1 ? '' : 's'} of ${d._id}.`);
+        ring = { from: focused, radius, size: members.size };
+        selectGroup(new Set(Array.from(members, i => points[i]._id)), e.shiftKey);
+        const selected = session.data.nodes.filter(node => node.selected).length;
+        announce(`${plural(members.size, 'node')} within ${radius} link${radius == 1 ? '' : 's'} of ${d._id} selected. ${plural(selected, 'node')} selected in all.`);
       });
       // A group of nodes without the mouse (#185): the focused node's cluster
       // (Shift adds it to the selection), or every node drawn
@@ -1533,6 +1612,9 @@
         onCounts: toggle('node-symbol-table-counts'),
         onFrequencies: toggle('node-symbol-table-frequencies')
       }),
+      MT.floatingTable(dashWrapper, $('.link-dash-table-menu'), {
+        onHide: () => settings.set('link-dash-table-show', false)
+      }),
       MT.floatingTable(polygonWrapper, $('.polygon-color-table-menu'), {
         onHide: () => settings.set('polygon-color-table-show', false),
         onCounts: toggle('polygon-color-table-counts'),
@@ -1570,6 +1652,8 @@
       settings.subscribe('node-border-width', () => events.emit('node-border-change')),
       settings.subscribe(['node-charge', 'network-gravity', 'network-friction', 'network-link-strength', 'link-length'], () => reheat()),
       settings.subscribe('link-directed', updateArrows),
+      settings.subscribe('link-dash-variable', updateLinkColor),
+      settings.subscribe('link-dash-table-show', showDashTable),
       settings.subscribe('link-label-variable', drawOverlays),
       settings.subscribe('link-opacity', setLinkOpacity),
       settings.subscribe(['link-width', 'link-width-max', 'link-width-min', 'link-width-variable'], scaleLinkWidth),
@@ -1588,6 +1672,7 @@
     showRows();
     setBackground();
     showSymbolTable();
+    showDashTable();
     showPolygonTable();
 
     // With links from several files, the links are colored by their file
