@@ -96,6 +96,67 @@
     return value;
   }
 
+  // Checks arguments against a tool's inputSchema, for the subset of JSON Schema
+  // the tools use (type, properties, required, enum, items, minItems, minimum,
+  // maximum, additionalProperties). Returns the first problem, or null. It runs
+  // before the tool does and before the user is asked, so a bad argument never
+  // acts. An object that declares its fields refuses others: a misspelt name
+  // would otherwise be ignored silently. A null optional field counts as left out.
+  function checkArgs(schema, value, path = '') {
+    if (path && (value === undefined || value === null)) return null;
+    const named = path ? '"' + path + '"' : 'The arguments';
+    if (schema.enum && !schema.enum.includes(value)) {
+      return named + ' must be one of ' + schema.enum.map(v => JSON.stringify(v)).join(', ') + ' (not ' + JSON.stringify(value) + ')';
+    }
+    const type = schema.type || (schema.properties ? 'object' : null);
+    if (type == 'object') {
+      if (!value || typeof value != 'object' || Array.isArray(value)) return named + ' must be an object';
+      // An object that declares no properties takes any (as JSON Schema does)
+      const declared = schema.properties;
+      for (const key of schema.required || []) {
+        if (value[key] === undefined || value[key] === null) return (path ? path + '.' : '') + key + ' is required';
+      }
+      for (const key of Object.keys(value)) {
+        const child = path ? path + '.' + key : key;
+        if (value[key] === undefined || value[key] === null) continue;
+        if (declared && Object.prototype.hasOwnProperty.call(declared, key)) {
+          const problem = checkArgs(declared[key], value[key], child);
+          if (problem) return problem;
+        } else if (schema.additionalProperties && typeof schema.additionalProperties == 'object') {
+          const problem = checkArgs(schema.additionalProperties, value[key], child);
+          if (problem) return problem;
+        } else if (schema.additionalProperties !== true && (declared || schema.additionalProperties === false)) {
+          const known = Object.keys(declared || {});
+          return 'There is no field "' + key + '"' + (known.length ? '; the fields are ' + known.join(', ') : '');
+        }
+      }
+      return null;
+    }
+    if (value === undefined || value === null) return null;
+    if (type == 'string' && typeof value != 'string') return named + ' must be a string';
+    if ((type == 'number' || type == 'integer') && (typeof value != 'number' || !isFinite(value))) return named + ' must be a number';
+    if (type == 'integer' && !Number.isInteger(value)) return named + ' must be a whole number';
+    if (type == 'boolean' && typeof value != 'boolean') return named + ' must be true or false';
+    if (type == 'array') {
+      if (!Array.isArray(value)) return named + ' must be a list';
+      if (schema.minItems && value.length < schema.minItems) return named + ' must have at least ' + schema.minItems + ' item' + (schema.minItems == 1 ? '' : 's');
+      for (let i = 0; schema.items && i < value.length; i++) {
+        const problem = checkArgs(schema.items, value[i], path + '[' + i + ']');
+        if (problem) return problem;
+      }
+      return null;
+    }
+    if ((type == 'number' || type == 'integer') && schema.minimum !== undefined && value < schema.minimum) return named + ' must be at least ' + schema.minimum;
+    if ((type == 'number' || type == 'integer') && schema.maximum !== undefined && value > schema.maximum) return named + ' must be at most ' + schema.maximum;
+    return null;
+  }
+
+  // Fails with the first problem with the arguments, if there is one
+  function validate(tool, args) {
+    const problem = checkArgs(tool.inputSchema, args);
+    if (problem) fail('Invalid arguments for ' + tool.name + ': ' + problem + '.');
+  }
+
   // Runs a tool, with its result (or error) as content
   async function run(tool, args, options) {
     try {
@@ -284,6 +345,8 @@
   // Fails unless WebMCP is on and, for a tool that asks, the user allows the call
   async function authorize(tool, args, signal) {
     if (!enabled) fail(OFF);
+    // Before anything is asked: a bad call is refused, not put to the user
+    validate(tool, args);
     if (!tool.confirm) return;
     const message = typeof tool.confirm == 'function' ? tool.confirm(args) : tool.confirm;
     if (!message) return;

@@ -431,9 +431,7 @@
     inputSchema: obj({}),
     execute: async () => {
       T.requireData();
-      const button = document.getElementById('RevealAllTab');
-      if (!button) fail('The Show All Hidden control is not available');
-      button.click();
+      self.MT.revealAll();
       return { counts: counts() };
     }
   });
@@ -530,9 +528,8 @@
     inputSchema: obj({ action: { type: 'string', enum: ['play', 'pause'] } }, ['action']),
     execute: async ({ action }) => {
       if (W()['node-timeline-variable'] == 'None') fail('The timeline is not on. Use set_timeline with a date field first');
-      const button = document.getElementById('timeline-play-button');
-      const playing = button.textContent == 'Pause';
-      if ((action == 'play') != playing) button.click();
+      if (typeof self.MT.setTimelinePlaying != 'function') fail('The timeline is not drawn yet. Use set_timeline with a date field first');
+      self.MT.setTimelinePlaying(action == 'play');
       return timelineState();
     }
   });

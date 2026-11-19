@@ -625,9 +625,7 @@
 
     // Autostashing is kept by the browser
     $$('input[name="stash-auto"]').forEach(input => input.addEventListener('change', () => {
-      if (!input.checked) return;
-      db.setItem('stash-auto', input.value);
-      if (input.value == 'false' && temp.autostash) clearInterval(temp.autostash.interval);
+      if (input.checked) MT.setAutostash(input.value == 'true');
     }));
     db.getItem('stash-auto').then(autostash => {
       if (autostash == 'true') $('input[name="stash-auto"][value="true"]').click();

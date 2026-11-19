@@ -300,30 +300,38 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   MT.defaultFilename(byId("save-file-name"));
-  on("save-data", "click", () => {
-    const format = byId("save-file-format").value;
-    // An empty or hidden-file name, or a typed extension, is put right
-    const name = MT.cleanFilename(byId("save-file-name").value, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
-    let data;
-    if (format == "microbetracestyle") {
-      data = JSON.stringify(session.style);
-    } else if (format == "hivtrace") {
-      data = MT.exportHIVTRACE();
-    } else {
-      MT.syncLayout();
-      data = JSON.stringify(session);
-    }
-    const saved = file => MT.toast.success("Saved as " + MT.escape(file));
-    if (byId("save-file-compress").checked) {
+
+  // The text a save writes, in one of the Save dialog's formats
+  MT.sessionText = format => {
+    if (format == "microbetracestyle") return JSON.stringify(session.style);
+    if (format == "hivtrace") return MT.exportHIVTRACE();
+    MT.syncLayout();
+    return JSON.stringify(session);
+  };
+
+  // Saves data (by default the session in format) as name.format, or name.zip
+  // when compress is on. An empty or hidden-file name, or a typed extension, is
+  // put right; with no name, the Save dialog's file name is used. Resolves to the
+  // file's name. (WebMCP's save_session saves through this too.)
+  MT.saveSession = async ({ format = "microbetrace", name, compress = false, data = MT.sessionText(format) } = {}) => {
+    const file = MT.cleanFilename(name === undefined ? byId("save-file-name").value : name, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
+    if (compress) {
       const zip = new JSZip();
-      zip.file(name + "." + format, data);
-      zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } })
-        .then(content => { MT.saveAs(content, name + ".zip"); saved(name + ".zip"); },
-          error => { console.error(error); MT.toast.error("The file couldn't be compressed. Try again with \"Compress the file\" unticked."); });
-    } else {
-      MT.saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), name + "." + format);
-      saved(name + "." + format);
+      zip.file(file + "." + format, data);
+      const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } });
+      MT.saveAs(content, file + ".zip");
+      return file + ".zip";
     }
+    MT.saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), file + "." + format);
+    return file + "." + format;
+  };
+
+  on("save-data", "click", () => {
+    const compress = byId("save-file-compress").checked;
+    MT.saveSession({ format: byId("save-file-format").value, compress }).then(file => MT.toast.success("Saved as " + MT.escape(file)), error => {
+      console.error(error);
+      MT.toast.error(compress ? "The file couldn't be compressed. Try again with \"Compress the file\" unticked." : "The file couldn't be saved.");
+    });
   });
 
   // File > Open: a button (it can take focus) that opens the file input's picker
@@ -632,13 +640,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  on("RevealAllTab", "click", () => {
+  // Settings > Filtering > Show All Hidden (and WebMCP's reveal_all)
+  MT.revealAll = () => {
     settings.set("cluster-minimum-size", 1);
     MT.setClusterVisibility();
     MT.setNodeVisibility();
     MT.setLinkVisibility();
     MT.updateStatistics();
-  });
+  };
+  on("RevealAllTab", "click", () => MT.revealAll());
 
   // The network statistics -----------------------------------------------------
 
@@ -902,6 +912,7 @@ document.addEventListener("DOMContentLoaded", () => {
       d3.select('#global-timeline svg').remove();
       clearInterval(session.timeline);
       MT.scrubTimeline = null;
+      MT.setTimelinePlaying = null;
       const pin = document.getElementById("pinbutton");
       let loadingJsonFile = previous == variable;
       if (previous != 'None' && !loadingJsonFile) {
@@ -1040,19 +1051,22 @@ document.addEventListener("DOMContentLoaded", () => {
           .attr("x", targetValue)
           .text(handleDateFormat(endDate))
           .attr("transform", "translate(0," + (-20) + ")")
-      playButton
-        .on("click", function() {
-          var button = d3.select(this);  
-          if (button.text() == "Pause") {
-            button.text("Play"); 
-            clearInterval(session.timeline);
-          } else {
-            button.text("Pause");
-            // From the start again, once it's reached the end
-            if (currentValue >= targetValue) currentValue = 0;
-            session.timeline = setInterval(step, 200);
-          }
-        })
+      const togglePlayback = () => {
+        if (playButton.text() == "Pause") {
+          playButton.text("Play");
+          clearInterval(session.timeline);
+        } else {
+          playButton.text("Pause");
+          // From the start again, once it's reached the end
+          if (currentValue >= targetValue) currentValue = 0;
+          session.timeline = setInterval(step, 200);
+        }
+      };
+      playButton.on("click", togglePlayback);
+      // Plays or pauses the animation, as the Play button does (WebMCP's control_timeline_playback)
+      MT.setTimelinePlaying = play => {
+        if (play != (playButton.text() == "Pause")) togglePlayback();
+      };
       function step() { 
         update(x.invert(currentValue));
         if (currentValue > targetValue) { 
