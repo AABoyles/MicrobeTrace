@@ -14,9 +14,6 @@ The IDs in the demo outbreak look like GenBank accessions with clone labels (for
 repository does not record which accessions were used, which database they came from, or
 the licence of that data.
 
-The manual's "Downloading Sample Data" section (`docs/MicrobeTrace_Manual.pdf`) describes the
-outbreak files as example files. It says nothing else about where they came from.
-
 ## Files
 
 Sizes and counts are from the files in this directory at the time of writing.

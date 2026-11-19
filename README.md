@@ -11,7 +11,6 @@ MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC), w
 * **[Launch MicrobeTrace](https://aaboyles.github.io/MicrobeTrace/)**
 * [Download Sample Data](https://github.com/aaboyles/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
 * [View the Help Wiki](https://github.com/aaboyles/MicrobeTrace/wiki)
-* [Read the Latest Manual](https://github.com/aaboyles/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.pdf)
 * [Watch and follow along with the webinar](https://www.youtube.com/watch?v=5E-_Kb7yvHU)
 * [Watch how to use MicrobeTrace for COVID-19](https://www.youtube.com/watch?v=he0Yq5yvToc)
 * [Cite MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/Cite-MicrobeTrace)
@@ -36,7 +35,6 @@ MicrobeTrace offers its features as tools for AI agents through [WebMCP](https:/
 
 ## To Spread the Word:
 
-* [View the MicrobeTrace Flyer](https://github.com/aaboyles/MicrobeTrace/blob/master/docs/MicrobeTrace%20Flyer_Sept_2019.pdf)
 * [Read our Reports](https://medium.com/microbetrace-reports/latest)
 * [Connect with our User Community](https://www.reddit.com/r/MicrobeTrace/)
 
