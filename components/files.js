@@ -1080,7 +1080,7 @@
         const unmatched = taken.size ? Array.from(linked).filter(id => !taken.has(id)).length : 0;
         const plural = (n, one, many) => n.toLocaleString() + ' ' + (n == 1 ? one : many);
         const notes = [];
-        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the last row's values are kept)`);
+        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the first row's values are kept, and later rows fill in its blanks)`);
         if (report.blanks) notes.push(`${plural(report.blanks, 'row with a blank ID was', 'rows with a blank ID were')} skipped`);
         if (report.selfLinks) notes.push(`${plural(report.selfLinks, 'link from a node to itself was', 'links from a node to itself were')} dropped`);
         if (report.repeatedLinks) notes.push(`${plural(report.repeatedLinks, 'link repeated', 'links repeated')} a pair of nodes already linked (in either direction), so overwrote its values`);
