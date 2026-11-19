@@ -105,3 +105,29 @@ test('exports a PNG', async () => {
   expect(download.suggestedFilename()).toBe('scatter-test.png');
   expect(errors).toEqual([]);
 });
+
+test('more than 2,000 points are drawn on a canvas, and still export under the CSP (#252)', async () => {
+  const fs = require('fs');
+  const setThreshold = value => page.evaluate(value => (el => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')), value);
+  // (Nearly every pair of the 300 sequences is within 1)
+  await setThreshold(1);
+  await expect.poll(async () => (await plot()).points).toBeGreaterThan(40000);
+  expect(await view().locator('.js-plotly-plot').evaluate(el => el.data[0].type)).toBe('scattergl');
+  for (const [filetype, check] of [
+    ['png', bytes => bytes.subarray(1, 4).toString() == 'PNG'],
+    ['svg', bytes => /<svg[\s\S]*<image[^>]*href="data:image\/png/.test(bytes.toString())]
+  ]) {
+    const modal = await openExport(page, view(), 'Export Scatterplot');
+    await modal.getByPlaceholder('Filename').fill('scatter-gl');
+    await modal.locator('[name="export-filetype"]').selectOption(filetype);
+    const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
+    expect(download.suggestedFilename()).toBe('scatter-gl.' + filetype);
+    const bytes = fs.readFileSync(await download.path());
+    expect(bytes.length).toBeGreaterThan(10000);
+    expect(check(bytes)).toBe(true);
+  }
+  // (A blob: image the Content Security Policy refused would be logged as an error)
+  expect(errors).toEqual([]);
+  await setThreshold(0.015);
+  await expect.poll(async () => (await plot()).points).toBe(476);
+});

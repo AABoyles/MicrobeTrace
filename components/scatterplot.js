@@ -61,12 +61,24 @@
     MT.plotExport(root, plot, settings, new Proxy({}, {
       get: (_, type) => gl && imageFormats.includes(type) ? filename => {
         const scale = parseFloat(root.querySelector('[name="export-scale"]').value) || 1;
-        Plotly.toImage(plot, { format: type, width: plot.clientWidth, height: plot.clientHeight, scale }).then(url => fetch(url))
-          .then(response => response.blob())
-          .then(blob => MT.saveImage(blob, filename + '.' + type), error => {
-            console.error(error);
-            MT.toast.error('The image could not be made (' + error.message + '). Try a smaller scale.');
-          });
+        const quality = root.querySelector('[name="export-quality"]');
+        // As an SVG (the canvas in it as a data: image), drawn by MT.svgImage like
+        // the other views': Plotly draws its pictures through blob: images, which
+        // the Content Security Policy refuses
+        Plotly.toImage(plot, { format: 'svg', width: plot.clientWidth, height: plot.clientHeight }).then(url => {
+          const text = decodeURIComponent(url.slice(url.indexOf(',') + 1));
+          if (type == 'svg') return MT.saveAs(new Blob([text], { type: 'image/svg+xml;charset=utf-8' }), filename + '.svg');
+          const svg = new DOMParser().parseFromString(text, 'image/svg+xml').documentElement;
+          return MT.svgImage(svg, {
+            scale,
+            backgroundColor: settings.get('background-color'),
+            type: 'image/' + type,
+            quality: quality ? parseFloat(quality.value) : undefined
+          }).then(blob => MT.saveImage(blob, filename + '.' + type));
+        }).catch(error => {
+          console.error(error);
+          MT.toast.error('The image could not be made (' + ((error && error.message) || error) + '). Try a smaller scale.');
+        });
       } : undefined
     }));
 
