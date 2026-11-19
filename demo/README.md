@@ -63,10 +63,8 @@ These differences cannot be resolved from the files, so they are recorded and no
   attribute values are unknown, so they were not added to the node list. They are in the demo
   session, as nodes with a sequence and blank attributes, because it was loaded from the node list
   and the FASTA together.
-- `30577_KF773461_C94cl29` is an edge endpoint that is not in the node list. Ten edges have it at
-  one end. It has a node only when the FASTA is loaded too, so with the node list alone those edges
-  have no node at that end.
-- The sequences in the node list and the FASTA file agree for all 86 node-list rows, but the node
-  list writes them in lower case and the FASTA in upper case. Loading both files therefore reports
-  86 node values that "differ", although only the case differs. The app's comparison is case
-  sensitive; the files were not changed.
+- `30577_KF773461_C94cl29` is an endpoint of ten edges in the edge list but has no node-list row.
+  Loading the edge list adds it as a node (as it does any endpoint), with no attributes.
+- The node list writes its sequences in lower case and the FASTA file in upper case; otherwise they
+  agree for all 86 node-list rows. MicrobeTrace compares sequences without regard to case, so
+  loading both files reports no conflict.
