@@ -77,6 +77,7 @@ test('a run of changes is applied once, with the last value', async () => {
   });
   expect(events).toBe(0);
   await expect.poll(() => page.evaluate(() => updates)).toBeGreaterThan(0);
+  // Waits to see that no second update follows the first
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => updates)).toBe(1);
   expect(await page.evaluate(() => MT.getVisibleLinks().length == session.data.graph.visibleCount && session.style.widgets['link-threshold'])).toBe(0.015);
@@ -90,6 +91,7 @@ test('a view that listens to node and link visibility redraws once for a change'
     window.offRedraw = () => offs.forEach(off => off());
   });
   await setThreshold(0.01);
+  // Waits to see that no second redraw follows the first
   await page.waitForTimeout(300);
   expect(await page.evaluate(() => { offRedraw(); return drawn; })).toBe(1);
   await setThreshold(0.015);

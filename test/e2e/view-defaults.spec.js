@@ -90,6 +90,7 @@ test('the network keeps its layout while the epi curve has a date field', async 
   await expect.poll(placed).toBe(310);
   // A redraw, as when links are shown or hidden
   await page.evaluate(() => { MT.setLinkVisibility(true); return MT.tagClusters().then(() => { MT.events.emit('link-visibility'); MT.events.emit('node-visibility'); }); });
+  // Gives the redraw time to run before the layout is read; nothing marks its end
   await page.waitForTimeout(500);
   expect(await placed()).toBe(310);
   await page.evaluate(() => MT.settings.set('timeline-date-field', 'None'));

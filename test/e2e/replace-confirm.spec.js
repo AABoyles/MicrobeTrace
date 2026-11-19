@@ -62,6 +62,7 @@ for (const [name, choose] of Object.entries(flows)) {
     await expect(dialog().locator('.modal-body')).toContainText('Unsaved changes will be lost.');
     await dialog().getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog()).toBeHidden();
+    // Cancel must leave the session alone: wait a moment to see it isn't replaced
     await page.waitForTimeout(500);
     expect(await startTime()).toBe(1);
     expect(await page.evaluate(() => session.data.nodes.length)).toBe(nodes);
@@ -75,6 +76,7 @@ for (const [name, choose] of Object.entries(flows)) {
     expect(await page.evaluate(() => document.getElementById('replace-modal').contains(document.activeElement))).toBe(true);
     await page.keyboard.press('Escape');
     await expect(dialog()).toBeHidden();
+    // As Cancel above: the session must not be replaced after the dialog closes
     await page.waitForTimeout(500);
     expect(await startTime()).toBe(1);
     await choose();

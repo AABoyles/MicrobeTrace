@@ -58,6 +58,8 @@ for (const name of files) {
       session.data.nodeFields.forEach(field => MT.settings.set('node-color-variable', field));
       session.data.linkFields.forEach(field => MT.settings.set('link-color-variable', field));
     });
+    // A payload's effects would show up soon after the views draw; this gives
+    // them time to, before the checks below find none
     await page.waitForTimeout(500);
 
     // Neither the markup nor its effects: no dialog, request, element or toast

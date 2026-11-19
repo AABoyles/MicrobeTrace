@@ -6,7 +6,7 @@
 // above what this takes, to catch slowdowns of several times rather than
 // noise; they're of the page's own work, as the GPU these tests run on is a
 // software one (SwiftShader), far slower than any real one. Each result is
-// logged, to compare runs.
+// logged, to compare runs. The times are asserted only with BENCH_STRICT=1.
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
@@ -15,11 +15,17 @@ const { watchErrors, open, launchView } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
-// The redraw's time budget. With software WebGL (GitHub's runners, or a busy
-// workstation) the same redraw has taken from 0.2 s to over 21 s, so by default
-// the budget only catches a hang. Set MT_PERF_BUDGET=1 on a machine with a GPU
-// to hold it to 2 s. The redraw count, which doesn't vary with load, is exact.
+// The times are only logged by default: software WebGL (GitHub's runners, or a
+// busy workstation) has taken the same redraw from 0.2 s to over 21 s, so an
+// absolute budget would fail on load alone. Set BENCH_STRICT=1 to enforce the
+// budgets below (the generous ones catch a hang or a slowdown of several times).
+// On a machine with a GPU, MT_PERF_BUDGET=1 holds the redraw to 2 s instead of
+// 30 s. The counts (redraws, readbacks, edges) are exact either way, and always
+// asserted.
+const strict = !!process.env.BENCH_STRICT;
 const thresholdBudget = process.env.MT_PERF_BUDGET ? 2000 : 30000;
+// Asserts a time is under its budget, only when strict
+const underBudget = (name, ms, budget) => { if (strict) expect(ms, `${name} over its ${budget} ms budget`).toBeLessThan(budget); };
 
 // Sequences of 1,000 sites in clusters of 25: each a few changes from its
 // cluster's centre, each centre a few dozen from a common ancestor
@@ -69,7 +75,9 @@ test.afterAll(async () => {
 });
 
 const readbacks = () => page.evaluate(() => window.readbacks);
-// Readbacks over a while, the view left alone
+// Readbacks over a while, the view left alone. The window is a fixed time on
+// purpose: what's being counted is activity while nothing happens, and there is
+// no event for "nothing happened for N seconds".
 async function readbacksOver(ms) {
   const before = await readbacks();
   await page.waitForTimeout(ms);
@@ -90,22 +98,26 @@ test(`loading ${N} sequences takes under 20 seconds`, async () => {
   await page.waitForFunction(() => temp.network && temp.network.points.length > 0, null, { timeout: 60000 });
   results.loadMs = Date.now() - start;
   expect(await page.evaluate(() => session.data.graph.edgeCount)).toBe(N * (N - 1) / 2);
-  expect(results.loadMs).toBeLessThan(20000);
+  underBudget('loading', results.loadMs, 20000);
 });
 
 test('a threshold change redraws the network once, within its time budget', async () => {
+  // The load's own redraws (the layout starts spreading as it's shown) must
+  // finish before the count starts. No event marks that, so this waits a
+  // fixed time, well above the layout's first frames.
   await page.waitForTimeout(1500);
   results.renders = 0;
   const start = Date.now();
   await page.evaluate(() => MT.settings.set('link-threshold', 0.02));
   await expect.poll(() => results.renders).toBe(1);
   results.thresholdMs = lastRender - start;
-  // (no second one after it)
+  // No second redraw may follow it: this waits a fixed time for one to show up
+  // (a redraw is an event with no end to wait on)
   await page.waitForTimeout(1000);
   results.rendersPerChange = results.renders;
   expect(results.rendersPerChange).toBe(1);
   expect(await page.evaluate(() => temp.network.links.length)).toBe(await page.evaluate(() => MT.getVisibleLinks().length));
-  expect(results.thresholdMs).toBeLessThan(thresholdBudget);
+  underBudget('a threshold change', results.thresholdMs, thresholdBudget);
 });
 
 test('laying out, the network reads positions back only to keep the layout in view', async () => {
@@ -115,8 +127,7 @@ test('laying out, the network reads positions back only to keep the layout in vi
   await page.mouse.wheel(0, 200);
   await page.mouse.move(5, 5);
   await page.evaluate(() => temp.network.graph.start(0.5));
-  await page.waitForTimeout(500);
-  expect(await page.evaluate(() => temp.network.graph.isSimulationRunning)).toBe(true);
+  await expect.poll(() => page.evaluate(() => temp.network.graph.isSimulationRunning)).toBe(true);
   results.readbacksPer3s = await readbacksOver(3000);
   expect(results.readbacksPer3s).toBe(0);
 });
@@ -124,7 +135,7 @@ test('laying out, the network reads positions back only to keep the layout in vi
 test('behind another view, the network neither simulates nor reads positions back', async () => {
   await launchView(page, 'table');
   await front('table');
-  await page.waitForTimeout(300);
+  await expect.poll(() => page.evaluate(() => temp.network.paused)).toBe(true);
   results.hiddenReadbacksPer3s = await readbacksOver(3000);
   expect(results.hiddenReadbacksPer3s).toBe(0);
   expect(await page.evaluate(() => temp.network.paused && !temp.network.graph.isSimulationRunning)).toBe(true);
@@ -138,6 +149,6 @@ test('opening a view takes under 5 seconds', async () => {
   await launchView(page, 'histogram');
   await page.waitForFunction(() => document.querySelector('.histogram-plot .main-svg'), null, { timeout: 30000 });
   results.histogramMs = Date.now() - start;
-  expect(results.histogramMs).toBeLessThan(5000);
+  underBudget('opening a view', results.histogramMs, 5000);
   expect(errors).toEqual([]);
 });

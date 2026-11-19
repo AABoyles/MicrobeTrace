@@ -130,6 +130,7 @@ test('a toast has a close button, and an action button when it offers one', asyn
   });
   const offer = page.locator('.mt-toast-container .toast', { hasText: 'Two things differ.' });
   await expect(offer).toBeVisible();
+  // An offer has no timer: it should still be there after a timed notice would have gone
   await page.waitForTimeout(2000);
   await expect(offer).toBeVisible();
   const action = offer.getByRole('button', { name: 'Review' });
@@ -150,6 +151,7 @@ test('a timed toast waits while the pointer or focus is in it', async () => {
   const toast = page.locator('.mt-toast-container .toast', { hasText: 'Held notice' });
   await expect(toast).toBeVisible();
   await toast.hover();
+  // A timed notice (1 s) would be gone by now: this waits to see that the pointer keeps it
   await page.waitForTimeout(2500);
   await expect(toast).toBeVisible();
   await page.mouse.move(5, 5);
@@ -159,6 +161,7 @@ test('a timed toast waits while the pointer or focus is in it', async () => {
   const focused = page.locator('.mt-toast-container .toast', { hasText: 'Focused notice' });
   await expect(focused).toBeVisible();
   await focused.getByRole('button', { name: 'Dismiss notification' }).focus();
+  // As above, for focus: a timed notice (1 s) would be gone by now
   await page.waitForTimeout(2500);
   await expect(focused).toBeVisible();
   await page.evaluate(() => document.activeElement.blur());
@@ -195,6 +198,8 @@ test('every view\'s icon-only buttons are named and at least 24 by 24 px', async
   const views = ['table', 'aggregation', 'crosstab', 'histogram', 'scatterplot', 'heatmap', 'timeline', 'gantt', 'bubbles',
     'flow_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'choropleth', 'globe', 'sequences', 'conflicts'];
   for (const view of views) await launchView(page, view);
+  // Lets each view finish laying out its toolbar before the sizes are read; no
+  // event marks that
   await page.waitForTimeout(1500);
   const problems = await page.evaluate(() => {
     const found = [];

@@ -65,7 +65,9 @@ test('rounded distances stay rounded through an animated redraw', async () => {
   await set('tree-round-true', true);
   const labels = () => view().locator('g.tidytree-link text').allTextContents();
   await expect.poll(async () => (await labels()).every(t => /^\d+$/.test(t))).toBe(true);
-  // The redraw fades the labels out, rewrites them and fades them back in
+  // The redraw fades the labels out, rewrites them and fades them back in,
+  // over the 1.2 s animation (setAnimation(1200)). Nothing marks its end, so
+  // this waits longer than that.
   await set('tree-mode', 'square');
   await page.waitForTimeout(2000);
   expect((await labels()).every(t => /^\d+$/.test(t))).toBe(true);
