@@ -636,10 +636,7 @@
     const MT = self.MT;
     if (format == 'microbetracestyle') return JSON.stringify(self.session.style);
     if (!dataLoaded()) fail('No data is loaded, so there is nothing to save. Load data first.');
-    if (format == 'hivtrace') return MT.exportHIVTRACE();
-    // The network's positions are on the GPU until synced (see MT.syncLayout)
-    if (MT.syncLayout) MT.syncLayout();
-    return JSON.stringify(self.session);
+    return MT.sessionText(format);
   }
 
   const formatSchema = { type: 'string', enum: ['microbetrace', 'microbetracestyle', 'hivtrace'], default: 'microbetrace', description: 'microbetrace: the whole session (data, style, layout); microbetracestyle: only the style/settings; hivtrace: HIV-TRACE-style output of the visible network' };
@@ -672,26 +669,11 @@
     annotations: { consequentialHint: true },
     confirm: args => args.download ? 'Download the session (' + (args.format || 'microbetrace') + ') as a file' + (args.filename ? ' named ' + quote(args.filename) : '') + ' to this computer.' : null,
     execute: async (args) => {
-      const MT = self.MT, format = args.format || 'microbetrace';
+      const format = args.format || 'microbetrace';
       const data = sessionText(format);
       const result = { format, characters: data.length };
-      if (args.download) {
-        let name = args.filename;
-        if (!name) {
-          const input = document.getElementById('save-file-name');
-          name = input && input.value || 'MicrobeTrace-' + new Date().toISOString().slice(0, 10);
-        }
-        if (args.compress) {
-          const zip = new self.JSZip();
-          zip.file(name + '.' + format, data);
-          const content = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
-          MT.saveAs(content, name + '.zip');
-          result.downloaded = name + '.zip';
-        } else {
-          MT.saveAs(new Blob([data], { type: 'application/json;charset=utf-8' }), name + '.' + format);
-          result.downloaded = name + '.' + format;
-        }
-      }
+      // The Save dialog's name unless given
+      if (args.download) result.downloaded = await self.MT.saveSession({ format, name: args.filename, compress: !!args.compress, data });
       if (args.returnContents !== false) result.contents = data;
       return result;
     }
@@ -829,10 +811,7 @@
     // Turning it off stores less, so only turning it on asks
     confirm: args => args.enabled ? 'Turn autostash on: every session loaded from now on would be saved in this browser each minute, until it is turned off.' : null,
     execute: async (args) => {
-      await self.db.setItem('stash-auto', args.enabled ? 'true' : 'false');
-      if (!args.enabled && self.temp && self.temp.autostash) clearInterval(self.temp.autostash.interval);
-      const radio = document.querySelector('input[name="stash-auto"][value="' + (args.enabled ? 'true' : 'false') + '"]');
-      if (radio && !radio.checked) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
+      self.MT.setAutostash(args.enabled);
       return { autostash: !!args.enabled };
     }
   });

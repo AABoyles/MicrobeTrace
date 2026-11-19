@@ -763,58 +763,34 @@
     return { dataURL: canvas.toDataURL(wanted, quality), width: canvas.width, height: canvas.height };
   }
 
-  const exportParts = root => {
-    const button = root.querySelector('.export-button');
-    const modal = button && button.closest('.modal');
-    if (!modal) return null;
-    const field = name => modal.querySelector('[name="' + name + '"]');
-    return { button, modal, field, type: field('export-filetype') };
-  };
-
-  const setField = (el, value) => {
-    if (!el || value === undefined) return;
-    el.value = value;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-  };
-
-  const EXT = { svg: 'image/svg+xml' };
+  // The view's export dialog action (see MT.exporterOf): its file types, and run()
+  const exporterOf = item => MT().exporterOf(rootOf(item));
   const IMAGE_TYPES = ['png', 'jpeg', 'webp'];
 
-  // Runs a view's own export dialog with these settings, taking the file it
+  // Runs a view's own export action with these settings, taking the file it
   // saves (MT.saveAs) when `download` is false instead of letting it download
   async function runExport(item, { format, filename, scale, quality, download }) {
-    const root = rootOf(item);
-    const parts = exportParts(root);
-    if (!parts) fail('The ' + item.componentType + ' view has no export dialog.');
-    const formats = Array.from(parts.type.options).map(o => ({ value: o.value, label: o.textContent.trim() }));
+    const exporter = exporterOf(item);
+    if (!exporter) fail('The ' + item.componentType + ' view has no export dialog.');
+    const formats = exporter.types;
     format = format ? String(format).toLowerCase().replace('jpg', 'jpeg') : formats[0].value;
     const chosen = formats.find(f => f.value == format || f.label.toLowerCase() == format);
     if (!chosen) fail('The ' + item.componentType + ' view exports: ' + formats.map(f => f.value).join(', ') + ' (not ' + format + ')');
-    setField(parts.type, chosen.value);
-    if (filename) setField(parts.field('export-filename'), filename);
-    else if (!parts.field('export-filename').value) setField(parts.field('export-filename'), 'microbetrace-' + item.componentType);
-    if (scale !== undefined) setField(parts.field('export-scale'), scale);
-    if (quality !== undefined) setField(parts.field('export-quality'), quality);
     const m = MT(), original = m.saveAs;
     let saved = null;
-    const got = new Promise(resolve => {
-      m.saveAs = (blob, name) => {
-        saved = { blob, name };
-        if (download) original.call(m, blob, name);
-        resolve(saved);
-      };
-    });
+    m.saveAs = (blob, name) => {
+      saved = { blob, name };
+      if (download) original.call(m, blob, name);
+    };
+    let base;
     try {
-      parts.button.click();
-      // A view that saves another way (XLSX, PDF) never reaches saveAs
-      const timeout = new Promise(resolve => setTimeout(resolve, download ? 20000 : 30000));
-      await Promise.race([got, timeout]);
+      // Resolves once the file is saved; a view that saves another way (XLSX, PDF) never reaches saveAs
+      base = await exporter.run({ filetype: chosen.value, filename, scale, quality });
     } finally {
       m.saveAs = original;
     }
     if (!saved) {
-      if (download) return { format: chosen.value, filename: (parts.field('export-filename').value || '') + '.' + chosen.value, formats, note: 'This format is saved by the browser directly, so its size is not known.' };
+      if (download) return { format: chosen.value, filename: base + '.' + chosen.value, formats, note: 'This format is saved by the browser directly, so its size is not known.' };
       fail('The ' + chosen.value + ' export does not hand its file back to the page; use download: true to save it instead.');
     }
     return Object.assign(saved, { format: chosen.value, formats });
@@ -886,8 +862,8 @@
       const root = rootOf(item);
       await settle(150);
       let dataURL, used;
-      const parts = exportParts(root);
-      if (method != 'dom' && parts && IMAGE_TYPES.some(t => Array.from(parts.type.options).some(o => o.value == t))) {
+      const exporter = exporterOf(item);
+      if (method != 'dom' && exporter && IMAGE_TYPES.some(t => exporter.types.some(o => o.value == t))) {
         try {
           const result = await runExport(item, { format: 'png', scale, download: false });
           dataURL = await blobToDataURL(result.blob);
@@ -989,20 +965,15 @@
       await waitFor(() => self.temp && self.temp.network && self.temp.network.graph, { timeout: 20000, message: 'The network graph did not start' });
       const h = networkHandle();
       const g = h.graph;
-      const click = title => {
-        const b = Array.from(rootOf(itemOf('network')).querySelectorAll('button')).find(b => b.title == title);
-        if (!b) fail('The network view has no "' + title + '" button');
-        b.click();
-      };
       switch (action) {
-        case 'fit': click('Center and Scale Network'); break;
+        case 'fit': h.fit(); break;
         case 'zoom':
           if (typeof level != 'number') fail('zoom needs a level');
           if (typeof g.setZoomLevel != 'function') fail('This network build cannot set a zoom level; use fit.');
           g.setZoomLevel(level, duration);
           break;
-        case 'pin_all': if (!self.session.network.allPinned) click('Pin all Nodes'); break;
-        case 'unpin_all': if (self.session.network.allPinned) click('Pin all Nodes'); break;
+        case 'pin_all': if (!self.session.network.allPinned) h.pinAll(); break;
+        case 'unpin_all': if (self.session.network.allPinned) h.pinAll(); break;
         case 'freeze': g.pause(); break;
         case 'resume': g.start(0.3); break;
         case 'reheat': g.start(1); break;

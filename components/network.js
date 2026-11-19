@@ -1593,7 +1593,7 @@
     // With links from several files, the links are colored by their file
     if (session.files.length > 1 && get('link-color-variable') == 'None') settings.set('link-color-variable', 'origin');
 
-    const handle = { graph: null, get points() { return points; }, get links() { return links; }, get paused() { return hidden; }, get focused() { return focused; }, focus: i => focusPoint(i), drawn, render, fit, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
+    const handle = { graph: null, get points() { return points; }, get links() { return links; }, get paused() { return hidden; }, get focused() { return focused; }, focus: i => focusPoint(i), drawn, render, fit, pinAll, syncPositions, contextMenu: (i, e) => showContextMenu(i, null, e) };
     self.cosmosLoading.then(() => {
       if (destroyed) return;
       createGraph();

@@ -2592,15 +2592,28 @@
     return item ? MT.titleize(item.componentType).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
   };
 
+  // The actions of export dialogs, by the view's root element: the file types a
+  // dialog offers, and run({filetype, filename, scale, quality}), which its
+  // button runs too. WebMCP's export_view runs it, so it needn't click the dialog.
+  const exporters = new WeakMap();
+  const optionsOf = select => Array.from(select.options).map(o => ({ value: o.value, label: o.textContent.trim() }));
+  MT.exporterOf = root => exporters.get(root) || null;
+
   // Wires a table view's export dialog: a filename field (export-filename), a
   // file type menu (export-filetype) and an .export-button. `formats` maps each
   // file type to a function that saves the file, given the filename.
   MT.tableExport = (root, formats) => {
     const field = name => root.querySelector(`[name="${name}"]`);
     MT.defaultFilename(field('export-filename'), () => exportName(root));
+    // Resolves to the base name used (the filename without its extension)
+    const run = async ({ filetype, filename }) => {
+      const name = filename === undefined ? field('export-filename').value || 'microbetrace-' + exportName(root) : filename;
+      formats[filetype](name);
+      return name;
+    };
+    exporters.set(root, { types: optionsOf(field('export-filetype')), run });
     root.querySelector('.export-button').addEventListener('click', () => {
-      const filetype = field('export-filetype').value;
-      formats[filetype](field('export-filename').value);
+      run({ filetype: field('export-filetype').value, filename: field('export-filename').value });
     });
   };
 
@@ -3052,28 +3065,47 @@
     field('export-scale').addEventListener('input', showDimensions);
     modal.addEventListener('show.bs.modal', showDimensions);
 
-    $('.export-button').addEventListener('click', () => {
-      const filetype = field('export-filetype').value;
-      const filename = MT.cleanFilename(field('export-filename').value, [filetype, 'jpg', 'png', 'jpeg', 'webp', 'svg'], ['microbetrace', exportName(root), MT.today()].filter(Boolean).join('-'));
-      if (formats[filetype]) return formats[filetype](filename);
+    // Saves the file; resolves to its base name. A filename of undefined is the dialog's own field.
+    const run = async ({ filetype, filename, scale, quality }) => {
+      const name = MT.cleanFilename(filename === undefined ? field('export-filename').value : filename, [filetype, 'jpg', 'png', 'jpeg', 'webp', 'svg'], ['microbetrace', exportName(root), MT.today()].filter(Boolean).join('-'));
+      if (formats[filetype]) {
+        formats[filetype](name);
+        return name;
+      }
       const svg = getSVG();
       if (filetype == 'svg') {
-        MT.saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), filename + '.' + filetype);
+        MT.saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), name + '.' + filetype);
         if (done) done(svg);
       } else {
-        MT.svgImage(svg, {
-          scale: parseFloat(field('export-scale').value),
+        // (The dialog's own scale and quality unless given)
+        await MT.svgImage(svg, {
+          scale: scale === undefined ? parseFloat(field('export-scale').value) : scale,
           backgroundColor: settings.get('background-color'),
           type: 'image/' + filetype,
-          quality: parseFloat(field('export-quality').value)
-        }).then(blob => MT.saveImage(blob, filename + '.' + filetype), error => {
+          quality: quality === undefined ? parseFloat(field('export-quality').value) : quality
+        }).then(blob => MT.saveImage(blob, name + '.' + filetype), error => {
           console.error(error);
           MT.toast.error('The image could not be made (' + error.message + '). Try a smaller scale.');
         }).finally(() => {
           if (done) done(svg);
         });
       }
+      return name;
+    };
+    exporters.set(root, { types: optionsOf(field('export-filetype')), run });
+    $('.export-button').addEventListener('click', () => {
+      run({ filetype: field('export-filetype').value, filename: field('export-filename').value });
     });
+  };
+
+  // Turns autostash on or off, as the Files view's Session Recovery buttons do
+  // (and WebMCP's set_autostash). Turning it off stops the copies made each minute.
+  MT.setAutostash = enabled => {
+    enabled = !!enabled;
+    db.setItem('stash-auto', enabled ? 'true' : 'false');
+    if (!enabled && temp.autostash) clearInterval(temp.autostash.interval);
+    const radio = document.querySelector('input[name="stash-auto"][value="' + (enabled ? 'true' : 'false') + '"]');
+    if (radio) radio.checked = true;
   };
 
   // The export dialog of a view drawn with Plotly (see MT.svgExport)
