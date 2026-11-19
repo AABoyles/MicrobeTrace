@@ -40,6 +40,22 @@ const rules = {
   "eqeqeq": ["warn", "always", { null: "ignore" }],
 };
 
+// Settings are written through MT.settings.set, so that subscribers hear about them (#327).
+// The selectors catch X.widgets[k] =, X.widgets.k = and widgets[k] = in the app code.
+// The session upgrades in src/common.js are the exception, with disable comments.
+const noDirectWidgets = {
+  "no-restricted-syntax": ["error",
+    {
+      selector: "AssignmentExpression > MemberExpression.left[object.property.name='widgets']",
+      message: "Write settings through MT.settings.set (src/settings.js), not session.style.widgets directly (#327)",
+    },
+    {
+      selector: "AssignmentExpression > MemberExpression.left[object.name='widgets']",
+      message: "Write settings through MT.settings.set (src/settings.js), not a widgets object directly (#327)",
+    },
+  ],
+};
+
 const common = { ecmaVersion: "latest" };
 
 module.exports = [
@@ -47,7 +63,7 @@ module.exports = [
   {
     files: ["src/**/*.js", "components/*.js"],
     languageOptions: { ...common, sourceType: "script", globals: { ...globals.browser, ...appGlobals, ...libGlobals } },
-    rules,
+    rules: { ...rules, ...noDirectWidgets },
   },
   {
     files: ["workers/*.js"],

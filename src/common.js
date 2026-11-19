@@ -651,6 +651,7 @@
     // kept the distance metric's as distance: they filter on that
     const widgets = session.style.widgets;
     if (!session.data.linkFields.includes(widgets['link-sort-variable']) && session.data.linkFields.includes('distance')) {
+      // eslint-disable-next-line no-restricted-syntax -- session upgrade, before anything subscribes (#249)
       widgets['link-sort-variable'] = 'distance';
     }
     MT.applyStyle(session.style);
@@ -664,6 +665,7 @@
     // link-show-nn, which ran the minimum spanning tree
     const old = style.widgets && style.widgets["link-show-nn"];
     if (old !== undefined) {
+      // eslint-disable-next-line no-restricted-syntax -- session upgrade, before anything subscribes (#236)
       if (style.widgets["link-prune"] === undefined) style.widgets["link-prune"] = (old === true || old === "true") ? "mst" : "none";
       delete style.widgets["link-show-nn"];
     }
@@ -1426,7 +1428,7 @@
     // Where only links within a threshold are kept, remember it (#228)
     const stored = Object.assign({}, widgets['link-stored-thresholds']);
     metrics.forEach((m, i) => { if (sparse) stored[m] = thresholds[i]; else delete stored[m]; });
-    if (MT.settings) MT.settings.set('link-stored-thresholds', stored); else widgets['link-stored-thresholds'] = stored;
+    MT.settings.set('link-stored-thresholds', stored);
 
     const seqs = order.map(d => d.seq);
     const cores = Math.min(navigator.hardwareConcurrency || 4, 8);

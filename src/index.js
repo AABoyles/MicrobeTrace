@@ -749,8 +749,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const sortLink = (key, other) => {
       const a = MT.sortButton();
       a.addEventListener("click", () => {
-        session.style.widgets[widget(other + "-sort")] = "";
-        session.style.widgets[widget(key + "-sort")] = get(widget(key + "-sort")) === "ASC" ? "DESC" : "ASC";
+        settings.set(widget(other + "-sort"), "");
+        settings.set(widget(key + "-sort"), get(widget(key + "-sort")) === "ASC" ? "DESC" : "ASC");
         showColorTable(kind);
       });
       return a;
@@ -952,10 +952,12 @@ document.addEventListener("DOMContentLoaded", () => {
           MT.updateStatistics();
         }
       }
-      session.style.widgets["node-timeline-variable"] = variable;
+      // Already stored when the change came from the setting itself, so this notifies
+      // only when showTimeline is called directly with another variable
+      settings.set("node-timeline-variable", variable);
       if (variable == "None") {
         document.getElementById("global-timeline-field").innerHTML = "";
-        session.style.widgets["timeline-date-field"] = 'None'  
+        settings.set("timeline-date-field", 'None');
         showTimelineBar(false);
         if (pin) pin.disabled = false;
         if(pin && !session.network.timelinePinned) {
@@ -1105,9 +1107,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         currentValue = currentValue + (targetValue/151);
       }
-      session.style.widgets["timeline-date-field"] = field;
       session.state.timeStart = startDate;
       session.state.timeTarget = x.invert(targetValue);
+      // After the times above, so that any redraw this causes sees them
+      settings.set("timeline-date-field", field);
       if (loadingJsonFile && MT.parseDate(session.state.timeEnd) < MT.parseDate(session.state.timeTarget)) {
         let t = MT.parseDate(session.state.timeEnd);
         currentValue = x(t);
