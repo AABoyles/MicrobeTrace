@@ -4,7 +4,7 @@
 // replaces the old one. The block below is generated: `npm run cache`.
 
 // BEGIN GENERATED (scripts/build-sw.js)
-const CACHE = "microbetrace-4021fb76e4cc";
+const CACHE = "microbetrace-519d7dba2699";
 const PRECACHE = [
   "components/aggregation.html",
   "components/aggregation.js",
@@ -58,16 +58,11 @@ const PRECACHE = [
   "img/android-chrome-192x192.png",
   "img/android-chrome-512x512.png",
   "img/apple-touch-icon.png",
-  "img/browserconfig.xml",
   "img/favicon-16x16.png",
   "img/favicon-32x32.png",
   "img/favicon-48x48.png",
   "img/humanstxt-isolated-blank.gif",
-  "img/mstile-144x144.png",
-  "img/mstile-150x150.png",
-  "img/mstile-310x150.png",
-  "img/mstile-310x310.png",
-  "img/mstile-70x70.png",
+  "img/maskable-512x512.png",
   "img/safari-pinned-tab.svg",
   "index.html",
   "manifest.json",
