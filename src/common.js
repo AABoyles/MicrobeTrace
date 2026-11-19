@@ -1600,7 +1600,8 @@
       // it has committed, so a failed write (the quota, say) keeps the old copy.
       // The user is told the first time it fails, not every minute.
       const state = temp.autostash = { time: Date.now(), key: null, warned: false, busy: false };
-      state.interval = setInterval(async () => {
+      // (Each minute's copy; tests call it directly)
+      state.tick = async () => {
         if (state.busy) return;
         state.busy = true;
         try {
@@ -1628,7 +1629,8 @@
         } finally {
           state.busy = false;
         }
-      }, 60000);
+      };
+      state.interval = setInterval(state.tick, 60000);
     });
     document.querySelectorAll(".hideForHIVTrace").forEach(el => el.style.display = "flex");
     setTimeout(() => {

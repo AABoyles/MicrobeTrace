@@ -76,21 +76,27 @@ test('an unchanged session is not written again (#254)', async ({ page }) => {
   const errors = watchErrors(page);
   await open(page);
   await page.evaluate(() => db.setItem('stash-auto', 'true'));
-  await page.clock.install();
   await page.setInputFiles('#data-files', [links]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
-  // (Nodes still settling make the session change, so the first copies are left out)
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '' && temp.autostash, null, { timeout: 120000 });
+  // Each minute's copy, called directly rather than by waiting minutes (or
+  // running a fake clock through every animation frame of those minutes).
+  const tick = () => page.evaluate(() => temp.autostash.tick());
   await page.evaluate(() => { MT.events.emit('stop-force-simulation'); MT.syncLayout = () => {}; });
-  await page.clock.runFor(61000);
-  await expect.poll(async () => (await keys(page)).length).toBe(1);
-  await page.clock.runFor(61000);
-  await page.waitForTimeout(500);
-  const settled = await keys(page);
-  await page.clock.runFor(61000);
-  await page.clock.runFor(61000);
-  expect(await keys(page)).toEqual(settled);
+  expect(await page.evaluate(() => typeof temp.autostash.interval)).not.toBe('undefined');
+  // (The views finish opening, and the Files view closes, just after launch)
+  await expect.poll(() => page.evaluate(async () => {
+    const before = JSON.stringify(session);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return JSON.stringify(session) === before;
+  }), { timeout: 30000 }).toBe(true);
+  await tick();
+  const first = await keys(page);
+  expect(first).toHaveLength(1);
+  await tick();
+  await tick();
+  expect(await keys(page)).toEqual(first);
   expect(errors).toEqual([]);
 });
 
