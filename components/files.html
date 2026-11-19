@@ -954,23 +954,32 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
     // Generated sequences go in node files of up to about 200 million characters
     // each: one CSV of hundreds of thousands of sequences is longer than the
     // longest string a browser can hold (#301)
-    // A count outside 1 to MT.maxGeneratedSequences is refused, typed or not
+    // (Both the Generate button and the generate_sequences tool.) A count that
+    // isn't a whole number from 1 to MT.maxGeneratedSequences is refused
+    const generateCountError = count => Number.isInteger(count) && count >= 1 && count <= MT.maxGeneratedSequences ? null :
+      `Generate makes from 1 to ${MT.maxGeneratedSequences.toLocaleString()} sequences. Enter a whole number in that range.`;
+    const isGenerated = name => /^generatedNodes(-\d+)?\.csv$/.test(name);
+    // [{name, contents}]: the generated sequences, a node file of CSV each
+    const generatedFiles = count => {
+      const nodes = MT.generateSeqs('gen-' + session.meta.readyTime + '-', count, 20);
+      const perFile = Math.max(1, Math.floor(MT.generatedFileChars / ((nodes[0] ? nodes[0].seq.length : 0) + 50)));
+      const files = Math.ceil(nodes.length / perFile);
+      return Array.from({ length: files }, (_, i) => ({
+        name: files == 1 ? 'generatedNodes.csv' : `generatedNodes-${i + 1}.csv`,
+        contents: Papa.unparse(nodes.slice(i * perFile, (i + 1) * perFile))
+      }));
+    };
+
     $('.generate-number').max = MT.maxGeneratedSequences;
     $('.generate-sequences').addEventListener('click', () => {
-      const count = number('.generate-number');
-      if (!Number.isInteger(count) || count < 1 || count > MT.maxGeneratedSequences) {
-        MT.toast.error(`Generate makes from 1 to ${MT.maxGeneratedSequences.toLocaleString()} sequences. Enter a whole number in that range.`);
+      const count = number('.generate-number'), error = generateCountError(count);
+      if (error) {
+        MT.toast.error(error);
         $('.generate-number').focus();
         return;
       }
       ready();
-      const nodes = MT.generateSeqs('gen-' + session.meta.readyTime + '-', count, 20);
-      const perFile = Math.max(1, Math.floor(MT.generatedFileChars / ((nodes[0] ? nodes[0].seq.length : 0) + 50)));
-      const files = Math.ceil(nodes.length / perFile);
-      for (let i = 0; i < files; i++) {
-        const name = files == 1 ? 'generatedNodes.csv' : `generatedNodes-${i + 1}.csv`;
-        processFile(new File([Papa.unparse(nodes.slice(i * perFile, (i + 1) * perFile))], name));
-      }
+      generatedFiles(count).forEach(f => processFile(new File([f.contents], f.name)));
       launchButton.focus();
     });
 
@@ -1668,9 +1677,14 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
         launchButton.click();
         return true;
       },
-      // Adds a file of generated random sequences, as the Generate button does
+      // Adds generated random sequences as the Generate button does (in several
+      // files if there are many), replacing those generated before; throws a
+      // count the button refuses
       generate(count) {
-        return api.add({ name: 'generatedNodes.csv', extension: 'csv', contents: Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', count, 20)) });
+        const error = generateCountError(count);
+        if (error) throw new Error(error);
+        session.files.filter(f => isGenerated(f.rawName || f.name)).forEach(f => api.remove(f.name));
+        return generatedFiles(count).map(f => api.add({ name: f.name, extension: 'csv', contents: f.contents }));
       },
       // The audit's findings for [{id, seq}], given {empty, gaps, RNA, 'amino-acids', CIGAR, malformed} (each on unless false)
       auditSequences: (data, checks) => auditSequences(data, name => checks[name] !== false),

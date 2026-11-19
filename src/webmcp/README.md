@@ -219,7 +219,7 @@ listed under [Consequential tools ask the user first](#consequential-tools-ask-t
 | `set_loading_options` | No | Changes those loading settings. |
 | `launch` | No (consequential) | Reads the pending files with the loading options, builds the network, and returns a summary. |
 | `load_demo` | No (consequential) | Loads the demo outbreak (about 100 nodes), replacing current data. `source` is `session` or `files`. |
-| `generate_sequences` | No (consequential) | Adds a node file of random, related sequences, for trying the app without data. |
+| `generate_sequences` | No (consequential) | Adds random, related sequences (1 to 250,000, as the Generate button), for trying the app without data; many go in several node files. |
 | `open_session` | No (consequential) | Opens a saved `.microbetrace`, HIV-TRACE or GHOST session, replacing current data. |
 | `apply_style` | No | Applies a `.microbetracestyle` (colors, view settings, widget values) to the session and open views. |
 | `get_session_json` | Yes | Returns the session as the Save dialog would write it (`microbetrace`, `microbetracestyle` or `hivtrace`), without downloading. |

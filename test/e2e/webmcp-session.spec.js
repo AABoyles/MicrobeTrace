@@ -179,6 +179,21 @@ test('generates sequences and launches', async () => {
   expect(r).toMatchObject({ loaded: true, nodes: 25, anySequences: true });
 });
 
+test('generates as the Generate button does: up to 250,000, in several files when many', async () => {
+  await call('new_session', { confirm: true });
+  expect(await page.evaluate(() => MTWebMCP.list().find(t => t.name == 'generate_sequences').inputSchema.properties.count.maximum)).toBe(250000);
+  for (const count of [0, 2.5, 250001]) expect(await fails('generate_sequences', { count })).toMatch(/from 1 to 250,000/);
+  expect(await page.evaluate(() => session.files.length)).toBe(0);
+  // Five sequences a file, as hundreds of thousands are at the real limit
+  const limit = await page.evaluate(() => { const was = MT.generatedFileChars; MT.generatedFileChars = 5 * (session.data.reference.length + 50); return was; });
+  let r = await call('generate_sequences', { count: 12 });
+  expect(r.pendingFiles.map(f => f.name)).toEqual(['generatedNodes-1.csv', 'generatedNodes-2.csv', 'generatedNodes-3.csv']);
+  // Generating again replaces them all
+  r = await call('generate_sequences', { count: 4 });
+  expect(r.pendingFiles.map(f => f.name)).toEqual(['generatedNodes.csv']);
+  await page.evaluate(limit => { MT.generatedFileChars = limit; }, limit);
+});
+
 test('adds an excel file as base64 and a session by file name', async () => {
   await call('new_session', { confirm: true });
   const base64 = await page.evaluate(() => {
