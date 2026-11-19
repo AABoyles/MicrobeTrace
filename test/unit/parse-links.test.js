@@ -13,7 +13,7 @@ function parse(msg) {
   let out;
   const ctx = { importScripts() {}, Papa, postMessage: m => { out = m; }, close() {} };
   vm.createContext(ctx);
-  vm.runInContext(source, ctx);
+  vm.runInContext(source, ctx, { filename: path.join(__dirname, '../../workers/parse-links.js') });  // a filename, so coverage counts it
   ctx.onmessage({ data: msg });
   return out;
 }

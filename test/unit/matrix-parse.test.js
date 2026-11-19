@@ -20,7 +20,7 @@ function parse(text, chunkSize) {
     close() {}
   };
   vm.createContext(ctx);
-  vm.runInContext(source, ctx);
+  vm.runInContext(source, ctx, { filename: path.join(__dirname, '../../workers/parse-csv-matrix.js') });  // a filename, so coverage counts it
   ctx.onmessage({ data: text });
   return out;
 }

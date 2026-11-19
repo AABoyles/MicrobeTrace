@@ -55,7 +55,7 @@ function load() {
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(root, 'src/common.js'), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(path.join(root, 'src/common.js'), 'utf8'), ctx, { filename: path.join(root, 'src/common.js') });
   // MT.escape is defined in src/index.js, as the page loads: take it from there
   const escape = fs.readFileSync(path.join(root, 'src/index.js'), 'utf8').match(/const escape = (value => .*);\n/)[1];
   ctx.MT.escape = vm.runInContext('(' + escape + ')', ctx);

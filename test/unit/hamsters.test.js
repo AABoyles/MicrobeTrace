@@ -26,7 +26,7 @@ function load({ directionality = true, tree = null, failTree = false } = {}) {
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx, { filename: path.join(__dirname, '../../src/common.js') });
   const MT = ctx.MT, log = [], warnings = [];
   ctx.session = { style: { widgets: { 'infer-directionality-false': !directionality } } };
   ctx.temp = { tree };
@@ -146,7 +146,7 @@ test('computeDirectionality rejects, rather than hanging, when its worker throws
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx, { filename: path.join(__dirname, '../../src/common.js') });
   let terminated = false;
   ctx.Worker = class {
     postMessage() { setTimeout(() => this.onerror(new Error('too deep')), 1); }
