@@ -212,7 +212,7 @@
         const next = circles[(at + step + circles.length) % circles.length];
         next.setAttribute('tabindex', 0);
         next.focus();
-      } else if (e.key == 'Enter' || e.key == 'ContextMenu' || (e.key == 'F10' && e.shiftKey)) {
+      } else if (e.key === 'Enter' || e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
         e.preventDefault();
         openMenuAt(e.target);
       }
@@ -226,11 +226,11 @@
       if (!menu.contains(e.target)) return;
       if (['ArrowDown', 'ArrowUp', 'Escape', 'Tab'].includes(e.key)) e.stopPropagation();
       const items = Array.from(menu.querySelectorAll('[data-action]')), at = items.indexOf(document.activeElement);
-      if (e.key == 'ArrowDown' || e.key == 'ArrowUp') {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        items[(at + (e.key == 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
-      } else if (e.key == 'Escape' || e.key == 'Tab') {
-        if (e.key == 'Escape') e.preventDefault();
+        items[(at + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+      } else if (e.key === 'Escape' || e.key === 'Tab') {
+        if (e.key === 'Escape') e.preventDefault();
         hideMenu();
         if (menuOpener) menuOpener.focus();
       }
@@ -298,7 +298,7 @@
 
     MT.paneToggle($('.settings-toggle'), pane);
     MT.svgExport(root, () => container.querySelector('svg'), settings, {
-      nwk: filename => MT.saveAs(new Blob([data.toNewick()], { type: 'application/newick;charset=utf-8' }), filename + '.nwk')
+      nwk: filename => MT.exportBlob(data.toNewick(), 'application/newick', filename + '.nwk')
     });
 
     const stop = [
@@ -330,7 +330,7 @@
     // Computing it shows in the view, which can cancel it (#293).
     computing.run((scope, onProgress) => {
       if (temp.tree) return;
-      if (session.files.length == 1 && session.files[0].format == 'newick') temp.tree = patristic.parseNewick(session.files[0].contents);
+      if (session.files.length === 1 && session.files[0].format == 'newick') temp.tree = patristic.parseNewick(session.files[0].contents);
       else return MT.computeTree({ scope, onProgress });
     }, () => {
       data = temp.tree.clone();

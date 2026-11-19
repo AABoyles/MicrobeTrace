@@ -125,7 +125,7 @@ function tooAmbiguous(x, y, fraction) {
 }
 
 function concat(Type, arrays) {
- if (arrays.length == 1) return arrays[0];
+ if (arrays.length === 1) return arrays[0];
  const out = new Type(arrays.reduce((sum, a) => sum + a.length, 0));
  let offset = 0;
  arrays.forEach(a => {

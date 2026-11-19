@@ -8,13 +8,12 @@
   // view, components/files.html, provides while it is open.)
 
   const { define, fail, waitFor, nextEvent, requireData } = self.MTWebMCP;
+  const { obj, str, bool, num } = self.MTWebMCP.schema;
 
   // Small helpers -----------------------------------------------------------------
 
-  const obj = (properties, required) => Object.assign({ type: 'object', properties }, required ? { required } : {});
-  const str = (description, extra) => Object.assign({ type: 'string', description }, extra);
-  const bool = (description, def) => ({ type: 'boolean', description, default: def });
-  const num = (description, extra) => Object.assign({ type: 'number', description }, extra);
+  // How long a tool waits for the Files view to open, once it is asked to
+  const FILES_VIEW_WAIT_MS = 20000;
   const timeoutSchema = def => ({ type: 'integer', minimum: 1000, description: 'Milliseconds to wait for the network to finish loading before giving up (default ' + def + ')', default: def });
 
   const FORMATS = ['link', 'node', 'matrix', 'fasta', 'newick'];
@@ -38,7 +37,7 @@
   async function filesView() {
     if (!self.MT.filesView) {
       self.MT.launchView('files');
-      await waitFor(() => self.MT.filesView, { timeout: 20000, message: 'The Files view did not open' });
+      await waitFor(() => self.MT.filesView, { timeout: FILES_VIEW_WAIT_MS, message: 'The Files view did not open' });
     }
     return self.MT.filesView;
   }
@@ -693,7 +692,7 @@
     execute: async (args) => {
       if (args.confirm !== true) fail('This discards all loaded data and settings. Pass confirm: true to proceed (stash_session or save_session first to keep it).');
       self.MT.reset();
-      await waitFor(() => self.MT.filesView, { timeout: 20000, message: 'The Files view did not open' });
+      await waitFor(() => self.MT.filesView, { timeout: FILES_VIEW_WAIT_MS, message: 'The Files view did not open' });
       return { reset: true, hint: 'Add files with add_file, or load_demo / generate_sequences / open_session.' };
     }
   });

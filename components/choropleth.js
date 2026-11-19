@@ -168,10 +168,7 @@
     const userLayers = MT.leafletGeoJSONUpload($('.geojson-input'), $('.geojson-layers'), map);
     MT.tableExport(root, {
       ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename => MT.mapImage(map, filename, type, paintLegend)])),
-      geojson: filename => MT.saveAs(
-        new Blob([JSON.stringify(regions)], { type: 'application/json;charset=utf-8' }),
-        filename + '.geojson'
-      )
+      geojson: filename => MT.exportBlob(JSON.stringify(regions), 'application/json', filename + '.geojson')
     });
 
     pickField();

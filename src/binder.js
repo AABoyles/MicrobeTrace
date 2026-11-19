@@ -79,7 +79,7 @@
       cleanup.push(settings.subscribe(key, show, { reload: true }));
 
       els.forEach(el => {
-        const live = el.type == 'range' || el.type == 'number' || el.type == 'text' || el.tagName == 'TEXTAREA';
+        const live = el.type == 'range' || el.type == 'number' || el.type == 'text' || el.tagName === 'TEXTAREA';
         // data-setting-on="change" waits for the edit to be committed
         const type = el.dataset.settingOn || (live ? 'input' : 'change');
         const listener = () => {

@@ -180,10 +180,7 @@
         drawNodes(false);
         requestAnimationFrame(() => requestAnimationFrame(() => MT.mapImage(map, filename, type, () => drawNodes())));
       }])),
-      geojson: filename => MT.saveAs(
-        new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
-        filename + '.geojson'
-      )
+      geojson: filename => MT.exportBlob(JSON.stringify(makeGeoJSON()), 'application/json', filename + '.geojson')
     });
 
     MT.pickLocationFields(settings, 'map-field-');

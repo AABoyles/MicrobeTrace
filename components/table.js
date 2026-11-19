@@ -94,7 +94,7 @@
     // Exports every row shown, with all its fields, not just the columns shown
     const rows = () => items();
     MT.tableExport(root, {
-      csv: name => MT.saveAs(new Blob([MT.toCSV(rows())], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
+      csv: name => MT.exportBlob(MT.toCSV(rows()), 'text/csv', name + '.csv'),
       xlsx: name => {
         const headers = session.data[dataset.slice(0, -1) + 'Fields'];
         const data = rows().map(item => {
@@ -108,7 +108,7 @@
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(data), MT.titleize(dataset));
         XLSX.writeFile(workbook, name + '.xlsx');
       },
-      json: name => MT.saveAs(new Blob([JSON.stringify(rows())], { type: 'application/json;charset=utf-8' }), name + '.json')
+      json: name => MT.exportBlob(JSON.stringify(rows()), 'application/json', name + '.json')
     });
 
 

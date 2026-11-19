@@ -83,7 +83,7 @@
       if (data) content.push({ type: 'image', data, mimeType });
       result = result.value;
     }
-    content.unshift({ type: 'text', text: result === undefined ? 'Done.' : typeof result == 'string' ? result : JSON.stringify(result, jsonReplacer) });
+    content.unshift({ type: 'text', text: result === undefined ? 'Done.' : typeof result === 'string' ? result : JSON.stringify(result, jsonReplacer) });
     return { content };
   }
 
@@ -92,7 +92,7 @@
     if (value instanceof Map) return Object.fromEntries(value);
     if (value instanceof Set) return Array.from(value);
     if (ArrayBuffer.isView(value)) return Array.from(value);
-    if (typeof value == 'number' && !isFinite(value)) return null;
+    if (typeof value === 'number' && !isFinite(value)) return null;
     return value;
   }
 
@@ -122,7 +122,7 @@
         if (declared && Object.prototype.hasOwnProperty.call(declared, key)) {
           const problem = checkArgs(declared[key], value[key], child);
           if (problem) return problem;
-        } else if (schema.additionalProperties && typeof schema.additionalProperties == 'object') {
+        } else if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
           const problem = checkArgs(schema.additionalProperties, value[key], child);
           if (problem) return problem;
         } else if (schema.additionalProperties !== true && (declared || schema.additionalProperties === false)) {
@@ -188,10 +188,10 @@
       controllers.set(tool.name, {
         abort() {
           if (controller) controller.abort();
-          if (registered && typeof registered.unregister == 'function') registered.unregister();
+          if (registered && typeof registered.unregister === 'function') registered.unregister();
         }
       });
-      if (registered && typeof registered.catch == 'function') {
+      if (registered && typeof registered.catch === 'function') {
         registered.catch(error => console.warn('WebMCP: ' + tool.name + ' was not registered:', error));
       }
     } catch (error) {
@@ -264,7 +264,7 @@
   function describeArgs(args) {
     let text;
     try {
-      text = JSON.stringify(args, (key, value) => typeof value == 'string' && value.length > 200 ?
+      text = JSON.stringify(args, (key, value) => typeof value === 'string' && value.length > 200 ?
         value.slice(0, 200) + '... (' + value.length.toLocaleString() + ' characters)' : value, 2);
     } catch (e) { text = String(args); }
     return text && text.length > 2000 ? text.slice(0, 2000) + '\n...' : text || '{}';
@@ -348,9 +348,9 @@
     // Before anything is asked: a bad call is refused, not put to the user
     validate(tool, args);
     if (!tool.confirm) return;
-    const message = typeof tool.confirm == 'function' ? tool.confirm(args) : tool.confirm;
+    const message = typeof tool.confirm === 'function' ? tool.confirm(args) : tool.confirm;
     if (!message) return;
-    if (typeof document == 'undefined' || !self.bootstrap || !self.bootstrap.Modal) {
+    if (typeof document === 'undefined' || !self.bootstrap || !self.bootstrap.Modal) {
       fail(tool.name + ' needs the user\'s permission, and this page cannot ask for it.');
     }
     if (!(await askUser(tool, String(message), args, signal))) fail('The user did not allow ' + tool.name + '.');
@@ -509,11 +509,11 @@
   };
   const matchSchema = { type: 'string', enum: ['all', 'any'], description: 'Whether items must meet all conditions (default) or any one' };
 
-  const isEmpty = v => v === undefined || v === null || v === '' || (typeof v == 'number' && isNaN(v)) || (Array.isArray(v) && !v.length);
-  const asNumber = v => typeof v == 'number' ? v : typeof v == 'string' && v.trim() !== '' && !isNaN(+v) ? +v : NaN;
+  const isEmpty = v => v === undefined || v === null || v === '' || (typeof v === 'number' && isNaN(v)) || (Array.isArray(v) && !v.length);
+  const asNumber = v => typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' && !isNaN(+v) ? +v : NaN;
   const asTime = v => {
     if (v instanceof Date) return v.getTime();
-    if (typeof v == 'string' && /^\d{4}-\d{1,2}(-\d{1,2})?|[A-Za-z]{3} [A-Za-z]{3} \d/.test(v)) {
+    if (typeof v === 'string' && /^\d{4}-\d{1,2}(-\d{1,2})?|[A-Za-z]{3} [A-Za-z]{3} \d/.test(v)) {
       const t = Date.parse(v);
       return isNaN(t) ? NaN : t;
     }
@@ -582,7 +582,7 @@
   // Sorts items by fields ({field, descending}), numbers as numbers
   function sort(items, by) {
     if (!by || !by.length) return items;
-    by = [].concat(by).map(s => typeof s == 'string' ? { field: s } : s);
+    by = [].concat(by).map(s => typeof s === 'string' ? { field: s } : s);
     return items.slice().sort((a, b) => {
       for (const { field, descending } of by) {
         const ea = isEmpty(a[field]), eb = isEmpty(b[field]);

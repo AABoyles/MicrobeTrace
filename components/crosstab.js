@@ -82,7 +82,7 @@
 
     const title = () => MT.titleize(fieldX.value) + ' by ' + MT.titleize(fieldY.value);
     MT.tableExport(root, {
-      csv: name => MT.saveAs(new Blob([MT.toCSV({ fields: headers, data: rows })], { type: 'text/csv;charset=utf-8' }), name + '.csv'),
+      csv: name => MT.exportBlob(MT.toCSV({ fields: headers, data: rows }), 'text/csv', name + '.csv'),
       xlsx: name => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([headers].concat(rows)), title().slice(0, 31));
@@ -91,7 +91,7 @@
       pdf: name => MT.tablesPDF('Crosstab: ' + title(), [{ headers, rows: rows.map(row => row.map(cell => cell + '')) }], name),
       json: name => {
         const objects = rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
-        MT.saveAs(new Blob([JSON.stringify(objects)], { type: 'application/json;charset=utf-8' }), name + '.json');
+        MT.exportBlob(JSON.stringify(objects), 'application/json', name + '.json');
       }
     });
 

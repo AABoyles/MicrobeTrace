@@ -70,7 +70,8 @@ self.MT = makeMT();
 self.session = makeSession();
 
 // (`document` is only used when a tool runs, and these tests run none that need it)
-for (const file of ['session.js', 'query.js', 'style.js', 'views.js']) load('src/webmcp/' + file);
+// schema.js first: the others take their schema helpers from it
+for (const file of ['schema.js', 'session.js', 'query.js', 'style.js', 'views.js']) load('src/webmcp/' + file);
 
 const tools = () => W.list();
 const byName = name => tools().find(t => t.name == name);

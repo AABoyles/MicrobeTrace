@@ -34,7 +34,7 @@
 
     // A node's date: spreadsheet day numbers, or anything MT.parseDate reads in
     // the order its field's dates are written in
-    const dateOf = (value, order) => MT.parseDate(typeof value == 'number' ? (value - 25567) * 24 * 60 * 60 * 1000 : value, order);
+    const dateOf = (value, order) => MT.parseDate(typeof value === 'number' ? (value - 25567) * 24 * 60 * 60 * 1000 : value, order);
     const orderOf = field => MTDates.dateOrderOf(session.data.nodes.map(d => d[field])).order;
 
     function bars() {

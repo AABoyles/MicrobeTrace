@@ -93,7 +93,7 @@
         headers: [title(t), `Number of ${MT.titleize(t.dataset)}s`, 'Percentage'],
         rows: t.data.map(row => [row[t.column] + '', row.n + '', row.percent])
       })), name),
-      json: name => MT.saveAs(new Blob([JSON.stringify(data)], { type: 'application/json;charset=utf-8' }), name + '.json')
+      json: name => MT.exportBlob(JSON.stringify(data), 'application/json', name + '.json')
     });
 
     root.style.overflowY = 'scroll';

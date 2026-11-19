@@ -42,7 +42,7 @@
     let destroyed = false;
     // What the last overlay frame drew (for tests)
     const drawn = { labels: 0, polygons: 0, focus: 0 };
-    const isNumber = a => typeof a == 'number';
+    const isNumber = a => typeof a === 'number';
 
     self.cosmosLoading = self.cosmosLoading || new Promise((resolve, reject) => {
       if (self.Cosmos) return resolve();
@@ -472,7 +472,7 @@
       let variables = tooltipVariables();
       if (!variables.length && get('node-color-variable') && get('node-color-variable') != 'None') variables = [get('node-color-variable')];
       if (!variables.length) return;
-      const html = variables.length == 1 ? MT.escape(d[variables[0]] == null ? '' : d[variables[0]]) :
+      const html = variables.length === 1 ? MT.escape(d[variables[0]] == null ? '' : d[variables[0]]) :
         '<table><tbody>' + variables.map(v => `<tr><td>${MT.escape(MT.titleize(v))}</td><td>${MT.escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
       MT.tooltip(html, event || mouse);
     }
@@ -512,7 +512,7 @@
       let min = Number.MAX_VALUE, max = Number.MIN_VALUE;
       nodes.forEach(d => {
         const size = d[sizeVariable];
-        if (typeof size == 'undefined') return;
+        if (typeof size === 'undefined') return;
         if (size < min) min = size;
         if (size > max) max = size;
       });
@@ -1450,7 +1450,7 @@
 
     function onKey(e) {
       if (e.target !== container || !graph || e.altKey) return;
-      const ctrl = e.ctrlKey || e.metaKey, key = e.key.length == 1 ? e.key.toLowerCase() : e.key;
+      const ctrl = e.ctrlKey || e.metaKey, key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
       const n = points.length;
       const needsFocus = action => () => focused === undefined ? noFocus() : action(points[focused]);
       let action;
@@ -1530,9 +1530,9 @@
     const onKeyFirst = e => {
       if (menu.contains(e.target)) {
         const items = Array.from(menu.querySelectorAll('.dropdown-item')), at = items.indexOf(e.target);
-        if (e.key == 'ArrowDown' || e.key == 'ArrowUp') items[(at + (e.key == 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
-        else if (e.key == ' ') e.target.click();
-        else if (e.key == 'Escape' || e.key == 'Tab') hideContextMenu();
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') items[(at + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+        else if (e.key === ' ') e.target.click();
+        else if (e.key === 'Escape' || e.key === 'Tab') hideContextMenu();
         else return;
       } else if (e.key != 'Escape' || e.target !== container) return;
       else if (!keysPanel.hidden) toggleKeys(false);

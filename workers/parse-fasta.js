@@ -32,7 +32,7 @@ if(typeof module !== 'undefined' && module.exports) module.exports = { parseFast
 if(typeof onmessage !== 'undefined' || typeof self !== 'undefined') onmessage = function(e){
  let start = Date.now();
  let text = e.data;
- let seqs = (!text || text.length == 0) ? [] : parseFasta(text);   // an empty file still answers (#222)
+ let seqs = (!text || text.length === 0) ? [] : parseFasta(text);   // an empty file still answers (#222)
  debugTime('FASTA Parse', start);
  start = Date.now();
  postMessage({ nodes: seqs, start: start });

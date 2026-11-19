@@ -1,5 +1,9 @@
   MT.registerView('files', (root, { settings, events }) => {
 
+    // How long the loading dialog may take to open before the load is given up,
+    // and when a long read says it is still working
+    const MODAL_WAIT_MS = 5000, STILL_WORKING_MS = 20000;
+
     const $ = selector => root.querySelector(selector);
     const $$ = selector => Array.from(root.querySelectorAll(selector));
     const get = key => settings.get(key);
@@ -63,7 +67,7 @@
       const row = e.target.closest('.file-table-row');
       if (!row) return;
       e.preventDefault();
-      moveRow(row, e.key == 'ArrowUp' ? -1 : 1);
+      moveRow(row, e.key === 'ArrowUp' ? -1 : 1);
       // (A button that can't go further hands the focus to the other)
       (e.target.disabled ? row.querySelector(e.target.classList.contains('file-move-up') ? '.file-move-down' : '.file-move-up') : e.target).focus();
     });
@@ -518,7 +522,7 @@
       const button = row.querySelector('button');
       button.addEventListener('click', () => {
         const excluded = session.data.nodeExclusions;
-        if (button.textContent == 'Exclude') {
+        if (button.textContent === 'Exclude') {
           excluded.push(id);
           button.classList.replace('btn-warning', 'btn-success');
           button.textContent = 'Include';
@@ -675,7 +679,7 @@
           resolve('done');
         }, { once: true });
         bootstrap.Modal.getOrCreateInstance(loading, { backdrop: false, keyboard: false }).show();
-        setTimeout(() => reject(new Error('Problem loading information modal!')), 5000);
+        setTimeout(() => reject(new Error('Problem loading information modal!')), MODAL_WAIT_MS);
       }).then(
         () => launch(),
         error => { console.error(error); MT.toast.error('The information window did not open, so the files are loading anyway. If anything looks wrong, reload the page and try again.'); launch(); } // the information dialog didn't open
@@ -727,7 +731,7 @@
       MT.progress('Reading the files');
       temp.messageTimeout = setTimeout(() => {
         MT.toast.info('Still working. Large sets of sequences can take several minutes to align and compare. Cancel in the loading dialog stops the work and keeps your files listed.', 15);
-      }, 20000);
+      }, STILL_WORKING_MS);
 
       const check = session.files.length > 1;
 
@@ -797,7 +801,7 @@
 
         // An empty file is said to be, not loaded as nothing (#222)
         const contents = file.contents;
-        if (contents == null || (typeof contents == 'string' ? contents.trim() === '' : contents.byteLength === 0)) {
+        if (contents == null || (typeof contents === 'string' ? contents.trim() === '' : contents.byteLength === 0)) {
           return fail(file, kindName[file.format] || 'a network file', 'the file is empty');
         }
 

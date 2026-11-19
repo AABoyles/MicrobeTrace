@@ -365,7 +365,7 @@
     origin: []
   });
   
-  let isNumber = a => typeof a == "number";
+  let isNumber = a => typeof a === "number";
   
   let uniq = a => {
     let seen = {};
@@ -808,8 +808,8 @@
       computer.onmessage = response => {
         const data = response && response.data;
         if (data === "Error") return fail(what + " failed");
-        if (data && typeof data == "object" && data.error) return fail(data.error);
-        if (data && typeof data == "object" && Object.keys(data).length == 1 && typeof data.progress == "number") {
+        if (data && typeof data === "object" && data.error) return fail(data.error);
+        if (data && typeof data === "object" && Object.keys(data).length === 1 && typeof data.progress === "number") {
           if (onProgress) onProgress(data.progress);
           return;
         }
@@ -835,7 +835,7 @@
     const bar = document.getElementById("loading-progress-bar");
     const wrap = document.getElementById("loading-progress");
     if (!label || !bar || !wrap) return;
-    const known = typeof total == "number" && total > 0;
+    const known = typeof total === "number" && total > 0;
     const percent = known ? Math.max(0, Math.min(100, Math.round(100 * done / total))) : null;
     label.textContent = text + (known ? ` (${percent}%)` : "...");
     wrap.hidden = false;
@@ -1716,7 +1716,7 @@
       console.error(error);
       MT.hideModal("loading-information-modal");
       MT.toast.error("Something went wrong! A new session will start in 5 seconds.");
-      setTimeout(() => MT.reload(), 5000);
+      setTimeout(() => MT.reload(), 5000); // the 5 seconds the message above names
     }
     MT.setLinkVisibility(true);
     session.meta.loadTime = Date.now() - session.meta.startTime;
@@ -2560,9 +2560,11 @@
   };
 
   // Opens the global settings at their Styling tab
+  const TAB_SHOW_DELAY_MS = 250;
   MT.showColorOptions = () => {
     bootstrap.Tab.getOrCreateInstance(document.getElementById("style-tab")).show();
-    setTimeout(() => bootstrap.Modal.getOrCreateInstance(document.getElementById("global-settings-modal")).show(), 250);
+    // The modal opens once the Styling tab has been shown (the tab's transition takes a moment)
+    setTimeout(() => bootstrap.Modal.getOrCreateInstance(document.getElementById("global-settings-modal")).show(), TAB_SHOW_DELAY_MS);
   };
 
   // Views written as modules register a mount function from their component's
@@ -2581,11 +2583,15 @@
   MT.views = {};
   MT.registerView = (name, mount) => { MT.views[name] = mount; };
 
+  // A settings pane (.left-pane) is this many pixels wide, and slides in from
+  // this far off the left edge when closed (the -400px in main.css)
+  const PANE_WIDTH = 400;
+
   // Slides a view's settings pane (.left-pane) in or out
   MT.slidePane = (pane, open) => {
     if (pane.slide) pane.slide.cancel();
-    const from = getComputedStyle(pane).display == 'none' ? '-400px' : getComputedStyle(pane).left;
-    const to = open ? '0px' : '-400px';
+    const from = getComputedStyle(pane).display === 'none' ? `-${PANE_WIDTH}px` : getComputedStyle(pane).left;
+    const to = open ? '0px' : `-${PANE_WIDTH}px`;
     pane.style.display = 'block';
     pane.style.left = to;
     pane.slide = pane.animate([{ left: from }, { left: to }], { duration: 400, easing: 'ease-in-out' });
@@ -2602,13 +2608,15 @@
   // one moved aside only while the view is wide enough to keep a good width
   // beside the pane (in a narrower view the pane covers it, as others do);
   // `resize` redraws the view when it moves.
-  const paneRoom = 410, besideAtLeast = 600;
+  // A view that moves aside for an open pane gives up the pane's width plus 10px,
+  // and only does so while it is at least besideAtLeast pixels wide
+  const paneRoom = PANE_WIDTH + 10, besideAtLeast = 600;
   // The width a view has to draw in: all of it, less what an open pane beside
   // it takes
   MT.viewWidth = root => root.clientWidth - (root.classList.contains('pane-beside-open') ? paneRoom : 0);
   const openPanes = new Set();
-  const typing = target => target.isContentEditable || target.tagName == 'TEXTAREA' ||
-    (target.tagName == 'INPUT' && !['checkbox', 'radio', 'range', 'button', 'color'].includes(target.type));
+  const typing = target => target.isContentEditable || target.tagName === 'TEXTAREA' ||
+    (target.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'button', 'color'].includes(target.type));
   // In the capture phase, before a menu that Escape closes has closed
   document.addEventListener('keydown', e => {
     if (e.key != 'Escape' || typing(e.target) || document.querySelector('.modal.show, .ts-wrapper.dropdown-active, .dropdown-menu.show')) return;
@@ -2870,14 +2878,14 @@
   MT.numericFields = (items, fields) => choosable(fields).filter(field => {
     if (field == 'cluster') return false;
     const values = valuesOf(items, field);
-    return values.length > 0 && values.every(v => typeof v == 'number' && isFinite(v)) && new Set(values).size >= 3;
+    return values.length > 0 && values.every(v => typeof v === 'number' && isFinite(v)) && new Set(values).size >= 3;
   });
 
   // Whether a value is a date: a Date, or text that reads as one (in the given
   // order, see MTDates.dateOrderOf). Numbers aren't, nor text that's just a
   // number (as spreadsheets give), though MT.parseDate reads them as times.
   MT.isDate = (value, order) => value instanceof Date ? !isNaN(value) :
-    typeof value == 'string' && isNaN(value) && !!MT.parseDate(value, order);
+    typeof value === 'string' && isNaN(value) && !!MT.parseDate(value, order);
 
   // A column's values read as dates: how many are present, how many read, and
   // how many distinct dates they are, all in the column's order
@@ -2953,7 +2961,7 @@
     };
     button.addEventListener('click', e => { e.stopPropagation(); openFrom(button, button.getBoundingClientRect()); });
     wrapper.addEventListener('keydown', e => {
-      if (e.key == 'ContextMenu' || (e.key == 'F10' && e.shiftKey)) {
+      if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
         e.preventDefault();
         openFrom(e.target, e.target.getBoundingClientRect());
       }
@@ -2964,14 +2972,14 @@
       if (!menu.contains(e.target)) return;
       const list = items(), at = list.indexOf(document.activeElement);
       if (['ArrowDown', 'ArrowUp', 'Escape', 'Tab', ' '].includes(e.key)) e.stopPropagation();
-      if (e.key == 'ArrowDown' || e.key == 'ArrowUp') {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        list[(at + (e.key == 'ArrowDown' ? 1 : list.length - 1)) % list.length].focus();
-      } else if (e.key == ' ') {
+        list[(at + (e.key === 'ArrowDown' ? 1 : list.length - 1)) % list.length].focus();
+      } else if (e.key === ' ') {
         e.preventDefault();
         document.activeElement.click();
-      } else if (e.key == 'Escape' || e.key == 'Tab') {
-        if (e.key == 'Escape') e.preventDefault();
+      } else if (e.key === 'Escape' || e.key === 'Tab') {
+        if (e.key === 'Escape') e.preventDefault();
         closeMenu();
         if (opener) opener.focus();
       }
@@ -2996,7 +3004,7 @@
         if (cell) cell.dispatchEvent(new Event('mt-rename'));
         return;
       } else if (action == 'expand') {
-        const expand = item.textContent == 'Expand';
+        const expand = item.textContent === 'Expand';
         wrapper.classList.toggle('expanded', expand);
         item.textContent = expand ? 'Contract' : 'Expand';
       } else if (action == 'counts' && onCounts) {
@@ -3042,13 +3050,13 @@
     cell.addEventListener('mt-rename', start);
     cell.addEventListener('keydown', e => {
       const editing = cell.isContentEditable;
-      if (!editing && (e.key == 'F2' || e.key == 'Enter')) {
+      if (!editing && (e.key === 'F2' || e.key === 'Enter')) {
         e.preventDefault();
         start();
-      } else if (editing && (e.key == 'Enter' || e.key == 'Escape')) {
+      } else if (editing && (e.key === 'Enter' || e.key === 'Escape')) {
         e.preventDefault();
         e.stopPropagation();
-        if (e.key == 'Escape') cell.textContent = before;
+        if (e.key === 'Escape') cell.textContent = before;
         cell.blur();
         cell.focus();
       }
@@ -3135,7 +3143,7 @@
     Object.entries(pagePanels).forEach(([kind, id]) => {
       const panel = document.getElementById(id);
       if (!panel) return;
-      const host = views.find(item => (typeof item.panels == 'function' ? item.panels() : item.panels || []).includes(kind));
+      const host = views.find(item => (typeof item.panels === 'function' ? item.panels() : item.panels || []).includes(kind));
       const into = host ? MT.panelDock(host.container.element) : parking();
       if (panel.parentElement !== into) into.appendChild(panel);
     });
@@ -3180,7 +3188,7 @@
       }
       const svg = getSVG();
       if (filetype == 'svg') {
-        MT.saveAs(new Blob([MT.unparseSVG(svg)], { type: 'image/svg+xml;charset=utf-8' }), name + '.' + filetype);
+        MT.exportBlob(MT.unparseSVG(svg), 'image/svg+xml', name + '.' + filetype);
         if (done) done(svg);
       } else {
         // (The dialog's own scale and quality unless given)
@@ -3335,7 +3343,7 @@
       return index.get(String(value)) || (isFinite(number) && index.get(String(number))) || undefined;
     };
     const at = place => place && [parseFloat(place._lat), parseFloat(place._lon)];
-    const coordinate = (value, negative) => typeof value == 'string' ? (value.toUpperCase().includes(negative) ? -1 : 1) * parseFloat(value) : value;
+    const coordinate = (value, negative) => typeof value === 'string' ? (value.toUpperCase().includes(negative) ? -1 : 1) * parseFloat(value) : value;
 
     const places = {};
     if (data.countries) {
@@ -3358,7 +3366,7 @@
         const v = d[field('county')];
         let county = lookup(i, v);
         // Otherwise by name, within the node's state
-        if (!county && typeof v == 'string' && v) {
+        if (!county && typeof v === 'string' && v) {
           const state = stateOf(d), name = v.toLowerCase();
           if (state) county = data.counties.features.find(c => c.properties.state == state.properties.usps &&
             (c.properties.name.includes(name) || name.includes(c.properties.name)));
@@ -3423,6 +3431,10 @@
     setTimeout(() => URL.revokeObjectURL(link.href), 60000);
   };
 
+  // Saves text as a UTF-8 file of the given type (a MIME type such as 'text/csv'),
+  // the way every export of text does; MT.saveAs does the download
+  MT.exportBlob = (text, type, filename) => MT.saveAs(new Blob([text], { type: type + ';charset=utf-8' }), filename);
+
   // Papa.unparse with the settings every export needs. escapeFormulae stops a
   // cell such as =HYPERLINK(...) from being evaluated when a spreadsheet opens
   // the file. Rows that are objects get the union of their keys as columns, in
@@ -3430,9 +3442,9 @@
   // says otherwise. Rows that are arrays, or {fields, data}, pass through.
   MT.toCSV = (rows, opts = {}) => {
     const config = { escapeFormulae: true, ...opts };
-    if (Array.isArray(rows) && !config.columns && rows.some(r => r && typeof r == 'object' && !Array.isArray(r))) {
+    if (Array.isArray(rows) && !config.columns && rows.some(r => r && typeof r === 'object' && !Array.isArray(r))) {
       const seen = new Set();
-      rows.forEach(r => { if (r && typeof r == 'object') Object.keys(r).forEach(k => seen.add(k)); });
+      rows.forEach(r => { if (r && typeof r === 'object') Object.keys(r).forEach(k => seen.add(k)); });
       config.columns = Array.from(seen);
     }
     return Papa.unparse(rows, config);
@@ -3538,7 +3550,7 @@
     const layers = Array.from(container.querySelector('.leaflet-map-pane').querySelectorAll('img.leaflet-tile-loaded, canvas, img.leaflet-marker-icon'));
     // Tiles come from other servers: load them again, asking for CORS, so the
     // canvas can still be saved. Tiles that won't load that way are left out.
-    const images = await Promise.all(layers.map(el => el.tagName == 'IMG' ? loadImage(el.src) : el));
+    const images = await Promise.all(layers.map(el => el.tagName === 'IMG' ? loadImage(el.src) : el));
     layers.forEach((el, i) => {
       const image = images[i], rect = el.getBoundingClientRect();
       if (!image || !rect.width || !rect.height) return;
@@ -3591,7 +3603,7 @@
     refresh();
     const events = MT.events, names = ['node-visibility', 'link-visibility', 'session-loaded'];
     const offs = names.map(n => events.on(n, refresh));
-    return () => { offs.forEach(off => typeof off == 'function' && off()); note.remove(); };
+    return () => { offs.forEach(off => typeof off === 'function' && off()); note.remove(); };
   };
   const nodesOf = n => n.toLocaleString() + (n == 1 ? ' node' : ' nodes');
   const linksOf = n => n.toLocaleString() + (n == 1 ? ' link' : ' links');
@@ -3717,7 +3729,7 @@
     });
   };
   // Only in a browser: the unit tests load this file in Node, without a DOM
-  if (typeof self.addEventListener == "function") {
+  if (typeof self.addEventListener === "function") {
     self.addEventListener("online", () => MT.updateDemoButtons());
     self.addEventListener("offline", () => MT.updateDemoButtons());
   }
@@ -4156,7 +4168,7 @@
       tip.style.left = Math.max(0, Math.min(box.left, window.innerWidth - tip.offsetWidth - 4)) + 'px';
     });
     document.addEventListener('focusout', hideTip);
-    document.addEventListener('keydown', function (e) { if (e.key == 'Escape') hideTip(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(); });
     var pending = false;
     var sweep = function () {
       if (pending) return;
@@ -4165,7 +4177,7 @@
     };
     MT.nameIconButtons(document);
     // Only in a browser: the unit tests load this file in Node, without a DOM
-    if (typeof MutationObserver == 'function' && document.body) {
+    if (typeof MutationObserver === 'function' && document.body) {
       new MutationObserver(sweep).observe(document.body, { childList: true, subtree: true });
     }
   })();

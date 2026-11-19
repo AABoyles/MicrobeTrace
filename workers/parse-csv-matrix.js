@@ -8,7 +8,7 @@ importScripts("../vendor/papaparse.min.js");
 // (Also in src/graph.js as MTGraph.parseDistance: workers cannot load it.)
 function parseDistance(v) {
  if (v == null) return null;
- if (typeof v == "number") return isFinite(v) ? v : NaN;
+ if (typeof v === "number") return isFinite(v) ? v : NaN;
  const s = ("" + v).trim();
  if (s === "") return null;
  if (/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(s)) return Number(s);

@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
       MT.saveAs(content, file + ".zip");
       return file + ".zip";
     }
-    MT.saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), file + "." + format);
+    MT.exportBlob(data, 'application/json', file + "." + format);
     return file + "." + format;
   };
 
@@ -718,7 +718,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .append("td")
       .each(function(d) {
         const cell = d3.select(this);
-        if (d.value !== null && typeof d.value == "object" && "swatch" in d.value) {
+        if (d.value !== null && typeof d.value === "object" && "swatch" in d.value) {
           cell.append("div")
             .style("margin-left", "5px")
             .style("width", "40px")
@@ -1228,17 +1228,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const open = results.style.display == "block";
     const items = options().filter(li => !li.classList.contains("no-matches"));
     const at = items.findIndex(li => li.classList.contains("active"));
-    if (e.key == "ArrowDown" || e.key == "ArrowUp") {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       if (!open || !items.length) return;
       e.preventDefault();
-      const step = e.key == "ArrowDown" ? 1 : -1;
+      const step = e.key === "ArrowDown" ? 1 : -1;
       setActive(items[at < 0 ? (step > 0 ? 0 : items.length - 1) : (at + step + items.length) % items.length]);
-    } else if (e.key == "Enter") {
+    } else if (e.key === "Enter") {
       if (open && at >= 0) {
         e.preventDefault();
         choose(items[at]);
       }
-    } else if (e.key == "Escape") {
+    } else if (e.key === "Escape") {
       if (open) {
         e.preventDefault();
         e.stopPropagation();
@@ -1303,11 +1303,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.addEventListener("keydown", e => {
     if (!e.ctrlKey && !e.metaKey) return;
-    if (e.key == "f" && !search.disabled) {
+    if (e.key === "f" && !search.disabled) {
       e.preventDefault();
       search.focus();
     }
-    if (e.key == "s") {
+    if (e.key === "s") {
       e.preventDefault();
       // Bootstrap ignores show() while the dialog is still fading out (right
       // after a save), so it opens again once it has gone
