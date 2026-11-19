@@ -99,6 +99,8 @@ test('the globe colors links from the link legend, and docks it', async () => {
 });
 
 test('the histogram colors bars by the legend of its dataset, the only one it docks', async () => {
+  // The node legend needs a color variable (an earlier test may have set one, but not on its own)
+  await colorBy('node', 'group');
   const colors = (await legend('link')).map(r => r.color);
   await launchView(page, 'histogram');
   const bars = () => page.evaluate(() => document.querySelector('.histogram-plot').data.map(t => t.marker.color));
@@ -111,7 +113,8 @@ test('the histogram colors bars by the legend of its dataset, the only one it do
   await page.evaluate(() => MT.settings.set('histogram-variable', 'nodes-degree'));
   await expect.poll(() => docked('histogram', 'node')).toBe(true);
   expect(await docked('histogram', 'link')).toBe(false);
-  expect((await bars()).every(c => nodeColors.includes(c))).toBe(true);
+  // (The bars are redrawn after the legend docks, so they're polled for)
+  await expect.poll(async () => (await bars()).every(c => nodeColors.includes(c))).toBe(true);
   await closeView(page, 'histogram');
 });
 
