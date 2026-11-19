@@ -13,5 +13,4 @@ docs
 *.md
 Dockerfile
 .dockerignore
-sonar-project.properties
 playwright.config.js

@@ -10,4 +10,5 @@ yarn.lock
 .cache
 test-results
 playwright-report
+coverage
 _site
