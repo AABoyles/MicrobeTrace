@@ -749,6 +749,10 @@
   // MT.startWork() runs again, no new worker starts (so the step that was
   // waiting on one doesn't go on to start the next). A worker may report its
   // progress by posting {progress: fraction} (0 to 1); onProgress gets it.
+  //
+  // A view's computations run in a scope of their own (MT.workScope), so that
+  // view's Cancel stops only its workers, and MT.cancelWork (Launch's Cancel)
+  // doesn't stop them: a scope's workers are in the scope, not in running.
   const running = new Set();
   let cancelled = false;
   const cancelError = () => Object.assign(new Error("it was cancelled"), { cancelled: true });
@@ -758,23 +762,36 @@
     Array.from(running).forEach(cancel => cancel());
   };
   MT.workCancelled = () => cancelled;
+  MT.workScope = () => {
+    const stops = new Set();
+    const scope = {
+      cancelled: false,
+      stops,
+      cancel() {
+        scope.cancelled = true;
+        Array.from(stops).forEach(stop => stop());
+      }
+    };
+    return scope;
+  };
 
-  MT.runWorker = (script, message, { transfer, name, worker, onProgress } = {}) => {
+  MT.runWorker = (script, message, { transfer, name, worker, onProgress, scope } = {}) => {
     return new Promise((resolve, reject) => {
-      if (cancelled) return reject(cancelError());
+      if (scope ? scope.cancelled : cancelled) return reject(cancelError());
       const computer = worker || new Worker(script);
+      const owners = scope ? scope.stops : running;
       let settled = false;
       const settle = (fn, value) => {
         if (settled) return;
         settled = true;
-        running.delete(stop);
+        owners.delete(stop);
         try { computer.terminate(); } catch (e) { /* already gone */ }
         fn(value);
       };
       const what = name || script;
       const fail = reason => settle(reject, reason instanceof Error ? reason : new Error(reason));
       const stop = () => fail(cancelError());
-      running.add(stop);
+      owners.add(stop);
       computer.onmessage = response => {
         const data = response && response.data;
         if (data === "Error") return fail(what + " failed");
@@ -819,6 +836,119 @@
   MT.progressDone = () => {
     const modal = document.getElementById("loading-information-modal");
     if (modal) modal.setAttribute("aria-busy", "false");
+  };
+
+  // A view's own computation (#293), shown in the view: "Computing the tree..."
+  // with its progress where the worker reports it, and a Cancel that stops the
+  // workers this computation started (its scope), not Launch's or another
+  // view's. Cancelled or failed, the view says so and offers Retry, which runs
+  // the same work again. The text is a live region, as the loading dialog's is.
+  // MT.viewComputing(root, what) returns { run, stop, destroy }: run(work, done)
+  // calls work(scope, onProgress), which returns the result or a promise of it,
+  // and then done(result), unless the run was cancelled, superseded (by a later
+  // run or stop) or the view closed. stop() ends the current run without a message.
+  MT.viewComputing = (root, what) => {
+    const box = document.createElement("div");
+    box.className = "view-computing";
+    box.innerHTML = `<p class="visually-hidden" role="status" aria-live="polite"></p>
+      <div class="view-computing-card" hidden>
+        <p class="view-computing-text" aria-hidden="true"></p>
+        <div class="progress view-computing-progress">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+        </div>
+        <div class="view-computing-actions">
+          <button type="button" class="btn btn-secondary btn-sm view-computing-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm view-computing-retry" hidden>Retry</button>
+        </div>
+      </div>`;
+    root.append(box);
+    const status = box.querySelector('[role="status"]');
+    const card = box.querySelector(".view-computing-card");
+    const text = box.querySelector(".view-computing-text");
+    const bar = box.querySelector(".progress-bar");
+    const cancelButton = box.querySelector(".view-computing-cancel");
+    const retryButton = box.querySelector(".view-computing-retry");
+    let current = null, last = null, destroyed = false, announced = -1;
+
+    // mode: "busy" (Cancel), "stopped" (Retry) or "idle" (nothing shown)
+    const setState = (message, mode) => {
+      const focused = box.contains(document.activeElement) ? document.activeElement : null;
+      card.hidden = mode == "idle";
+      cancelButton.hidden = mode != "busy";
+      retryButton.hidden = mode != "stopped";
+      bar.parentElement.hidden = mode != "busy";
+      text.textContent = message;
+      status.textContent = message;
+      // Focus can't stay on a control that's gone: move it to the one that replaces it
+      if (focused && (card.hidden || focused.hidden)) {
+        const next = mode == "stopped" ? retryButton : mode == "busy" ? cancelButton : root.querySelector(".view-controls button");
+        if (next) next.focus();
+      }
+    };
+    // The live region is told each tenth of the way, not at every step
+    const progressTo = fraction => {
+      const percent = Math.max(0, Math.min(100, Math.round(100 * fraction)));
+      bar.classList.remove("progress-bar-striped", "progress-bar-animated");
+      bar.style.width = percent + "%";
+      bar.setAttribute("aria-valuenow", percent);
+      text.textContent = `Computing ${what} (${percent}%)...`;
+      if (Math.floor(percent / 10) != announced) {
+        announced = Math.floor(percent / 10);
+        status.textContent = `Computing ${what} (${percent}%)...`;
+      }
+    };
+
+    const stop = () => {
+      const was = current;
+      current = null;
+      if (was) was.cancel();
+      setState("", "idle");
+    };
+    const run = (work, done = () => {}) => {
+      if (destroyed) return Promise.resolve();
+      if (current) {
+        const superseded = current;
+        current = null;
+        superseded.cancel();
+      }
+      const scope = current = MT.workScope();
+      last = { work, done };
+      const computing = `Computing ${what}`;
+      announced = -1;
+      setState(computing + "...", "busy");
+      // Until the worker reports a fraction, the bar says only that work is going on
+      bar.classList.add("progress-bar-striped", "progress-bar-animated");
+      bar.style.width = "100%";
+      bar.removeAttribute("aria-valuenow");
+      return Promise.resolve()
+        .then(() => work(scope, fraction => { if (scope === current) progressTo(fraction); }))
+        .then(result => {
+          if (scope !== current) return;
+          done(result);
+          current = null;
+          setState("", "idle");
+        })
+        .catch(error => {
+          if (scope !== current) return;
+          current = null;
+          if (scope.cancelled || (error && error.cancelled)) return setState(`${computing} was cancelled.`, "stopped");
+          console.error(error);
+          const reason = ((error && error.message) || "" + error).replace(/\.$/, "");
+          setState(`Couldn't compute ${what}: ${reason}.`, "stopped");
+        });
+    };
+    cancelButton.addEventListener("click", () => { if (current) current.cancel(); });
+    retryButton.addEventListener("click", () => { if (last) run(last.work, last.done); });
+
+    return {
+      run,
+      stop,
+      destroy() {
+        destroyed = true;
+        stop();
+        box.remove();
+      }
+    };
   };
 
   MT.parseFASTA = text => MT.runWorker("workers/parse-fasta.js", text, { name: "The FASTA parser" }).then(data => {
@@ -1376,6 +1506,14 @@
   // n * n is 200 MB at 5,000 nodes, and 800 MB at 10,000 (#248).
   MT.DM_MAX_NODES = 5000;
 
+  // Why the distance matrix of the current nodes can't be built, or null if it can
+  MT.dmTooLargeMessage = (maxNodes = MT.DM_MAX_NODES) => {
+    const n = session.data.nodes.length;
+    if (n <= maxNodes) return null;
+    return 'The distance matrix of ' + n.toLocaleString() + ' nodes (' + (n * n / 1e6).toLocaleString(undefined, { maximumFractionDigits: 0 }) +
+      ' million cells) is too large to build; the limit is ' + maxNodes.toLocaleString() + ' nodes. Filter the data to fewer nodes to use it.';
+  };
+
   // The distance matrix computed last, kept while the graph, the metric and the
   // nodes are as they were, so restyling a view doesn't compute it again.
   let dmCache = null;
@@ -1384,44 +1522,39 @@
   // MT.getDMLabels(): a Float64Array of n * n, row by row, NaN where there's no
   // link, 0 on the diagonal. It is shared (don't change it; copy it to hand it to
   // a worker). Rejects, saying why, when there are more than maxNodes nodes.
-  MT.getDM = (maxNodes = MT.DM_MAX_NODES) => {
-    return new Promise(resolve => {
+  // The matrix is filled in a worker (workers/expand-dm.js), so it can be
+  // cancelled and reports its progress; options are as MT.runWorker's scope and
+  // onProgress.
+  MT.getDM = (maxNodes = MT.DM_MAX_NODES, { scope, onProgress } = {}) => {
+    return Promise.resolve().then(() => {
+      const tooLarge = MT.dmTooLargeMessage(maxNodes);
+      if (tooLarge) throw new Error(tooLarge);
       const g = session.data.graph, nodes = session.data.nodes;
       const n = nodes.length, metric = session.style.widgets['link-sort-variable'];
-      if (n > maxNodes) {
-        throw new Error('The distance matrix of ' + n.toLocaleString() + ' nodes (' + (n * n / 1e6).toLocaleString(undefined, { maximumFractionDigits: 0 }) +
-          ' million cells) is too large to build; the limit is ' + maxNodes.toLocaleString() + ' nodes. Filter the data to fewer nodes to use it.');
-      }
       const c = dmCache;
-      if (c && c.graph === g && c.version === g.version && c.metric === metric && c.nodes === nodes && c.n === n) return resolve(c.dm);
-      let start = Date.now();
+      if (c && c.graph === g && c.version === g.version && c.metric === metric && c.nodes === nodes && c.n === n) return c.dm;
+      const start = Date.now(), version = g.version;
       const { tri } = MT.getCondensedDM(metric, MT.getDMLabels());
-      const dm = new Float64Array(n * n).fill(NaN);
-      let k = 0;
-      for (let i = 0; i < n; i++) {
-        dm[i * n + i] = 0;
-        for (let j = i + 1; j < n; j++, k++) {
-          const v = tri[k];
-          // NaN (no link) and Infinity (a saturated distance) are both missing
-          if (isFinite(v)) dm[i * n + j] = dm[j * n + i] = v;
-        }
-      }
-      dmCache = { graph: g, version: g.version, metric, nodes, n, dm };
-      console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
-      resolve(dm);
+      return MT.runWorker("workers/expand-dm.js", { n, tri }, { transfer: [tri.buffer], name: "The distance matrix", scope, onProgress }).then(response => {
+        const dm = response.dm;
+        dmCache = { graph: g, version, metric, nodes, n, dm };
+        console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
+        return dm;
+      });
     });
   };
 
-  MT.computeTree = () => {
+  // The tree from the distance matrix, in a worker (its options are as MT.getDM's)
+  MT.computeTree = ({ scope, onProgress } = {}) => {
     // Every way out settles the promise, as MT.runHamsters waits on it:
     // parsing a tree too deep for patristic throws here, on the main thread (#250)
-    return MT.getDM().then(dm => {
+    return MT.getDM(undefined, { scope, onProgress }).then(dm => {
       const matrix = dm.slice(); // the worker takes this copy; the cached one stays
       return MT.runWorker("workers/compute-tree.js", {
         labels: MT.getDMLabels(),
         matrix,
         round: session.style.widgets["tree-round"]
-      }, { transfer: [matrix.buffer], name: "The tree computation" });
+      }, { transfer: [matrix.buffer], name: "The tree computation", scope });
     }).then(response => {
       temp.tree = patristic.parseJSON(response.tree);
       console.log("Tree Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");

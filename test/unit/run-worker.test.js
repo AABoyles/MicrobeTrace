@@ -71,3 +71,50 @@ test('computeNNFlags rejects, rather than resolving, when its worker fails', asy
   session.data.graph = { ids: [] };
   await assert.rejects(MT.computeNNFlags('workers/compute-nn.js', 'NN'), /out of memory/);
 });
+
+// A view's computations run in a scope (#293): its Cancel stops that scope's
+// workers and no others, and Launch's cancel doesn't stop a scope's workers
+test('a scope cancel terminates its workers, rejects them as cancelled, and leaves others running', async () => {
+  const { MT } = loadApp();
+  const scope = MT.workScope();
+  const inScope = new Fake(() => {});
+  const outside = new Fake(() => {});
+  const a = MT.runWorker('x.js', 'in', { worker: inScope, scope });
+  const b = MT.runWorker('x.js', 'in', { worker: outside });
+  scope.cancel();
+  await assert.rejects(a, error => error.cancelled === true);
+  assert.strictEqual(inScope.terminated, 1);
+  assert.strictEqual(outside.terminated, 0);
+  assert.strictEqual(MT.workCancelled(), false);
+  // A worker outside the scope still settles normally
+  const c = MT.runWorker('x.js', 'in', { worker: new Fake(w => w.onmessage({ data: { ok: 'done' } })) });
+  assert.strictEqual((await c).ok, 'done');
+  MT.cancelWork();
+  await assert.rejects(b, error => error.cancelled === true);
+  assert.strictEqual(outside.terminated, 1);
+});
+
+test('Launch cancel (MT.cancelWork) does not stop a scope, and a cancelled scope refuses new workers', async () => {
+  const { MT } = loadApp();
+  const scope = MT.workScope();
+  const worker = new Fake(() => {});
+  const pending = MT.runWorker('x.js', 'in', { worker, scope });
+  MT.cancelWork();
+  assert.strictEqual(worker.terminated, 0);
+  scope.cancel();
+  await assert.rejects(pending, error => error.cancelled === true);
+  const late = new Fake(() => {});
+  await assert.rejects(MT.runWorker('x.js', 'in', { worker: late, scope }), error => error.cancelled === true);
+  assert.strictEqual(late.terminated, 0, 'no worker is started for a cancelled scope');
+  MT.startWork();
+});
+
+test('a scope cancel after its worker has replied does nothing', async () => {
+  const { MT } = loadApp();
+  const scope = MT.workScope();
+  const worker = new Fake(w => w.onmessage({ data: { n: 1 } }));
+  assert.strictEqual((await MT.runWorker('x.js', 'in', { worker, scope })).n, 1);
+  scope.cancel();
+  assert.strictEqual(worker.terminated, 1);
+  assert.strictEqual(scope.stops.size, 0);
+});

@@ -56,6 +56,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `files.spec.js` | The files view: adding files and their kinds and fields, the loading settings, generating sequences, alignment and audit, launching |
 | `bubbles.spec.js` | The bubbles: grouping, size, selection, colors, redraws, restoring and export |
 | `phylogenetic_tree.spec.js` | The tree: layout, type and branch settings, leaf sizes, colors, labels and tooltips, selection, the context menu, restoring and export |
+| `view-computing.spec.js` | The views that compute when opened or redrawn (the tree, the heatmap's distance matrix, the sequences' alignment): the computing state with its progress in a live region, Cancel (by keyboard too) stopping that view's workers and no others, closing a view stopping its own, and Retry computing it normally |
 | `globe.spec.js` | The globe: placing nodes, links, layers, transparency, jitter, turning, redraws, restoring and export |
 | `webmcp-optin.spec.js` | WebMCP's safety: off by default, the switch in Settings > AI Agents, per-tab persistence, registering and unregistering tools, and the dialog that asks the user before consequential tools run (allow, decline, Escape, script clicks, queueing) |
 | `webmcp-session.spec.js` | The WebMCP session tools: adding, updating, reordering and removing files, loading options, sequence audits, launching, saving and reopening, stashes and autostash, the demo, and generated sequences |

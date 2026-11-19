@@ -3,7 +3,10 @@
     const $ = selector => root.querySelector(selector);
     const panel = $('.sequences-panel');
     const pane = $('.left-pane');
-    let canvas = null, labels = null, transform = d3.zoomIdentity, request = 0, destroyed = false;
+    let canvas = null, labels = null, transform = d3.zoomIdentity;
+    // The alignment is drawn in a worker (workers/render-alignment.js), shown in
+    // the view while it is, with a Cancel (#293)
+    const computing = MT.viewComputing(root, 'the alignment');
 
     const sequences = () => session.data.nodes.filter(d => d.seq);
 
@@ -44,23 +47,31 @@
       return column;
     }
 
-    // Draws the alignment, replacing the last one when it's ready
+    // Draws the alignment, replacing the last one when it's ready. The worker
+    // gets copies of the sequences, so the nodes stay as they are.
     function draw() {
-      const ticket = ++request;
       const width = settings.get('sequences-cell-width'), height = settings.get('sequences-cell-height');
       if (!(width >= 1) || !(height >= 1)) return;
       const rows = sequences();
       const show = settings.get('sequences-show-chars');
+      const showChar = show && lettersFit(width, height);
       $('.sequences-letters-note').hidden = !show || lettersFit(width, height);
-      // The viewer doesn't label rows; give it copies, so the nodes stay as they are
-      alignmentViewer(rows.map(d => ({ id: d._id, seq: d.seq.toUpperCase() })), {
+      computing.run((scope, onProgress) => MT.runWorker('workers/render-alignment.js', {
+        seqs: rows.map(d => d.seq.toUpperCase()),
         width: 0 | width,
         height: 0 | height,
-        showChar: show && lettersFit(width, height),
+        showChar,
         colors
-      }).then(c => {
-        // A newer drawing, or a closed view, makes this one moot
-        if (ticket != request || destroyed) return;
+      }, { name: 'The alignment', scope, onProgress }).then(response => {
+        const c = document.createElement('canvas');
+        if (response.image) {
+          c.width = response.image.width;
+          c.height = response.image.height;
+          c.getContext('2d').drawImage(response.image, 0, 0);
+          response.image.close();
+        }
+        return c;
+      }), c => {
         if (canvas) canvas.remove();
         if (labels) labels.remove();
         canvas = c;
@@ -119,7 +130,7 @@
 
     return {
       destroy() {
-        destroyed = true;
+        computing.destroy();
         stop.forEach(fn => fn());
         d3.select(panel).on('.zoom', null);
       }

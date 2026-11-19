@@ -4,6 +4,7 @@
     const pane = $('.left-pane');
     const container = $('.tree');
     const menu = $('.tree-context-menu');
+    const computing = MT.viewComputing(root, 'the tree');
     // The tree drawn, and the data it draws (rerooted, rotated and so on)
     let tree = null, data = null, size = null, destroyed = false;
 
@@ -325,18 +326,15 @@
     showRows();
     setBackground();
 
-    // The tree: the one given as a newick file, or one computed from the distances
-    (async () => {
-      if (!temp.tree) {
-        if (session.files.length == 1 && session.files[0].format == 'newick') temp.tree = patristic.parseNewick(session.files[0].contents);
-        else await MT.computeTree();
-      }
-      if (destroyed) return;
+    // The tree: the one given as a newick file, or one computed from the distances.
+    // Computing it shows in the view, which can cancel it (#293).
+    computing.run((scope, onProgress) => {
+      if (temp.tree) return;
+      if (session.files.length == 1 && session.files[0].format == 'newick') temp.tree = patristic.parseNewick(session.files[0].contents);
+      else return MT.computeTree({ scope, onProgress });
+    }, () => {
       data = temp.tree.clone();
       draw();
-    })().catch(error => {
-      console.error(error);
-      MT.toast.error("The tree couldn't be built: " + MT.escape((error && error.message) || '' + error) + '.');
     });
 
     const handle = temp.phylogeneticTree = { get tree() { return tree; } };
@@ -349,6 +347,7 @@
       },
       destroy() {
         destroyed = true;
+        computing.destroy();
         labelWatcher.disconnect();
         stop.forEach(fn => fn());
         window.removeEventListener('keydown', menuKeys, true);
