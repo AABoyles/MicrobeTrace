@@ -104,8 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  self.temp = MT.tempSkeleton();
-  self.session = MT.sessionSkeleton();
+  MT.resetSession();
   MT.createLayout();
 
   const settings = MT.settings, events = MT.events;

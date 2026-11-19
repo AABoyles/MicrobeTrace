@@ -163,7 +163,7 @@
   };
   
   MT.applyHIVTrace = hivtrace => {
-    self.session = MT.sessionSkeleton();
+    MT.resetSession({ temp: false });
     session.meta.startTime = Date.now();
     hivtrace["trace_results"]["Nodes"].forEach(node => {
       let newNode = JSON.parse(JSON.stringify(node.patient_attributes));
@@ -194,7 +194,7 @@
   };
   
   MT.applyGHOST = ghost => {
-    self.session = MT.sessionSkeleton();   
+    MT.resetSession({ temp: false });   
     session.meta.startTime = Date.now();
     ghost["samples"].forEach(node => {     
       let newNode = JSON.parse(JSON.stringify(node));     

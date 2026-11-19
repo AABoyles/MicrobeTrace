@@ -770,16 +770,25 @@
     };
   };
 
+  // The one place that replaces the session and temp globals (self.session and
+  // self.temp). Everything else reads them and sets their fields. temp is replaced
+  // unless `temp: false`; with `keepComponents`, temp keeps its componentCache, the
+  // views' compiled components.
+  MT.resetSession = ({ temp = true, keepComponents = false } = {}) => {
+    if (temp) {
+      const componentCache = keepComponents ? self.temp.componentCache : undefined;
+      self.temp = MT.tempSkeleton();
+      if (keepComponents) self.temp.componentCache = componentCache;
+    }
+    self.session = MT.sessionSkeleton();
+  };
+
   MT.reset = () => {
 
     // temp variables is affecting the recall file's link visibility when recalling the same file
     // reset temp causing register component error since file view has been registered and 2nd_network view via ansyc call also causing register error
     // reset temp but retain componentCache
-    let tempComp = self.temp.componentCache;
-    self.temp = MT.tempSkeleton();
-    self.temp.componentCache = tempComp;
-    
-    self.session = MT.sessionSkeleton();
+    MT.resetSession({ keepComponents: true });
     
     // The controls show the new session's settings (and the statistics hide,
     // having no network)
