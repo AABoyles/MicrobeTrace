@@ -47,4 +47,14 @@ test.describe('after loading a network', () => {
     await launchView(page, 'heatmap');
     expect(errors).toEqual([]);
   });
+
+  test('a view whose script fails to load says so, is closed, and loads on the next try', async () => {
+    await page.route('**/components/histogram.js', route => route.fulfill({ status: 404, body: 'Not found' }));
+    await page.evaluate(() => MT.launchView('histogram'));
+    await expect(page.locator('.toast', { hasText: 'Could not load the Histogram view' })).toBeVisible();
+    expect(await page.evaluate(() => 'histogram' in temp.componentCache)).toBe(false);
+    await page.unroute('**/components/histogram.js');
+    await launchView(page, 'histogram');
+    expect(errors).toEqual([]);
+  });
 });

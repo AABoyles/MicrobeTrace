@@ -7,14 +7,17 @@
 //
 // The app shell comes from the service worker's precache list, so the two
 // cannot drift apart. On top of that, the site needs the worker itself, the
-// map boundary files it caches on first use, the demo session (loaded by
+// map boundary files it caches on first use, the demo session and its pieces (loaded by
 // #demo and the WebMCP demo tool), package.json (read for the version shown
 // in the app) and robots.txt.
 const fs = require("fs");
 const path = require("path");
 const { precacheList, root } = require("./build-sw.js");
 
-const EXTRA_FILES = ["sw.js", "robots.txt", "package.json", "demo/Demo_outbreak_session.microbetrace"];
+const EXTRA_FILES = ["sw.js", "robots.txt", "package.json", "demo/Demo_outbreak_session.microbetrace",
+  // the pieces the WebMCP load_demo tool can fetch one at a time
+  "demo/Demo_outbreak_EdgeList.csv", "demo/Demo_outbreak_NodeList.csv", "demo/Demo_outbreak_Sequences.fas",
+  "demo/Demo_outbreak_DistanceMatrix.csv", "demo/Demo_outbreak_PhylogeneticTree.nwk"];
 const EXTRA_DIRS = ["data"];
 
 function filesIn(dir) {

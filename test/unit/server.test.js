@@ -1,0 +1,56 @@
+// What server.js serves (#210): the files the app needs, and a real 404 for
+// everything else (never index.html under another URL).
+const test = require("node:test");
+const assert = require("node:assert");
+const http = require("node:http");
+
+const app = require("../../server.js");
+const server = http.createServer(app);
+let base;
+test.before(async () => {
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  base = "http://127.0.0.1:" + server.address().port;
+});
+test.after(() => server.close());
+
+const get = (url, options) => fetch(base + url, { redirect: "manual", ...options });
+
+test("serves the app shell, a component, a worker and the data", async () => {
+  for (const url of ["/", "/index.html", "/components/table.html", "/workers/compute-links.js", "/sw.js",
+    "/package.json", "/manifest.json", "/data/countries.json", "/demo/Demo_outbreak_session.microbetrace"]) {
+    const response = await get(url);
+    assert.strictEqual(response.status, 200, url);
+    await response.arrayBuffer();
+  }
+  assert.match(await (await get("/")).text(), /<html/i);
+});
+
+test("404s files that are not part of the app", async () => {
+  for (const url of ["/package-lock.json", "/server.js", "/Dockerfile", "/node_modules/express/package.json",
+    "/test/e2e/injection.spec.js", "/docs/", "/scripts/build-site.js", "/README.md", "/.git/config",
+    "/components/nope.html", "/src/nope.js", "/nope.js?x=1", "/nope", "/%E0%A4%A",
+    "/dist/app.js.br"]) {
+    const response = await get(url);
+    assert.strictEqual(response.status, 404, url);
+    assert.doesNotMatch(await response.text(), /GoldenLayout|id="main-menu"/i, url + " answered with the app");
+  }
+});
+
+test("a missing script is not answered with HTML as JavaScript", async () => {
+  const response = await get("/src/missing.js");
+  assert.strictEqual(response.status, 404);
+  assert.doesNotMatch(response.headers.get("content-type") || "", /javascript/);
+});
+
+test("/health says only that it is ok", async () => {
+  const response = await get("/health");
+  assert.strictEqual(response.status, 200);
+  assert.deepStrictEqual(await response.json(), { status: "ok" });
+});
+
+test("does not redirect to HTTPS unless FORCE_HTTPS is set, and sends no X-XSS-Protection", async () => {
+  const response = await get("/", { headers: { "x-forwarded-proto": "http" } });
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.headers.get("x-xss-protection"), null);
+  await response.arrayBuffer();
+});

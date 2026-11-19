@@ -17,6 +17,20 @@ MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC), w
 * [Watch how to use MicrobeTrace for COVID-19](https://www.youtube.com/watch?v=he0Yq5yvToc)
 * [Cite MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/Cite-MicrobeTrace)
 
+## To Run Your Own Server:
+
+```sh
+npm ci --omit=dev && npm start      # http://localhost:5000 (PORT sets the port)
+docker build -t microbetrace . && docker run -p 5000:5000 microbetrace
+```
+
+The server serves only the files the app needs (the same list the GitHub Pages
+deploy publishes, `scripts/build-site.js`); anything else is a 404. `/health`
+answers `{"status":"ok"}`. By default it speaks plain HTTP. Behind a proxy or
+load balancer that terminates TLS and sets `X-Forwarded-Proto`, set
+`FORCE_HTTPS=1` to redirect HTTP requests to HTTPS. `SITE_DIR=_site` serves a
+directory built by `npm run site` instead (the Docker image does this).
+
 ## AI Agents (WebMCP)
 
 MicrobeTrace offers its features as tools for AI agents through [WebMCP](https://webmachinelearning.github.io/webmcp/), a draft web standard for exposing tools to agents in the browser. An agent can load files, launch a network, query and style nodes and links, and draw views, using the same operations as the interface. The tools are described in [src/webmcp/README.md](src/webmcp/README.md), which also covers the filter language, an example workflow and how to add a tool. The tools work without WebMCP too, through `MTWebMCP.call` in the page.

@@ -1,0 +1,4 @@
+name: MicrobeTrace CodeQL config
+paths-ignore:
+  - dist
+  - vendor

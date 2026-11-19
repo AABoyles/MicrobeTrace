@@ -1,5 +1,18 @@
 # Security Tests
 
+## Running the tests
+
+The automated check (this is what CI runs, as part of `npm run test:e2e`):
+
+```sh
+npx playwright test test/e2e/injection.spec.js
+```
+
+It starts its own server (port 5057 by default; set `E2E_PORT` to change it), so
+nothing needs to be running first.
+
+## What is here
+
 This directory contains a single script (pwn.js) which alerts the user that
 their box has been pwned.
 
@@ -26,17 +39,21 @@ fails if a script runs, a request is made or an element appears.
 `test/unit/menus.test.js` loads the session and HIV-TRACE files through
 MicrobeTrace's loaders.
 
-To test MicrobeTrace's security using these files, launch the MicrobeTrace
-webserver:
+## Trying the files by hand
+
+To try the files yourself, launch the MicrobeTrace webserver:
 
 ```sh
 npm start
 ```
 
 Then, with the server running, [launch MicrobeTrace](http://localhost:5000) and
-load any of the files in this directory. If you recieve an alert that
+load any of the files in this directory. If you receive an alert that
 "ya been pwned", it means that somewhere in the program, an unsanitized user
 input has been leaked into the DOM. This is a security bug.
+
+## Reporting
+
 Please report it as described in [SECURITY.md](../../SECURITY.md), with a description of how you got the
 message (which file you were using and what part of the program you were
 interacting with). Please do NOT post this as an issue on Github.

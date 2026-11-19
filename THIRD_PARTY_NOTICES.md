@@ -173,5 +173,3 @@ top-level `patristic` (0.6.0) is the one in `vendor/patristic.min.js`.
   file is the notice for them.
 - `dist/bundle.secondary.js` carries the banners esbuild and pdfmake keep (for example pdfmake's
   "@license MIT" and esbuild's bundled-licence comment for polybooljs).
-- `scripts/README.md` says that `screenfull` and `devtools-detect` are bundled. Neither appears in
-  `scripts/bundle.sh`, `dist/` or `vendor/`, so they are not listed here.

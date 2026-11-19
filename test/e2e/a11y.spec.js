@@ -25,7 +25,12 @@ const AXE = require.resolve('axe-core/axe.min.js');
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
 // What axe finds against those tags, as "rule: element" lines
 async function axe(page, context = null, rules) {
-  if (!(await page.evaluate(() => !!window.axe))) await page.addScriptTag({ path: AXE });
+  if (!(await page.evaluate(() => !!window.axe))) {
+    // Served from the page's own origin: the content security policy allows
+    // no inline script, which is what addScriptTag({ path }) would add
+    await page.route('**/__axe.js', route => route.fulfill({ path: AXE, contentType: 'text/javascript' }));
+    await page.addScriptTag({ url: '/__axe.js' });
+  }
   return page.evaluate(async ([context, rules, tags]) => {
     const options = rules ? { runOnly: { type: 'rule', values: rules } } : { runOnly: { type: 'tag', values: tags } };
     const { violations } = await window.axe.run(context || document, { ...options, resultTypes: ['violations'] });

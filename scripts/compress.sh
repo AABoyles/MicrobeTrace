@@ -1,4 +1,7 @@
 #!/bin/sh
+# Writes .br and .gz copies of the large files that server.js serves compressed.
+set -eu
+cd "$(dirname "$0")/.."
 
 echo 'Compressing Large Files...'
 
