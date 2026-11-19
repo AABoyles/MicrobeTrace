@@ -263,7 +263,11 @@
         // A table's rows have as many columns as its header: prose (notes, say)
         // doesn't, however its commas fall
         const sample = Papa.parse(file.contents, { delimiter: file.delimiter, preview: 20, skipEmptyLines: true }).data;
-        const tabular = sample.length > 1 && sample.slice(1).filter(r => r.length == sample[0].length).length >= 0.8 * (sample.length - 1);
+        // A file cut off mid-row ends in a short row, which doesn't make it prose
+        // (in a short file, that one row would otherwise be most of the sample)
+        const rows = sample.slice(1);
+        const body = rows.length > 1 && rows[rows.length - 1].length != sample[0].length ? rows.slice(0, -1) : rows;
+        const tabular = sample.length > 1 && body.filter(r => r.length == sample[0].length).length >= 0.8 * body.length;
         Papa.parse(file.contents, {
           delimiter: file.delimiter,
           header: true,
