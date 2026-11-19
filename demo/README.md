@@ -28,7 +28,7 @@ Sizes and counts are from the files in this directory at the time of writing.
 | `Demo_outbreak_Sequences.fas` | Aligned FASTA, 88 records of 1,465 columns, `-` for gaps, CRLF line endings. | Added in `295f77b`. Sequence source: see above (public sequence data, accessions not recorded). |
 | `Demo_outbreak_DistanceMatrix.csv` | Square matrix of pairwise distances, 88 IDs by 88 IDs. | Added in `295f77b`. Distance model and software: not recorded. #297 removed an empty duplicate row and column for `30576_KF773440_B96cl58` and trimmed the padded ID. |
 | `Demo_outbreak_PhylogeneticTree.nwk` | Newick tree over the sequence IDs. | Added in `295f77b`. Tree method and software: not recorded. |
-| `Demo_outbreak_session.microbetrace` | A saved MicrobeTrace session built from the demo node list. Loaded by `#demo` (`src/index.js`). | Added in `abd5569` (2019-06-07, "Set MicrobeTrace to load Demo Data on #demo"). Rebuilt in #297 by loading `Demo_outbreak_NodeList.csv` in the app and saving it, so its node fields are the node list's columns and its node IDs are `_id`, not the 2019 `id`. It holds 86 nodes and 3,655 links computed from the sequences (590 within the default link threshold of 0.015, TN93). It does not include the edge list. |
+| `Demo_outbreak_session.microbetrace` | A saved MicrobeTrace session built from the demo node list. Loaded by `#demo` (`src/index.js`). | Added in `abd5569` (2019-06-07, "Set MicrobeTrace to load Demo Data on #demo"). Rebuilt in #297 by loading `Demo_outbreak_NodeList.csv` in the app and saving it, so its node fields are the node list's columns and its node IDs are `_id`, not the 2019 `id`. It was loaded from the node list and the FASTA file together, so it holds 88 nodes (the 86 node-list rows and the two FASTA-only IDs). It holds 3,828 links computed from the sequences (662 within the default link threshold of 0.015, TN93). It does not include the edge list. |
 | `MicrobetraceDemoData.zip` | The sample download linked from the top-level README. Contains the five `Demo_outbreak_*` files listed below. | Created in `b08be98` (2018-11-14). Its members are rebuilt to match these loose files (the node list was out of date until `4ed9553`, which rebuilt the zip from the current loose copy). Rebuilt again in #297. |
 | `COVID Dummy Data.zip` | The COVID-19 sample download linked from the top-level README. Contains `edgeList_covidDummy.csv` and `nodeList_covidDummy.csv`, byte-identical to the loose copies. | Added in `31fb3e8` (2020-08-25, Ellsworth Campbell). The loose copies were added in `993be5c` (2020-08-24). |
 | `edgeList_covidDummy.csv` | Edge list for the COVID dummy data: 299 links with columns `ID1`, `ID2`, `type` (`locationLink`). | Added in `993be5c` (2020-08-24). Its name and commit say "dummy". |
@@ -64,10 +64,15 @@ Each member is byte-identical to the loose file of the same name.
 
 These differences cannot be resolved from the files, so they are recorded and not changed.
 
-- The node list has 86 rows, but the FASTA file and the distance matrix have 88 IDs each. Two of
-  them are not in the node list: `30577_KF773448_C02cl26` and `30577_KF773461_C94cl29`. Their
-  attribute values are unknown, so they were not added to the node list. The session therefore has
-  86 nodes.
+- The node list has 86 rows, but the FASTA file and the distance matrix have 88 IDs each. The two
+  extra IDs, `30577_KF773448_C02cl26` and `30577_KF773461_C94cl29`, are not in the node list. Their
+  attribute values are unknown, so they were not added to the node list. They are in the demo
+  session, as nodes with a sequence and blank attributes, because it was loaded from the node list
+  and the FASTA together.
 - `30577_KF773461_C94cl29` is an edge endpoint that is not in the node list. Ten edges have it at
-  one end, and those edges have no node there.
-- The sequences in the node list and the FASTA file agree for all 86 node-list rows.
+  one end. It has a node only when the FASTA is loaded too, so with the node list alone those edges
+  have no node at that end.
+- The sequences in the node list and the FASTA file agree for all 86 node-list rows, but the node
+  list writes them in lower case and the FASTA in upper case. Loading both files therefore reports
+  86 node values that "differ", although only the case differs. The app's comparison is case
+  sensitive; the files were not changed.

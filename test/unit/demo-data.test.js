@@ -20,18 +20,30 @@ const isInternal = field => internal.includes(field) || field[0] == '_';
 const appFields = ['index', '_id', 'selected', 'cluster', 'visible', 'degree', 'origin', 'seq', '_diff', '_ambiguity'];
 
 const nodeListHeader = lines(read('Demo_outbreak_NodeList.csv'))[0].split(',');
-const nodeListRows = lines(read('Demo_outbreak_NodeList.csv')).length - 1;
+const nodeListIds = lines(read('Demo_outbreak_NodeList.csv')).slice(1).map(line => line.split(',')[0]);
+// The FASTA has two sequences that are not in the node list: they load as nodes with only a sequence
+const fastaIds = lines(read('Demo_outbreak_Sequences.fas')).filter(line => line[0] == '>').map(line => line.slice(1));
 const session = JSON.parse(read('Demo_outbreak_session.microbetrace'));
 
 test('the demo session is a session this version opens', () => {
   assert.deepStrictEqual(F.validate(session), { ok: true, version: F.CURRENT_VERSION });
 });
 
-test('the demo session was read from the current node list', () => {
-  // The session keeps the file as it was loaded, so its columns and row count show the source
-  assert.strictEqual(session.files[0].name, 'Demo_outbreak_NodeList.csv');
+test('the demo session was read from the current node list and FASTA', () => {
+  // The session keeps the files as they were loaded, so their columns show the source
+  assert.deepStrictEqual(session.files.map(file => file.name), ['Demo_outbreak_NodeList.csv', 'Demo_outbreak_Sequences.fas']);
   assert.deepStrictEqual(lines(session.files[0].contents)[0].split(',').map(f => f.trim()), nodeListHeader);
-  assert.strictEqual(session.data.nodes.length, nodeListRows);
+});
+
+test('the demo session has a node for every ID in the node list or the FASTA', () => {
+  const expected = new Set([...nodeListIds, ...fastaIds]);
+  assert.strictEqual(expected.size, 88);
+  const ids = session.data.nodes.map(node => node._id);
+  assert.strictEqual(ids.length, expected.size);
+  assert.deepStrictEqual(ids.filter(id => !expected.has(id)), []);
+  // Every link joins two of the nodes
+  const known = new Set(ids);
+  assert.deepStrictEqual(session.data.links.filter(link => !known.has(link.source) || !known.has(link.target)), []);
 });
 
 test('no column of the demo node list is a name MicrobeTrace keeps for itself', () => {
