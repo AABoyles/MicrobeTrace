@@ -872,6 +872,10 @@
   // The most characters the Generate button puts in one node file (#301): a
   // browser's longest string is about 500 million, and each is read whole
   MT.generatedFileChars = 2e8;
+  // The most sequences the Generate button makes: 250,000 load in a few minutes;
+  // 300,000 and more run out of memory computing distances, as each distance
+  // worker gets its own copy of the sequences (#301)
+  MT.maxGeneratedSequences = 250000;
 
   MT.generateSeqs = (idPrefix, count, snps, seed) => {
     let start = Date.now();

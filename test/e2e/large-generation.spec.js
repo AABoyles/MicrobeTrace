@@ -23,6 +23,25 @@ test('the length check copes with hundreds of thousands of sequences (#302)', as
   expect(warnings[0]).toContain('1,500 to 1,617');
 });
 
+test('Generate refuses counts outside 1 to 250,000, typed or not', async () => {
+  expect(await page.locator('.generate-number').getAttribute('max')).toBe('250000');
+  const refused = await page.evaluate(() => {
+    const messages = [], toast = MT.toast.error;
+    MT.toast.error = (message, ...rest) => { messages.push(message); return toast(message, ...rest); };
+    for (const value of ['250001', '500000', '0', '-5', '2.5', '']) {
+      document.querySelector('.generate-number').value = value;
+      document.querySelector('.generate-sequences').click();
+    }
+    MT.toast.error = toast;
+    // (Error toasts stay until dismissed, and these would cover Launch)
+    document.querySelectorAll('#mt-toast-container .toast').forEach(t => t.remove());
+    return { messages, files: session.files.length };
+  });
+  expect(refused.files).toBe(0);
+  expect(refused.messages).toHaveLength(6);
+  expect(refused.messages[0]).toContain('from 1 to 250,000');
+});
+
 test('generated sequences too many for one file go in several, and all load (#301)', async () => {
   // Five sequences a file, as hundreds of thousands are at the real limit
   await page.evaluate(() => { MT.generatedFileChars = 5 * (session.data.reference.length + 50); });
