@@ -28,10 +28,13 @@ Changes since 0.6.2 (June 2020).
 - Menus, dialogs, controls, labels, dates and sequences are cleaned up, and several interface bugs are fixed. (#141, #143, #144, #150, #151, #155, #156, #157, #161)
 - The floating panels stay in the view in front of them, without overlapping. (#142)
 - The network can be reached from the keyboard. (#285)
+- The tree, heatmap and sequences views compute in the background, each with its own progress, Cancel and Retry. (#329)
 
 ### Accessibility
 
 - Controls and dialogs have names, settings panes' tabs are wired to their panels, and faint text is darker. (#162)
+- The network's nodes can be selected by neighbourhood from the keyboard (G, and Shift+G to add), and by value from the node color table. (#329)
+- Links can be told apart by dash pattern as well as color (Dash By), and a color variable with many values offers node shapes too. (#329)
 
 ### Files and sessions
 
@@ -39,6 +42,10 @@ Changes since 0.6.2 (June 2020).
 - Stashes are committed, and recovery is offered after a failure. (#289)
 - Empty files no longer hang the loading dialog, and a failed worker reports its error. (#289)
 - Tables and aggregations sort, show their defaults and name their columns clearly. (#161)
+- A distance matrix that repeats an ID, or is cut off before a node's row, is refused with a message naming the ID, instead of loading with wrong or missing distances. A table cut off mid-row keeps its header. (#329)
+- Sequences that differ only in case are no longer reported as a conflict between files. (#329)
+- The demo session is rebuilt from the current demo files, with all 88 nodes. The COVID sample data, whose source wasn't recorded, is removed. (#329)
+- WebMCP tools check their arguments against their schemas before they run or ask you anything. (#329)
 
 ### Reliability and performance
 
@@ -55,8 +62,9 @@ Changes since 0.6.2 (June 2020).
 
 - Node 26 is used in CI, the Pages deploy and the Docker image. (#287)
 - The Pages deploy publishes only the files the app loads. (#287)
-- Bundles are reproducible: CI rebuilds `dist/` and `vendor/` from the lockfile and fails if they differ. (#200, #287)
-- Every pull request runs the unit tests, the bundle check and the Playwright end-to-end suite. (#127, #284)
+- `dist/`, `vendor/` (except the bx-distance-models build), `fonts/` and `sw.js` are built, not committed: CI, the Pages deploy and the Docker build build them, and `npm start` builds them when they're missing. A fresh clone needs `npm ci` before `npm start`. (#200, #287, #325)
+- Every pull request runs the unit tests with coverage, ESLint and the Playwright end-to-end suite. (#127, #284, #329)
+- The out-of-date manual, VPAT and flyers are removed from `docs/`, and the README explains how to build, test and deploy. (#329)
 - The project is licensed under Apache-2.0. (#287, #290)
 - The Docker image runs as an unprivileged user and serves the same files as the Pages site. (#299)
 

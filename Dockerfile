@@ -5,14 +5,18 @@
 #
 # Set FORCE_HTTPS=1 only behind a proxy that terminates TLS (see README).
 
-# Build the published site (exactly the files the app needs, as on GitHub Pages)
-# and install the server's production dependencies. The -dev image has npm; the
-# runtime image does not need it.
+# Build the bundles and the published site (exactly the files the app needs, as
+# on GitHub Pages) and install the server's production dependencies. The -dev
+# image has npm; the runtime image does not need it. dist/, vendor/, fonts/ and
+# sw.js aren't committed (#325): they're built here from the dev dependencies,
+# with scripts/bundle.sh, which needs bash.
 FROM dhi.io/node:26-alpine-dev AS build
 WORKDIR /build
+RUN apk add --no-cache bash
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && cp -r node_modules /prod_modules
+RUN npm ci --omit=dev && cp -r node_modules /prod_modules && npm ci
 COPY . .
+RUN npm run bundle && npm run cache
 # Optional: docker build --build-arg GIT_COMMIT=$(git rev-parse --short HEAD) shows the commit in About
 ARG GIT_COMMIT=
 RUN GIT_COMMIT=$GIT_COMMIT node scripts/build-site.js _site

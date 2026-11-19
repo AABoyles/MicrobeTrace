@@ -1,21 +1,25 @@
 #!/usr/bin/env node
-// Regenerates the precache list and cache name inside sw.js (#194).
+// Writes sw.js from scripts/sw.template.js, filling in the precache list and
+// cache name (#194). sw.js is generated, not committed (#325): it lists
+// dist/, vendor/ and fonts/, which are built too, so run this after
+// `npm run bundle` (npm start and the deploys do).
 //
-//   node scripts/build-sw.js          rewrite sw.js
-//   node scripts/build-sw.js --check  exit 1 if sw.js is out of date
+//   node scripts/build-sw.js          write sw.js
+//   node scripts/build-sw.js --check  exit 1 if sw.js is missing or out of date
 //
 // The list is built from files that exist, so it cannot name a file that has
 // gone (which would make cache.addAll, and so the worker's install, fail). The
 // cache name ends in a hash of every precached file's path and contents, so it
 // changes exactly when something the worker serves changes, and a new worker
 // (and the "new version" prompt) follows. Run it after changing any of them;
-// test/unit/sw.test.js fails until you do.
+// test/unit/sw.test.js checks the list against the files.
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
 const root = path.join(__dirname, "..");
 const swPath = path.join(root, "sw.js");
+const templatePath = path.join(__dirname, "sw.template.js");
 const BEGIN = "// BEGIN GENERATED (scripts/build-sw.js)";
 const END = "// END GENERATED";
 
@@ -69,15 +73,18 @@ function render(source) {
   return source.slice(0, start) + generatedBlock() + source.slice(end + END.length);
 }
 
-module.exports = { precacheList, cacheName, render, swPath, root };
+// The service worker, rendered from its template
+const build = () => render(fs.readFileSync(templatePath, "utf8"));
+
+module.exports = { precacheList, cacheName, render, build, swPath, templatePath, root };
 
 if (require.main === module) {
-  const current = fs.readFileSync(swPath, "utf8");
-  const next = render(current);
+  const current = fs.existsSync(swPath) ? fs.readFileSync(swPath, "utf8") : null;
+  const next = build();
   if (process.argv.includes("--check")) {
-    if (next !== current) { console.error("sw.js is out of date: run `npm run cache`"); process.exit(1); }
+    if (next !== current) { console.error("sw.js is missing or out of date: run `npm run cache`"); process.exit(1); }
   } else if (next !== current) {
     fs.writeFileSync(swPath, next);
-    console.log("sw.js updated");
+    console.log("sw.js written");
   } else console.log("sw.js is up to date");
 }

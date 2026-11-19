@@ -76,6 +76,13 @@ module.exports = [
     rules,
   },
   {
+    // The service worker's source (#325): CACHE and PRECACHE are the block
+    // scripts/build-sw.js fills in when it writes sw.js
+    files: ["scripts/sw.template.js"],
+    languageOptions: { ...common, sourceType: "script", globals: { ...globals.serviceworker, CACHE: "readonly", PRECACHE: "readonly" } },
+    rules,
+  },
+  {
     // Specs and the security fixtures run code in the page through page.evaluate and
     // friends; `layout` is the page's GoldenLayout (self.layout), which the specs read
     files: ["test/e2e/**/*.js", "test/security/**/*.js"],

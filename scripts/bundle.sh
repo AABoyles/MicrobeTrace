@@ -1,10 +1,12 @@
 #!/bin/bash
-# Builds dist/ and vendor/ from node_modules (run `npm ci` first). The output is
-# committed, and CI re-runs this and fails if it differs from what was committed
-# (#200), so run it (npm run bundle) after changing a dependency or this file.
+# Builds dist/, vendor/ and fonts/ from node_modules (run `npm ci` first). The
+# output isn't committed (#325): CI, the Pages deploy and the Docker build run
+# this, and `npm start` does when it's missing. Run it (npm run bundle) after
+# changing a dependency or this file, then `npm run cache` for sw.js.
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
+mkdir -p dist vendor fonts
 
 # Intermediate files go in a scratch directory, removed however the script exits
 tmp=$(mktemp -d)
