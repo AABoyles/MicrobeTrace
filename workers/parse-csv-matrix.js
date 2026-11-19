@@ -18,6 +18,17 @@ function parseDistance(v) {
 // An ID: trimmed, and stripped of stray quotes
 const clean = v => v == null ? "" : ("" + v).replace(/^[\s"']+|[\s"']+$/g, "");
 
+// The first ID named more than once (a blank ID does not count), or null
+const firstRepeat = ids => {
+  const seen = new Set();
+  for (const id of ids) {
+    if (id === "") continue;
+    if (seen.has(id)) return id;
+    seen.add(id);
+  }
+  return null;
+};
+
 // Whether a row is blank: an empty line, or only empty cells
 const blank = row => !row || row.every(c => c == null || ("" + c).trim() === "");
 
@@ -28,6 +39,7 @@ onmessage = function(e) {
   let nodeIDs = null;        // the IDs, in order
   let square = null;         // true: IDs across a header row; false: IDs down the first column only
   let rows = [];             // rows kept until the IDs are known (a matrix without a header row)
+  let rowIDs = [];           // the ID of each row, in order
   let unparseable = 0, example = null;
   let failed = false;
 
@@ -72,8 +84,11 @@ onmessage = function(e) {
             continue;
           }
         }
-        if (square) addRow(clean(row[0]), row);
-        else rows.push(row);
+        if (square) {
+          const id = clean(row[0]);
+          rowIDs.push(id);
+          addRow(id, row);
+        } else rows.push(row);
       }
     },
     complete: function() {
@@ -82,8 +97,23 @@ onmessage = function(e) {
       if (!square) {
         // Row i is node i; either triangle, or all of it, may be filled
         nodeIDs = rows.map(r => clean(r[0]));
+        rowIDs = nodeIDs;
         rows.forEach((row, i) => addRow(nodeIDs[i], row));
         rows = [];
+      }
+      // Each ID names one node: once in the header, and once per row. A repeat would give
+      // two nodes the same distances, so the file is refused. A header ID with no row means
+      // the file was cut off before that row (#172).
+      if (square) {
+        const repeatedHeader = firstRepeat(nodeIDs);
+        if (repeatedHeader !== null) return fail(`it names "${repeatedHeader}" more than once`);
+      }
+      const repeatedRow = firstRepeat(rowIDs);
+      if (repeatedRow !== null) return fail(`it has more than one row for "${repeatedRow}"`);
+      if (square) {
+        const withRows = new Set(rowIDs);
+        const missing = nodeIDs.find(id => id !== "" && !withRows.has(id));
+        if (missing !== undefined) return fail(`it has no row for "${missing}", so it may be cut off`);
       }
       const nodes = nodeIDs.filter(id => id !== "");
       if (!nodes.length) return fail("it names no nodes");

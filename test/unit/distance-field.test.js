@@ -17,7 +17,8 @@ function parseMatrix(text) {
     close() {}
   };
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../workers/parse-csv-matrix.js'), 'utf8'), ctx);
+  const file = path.join(__dirname, '../../workers/parse-csv-matrix.js');
+  vm.runInContext(fs.readFileSync(file, 'utf8'), ctx, { filename: file });  // a filename, so coverage counts it
   ctx.onmessage({ data: text });
   return out;
 }
