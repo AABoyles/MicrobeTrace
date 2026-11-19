@@ -12,6 +12,7 @@
 // in the app) and robots.txt.
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 const { precacheList, root } = require("./build-sw.js");
 
 const EXTRA_FILES = ["sw.js", "robots.txt", "package.json", "demo/Demo_outbreak_session.microbetrace",
@@ -34,7 +35,28 @@ function siteFiles() {
   return [...new Set(list)].sort();
 }
 
-module.exports = { siteFiles };
+// The commit the site is built from, shown after the version in Help > About (#202).
+// GIT_COMMIT wins (the Docker build passes it, since its context has no .git); otherwise
+// git is asked. Null when neither is available, and the About dialog shows only the version.
+function buildCommit() {
+  if (process.env.GIT_COMMIT) return process.env.GIT_COMMIT.slice(0, 7);
+  try {
+    return execFileSync("git", ["rev-parse", "--short=7", "HEAD"], { cwd: root, stdio: ["ignore", "pipe", "ignore"] })
+      .toString().trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+// The copy of package.json in the site carries the commit; the repository's stays as it is
+function publishedPackageJson(source) {
+  const pkg = JSON.parse(fs.readFileSync(source, "utf8"));
+  const commit = buildCommit();
+  if (commit) pkg.commit = commit;
+  return JSON.stringify(pkg, null, 2) + "\n";
+}
+
+module.exports = { siteFiles, publishedPackageJson };
 
 if (require.main === module) {
   const out = path.resolve(root, process.argv[2] || "_site");
@@ -47,7 +69,8 @@ if (require.main === module) {
   for (const file of files) {
     const dest = path.join(out, file);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.copyFileSync(path.join(root, file), dest);
+    if (file === "package.json") fs.writeFileSync(dest, publishedPackageJson(path.join(root, file)));
+    else fs.copyFileSync(path.join(root, file), dest);
   }
   console.log("Copied " + files.length + " files to " + path.relative(root, out) + "/");
 }

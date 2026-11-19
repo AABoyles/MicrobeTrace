@@ -2,10 +2,24 @@
 // run time, and nothing else from the repository.
 const test = require("node:test");
 const assert = require("node:assert");
-const { siteFiles } = require("../../scripts/build-site.js");
-const { precacheList } = require("../../scripts/build-sw.js");
+const path = require("path");
+const { siteFiles, publishedPackageJson } = require("../../scripts/build-site.js");
+const { precacheList, root } = require("../../scripts/build-sw.js");
 
 const files = siteFiles();
+
+test("the published package.json names the build commit, and the repository's does not (#202)", () => {
+  const saved = process.env.GIT_COMMIT;
+  process.env.GIT_COMMIT = "abcdef0123";
+  try {
+    const published = JSON.parse(publishedPackageJson(path.join(root, "package.json")));
+    assert.strictEqual(published.commit, "abcdef0");
+    assert.strictEqual(published.version, require(path.join(root, "package.json")).version);
+  } finally {
+    if (saved === undefined) delete process.env.GIT_COMMIT; else process.env.GIT_COMMIT = saved;
+  }
+  assert.strictEqual(require(path.join(root, "package.json")).commit, undefined);
+});
 
 test("the site includes the app shell and the files it fetches at run time", () => {
   for (const file of precacheList()) assert.ok(files.includes(file), file + " is precached but not published");

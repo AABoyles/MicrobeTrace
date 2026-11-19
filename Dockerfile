@@ -13,7 +13,9 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && cp -r node_modules /prod_modules
 COPY . .
-RUN node scripts/build-site.js _site
+# Optional: docker build --build-arg GIT_COMMIT=$(git rev-parse --short HEAD) shows the commit in About
+ARG GIT_COMMIT=
+RUN GIT_COMMIT=$GIT_COMMIT node scripts/build-site.js _site
 
 # Runtime: the non-dev image, which runs as the unprivileged user "node" (uid 1000)
 FROM dhi.io/node:26-alpine
