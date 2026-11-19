@@ -10,6 +10,23 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '../..');
 const quiet = { log() {}, warn() {}, error: (...a) => console.error(...a) };
 
+// A message's arrays and plain objects made again in the worker's own realm, as a
+// browser's structured clone makes them. Without this, a worker's `instanceof Array`
+// is false for them (patristic's parseJSON reads a tree's children that way).
+function intoRealm(v, ctx) {
+  if (Array.isArray(v)) {
+    const out = new (vm.runInContext('Array', ctx))();
+    v.forEach(x => out.push(intoRealm(x, ctx)));
+    return out;
+  }
+  if (v && typeof v === 'object' && Object.getPrototypeOf(v) === Object.prototype) {
+    const out = new (vm.runInContext('Object', ctx))();
+    for (const k of Object.keys(v)) out[k] = intoRealm(v[k], ctx);
+    return out;
+  }
+  return v;
+}
+
 // A Web Worker running script (a path from the app root, as the app names it)
 // in its own context. Messages are structured-cloned both ways, as a browser does.
 class Worker {
@@ -20,16 +37,17 @@ class Worker {
       fetch: async url => new Response(fs.readFileSync(path.resolve(dir, String(url))), { headers: { 'content-type': 'application/wasm' } }),
       postMessage: data => setImmediate(() => this.onmessage && this.onmessage({ data: structuredClone(data) })),
       close() {},
-      importScripts: (...files) => files.forEach(f => vm.runInContext(fs.readFileSync(path.resolve(dir, f), 'utf8'), ctx, { filename: f }))
+      importScripts: (...files) => files.forEach(f => vm.runInContext(fs.readFileSync(path.resolve(dir, f), 'utf8'), ctx, { filename: path.resolve(dir, f) }))
     };
     ctx.self = ctx;
     vm.createContext(ctx);
-    vm.runInContext(fs.readFileSync(file, 'utf8'), ctx, { filename: script });
+    // Absolute filenames, so that --experimental-test-coverage counts these scripts
+    vm.runInContext(fs.readFileSync(file, 'utf8'), ctx, { filename: file });
   }
   postMessage(data) {
     setImmediate(async () => {
       try {
-        await this.ctx.onmessage({ data: structuredClone(data) });
+        await this.ctx.onmessage({ data: intoRealm(structuredClone(data), this.ctx) });
       } catch (error) {
         if (this.onerror) this.onerror(error); else throw error;
       }
@@ -66,7 +84,7 @@ function loadApp(widgets = {}) {
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(root, 'src/common.js'), 'utf8'), ctx, { filename: 'src/common.js' });
+  vm.runInContext(fs.readFileSync(path.join(root, 'src/common.js'), 'utf8'), ctx, { filename: path.join(root, 'src/common.js') });
   const MT = ctx.MT;
   ctx.temp = {};
   ctx.session = {
