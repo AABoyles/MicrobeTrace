@@ -22,6 +22,9 @@
   // as a spreadsheet and a CSV give it), or the same text but for spaces
   const isNumber = v => typeof v == 'number' || (typeof v == 'string' && v.trim() !== '' && !isNaN(v));
   const same = (a, b) => a === b || (isNumber(a) && isNumber(b) ? +a == +b : String(a).trim() == String(b).trim());
+  // Sequences are the same whatever their case: a FASTA file and a node list
+  // often differ only in that, and the sequence is read the same either way
+  const sameSequence = (a, b) => a === b || String(a).trim().toUpperCase() == String(b).trim().toUpperCase();
 
   class Source {
     constructor(name, rank) {
@@ -163,6 +166,7 @@
       fields.forEach(field => {
         const having = this.ranked().filter(s => s.columns.has(field));
         if (having.length < 2) return;
+        const equal = field == 'seq' ? sameSequence : same;
         const keys = [];
         for (const key of shared) {
           let first;
@@ -170,7 +174,7 @@
             const v = s.value(key, field);
             if (v === undefined) continue;
             if (first === undefined) first = v;
-            else if (!same(first, v)) {
+            else if (!equal(first, v)) {
               keys.push(key);
               break;
             }
@@ -233,6 +237,7 @@
 
   MTNodeSources.empty = empty;
   MTNodeSources.same = same;
+  MTNodeSources.sameSequence = sameSequence;
 
   self.MTNodeSources = MTNodeSources;
   if (typeof module !== 'undefined' && module.exports) module.exports = MTNodeSources;
