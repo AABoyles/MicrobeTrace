@@ -5,14 +5,17 @@
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
-trap 'rm -f temp.*.css temp.*.js' EXIT
+
+# Intermediate files go in a scratch directory, removed however the script exits
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
 
 # primaryscripts is where you put scripts that must be loaded immediately.
 # It is unlikely that you should need to modify this, unless you're working on
 # index.html, components/files.html, or scripts/index.js
 primaryscripts=(
   "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-  "temp.golden-layout.js"
+  "$tmp/golden-layout.js"
   "node_modules/tom-select/dist/js/tom-select.complete.min.js"
   "node_modules/papaparse/papaparse.min.js"
   "node_modules/jszip/dist/jszip.min.js"
@@ -28,8 +31,8 @@ primaryscripts=(
 secondaryscripts=(
   "node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"
   "node_modules/d3-polygon/dist/d3-polygon.min.js"
-  "temp.plotly.js"
-  "temp.tidytree.js"
+  "$tmp/plotly.js"
+  "$tmp/tidytree.js"
   "node_modules/leaflet/dist/leaflet.js"
   "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
   "node_modules/html5sortable/dist/html5sortable.min.js"
@@ -47,10 +50,10 @@ pdfscripts=(
 primarystyles=(
   "node_modules/bootstrap/dist/css/bootstrap.min.css"
   "node_modules/golden-layout/dist/css/goldenlayout-base.css"
-  "temp.goldenlayout-theme.css"
+  "$tmp/goldenlayout-theme.css"
   "node_modules/tabulator-tables/dist/css/tabulator.min.css"
   "node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css"
-  "temp.bootstrap-icons.css"
+  "$tmp/bootstrap-icons.css"
 )
 
 # secondarystyles is where you put stylesheets that must be loaded before a
@@ -65,29 +68,29 @@ secondarystyles=(
 
 # golden-layout's theme refers to its icons by relative path; inline them
 npx esbuild node_modules/golden-layout/dist/css/themes/goldenlayout-light-theme.css --bundle \
-  --loader:.png=dataurl --log-level=warning --outfile=temp.goldenlayout-theme.css
+  --loader:.png=dataurl --log-level=warning --outfile="$tmp/goldenlayout-theme.css"
 
 # Bootstrap Icons' stylesheet finds its fonts beside it; the bundle's are in fonts/
-sed 's#url("fonts/#url("../fonts/#g' node_modules/bootstrap-icons/font/bootstrap-icons.min.css > temp.bootstrap-icons.css
+sed 's#url("fonts/#url("../fonts/#g' node_modules/bootstrap-icons/font/bootstrap-icons.min.css > "$tmp/bootstrap-icons.css"
 
 echo 'Assembling Stylesheets...'
 
-: > temp.primary.css
-for i in ${primarystyles[@]}; do
-  cat $i >> temp.primary.css
-  printf "\n" >> temp.primary.css
+: > "$tmp/primary.css"
+for i in "${primarystyles[@]}"; do
+  cat "$i" >> "$tmp/primary.css"
+  printf "\n" >> "$tmp/primary.css"
 done
 
-: > temp.secondary.css
-for i in ${secondarystyles[@]}; do
-  cat $i >> temp.secondary.css
-  printf "\n" >> temp.secondary.css
+: > "$tmp/secondary.css"
+for i in "${secondarystyles[@]}"; do
+  cat "$i" >> "$tmp/secondary.css"
+  printf "\n" >> "$tmp/secondary.css"
 done
 
 echo 'Minifying Stylesheets...'
 
-node scripts/minify-css.js temp.primary.css dist/bundle.primary.css
-node scripts/minify-css.js temp.secondary.css dist/bundle.secondary.css
+node scripts/minify-css.js "$tmp/primary.css" dist/bundle.primary.css
+node scripts/minify-css.js "$tmp/secondary.css" dist/bundle.secondary.css
 
 echo 'Copying Unbundlable Dependencies...'
 
@@ -106,31 +109,31 @@ echo 'Building Dependencies...'
 node scripts/patch-tn93.js vendor/tn93.min.js
 
 # TidyTree, with interrupted redraws no longer rejecting (see scripts/patch-tidytree.js)
-node scripts/patch-tidytree.js temp.tidytree.js
+node scripts/patch-tidytree.js "$tmp/tidytree.js"
 
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.
 # scattergl needs a stand-in for Node's buffer module (scripts/buffer-shim.js).
 npx esbuild scripts/plotly-bundle.js --bundle --minify --format=iife --global-name=Plotly \
-  --target=es2019 --define:global=globalThis --loader:.css=empty --alias:buffer=./scripts/buffer-shim.js --log-level=warning --outfile=temp.plotly.js
+  --target=es2019 --define:global=globalThis --loader:.css=empty --alias:buffer=./scripts/buffer-shim.js --log-level=warning --outfile="$tmp/plotly.js"
 
 # golden-layout 2 ships only ES and CommonJS modules
 npx esbuild node_modules/golden-layout/dist/esm/index.js --bundle --minify --format=iife --global-name=goldenLayout \
-  --target=es2019 --log-level=warning --outfile=temp.golden-layout.js
+  --target=es2019 --log-level=warning --outfile="$tmp/golden-layout.js"
 
 echo 'Assembling Javascript Bundle...'
 
 : > dist/bundle.primary.js
 # A semicolon after each script, so one ending without its own can't run into
 # the next (a script starting with "(" would call the previous one's last value)
-for i in ${primaryscripts[@]}; do
-  cat $i >> dist/bundle.primary.js
+for i in "${primaryscripts[@]}"; do
+  cat "$i" >> dist/bundle.primary.js
   printf "\n;\n" >> dist/bundle.primary.js
 done
 
 : > dist/bundle.secondary.js
-for i in ${secondaryscripts[@]}; do
-  cat $i >> dist/bundle.secondary.js
+for i in "${secondaryscripts[@]}"; do
+  cat "$i" >> dist/bundle.secondary.js
   printf "\n;\n" >> dist/bundle.secondary.js
 done
 
