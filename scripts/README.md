@@ -17,9 +17,11 @@ _A directory for shell scripts_
 
   It also applies the local patches (`patch-tn93.js`, `patch-tidytree.js`) and
   writes `dist/versions.json` (via `write-versions.js`), which records the
-  version of every library in `dist/` and `vendor/`. Run it with `npm run
-  bundle` after `npm ci`, then `npm run cache`, and commit the result: CI
-  rebuilds both and fails if they differ from what was committed.
+  version of every library in `dist/` and `vendor/`. Its output isn't
+  committed (#325): `npm start` runs it when `dist/` is missing (through
+  `ensure-built.js`), and CI, the Pages deploy and the Docker build run it each
+  time. Run it with `npm run bundle` after changing a dependency, then `npm run
+  cache`.
 
 - `npm run build` runs `bundle`, `cache` and `compress` in that order.
 
@@ -33,10 +35,16 @@ _A directory for shell scripts_
   Removes all compressed files.
 
 - [`build-sw.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-sw.js) -
-  (`npm run cache`) Regenerates the precache list and cache name in
-  [`sw.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/sw.js) from the
-  files that exist. Run it after changing any file the app loads; `npm test`
-  fails if `sw.js` is out of date.
+  (`npm run cache`) Writes the service worker, `sw.js`, from
+  [`sw.template.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/sw.template.js),
+  filling in the precache list and a cache name built from the files that exist.
+  `sw.js` isn't committed (#325); `npm start` writes it each time, after the
+  bundles.
+
+- [`ensure-built.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/ensure-built.js) -
+  Runs before `npm start`: builds `dist/`, `vendor/` and `fonts/` if they're
+  missing, then writes `sw.js`. Building needs the dev dependencies, so after
+  `npm ci --omit=dev` it stops and says so.
 
 - To deploy only the files the app needs (for example, to a static host), run
   [`node scripts/build-site.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-site.js).
