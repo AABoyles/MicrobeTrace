@@ -35,7 +35,7 @@ const ignores = ["dist/**", "vendor/**", "fonts/**", "sw.js", "_site/**", "cover
 
 // Warnings for now; an error only where the codebase is already clean
 const rules = {
-  "no-undef": "warn",
+  "no-undef": "error",
   "no-unused-vars": "warn",
   "eqeqeq": ["warn", "always", { null: "ignore" }],
 };
