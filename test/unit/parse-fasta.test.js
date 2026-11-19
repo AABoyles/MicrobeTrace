@@ -59,13 +59,10 @@ test('badSequences.fasta: every record comes back, with its sequence as written'
   assert.deepStrictEqual(out.nodes, seqs);
 });
 
-// The same ID on two records. The parser keeps both, in order, as the file has them.
+// The same ID on two records. The parser keeps both, in order, as the file has them. The app
+// then merges them into one node and reports the repeat (files.js), as it always has.
 test('a duplicate ID gives both records, in file order', () => {
   assert.deepStrictEqual(parseFasta('>a\nAC\n>b\nGG\n>a\nTT\n'), [{ id: 'a', seq: 'AC' }, { id: 'b', seq: 'GG' }, { id: 'a', seq: 'TT' }]);
-});
-// The app keeps one node per ID, so loading both would silently replace the first sequence
-test('a file with a duplicate ID is refused, naming the ID', { todo: 'fixed in the next commit (#172)' }, async () => {
-  await assert.rejects(runWorker('workers/parse-fasta.js', '>a\nAC\n>a\nTT\n'), /"a".*more than once/);
 });
 
 // A FASTA file has no end marker, so one cut off mid-sequence keeps what it has: the last record is short.

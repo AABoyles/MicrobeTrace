@@ -132,13 +132,13 @@ test('an empty file fails with a message instead of throwing', () => {
 // Duplicate IDs and cut-off files (#172). Each ID should name one node, once in the header
 // and once per row, and a file cut off before a node's row is missing a row.
 // The app keeps one node per ID, so a repeat would overwrite the other's distances.
-test('a repeated ID in the header is refused, naming it', { todo: 'fixed in the next commit (#172)' }, () => {
+test('a repeated ID in the header is refused, naming it', () => {
   assert.match(parse(',A,A,B\nA,0,1,5\nB,5,2,0\n').error, /"A".*more than once/);
 });
-test('a repeated row ID is refused, naming it', { todo: 'fixed in the next commit (#172)' }, () => {
-  assert.match(parse('A,0\nB,1,0\nB,5,2,0\n').error, /"B".*more than one row/);
+test('a repeated row ID is refused, naming it', () => {
+  assert.match(parse('A,0\nB,1,0\nB,5,2,0\n').error, /more than one row for "B"/);
 });
-test('a file cut off before a node\'s row is refused, naming the node', { todo: 'fixed in the next commit (#172)' }, () => {
+test('a file cut off before a node\'s row is refused, naming the node', () => {
   assert.match(parse(',A,B,C\nA,0,1,5\nB,1,0,2\n').error, /no row for "C"/);
   assert.match(parse(',A,B,C\n').error, /no row for "A"/);
 });
