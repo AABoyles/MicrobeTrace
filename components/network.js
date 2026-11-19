@@ -263,7 +263,7 @@
       updateGroups();
       updateTracking();
       refresh().then(() => graph && startLayout(0.3));
-      console.log('Network render time:', (Date.now() - start).toLocaleString(), 'ms');
+      MT.time('Network render', start);
     }
 
     // Strategic initial positioning: known positions are kept, foci-based groups

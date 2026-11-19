@@ -559,7 +559,7 @@
       const check = name => modal.querySelector(`[name="audit-${name}"]`).checked;
       audited.innerHTML = '';
       auditSequences(data, check).forEach(({ id, type }) => logAudit(id, type));
-      console.log('Sequence Auditing time:', (Date.now() - start).toLocaleString(), 'ms');
+      MT.time('Sequence Auditing', start);
     }));
 
     $('.audit-toggle-all').addEventListener('click', () => $$('.audit-exclude').forEach(b => b.click()));
@@ -819,7 +819,7 @@
               }, check, source);
             }
             seen.forEach(id => taken.add(id));
-            console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
+            MT.time('FASTA Merge', start);
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
             parsed();
           }).catch(error => fail(file, 'FASTA', error));
@@ -896,7 +896,7 @@
                 }, true, source);
               });
             }
-            console.log('Link Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+            MT.time('Link Excel Parse', start);
             message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
             parsed();
 
@@ -926,7 +926,7 @@
                   }, true, source);
                 });
               }
-              console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+              MT.time('Link CSV Parse', start);
               message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
               parsed();
             }).catch(error => fail(file, 'a link list', error));
@@ -960,7 +960,7 @@
               m += MT.addNode(safeNode, check, source);
             });
             seen.forEach(id => taken.add(id));
-            console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+            MT.time('Node Excel Parse', start);
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
             parsed();
 
@@ -994,7 +994,7 @@
               },
               complete: () => {
                 seen.forEach(id => taken.add(id));
-                console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+                MT.time('Node CSV Parse', start);
                 message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
                 parsed();
               }
@@ -1056,7 +1056,7 @@
               links++;
             }
           }
-          console.log('Newick Tree Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+          MT.time('Newick Tree Parse', start);
           message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
           message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
           labels.forEach(id => linked.add(MT.cleanID(id)));
@@ -1135,7 +1135,7 @@
           for (let j = 0; j < m; j++) {
             Object.assign(subset[j], output[j]);
           }
-          console.log("Alignment Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+          MT.time('Alignment Merge', start);
           reportLengths(MT.lengthWarnings(output.fit));
         } else {
           reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));

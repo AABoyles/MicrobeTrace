@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 // Flags the links of the minimum spanning tree plus the near-ties allowed by
 // epsilon. Takes the condensed distance matrix (NaN where there's no link) of n
 // nodes and returns the flagged links as pairs of node positions.
@@ -17,7 +19,7 @@ onmessage = function(e){
     const mst = primMST(n, weight);
     const pairs = nearest_neighbour_pairs(n, weight, mst, epsilon);
     const output = Uint32Array.from(pairs);
-    console.log('MST Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
+    debugTime('MST Compute', start);
     postMessage({pairs: output.buffer, start: Date.now()}, [output.buffer]);
     close();
 };

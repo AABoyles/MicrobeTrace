@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 importScripts("../vendor/papaparse.min.js");
 
 // A distance as a number; null for an empty cell; NaN for text that is not a
@@ -87,7 +89,7 @@ onmessage = function(e) {
       }
       const nodes = nodeIDs.filter(id => id !== "");
       if (!nodes.length) return fail("it names no nodes");
-      console.log("CSV Matrix Parse time: ", (Date.now() - start).toLocaleString(), "ms");
+      debugTime('CSV Matrix Parse', start);
       start = Date.now();
       postMessage({ data: { links: links, nodes: nodes, unparseable: unparseable, example: example }, start: start });
       close();

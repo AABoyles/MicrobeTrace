@@ -46,6 +46,7 @@ MicrobeTrace offers its features as tools for AI agents through [WebMCP](https:/
 * [Report Bugs or Request Features](https://github.com/aaboyles/MicrobeTrace/issues)
 * [Deploy Your Own Instance of MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/z-Deployment)
 * [Help us Develop MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/z-Development)
+* To log timings and other developer messages to the browser console, open MicrobeTrace with `?debug` in the address, or run `localStorage.setItem('MT.debug', '1')` and reload. Both are off by default.
 
 ## License
 MicrobeTrace is licensed under the [Apache License, Version 2.0](LICENSE).

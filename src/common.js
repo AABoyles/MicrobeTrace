@@ -759,10 +759,21 @@
   };
   MT.workCancelled = () => cancelled;
 
+  // Timings and other developer messages, printed only when debugging is on:
+  // add ?debug to the address, or run localStorage.setItem('MT.debug', '1') in
+  // the console, then reload. (Workers switch on with it too: runWorker starts
+  // them with the name "debug", which each worker's debugTime reads.)
+  MT.debugging = (() => {
+    try { return /[?&]debug\b/.test(location.search) || localStorage.getItem('MT.debug') == '1'; } catch (e) { return false; }
+  })();
+  MT.debug = (...args) => { if (MT.debugging) console.log(...args); };
+  // start is the Date.now() value from when the work began
+  MT.time = (label, start) => { if (MT.debugging) console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
+
   MT.runWorker = (script, message, { transfer, name, worker, onProgress } = {}) => {
     return new Promise((resolve, reject) => {
       if (cancelled) return reject(cancelError());
-      const computer = worker || new Worker(script);
+      const computer = worker || new Worker(script, MT.debugging ? { name: "debug" } : undefined);
       let settled = false;
       const settle = (fn, value) => {
         if (settled) return;
@@ -822,12 +833,12 @@
   };
 
   MT.parseFASTA = text => MT.runWorker("workers/parse-fasta.js", text, { name: "The FASTA parser" }).then(data => {
-    console.log("FASTA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
+    MT.time('FASTA Transit', data.start);
     return data.nodes;
   });
 
   MT.parseMEGA = text => MT.runWorker("workers/parse-mega.js", text, { name: "The MEGA parser" }).then(data => {
-    console.log("MEGA Transit time: ", (Date.now() - data.start).toLocaleString(), "ms");
+    MT.time('MEGA Transit', data.start);
     return data.nodes;
   });
   
@@ -841,7 +852,7 @@
           nl = 0;
       MT.runWorker("workers/parse-csv-matrix.js", file.contents, { name: "The matrix parser" }).then(response => {
         const data = response.data;
-        console.log("CSV Matrix Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+        MT.time('CSV Matrix Transit', response.start);
         const start = Date.now();
         const nodes = data.nodes;
         const tn = nodes.length;
@@ -859,7 +870,7 @@
         for (let j = 0; j < tl; j++) {
           nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field));
         }
-        console.log("CSV Matrix Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+        MT.time('CSV Matrix Merge', start);
         resolve({ nn, nl, tn, tl, ids: nodes, unparseable: data.unparseable || 0, example: data.example });
       }).catch(reject);
     })
@@ -1005,7 +1016,7 @@
   
       seqs.push({ id: idPrefix + "" + seqs.length, seq: newseed });
     }
-    console.log("Sequence spawn time:", (Date.now() - start).toLocaleString(), 'ms');
+    MT.time('Sequence spawn', start);
     return seqs;
   };
   
@@ -1066,7 +1077,7 @@
       const originals = params.nodes.map(d => d.seq || "");
       MT.runWorker("workers/align-sw.js", params, { name: "The aligner" }).then(response => {
         let subset = response.nodes;
-        console.log("Alignment transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+        MT.time('Alignment transit', response.start);
         let start = Date.now();
         let minPadding = Infinity,
         d = null;
@@ -1077,7 +1088,7 @@
         }
         const fit = MT.fitToReference(subset, referenceLength, minPadding, originals);
         MT.addNodeField('_score', '_padding', '_cigar');
-        console.log("Alignment Padding time: ", (Date.now() - start).toLocaleString(), "ms");
+        MT.time('Alignment Padding', start);
         subset.fit = fit;
         resolve(subset);
       }).catch(reject);
@@ -1087,7 +1098,7 @@
   MT.computeConsensus = nodes => {
     if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
     return MT.runWorker("workers/compute-consensus.js", nodes, { name: "The consensus computation" }).then(response => {
-      console.log("Consensus Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+      MT.time('Consensus Transit', response.start);
       return response.consensus;
     });
   };
@@ -1131,14 +1142,14 @@
       // would be saved with the session
       const encoded = subset.map(d => ({ _seqInt: tn93.toInts(d.seq) }));
       MT.runWorker("workers/compute-ambiguity-counts.js", encoded, { name: "The ambiguity count" }).then(response => {
-        console.log("Ambiguity Count Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+        MT.time('Ambiguity Count Transit', response.start);
         let start = Date.now();
         const dists = new Float32Array(response.counts);
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._ambiguity = dists[j];
         }
         MT.addNodeField('_ambiguity');
-        console.log("Ambiguity Count Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+        MT.time('Ambiguity Count Merge', start);
         resolve();
       }).catch(reject);
     });
@@ -1171,13 +1182,13 @@
         start: start
       }, { name: "The consensus distance computation" }).then(response => {
         let dists = new Uint32Array(response.dists);
-        console.log("Consensus Difference Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+        MT.time('Consensus Difference Transit', response.start);
         start = Date.now();
         for (let j = 0; j < subsetLength; j++) {
           nodes[subset[j].index]._diff = dists[j];
         }
         MT.addNodeField('_diff');
-        console.log("Consensus Difference Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+        MT.time('Consensus Difference Merge', start);
         resolve();
       }).catch(reject);
     });
@@ -1278,7 +1289,7 @@
     // Kept within the link threshold for the distance metric, and within their
     // own default thresholds for the others
     const thresholds = sparse ? metrics.map((m, i) => i == 0 ? parseFloat(widgets['link-threshold']) : MT.distanceMetrics[m].threshold) : null;
-    if (sparse) console.log(`Keeping only links with ${metrics.map((m, i) => `${m} <= ${thresholds[i]}`).join(', ')} (${pairs.toLocaleString()} pairs)`);
+    if (sparse) MT.debug(`Keeping only links with ${metrics.map((m, i) => `${m} <= ${thresholds[i]}`).join(', ')} (${pairs.toLocaleString()} pairs)`);
 
     // Where only links within a threshold are kept, remember it (#228)
     const stored = Object.assign({}, widgets['link-stored-thresholds']);
@@ -1311,7 +1322,7 @@
         .then(data => { done[w] = 1; report(); resolve(legacy ? { results: [data], start: data.start } : data); }, reject);
     })));
 
-    console.log('Links Transit time: ', (Date.now() - Math.min(...parts.map(p => p.start))).toLocaleString(), 'ms');
+    MT.time('Links Transit', Math.min(...parts.map(p => p.start)));
     let start = Date.now();
     const g = session.data.graph;
     const before = g.edgeCount;
@@ -1342,7 +1353,7 @@
         g.setDistances(order.map(d => d._id), tri, field, 'Genetic Distance');
       }
     });
-    console.log("Links Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+    MT.time('Links Merge', start);
     return g.edgeCount - before;
   };
 
@@ -1407,7 +1418,7 @@
         }
       }
       dmCache = { graph: g, version: g.version, metric, nodes, n, dm };
-      console.log("DM Compute time: ", (Date.now() - start).toLocaleString(), "ms");
+      MT.time('DM Compute', start);
       resolve(dm);
     });
   };
@@ -1424,7 +1435,7 @@
       }, { transfer: [matrix.buffer], name: "The tree computation" });
     }).then(response => {
       temp.tree = patristic.parseJSON(response.tree);
-      console.log("Tree Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+      MT.time('Tree Transit', response.start);
     });
   };
 
@@ -1446,7 +1457,7 @@
         tree: temp.tree
       }, { name: "The directionality computation" }).then(response => {
         let flips = new Uint8Array(response.output);
-        console.log("Directionality Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+        MT.time('Directionality Transit', response.start);
         let start = Date.now();
         let n = flips.length;
         try {
@@ -1459,7 +1470,7 @@
         } finally {
           g.version++;
         }
-        console.log("Directionality Integration time: ", (Date.now() - start).toLocaleString(), "ms");
+        MT.time('Directionality Integration', start);
         resolve();
       }).catch(reject); // (a worker that throws, say on a tree too deep for patristic, rejects)
     });
@@ -1482,7 +1493,7 @@
         epsilon: session.style.widgets["filtering-epsilon"]
       }, { transfer: [tri.buffer], name }).then(response => {
         let pairs = new Uint32Array(response.pairs);
-        console.log(name + " Transit time: ", (Date.now() - response.start).toLocaleString(), "ms");
+        MT.time(name + ' Transit', response.start);
         const start = Date.now();
         g.clearFlag(MTGraph.NN);
         for (let i = 0; i < pairs.length; i += 2) {
@@ -1490,7 +1501,7 @@
           if (e >= 0) g.setFlag(e, MTGraph.NN, true);
         }
         g.version++;
-        console.log(name + " Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+        MT.time(name + ' Merge', start);
         resolve();
       }).catch(reject);
     });
@@ -1574,7 +1585,7 @@
     }
     MT.setLinkVisibility(true);
     session.meta.loadTime = Date.now() - session.meta.startTime;
-    console.log("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
+    MT.debug("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
     if (oldSession) {
       MT.loadLayout(session.layout);
     } else {
@@ -1736,7 +1747,7 @@
         c.links_per_node = c.links / c.nodes;
         c.mean_genetic_distance = c.sum_distances / c.links;
       });
-      console.log("Cluster Tagging time:", (Date.now() - start).toLocaleString(), "ms");
+      MT.time('Cluster Tagging', start);
       resolve();
     });
   };
@@ -1784,7 +1795,7 @@
       if (timeEnd) node.visible = node.visible && !(times[i] > until);
     }
     if (!silent) MT.events.emit("node-visibility");
-    console.log("Node Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
+    MT.time('Node Visibility Setting', start);
   };
   
   MT.setLinkVisibility = silent => { 
@@ -1801,7 +1812,7 @@
     } : () => true;
     g.computeVisible(metric, threshold, showNN, keep);
     if (!silent) MT.events.emit("link-visibility");
-    console.log("Link Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
+    MT.time('Link Visibility Setting', start);
   };
   
   MT.setClusterVisibility = silent => { 
@@ -1814,7 +1825,7 @@
       cluster.visible = cluster.nodes >= min;
     }
     if (!silent) MT.events.emit("cluster-visibility");
-    console.log("Cluster Visibility Setting time:", (Date.now() - start).toLocaleString(), "ms");
+    MT.time('Cluster Visibility Setting', start);
   };
 
   // Copies the network's layout from the GPU into session.network.nodes, for

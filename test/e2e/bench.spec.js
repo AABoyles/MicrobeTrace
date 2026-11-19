@@ -44,6 +44,8 @@ const results = {};
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
   errors = watchErrors(page);
+  // The network's render time is logged only when debugging is on (MT.debugging)
+  await page.addInitScript(() => { try { localStorage.setItem('MT.debug', '1'); } catch (e) { /* no storage: no log, no count */ } });
   // Counts every read back from a WebGL canvas
   await page.addInitScript(() => {
     window.readbacks = 0;

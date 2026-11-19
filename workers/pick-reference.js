@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 // A provisional reference for building a consensus (#317): the medoid of the
 // raw, unaligned sequences by k-mer distance. It needs no alignment, so it is
 // cheap, and it only has to be close to everything else, not right.
@@ -95,7 +97,7 @@ if(typeof module !== 'undefined' && module.exports) module.exports = { pickRefer
 if(typeof onmessage !== 'undefined' || typeof self !== 'undefined') onmessage = function(e){
   var start = Date.now();
   var index = pickReference(e.data.seqs, { k: e.data.k, sample: e.data.sample });
-  console.log('Pick Reference Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
+  debugTime('Pick Reference Compute', start);
   start = Date.now();
   postMessage({index: index, start: start});
   close();
