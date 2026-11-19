@@ -10,7 +10,6 @@ MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC), w
 
 * **[Launch MicrobeTrace](https://aaboyles.github.io/MicrobeTrace/)**
 * [Download Sample Data](https://github.com/aaboyles/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
-* [Download Sample COVID Data](https://github.com/aaboyles/MicrobeTrace/raw/master/demo/COVID%20Dummy%20Data.zip)
 * [View the Help Wiki](https://github.com/aaboyles/MicrobeTrace/wiki)
 * [Read the Latest Manual](https://github.com/aaboyles/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.pdf)
 * [Watch and follow along with the webinar](https://www.youtube.com/watch?v=5E-_Kb7yvHU)

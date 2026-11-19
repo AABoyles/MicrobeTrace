@@ -1,7 +1,7 @@
 # Demo data
 
 This directory holds the sample outbreak that MicrobeTrace loads for `#demo`, the sample
-download linked from the top-level README, and the COVID-19 dummy data.
+download linked from the top-level README.
 
 ## The attribute values are simulated
 
@@ -30,9 +30,6 @@ Sizes and counts are from the files in this directory at the time of writing.
 | `Demo_outbreak_PhylogeneticTree.nwk` | Newick tree over the sequence IDs. | Added in `295f77b`. Tree method and software: not recorded. |
 | `Demo_outbreak_session.microbetrace` | A saved MicrobeTrace session built from the demo data. Loaded by `#demo` (`src/index.js`). | Added in `abd5569` (2019-06-07, "Set MicrobeTrace to load Demo Data on #demo"). Its node fields use the 2019 column names (`id`, `degree`, `cntdate`, `_diff`, `column13`, `cluster`), not the current node list's, so it does not reproduce the current `Demo_outbreak_NodeList.csv` exactly. |
 | `MicrobetraceDemoData.zip` | The sample download linked from the top-level README. Contains the five `Demo_outbreak_*` files listed below. | Created in `b08be98` (2018-11-14). Its members are rebuilt to match these loose files (the node list was out of date until `4ed9553`, which rebuilt the zip from the current loose copy). |
-| `COVID Dummy Data.zip` | The COVID-19 sample download linked from the top-level README. Contains `edgeList_covidDummy.csv` and `nodeList_covidDummy.csv`, byte-identical to the loose copies. | Added in `31fb3e8` (2020-08-25, Ellsworth Campbell). The loose copies were added in `993be5c` (2020-08-24). |
-| `edgeList_covidDummy.csv` | Edge list for the COVID dummy data: 299 links with columns `ID1`, `ID2`, `type` (`locationLink`). | Added in `993be5c` (2020-08-24). Its name and commit say "dummy". |
-| `nodeList_covidDummy.csv` | Node list for the COVID dummy data: 265 rows, 34 columns (gender, age, ZIP code, symptom and hospital dates, symptoms, comorbidities, `type` = `person`). | Added in `993be5c` (2020-08-24). Its name and commit say "dummy". The repository has no separate statement on whether its values are simulated. The maintainer's confirmation (issue #257) covers the outbreak demo files, not this file. |
 
 ### Contents of `MicrobetraceDemoData.zip`
 
