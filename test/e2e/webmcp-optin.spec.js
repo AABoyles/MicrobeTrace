@@ -1,3 +1,4 @@
+/* global registeredTools -- set on window by the specs' page.evaluate calls */
 // WebMCP is opt-in, and asks the user before consequential tools run (src/webmcp.js)
 const { test, expect } = require('@playwright/test');
 const { open, watchErrors, waitForModal } = require('./helpers');

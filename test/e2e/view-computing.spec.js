@@ -1,3 +1,4 @@
+/* global stalled, RealWorker -- set on window by the specs' page.evaluate calls */
 // The views that compute when opened or redrawn (#293): the tree, the heatmap's
 // distance matrix and the sequences' alignment. Each shows that it is computing,
 // with its progress, in a live region; its Cancel (by keyboard too) stops its own

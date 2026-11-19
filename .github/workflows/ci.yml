@@ -28,6 +28,8 @@ jobs:
       # Runs the unit tests with coverage, failing if line coverage drops below the
       # threshold in package.json (#175)
       - run: npm run coverage
+      # ESLint (eslint.config.js): errors fail the build; warnings are counted, not fatal (#243)
+      - run: npm run lint
 
   bundle:
     # dist/ and vendor/ are committed; rebuild them from the lockfile and fail

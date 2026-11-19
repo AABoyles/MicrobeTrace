@@ -1,3 +1,4 @@
+/* global kept, updates, drawn, offRedraw -- set on window by the specs' page.evaluate calls */
 // What a threshold change or a step of the timeline recomputes: the visible
 // links are built once for all the views and kept while they don't change, a
 // run of changes is applied once, and the dates are read once.

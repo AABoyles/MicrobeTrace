@@ -1,3 +1,4 @@
+/* global stalled, RealWorker -- set on window by the specs' page.evaluate calls */
 // The loading dialog (#265, #190): real progress, a Cancel that stops the work,
 // and a live region for the progress text; and what a file is read as, decided
 // from its contents (#267).
