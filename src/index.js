@@ -851,12 +851,40 @@ document.addEventListener("DOMContentLoaded", () => {
     MT.floatingTable(wrapper, byId(kind + "-color-table-context"), {
       onHide: () => settings.set(kind + "-color-table-show", false),
       onCounts: toggle(kind + "-color-table-counts"),
-      onFrequencies: toggle(kind + "-color-table-frequencies")
+      onFrequencies: toggle(kind + "-color-table-frequencies"),
+      onSelect: kind == "node" ? selectNodesOfRow : undefined
     });
     settings.subscribe(kind + "-color-variable", () => showColorTable(kind));
     settings.subscribe(kind + "-color-table-show", show => {
       wrapper.style.display = show && get(kind + "-color-variable") != "None" ? "block" : "none";
     }, { reload: true });
+  });
+
+  // Selects the visible nodes whose color value is a row's value, in place of
+  // the selection (#295): the menu's Select These Nodes, for keyboard users too.
+  // The selection's announcement comes from node-selected, as for any change.
+  function selectNodesOfRow(cell) {
+    if (!cell) return MT.announce("Choose a value in the table first.");
+    const variable = get("node-color-variable"), value = cell.dataset.value;
+    session.data.nodes.forEach(d => { d.selected = !!d.visible && String(d[variable]) === value; });
+    events.emit("node-selected");
+  }
+
+  // A categorical node color with more values than a few is hard to tell apart
+  // by color alone, so once per variable (#294) the page suggests showing it as
+  // shapes too, in a toast the user can take or leave. Only when the variable is
+  // chosen, not when a session that already has it is opened.
+  const shapeSuggested = new Set();
+  settings.subscribe("node-color-variable", variable => {
+    if (variable == "None" || shapeSuggested.has(variable) || get("node-symbol-variable") != "None") return;
+    const values = new Set(session.data.nodes.filter(d => d.visible).map(d => String(d[variable]))).size;
+    // (Up to six values, or seven with (Empty), are still told apart by color)
+    if (values <= 6) return;
+    shapeSuggested.add(variable);
+    const name = MT.escape(MT.titleize(variable));
+    MT.toast.info(`${values.toLocaleString()} values of ${name} are hard to tell apart by color alone. Show ${name} as shapes too?`,
+      taken => { if (taken && get("node-color-variable") == variable) settings.set("node-symbol-variable", variable); },
+      { action: "Show as shapes" });
   });
 
   // The colors ----------------------------------------------------------------

@@ -10,7 +10,7 @@
   </div>
 </div>
 <div class="network-live visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
-<p id="network-keys-summary" class="visually-hidden">Arrow keys move to the nearest node in that direction, N and P step through every node, L follows the focused node's links, Enter selects, C selects the node's cluster, A selects every node, F pins, M opens the node menu, Escape clears the selection, and question mark lists the keys. The Table view lists the same nodes.</p>
+<p id="network-keys-summary" class="visually-hidden">Arrow keys move to the nearest node in that direction, N and P step through every node, L follows the focused node's links, Enter selects, G selects the node's neighbours (again: nodes further out), C selects the node's cluster, A selects every node, F pins, M opens the node menu, Escape clears the selection, and question mark lists the keys. The Table view lists the same nodes.</p>
 <div id="network-keys" class="network-keys" hidden>
   <h2 class="h6">Network keys</h2>
   <p class="small mb-1">Click the network or Tab to it, then:</p>
@@ -20,6 +20,7 @@
     <dt>L / Shift+L</dt><dd>Next / previous linked node</dd>
     <dt>Enter or Space</dt><dd>Select the node (Ctrl: add or remove it)</dd>
     <dt>C / Shift+C</dt><dd>Select the node's cluster (Shift: add it to the selection)</dd>
+    <dt>G / Shift+G</dt><dd>Select the node's neighbours; each further press adds the nodes one more link out (Shift: add them to the selection)</dd>
     <dt>A</dt><dd>Select every node</dd>
     <dt>F</dt><dd>Pin or unpin the node</dd>
     <dt>M, Shift+F10</dt><dd>Node menu (copy ID, attributes…)</dd>
@@ -239,6 +240,14 @@
                   </select>
                 </div>
               </div>
+              <div class="form-group row" title="Which variable should determine the dash pattern of a link? Solid, dashed and dotted links tell values apart without colour.">
+                <div class="col-4"><label for="link-dash-variable">Dash By</label></div>
+                <div class="col-8">
+                  <select id="link-dash-variable" data-setting="link-dash-variable" class="form-select form-select-sm linkVariables">
+                    <option>None</option>
+                  </select>
+                </div>
+              </div>
               <div class="form-group row link-max-width-row" title="Should link max widths to this variable?">
                 <div class="col-4"><label for="link-width-max">Max Width</label></div>
                 <div class="col-8"><input type="range" class="form-range" id="link-width-max" data-setting="link-width-max" min="0.3" max="30" step=".3" value="27"></div>
@@ -450,6 +459,17 @@ Note that this may cause slow performance on larger networks.">
 <div class="floater node-symbol-table-wrapper" hidden>
   <div class="draghandle"><span class="bi bi-arrows-move"></span></div>
   <table class="node-symbol-table"></table>
+</div>
+
+<div class="floater link-dash-table-wrapper" hidden>
+  <div class="draghandle"><span class="bi bi-arrows-move"></span></div>
+  <table class="link-dash-table"></table>
+</div>
+
+<div class="dropdown-menu floater-menu link-dash-table-menu">
+  <button type="button" class="dropdown-item" data-action="drag">Pin</button>
+  <button type="button" class="dropdown-item" data-action="hide">Hide</button>
+  <button type="button" class="dropdown-item" data-action="expand">Expand</button>
 </div>
 
 <div class="dropdown-menu floater-menu node-symbol-table-menu">

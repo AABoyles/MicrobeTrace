@@ -479,6 +479,7 @@ body > .ts-dropdown {
 #link-color-table-wrapper { order: 1; }
 #node-color-table-wrapper { order: 2; }
 .node-symbol-table-wrapper { order: 3; }
+.link-dash-table-wrapper { order: 3; }
 .polygon-color-table-wrapper { order: 4; }
 #network-statistics-wrapper {
   order: 5;
@@ -1045,7 +1046,8 @@ body.timeline-open #main-panel {
 .network-keys dd {
   margin: 0 0 0.25rem;
 }
-.node-symbol-table-wrapper {
+.node-symbol-table-wrapper,
+.link-dash-table-wrapper {
   max-height: 400px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1053,15 +1055,18 @@ body.timeline-open #main-panel {
   color: var(--mt-text);
   background-color: var(--mt-panel) !important;
 }
+.link-dash-table-wrapper .draghandle,
 .node-symbol-table-wrapper .draghandle {
   width: 100%;
   text-align: center;
 }
+.link-dash-table th,
 .node-symbol-table th {
   border: 1px solid lightgray;
   padding: 4px;
   text-align: center;
 }
+.link-dash-table td,
 .node-symbol-table td {
   border: 1px solid lightgray;
   padding: 4px;

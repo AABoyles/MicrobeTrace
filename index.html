@@ -255,6 +255,7 @@
   <div id="node-color-table-context" class="dropdown-menu">
     <button type="button" class="dropdown-item" data-action="drag">Drag</button>
     <button type="button" class="dropdown-item" data-action="rename">Rename a Value</button>
+    <button type="button" class="dropdown-item" data-action="select">Select These Nodes</button>
     <button type="button" class="dropdown-item" data-action="hide">Hide</button>
     <button type="button" class="dropdown-item" data-action="expand">Expand</button>
     <button type="button" class="dropdown-item" data-action="counts">Toggle Counts</button>
@@ -658,18 +659,18 @@
           <ul>
             <li><kbd>Ctrl</kbd>+<kbd>F</kbd> (<kbd>&#8984;</kbd>+<kbd>F</kbd> on a Mac): search nodes by ID.</li>
             <li><kbd>Ctrl</kbd>+<kbd>S</kbd> (<kbd>&#8984;</kbd>+<kbd>S</kbd>): save.</li>
-            <li>Network view, with the view focused: arrow keys move between nodes, <kbd>N</kbd> and <kbd>P</kbd> step through them, <kbd>L</kbd> follows links, <kbd>Enter</kbd> selects, <kbd>F</kbd> pins, <kbd>M</kbd> opens the node menu, <kbd>Esc</kbd> clears, and <kbd>?</kbd> lists the keys.</li>
+            <li>Network view, with the view focused: arrow keys move between nodes, <kbd>N</kbd> and <kbd>P</kbd> step through them, <kbd>L</kbd> follows links, <kbd>Enter</kbd> selects, <kbd>G</kbd> selects a node's neighbours (press again to take in the nodes one more link out), <kbd>F</kbd> pins, <kbd>M</kbd> opens the node menu, <kbd>Esc</kbd> clears, and <kbd>?</kbd> lists the keys.</li>
           </ul>
           <div id="help-shortcuts-table">
             <p>Some actions are reached by a mouse gesture. Each has a keyboard way too.</p>
             <table class="table table-sm shortcuts-table">
               <thead><tr><th scope="col">Where</th><th scope="col">With the mouse</th><th scope="col">What it does</th><th scope="col">From the keyboard</th></tr></thead>
               <tbody>
-                <tr><th scope="row">Network</th><td>Ctrl + drag</td><td>Select the nodes in a rectangle (they toggle)</td><td>Focus the network, then C selects the focused node's cluster (Shift+C adds it), A selects every node</td></tr>
+                <tr><th scope="row">Network</th><td>Ctrl + drag</td><td>Select the nodes in a rectangle (they toggle)</td><td>Focus the network, then G selects the focused node's neighbours (press G again for the nodes one more link out; Shift+G adds them), C selects the focused node's cluster (Shift+C adds it), A selects every node</td></tr>
                 <tr><th scope="row">Network</th><td>Ctrl + click a node</td><td>Add it to, or remove it from, the selection</td><td>Ctrl + Enter on the focused node</td></tr>
                 <tr><th scope="row">Network</th><td>Right-click a node</td><td>The node menu</td><td>M, the menu key or Shift+F10 on the focused node</td></tr>
                 <tr><th scope="row">Network</th><td>Click a node</td><td>Select it</td><td>Arrow keys, N and P move between nodes; Enter or Space selects</td></tr>
-                <tr><th scope="row">Color, shape and polygon tables</th><td>Right-click the table</td><td>Menu: Drag or Pin, Rename a Value, Hide, Expand, Toggle Counts, Toggle Frequencies</td><td>The ... button on the table, or the menu key or Shift+F10 inside it</td></tr>
+                <tr><th scope="row">Color, shape and polygon tables</th><td>Right-click the table</td><td>Menu: Drag or Pin, Rename a Value, Select These Nodes (node color table: selects the nodes with that value), Hide, Expand, Toggle Counts, Toggle Frequencies</td><td>The ... button on the table, or the menu key or Shift+F10 inside it</td></tr>
                 <tr><th scope="row">Color and polygon tables</th><td>Double-click a value</td><td>Rename it</td><td>F2 or Enter on the focused value (Enter keeps the name, Escape cancels), or Rename a Value in the menu</td></tr>
                 <tr><th scope="row">Network statistics</th><td>Right-click the box</td><td>Menu: Drag or Pin, Hide</td><td>The ... button, or the menu key or Shift+F10</td></tr>
                 <tr><th scope="row">Phylogenetic tree</th><td>Right-click a branch</td><td>Rotate, flip or set as root</td><td>Arrow keys move between branches, then Enter, the menu key or Shift+F10; or the ... Tree menu button</td></tr>

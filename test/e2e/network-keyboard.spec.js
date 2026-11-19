@@ -215,3 +215,84 @@ test('the links described follow the threshold', async () => {
   await expect(network()).toHaveAttribute('aria-label', /476 links/);
   expect(errors).toEqual([]);
 });
+
+// The nodes within r links of a node, by ID, found from the links drawn
+const reach = (i, r) => page.evaluate(([i, r]) => {
+  const { points, links } = temp.network;
+  let ids = new Set([points[i]._id]);
+  for (let step = 0; step < r; step++) {
+    const grown = new Set(ids);
+    links.forEach(l => {
+      if (ids.has(l.source)) grown.add(l.target);
+      if (ids.has(l.target)) grown.add(l.source);
+    });
+    ids = grown;
+  }
+  return Array.from(ids).sort();
+}, [i, r]);
+
+// G (#295): the focused node's neighbours, then one more link out per press
+test('G selects the neighbours, then takes in one more link out each press; Shift+G adds them', async () => {
+  // A node whose first two rings each add nodes
+  const i = await page.evaluate(() => {
+    const { points, links } = temp.network;
+    const adjacent = new Map(points.map(d => [d._id, new Set()]));
+    links.forEach(l => { adjacent.get(l.source)?.add(l.target); adjacent.get(l.target)?.add(l.source); });
+    const rings = id => {
+      let ids = new Set([id]);
+      return [1, 2].map(() => {
+        const next = new Set(ids);
+        ids.forEach(x => adjacent.get(x)?.forEach(y => next.add(y)));
+        ids = next;
+        return ids.size;
+      });
+    };
+    return points.findIndex(d => { const [one, two] = rings(d._id); return one > 1 && two > one; });
+  });
+  expect(i).toBeGreaterThanOrEqual(0);
+  await network().focus();
+  await page.evaluate(i => temp.network.focus(i), i);
+  const id = await focusedId();
+  await page.keyboard.press('g');
+  let expected = await reach(i, 1);
+  expect((await selected()).sort()).toEqual(expected);
+  await expect(live()).toHaveText(new RegExp(`^${expected.length} nodes? within 1 link of ${id} selected\\. ${expected.length} nodes? selected in all\\.$`));
+  await page.keyboard.press('g');
+  expected = await reach(i, 2);
+  expect((await selected()).sort()).toEqual(expected);
+  await expect(live()).toContainText(`within 2 links of ${id} selected`);
+  // Shift adds the nodes one more link out to the selection (if there are any)
+  const three = await reach(i, 3);
+  await page.keyboard.press('Shift+g');
+  expect((await selected()).sort()).toEqual(three);
+  if (three.length > expected.length) await expect(live()).toContainText(`within 3 links of ${id} selected`);
+  else await expect(live()).toContainText('No more nodes within 2 links');
+  // Pressing on until the group stops growing says so, and keeps the selection
+  let before = null;
+  for (let k = 0; k < 60; k++) {
+    before = await selected();
+    await page.keyboard.press('g');
+    if (JSON.stringify(await selected()) === JSON.stringify(before)) break;
+  }
+  await expect(live()).toContainText('No more nodes within');
+  expect((await selected()).sort()).toEqual(before.sort());
+  // Moving the focus starts again from one link (or says the node has none)
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('n');
+  await page.keyboard.press('g');
+  await expect(live()).toHaveText(/within 1 link of \S+ selected|has no links/);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  expect(await focused()).toBeUndefined();
+  expect(errors).toEqual([]);
+});
+
+test('the key list and the summary name G', async () => {
+  await network().focus();
+  const button = page.locator('.keys-button');
+  await button.click();
+  await expect(page.locator('#network-keys')).toContainText('G / Shift+G');
+  await button.click();
+  await expect(page.locator('#network-keys-summary')).toContainText('G selects');
+});
