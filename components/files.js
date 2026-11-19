@@ -263,7 +263,11 @@
         // A table's rows have as many columns as its header: prose (notes, say)
         // doesn't, however its commas fall
         const sample = Papa.parse(file.contents, { delimiter: file.delimiter, preview: 20, skipEmptyLines: true }).data;
-        const tabular = sample.length > 1 && sample.slice(1).filter(r => r.length == sample[0].length).length >= 0.8 * (sample.length - 1);
+        // A file cut off mid-row ends in a short row, which doesn't make it prose
+        // (in a short file, that one row would otherwise be most of the sample)
+        const rows = sample.slice(1);
+        const body = rows.length > 1 && rows[rows.length - 1].length != sample[0].length ? rows.slice(0, -1) : rows;
+        const tabular = sample.length > 1 && body.filter(r => r.length == sample[0].length).length >= 0.8 * body.length;
         Papa.parse(file.contents, {
           delimiter: file.delimiter,
           header: true,
@@ -1074,7 +1078,7 @@
         const unmatched = taken.size ? Array.from(linked).filter(id => !taken.has(id)).length : 0;
         const plural = (n, one, many) => n.toLocaleString() + ' ' + (n == 1 ? one : many);
         const notes = [];
-        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the last row's values are kept)`);
+        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the first row's values are kept, and later rows fill in its blanks)`);
         if (report.blanks) notes.push(`${plural(report.blanks, 'row with a blank ID was', 'rows with a blank ID were')} skipped`);
         if (report.selfLinks) notes.push(`${plural(report.selfLinks, 'link from a node to itself was', 'links from a node to itself were')} dropped`);
         if (report.repeatedLinks) notes.push(`${plural(report.repeatedLinks, 'link repeated', 'links repeated')} a pair of nodes already linked (in either direction), so overwrote its values`);

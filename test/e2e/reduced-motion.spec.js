@@ -55,6 +55,7 @@ test('the bubbles are settled as soon as they are drawn', async () => {
   await expect(circles.first()).toBeVisible();
   const positions = () => circles.evaluateAll(els => els.slice(0, 20).map(e => e.getAttribute('cx') + ',' + e.getAttribute('cy')).join(';'));
   const first = await positions();
+  // Waits to see that nothing moves: with reduced motion the bubbles don't animate
   await page.waitForTimeout(700);
   expect(await positions()).toBe(first);
 });

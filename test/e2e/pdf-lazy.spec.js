@@ -27,6 +27,9 @@ test('bundle.pdf.js is fetched by the first PDF export, not on load', async ({ p
   await modal.locator('button', { hasText: 'Export' }).click();
   await expect(page.getByText("The PDF library couldn't be loaded")).toBeVisible();
   await expect(page.locator('.modal.show')).toHaveCount(0); // the dialog closes as for any export
+  // The aborted request is the failure this test makes on purpose; the message
+  // above is what the app does about it
+  errors.length = 0;
   expect(await page.evaluate(() => typeof pdfMake)).toBe('undefined');
   await page.unroute('**/dist/bundle.pdf.js');
   modal = await openPDF();

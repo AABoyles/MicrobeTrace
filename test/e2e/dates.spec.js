@@ -173,6 +173,8 @@ test('letters are drawn only in cells wide enough for them', async () => {
   await set('sequences-cell-width', 2);
   await set('sequences-cell-height', 12);
   await expect.poll(async () => (await alignment().evaluate(c => c.width)) > 0).toBe(true);
+  // No letters should appear, so there is no event to wait for: this gives
+  // the redraw time to show any before the count
   await page.waitForTimeout(300);
   expect((await pixels()).dark).toBe(0);
   await sequences().locator('button[title="Sequences Settings"]').click();

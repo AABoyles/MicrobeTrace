@@ -6,14 +6,27 @@ const fixtures = ['seqs.fasta', 'links.csv', 'nodes.csv'].map(f => path.join(__d
 // fix; remove its pattern when it is.
 const KNOWN_ERRORS = [];
 
-// Collects page errors and console errors, minus the known ones above.
+// The only hosts the app contacts (the img-src in the CSP in server.js): map
+// tiles for the online base layers. Some test machines can't reach them, so a
+// failed request to them isn't an app error. Any other failed request, same
+// origin or not, fails the test (a missing worker script, say).
+const EXTERNAL_HOSTS = [/(^|\.)basemaps\.cartocdn\.com$/, /^server\.arcgisonline\.com$/];
+
+// Collects page errors, failed requests and console errors, minus the known
+// ones above.
 function watchErrors(page) {
   const errors = [];
   const add = text => { if (!KNOWN_ERRORS.some(p => p.test(text))) errors.push(text); };
+  const failed = (url, what) => {
+    if (!EXTERNAL_HOSTS.some(h => h.test(new URL(url).hostname))) add(`${what} ${url}`);
+  };
   page.on('pageerror', e => add(e.message));
+  page.on('requestfailed', r => failed(r.url(), `Request failed (${r.failure() && r.failure().errorText}):`));
+  page.on('response', r => { if (r.status() >= 400) failed(r.url(), `HTTP ${r.status()}:`); });
   page.on('console', m => {
-    // Network failures (blocked analytics, offline map tiles) are not app errors
-    if (m.type() == 'error' && !/Failed to load resource|net::ERR_|GL Driver/.test(m.text())) add(m.text());
+    // A failed resource is reported by the request and response events above,
+    // with its URL, which this console line doesn't have
+    if (m.type() == 'error' && !/^Failed to load resource/.test(m.text())) add(m.text());
   });
   return errors;
 }

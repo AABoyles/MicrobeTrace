@@ -50,6 +50,8 @@ for (const [view, selector] of Object.entries(content)) {
       return item && item.element;
     }, view);
     await expect.poll(() => item.evaluate((el, selector) => el.querySelectorAll(selector).length, selector), { timeout: 30000 }).toBeGreaterThan(0);
+    // Errors can come a little after the first draw: give them time to show
+    // before checking. No event marks the end of a view's first draw.
     await page.waitForTimeout(500);
     expect(errors).toEqual([]);
     if (view != 'network') await closeView(page, view);

@@ -26,7 +26,9 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `recall.spec.js` | The Recall dialog: stashes listed newest first by name and when they were stashed, choosing one anywhere on its row, recalling one by double-clicking it, undoing a deletion, a stash that can't be read, and nothing stashed |
 | `words.spec.js` | Tables and words: the aggregation sorted by count alone (as numbers), shares to one decimal and right-aligned; the table opening without its internal Index, columns sized to fit and lists comma-separated; a loading log that counts node rows and says how many links are within the threshold; a file that isn't a table saying so while Launch waits; File > New saying what it clears and offering to save first; Save's and exports' formats by name; hover text without typos; one name for each view and setting; blue main actions and Done or Close; the View menu's network above lined-up columns; and the tree's Label and Tooltip menus turning them off with None |
 | `framing.spec.js` | Views framed to their data: the network kept in view as its layout spreads (clear of the docked tables), its labels one size at any zoom and never overlapping; the choropleth opening on the regions with data under a titled legend; the globe zooming to the nodes, with a Fit button and Borders; plots below the toolbar and clear of the docked tables, with outlined scatterplot points; the heatmap naming its metric, greying missing pairs and labelling ids; the flow diagram naming its columns, values in order with empty last; the map and the tree clear of the docked tables; the timeline starting where the network is, with years, centered; and the waterfall saying what to choose and what it doesn't list |
-| `bench.spec.js` | Speed budgets on 2,000 generated sequences: loading, a threshold change redrawing the network once (and soon), no position reads from the GPU while laying out once the user has zoomed, a hidden network paused and reading nothing, and opening a view; each result is logged to compare runs |
+| `bench.spec.js` | Speed on 2,000 generated sequences: loading, a threshold change redrawing the network once (and soon), no position reads from the GPU while laying out once the user has zoomed, a hidden network paused and reading nothing, and opening a view; each time is logged to compare runs, and the time budgets are enforced only with `BENCH_STRICT=1` (see below) |
+| `bad-files.spec.js` | Files with duplicate IDs (a FASTA, a node list), and files cut off mid-record (a link list, a node list, a FASTA mid-sequence and after a header): each loads or says why, with a message, and Launch finishes |
+| `large-fasta.spec.js` | 4,000 generated sequences (8 million pairs) load through the Files view within the test timeout, with every pair's distance computed |
 | `distances.spec.js` | Several distance metrics for the same sequences: Also Compute offering every metric but the distance metric (and none with GapMM); each chosen metric computed for every pair and kept under its own name, with the values computing it alone gives; filtering links on any of them, each with its own threshold; saved with the session; and, with only links within the threshold kept, each metric keeping those within its own default |
 | `a11y.spec.js` | Accessibility: every control named (color swatches for their rows, as in "G0 color", menus for their labels) and every dialog for its title; the settings panes' tabs wired to their panels; no listbox roles on draggable rows and a mended ARIA tree in tables; and [axe](https://github.com/dequelabs/axe-core) finding nothing against WCAG 2.0 to 2.2 A and AA and its best practices, in light and in dark, in each view with its pane open, the main dialogs (Settings, Save, Stash, Recall, Help, About and its delete confirmation, loading, licence, Sequence Settings and the rest), every view's export dialog, a toast with an action, a view's empty state and the narrow window with the menus open (and in light, the timeline's Play button and the alignment warning's links) |
 | `dark.spec.js` | The interface light or dark as the system is, changing with it: in dark, the menu bar, menus, panel tabs, toolbars, settings panes, multi-selects, floating color tables, dialogs, the threshold histogram and the table views are dark with light text, while the views keep drawing in their own colors |
@@ -66,6 +68,25 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.
+
+A test also fails on any page error, console error, or request that fails or gets a status of
+400 or more, whatever its URL. The one exception is the map tiles, from `basemaps.cartocdn.com`
+and `server.arcgisonline.com` (the only other hosts the app's CSP allows), which some machines
+can't reach. Anything else (a missing worker script, say) is a bug.
+
+### Bench budgets
+
+`bench.spec.js` logs each time it measures (`Benchmark: {...}`) and asserts only the exact
+counts, such as the redraws per change and the edges. The time budgets (20 s to load, 5 s to
+open a view, 30 s for a threshold change) are asserted only with `BENCH_STRICT=1`:
+
+```sh
+BENCH_STRICT=1 npx playwright test test/e2e/bench.spec.js
+```
+
+Software WebGL (CI, or a busy machine) varies too much for an absolute time to fail a build, so
+the budgets are generous and off by default. `MT_PERF_BUDGET=1` holds the threshold change to
+2 s, for a machine with a GPU.
 
 When a view moves onto the settings store and `MT.registerView` (see `src/settings.js`,
 `src/binder.js` and the view contract in `src/common.js`), give it a spec like

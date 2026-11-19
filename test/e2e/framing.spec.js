@@ -52,6 +52,8 @@ test('the network stays in view as its layout spreads, clear of the docked table
   });
   // Once first fitted, it stays fitted as the layout keeps spreading
   await expect.poll(framed, { timeout: 5000 }).toBeGreaterThan(0.98);
+  // Sampled over 4 s as the layout spreads: the fit has to hold throughout,
+  // and the lowest sample is the one that counts
   let least = 1;
   for (let i = 0; i < 16; i++) {
     await page.waitForTimeout(250);
