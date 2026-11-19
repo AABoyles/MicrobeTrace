@@ -1,3 +1,4 @@
+/* global registeredTools -- set on window by the specs' page.evaluate calls */
 // WebMCP is opt-in, and asks the user before consequential tools run (src/webmcp.js)
 const { test, expect } = require('@playwright/test');
 const { open, watchErrors, waitForModal } = require('./helpers');
@@ -132,6 +133,7 @@ test.describe('with WebMCP on', () => {
     await expect(page.locator('#webmcp-confirm-deny')).toBeFocused();
     // A script's click is not the user's
     await page.evaluate(() => document.getElementById('webmcp-confirm-allow').click());
+    // Waits to see the dialog stay open, as a click that isn't the user's must not close it
     await page.waitForTimeout(200);
     await expect(dialog(page)).toBeVisible();
     await page.click('#webmcp-confirm-deny');

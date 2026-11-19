@@ -27,8 +27,8 @@
   const isInternal = f => INTERNAL.includes(f) || f[0] == '_';
 
   const isEmpty = W.isEmpty;
-  const clip = (s, n) => typeof s == 'string' && n && s.length > n ? s.slice(0, n) + '…(' + s.length + ' long)' : s;
-  const round = (x, d = 6) => typeof x == 'number' && isFinite(x) ? Math.round(x * 10 ** d) / 10 ** d : x;
+  const clip = (s, n) => typeof s === 'string' && n && s.length > n ? s.slice(0, n) + '…(' + s.length + ' long)' : s;
+  const round = (x, d = 6) => typeof x === 'number' && isFinite(x) ? Math.round(x * 10 ** d) / 10 ** d : x;
   const label = v => v === undefined || v === null || v === '' ? '(Empty)' : Array.isArray(v) ? v.join(', ') : v instanceof Date ? v.toISOString() : '' + v;
 
   // Shared schema pieces ----------------------------------------------------
@@ -72,7 +72,7 @@
       }
       out[f] = v === undefined ? null : v instanceof Date ? v.toISOString() : v;
     });
-    if ((!fields || !fields.length || fields.includes('seq_length')) && sequences == 'none') out.seq_length = typeof node.seq == 'string' ? node.seq.length : 0;
+    if ((!fields || !fields.length || fields.includes('seq_length')) && sequences == 'none') out.seq_length = typeof node.seq === 'string' ? node.seq.length : 0;
     return out;
   }
 
@@ -160,7 +160,7 @@
 
   // Applies filter and sort (reading only the fields they need), returning edges
   function filterSortEdges(edges, args) {
-    const conditions = args.filter || [], by = args.sort ? [].concat(args.sort).map(s => typeof s == 'string' ? { field: s } : s) : [];
+    const conditions = args.filter || [], by = args.sort ? [].concat(args.sort).map(s => typeof s === 'string' ? { field: s } : s) : [];
     if (!conditions.length && !by.length) return edges;
     const read = linkReader();
     const fields = Array.from(new Set(conditions.map(c => c.field).concat(by.map(s => s.field))));
@@ -258,21 +258,21 @@
   function inferType(values, field) {
     if (field == 'seq') return 'sequence';
     if (!values.length) return 'empty';
-    if (values.every(v => typeof v == 'boolean')) return 'boolean';
+    if (values.every(v => typeof v === 'boolean')) return 'boolean';
     if (values.some(v => Array.isArray(v))) return 'list';
-    if (values.every(v => typeof v == 'number' && isFinite(v))) return 'numeric';
+    if (values.every(v => typeof v === 'number' && isFinite(v))) return 'numeric';
     if (values.every(v => MT_().isDate(v))) return 'date';
-    if (values.every(v => typeof v == 'string' && v.trim() !== '' && isFinite(+v)) && values.length > 1) return 'numeric-text';
+    if (values.every(v => typeof v === 'string' && v.trim() !== '' && isFinite(+v)) && values.length > 1) return 'numeric-text';
     const distinct = new Set(values).size;
     return distinct <= 20 ? 'categorical' : 'text';
   }
 
   function summarizeValues(values, { field, top = 20, bins = 10 } = {}) {
-    let present = values.filter(v => !isEmpty(v) && !(typeof v == 'string' && v === 'null'));
+    let present = values.filter(v => !isEmpty(v) && !(typeof v === 'string' && v === 'null'));
     // Saturated distances are Infinity (#281): they'd make the field non-numeric
     // and the histogram infinitely wide, so they're counted apart
-    const infinite = present.filter(v => typeof v == 'number' && (v === Infinity || v === -Infinity)).length;
-    if (infinite) present = present.filter(v => !(typeof v == 'number' && (v === Infinity || v === -Infinity)));
+    const infinite = present.filter(v => typeof v === 'number' && (v === Infinity || v === -Infinity)).length;
+    if (infinite) present = present.filter(v => !(typeof v === 'number' && (v === Infinity || v === -Infinity)));
     const type = inferType(present, field);
     const out = { type, count: present.length, empty: values.length - present.length - infinite };
     if (infinite) out.infinite = infinite;
@@ -334,7 +334,7 @@
       const k = JSON.stringify(v);
       if (seen.has(k)) continue;
       seen.add(k);
-      out.push(typeof v == 'string' ? clip(v, 40) : v instanceof Date ? v.toISOString() : v);
+      out.push(typeof v === 'string' ? clip(v, 40) : v instanceof Date ? v.toISOString() : v);
       if (out.length >= n) break;
     }
     return out;
@@ -445,7 +445,7 @@
       const rows = fields.map(field => {
         const { values, items, sampled } = fieldValues(entity, field, { visibleOnly, limit: sampleLimit });
         const present = values.filter(v => !isEmpty(v));
-        const distinct = field == 'seq' ? present.length : new Set(present.map(v => typeof v == 'object' ? JSON.stringify(v) : v)).size;
+        const distinct = field == 'seq' ? present.length : new Set(present.map(v => typeof v === 'object' ? JSON.stringify(v) : v)).size;
         const row = { field, type: inferType(present, field), nonEmpty: present.length, distinct, internal: isInternal(field), examples: field == 'seq' ? [] : examples(present) };
         if (sampled) row.sampled = true;
         return row;
@@ -895,7 +895,7 @@
         computed = true;
       }
       if (!t || !t.tree) return { newick: null, leaves: 0, computed, note: 'No tree has been computed.' };
-      const newick = typeof t.tree.toNewick == 'function' ? t.tree.toNewick() : String(t.tree);
+      const newick = typeof t.tree.toNewick === 'function' ? t.tree.toNewick() : String(t.tree);
       return { newick, leaves: (newick.match(/[,]/g) || []).length + 1, computed };
     }
   });
@@ -917,7 +917,7 @@
     },
     annotations: RO,
     execute: async args => {
-      const nodes = selectNodes(args).filter(n => typeof n.seq == 'string' && n.seq);
+      const nodes = selectNodes(args).filter(n => typeof n.seq === 'string' && n.seq);
       const result = page(nodes, { offset: args.offset, limit: args.limit == null ? 25 : args.limit });
       const items = result.items.map(n => ({ _id: n._id, seq: args.maxLength ? n.seq.slice(0, args.maxLength) : n.seq }));
       if (args.format == 'fasta') {
@@ -937,7 +937,7 @@
     inputSchema: { type: 'object', properties: nodeSelectProps },
     annotations: RO,
     execute: async args => {
-      const nodes = selectNodes(args).filter(n => typeof n.seq == 'string' && n.seq);
+      const nodes = selectNodes(args).filter(n => typeof n.seq === 'string' && n.seq);
       if (!nodes.length) fail('None of the chosen nodes has a sequence');
       const consensus = await MT_().computeConsensus(nodes.map(n => ({ _id: n._id, seq: n.seq })));
       return { consensus, length: consensus.length, nodes: nodes.length };

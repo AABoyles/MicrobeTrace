@@ -1,4 +1,4 @@
-// Unit tests for MT.fillSelect in src/common.js (#204): field
+// Unit tests for MT.fillSelect in src/ui.js (#204): field
 // names from loaded files (sessions, HIV-TRACE and GHOST output, which aren't
 // escaped as they load) must reach the variable menus as text, never markup.
 // Run with: npm test
@@ -7,6 +7,7 @@ const assert = require('node:assert');
 const vm = require('vm');
 const fs = require('fs');
 const path = require('path');
+const APP_FILES = require('../app-files.js');
 
 const root = path.join(__dirname, '../..');
 const fixture = name => JSON.parse(fs.readFileSync(path.join(root, 'test/security', name), 'utf8'));
@@ -55,7 +56,7 @@ function load() {
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(root, 'src/common.js'), 'utf8'), ctx);
+  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), ctx, { filename: path.join(root, file) });
   // MT.escape is defined in src/index.js, as the page loads: take it from there
   const escape = fs.readFileSync(path.join(root, 'src/index.js'), 'utf8').match(/const escape = (value => .*);\n/)[1];
   ctx.MT.escape = vm.runInContext('(' + escape + ')', ctx);
@@ -166,7 +167,7 @@ test('IDs are text without surrounding spaces, however they arrive (#219), and a
 test('no menu of fields is built as markup any more', () => {
   // An option whose value or text is interpolated without escaping
   const unsafe = /<option value="(?:'\s*\+|\$\{(?!MT\.escape\(|text\())/;
-  const files = ['src/common.js', 'src/index.js']
+  const files = APP_FILES.concat(['src/index.js'])
     .concat(fs.readdirSync(path.join(root, 'components')).filter(f => /\.(html|js)$/.test(f)).map(f => 'components/' + f));
   const found = [];
   files.forEach(file => fs.readFileSync(path.join(root, file), 'utf8').split('\n').forEach((line, i) => {

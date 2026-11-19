@@ -6,34 +6,37 @@
 
     // The distance matrix and its labels as last drawn (before any inversion),
     // for export
-    let labels = [], matrix = new Float64Array(0), drawing = 0;
+    let labels = [], matrix = new Float64Array(0);
     const missingColor = '#d0d0d0';
     // Plotly draws every cell as an element of its own, so the heatmap stops
     // short of the most nodes MT.getDM could build for (#248)
     const maxNodes = 3000;
+    // The matrix is computed in a worker, shown in the view as it is (#293)
+    const computing = MT.viewComputing(root, 'the distance matrix');
 
-    async function draw() {
+    function draw() {
       const width = MT.viewWidth(root), height = root.clientHeight;
       // A view in a background tab has no size; it draws when it's shown
       if (!width || !height) return;
-      const ticket = ++drawing;
-      let dm;
-      try {
-        dm = await MT.getDM(maxNodes);
-      } catch (error) {
-        if (ticket != drawing) return;
-        // Too many nodes: say so where the heatmap would be
-        console.error(error);
+      // Too many nodes: say so where the heatmap would be
+      const tooLarge = MT.dmTooLargeMessage(maxNodes);
+      if (tooLarge) {
+        computing.stop();
         labels = [];
         matrix = new Float64Array(0);
         if (plot.data) Plotly.purge(plot);
-        plot.textContent = error.message;
+        plot.textContent = tooLarge;
         return;
       }
-      // A newer draw started while this one waited
-      if (ticket != drawing) return;
+      // (A draw that starts while another waits replaces it: see MT.viewComputing)
+      const rowLabels = MT.getDMLabels();
+      computing.run((scope, onProgress) => MT.getDM(maxNodes, { scope, onProgress }), dm => drawMatrix(dm, rowLabels));
+    }
+
+    function drawMatrix(dm, rowLabels) {
+      const width = MT.viewWidth(root), height = root.clientHeight;
       if (!plot.data) plot.textContent = '';
-      labels = MT.getDMLabels();
+      labels = rowLabels;
       matrix = dm;
       const n = labels.length;
       // The nodes' own ids, as categories (numeric ids would make a number line)
@@ -95,7 +98,7 @@
     };
     MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.heatmap-plot'), resize });
     MT.plotExport(root, plot, settings, {
-      csv: filename => MT.saveAs(new Blob([MT.toCSV(table())], { type: 'text/csv;charset=utf-8' }), filename + '.csv'),
+      csv: filename => MT.exportBlob(MT.toCSV(table()), 'text/csv', filename + '.csv'),
       xlsx: filename => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(table()), 'Distances');
@@ -114,7 +117,7 @@
       resize,
       destroy() {
         stop.forEach(fn => fn());
-        drawing++;
+        computing.destroy();
         Plotly.purge(plot);
       }
     };

@@ -1,5 +1,9 @@
   MT.registerView('files', (root, { settings, events }) => {
 
+    // How long the loading dialog may take to open before the load is given up,
+    // and when a long read says it is still working
+    const MODAL_WAIT_MS = 5000, STILL_WORKING_MS = 20000;
+
     const $ = selector => root.querySelector(selector);
     const $$ = selector => Array.from(root.querySelectorAll(selector));
     const get = key => settings.get(key);
@@ -63,7 +67,7 @@
       const row = e.target.closest('.file-table-row');
       if (!row) return;
       e.preventDefault();
-      moveRow(row, e.key == 'ArrowUp' ? -1 : 1);
+      moveRow(row, e.key === 'ArrowUp' ? -1 : 1);
       // (A button that can't go further hands the focus to the other)
       (e.target.disabled ? row.querySelector(e.target.classList.contains('file-move-up') ? '.file-move-down' : '.file-move-up') : e.target).focus();
     });
@@ -263,7 +267,11 @@
         // A table's rows have as many columns as its header: prose (notes, say)
         // doesn't, however its commas fall
         const sample = Papa.parse(file.contents, { delimiter: file.delimiter, preview: 20, skipEmptyLines: true }).data;
-        const tabular = sample.length > 1 && sample.slice(1).filter(r => r.length == sample[0].length).length >= 0.8 * (sample.length - 1);
+        // A file cut off mid-row ends in a short row, which doesn't make it prose
+        // (in a short file, that one row would otherwise be most of the sample)
+        const rows = sample.slice(1);
+        const body = rows.length > 1 && rows[rows.length - 1].length != sample[0].length ? rows.slice(0, -1) : rows;
+        const tabular = sample.length > 1 && body.filter(r => r.length == sample[0].length).length >= 0.8 * body.length;
         Papa.parse(file.contents, {
           delimiter: file.delimiter,
           header: true,
@@ -514,7 +522,7 @@
       const button = row.querySelector('button');
       button.addEventListener('click', () => {
         const excluded = session.data.nodeExclusions;
-        if (button.textContent == 'Exclude') {
+        if (button.textContent === 'Exclude') {
           excluded.push(id);
           button.classList.replace('btn-warning', 'btn-success');
           button.textContent = 'Include';
@@ -559,7 +567,7 @@
       const check = name => modal.querySelector(`[name="audit-${name}"]`).checked;
       audited.innerHTML = '';
       auditSequences(data, check).forEach(({ id, type }) => logAudit(id, type));
-      console.log('Sequence Auditing time:', (Date.now() - start).toLocaleString(), 'ms');
+      MT.time('Sequence Auditing', start);
     }));
 
     $('.audit-toggle-all').addEventListener('click', () => $$('.audit-exclude').forEach(b => b.click()));
@@ -625,9 +633,7 @@
 
     // Autostashing is kept by the browser
     $$('input[name="stash-auto"]').forEach(input => input.addEventListener('change', () => {
-      if (!input.checked) return;
-      db.setItem('stash-auto', input.value);
-      if (input.value == 'false' && temp.autostash) clearInterval(temp.autostash.interval);
+      if (input.checked) MT.setAutostash(input.value == 'true');
     }));
     db.getItem('stash-auto').then(autostash => {
       if (autostash == 'true') $('input[name="stash-auto"][value="true"]').click();
@@ -673,7 +679,7 @@
           resolve('done');
         }, { once: true });
         bootstrap.Modal.getOrCreateInstance(loading, { backdrop: false, keyboard: false }).show();
-        setTimeout(() => reject(new Error('Problem loading information modal!')), 5000);
+        setTimeout(() => reject(new Error('Problem loading information modal!')), MODAL_WAIT_MS);
       }).then(
         () => launch(),
         error => { console.error(error); MT.toast.error('The information window did not open, so the files are loading anyway. If anything looks wrong, reload the page and try again.'); launch(); } // the information dialog didn't open
@@ -725,7 +731,7 @@
       MT.progress('Reading the files');
       temp.messageTimeout = setTimeout(() => {
         MT.toast.info('Still working. Large sets of sequences can take several minutes to align and compare. Cancel in the loading dialog stops the work and keeps your files listed.', 15);
-      }, 20000);
+      }, STILL_WORKING_MS);
 
       const check = session.files.length > 1;
 
@@ -795,7 +801,7 @@
 
         // An empty file is said to be, not loaded as nothing (#222)
         const contents = file.contents;
-        if (contents == null || (typeof contents == 'string' ? contents.trim() === '' : contents.byteLength === 0)) {
+        if (contents == null || (typeof contents === 'string' ? contents.trim() === '' : contents.byteLength === 0)) {
           return fail(file, kindName[file.format] || 'a network file', 'the file is empty');
         }
 
@@ -819,7 +825,7 @@
               }, check, source);
             }
             seen.forEach(id => taken.add(id));
-            console.log('FASTA Merge time:', (Date.now() - start).toLocaleString(), 'ms');
+            MT.time('FASTA Merge', start);
             message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
             parsed();
           }).catch(error => fail(file, 'FASTA', error));
@@ -896,7 +902,7 @@
                 }, true, source);
               });
             }
-            console.log('Link Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+            MT.time('Link Excel Parse', start);
             message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
             parsed();
 
@@ -926,7 +932,7 @@
                   }, true, source);
                 });
               }
-              console.log('Link CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+              MT.time('Link CSV Parse', start);
               message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
               parsed();
             }).catch(error => fail(file, 'a link list', error));
@@ -960,7 +966,7 @@
               m += MT.addNode(safeNode, check, source);
             });
             seen.forEach(id => taken.add(id));
-            console.log('Node Excel Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+            MT.time('Node Excel Parse', start);
             message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
             parsed();
 
@@ -994,7 +1000,7 @@
               },
               complete: () => {
                 seen.forEach(id => taken.add(id));
-                console.log('Node CSV Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+                MT.time('Node CSV Parse', start);
                 message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
                 parsed();
               }
@@ -1056,7 +1062,7 @@
               links++;
             }
           }
-          console.log('Newick Tree Parse time:', (Date.now() - start).toLocaleString(), 'ms');
+          MT.time('Newick Tree Parse', start);
           message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
           message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
           labels.forEach(id => linked.add(MT.cleanID(id)));
@@ -1076,7 +1082,7 @@
         const unmatched = taken.size ? Array.from(linked).filter(id => !taken.has(id)).length : 0;
         const plural = (n, one, many) => n.toLocaleString() + ' ' + (n == 1 ? one : many);
         const notes = [];
-        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the last row's values are kept)`);
+        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the first row's values are kept, and later rows fill in its blanks)`);
         if (report.blanks) notes.push(`${plural(report.blanks, 'row with a blank ID was', 'rows with a blank ID were')} skipped`);
         if (report.selfLinks) notes.push(`${plural(report.selfLinks, 'link from a node to itself was', 'links from a node to itself were')} dropped`);
         if (report.repeatedLinks) notes.push(`${plural(report.repeatedLinks, 'link repeated', 'links repeated')} a pair of nodes already linked (in either direction), so overwrote its values`);
@@ -1135,7 +1141,7 @@
           for (let j = 0; j < m; j++) {
             Object.assign(subset[j], output[j]);
           }
-          console.log("Alignment Merge time: ", (Date.now() - start).toLocaleString(), "ms");
+          MT.time('Alignment Merge', start);
           reportLengths(MT.lengthWarnings(output.fit));
         } else {
           reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));

@@ -1,6 +1,7 @@
-// Unit tests for the order of MT.runHamsters in src/common.js (#233).
+// Unit tests for the order of MT.runHamsters in src/links-clusters.js (#233).
 // Run with: npm test
 const test = require('node:test');
+const APP_FILES = require('../app-files.js');
 const assert = require('node:assert');
 const vm = require('vm');
 const fs = require('fs');
@@ -26,7 +27,7 @@ function load({ directionality = true, tree = null, failTree = false } = {}) {
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx);
+  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(__dirname, '../../' + file), 'utf8'), ctx, { filename: path.join(__dirname, '../../' + file) });
   const MT = ctx.MT, log = [], warnings = [];
   ctx.session = { style: { widgets: { 'infer-directionality-false': !directionality } } };
   ctx.temp = { tree };
@@ -90,7 +91,7 @@ function bare() {
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx);
+  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(__dirname, '../../' + file), 'utf8'), ctx, { filename: path.join(__dirname, '../../' + file) });
   ctx.session = { style: { widgets: {} } };
   ctx.temp = {};
   return ctx;
@@ -146,7 +147,7 @@ test('computeDirectionality rejects, rather than hanging, when its worker throws
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8'), ctx);
+  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(__dirname, '../../' + file), 'utf8'), ctx, { filename: path.join(__dirname, '../../' + file) });
   let terminated = false;
   ctx.Worker = class {
     postMessage() { setTimeout(() => this.onerror(new Error('too deep')), 1); }

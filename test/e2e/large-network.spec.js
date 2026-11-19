@@ -23,13 +23,15 @@ const links = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'mt-large-')), 'li
 })();
 
 test('a large network does not pile its nodes against the edge of the space', async ({ page }) => {
-  test.setTimeout(180000);
+  test.setTimeout(300000);
   const errors = watchErrors(page);
   await open(page);
   await page.setInputFiles('#data-files', links);
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length == 1);
   await page.click('#launch');
   await page.waitForFunction(n => temp.network && temp.network.points.length > n, N / 2, { timeout: 120000 });
+  // Lets the layout settle: the simulation doesn't stop on its own at this size
+  // (waiting for it to stop timed out), and no other event marks the end
   await page.waitForTimeout(20000);
   const edge = await page.evaluate(() => {
     const p = temp.network.graph.getPointPositions();

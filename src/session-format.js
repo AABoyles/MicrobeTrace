@@ -11,7 +11,7 @@
 
   const CURRENT_VERSION = 1;
 
-  const isObject = v => v !== null && typeof v == 'object' && !Array.isArray(v);
+  const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 
   // Returns { ok: true, version } or { ok: false, error: 'message for the user' }
   function validate(session) {

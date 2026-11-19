@@ -1,4 +1,4 @@
-// Unit tests for the export helpers in src/common.js (#230): CSV cells that
+// Unit tests for the export helpers in src/export.js (#230): CSV cells that
 // look like formulae are escaped, columns are the union of every row's keys,
 // and a null image Blob is reported rather than thrown.
 // Run with: npm test
@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const Papa = require('papaparse');
 
-const src = fs.readFileSync(path.join(__dirname, '../../src/common.js'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, '../../src/export.js'), 'utf8');
 const start = src.indexOf('MT.toCSV = ');
 const end = src.indexOf('// Loads an image, crossOrigin');
 assert.ok(start > 0 && end > start);

@@ -3,7 +3,7 @@
     const $ = selector => root.querySelector(selector);
     const lists = { clusters: $('.waterfall-clusters'), nodes: $('.waterfall-nodes'), links: $('.waterfall-links') };
     const meta = ['index', 'id', 'visible', 'degree', '_diff', 'seq', 'cluster', 'directed', 'source', 'target'];
-    const format = value => typeof value == 'number' ? value.toLocaleString() : value;
+    const format = value => typeof value === 'number' ? value.toLocaleString() : value;
     const details = item => Object.keys(item).filter(k => !meta.includes(k)).map(k => MT.escape(MT.titleize(k) + ': ' + format(item[k]))).join('<br>');
 
     root.style.overflowY = 'scroll';

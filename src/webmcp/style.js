@@ -13,12 +13,8 @@
   const W = () => self.session.style.widgets;
   const events = () => self.MT.events;
   const readOnly = { readOnlyHint: true };
-  const obj = (properties, required) => ({ type: 'object', properties, required: required || [] });
-  const str = description => ({ type: 'string', description });
-  const num = (description, extra) => Object.assign({ type: 'number', description }, extra);
-  const bool = description => ({ type: 'boolean', description });
+  const { obj, str, num, bool, same } = T.schema;
   const strList = description => ({ type: 'array', items: { type: 'string' }, description });
-  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
   // Data helpers --------------------------------------------------------------
 
@@ -45,7 +41,7 @@
       const v = d[field];
       if (v === null || v === undefined || v === '') continue;
       n++;
-      if (typeof v == 'number' || (typeof v == 'string' && v.trim() !== '' && !isNaN(+v))) numeric++;
+      if (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && !isNaN(+v))) numeric++;
     }
     return n > 0 && numeric / n > 0.5;
   }
@@ -124,7 +120,7 @@
         info = { control: null, label: labelFor(el), view: viewOf(el) };
         out.set(key, info);
       }
-      if (el.tagName == 'SELECT') {
+      if (el.tagName === 'SELECT') {
         info.control = el.multiple ? 'multiselect' : 'select';
         info.options = Array.from(el.options).map(o => ({ value: o.value, label: o.textContent.replace(/\s+/g, ' ').trim() }));
       } else if (el.type == 'radio') {
@@ -163,17 +159,17 @@
     const c = ctl.get(key);
     const bad = msg => fail(key + ': ' + msg);
     if (ref === null || ref === undefined) return { value, warnings };
-    if (typeof ref == 'boolean') {
+    if (typeof ref === 'boolean') {
       if (value === 'true') value = true;
       else if (value === 'false') value = false;
       if (typeof value != 'boolean') bad('expected true or false, got ' + JSON.stringify(value));
-    } else if (typeof ref == 'number') {
-      if (typeof value == 'string' && value.trim() !== '' && !isNaN(+value)) value = +value;
+    } else if (typeof ref === 'number') {
+      if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) value = +value;
       if (typeof value != 'number' || !isFinite(value)) bad('expected a number, got ' + JSON.stringify(value));
       if (c && c.min !== undefined && value < c.min) warnings.push(key + ' ' + value + ' is below the control\'s minimum of ' + c.min);
       if (c && c.max !== undefined && value > c.max) warnings.push(key + ' ' + value + ' is above the control\'s maximum of ' + c.max);
-    } else if (typeof ref == 'string') {
-      if (/tooltip-variable$/.test(key) && Array.isArray(value) && value.every(v => typeof v == 'string')) {
+    } else if (typeof ref === 'string') {
+      if (/tooltip-variable$/.test(key) && Array.isArray(value) && value.every(v => typeof v === 'string')) {
         // (multi-field tooltips)
       } else {
         if (typeof value != 'string') bad('expected text, got ' + JSON.stringify(value));
@@ -184,7 +180,7 @@
       }
     } else if (Array.isArray(ref)) {
       if (!Array.isArray(value)) bad('expected a list');
-    } else if (typeof ref == 'object') {
+    } else if (typeof ref === 'object') {
       if (typeof value != 'object' || value === null || Array.isArray(value)) bad('expected an object');
     }
     return { value, warnings };
@@ -431,9 +427,7 @@
     inputSchema: obj({}),
     execute: async () => {
       T.requireData();
-      const button = document.getElementById('RevealAllTab');
-      if (!button) fail('The Show All Hidden control is not available');
-      button.click();
+      self.MT.revealAll();
       return { counts: counts() };
     }
   });
@@ -461,7 +455,7 @@
     let n = 0;
     for (const d of nodes()) {
       const v = d[f];
-      if (typeof v == 'string' && isNaN(+v) && self.MT.parseDate(v) && ++n >= 2) return true;
+      if (typeof v === 'string' && isNaN(+v) && self.MT.parseDate(v) && ++n >= 2) return true;
     }
     return false;
   });
@@ -530,9 +524,8 @@
     inputSchema: obj({ action: { type: 'string', enum: ['play', 'pause'] } }, ['action']),
     execute: async ({ action }) => {
       if (W()['node-timeline-variable'] == 'None') fail('The timeline is not on. Use set_timeline with a date field first');
-      const button = document.getElementById('timeline-play-button');
-      const playing = button.textContent == 'Pause';
-      if ((action == 'play') != playing) button.click();
+      if (typeof self.MT.setTimelinePlaying != 'function') fail('The timeline is not drawn yet. Use set_timeline with a date field first');
+      self.MT.setTimelinePlaying(action == 'play');
       return timelineState();
     }
   });
@@ -681,8 +674,8 @@
       const set = new Set();
       nodes().forEach(d => {
         const v = d[field];
-        if (typeof v == 'string') { if (re.test(T.regexInput(v))) set.add(d); }
-        else if (typeof v == 'number') { if (v + '' == args.query) set.add(d); }
+        if (typeof v === 'string') { if (re.test(T.regexInput(v))) set.add(d); }
+        else if (typeof v === 'number') { if (v + '' == args.query) set.add(d); }
       });
       const changed = applySelection(set, mode);
       return Object.assign({ field, query: args.query, matched: set.size, changed }, selectionSummary());
@@ -794,7 +787,7 @@
   }
 
   function refreshTable(kind) {
-    if (typeof self.MT.showColorTable == 'function') self.MT.showColorTable(kind);
+    if (typeof self.MT.showColorTable === 'function') self.MT.showColorTable(kind);
     else events().emit(kind + '-color-change');
   }
 

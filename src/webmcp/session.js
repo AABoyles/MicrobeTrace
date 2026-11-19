@@ -8,13 +8,12 @@
   // view, components/files.html, provides while it is open.)
 
   const { define, fail, waitFor, nextEvent, requireData } = self.MTWebMCP;
+  const { obj, str, bool, num } = self.MTWebMCP.schema;
 
   // Small helpers -----------------------------------------------------------------
 
-  const obj = (properties, required) => Object.assign({ type: 'object', properties }, required ? { required } : {});
-  const str = (description, extra) => Object.assign({ type: 'string', description }, extra);
-  const bool = (description, def) => ({ type: 'boolean', description, default: def });
-  const num = (description, extra) => Object.assign({ type: 'number', description }, extra);
+  // How long a tool waits for the Files view to open, once it is asked to
+  const FILES_VIEW_WAIT_MS = 20000;
   const timeoutSchema = def => ({ type: 'integer', minimum: 1000, description: 'Milliseconds to wait for the network to finish loading before giving up (default ' + def + ')', default: def });
 
   const FORMATS = ['link', 'node', 'matrix', 'fasta', 'newick'];
@@ -38,7 +37,7 @@
   async function filesView() {
     if (!self.MT.filesView) {
       self.MT.launchView('files');
-      await waitFor(() => self.MT.filesView, { timeout: 20000, message: 'The Files view did not open' });
+      await waitFor(() => self.MT.filesView, { timeout: FILES_VIEW_WAIT_MS, message: 'The Files view did not open' });
     }
     return self.MT.filesView;
   }
@@ -636,10 +635,7 @@
     const MT = self.MT;
     if (format == 'microbetracestyle') return JSON.stringify(self.session.style);
     if (!dataLoaded()) fail('No data is loaded, so there is nothing to save. Load data first.');
-    if (format == 'hivtrace') return MT.exportHIVTRACE();
-    // The network's positions are on the GPU until synced (see MT.syncLayout)
-    if (MT.syncLayout) MT.syncLayout();
-    return JSON.stringify(self.session);
+    return MT.sessionText(format);
   }
 
   const formatSchema = { type: 'string', enum: ['microbetrace', 'microbetracestyle', 'hivtrace'], default: 'microbetrace', description: 'microbetrace: the whole session (data, style, layout); microbetracestyle: only the style/settings; hivtrace: HIV-TRACE-style output of the visible network' };
@@ -672,26 +668,11 @@
     annotations: { consequentialHint: true },
     confirm: args => args.download ? 'Download the session (' + (args.format || 'microbetrace') + ') as a file' + (args.filename ? ' named ' + quote(args.filename) : '') + ' to this computer.' : null,
     execute: async (args) => {
-      const MT = self.MT, format = args.format || 'microbetrace';
+      const format = args.format || 'microbetrace';
       const data = sessionText(format);
       const result = { format, characters: data.length };
-      if (args.download) {
-        let name = args.filename;
-        if (!name) {
-          const input = document.getElementById('save-file-name');
-          name = input && input.value || 'MicrobeTrace-' + new Date().toISOString().slice(0, 10);
-        }
-        if (args.compress) {
-          const zip = new self.JSZip();
-          zip.file(name + '.' + format, data);
-          const content = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
-          MT.saveAs(content, name + '.zip');
-          result.downloaded = name + '.zip';
-        } else {
-          MT.saveAs(new Blob([data], { type: 'application/json;charset=utf-8' }), name + '.' + format);
-          result.downloaded = name + '.' + format;
-        }
-      }
+      // The Save dialog's name unless given
+      if (args.download) result.downloaded = await self.MT.saveSession({ format, name: args.filename, compress: !!args.compress, data });
       if (args.returnContents !== false) result.contents = data;
       return result;
     }
@@ -711,7 +692,7 @@
     execute: async (args) => {
       if (args.confirm !== true) fail('This discards all loaded data and settings. Pass confirm: true to proceed (stash_session or save_session first to keep it).');
       self.MT.reset();
-      await waitFor(() => self.MT.filesView, { timeout: 20000, message: 'The Files view did not open' });
+      await waitFor(() => self.MT.filesView, { timeout: FILES_VIEW_WAIT_MS, message: 'The Files view did not open' });
       return { reset: true, hint: 'Add files with add_file, or load_demo / generate_sequences / open_session.' };
     }
   });
@@ -829,10 +810,7 @@
     // Turning it off stores less, so only turning it on asks
     confirm: args => args.enabled ? 'Turn autostash on: every session loaded from now on would be saved in this browser each minute, until it is turned off.' : null,
     execute: async (args) => {
-      await self.db.setItem('stash-auto', args.enabled ? 'true' : 'false');
-      if (!args.enabled && self.temp && self.temp.autostash) clearInterval(self.temp.autostash.interval);
-      const radio = document.querySelector('input[name="stash-auto"][value="' + (args.enabled ? 'true' : 'false') + '"]');
-      if (radio && !radio.checked) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
+      self.MT.setAutostash(args.enabled);
       return { autostash: !!args.enabled };
     }
   });

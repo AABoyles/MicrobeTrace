@@ -11,7 +11,7 @@
 
   // Two-digit years: 00 to 69 are 2000 to 2069, and 70 to 99 are 1970 to 1999
   // (the pivot spreadsheets use). Four-digit years are as written.
-  const fullYear = text => text.length == 2 ? (+text < 70 ? 2000 : 1900) + +text : +text;
+  const fullYear = text => text.length === 2 ? (+text < 70 ? 2000 : 1900) + +text : +text;
 
   // A local time on a day, or null if the day doesn't exist (31 April, or 29
   // February in a common year)
@@ -29,7 +29,7 @@
     const [, p1, , p2, p3] = m;
     const time = [m[5], m[6], m[7]].map(t => +(t || 0));
     if (time[0] > 23 || time[1] > 59 || time[2] > 59) return null;
-    if (p1.length == 4) return p3.length <= 2 ? { yearFirst: true, year: +p1, first: +p2, second: +p3, time } : null;
+    if (p1.length === 4) return p3.length <= 2 ? { yearFirst: true, year: +p1, first: +p2, second: +p3, time } : null;
     if (p1.length > 2 || (p3.length != 2 && p3.length != 4)) return null;
     return { yearFirst: false, year: fullYear(p3), first: +p1, second: +p2, time };
   }
@@ -51,7 +51,7 @@
   function dateOrderOf(values) {
     let dayFirst = 0, monthFirst = 0, ambiguous = 0;
     for (const value of values) {
-      const parts = typeof value == 'string' ? numericParts(value.trim()) : null;
+      const parts = typeof value === 'string' ? numericParts(value.trim()) : null;
       if (!parts || parts.yearFirst) continue;
       const { first, second } = parts;
       if (first > 12 && second <= 12) dayFirst++;
@@ -73,7 +73,7 @@
   function parseDate(value, order = 'mdy') {
     if (value == null || value === '') return null;
     let time;
-    if (value instanceof Date || typeof value == 'number') {
+    if (value instanceof Date || typeof value === 'number') {
       time = new Date(value);
     } else {
       const text = String(value).trim();

@@ -104,8 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  self.temp = MT.tempSkeleton();
-  self.session = MT.sessionSkeleton();
+  MT.resetSession();
   MT.createLayout();
 
   const settings = MT.settings, events = MT.events;
@@ -300,30 +299,38 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   MT.defaultFilename(byId("save-file-name"));
-  on("save-data", "click", () => {
-    const format = byId("save-file-format").value;
-    // An empty or hidden-file name, or a typed extension, is put right
-    const name = MT.cleanFilename(byId("save-file-name").value, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
-    let data;
-    if (format == "microbetracestyle") {
-      data = JSON.stringify(session.style);
-    } else if (format == "hivtrace") {
-      data = MT.exportHIVTRACE();
-    } else {
-      MT.syncLayout();
-      data = JSON.stringify(session);
-    }
-    const saved = file => MT.toast.success("Saved as " + MT.escape(file));
-    if (byId("save-file-compress").checked) {
+
+  // The text a save writes, in one of the Save dialog's formats
+  MT.sessionText = format => {
+    if (format == "microbetracestyle") return JSON.stringify(session.style);
+    if (format == "hivtrace") return MT.exportHIVTRACE();
+    MT.syncLayout();
+    return JSON.stringify(session);
+  };
+
+  // Saves data (by default the session in format) as name.format, or name.zip
+  // when compress is on. An empty or hidden-file name, or a typed extension, is
+  // put right; with no name, the Save dialog's file name is used. Resolves to the
+  // file's name. (WebMCP's save_session saves through this too.)
+  MT.saveSession = async ({ format = "microbetrace", name, compress = false, data = MT.sessionText(format) } = {}) => {
+    const file = MT.cleanFilename(name === undefined ? byId("save-file-name").value : name, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
+    if (compress) {
       const zip = new JSZip();
-      zip.file(name + "." + format, data);
-      zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } })
-        .then(content => { MT.saveAs(content, name + ".zip"); saved(name + ".zip"); },
-          error => { console.error(error); MT.toast.error("The file couldn't be compressed. Try again with \"Compress the file\" unticked."); });
-    } else {
-      MT.saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), name + "." + format);
-      saved(name + "." + format);
+      zip.file(file + "." + format, data);
+      const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } });
+      MT.saveAs(content, file + ".zip");
+      return file + ".zip";
     }
+    MT.exportBlob(data, 'application/json', file + "." + format);
+    return file + "." + format;
+  };
+
+  on("save-data", "click", () => {
+    const compress = byId("save-file-compress").checked;
+    MT.saveSession({ format: byId("save-file-format").value, compress }).then(file => MT.toast.success("Saved as " + MT.escape(file)), error => {
+      console.error(error);
+      MT.toast.error(compress ? "The file couldn't be compressed. Try again with \"Compress the file\" unticked." : "The file couldn't be saved.");
+    });
   });
 
   // File > Open: a button (it can take focus) that opens the file input's picker
@@ -632,13 +639,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  on("RevealAllTab", "click", () => {
+  // Settings > Filtering > Show All Hidden (and WebMCP's reveal_all)
+  MT.revealAll = () => {
     settings.set("cluster-minimum-size", 1);
     MT.setClusterVisibility();
     MT.setNodeVisibility();
     MT.setLinkVisibility();
     MT.updateStatistics();
-  });
+  };
+  on("RevealAllTab", "click", () => MT.revealAll());
 
   // The network statistics -----------------------------------------------------
 
@@ -708,7 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .append("td")
       .each(function(d) {
         const cell = d3.select(this);
-        if (d.value !== null && typeof d.value == "object" && "swatch" in d.value) {
+        if (d.value !== null && typeof d.value === "object" && "swatch" in d.value) {
           cell.append("div")
             .style("margin-left", "5px")
             .style("width", "40px")
@@ -739,8 +748,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const sortLink = (key, other) => {
       const a = MT.sortButton();
       a.addEventListener("click", () => {
-        session.style.widgets[widget(other + "-sort")] = "";
-        session.style.widgets[widget(key + "-sort")] = get(widget(key + "-sort")) === "ASC" ? "DESC" : "ASC";
+        settings.set(widget(other + "-sort"), "");
+        settings.set(widget(key + "-sort"), get(widget(key + "-sort")) === "ASC" ? "DESC" : "ASC");
         showColorTable(kind);
       });
       return a;
@@ -851,12 +860,40 @@ document.addEventListener("DOMContentLoaded", () => {
     MT.floatingTable(wrapper, byId(kind + "-color-table-context"), {
       onHide: () => settings.set(kind + "-color-table-show", false),
       onCounts: toggle(kind + "-color-table-counts"),
-      onFrequencies: toggle(kind + "-color-table-frequencies")
+      onFrequencies: toggle(kind + "-color-table-frequencies"),
+      onSelect: kind == "node" ? selectNodesOfRow : undefined
     });
     settings.subscribe(kind + "-color-variable", () => showColorTable(kind));
     settings.subscribe(kind + "-color-table-show", show => {
       wrapper.style.display = show && get(kind + "-color-variable") != "None" ? "block" : "none";
     }, { reload: true });
+  });
+
+  // Selects the visible nodes whose color value is a row's value, in place of
+  // the selection (#295): the menu's Select These Nodes, for keyboard users too.
+  // The selection's announcement comes from node-selected, as for any change.
+  function selectNodesOfRow(cell) {
+    if (!cell) return MT.announce("Choose a value in the table first.");
+    const variable = get("node-color-variable"), value = cell.dataset.value;
+    session.data.nodes.forEach(d => { d.selected = !!d.visible && String(d[variable]) === value; });
+    events.emit("node-selected");
+  }
+
+  // A categorical node color with more values than a few is hard to tell apart
+  // by color alone, so once per variable (#294) the page suggests showing it as
+  // shapes too, in a toast the user can take or leave. Only when the variable is
+  // chosen, not when a session that already has it is opened.
+  const shapeSuggested = new Set();
+  settings.subscribe("node-color-variable", variable => {
+    if (variable == "None" || shapeSuggested.has(variable) || get("node-symbol-variable") != "None") return;
+    const values = new Set(session.data.nodes.filter(d => d.visible).map(d => String(d[variable]))).size;
+    // (Up to six values, or seven with (Empty), are still told apart by color)
+    if (values <= 6) return;
+    shapeSuggested.add(variable);
+    const name = MT.escape(MT.titleize(variable));
+    MT.toast.info(`${values.toLocaleString()} values of ${name} are hard to tell apart by color alone. Show ${name} as shapes too?`,
+      taken => { if (taken && get("node-color-variable") == variable) settings.set("node-symbol-variable", variable); },
+      { action: "Show as shapes" });
   });
 
   // The colors ----------------------------------------------------------------
@@ -902,6 +939,7 @@ document.addEventListener("DOMContentLoaded", () => {
       d3.select('#global-timeline svg').remove();
       clearInterval(session.timeline);
       MT.scrubTimeline = null;
+      MT.setTimelinePlaying = null;
       const pin = document.getElementById("pinbutton");
       let loadingJsonFile = previous == variable;
       if (previous != 'None' && !loadingJsonFile) {
@@ -913,10 +951,12 @@ document.addEventListener("DOMContentLoaded", () => {
           MT.updateStatistics();
         }
       }
-      session.style.widgets["node-timeline-variable"] = variable;
+      // Already stored when the change came from the setting itself, so this notifies
+      // only when showTimeline is called directly with another variable
+      settings.set("node-timeline-variable", variable);
       if (variable == "None") {
         document.getElementById("global-timeline-field").innerHTML = "";
-        session.style.widgets["timeline-date-field"] = 'None'  
+        settings.set("timeline-date-field", 'None');
         showTimelineBar(false);
         if (pin) pin.disabled = false;
         if(pin && !session.network.timelinePinned) {
@@ -1040,19 +1080,22 @@ document.addEventListener("DOMContentLoaded", () => {
           .attr("x", targetValue)
           .text(handleDateFormat(endDate))
           .attr("transform", "translate(0," + (-20) + ")")
-      playButton
-        .on("click", function() {
-          var button = d3.select(this);  
-          if (button.text() == "Pause") {
-            button.text("Play"); 
-            clearInterval(session.timeline);
-          } else {
-            button.text("Pause");
-            // From the start again, once it's reached the end
-            if (currentValue >= targetValue) currentValue = 0;
-            session.timeline = setInterval(step, 200);
-          }
-        })
+      const togglePlayback = () => {
+        if (playButton.text() == "Pause") {
+          playButton.text("Play");
+          clearInterval(session.timeline);
+        } else {
+          playButton.text("Pause");
+          // From the start again, once it's reached the end
+          if (currentValue >= targetValue) currentValue = 0;
+          session.timeline = setInterval(step, 200);
+        }
+      };
+      playButton.on("click", togglePlayback);
+      // Plays or pauses the animation, as the Play button does (WebMCP's control_timeline_playback)
+      MT.setTimelinePlaying = play => {
+        if (play != (playButton.text() == "Pause")) togglePlayback();
+      };
       function step() { 
         update(x.invert(currentValue));
         if (currentValue > targetValue) { 
@@ -1063,9 +1106,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         currentValue = currentValue + (targetValue/151);
       }
-      session.style.widgets["timeline-date-field"] = field;
       session.state.timeStart = startDate;
       session.state.timeTarget = x.invert(targetValue);
+      // After the times above, so that any redraw this causes sees them
+      settings.set("timeline-date-field", field);
       if (loadingJsonFile && MT.parseDate(session.state.timeEnd) < MT.parseDate(session.state.timeTarget)) {
         let t = MT.parseDate(session.state.timeEnd);
         currentValue = x(t);
@@ -1186,17 +1230,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const open = results.style.display == "block";
     const items = options().filter(li => !li.classList.contains("no-matches"));
     const at = items.findIndex(li => li.classList.contains("active"));
-    if (e.key == "ArrowDown" || e.key == "ArrowUp") {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       if (!open || !items.length) return;
       e.preventDefault();
-      const step = e.key == "ArrowDown" ? 1 : -1;
+      const step = e.key === "ArrowDown" ? 1 : -1;
       setActive(items[at < 0 ? (step > 0 ? 0 : items.length - 1) : (at + step + items.length) % items.length]);
-    } else if (e.key == "Enter") {
+    } else if (e.key === "Enter") {
       if (open && at >= 0) {
         e.preventDefault();
         choose(items[at]);
       }
-    } else if (e.key == "Escape") {
+    } else if (e.key === "Escape") {
       if (open) {
         e.preventDefault();
         e.stopPropagation();
@@ -1261,11 +1305,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.addEventListener("keydown", e => {
     if (!e.ctrlKey && !e.metaKey) return;
-    if (e.key == "f" && !search.disabled) {
+    if (e.key === "f" && !search.disabled) {
       e.preventDefault();
       search.focus();
     }
-    if (e.key == "s") {
+    if (e.key === "s") {
       e.preventDefault();
       // Bootstrap ignores show() while the dialog is still fading out (right
       // after a save), so it opens again once it has gone
@@ -1307,7 +1351,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetch("package.json").then(r => r.json()).then(r => {
     MT.manifest = r;
-    byId("version").textContent = r.version;
+    byId("version").textContent = r.commit ? r.version + " (" + r.commit + ")" : r.version;
   });
 
   MTBind(byId("global-settings-modal"), settings);

@@ -20,7 +20,7 @@ function parse(text, chunkSize) {
     close() {}
   };
   vm.createContext(ctx);
-  vm.runInContext(source, ctx);
+  vm.runInContext(source, ctx, { filename: path.join(__dirname, '../../workers/parse-csv-matrix.js') });  // a filename, so coverage counts it
   ctx.onmessage({ data: text });
   return out;
 }
@@ -127,4 +127,26 @@ test('an empty file fails with a message instead of throwing', () => {
   assert.strictEqual(parse('').error, 'it has no rows');
   assert.strictEqual(parse('\n\n  \n').error, 'it has no rows');
   assert.ok(parse(',,\n,,\n').error);
+});
+
+// Duplicate IDs and cut-off files (#172). Each ID should name one node, once in the header
+// and once per row, and a file cut off before a node's row is missing a row.
+// The app keeps one node per ID, so a repeat would overwrite the other's distances.
+test('a repeated ID in the header is refused, naming it', () => {
+  assert.match(parse(',A,A,B\nA,0,1,5\nB,5,2,0\n').error, /"A".*more than once/);
+});
+test('a repeated row ID is refused, naming it', () => {
+  assert.match(parse('A,0\nB,1,0\nB,5,2,0\n').error, /more than one row for "B"/);
+});
+test('a file cut off before a node\'s row is refused, naming the node', () => {
+  assert.match(parse(',A,B,C\nA,0,1,5\nB,1,0,2\n').error, /no row for "C"/);
+  assert.match(parse(',A,B,C\n').error, /no row for "A"/);
+});
+// A cut inside the last row keeps the cells it has. Here the lower half repeats the upper, so
+// nothing is lost. In an upper triangle the cut would lose pairs, and nothing in the text shows it.
+test('a file cut inside its last row keeps the cells it has, with no error', () => {
+  const p = parse(',A,B,C\nA,0,1,5\nB,1,0,2\nC,5');
+  assert.strictEqual(p.error, undefined);
+  assert.deepStrictEqual(p.nodes, ['A', 'B', 'C']);
+  assert.deepStrictEqual(asObject(p), FULL);
 });

@@ -73,7 +73,7 @@
         }
         label.text(MT.titleize(field));
         const values = Array.from(new Set(bubbles.map(b => b.node[field])));
-        if (values.every(v => typeof v == 'number')) values.sort((a, b) => axis == 'x' ? a - b : b - a);
+        if (values.every(v => typeof v === 'number')) values.sort((a, b) => axis == 'x' ? a - b : b - a);
         else values.sort();
         const ratio = length / (values.length + 1);
         const place = v => ratio * values.indexOf(v) + ratio;

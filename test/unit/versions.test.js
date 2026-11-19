@@ -11,7 +11,7 @@ const lock = require(path.join(root, "package-lock.json"));
 const { packages } = require(path.join(root, "dist", "versions.json"));
 
 // Used to build or test, not shipped
-const TOOLS = ["@playwright/test", "axe-core", "cssnano", "esbuild", "gzipper", "postcss"];
+const TOOLS = ["@eslint/js", "@playwright/test", "axe-core", "cssnano", "esbuild", "eslint", "globals", "gzipper", "postcss"];
 
 test("every shipped dependency is listed in dist/versions.json at its locked version", () => {
   for (const name of Object.keys(pkg.devDependencies)) {

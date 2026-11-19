@@ -114,6 +114,7 @@ test('dragging turns the globe, and autorotation spins it', async () => {
   await expect.poll(rotation).not.toBe(dragged);
   await view().locator('button[title="Toggle Autorotation"]').click();
   const stopped = await rotation();
+  // Waits to see the rotation stay stopped
   await page.waitForTimeout(300);
   expect(await rotation()).toBe(stopped);
 });

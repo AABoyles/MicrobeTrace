@@ -99,6 +99,8 @@ test('the globe colors links from the link legend, and docks it', async () => {
 });
 
 test('the histogram colors bars by the legend of its dataset, the only one it docks', async () => {
+  // The node legend needs a color variable (an earlier test may have set one, but not on its own)
+  await colorBy('node', 'group');
   const colors = (await legend('link')).map(r => r.color);
   await launchView(page, 'histogram');
   const bars = () => page.evaluate(() => document.querySelector('.histogram-plot').data.map(t => t.marker.color));
@@ -111,7 +113,8 @@ test('the histogram colors bars by the legend of its dataset, the only one it do
   await page.evaluate(() => MT.settings.set('histogram-variable', 'nodes-degree'));
   await expect.poll(() => docked('histogram', 'node')).toBe(true);
   expect(await docked('histogram', 'link')).toBe(false);
-  expect((await bars()).every(c => nodeColors.includes(c))).toBe(true);
+  // (The bars are redrawn after the legend docks, so they're polled for)
+  await expect.poll(async () => (await bars()).every(c => nodeColors.includes(c))).toBe(true);
   await closeView(page, 'histogram');
 });
 
@@ -185,4 +188,29 @@ test('the link color table counts the links between visible nodes, finding nodes
   expect(result.hidden[0]).toBe(result.hidden[1]);
   expect(result.all[0]).not.toBe('');
   expect(errors).toEqual([]);
+});
+
+// Select These Nodes (#295): a row's menu selects the visible nodes with its
+// value, from the keyboard too
+test('the node color table’s menu selects the nodes with a row’s value, from the keyboard', async () => {
+  await colorBy('node', 'state');
+  const rows = await legend('node');
+  const target = rows[1];
+  const expected = await page.evaluate(value => session.data.nodes.filter(d => d.visible && String(d.state) === value).map(d => d._id).sort(), target.value);
+  // Start from some other selection, which the menu replaces
+  await page.evaluate(() => session.data.nodes.forEach((d, i) => { d.selected = i === 0; }));
+  const cell = page.locator(`#node-color-table-wrapper td[data-value="${target.value}"]`);
+  await cell.focus();
+  await page.keyboard.press('Shift+F10');
+  const menu = page.locator('#node-color-table-context');
+  await expect(menu).toBeVisible();
+  await menu.locator('[data-action="select"]').focus();
+  await page.keyboard.press('Enter');
+  await expect(menu).toBeHidden();
+  expect(await page.evaluate(() => session.data.nodes.filter(d => d.selected).map(d => d._id).sort())).toEqual(expected);
+  await expect(page.locator('#mt-status')).toHaveText(new RegExp(`^${expected.length} nodes? selected$`));
+  // The focus goes back to the row it was opened on
+  await expect(cell).toBeFocused();
+  expect(errors).toEqual([]);
+  await page.evaluate(() => session.data.nodes.forEach(d => { d.selected = false; }));
 });

@@ -7,7 +7,11 @@
   // loading data in session.js; reading data in query.js.)
 
   const { fail, waitFor, image, pick } = self.MTWebMCP;
+  const { same } = self.MTWebMCP.schema;
   const define = tool => self.MTWebMCP.define(tool);
+  // How long a tool waits for a view's network to start, and for a view it
+  // opened to show up
+  const GRAPH_WAIT_MS = 20000, VIEW_SHOW_WAIT_MS = 5000;
 
   // The views --------------------------------------------------------------------
 
@@ -51,21 +55,21 @@
   const itemOf = view => items().find(i => i.componentType == view);
   const rootOf = item => item.container.element;
   const isShown = item => { const r = rootOf(item); return !!(r && r.clientWidth && r.clientHeight); };
-  const activeOf = stack => stack && (typeof stack.getActiveComponentItem == 'function' ? stack.getActiveComponentItem() : stack.activeComponentItem);
+  const activeOf = stack => stack && (typeof stack.getActiveComponentItem === 'function' ? stack.getActiveComponentItem() : stack.activeComponentItem);
   const isActive = item => item.parent && activeOf(item.parent) === item;
 
   // Waits for a view's element to be filled in (and, for the network, its graph)
   async function mounted(item) {
     await waitFor(() => rootOf(item).children.length > 0, { timeout: 30000, message: 'The ' + item.componentType + ' view did not finish opening' });
     if (item.componentType == 'network') {
-      await waitFor(() => self.temp && self.temp.network && self.temp.network.graph, { timeout: 20000 }).catch(() => {});
+      await waitFor(() => self.temp && self.temp.network && self.temp.network.graph, { timeout: GRAPH_WAIT_MS }).catch(() => {});
     }
     await settle(50);
   }
 
   async function activate(item) {
     if (!isActive(item)) item.parent.setActiveComponentItem(item, true);
-    await waitFor(() => isShown(item), { timeout: 5000 }).catch(() => {});
+    await waitFor(() => isShown(item), { timeout: VIEW_SHOW_WAIT_MS }).catch(() => {});
     await settle(60);
   }
 
@@ -174,7 +178,7 @@
     if (!node.content) return node.type == view ? null : node;
     const content = node.content.map(c => without(c, view)).filter(Boolean);
     if (!content.length) return null;
-    if (node.type != 'stack' && content.length == 1) return content[0];
+    if (node.type != 'stack' && content.length === 1) return content[0];
     const out = Object.assign({}, node, { content });
     if (out.active == view) delete out.active;
     return out;
@@ -340,7 +344,7 @@
   const isOff = (el, root) => {
     for (let e = el; e && e !== root; e = e.parentElement) {
       if (e.matches('.left-pane, .tab-pane, .collapse, .modal')) continue;
-      if (e.hidden || e.style.display == 'none' || e.classList.contains('d-none') || getComputedStyle(e).display == 'none') return true;
+      if (e.hidden || e.style.display == 'none' || e.classList.contains('d-none') || getComputedStyle(e).display === 'none') return true;
     }
     return false;
   };
@@ -415,7 +419,7 @@
           rec.type = 'choice';
           rec.options = options;
         }
-      } else if (el.tagName == 'SELECT') {
+      } else if (el.tagName === 'SELECT') {
         rec.type = el.multiple ? 'multi-choice' : 'choice';
         rec.options = optionsOf(el);
       } else if (el.type == 'range' || el.type == 'number') {
@@ -448,14 +452,14 @@
     const name = '"' + rec.key + '"';
     switch (rec.type) {
       case 'boolean': {
-        if (typeof value == 'boolean') return value;
+        if (typeof value === 'boolean') return value;
         if (value === 'true' || value === 1 || value === 'on') return true;
         if (value === 'false' || value === 0 || value === 'off') return false;
         fail(name + ' is on/off: pass true or false');
         break;
       }
       case 'number': {
-        const n = typeof value == 'number' ? value : (typeof value == 'string' && value.trim() !== '' ? Number(value) : NaN);
+        const n = typeof value === 'number' ? value : (typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN);
         if (!isFinite(n)) fail(name + ' needs a number');
         let out = n;
         if (rec.min !== undefined && out < rec.min) out = rec.min;
@@ -487,8 +491,6 @@
         return String(value);
     }
   }
-
-  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
   define({
     name: 'get_view_settings',
@@ -559,7 +561,7 @@
       plan.forEach(({ rec, key, value }) => {
         rec._controls.forEach(el => {
           if (!self.MTBind) return;
-          if (el.tagName == 'SELECT' && el.multiple) return;
+          if (el.tagName === 'SELECT' && el.multiple) return;
           const now = el.type == 'radio' ? (el.checked ? self.MTBind.read(el) : undefined) : self.MTBind.read(el);
           const shown = el.type == 'radio' ? el.checked === (self.MTBind.read(el) === value) : same(now, value);
           if (!shown) {
@@ -583,19 +585,19 @@
       if (el.classList.contains('ts-control') || el.closest('.btn-group-toggle')) return;
       const control = controlSelector(root, el);
       if (!control) return;
-      const rec = { control, label: labelOf(el, root) || el.title || '', type: el.tagName == 'SELECT' ? (el.multiple ? 'multi-choice' : 'choice') : el.type == 'checkbox' ? 'boolean' : el.type, value: el.type == 'checkbox' ? el.checked : (el.multiple ? Array.from(el.selectedOptions).map(o => o.value) : el.value), disabled: el.disabled };
-      if (el.tagName == 'SELECT') rec.options = optionsOf(el);
+      const rec = { control, label: labelOf(el, root) || el.title || '', type: el.tagName === 'SELECT' ? (el.multiple ? 'multi-choice' : 'choice') : el.type == 'checkbox' ? 'boolean' : el.type, value: el.type == 'checkbox' ? el.checked : (el.multiple ? Array.from(el.selectedOptions).map(o => o.value) : el.value), disabled: el.disabled };
+      if (el.tagName === 'SELECT') rec.options = optionsOf(el);
       out.push(rec);
     });
     return out;
   }
 
   function controlSelector(root, el) {
-    if (el.id && root.querySelectorAll('#' + CSS.escape(el.id)).length == 1) return '#' + el.id;
-    if (el.name && root.querySelectorAll('[name="' + el.name + '"]').length == 1) return '[name="' + el.name + '"]';
+    if (el.id && root.querySelectorAll('#' + CSS.escape(el.id)).length === 1) return '#' + el.id;
+    if (el.name && root.querySelectorAll('[name="' + el.name + '"]').length === 1) return '[name="' + el.name + '"]';
     for (const c of el.classList) {
       if (/^(form-|btn|col-|ts-)/.test(c)) continue;
-      if (root.querySelectorAll('.' + CSS.escape(c)).length == 1) return '.' + c;
+      if (root.querySelectorAll('.' + CSS.escape(c)).length === 1) return '.' + c;
     }
     return null;
   }
@@ -622,7 +624,7 @@
       try { el = root.querySelector(control); } catch (e) { fail('Invalid selector ' + control); }
       if (!el) fail('No control ' + control + ' in the ' + item.componentType + ' view; see other_controls in get_view_settings');
       if (el.disabled) fail('That control is disabled right now');
-      if (el.tagName == 'SELECT') {
+      if (el.tagName === 'SELECT') {
         const options = Array.from(el.options);
         const want = [].concat(value).map(v => {
           const o = options.find(o => o.value === String(v)) || options.find(o => o.textContent.trim().toLowerCase() == String(v).toLowerCase());
@@ -763,58 +765,34 @@
     return { dataURL: canvas.toDataURL(wanted, quality), width: canvas.width, height: canvas.height };
   }
 
-  const exportParts = root => {
-    const button = root.querySelector('.export-button');
-    const modal = button && button.closest('.modal');
-    if (!modal) return null;
-    const field = name => modal.querySelector('[name="' + name + '"]');
-    return { button, modal, field, type: field('export-filetype') };
-  };
-
-  const setField = (el, value) => {
-    if (!el || value === undefined) return;
-    el.value = value;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-  };
-
-  const EXT = { svg: 'image/svg+xml' };
+  // The view's export dialog action (see MT.exporterOf): its file types, and run()
+  const exporterOf = item => MT().exporterOf(rootOf(item));
   const IMAGE_TYPES = ['png', 'jpeg', 'webp'];
 
-  // Runs a view's own export dialog with these settings, taking the file it
+  // Runs a view's own export action with these settings, taking the file it
   // saves (MT.saveAs) when `download` is false instead of letting it download
   async function runExport(item, { format, filename, scale, quality, download }) {
-    const root = rootOf(item);
-    const parts = exportParts(root);
-    if (!parts) fail('The ' + item.componentType + ' view has no export dialog.');
-    const formats = Array.from(parts.type.options).map(o => ({ value: o.value, label: o.textContent.trim() }));
+    const exporter = exporterOf(item);
+    if (!exporter) fail('The ' + item.componentType + ' view has no export dialog.');
+    const formats = exporter.types;
     format = format ? String(format).toLowerCase().replace('jpg', 'jpeg') : formats[0].value;
     const chosen = formats.find(f => f.value == format || f.label.toLowerCase() == format);
     if (!chosen) fail('The ' + item.componentType + ' view exports: ' + formats.map(f => f.value).join(', ') + ' (not ' + format + ')');
-    setField(parts.type, chosen.value);
-    if (filename) setField(parts.field('export-filename'), filename);
-    else if (!parts.field('export-filename').value) setField(parts.field('export-filename'), 'microbetrace-' + item.componentType);
-    if (scale !== undefined) setField(parts.field('export-scale'), scale);
-    if (quality !== undefined) setField(parts.field('export-quality'), quality);
     const m = MT(), original = m.saveAs;
     let saved = null;
-    const got = new Promise(resolve => {
-      m.saveAs = (blob, name) => {
-        saved = { blob, name };
-        if (download) original.call(m, blob, name);
-        resolve(saved);
-      };
-    });
+    m.saveAs = (blob, name) => {
+      saved = { blob, name };
+      if (download) original.call(m, blob, name);
+    };
+    let base;
     try {
-      parts.button.click();
-      // A view that saves another way (XLSX, PDF) never reaches saveAs
-      const timeout = new Promise(resolve => setTimeout(resolve, download ? 20000 : 30000));
-      await Promise.race([got, timeout]);
+      // Resolves once the file is saved; a view that saves another way (XLSX, PDF) never reaches saveAs
+      base = await exporter.run({ filetype: chosen.value, filename, scale, quality });
     } finally {
       m.saveAs = original;
     }
     if (!saved) {
-      if (download) return { format: chosen.value, filename: (parts.field('export-filename').value || '') + '.' + chosen.value, formats, note: 'This format is saved by the browser directly, so its size is not known.' };
+      if (download) return { format: chosen.value, filename: base + '.' + chosen.value, formats, note: 'This format is saved by the browser directly, so its size is not known.' };
       fail('The ' + chosen.value + ' export does not hand its file back to the page; use download: true to save it instead.');
     }
     return Object.assign(saved, { format: chosen.value, formats });
@@ -831,13 +809,13 @@
     src.forEach((s, i) => {
       const d = dst[i];
       if (!d) return;
-      if (s.tagName == 'SCRIPT' || s.matches('.modal, .left-pane')) { d.remove(); return; }
+      if (s.tagName === 'SCRIPT' || s.matches('.modal, .left-pane')) { d.remove(); return; }
       const cs = getComputedStyle(s);
       let css = '';
       for (let k = 0; k < cs.length; k++) css += cs[k] + ':' + cs.getPropertyValue(cs[k]) + ';';
       d.setAttribute('style', css);
       d.removeAttribute('class');
-      if (s.tagName == 'CANVAS') {
+      if (s.tagName === 'CANVAS') {
         let url = null;
         try { if (s.width && s.height) url = s.toDataURL('image/png'); } catch (e) { /* tainted */ }
         if (url) {
@@ -886,8 +864,8 @@
       const root = rootOf(item);
       await settle(150);
       let dataURL, used;
-      const parts = exportParts(root);
-      if (method != 'dom' && parts && IMAGE_TYPES.some(t => Array.from(parts.type.options).some(o => o.value == t))) {
+      const exporter = exporterOf(item);
+      if (method != 'dom' && exporter && IMAGE_TYPES.some(t => exporter.types.some(o => o.value == t))) {
         try {
           const result = await runExport(item, { format: 'png', scale, download: false });
           dataURL = await blobToDataURL(result.blob);
@@ -964,8 +942,8 @@
       nodes: h.points.length,
       links: h.links.length,
       allPinned: !!self.session.network.allPinned,
-      zoom: typeof g.getZoomLevel == 'function' ? g.getZoomLevel() : null,
-      simulationRunning: typeof g.isSimulationRunning == 'boolean' ? g.isSimulationRunning : (g.isSimulationRunning === undefined ? null : !!g.isSimulationRunning)
+      zoom: typeof g.getZoomLevel === 'function' ? g.getZoomLevel() : null,
+      simulationRunning: typeof g.isSimulationRunning === 'boolean' ? g.isSimulationRunning : (g.isSimulationRunning === undefined ? null : !!g.isSimulationRunning)
     };
   };
 
@@ -986,23 +964,18 @@
     execute: async ({ action, level, duration = 300 }) => {
       const item = await need('network', { open: true, show: true });
       void item;
-      await waitFor(() => self.temp && self.temp.network && self.temp.network.graph, { timeout: 20000, message: 'The network graph did not start' });
+      await waitFor(() => self.temp && self.temp.network && self.temp.network.graph, { timeout: GRAPH_WAIT_MS, message: 'The network graph did not start' });
       const h = networkHandle();
       const g = h.graph;
-      const click = title => {
-        const b = Array.from(rootOf(itemOf('network')).querySelectorAll('button')).find(b => b.title == title);
-        if (!b) fail('The network view has no "' + title + '" button');
-        b.click();
-      };
       switch (action) {
-        case 'fit': click('Center and Scale Network'); break;
+        case 'fit': h.fit(); break;
         case 'zoom':
           if (typeof level != 'number') fail('zoom needs a level');
           if (typeof g.setZoomLevel != 'function') fail('This network build cannot set a zoom level; use fit.');
           g.setZoomLevel(level, duration);
           break;
-        case 'pin_all': if (!self.session.network.allPinned) click('Pin all Nodes'); break;
-        case 'unpin_all': if (self.session.network.allPinned) click('Pin all Nodes'); break;
+        case 'pin_all': if (!self.session.network.allPinned) h.pinAll(); break;
+        case 'unpin_all': if (self.session.network.allPinned) h.pinAll(); break;
         case 'freeze': g.pause(); break;
         case 'resume': g.start(0.3); break;
         case 'reheat': g.start(1); break;

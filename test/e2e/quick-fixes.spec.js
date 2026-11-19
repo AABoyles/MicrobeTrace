@@ -42,6 +42,9 @@ test.describe('after loading a network', () => {
     await page.route('**/components/heatmap.html', route => route.fulfill({ status: 404, body: 'Not found' }));
     await page.evaluate(() => MT.launchView('heatmap'));
     await expect(page.locator('.toast', { hasText: 'Could not load the Heatmap view' })).toBeVisible();
+    // The 404 is the failure this test makes on purpose (the toast above is what
+    // the app does about it), so it's not an error to report
+    errors.length = 0;
     expect(await page.evaluate(() => 'heatmap' in temp.componentCache)).toBe(false);
     await page.unroute('**/components/heatmap.html');
     await launchView(page, 'heatmap');
@@ -52,6 +55,8 @@ test.describe('after loading a network', () => {
     await page.route('**/components/histogram.js', route => route.fulfill({ status: 404, body: 'Not found' }));
     await page.evaluate(() => MT.launchView('histogram'));
     await expect(page.locator('.toast', { hasText: 'Could not load the Histogram view' })).toBeVisible();
+    // The 404 is made on purpose, as above: the toast is what's checked
+    errors.length = 0;
     expect(await page.evaluate(() => 'histogram' in temp.componentCache)).toBe(false);
     await page.unroute('**/components/histogram.js');
     await launchView(page, 'histogram');

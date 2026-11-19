@@ -289,10 +289,7 @@
     MT.tableExport(root, {
       ...Object.fromEntries(['png', 'jpeg', 'webp'].map(type => [type, filename =>
         canvas.toBlob(blob => MT.saveImage(blob, filename + '.' + type), 'image/' + type)])),
-      geojson: filename => MT.saveAs(
-        new Blob([JSON.stringify(makeGeoJSON())], { type: 'application/json;charset=utf-8' }),
-        filename + '.geojson'
-      )
+      geojson: filename => MT.exportBlob(JSON.stringify(makeGeoJSON()), 'application/json', filename + '.geojson')
     });
 
     MT.pickLocationFields(settings, 'globe-field-');

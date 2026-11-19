@@ -83,7 +83,7 @@ test('gets and sets loading options', async () => {
   expect(r.aligner.match).toBe(2);
   expect(await page.evaluate(() => document.querySelector('#default-distance-metric').value)).toBe('snps');
   expect(await fails('set_loading_options', { distanceMetric: 'snps', ambiguityStrategy: 'GAPMM' })).toMatch(/GAPMM/);
-  expect(await fails('set_loading_options', { distanceMetric: 'bogus' })).toMatch(/Unknown distance metric/);
+  expect(await fails('set_loading_options', { distanceMetric: 'bogus' })).toMatch(/"distanceMetric" must be one of/);
   // The metric alone brings its default threshold
   r = await call('set_loading_options', { distanceMetric: 'tn93', ambiguityStrategy: 'AVERAGE', alignment: 'none', referenceSource: 'consensus', distanceMetricsAlso: [], aligner: { match: 1 }, linkStorage: 'auto', inferDirectionality: true });
   expect(r.linkThreshold).toBe(0.015);
@@ -212,7 +212,9 @@ test('aligning to a file reference refuses to launch without one', async () => {
 test('generates as the Generate button does: up to 250,000, in several files when many', async () => {
   await call('new_session', { confirm: true });
   expect(await page.evaluate(() => MTWebMCP.list().find(t => t.name == 'generate_sequences').inputSchema.properties.count.maximum)).toBe(250000);
-  for (const count of [0, 2.5, 250001]) expect(await fails('generate_sequences', { count })).toMatch(/from 1 to 250,000/);
+  expect(await fails('generate_sequences', { count: 0 })).toMatch(/"count" must be at least 1/);
+  expect(await fails('generate_sequences', { count: 2.5 })).toMatch(/"count" must be a whole number/);
+  expect(await fails('generate_sequences', { count: 250001 })).toMatch(/"count" must be at most 250000/);
   expect(await page.evaluate(() => session.files.length)).toBe(0);
   // Five sequences a file, as hundreds of thousands are at the real limit
   const limit = await page.evaluate(() => { const was = MT.generatedFileChars; MT.generatedFileChars = 5 * (MT.generatedSeedLength + 50); return was; });

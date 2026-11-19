@@ -140,6 +140,13 @@ the agent gets the image as an image block and `value` as text. If `execute` thr
 `MTWebMCP.ToolError`) for errors that are the agent's fault, such as a missing file or an unknown
 column. Other errors are also logged to the console.
 
+Arguments are checked against the tool's `inputSchema` before anything else happens, including the
+user's confirmation: a wrong type, a value outside `enum`, `minimum` or `maximum`, a missing required
+field, or a field the schema does not declare gets the error `Invalid arguments for <tool>: ...`, and
+the tool does not run. The checker handles the subset of JSON Schema the tools use (see `checkArgs`
+in `src/webmcp.js`). An object schema that declares no `properties` takes any fields, and a `null`
+optional field counts as left out. Declare every field a tool reads, or it will refuse them.
+
 ## The filter, sort and paging language
 
 Tools that pick out nodes, links or clusters share one vocabulary (`MTWebMCP.filter`, `sort`,
@@ -374,8 +381,12 @@ npm test                                        # unit tests: test/unit/webmcp.t
 npx playwright test test/e2e/webmcp-*.spec.js   # end-to-end tests of the four groups
 ```
 
-The unit tests run in Node with no browser. They cover the filter, sort and paging helpers, the
-regex bounds, `define` and `call`, turning WebMCP on and off, and the description notes.
+The unit tests run in Node with no browser. `test/unit/webmcp.test.js` covers the filter, sort and
+paging helpers, the regex bounds, `define` and `call`, turning WebMCP on and off, and the description
+notes. `test/unit/webmcp-tools.test.js` loads the four tool files against a mocked `MT` and session:
+every tool's name, description, schema and annotations; registration with `navigator.modelContext`;
+bad arguments for every tool (generated from its schema); and the query, autostash, save, reveal and
+timeline tools.
 `webmcp-optin.spec.js` tests the switch in Settings, per-tab persistence, and the confirmation
 dialog (allow, decline, Escape, script clicks, queueing). The other e2e specs turn WebMCP on before
 the page loads (`open(page, { webmcp: true })` in `test/e2e/helpers.js`) and call the tools through

@@ -33,6 +33,7 @@ test('opening the page and every view raises no policy violation', async ({ page
       const item = layout.contentItems.find(i => i.componentType == view);
       return item && item.element && !item.ready;
     }, view);
+    // A violation can be reported a moment after the view's first frame: wait for it
     await page.waitForTimeout(200);
     if (view != 'network') await closeView(page, view);
   }

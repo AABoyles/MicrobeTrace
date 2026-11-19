@@ -26,7 +26,9 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `recall.spec.js` | The Recall dialog: stashes listed newest first by name and when they were stashed, choosing one anywhere on its row, recalling one by double-clicking it, undoing a deletion, a stash that can't be read, and nothing stashed |
 | `words.spec.js` | Tables and words: the aggregation sorted by count alone (as numbers), shares to one decimal and right-aligned; the table opening without its internal Index, columns sized to fit and lists comma-separated; a loading log that counts node rows and says how many links are within the threshold; a file that isn't a table saying so while Launch waits; File > New saying what it clears and offering to save first; Save's and exports' formats by name; hover text without typos; one name for each view and setting; blue main actions and Done or Close; the View menu's network above lined-up columns; and the tree's Label and Tooltip menus turning them off with None |
 | `framing.spec.js` | Views framed to their data: the network kept in view as its layout spreads (clear of the docked tables), its labels one size at any zoom and never overlapping; the choropleth opening on the regions with data under a titled legend; the globe zooming to the nodes, with a Fit button and Borders; plots below the toolbar and clear of the docked tables, with outlined scatterplot points; the heatmap naming its metric, greying missing pairs and labelling ids; the flow diagram naming its columns, values in order with empty last; the map and the tree clear of the docked tables; the timeline starting where the network is, with years, centered; and the waterfall saying what to choose and what it doesn't list |
-| `bench.spec.js` | Speed budgets on 2,000 generated sequences: loading, a threshold change redrawing the network once (and soon), no position reads from the GPU while laying out once the user has zoomed, a hidden network paused and reading nothing, and opening a view; each result is logged to compare runs |
+| `bench.spec.js` | Speed on 2,000 generated sequences: loading, a threshold change redrawing the network once (and soon), no position reads from the GPU while laying out once the user has zoomed, a hidden network paused and reading nothing, and opening a view; each time is logged to compare runs, and the time budgets are enforced only with `BENCH_STRICT=1` (see below) |
+| `bad-files.spec.js` | Files with duplicate IDs (a FASTA, a node list), and files cut off mid-record (a link list, a node list, a FASTA mid-sequence and after a header): each loads or says why, with a message, and Launch finishes |
+| `large-fasta.spec.js` | 4,000 generated sequences (8 million pairs) load through the Files view within the test timeout, with every pair's distance computed |
 | `distances.spec.js` | Several distance metrics for the same sequences: Also Compute offering every metric but the distance metric (and none with GapMM); each chosen metric computed for every pair and kept under its own name, with the values computing it alone gives; filtering links on any of them, each with its own threshold; saved with the session; and, with only links within the threshold kept, each metric keeping those within its own default |
 | `a11y.spec.js` | Accessibility: every control named (color swatches for their rows, as in "G0 color", menus for their labels) and every dialog for its title; the settings panes' tabs wired to their panels; no listbox roles on draggable rows and a mended ARIA tree in tables; and [axe](https://github.com/dequelabs/axe-core) finding nothing against WCAG 2.0 to 2.2 A and AA and its best practices, in light and in dark, in each view with its pane open, the main dialogs (Settings, Save, Stash, Recall, Help, About and its delete confirmation, loading, licence, Sequence Settings and the rest), every view's export dialog, a toast with an action, a view's empty state and the narrow window with the menus open (and in light, the timeline's Play button and the alignment warning's links) |
 | `dark.spec.js` | The interface light or dark as the system is, changing with it: in dark, the menu bar, menus, panel tabs, toolbars, settings panes, multi-selects, floating color tables, dialogs, the threshold histogram and the table views are dark with light text, while the views keep drawing in their own colors |
@@ -34,7 +36,8 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `dates.spec.js` | Dates and sequences that can be read: the epi curve's bars counting calendar weeks or months (a setting), with a count axis, hover counts and gaps between bars; the Gantt chart's rows tall enough for their labels, in order of date, scrolling under an axis that stays in view, with single dates as dots; and the sequences' ids beside the alignment, letters only in cells wide enough, four distinct base colors with a key, and the ids in the PNG export |
 | `fit.spec.js` | Controls that fit: sliders filling their column in one style, labels on one line, toggle buttons inside their groups with dividers, the heatmap's colors, flow variables and Gantt dates held in their rows, padded color tables, pane sections that show whether they're open (with Colors as a link to its dialog), a search bar that stays put, the Files pane pushing its footer too, aligned style-file and disabled toolbar buttons, sort arrows beside their own titles, and one meaning per icon |
 | `hidden.spec.js` | Nothing hidden: the view tabs below a menu bar that wraps in a narrow window, the table views' and Sequence Settings' dialogs covering the menu bar, the table's column picker's menu opening over the page, pinned selected rows in line, no-matches shown in the search box, and the link threshold's histogram in its column, marking the threshold |
-| `legends.spec.js` | Colors and labels matching the data: numbers and empty values drawn in their legend rows' colors (with the timeline too), links on the map and globe and bars in the histogram following the link legend those views dock, values shown as the data has them, and the crosstab and aggregation labelling empty values, axes and order |
+| `legends.spec.js` | Colors and labels matching the data: numbers and empty values drawn in their legend rows' colors (with the timeline too), links on the map and globe and bars in the histogram following the link legend those views dock, values shown as the data has them, the crosstab and aggregation labelling empty values, axes and order, and a color table's menu selecting the nodes with a row's value from the keyboard |
+| `link-patterns.spec.js` | Links told apart without color: a dash pattern by variable drawn per link and listed in the link legend (saved with the session, past three values repeating), and the shape suggestion for a categorical node color with more than six values, once per variable |
 | `missing-values.spec.js` | Nodes missing values, from CSV and spreadsheets: missing dates filled with the earliest date, missing numbers (latitudes, counts) left missing, and which values count as dates |
 | `conflicts.spec.js` | The Conflicts view: where files disagree, using another file's value for a node or another file's values for a field, the notice after launching, other views following, and sessions keeping the choices |
 | `provenance.spec.js` | Where node values come from: files that disagree (the top file winning, others filling its gaps), tracing values to their files, reordering files, a node listed twice in a file, merging many nodes quickly, and keeping all this in saved and stashed sessions |
@@ -56,6 +59,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `files.spec.js` | The files view: adding files and their kinds and fields, the loading settings, generating sequences, alignment and audit, launching |
 | `bubbles.spec.js` | The bubbles: grouping, size, selection, colors, redraws, restoring and export |
 | `phylogenetic_tree.spec.js` | The tree: layout, type and branch settings, leaf sizes, colors, labels and tooltips, selection, the context menu, restoring and export |
+| `view-computing.spec.js` | The views that compute when opened or redrawn (the tree, the heatmap's distance matrix, the sequences' alignment): the computing state with its progress in a live region, Cancel (by keyboard too) stopping that view's workers and no others, closing a view stopping its own, and Retry computing it normally |
 | `globe.spec.js` | The globe: placing nodes, links, layers, transparency, jitter, turning, redraws, restoring and export |
 | `webmcp-optin.spec.js` | WebMCP's safety: off by default, the switch in Settings > AI Agents, per-tab persistence, registering and unregistering tools, and the dialog that asks the user before consequential tools run (allow, decline, Escape, script clicks, queueing) |
 | `webmcp-session.spec.js` | The WebMCP session tools: adding, updating, reordering and removing files, loading options, sequence audits, launching, saving and reopening, stashes and autostash, the demo, and generated sequences |
@@ -65,6 +69,25 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 
 `helpers.js` lists the errors that also happen on `master` (`KNOWN_ERRORS`), which don't fail a
 test. Each one is a bug to fix: remove its pattern when it is.
+
+A test also fails on any page error, console error, or request that fails or gets a status of
+400 or more, whatever its URL. The one exception is the map tiles, from `basemaps.cartocdn.com`
+and `server.arcgisonline.com` (the only other hosts the app's CSP allows), which some machines
+can't reach. Anything else (a missing worker script, say) is a bug.
+
+### Bench budgets
+
+`bench.spec.js` logs each time it measures (`Benchmark: {...}`) and asserts only the exact
+counts, such as the redraws per change and the edges. The time budgets (20 s to load, 5 s to
+open a view, 30 s for a threshold change) are asserted only with `BENCH_STRICT=1`:
+
+```sh
+BENCH_STRICT=1 npx playwright test test/e2e/bench.spec.js
+```
+
+Software WebGL (CI, or a busy machine) varies too much for an absolute time to fail a build, so
+the budgets are generous and off by default. `MT_PERF_BUDGET=1` holds the threshold change to
+2 s, for a machine with a GPU.
 
 When a view moves onto the settings store and `MT.registerView` (see `src/settings.js`,
 `src/binder.js` and the view contract in `src/common.js`), give it a spec like

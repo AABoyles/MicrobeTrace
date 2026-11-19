@@ -53,6 +53,17 @@ test('conflicts lists the nodes whose sources disagree, counting 31 and "31.00" 
   assert.strictEqual(new MTNodeSources().conflicts().size, 0);
 });
 
+test('sequences that differ only in case are not a conflict, but other text that does is', () => {
+  const sources = new MTNodeSources();
+  sources.add('nodes.csv', 0).add('S1', { seq: 'acgt-n', state: 'Texas' });
+  sources.add('seqs.fasta', 1).add('S1', { seq: 'ACGT-N', state: 'texas' });
+  const conflicts = sources.conflicts();
+  assert.strictEqual(conflicts.has('seq'), false);
+  assert.deepStrictEqual(conflicts.get('state'), ['S1']);
+  sources.add('more.fasta', 2).add('S1', { seq: 'ACGA-N' });
+  assert.deepStrictEqual(sources.conflicts().get('seq'), ['S1']);
+});
+
 test('a key repeated within a source keeps its first row, which later rows fill in', () => {
   const sources = new MTNodeSources();
   const file = sources.add('nodes.csv', 0);

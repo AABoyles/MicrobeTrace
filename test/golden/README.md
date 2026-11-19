@@ -126,5 +126,4 @@ These tests are marked `todo`, so `npm test` passes, until the app is fixed.
 
 ## Not covered
 
-Triangulation (`workers/compute-triangulation.js`) is switched off in the app (#236) and has no
-published definition to test against. Directionality and the consensus are not covered either.
+Triangulation was removed from the app (#236) and had no published definition to test against. Directionality and the consensus are not covered either.

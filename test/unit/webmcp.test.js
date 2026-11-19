@@ -86,7 +86,7 @@ test('pick and isEmpty', () => {
 test('define validates and call runs, once WebMCP is on', async () => {
   assert.throws(() => W.define({ name: 'bad name', description: 'x', execute() {} }));
   assert.throws(() => W.define({ name: 'bad_confirm', description: 'x', confirm: true, execute() {} }), /confirm/);
-  W.define({ name: 'unit_test_tool', description: 'x', execute: async a => a.n + 1 });
+  W.define({ name: 'unit_test_tool', description: 'x', inputSchema: { type: 'object', properties: { n: { type: 'number' } } }, execute: async a => a.n + 1 });
   W.setEnabled(true);
   try {
     assert.strictEqual(await W.call('unit_test_tool', { n: 1 }), 2);
@@ -161,7 +161,7 @@ test('descriptions mark untrusted results and tools that ask the user', () => {
 
 test('a tool that asks the user fails closed where it cannot ask; its arguments decide whether it asks', async () => {
   let ran = 0;
-  W.define({ name: 'unit_gated', description: 'x', confirm: args => args.download ? 'Download' : null, execute: async () => ++ran });
+  W.define({ name: 'unit_gated', description: 'x', inputSchema: { type: 'object', properties: { download: { type: 'boolean' } } }, confirm: args => args.download ? 'Download' : null, execute: async () => ++ran });
   W.setEnabled(true);
   try {
     assert.strictEqual(await W.call('unit_gated', {}), 1); // no confirmation needed for this call

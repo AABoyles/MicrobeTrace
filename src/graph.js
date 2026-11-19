@@ -105,7 +105,7 @@
 
     // New origins first, then old ones not repeated (as MT.addLink always did).
     mergeOrigins(comboID, origins) {
-      if (!origins || origins.length == 0) return comboID;
+      if (!origins || origins.length === 0) return comboID;
       const seen = new Set();
       const list = [];
       origins.concat(this.combos[comboID]).forEach(o => {
@@ -131,7 +131,7 @@
     setValue(e, field, value) {
       this.version++;
       let col = this.column(field);
-      if (col.numeric && !(value == null || typeof value == 'number')) {
+      if (col.numeric && !(value == null || typeof value === 'number')) {
         col.numeric = false;
         col.data = Array.from(col.data.subarray(0, this.m), v => isNaN(v) ? null : v);
       }
@@ -207,7 +207,7 @@
       this.src[e] = s;
       this.tgt[e] = t;
       let origins = link.origin;
-      if (typeof origins == 'string') origins = [origins];
+      if (typeof origins === 'string') origins = [origins];
       this.combo[e] = this.mergeOrigins(this.combo[e], origins || []);
       if ('nn' in link) this.setFlag(e, NN, link.nn);
       if ('directed' in link) this.setFlag(e, DIRECTED, link.directed);
@@ -599,7 +599,7 @@
   // (Copied in workers/parse-csv-matrix.js, which cannot load this file.)
   MTGraph.parseDistance = v => {
     if (v == null) return null;
-    if (typeof v == 'number') return isFinite(v) ? v : NaN;
+    if (typeof v === 'number') return isFinite(v) ? v : NaN;
     const s = ('' + v).trim();
     if (s === '') return null;
     if (/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(s)) return Number(s);
