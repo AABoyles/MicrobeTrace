@@ -104,11 +104,15 @@ test('the sequence controls preview the sequences, and align them with Smith-Wat
   await modal.locator('label', { hasText: 'Smith-Waterman' }).click();
   await expect(modal.locator('.align-config-row').first()).toBeVisible();
   expect(await get('align-sw')).toBe(true);
+  // Consensus is the default, so there is no reference file to choose
+  expect(await get('reference-source-consensus')).toBe(true);
+  await expect(modal.locator('.reference-file-row')).toBeHidden();
   await modal.locator('label', { hasText: 'First Sequence' }).click();
   await expect(modal.locator('.reference-file-row')).toBeHidden();
   expect(await get('reference-source-first')).toBe(true);
   await modal.locator('label', { hasText: 'Load From FASTA' }).click();
   await expect(modal.locator('.reference-file-row')).toBeVisible();
+  expect(await get('reference-source-file')).toBe(true);
   await modal.locator('label', { hasText: /^\s*None\s*$/ }).click();
   await expect(modal.locator('.align-config-row').first()).toBeHidden();
   expect(await get('align-sw')).toBe(false);
