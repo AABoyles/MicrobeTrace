@@ -165,8 +165,7 @@ test('IDs are text without surrounding spaces, however they arrive (#219), and a
 
 test('no menu of fields is built as markup any more', () => {
   // An option whose value or text is interpolated without escaping
-  // (The HXB2 reference is a constant)
-  const unsafe = /<option value="(?:'\s*\+|\$\{(?!MT\.escape\(|text\(|MT\.HXB2))/;
+  const unsafe = /<option value="(?:'\s*\+|\$\{(?!MT\.escape\(|text\())/;
   const files = ['src/common.js', 'src/index.js']
     .concat(fs.readdirSync(path.join(root, 'components')).filter(f => /\.(html|js)$/.test(f)).map(f => 'components/' + f));
   const found = [];

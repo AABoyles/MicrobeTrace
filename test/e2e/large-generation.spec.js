@@ -44,7 +44,7 @@ test('Generate refuses counts outside 1 to 250,000, typed or not', async () => {
 
 test('generated sequences too many for one file go in several, and all load (#301)', async () => {
   // Five sequences a file, as hundreds of thousands are at the real limit
-  await page.evaluate(() => { MT.generatedFileChars = 5 * (session.data.reference.length + 50); });
+  await page.evaluate(() => { MT.generatedFileChars = 5 * (MT.generatedSeedLength + 50); });
   await page.evaluate(() => { document.querySelector('.generate-number').value = 23; document.querySelector('.generate-sequences').click(); });
   const rows = page.locator('#file-table .file-table-row');
   await expect(rows).toHaveCount(5);

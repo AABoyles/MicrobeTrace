@@ -20,6 +20,7 @@
     'link-visibility': 'which links are visible changed',
     'cluster-visibility': 'which clusters are visible changed',
     'session-loaded': 'a network finished loading and its clusters are tagged (files were launched or a session was opened)',
+    'session-load-failed': 'launching the files failed (detail: the message the user was shown)',
     'stop-force-simulation': 'the network layout should stop (a new session is replacing this one)'
   };
 

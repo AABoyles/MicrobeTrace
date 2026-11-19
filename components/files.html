@@ -254,26 +254,26 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
               <div class="col-2" title="What should MicrobeTrace use as a reference to align your sequences?">Reference Source</div>
               <div class="col-10">
                 <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col" title="Load Reference from FASTA">
-                    <input type="radio" name="reference-source" value="file" autocomplete="off" checked>
+                  <label class="btn btn-light col" title="Load Reference from FASTA: pick one of its sequences">
+                    <input type="radio" name="reference-source" value="file" autocomplete="off">
                     Load From FASTA
                   </label>
                   <label class="btn btn-light col" title="Use First Sequence as Reference">
                     <input type="radio" name="reference-source" value="first" autocomplete="off">
                     First Sequence
                   </label>
-                  <label class="btn btn-light col" title="Generate a Consensus Sequence to use as a Reference">
-                    <input type="radio" name="reference-source" value="consensus" autocomplete="off">
+                  <label class="btn btn-light active col" title="Build a consensus from your sequences: the majority base at each site, after aligning them all to a provisional reference">
+                    <input type="radio" name="reference-source" value="consensus" autocomplete="off" checked>
                     Consensus
                   </label>
                 </div>
-                <div id="reference-source-help" class="form-text small">The sequence the others are aligned to.</div>
+                <div id="reference-source-help" class="form-text small">The sequence the others are aligned to. Consensus is built from your sequences: a provisional reference is chosen by k-mer similarity, every sequence is aligned to it, and the majority base at each site is kept (sites where most sequences have a gap are dropped).</div>
               </div>
             </div>
             <div class="form-group row reference-file-row">
               <div class="col-2" title="Against what sequence should MicrobeTrace align your sequences?">Reference</div>
               <div class="col-5">
-                <label class="form-label small mb-1 reference-file-name" style="overflow:hidden">HXB2</label>
+                <label class="form-label small mb-1 reference-file-name" style="overflow:hidden">No file chosen</label>
                 <input type="file" class="form-control form-control-sm reference-file">
               </div>
               <div class="col-5">

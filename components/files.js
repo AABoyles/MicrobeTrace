@@ -429,12 +429,34 @@
       MT.toast.error(`The sequences could not be previewed: ${MT.escape((error && error.message) || '' + error)}.`);
     }
 
+    // The reference the preview aligns to. A consensus is kept for the same
+    // sequences and scores, so reopening the preview doesn't rebuild it; the
+    // load builds its own, from every sequence (not only the FASTA files').
+    let previewConsensus = { key: null, reference: '' };
+    async function previewReference(data) {
+      const source = referenceSource();
+      if (source == 'first') return data.length ? data[0].seq : '';
+      if (source == 'file') return session.data.reference;
+      const scoring = alignerScoring();
+      const key = JSON.stringify(scoring) + '|' + data.map(d => d.id + ':' + d.seq.length).join(',');
+      if (previewConsensus.key != key) {
+        previewConsensus = { key, reference: await MT.consensusReference(data, scoring) };
+      }
+      return previewConsensus.reference;
+    }
+
     async function updatePreview(data) {
       preview.innerHTML = '<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>';
       if (get('align-sw')) {
+        const reference = await previewReference(data);
+        if (!reference) {
+          preview.innerHTML = '';
+          preview.textContent = referenceSource() == 'file' ? 'Load a reference from a FASTA file to preview the alignment.' : 'No reference could be made from these sequences.';
+          return;
+        }
         data = await MT.align({
           nodes: data,
-          reference: session.data.reference,
+          reference,
           ...alignerScoring()
         });
       }
@@ -443,7 +465,7 @@
       preview.append(canvas);
     }
 
-    const referenceSource = () => ['file', 'first', 'consensus'].find(s => get('reference-source-' + s)) || 'file';
+    const referenceSource = () => ['file', 'first', 'consensus'].find(s => get('reference-source-' + s)) || 'consensus';
     function showAlignmentRows() {
       show($$('.align-config-row'), get('align-sw'));
       show($('.reference-file-row'), get('align-sw') && referenceSource() == 'file');
@@ -456,6 +478,8 @@
       input.addEventListener('change', () => {
         if (!input.checked) return;
         ['file', 'first', 'consensus'].forEach(s => settings.set('reference-source-' + s, s == input.value));
+        // (Even when no file is loaded: a reference left from another source
+        // must not be used as though it had been loaded)
         if (input.value == 'file') session.data.reference = referenceSelect.value;
         showAlignmentRows();
       });
@@ -472,17 +496,10 @@
       $('.reference-file-name').textContent = file.name;
     });
 
-    referenceSelect.innerHTML = `
-      <option value="${MT.HXB2.substr(2000, 2100)}" selected>Pol</option>
-      <option value="${MT.HXB2}">Complete</option>`;
     referenceSelect.addEventListener('change', () => { session.data.reference = referenceSelect.value; });
 
     // Opening the controls (or clicking the preview) previews the sequences
-    const showPreview = () => readFastas().then(data => {
-      if (get('reference-source-first') && data.length) session.data.reference = data[0].seq;
-      if (get('reference-source-consensus')) MT.computeConsensus().then(consensus => session.data.reference = consensus).catch(previewFailed);
-      return updatePreview(data);
-    }).catch(previewFailed);
+    const showPreview = () => readFastas().then(updatePreview).catch(previewFailed);
     $('.sequence-controls-button').addEventListener('click', showPreview);
     preview.addEventListener('click', showPreview);
 
@@ -681,6 +698,7 @@
       clearTimeout(temp.messageTimeout);
       MT.hideModal('loading-information-modal');
       checkLaunch();
+      MT.events.emit('session-load-failed', text);
     };
 
     const launch = () => load().catch(loadFailed);
@@ -1067,6 +1085,24 @@
         if (notes.length) MT.toast.warning(notes.map(note => note[0].toUpperCase() + note.slice(1)).join('. ') + '. See the loading log for details.', 15);
       }
 
+      // Sets the reference the sequences are aligned to, from the chosen source
+      async function chooseReference(subset) {
+        const source = referenceSource();
+        if (source == 'consensus') {
+          message('Building a consensus reference from the sequences...');
+          step = 'building the consensus reference';
+          MT.progress('Building a consensus reference');
+          session.data.reference = await MT.consensusReference(subset, alignerScoring());
+        } else if (source == 'first') {
+          session.data.reference = subset.length ? subset[0].seq : '';
+        }
+        if (!session.data.reference) {
+          throw new Error(source == 'file' ?
+            'no reference sequence was loaded: load one from a FASTA file, or use the consensus or the first sequence as the reference' :
+            'no reference sequence could be made from the sequences');
+        }
+      }
+
       async function processSequences() {
         if (!session.data.nodes.length) throw new Error('no nodes were found in the files (are they empty, or the wrong kind of file?)');
         // Where files disagree about nodes, say so (the top file's values are used)
@@ -1074,18 +1110,18 @@
         if (differ) message(` - ${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files; the top file's are used.`);
         if (!session.meta.anySequences) return MT.runHamsters();
         MT.addNodeField('seq');
-        let nodes = session.data.nodes, subset = [];
-        const n = nodes.length;
-        const gapString = '-'.repeat(session.data.reference.length);
-        for (let i = 0; i < n; i++) {
-          const d = nodes[i];
-          if (!d.seq) {
-            d.seq = gapString;
-          } else {
-            subset.push(d);
-          }
-        }
-        if (session.style.widgets['align-sw']){
+        const nodes = session.data.nodes;
+        const subset = nodes.filter(d => d.seq);
+        const align = session.style.widgets['align-sw'];
+        if (align) await chooseReference(subset);
+        // Nodes without a sequence get only gaps, as long as the aligned
+        // sequences (the reference) or, unaligned, the longest sequence
+        let width = 0;
+        if (align) width = session.data.reference.length;
+        else for (const d of subset) if (d.seq.length > width) width = d.seq.length;
+        const gapString = '-'.repeat(width);
+        for (const d of nodes) if (!d.seq) d.seq = gapString;
+        if (align){
           message('Aligning Sequences...');
           step = 'aligning the sequences';
           let output = await MT.align({
@@ -1288,15 +1324,10 @@
       // What keeps Launch disabled, by file
       problems: () => session.files.map(describe).filter(d => d.problem).map(d => ({ name: d.name, problem: d.problem })),
       canLaunch() { checkLaunch(); return !launchButton.disabled; },
-      // Same as clicking Launch (after setting the reference a first-sequence
-      // alignment uses, as opening the sequence settings does)
+      // Same as clicking Launch (the load chooses the reference)
       async launch() {
         checkLaunch();
         if (launchButton.disabled) return false;
-        if (get('align-sw') && get('reference-source-first')) {
-          const data = await readFastas();
-          if (data.length) session.data.reference = data[0].seq;
-        }
         launchButton.click();
         return true;
       },

@@ -76,7 +76,7 @@ test('updates, reorders and removes pending files', async () => {
 
 test('gets and sets loading options', async () => {
   let r = await call('get_loading_options');
-  expect(r.options).toMatchObject({ distanceMetric: 'tn93', alignment: 'none', referenceSource: 'file' });
+  expect(r.options).toMatchObject({ distanceMetric: 'tn93', alignment: 'none', referenceSource: 'consensus' });
   expect(r.valid.distanceMetric.map(m => m.id)).toContain('snps');
   r = await call('set_loading_options', { distanceMetric: 'snps', linkThreshold: 5, ambiguityStrategy: 'RESOLVE', linkStorage: 'all', inferDirectionality: false, alignment: 'smith-waterman', referenceSource: 'first', distanceMetricsAlso: ['tn93'], aligner: { match: 2 } });
   expect(r).toMatchObject({ distanceMetric: 'snps', linkThreshold: 5, ambiguityStrategy: 'RESOLVE', linkStorage: 'all', alignment: 'smith-waterman', referenceSource: 'first', distanceMetricsAlso: ['tn93'] });
@@ -85,7 +85,7 @@ test('gets and sets loading options', async () => {
   expect(await fails('set_loading_options', { distanceMetric: 'snps', ambiguityStrategy: 'GAPMM' })).toMatch(/GAPMM/);
   expect(await fails('set_loading_options', { distanceMetric: 'bogus' })).toMatch(/Unknown distance metric/);
   // The metric alone brings its default threshold
-  r = await call('set_loading_options', { distanceMetric: 'tn93', ambiguityStrategy: 'AVERAGE', alignment: 'none', referenceSource: 'file', distanceMetricsAlso: [], aligner: { match: 1 }, linkStorage: 'auto', inferDirectionality: true });
+  r = await call('set_loading_options', { distanceMetric: 'tn93', ambiguityStrategy: 'AVERAGE', alignment: 'none', referenceSource: 'consensus', distanceMetricsAlso: [], aligner: { match: 1 }, linkStorage: 'auto', inferDirectionality: true });
   expect(r.linkThreshold).toBe(0.015);
   await call('set_loading_options', { inferDirectionality: false });
 });
@@ -179,13 +179,43 @@ test('generates sequences and launches', async () => {
   expect(r).toMatchObject({ loaded: true, nodes: 25, anySequences: true });
 });
 
+test('aligns to a consensus built from the sequences by default (#317)', async () => {
+  await call('new_session', { confirm: true });
+  await call('set_loading_options', { alignment: 'smith-waterman' });
+  expect((await call('get_loading_options')).options.referenceSource).toBe('consensus');
+  const r = await call('generate_sequences', { count: 25, launch: true });
+  expect(r).toMatchObject({ loaded: true, nodes: 25, anySequences: true });
+  const { reference, lengths } = await page.evaluate(() => ({
+    reference: session.data.reference,
+    lengths: Array.from(new Set(session.data.nodes.map(d => d._seq.length)))
+  }));
+  expect(reference).toMatch(/^[ACGT]+$/);
+  // Every sequence is put on the consensus's coordinates
+  expect(lengths).toEqual([reference.length]);
+  await call('set_loading_options', { alignment: 'none' });
+});
+
+test('aligning to a file reference refuses to launch without one', async () => {
+  await call('new_session', { confirm: true });
+  await call('set_loading_options', { alignment: 'smith-waterman', referenceSource: 'file' });
+  await page.evaluate(() => { session.data.reference = ''; });
+  // The tool fails with the load's message, rather than waiting until it times out
+  expect(await fails('generate_sequences', { count: 5, launch: true })).toContain('no reference sequence was loaded');
+  // (The failed load logs its error, as it should; only that one is expected)
+  expect(errors.filter(e => !/no reference sequence was loaded/.test(e))).toEqual([]);
+  errors.length = 0;
+  await call('set_loading_options', { alignment: 'none', referenceSource: 'consensus' });
+  // (The failed load's error toast stays until dismissed)
+  await page.evaluate(() => document.querySelectorAll('#mt-toast-container .toast').forEach(t => t.remove()));
+});
+
 test('generates as the Generate button does: up to 250,000, in several files when many', async () => {
   await call('new_session', { confirm: true });
   expect(await page.evaluate(() => MTWebMCP.list().find(t => t.name == 'generate_sequences').inputSchema.properties.count.maximum)).toBe(250000);
   for (const count of [0, 2.5, 250001]) expect(await fails('generate_sequences', { count })).toMatch(/from 1 to 250,000/);
   expect(await page.evaluate(() => session.files.length)).toBe(0);
   // Five sequences a file, as hundreds of thousands are at the real limit
-  const limit = await page.evaluate(() => { const was = MT.generatedFileChars; MT.generatedFileChars = 5 * (session.data.reference.length + 50); return was; });
+  const limit = await page.evaluate(() => { const was = MT.generatedFileChars; MT.generatedFileChars = 5 * (MT.generatedSeedLength + 50); return was; });
   let r = await call('generate_sequences', { count: 12 });
   expect(r.pendingFiles.map(f => f.name)).toEqual(['generatedNodes-1.csv', 'generatedNodes-2.csv', 'generatedNodes-3.csv']);
   // Generating again replaces them all

@@ -50,16 +50,25 @@
       { timeout: 6000, interval: 100 }).catch(() => {});
   }
 
-  // Runs start() and resolves once the session has loaded (the event is awaited from before it starts)
+  // Runs start(), then waits for the load it began to finish, or to fail
+  // (which otherwise would only show as a timeout). Both events are listened
+  // for from before it starts.
   async function loading(start, timeout) {
+    let offFailed = () => {};
+    const failed = new Promise((resolve, reject) => {
+      offFailed = self.MT.events.on('session-load-failed', text => {
+        try { fail(String(text || 'The load failed')); } catch (error) { reject(error); }
+      });
+    });
     const loaded = nextEvent('session-loaded', { timeout });
     loaded.catch(() => {});
+    failed.catch(() => {});
     try {
       await start();
-    } catch (error) {
-      throw error;
+      await Promise.race([loaded, failed]);
+    } finally {
+      offFailed();
     }
-    await loaded;
     await settle();
   }
 
@@ -339,7 +348,7 @@
 
   function readOptions() {
     const w = self.session.style.widgets;
-    const referenceSource = ['file', 'first', 'consensus'].find(s => w['reference-source-' + s]) || 'file';
+    const referenceSource = ['file', 'first', 'consensus'].find(s => w['reference-source-' + s]) || 'consensus';
     const view = self.MT.filesView;
     return {
       distanceMetric: w['default-distance-metric'],
@@ -363,7 +372,7 @@
     description: 'Reads the settings that control how files are turned into a network (the Files view\'s settings), with the valid values for each. They apply the next time launch runs. ' +
       'distanceMetric: which genetic distance builds links from sequences (also the name distances in link files are stored under); distanceMetricsAlso: other metrics to compute too; linkThreshold: the largest distance that counts as linked (each metric has its own default); ' +
       'ambiguityStrategy / ambiguityThreshold: how ambiguous bases (N, R, Y...) are handled; linkStorage: keep every pair\'s distance or only links within the threshold (auto decides by size); defaultView: the view shown after launch; inferDirectionality; ' +
-      'alignment (none or smith-waterman) with referenceSource (file: a reference sequence, first: the first sequence, consensus) and aligner scores. Use set_loading_options to change them.',
+      'alignment (none or smith-waterman) with referenceSource (consensus, the default, is derived from the loaded sequences; first: the first sequence; file: a reference sequence) and aligner scores. Use set_loading_options to change them.',
     inputSchema: obj({}),
     annotations: { readOnlyHint: true },
     execute: async () => ({
@@ -385,7 +394,7 @@
     title: 'Set loading options',
     description: 'Changes the settings that control how files become a network (see get_loading_options for what each means and its valid values). Only the options you pass change. They apply to the next launch. ' +
       'Changing distanceMetric also resets linkThreshold to that metric\'s default (pass linkThreshold too to override it); GAPMM ambiguity handling needs the tn93 metric. ' +
-      'referenceSequence (a nucleotide string) or referencePreset (pol = HXB2 pol region, complete = full HXB2) sets the alignment reference used with referenceSource "file". ' +
+      'referenceSequence (a nucleotide string) sets the alignment reference used with referenceSource "file". ' +
       'Returns the options as set.',
     inputSchema: obj({
       distanceMetric: { type: 'string', enum: Object.keys((self.MT && self.MT.distanceMetrics) || { tn93: 1, tn92: 1, k2p: 1, jc69: 1, snps: 1, hamming: 1, p_distance: 1, transitions: 1, transversions: 1, ts_tv_ratio: 1 }), description: 'The genetic distance metric' },
@@ -397,8 +406,7 @@
       defaultView: str('The view shown after launch (e.g. network, bubbles, table)'),
       inferDirectionality: bool('Try to infer link directions (experimental)'),
       alignment: { type: 'string', enum: ['none', 'smith-waterman'], description: 'Whether to align sequences (Smith-Waterman) before computing distances' },
-      referenceSource: { type: 'string', enum: ['file', 'first', 'consensus'], description: 'What sequences are aligned against' },
-      referencePreset: { type: 'string', enum: ['pol', 'complete'], description: 'Use HXB2\'s pol region or complete genome as the reference' },
+      referenceSource: { type: 'string', enum: ['file', 'first', 'consensus'], description: 'What sequences are aligned against: consensus (the default; derived from the loaded sequences), first (the first sequence), or file (a reference you supply with referenceSequence)' },
       referenceSequence: str('A nucleotide sequence to use as the reference'),
       aligner: obj({
         match: num('Reward for matching bases', { minimum: 0 }),
@@ -450,11 +458,6 @@
         settings.set('align-none', args.alignment != 'smith-waterman');
       }
       if (args.referenceSource !== undefined) ['file', 'first', 'consensus'].forEach(s => settings.set('reference-source-' + s, s == args.referenceSource));
-      if (args.referencePreset !== undefined) {
-        const hxb2 = MT.HXB2;
-        if (!hxb2) fail('The HXB2 reference is not available');
-        self.session.data.reference = args.referencePreset == 'pol' ? hxb2.substr(2000, 2100) : hxb2;
-      }
       if (args.referenceSequence !== undefined) {
         const seq = String(args.referenceSequence).replace(/\s+/g, '').toUpperCase();
         if (!/^[ACGTURYMKWSBDHVN-]+$/.test(seq)) fail('referenceSequence must be nucleotides (ACGT and ambiguity codes)');
