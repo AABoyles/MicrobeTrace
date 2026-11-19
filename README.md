@@ -10,9 +10,7 @@ MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC), w
 
 * **[Launch MicrobeTrace](https://aaboyles.github.io/MicrobeTrace/)**
 * [Download Sample Data](https://github.com/aaboyles/MicrobeTrace/raw/master/demo/MicrobetraceDemoData.zip)
-* [Download Sample COVID Data](https://github.com/aaboyles/MicrobeTrace/raw/master/demo/COVID%20Dummy%20Data.zip)
 * [View the Help Wiki](https://github.com/aaboyles/MicrobeTrace/wiki)
-* [Read the Latest Manual](https://github.com/aaboyles/MicrobeTrace/raw/master/docs/MicrobeTrace_Manual.pdf)
 * [Watch and follow along with the webinar](https://www.youtube.com/watch?v=5E-_Kb7yvHU)
 * [Watch how to use MicrobeTrace for COVID-19](https://www.youtube.com/watch?v=he0Yq5yvToc)
 * [Cite MicrobeTrace](https://github.com/aaboyles/MicrobeTrace/wiki/Cite-MicrobeTrace)
@@ -31,13 +29,40 @@ load balancer that terminates TLS and sets `X-Forwarded-Proto`, set
 `FORCE_HTTPS=1` to redirect HTTP requests to HTTPS. `SITE_DIR=_site` serves a
 directory built by `npm run site` instead (the Docker image does this).
 
+## Development
+
+MicrobeTrace needs **Node.js 26**, the version in `engines` in `package.json` and used by CI and the Docker image.
+
+```sh
+npm ci                            # install the locked dependencies
+npm start                         # serve the app at http://localhost:5000
+npm test                          # unit tests (no browser needed)
+npx playwright install chromium   # once: the browser for the end-to-end tests
+npm run test:e2e                  # end-to-end tests in Chromium (E2E_PORT sets the port)
+```
+
+The build scripts (see [scripts/README.md](scripts/README.md)):
+
+* `npm run bundle` builds `dist/` and `vendor/` from `node_modules`. Run it after changing a dependency or `scripts/bundle.sh`, then commit the result. CI rebuilds them and fails if they differ.
+* `npm run cache` regenerates the service worker's precache list in `sw.js`. Run it after changing any file the app loads; `npm test` fails until you do.
+* `npm run compress` writes the `.br` and `.gz` copies of the largest files, which `server.js` serves when they exist. `npm run clean` removes them.
+* `npm run site` copies exactly the files the app needs into `_site/`.
+* `npm run build` runs `bundle`, `cache` and `compress`. `npm run update` updates the dependencies and then runs `bundle` and `cache`.
+
+**Deployment.** A push to `master` runs `.github/workflows/pages.yml`. It runs the CI workflow (`.github/workflows/ci.yml`: unit tests, the bundle check and the end-to-end tests) and, if those pass, publishes the output of `scripts/build-site.js` to GitHub Pages. Pull requests run the CI workflow alone.
+
+**Browsers.** The app names Chrome, Firefox, Safari and Edge as the browsers to use. At startup it checks for WebAssembly, Web Workers and IndexedDB, and a browser without one of them gets a message saying which it lacks (`src/index.js`). The end-to-end tests run in Chromium only (`playwright.config.js`).
+
+**How the code fits together.** `index.html` is the one page: its menus, dialogs and Content-Security-Policy, which allows no inline scripts. `src/index.js` starts the page (the menus, global settings, color tables and global timeline), `src/common.js` holds what the views share, and `src/graph.js` and `src/nodes.js` hold the network and the values each file gives its nodes. Each view is an HTML fragment and a script in `components/`, which `src/common.js` loads into a golden-layout panel when the view opens. Heavy work runs in Web Workers in `workers/`, started with `MT.runWorker`: parsing, distances, alignment, trees and clustering. Third-party libraries are bundled into `dist/`, and those that workers must load are in `vendor/`. `sw.js` is the service worker that keeps the app working offline, and `server.js` serves the same files under `npm start`.
+
+More detail is in the READMEs next to the code: [`src/webmcp/`](src/webmcp/README.md), [`workers/`](workers/README.md), [`vendor/`](vendor/README.md), [`scripts/`](scripts/README.md), [`data/`](data/README.md), [`demo/`](demo/README.md), [`test/unit/`](test/unit/README.md), [`test/e2e/`](test/e2e/README.md), [`test/golden/`](test/golden/README.md) and [`test/security/`](test/security/README.md).
+
 ## AI Agents (WebMCP)
 
 MicrobeTrace offers its features as tools for AI agents through [WebMCP](https://webmachinelearning.github.io/webmcp/), a draft web standard for exposing tools to agents in the browser. An agent can load files, launch a network, query and style nodes and links, and draw views, using the same operations as the interface. The tools are described in [src/webmcp/README.md](src/webmcp/README.md), which also covers the filter language, an example workflow and how to add a tool. The tools work without WebMCP too, through `MTWebMCP.call` in the page.
 
 ## To Spread the Word:
 
-* [View the MicrobeTrace Flyer](https://github.com/aaboyles/MicrobeTrace/blob/master/docs/MicrobeTrace%20Flyer_Sept_2019.pdf)
 * [Read our Reports](https://medium.com/microbetrace-reports/latest)
 * [Connect with our User Community](https://www.reddit.com/r/MicrobeTrace/)
 

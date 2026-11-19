@@ -5,8 +5,8 @@
   "theme_color": "#f8f9fa",
   "background_color": "#f8f9fa",
   "display": "standalone",
-  "scope": "/",
-  "start_url": "/",
+  "scope": "./",
+  "start_url": "./",
   "icons": [
     {
       "src": "img/android-chrome-192x192.png",
@@ -17,10 +17,12 @@
       "src": "img/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "img/maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ],
-  "splash_pages": null,
-  "serviceworker": {
-    "src": "./sw.js"
-  }
+  ]
 }

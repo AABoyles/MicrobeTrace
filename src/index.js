@@ -1307,7 +1307,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetch("package.json").then(r => r.json()).then(r => {
     MT.manifest = r;
-    byId("version").textContent = r.version;
+    byId("version").textContent = r.commit ? r.version + " (" + r.commit + ")" : r.version;
   });
 
   MTBind(byId("global-settings-modal"), settings);
