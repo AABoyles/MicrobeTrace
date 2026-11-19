@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 const isblank = /^\s*$/;
 
 // Parses FASTA text into [{id, seq}]. Tolerates a UTF-8 BOM, CRLF line endings,
@@ -31,7 +33,7 @@ if(typeof onmessage !== 'undefined' || typeof self !== 'undefined') onmessage = 
   let start = Date.now();
   let text = e.data;
   let seqs = (!text || text.length == 0) ? [] : parseFasta(text);   // an empty file still answers (#222)
-  console.log('FASTA Parse time: ', (Date.now()-start).toLocaleString(), 'ms');
+  debugTime('FASTA Parse', start);
   start = Date.now();
   postMessage({ nodes: seqs, start: start });
   close();

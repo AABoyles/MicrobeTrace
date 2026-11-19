@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 onmessage = function(e) {
   const start = Date.now();
   const subset = e.data;
@@ -12,7 +14,7 @@ onmessage = function(e) {
     }
     output[i] = count/sequenceLength;
   }
-  console.log("Ambiguity Count time: ", (Date.now() - start).toLocaleString(), "ms");
+  debugTime('Ambiguity Count', start);
   postMessage({ counts: output.buffer, start: Date.now() }, [output.buffer]);
   close();
 };

@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 importScripts('../vendor/tn93.min.js');
 
 // The original tn93.js engine, kept for the GapMM ambiguity strategy, which
@@ -41,7 +43,7 @@ onmessage = function(e) {
     };
   }
 
-  console.log('Links Compute time (rows ' + rowStart + '-' + rowEnd + '): ', (Date.now() - start).toLocaleString(), 'ms');
+  debugTime('Links Compute (rows ' + rowStart + '-' + rowEnd + ')', start);
   output.start = Date.now();
   postMessage(output, Object.values(output).filter(v => v.buffer).map(v => v.buffer));
   close();

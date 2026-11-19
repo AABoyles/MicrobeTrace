@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 importScripts('../vendor/patristic.min.js');
 
 onmessage = function(e){
@@ -15,7 +17,7 @@ onmessage = function(e){
       }
     }
   }
-  console.log('Directionality Inference time: ', (Date.now()-start).toLocaleString(), 'ms');
+  debugTime('Directionality Inference', start);
   postMessage({output: flips.buffer, start: Date.now()}, [flips.buffer]);
   close();
 };

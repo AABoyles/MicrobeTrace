@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 importScripts('../vendor/bx_distance_models.js');
 
 // Computes genetic distances with bx-distance-models (WebAssembly) for rows
@@ -81,7 +83,7 @@ onmessage = async function(e) {
       distance: concat(Float64Array, metricParts.map(p => p.distance))
     });
 
-  console.log('Links Compute time (rows ' + rowStart + '-' + rowEnd + ', ' + metrics.join(', ') + '): ', (Date.now() - start).toLocaleString(), 'ms');
+  debugTime('Links Compute (rows ' + rowStart + '-' + rowEnd + ', ' + metrics.join(', ') + ')', start);
   const buffers = results.flatMap(r => Object.values(r).map(v => v.buffer));
   postMessage({ results, start: Date.now() }, buffers);
   close();

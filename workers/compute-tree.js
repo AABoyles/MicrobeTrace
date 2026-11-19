@@ -1,3 +1,5 @@
+// Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
+const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 importScripts('../vendor/patristic.min.js');
 
 // Takes the n by n distance matrix as a flat Float64Array (NaN where there's no
@@ -14,7 +16,7 @@ onmessage = function(e){
     }
   }
   const RNJ = patristic.parseMatrix(matrix, e.data.labels);
-  console.log('Tree Compute time: ', (Date.now()-start).toLocaleString(), 'ms');
+  debugTime('Tree Compute', start);
   start = Date.now();
   postMessage({tree: RNJ.toObject(), start: start});
   close();
