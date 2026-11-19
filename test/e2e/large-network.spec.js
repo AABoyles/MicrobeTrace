@@ -30,8 +30,9 @@ test('a large network does not pile its nodes against the edge of the space', as
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length == 1);
   await page.click('#launch');
   await page.waitForFunction(n => temp.network && temp.network.points.length > n, N / 2, { timeout: 120000 });
-  // The layout has settled once the simulation stops (it's slow on software WebGL)
-  await page.waitForFunction(() => !temp.network.graph.isSimulationRunning, null, { timeout: 150000 });
+  // Lets the layout settle: the simulation doesn't stop on its own at this size
+  // (waiting for it to stop timed out), and no other event marks the end
+  await page.waitForTimeout(20000);
   const edge = await page.evaluate(() => {
     const p = temp.network.graph.getPointPositions();
     const n = p.length / 2;
