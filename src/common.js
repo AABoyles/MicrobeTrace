@@ -869,6 +869,10 @@
   MT.r01 = Math.random;
   
   // ported from https://github.com/aaboyles/SeqSpawnR/blob/91d5857dbda5998839a002fbecae0f494dca960a/R/SequenceSpawner.R
+  // The most characters the Generate button puts in one node file (#301): a
+  // browser's longest string is about 500 million, and each is read whole
+  MT.generatedFileChars = 2e8;
+
   MT.generateSeqs = (idPrefix, count, snps, seed) => {
     let start = Date.now();
     if (!count) count = 1000;
@@ -1033,7 +1037,12 @@
       if (fit.padded) warnings.push(`${plural(fit.padded, 'sequence')} did not reach the end of the reference; ${fit.padded == 1 ? 'its' : 'their'} end was filled with gaps.`);
     }
     if (unaligned && unaligned.length) {
-      const min = Math.min(...unaligned), max = Math.max(...unaligned);
+      // (A loop: spreading hundreds of thousands of lengths into Math.min overflows the stack, #302)
+      let min = Infinity, max = -Infinity;
+      for (const length of unaligned) {
+        if (length < min) min = length;
+        if (length > max) max = length;
+      }
       if (min != max) warnings.push(`Alignment is off but the sequences differ in length (${min.toLocaleString()} to ${max.toLocaleString()}). Positions will not correspond between sequences, so distances may be wrong. Turn on alignment or align them beforehand.`);
     }
     return warnings;

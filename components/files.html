@@ -951,9 +951,18 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       if (first) first.type = view;
     };
 
+    // Generated sequences go in node files of up to about 200 million characters
+    // each: one CSV of hundreds of thousands of sequences is longer than the
+    // longest string a browser can hold (#301)
     $('.generate-sequences').addEventListener('click', () => {
       ready();
-      processFile(new File([Papa.unparse(MT.generateSeqs('gen-' + session.meta.readyTime + '-', number('.generate-number'), 20))], 'generatedNodes.csv'));
+      const nodes = MT.generateSeqs('gen-' + session.meta.readyTime + '-', number('.generate-number'), 20);
+      const perFile = Math.max(1, Math.floor(MT.generatedFileChars / ((nodes[0] ? nodes[0].seq.length : 0) + 50)));
+      const files = Math.ceil(nodes.length / perFile);
+      for (let i = 0; i < files; i++) {
+        const name = files == 1 ? 'generatedNodes.csv' : `generatedNodes-${i + 1}.csv`;
+        processFile(new File([Papa.unparse(nodes.slice(i * perFile, (i + 1) * perFile))], name));
+      }
       launchButton.focus();
     });
 

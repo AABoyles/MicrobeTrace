@@ -841,7 +841,7 @@
     const MT = self.MT, data = [];
     for (const file of self.session.files) {
       if (file.format == 'fasta') {
-        data.push(...await MT.parseFASTA(file.contents));
+        for (const d of await MT.parseFASTA(file.contents)) data.push(d); // (no spread: it overflows the stack on large files)
       } else if (file.format == 'node' && file.field2 && file.field2 != 'None') {
         let rows;
         if (file.extension == 'xlsx' || file.extension == 'xls') {
