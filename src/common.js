@@ -2166,7 +2166,6 @@
       // During timeline mode, user Pause and switch to a different Node varaible but nodeColorsTableKeys[variable] is not available
       if(!session.style.nodeColorsTableKeys[variable]) {
         let aggregatesTL = {};
-        const timelineIndex = byId(session.network.timelineNodes);
         let nodesTL = session.network.timelineNodes;
         let n = nodesTL.length;
         let nodeColorsTL = [...session.style.nodeColors];
@@ -2294,6 +2293,9 @@
       // During timeline mode, user Pause and switch to a different link varaible but linkColorsTableKeys[variable] is not available
       if(!session.style.linkColorsTableKeys[variable]) {
         let aggregatesTL = {};
+        // The timeline's nodes are found by ID as the links are, which is what
+        // byId (above) is for; this branch is the only one that uses it
+        const timelineIndex = byId(session.network.timelineNodes);
         let linksTL = MT.getVisibleLinks();
         let linkColorsTL = [...session.style.linkColors];
         let i = 0,
