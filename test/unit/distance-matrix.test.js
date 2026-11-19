@@ -1,4 +1,4 @@
-// Unit tests for MT.getDM in src/common.js (#248): the flat matrix, its cache
+// Unit tests for MT.getDM in src/links-clusters.js (#248): the flat matrix, its cache
 // and its size limit. Run with: npm test
 const test = require('node:test');
 const assert = require('node:assert');

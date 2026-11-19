@@ -71,7 +71,7 @@ module.exports = [
     rules,
   },
   {
-    files: ["scripts/**/*.js", "server.js", "eslint.config.js", "playwright.config.js", "test/unit/**/*.js", "test/golden/**/*.js"],
+    files: ["scripts/**/*.js", "server.js", "eslint.config.js", "playwright.config.js", "test/*.js", "test/unit/**/*.js", "test/golden/**/*.js"],
     languageOptions: { ...common, sourceType: "commonjs", globals: globals.node },
     rules,
   },

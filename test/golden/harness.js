@@ -6,6 +6,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const APP_FILES = require('../app-files.js');
 
 const root = path.join(__dirname, '../..');
 const quiet = { log() {}, warn() {}, error: (...a) => console.error(...a) };
@@ -84,7 +85,7 @@ function loadApp(widgets = {}) {
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(root, 'src/common.js'), 'utf8'), ctx, { filename: path.join(root, 'src/common.js') });
+  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), ctx, { filename: path.join(root, file) });
   const MT = ctx.MT;
   ctx.temp = {};
   ctx.session = {
