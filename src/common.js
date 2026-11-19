@@ -1776,7 +1776,7 @@
     });
     document.querySelectorAll(".hideForHIVTrace").forEach(el => el.style.display = "flex");
     setTimeout(() => {
-      let files = layout.contentItems.find(item => item.componentType == "files");
+      let files = self.layout.contentItems.find(item => item.componentType == "files");
       if (files) files.remove();
       MT.progressDone();
       MT.hideModal("loading-information-modal");
@@ -2467,21 +2467,21 @@
   MT.createLayout = () => {
     if (self.layout) {
       parkPanels();
-      layout.destroy();
+      self.layout.destroy();
     }
     recentViews.length = 0;
     self.layout = new goldenLayout.GoldenLayout(document.getElementById("main-panel"));
-    layout.resizeWithContainerAutomatically = true;
+    self.layout.resizeWithContainerAutomatically = true;
     // golden-layout builds a component before its element is in the page, where
     // a view's inline scripts couldn't find their own elements. Components are
     // therefore empty here, and renderView fills each one in once it's attached.
-    layout.registerComponentFunction(() => function () {});
+    self.layout.registerComponentFunction(() => function () {});
     // MicrobeTrace's open views, which golden-layout 1 called contentItems
-    Object.defineProperty(layout, "contentItems", { get: () => viewItems(layout.rootItem) });
-    layout.loadLayout(emptyLayout);
-    layout.on("stateChanged", () => session.layout = MT.cacheLayout(layout.rootItem));
-    layout.on("activeContentItemChanged", bringForward);
-    layout.on("focus", e => bringForward(e.target));
+    Object.defineProperty(self.layout, "contentItems", { get: () => viewItems(self.layout.rootItem) });
+    self.layout.loadLayout(emptyLayout);
+    self.layout.on("stateChanged", () => session.layout = MT.cacheLayout(self.layout.rootItem));
+    self.layout.on("activeContentItemChanged", bringForward);
+    self.layout.on("focus", e => bringForward(e.target));
   };
 
   // Fetches a view's HTML into temp.componentCache, and its script (so that
@@ -2691,7 +2691,7 @@
   // What an export dialog inside a view suggests calling the file: the view's
   // name, e.g. epi-curve
   const exportName = root => {
-    const item = layout.contentItems.find(item => item.container.element.contains(root));
+    const item = self.layout.contentItems.find(item => item.container.element.contains(root));
     return item ? MT.titleize(item.componentType).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
   };
 
@@ -3129,8 +3129,8 @@
   });
   const inFront = item => item.parent && item.parent.isStack && item.parent.getActiveComponentItem() === item;
   MT.placePanels = () => {
-    if (!self.layout || !layout.rootItem) return parkPanels();
-    const views = layout.contentItems.filter(inFront)
+    if (!self.layout || !self.layout.rootItem) return parkPanels();
+    const views = self.layout.contentItems.filter(inFront)
       .sort((a, b) => (recentViews.indexOf(a) + 1 || Infinity) - (recentViews.indexOf(b) + 1 || Infinity));
     Object.entries(pagePanels).forEach(([kind, id]) => {
       const panel = document.getElementById(id);
@@ -3652,15 +3652,15 @@
     if (!temp.componentCache[view]) {
       fetchView(view).then(() => MT.launchView(view, callback), viewFailed);
     } else {
-      let contentItem = layout.contentItems.find(item => item.componentType == view);
+      let contentItem = self.layout.contentItems.find(item => item.componentType == view);
       if (contentItem) {
         contentItem.parent.setActiveComponentItem(contentItem, true);
         // A view still loading its script is set up when it has
         if (!contentItem.ready) setupView(contentItem);
         else if (callback) { contentItem.ready.then(() => callback(contentItem)); return; }
       } else {
-        if (!layout.rootItem) layout.loadLayout(emptyLayout);
-        let lastStack = peek(stacks(layout.rootItem)) || layout.rootItem;
+        if (!self.layout.rootItem) self.layout.loadLayout(emptyLayout);
+        let lastStack = peek(stacks(self.layout.rootItem)) || self.layout.rootItem;
         contentItem = lastStack.newComponent(view, undefined, MT.titleize(view));
         // The item is in the layout now; it is set up once its script has run
         // (the callback waits for that too)
@@ -3799,7 +3799,7 @@
     note.querySelector(".view-needs-demo").hidden = !empty;
     if (empty) MT.updateDemoButtons();
   };
-  MT.updateAllViewNeeds = () => layout.contentItems.forEach(MT.updateViewNeeds);
+  MT.updateAllViewNeeds = () => self.layout.contentItems.forEach(MT.updateViewNeeds);
 
   MT.cacheLayout = contentItem => {
     if (!contentItem) return { type: "stack", content: [] };
@@ -3828,12 +3828,12 @@
     };
     const root = toConfig(component || emptyLayout.root);
     return Promise.all(views.map(fetchView)).then(() => {
-      layout.loadLayout(Object.assign({}, emptyLayout, { root }));
+      self.layout.loadLayout(Object.assign({}, emptyLayout, { root }));
       // One at a time and in order, as each view's script runs when it loads.
       // Each item is marked as loading from the start, so a launchView for a
       // view still waiting its turn waits too, rather than setting up an empty
       // element (openView replaces the mark with its own when it starts).
-      return layout.contentItems.reduce((done, item) => {
+      return self.layout.contentItems.reduce((done, item) => {
         const opened = done.then(() => openView(item));
         item.ready = opened;
         opened.finally(() => { if (item.ready === opened) item.ready = null; });
