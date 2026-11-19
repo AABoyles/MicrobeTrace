@@ -226,8 +226,7 @@
     "tree-ruler-show": true,
     "tree-tooltip-show": true,
     "tree-type": "weighted",
-    "tree-vertical-stretch": 1,
-    "triangulate-false": true
+    "tree-vertical-stretch": 1
   };
   
   MT.sessionSkeleton = () => ({
