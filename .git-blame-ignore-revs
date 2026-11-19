@@ -1,0 +1,4 @@
+# Whitespace-only commits for git blame and GitHub's blame view. To use locally:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# Re-indent workers/*.js to 2 spaces (#243)
+c6f1088e43c06954afd2d639bb0550368d731a4f
