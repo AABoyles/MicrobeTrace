@@ -21,7 +21,13 @@ function watchErrors(page) {
     if (!EXTERNAL_HOSTS.some(h => h.test(new URL(url).hostname))) add(`${what} ${url}`);
   };
   page.on('pageerror', e => add(e.message));
-  page.on('requestfailed', r => failed(r.url(), `Request failed (${r.failure() && r.failure().errorText}):`));
+  // A request the page itself cancelled (ERR_ABORTED), as a reload does to a
+  // script still downloading (vendor/cosmos.min.js, say), is not an error; a
+  // missing file is an HTTP 404, caught below.
+  page.on('requestfailed', r => {
+    const text = r.failure() && r.failure().errorText;
+    if (text != 'net::ERR_ABORTED') failed(r.url(), `Request failed (${text}):`);
+  });
   page.on('response', r => { if (r.status() >= 400) failed(r.url(), `HTTP ${r.status()}:`); });
   page.on('console', m => {
     // A failed resource is reported by the request and response events above,

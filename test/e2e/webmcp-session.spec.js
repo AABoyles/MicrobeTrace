@@ -81,7 +81,8 @@ test('gets and sets loading options', async () => {
   r = await call('set_loading_options', { distanceMetric: 'snps', linkThreshold: 5, ambiguityStrategy: 'RESOLVE', linkStorage: 'all', inferDirectionality: false, alignment: 'smith-waterman', referenceSource: 'first', distanceMetricsAlso: ['tn93'], aligner: { match: 2 } });
   expect(r).toMatchObject({ distanceMetric: 'snps', linkThreshold: 5, ambiguityStrategy: 'RESOLVE', linkStorage: 'all', alignment: 'smith-waterman', referenceSource: 'first', distanceMetricsAlso: ['tn93'] });
   expect(r.aligner.match).toBe(2);
-  expect(r.aligner.band).toBe(0);
+  // The Files view's default band
+  expect(r.aligner.band).toBe(100);
   r = await call('set_loading_options', { aligner: { band: 50 } });
   expect(r.aligner.band).toBe(50);
   expect(await page.evaluate(() => document.querySelector('.aligner-band').value)).toBe('50');
