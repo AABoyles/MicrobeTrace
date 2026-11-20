@@ -10,11 +10,11 @@
       "license": "Apache-2.0"
     },
     "bioseq": {
-      "version": "0.1.5",
+      "version": "0.2.0",
       "license": "Apache-2.0"
     },
     "bootstrap": {
-      "version": "5.3.8",
+      "version": "5.3.9",
       "license": "MIT"
     },
     "bootstrap-icons": {
@@ -22,11 +22,11 @@
       "license": "MIT"
     },
     "d3": {
-      "version": "7.9.0",
+      "version": "7.9.2",
       "license": "ISC"
     },
     "d3-polygon": {
-      "version": "3.0.1",
+      "version": "3.0.2",
       "license": "ISC"
     },
     "d3-symbol-extra": {
@@ -54,7 +54,7 @@
       "license": "MIT"
     },
     "papaparse": {
-      "version": "5.7.0",
+      "version": "5.7.1",
       "license": "MIT"
     },
     "patristic": {
@@ -62,15 +62,15 @@
       "license": "Apache-2.0"
     },
     "pdfmake": {
-      "version": "0.3.11",
+      "version": "0.3.14",
       "license": "MIT"
     },
     "plotly.js": {
-      "version": "4.1.2",
+      "version": "4.3.0",
       "license": "MIT"
     },
     "tabulator-tables": {
-      "version": "6.6.1",
+      "version": "6.7.1",
       "license": "MIT"
     },
     "tidytree": {
@@ -84,7 +84,7 @@
       "patched": "resolutionsCount table fixed (scripts/patch-tn93.js)"
     },
     "tom-select": {
-      "version": "2.6.2",
+      "version": "2.7.0",
       "license": "Apache-2.0"
     },
     "xlsx": {

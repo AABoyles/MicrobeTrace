@@ -104,6 +104,8 @@ test('the sequence controls preview the sequences, and align them with Smith-Wat
   await modal.locator('label', { hasText: 'Smith-Waterman' }).click();
   await expect(modal.locator('.align-config-row').first()).toBeVisible();
   expect(await get('align-sw')).toBe(true);
+  // The band starts at 0, the fastest
+  await expect(modal.getByLabel('Band Width')).toHaveValue('0');
   // Consensus is the default, so there is no reference file to choose
   expect(await get('reference-source-consensus')).toBe(true);
   await expect(modal.locator('.reference-file-row')).toBeHidden();

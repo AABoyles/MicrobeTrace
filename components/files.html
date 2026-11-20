@@ -300,6 +300,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 <input type="number" class="form-control aligner-gap-extend" value="2" min="0" aria-describedby="aligner-gap-extend-help"><div id="aligner-gap-extend-help" class="form-text small">Score taken off for each further position in a gap.</div>
               </div>
             </div>
+            <div class="row align-config-row">
+              <div class="form-group col offset-2" title="How far may a gap shift a sequence against the reference?">
+                <label for="aligner-band">Band Width</label>
+                <input type="number" id="aligner-band" class="form-control aligner-band" value="100" min="0" step="1" aria-describedby="aligner-band-help"><div id="aligner-band-help" class="form-text small">How many bases a gap may shift a sequence, beyond the difference in length from the reference. 0 is fastest; wider places more gaps correctly but is slower. Leave it blank for no limit (slowest).</div>
+              </div>
+              <div class="col"></div>
+            </div>
             <div class="row alignPreviewRow">
               <div class="w-100 text-center alignment-preview"></div>
             </div>

@@ -12,7 +12,7 @@
     const table = $('#file-table');
     const launchButton = $('#launch');
     const number = selector => parseFloat($(selector).value);
-    const alignerInputs = { match: '.aligner-match', mismatch: '.aligner-mismatch', gapOpen: '.aligner-gap-open', gapExtend: '.aligner-gap-extend' };
+    const alignerInputs = { match: '.aligner-match', mismatch: '.aligner-mismatch', gapOpen: '.aligner-gap-open', gapExtend: '.aligner-gap-extend', band: '.aligner-band' };
     const alignerCosts = () => Object.fromEntries(Object.keys(alignerInputs).map(k => [k, number(alignerInputs[k])]));
     // The aligner's {match, gap} scores; the preview and the launch both use these
     const alignerScoring = () => MTAlignerScoring(alignerCosts());
@@ -1349,10 +1349,13 @@
       // The audit's findings for [{id, seq}], given {empty, gaps, RNA, 'amino-acids', CIGAR, malformed} (each on unless false)
       auditSequences: (data, checks) => auditSequences(data, name => checks[name] !== false),
       readFastas,
-      // The alignment scores {match, mismatch, gapOpen, gapExtend}, after setting any given
+      // The alignment scores {match, mismatch, gapOpen, gapExtend, band}, after setting any given (band null: no band)
       aligner(values) {
         Object.keys(alignerInputs).forEach(k => { if (values && values[k] !== undefined) $(alignerInputs[k]).value = values[k]; });
-        return alignerCosts();
+        // A blank band is NaN, which JSON (the agent's answer) would turn into null anyway
+        const costs = alignerCosts();
+        if (!Number.isFinite(costs.band)) costs.band = null;
+        return costs;
       },
       // Redraws the controls that follow other settings, after those were set
       refresh() {
