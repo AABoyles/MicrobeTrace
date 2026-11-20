@@ -10,9 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const patched = {
-  tn93: 'resolutionsCount table fixed (scripts/patch-tn93.js)'
-};
+const patched = {};
 
 const [out, ...names] = process.argv.slice(2);
 if (!out || !names.length) {

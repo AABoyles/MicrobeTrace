@@ -93,7 +93,9 @@ test('gets and sets loading options', async () => {
   r = await call('set_loading_options', { aligner: { band: 0 } });
   expect(r.aligner.band).toBe(0);
   expect(await page.evaluate(() => document.querySelector('#default-distance-metric').value)).toBe('snps');
-  expect(await fails('set_loading_options', { distanceMetric: 'snps', ambiguityStrategy: 'GAPMM' })).toMatch(/GAPMM/);
+  // GapMM works with any metric
+  r = await call('set_loading_options', { distanceMetric: 'snps', ambiguityStrategy: 'GAPMM' });
+  expect(r.ambiguityStrategy).toBe('GAPMM');
   expect(await fails('set_loading_options', { distanceMetric: 'bogus' })).toMatch(/"distanceMetric" must be one of/);
   // The metric alone brings its default threshold
   r = await call('set_loading_options', { distanceMetric: 'tn93', ambiguityStrategy: 'AVERAGE', alignment: 'none', referenceSource: 'consensus', distanceMetricsAlso: [], aligner: { match: 1 }, linkStorage: 'auto', inferDirectionality: true });

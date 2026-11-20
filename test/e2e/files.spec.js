@@ -54,11 +54,10 @@ test('the distance metric sets the link threshold', async () => {
   await metric.selectOption('snps');
   await expect.poll(() => get('link-threshold')).toBe(await page.evaluate(() => MT.distanceMetrics.snps.threshold));
   await expect(pane().locator('input[data-setting="link-threshold"]')).toHaveAttribute('step', '1');
-  // GapMM is for TN93 only
-  await expect(pane().locator('option[value="GAPMM"]')).toBeDisabled();
+  // GapMM works with any metric
+  await expect(pane().locator('option[value="GAPMM"]')).toBeEnabled();
   await metric.selectOption('tn93');
   await expect.poll(() => get('link-threshold')).toBe(0.015);
-  await expect(pane().locator('option[value="GAPMM"]')).toBeEnabled();
 });
 
 test('the HIV-TRACE ambiguity strategy has a threshold', async () => {

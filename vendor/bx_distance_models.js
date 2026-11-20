@@ -76,8 +76,8 @@ let wasm_bindgen = (function(exports) {
             wasm.__wbg_sequenceset_free(ptr, 0);
         }
         /**
-         * Number of sequences that contain ambiguity codes and use the fallback kernel
-         * (always 0 in `"skip"` mode).
+         * Number of sequences that hold an ambiguity code the mode compares, so that their pairs
+         * take the extra passes (always 0 in `"skip"` mode; gaps count in `"gapmm"` mode).
          * @returns {number}
          */
         ambiguous_count() {
@@ -149,23 +149,35 @@ let wasm_bindgen = (function(exports) {
         }
         /**
          * Encodes `seqs` once. `ambiguity` decides how sites holding IUPAC ambiguity codes
-         * (R, Y, S, W, K, M, B, D, H, V) are compared:
+         * (R, Y, S, W, K, M, B, D, H, V) are compared, as HIV-TRACE's `tn93 -a` does:
          * - `"skip"` (default): ignore them. Every pair uses the fast bit-plane kernel.
          * - `"resolve"`: count a site as a match if the two codes share a base, otherwise average.
          * - `"average"`: average over every pair of bases the two codes allow.
+         * - `"gapmm"`: as `"average"`, and compare a gap facing anything but a gap as an `N`.
          *
-         * With `"resolve"` or `"average"`, only pairs involving a sequence that actually contains
-         * ambiguity codes pay for the slower fallback. `N`, gaps and other characters are always
-         * skipped.
+         * Except in `"skip"` mode, `N` and `?` are fourfold ambiguity codes (any base): resolved
+         * as a match facing a base, or averaged. Gaps and other characters are skipped (outside
+         * `"gapmm"`). Only pairs involving a sequence that actually holds a compared ambiguity code
+         * pay for the extra passes.
+         *
+         * `options`:
+         * - `maxAmbiguityFraction` (with `"resolve"` only, between 0 and 1): HIV-TRACE's
+         *   `tn93 -a resolve -g FRACTION`. A pair is resolved, unless the sites it resolved are at
+         *   least this fraction of its compared sites; then it is averaged instead. As in tn93, a
+         *   resolved site is a base facing a code that contains it, or two ambiguity codes (N
+         *   included) whether or not they share a base. 1 never averages; 0 always does.
+         * - `tn93K2pFallback` (boolean): `"tn93"` uses the K2P formula for a pair in which a base
+         *   never occurs, as tn93 does. By default the TN93 terms that vanish drop out instead.
          * @param {string[]} seqs
          * @param {string | null} [ambiguity]
+         * @param {object | null} [options]
          */
-        constructor(seqs, ambiguity) {
+        constructor(seqs, ambiguity, options) {
             const ptr0 = passArrayJsValueToWasm0(seqs, wasm.__wbindgen_malloc);
             const len0 = WASM_VECTOR_LEN;
             var ptr1 = isLikeNone(ambiguity) ? 0 : passStringToWasm0(ambiguity, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             var len1 = WASM_VECTOR_LEN;
-            const ret = wasm.sequenceset_new(ptr0, len0, ptr1, len1);
+            const ret = wasm.sequenceset_new(ptr0, len0, ptr1, len1, isLikeNone(options) ? 0 : addToExternrefTable0(options));
             if (ret[2]) {
                 throw takeFromExternrefTable0(ret[1]);
             }
@@ -459,9 +471,28 @@ let wasm_bindgen = (function(exports) {
                 const ret = Error(getStringFromWasm0(arg0, arg1));
                 return ret;
             },
+            __wbg___wbindgen_boolean_get_5b446f51afd21013: function(arg0) {
+                const v = arg0;
+                const ret = typeof(v) === 'boolean' ? v : undefined;
+                return isLikeNone(ret) ? 0xFFFFFF : ret ? 1 : 0;
+            },
+            __wbg___wbindgen_is_null_e343b7d08827ba72: function(arg0) {
+                const ret = arg0 === null;
+                return ret;
+            },
             __wbg___wbindgen_is_string_90b56bc79aad6f6c: function(arg0) {
                 const ret = typeof(arg0) === 'string';
                 return ret;
+            },
+            __wbg___wbindgen_is_undefined_8865fb403f8fe9d8: function(arg0) {
+                const ret = arg0 === undefined;
+                return ret;
+            },
+            __wbg___wbindgen_number_get_2e0e7dee9f701a71: function(arg0, arg1) {
+                const obj = arg1;
+                const ret = typeof(obj) === 'number' ? obj : undefined;
+                getDataViewMemory0().setFloat64(arg0 + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
+                getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
             },
             __wbg___wbindgen_string_get_0380ccaa2f57f0d9: function(arg0, arg1) {
                 const obj = arg1;
@@ -491,6 +522,10 @@ let wasm_bindgen = (function(exports) {
             }, arguments); },
             __wbg_get_unchecked_288889d017702237: function(arg0, arg1) {
                 const ret = arg0[arg1 >>> 0];
+                return ret;
+            },
+            __wbg_keys_440be172f17c0265: function(arg0) {
+                const ret = Object.keys(arg0);
                 return ret;
             },
             __wbg_length_b5f0008bbf60cf59: function(arg0) {

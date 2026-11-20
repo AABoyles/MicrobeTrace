@@ -20,7 +20,6 @@ primaryscripts=(
   "node_modules/papaparse/papaparse.min.js"
   "node_modules/jszip/dist/jszip.min.js"
   "node_modules/xlsx/dist/xlsx.core.min.js"
-  "vendor/tn93.min.js"
   "node_modules/d3/dist/d3.min.js"
   "node_modules/tabulator-tables/dist/js/tabulator.min.js"
 )
@@ -104,10 +103,6 @@ mkdir -p fonts && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.wof
 
 echo 'Building Dependencies...'
 
-# tn93, with GapMM's resolution weights fixed (see scripts/patch-tn93.js). The
-# primary bundle includes this copy too, so it must be built first.
-node scripts/patch-tn93.js vendor/tn93.min.js
-
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.
 # scattergl needs a stand-in for Node's buffer module (scripts/buffer-shim.js).
@@ -146,6 +141,6 @@ echo 'Recording Versions...'
 node scripts/write-versions.js dist/versions.json \
   @cosmos.gl/graph alignment-viewer bioseq bootstrap bootstrap-icons d3 d3-polygon d3-symbol-extra \
   golden-layout html5sortable jszip leaflet leaflet.markercluster papaparse patristic pdfmake \
-  plotly.js tabulator-tables tidytree tom-select tn93 xlsx
+  plotly.js tabulator-tables tidytree tom-select xlsx
 
 echo 'Done.'

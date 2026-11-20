@@ -2,6 +2,12 @@
 
 The version is the `version` in `package.json`. Help > About shows it, with the commit the site was built from. Numbers in brackets are the pull requests that made each change.
 
+## Unreleased
+
+### Analysis
+
+- Genetic distances agree with HIV-TRACE's tn93 in every ambiguity strategy (bx-distance-models 0.2.0). GapMM weighs a gap facing a base as one site, not 4/3 (#282), and works with every distance metric. N and ? count as any base when resolving or averaging, instead of being skipped. MicrobeTrace no longer loads tn93.js.
+
 ## 0.7.1 (2026-11-20)
 
 ### Analysis

@@ -37,7 +37,6 @@ package in `node_modules`, and the copyright lines are in the same files. They a
 | PapaParse | 5.7.0 | MIT | https://github.com/mholt/PapaParse | `bundle.primary.js`, `vendor/papaparse.min.js` |
 | JSZip | 3.10.2 | MIT OR GPL-3.0-or-later (dual; upstream offers either, and MIT is the one named here) | https://github.com/Stuk/jszip | `bundle.primary.js` |
 | SheetJS (`xlsx`, core build) | 0.20.3 | Apache-2.0 | https://git.sheetjs.com/SheetJS/sheetjs | `bundle.primary.js` |
-| tn93 (locally patched) | 0.3.5 (patched) | Apache-2.0 | https://github.com/CDCgov/tn93.js | `bundle.primary.js`, `vendor/tn93.min.js` |
 | D3 | 7.9.0 | ISC | https://github.com/d3/d3 | `bundle.primary.js` |
 | Tabulator (`tabulator-tables`) | 6.6.1 | MIT | https://github.com/tabulator-tables/tabulator | `bundle.primary.js`, `bundle.primary.css` |
 | d3-symbol-extra | 0.1.0 | BSD-3-Clause | https://github.com/YellowTugboat/d3-symbol-extra | `bundle.secondary.js` |
@@ -59,8 +58,7 @@ package in `node_modules`, and the copyright lines are in the same files. They a
 | `vendor/cosmos.min.js` | @cosmos.gl/graph (built with esbuild; see the packages it includes below) | 3.6.0 | MIT | https://github.com/cosmosgl/graph |
 | `vendor/papaparse.min.js` | PapaParse | 5.7.0 | MIT | https://github.com/mholt/PapaParse |
 | `vendor/patristic.min.js` | Patristic | 0.6.0 | Apache-2.0 | https://github.com/CDCgov/patristic |
-| `vendor/tn93.min.js` | tn93 (locally patched) | 0.3.5 (patched) | Apache-2.0 | https://github.com/CDCgov/tn93.js |
-| `vendor/bx_distance_models.js`, `vendor/bx_distance_models_bg.wasm` | bx-distance-models (not on NPM; built from commit `f0fb4cf`, per `vendor/README.md`) | Commit `f0fb4cf` | **Not verified.** No licence file is in this repository or the build inputs, and the upstream licence was not checked. | https://github.com/AABoyles/bx-distance-models |
+| `vendor/bx_distance_models.js`, `vendor/bx_distance_models_bg.wasm` | bx-distance-models (not on NPM; built from commit `970bba4`, per `vendor/README.md`) | Commit `970bba4` (0.2.0) | **Not verified.** No licence file is in this repository or the build inputs, and the upstream licence was not checked. | https://github.com/AABoyles/bx-distance-models |
 
 ### `fonts/`
 
@@ -169,7 +167,7 @@ top-level `patristic` (0.6.0) is the one in `vendor/patristic.min.js`.
 - The full text of each licence is in the package's `LICENSE` file in `node_modules`. Copies of
   those texts are not included in this repository (the MIT, BSD, ISC and Apache-2.0 notice
   conditions apply to redistribution). That has not been done here.
-- Several minified files in `vendor/` (`bioseq.min.js`, `patristic.min.js`, `tn93.min.js`) and the Leaflet and Tabulator builds that are bundled (`leaflet.js`, `tabulator.min.js`) do not carry their own licence banner. This
+- Several minified files in `vendor/` (`bioseq.min.js`, `patristic.min.js`) and the Leaflet and Tabulator builds that are bundled (`leaflet.js`, `tabulator.min.js`) do not carry their own licence banner. This
   file is the notice for them.
 - `dist/bundle.secondary.js` carries the banners esbuild and pdfmake keep (for example pdfmake's
   "@license MIT" and esbuild's bundled-licence comment for polybooljs).

@@ -15,8 +15,7 @@ _A directory for shell scripts_
   so it carries exactly the traces MicrobeTrace draws (Plotly's prebuilt partial
   bundles leave out the sankey trace the flow diagram needs).
 
-  It also applies the local patch (`patch-tn93.js`) and
-  writes `dist/versions.json` (via `write-versions.js`), which records the
+  It also writes `dist/versions.json` (via `write-versions.js`), which records the
   version of every library in `dist/` and `vendor/`. Run it with `npm run
   bundle` after `npm ci`, then `npm run cache`, and commit the result: CI
   rebuilds both and fails if they differ from what was committed.

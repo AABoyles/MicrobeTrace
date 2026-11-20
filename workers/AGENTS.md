@@ -11,7 +11,7 @@ Classic (non-module) Web Workers, started through `MT.runWorker(script, message,
   (`test/golden/harness.js`) run them in a Node `vm` context with only `importScripts`, `fetch`
   (for the WebAssembly in `vendor/`), `postMessage`, `close` and a few globals.
 - Distances from `compute-links.js` (bx-distance-models) can be `NaN` or `Infinity` and can exceed
-  1. `compute-links-legacy.js` (tn93.js) exists only for the GapMM ambiguity strategy.
+  1.
 - A numerical change should be checked against `test/golden/`, whose expected values come from an
   independent implementation; don't regenerate them to match new output.
 - After adding or renaming a worker, run `npm run cache`.

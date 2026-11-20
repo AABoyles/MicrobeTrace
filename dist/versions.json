@@ -77,11 +77,6 @@
       "version": "0.8.1",
       "license": "Apache-2.0"
     },
-    "tn93": {
-      "version": "0.3.5",
-      "license": "Apache-2.0",
-      "patched": "resolutionsCount table fixed (scripts/patch-tn93.js)"
-    },
     "tom-select": {
       "version": "2.7.0",
       "license": "Apache-2.0"
