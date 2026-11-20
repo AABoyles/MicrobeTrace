@@ -74,9 +74,8 @@
       "license": "MIT"
     },
     "tidytree": {
-      "version": "0.8.0",
-      "license": "Apache-2.0",
-      "patched": "arc flags stay 0 or 1 while branches move; no redraw after destroy (scripts/patch-tidytree.js)"
+      "version": "0.8.1",
+      "license": "Apache-2.0"
     },
     "tn93": {
       "version": "0.3.5",
