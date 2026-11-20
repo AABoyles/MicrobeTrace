@@ -39,7 +39,7 @@
   <button type="button" class="btn btn-light btn-sm fit-button" title="Center and Scale Network">
     <span class="bi bi-bullseye"></span>
   </button>
-  <button id="pinbutton" type="button" class="btn btn-light btn-sm pin-button" data-toggle="button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
+  <button id="pinbutton" type="button" class="btn btn-light btn-sm pin-button" aria-pressed="false" autocomplete="off" title="Pin all Nodes">
     <span class="bi bi-pin-angle"></span>
   </button>
   <button type="button" class="btn btn-light btn-sm keys-button" title="Keyboard Shortcuts" aria-expanded="false" aria-controls="network-keys">
@@ -123,8 +123,8 @@
               <div class="form-group row node-symbol-table-row" title="What shape should the nodes be?">
                 <div class="col-4">Table</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light btn-sm col active" title="Show a table of symbols">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100">
+                    <label class="btn btn-light btn-sm col" title="Show a table of symbols">
                       <input type="radio" name="network-symbol-table-visibility" data-setting="node-symbol-table-show" value="true" autocomplete="off" checked>
                       Show
                     </label>
@@ -267,8 +267,8 @@
               <div class="form-group row hideForHIVTrace" title="Should links show arrowheads pointing to their targets?">
                 <div class="col-4">Arrows</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100">
+                    <label class="btn btn-light col">
                       <input type="radio" name="network-directionality" data-setting="link-directed" value="false" autocomplete="off" checked>
                       Hide
                     </label>
@@ -301,8 +301,8 @@
               <div class="form-group row" title="Should MicrobeTrace highlight a node's neighbors when you hover over it?">
                 <div class="col-4">Neighbors</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col" title="Do not highlight anything.
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100">
+                    <label class="btn btn-light col" title="Do not highlight anything.
 Recommended for performance reasons.">
                       <input type="radio" name="network-highlight" data-setting="node-highlight" value="false" autocomplete="off"
                         checked> Normal
@@ -318,12 +318,12 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row" title="Should MicrobeTrace draw gridlines behind the network?">
                 <div class="col-4">Gridlines</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100">
                     <label class="btn btn-light col" title="Show gridlines under the network.">
                       <input type="radio" name="network-gridlines" data-setting="network-gridlines-show" value="true" autocomplete="off">
                       Show
                     </label>
-                    <label class="btn btn-light col active" title="Do Not show gridlines under the network.">
+                    <label class="btn btn-light col" title="Do Not show gridlines under the network.">
                       <input type="radio" name="network-gridlines" data-setting="network-gridlines-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
@@ -384,12 +384,12 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row" title="Should MicrobeTrace draw a shape around each group of nodes?">
                 <div class="col-4">Polygons</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100">
                     <label class="btn btn-light col" title="Show convex hull under the network.">
                       <input type="radio" name="polygons" data-setting="polygons-show" value="true" autocomplete="off">
                       Show
                     </label>
-                    <label class="btn btn-light col active" title="Do Not show convex hull under the network.">
+                    <label class="btn btn-light col" title="Do Not show convex hull under the network.">
                       <input type="radio" name="polygons" data-setting="polygons-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
@@ -415,12 +415,12 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row polygons-settings-row" title="Show polygons colored?">
                 <div class="col-4">Color Polygons</label></div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100">
                     <label class="btn btn-light col" title="Show convex hull under the network.">
                       <input type="radio" name="polygons-color" data-setting="polygons-color-show" value="true" autocomplete="off">
                       Show
                     </label>
-                    <label class="btn btn-light col active" title="Do Not show convex hull under the network.">
+                    <label class="btn btn-light col" title="Do Not show convex hull under the network.">
                       <input type="radio" name="polygons-color" data-setting="polygons-color-show" value="false" autocomplete="off" checked>
                       Hide
                     </label>
@@ -430,8 +430,8 @@ Note that this may cause slow performance on larger networks.">
               <div class="form-group row polygon-color-table-row" title="Should MicrobeTrace display the table of colors?">
                 <div class="col-4">Polygon Color Table</div>
                 <div class="col-8">
-                  <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                    <label class="btn btn-light active col">
+                  <div class="btn-group btn-group-toggle btn-group-sm w-100">
+                    <label class="btn btn-light col">
                       <input type="radio" name="polygonColorTableShowHide" data-setting="polygon-color-table-show" value="true" autocomplete="off" checked>
                       Show
                     </label>

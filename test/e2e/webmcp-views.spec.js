@@ -76,6 +76,8 @@ test('network control and layout', async () => {
   expect(typeof l.nodes[0].x).toBe('number');
   const p = await call('network_control', { action: 'pin_all' });
   expect(p.allPinned).toBe(true);
+  // The pin button follows, though it wasn't clicked (#326)
+  await expect(page.locator('.pin-button')).toHaveAttribute('aria-pressed', 'true');
   await call('network_control', { action: 'unpin_all' });
 });
 

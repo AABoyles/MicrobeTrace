@@ -1042,6 +1042,15 @@
         refresh();
       }
       session.network.allPinned = !session.network.allPinned;
+      showPinned();
+    }
+
+    // The pin button shows whether everything is pinned, however that changed
+    // (a click, the timeline, or an agent's network_control) (#326)
+    function showPinned() {
+      const button = $('.pin-button');
+      button.classList.toggle('active', !!session.network.allPinned);
+      button.setAttribute('aria-pressed', !!session.network.allPinned);
     }
 
     function updatePins() {
@@ -1594,9 +1603,8 @@
     tooltipMenu.setValue(chosen, true);
     tooltipMenu.on('change', () => settings.set('node-tooltip-variable', tooltipMenu.getValue()));
 
-    const pinButton = $('.pin-button');
-    pinButton.classList.toggle('active', !!session.network.allPinned);
-    pinButton.addEventListener('click', pinAll);
+    showPinned();
+    $('.pin-button').addEventListener('click', pinAll);
     $('.fit-button').addEventListener('click', () => fit());
     MT.paneToggle($('.settings-toggle'), pane);
     MT.svgExport(root, buildExportSVG, settings, {}, () => {

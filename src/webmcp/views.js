@@ -671,7 +671,7 @@
         where: el.closest('.view-controls') ? 'toolbar' : el.closest('.left-pane') ? 'settings pane' : 'view',
         kind: exportOpener ? 'export' : toggle == 'dropdown' ? 'menu' : menu ? 'menu item' : 'button',
         menu: toggler ? (toggler.title || text(toggler)) : undefined,
-        pressed: el.getAttribute('aria-pressed') == 'true' || (el.classList.contains('active') && el.matches('[data-toggle="button"], .settings-toggle, [class*="toggle"]')) || undefined,
+        pressed: el.getAttribute('aria-pressed') == 'true' || (el.classList.contains('active') && el.matches('.settings-toggle, [class*="toggle"]')) || undefined,
         enabled: !el.disabled && !el.classList.contains('disabled'),
         visible: !isOff(el, root),
         el

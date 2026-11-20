@@ -277,8 +277,10 @@ body {
   border-color: var(--bs-btn-border-color);
   box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
 }
-/* The chosen option in a toggle group (grey read as disabled) */
-.btn-group-toggle > .btn.active {
+/* The chosen option in a toggle group (grey read as disabled). Each option is
+   a label.btn holding its input, so the browser checks it and :has() styles it
+   with no script (#326). */
+.btn-group-toggle > .btn:has(> input:checked) {
   position: relative;
   z-index: 1;
   background-color: var(--bs-primary-bg-subtle);
@@ -793,13 +795,17 @@ td {
 .form-group {
   margin-bottom: 1rem;
 }
-/* Toggle-button groups: the inputs are hidden and the labels are the buttons
-   (src/bootstrap-compat.js keeps their .active state) */
+/* Toggle-button groups: the inputs are hidden and the labels are the buttons.
+   The inputs still take focus and arrow keys, so the label shows the focus. */
 .btn-group-toggle > .btn input[type="radio"],
 .btn-group-toggle > .btn input[type="checkbox"] {
   position: absolute;
   clip: rect(0, 0, 0, 0);
   pointer-events: none;
+}
+.btn-group-toggle > .btn:has(> input:focus-visible) {
+  z-index: 2;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
 }
 /* The sequence controls' preview scrolls inside the dialog */
 .alignment-preview {

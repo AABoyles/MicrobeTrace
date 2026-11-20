@@ -295,8 +295,8 @@
             <button type="button" class="btn btn-light btn-sm file-move-up" title="Move this file up" aria-label="Move this file up"><span class="bi bi-arrow-up" aria-hidden="true"></span></button>
             <button type="button" class="btn btn-light btn-sm file-move-down" title="Move this file down" aria-label="Move this file down"><span class="bi bi-arrow-down" aria-hidden="true"></span></button>
             <span class="file-title p-1"></span>
-            <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
-              ${kinds.map(([value, label]) => `<label class="btn btn-light${value == kind ? ' active' : ''}">
+            <div class="btn-group btn-group-toggle btn-group-sm">
+              ${kinds.map(([value, label]) => `<label class="btn btn-light">
                 <input type="radio" name="${group}" value="${value}" autocomplete="off"${value == kind ? ' checked' : ''}>${label}
               </label>`).join('')}
             </div>
