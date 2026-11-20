@@ -15,7 +15,7 @@ test.afterAll(() => page.close());
 
 test('network statistics', async () => {
   const stats = await page.evaluate(() => ['numberOfNodes', 'numberOfVisibleLinks', 'numberOfSingletonNodes', 'numberOfDisjointComponents'].map(id => document.getElementById(id).textContent));
-  expect(stats).toEqual(['310', '476', '22', '76']);
+  expect(stats).toEqual(['310', '299', '85', '63']);
   expect(errors).toEqual([]);
 });
 

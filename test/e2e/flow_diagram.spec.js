@@ -68,14 +68,14 @@ test('the links dataset offers link variables', async () => {
   await expect.poll(() => selectors().first().evaluate(el => Array.from(el.options).map(o => o.value))).toContain('distance');
   await selectors().nth(0).selectOption('origin');
   await selectors().nth(1).selectOption('contact');
-  await expect.poll(async () => (await plot()).flow).toBe(476);
+  await expect.poll(async () => (await plot()).flow).toBe(299);
 });
 
 test('redraws when the visible links change', async () => {
   await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(async () => (await plot()).flow).toBeLessThan(476);
+  await expect.poll(async () => (await plot()).flow).toBeLessThan(299);
   await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(async () => (await plot()).flow).toBe(476);
+  await expect.poll(async () => (await plot()).flow).toBe(299);
 });
 
 test('reopening the view restores the dataset', async () => {

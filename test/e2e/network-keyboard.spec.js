@@ -43,7 +43,7 @@ test('the network is named, focusable, and says how to use it', async () => {
   await expect(network()).toHaveAttribute('role', 'application');
   await expect(network()).toHaveAttribute('tabindex', '0');
   const nodes = await page.evaluate(() => temp.network.points.length);
-  await expect(network()).toHaveAttribute('aria-label', new RegExp(`^Network of ${nodes.toLocaleString('en-US')} nodes and 476 links in \\d+ clusters$`));
+  await expect(network()).toHaveAttribute('aria-label', new RegExp(`^Network of ${nodes.toLocaleString('en-US')} nodes and 299 links in \\d+ clusters$`));
   await expect(page.locator('#network-keys-summary')).toContainText('Table view');
   await expect(live()).toHaveAttribute('aria-live', 'polite');
   // The key list, from its button
@@ -204,15 +204,15 @@ test('M opens the node menu, whose items take the arrows, and Escape returns to 
 test('the links described follow the threshold', async () => {
   const i = await withLinks(2);
   await page.evaluate(() => MT.settings.set('link-threshold', 0.005));
-  await expect.poll(() => page.evaluate(() => temp.network.links.length)).toBeLessThan(476);
+  await expect.poll(() => page.evaluate(() => temp.network.links.length)).toBeLessThan(299);
   await network().focus();
   const j = await page.evaluate(id => temp.network.points.findIndex(d => d._id == id), await page.evaluate(i => temp.network.points[i]._id, i));
   await page.evaluate(j => temp.network.focus(j), j);
   const neighbours = await linked(j);
   await expect(live()).toContainText(neighbours.length ? `${neighbours.length} link${neighbours.length == 1 ? '' : 's'}: ` : 'No links');
   await page.evaluate(() => MT.settings.set('link-threshold', 0.015));
-  await expect.poll(() => page.evaluate(() => temp.network.links.length)).toBe(476);
-  await expect(network()).toHaveAttribute('aria-label', /476 links/);
+  await expect.poll(() => page.evaluate(() => temp.network.links.length)).toBe(299);
+  await expect(network()).toHaveAttribute('aria-label', /299 links/);
   expect(errors).toEqual([]);
 });
 

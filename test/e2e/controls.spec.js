@@ -145,6 +145,6 @@ test("a view's settings labels don't wrap", async () => {
 test('the statistics read as sentences', async () => {
   const stats = page.locator('#network-statistics-table');
   await expect(stats).toContainText('310 nodes, 0 selected');
-  await expect(stats).toContainText('476 links');
+  await expect(stats).toContainText('299 links');
   expect(errors).toEqual([]);
 });

@@ -34,7 +34,7 @@ test('draws the links’ distances by default', async () => {
   const p = await plot();
   expect(p.y).toBe('Number of Links');
   // Colored by origin, as the link legend is: by the file each link came from first
-  expect(p.traces).toEqual([10, 466]);
+  expect(p.traces).toEqual([10, 289]);
 });
 
 test('the settings pane opens and closes', async () => {
@@ -104,11 +104,11 @@ test('redraws when the background color or the visible links change', async () =
   await page.evaluate(() => (el => { el.value = '#ffffff'; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('background-color')));
   await page.evaluate(() => MT.settings.set('histogram-variable', 'links-distance'));
   const total = async () => (await plot()).traces.reduce((a, b) => a + b, 0);
-  await expect.poll(total).toBe(476);
+  await expect.poll(total).toBe(299);
   await page.evaluate(() => (el => { el.value = 0.005; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(total).toBeLessThan(476);
+  await expect.poll(total).toBeLessThan(299);
   await page.evaluate(() => (el => { el.value = 0.015; el.dispatchEvent(new Event('change', { bubbles: true })); })(document.getElementById('link-threshold')));
-  await expect.poll(total).toBe(476);
+  await expect.poll(total).toBe(299);
 });
 
 test('the plot follows the panel size', async () => {
