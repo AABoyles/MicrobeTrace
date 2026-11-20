@@ -4,7 +4,7 @@
 // replaces the old one. The block below is generated: `npm run cache`.
 
 // BEGIN GENERATED (scripts/build-sw.js)
-const CACHE = "microbetrace-106cb0444b34";
+const CACHE = "microbetrace-5d2b4e1f8368";
 const PRECACHE = [
   "components/aggregation.html",
   "components/aggregation.js",
