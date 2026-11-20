@@ -108,7 +108,7 @@ echo 'Building Dependencies...'
 # primary bundle includes this copy too, so it must be built first.
 node scripts/patch-tn93.js vendor/tn93.min.js
 
-# TidyTree, with interrupted redraws no longer rejecting (see scripts/patch-tidytree.js)
+# TidyTree, with two fixes for 0.8 (see scripts/patch-tidytree.js)
 node scripts/patch-tidytree.js "$tmp/tidytree.js"
 
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).

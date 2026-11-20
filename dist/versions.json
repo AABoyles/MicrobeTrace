@@ -74,9 +74,9 @@
       "license": "MIT"
     },
     "tidytree": {
-      "version": "0.7.0",
+      "version": "0.8.0",
       "license": "Apache-2.0",
-      "patched": "interrupted redraws no longer reject (scripts/patch-tidytree.js)"
+      "patched": "arc flags stay 0 or 1 while branches move; no redraw after destroy (scripts/patch-tidytree.js)"
     },
     "tn93": {
       "version": "0.3.5",

@@ -12,7 +12,7 @@ const path = require('path');
 
 const patched = {
   tn93: 'resolutionsCount table fixed (scripts/patch-tn93.js)',
-  tidytree: 'interrupted redraws no longer reject (scripts/patch-tidytree.js)'
+  tidytree: 'arc flags stay 0 or 1 while branches move; no redraw after destroy (scripts/patch-tidytree.js)'
 };
 
 const [out, ...names] = process.argv.slice(2);
