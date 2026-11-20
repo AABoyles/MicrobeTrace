@@ -2,6 +2,43 @@
 
 The version is the `version` in `package.json`. Help > About shows it, with the commit the site was built from. Numbers in brackets are the pull requests that made each change.
 
+## 0.7.1 (2026-11-20)
+
+### Analysis
+
+- Smith-Waterman alignment is much faster (bioseq 0.2.0), and has a Band Width setting: how far a gap may shift a sequence against the reference. A narrower band is faster; a blank band compares every position.
+
+### Views and interface
+
+- Links can be told apart by dash pattern as well as color (Dash By), and node shapes are suggested when a color variable has many values. (#294)
+- In the network, G selects the focused node's neighbours and takes in one more link each press; Shift+G adds them to the selection. (#295)
+- The tree, heatmap and sequences views compute in the background, with progress and a Cancel button. (#293)
+- Toggle buttons work and show their state without a compatibility script, and the network's pin button shows when an AI agent pinned the nodes. (#326)
+
+### Files and sessions
+
+- A file cut off mid-row keeps its header, instead of reporting that no columns were found. (#172)
+- A distance matrix with a repeated ID, or cut off before a node's row, is refused with a message naming the ID. (#172)
+- The loading log says correctly that a repeated ID keeps its first row's values. (#172)
+- Sequences that differ only in letter case are no longer reported as conflicting between files.
+- The demo session uses the current field names and has all 88 nodes, and the demo files agree on their IDs. (#297)
+
+### Reliability and performance
+
+- The timeline no longer stops with an error when a variable's color table isn't cached. (#243)
+- Changes the timeline and the color tables make to settings reach the views that follow them. (#327)
+- WebMCP tools refuse arguments that don't match their schema before they run or ask you to allow them, and no longer depend on the page's markup. (#176, #242)
+- Timing messages are printed only when debugging is on. (#239)
+
+### Build, deployment and project
+
+- ESLint runs in CI, and the code has no undefined names. (#243)
+- `src/common.js` is split by subject into seven scripts. (#240)
+- The unused triangulation and patristic-matrix workers and other dead code are removed. (#238)
+- Unit-test coverage is reported in CI, and there are more tests for malformed input and the workers. End-to-end tests wait on page state instead of fixed delays, and fail on failed requests. (#170, #172, #175, #178)
+- TidyTree 0.8.1 fixes the bugs that local patches worked around, and the d3 and Bootstrap compatibility shims are gone. (#326)
+- Dependencies are updated, and `AGENTS.md` files describe the codebase for coding agents.
+
 ## 0.7.0 (2026-11-19)
 
 Changes since 0.6.2 (June 2020).

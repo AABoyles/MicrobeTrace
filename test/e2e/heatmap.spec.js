@@ -55,7 +55,7 @@ test('inverting an axis reverses it', async () => {
   await expect.poll(async () => (await plot()).x0).toBe(names[names.length - 1]);
   expect((await plot()).y0).toBe(names[0]);
   expect(await widget('heatmap-invertX')).toBe(true);
-  await expect(pane().locator('label', { hasText: 'X-Axis' })).toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: 'X-Axis' }).locator('input')).toBeChecked();
   await pane().locator('label', { hasText: 'Y-Axis' }).click();
   await expect.poll(async () => (await plot()).y0).toBe(names[names.length - 1]);
   await pane().locator('label', { hasText: 'Y-Axis' }).click();
@@ -93,9 +93,9 @@ test('reopening the view restores its settings', async () => {
   const p = await plot();
   expect(p.tickLabels).toBe(true);
   expect(p.colors[2]).toBe('#00ff00');
-  await expect(pane().locator('label', { hasText: 'X-Axis' })).toHaveClass(/active/);
-  await expect(pane().locator('label', { hasText: 'Y-Axis' })).not.toHaveClass(/active/);
-  await expect(pane().locator('label', { hasText: 'Show' })).toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: 'X-Axis' }).locator('input')).toBeChecked();
+  await expect(pane().locator('label', { hasText: 'Y-Axis' }).locator('input')).not.toBeChecked();
+  await expect(pane().locator('label', { hasText: 'Show' }).locator('input')).toBeChecked();
   await expect(pane().locator('input[data-setting="heatmap-color-high"]')).toHaveValue('#00ff00');
 });
 

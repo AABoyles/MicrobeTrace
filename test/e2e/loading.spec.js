@@ -19,7 +19,7 @@ test.afterEach(() => page.close());
 
 const rows = () => page.locator('#file-table .file-table-row');
 const row = name => rows().filter({ hasText: name });
-const active = name => row(name).locator('label.active');
+const active = name => row(name).locator('label:has(> input:checked)');
 
 test('Cancel terminates the workers and returns to the files, still listed', async () => {
   // Workers that never reply, so the load is waiting on one

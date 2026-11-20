@@ -61,15 +61,15 @@ test('the Y axis setting turns the histogram sideways', async () => {
   await expect.poll(async () => (await plot()).y).toBe('Degree');
   expect((await plot()).horizontal).toBe(true);
   expect(await widget('histogram-axis-x')).toBe(false);
-  await expect(pane().locator('label', { hasText: /^\s*Y\s*$/ })).toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: /^\s*Y\s*$/ }).locator('input')).toBeChecked();
 });
 
 test('the log scale applies to the count axis', async () => {
   await pane().locator('label', { hasText: 'Log' }).click();
   await expect.poll(async () => (await plot()).xType).toBe('log');
   expect(await widget('histogram-scale-log')).toBe(true);
-  await expect(pane().locator('label', { hasText: 'Log' })).toHaveClass(/active/);
-  await expect(pane().locator('label', { hasText: 'Linear' })).not.toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: 'Log' }).locator('input')).toBeChecked();
+  await expect(pane().locator('label', { hasText: 'Linear' }).locator('input')).not.toBeChecked();
 });
 
 test('coloring nodes by a variable stacks the bars', async () => {
@@ -86,16 +86,16 @@ test('reopening the view restores its settings', async () => {
   await expect.poll(async () => (await plot()).y).toBe('Degree');
   expect((await plot()).xType).toBe('log');
   await expect(pane().getByLabel('Variable')).toHaveValue('nodes-degree');
-  await expect(pane().locator('label', { hasText: /^\s*Y\s*$/ })).toHaveClass(/active/);
-  await expect(pane().locator('label', { hasText: 'Log' })).toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: /^\s*Y\s*$/ }).locator('input')).toBeChecked();
+  await expect(pane().locator('label', { hasText: 'Log' }).locator('input')).toBeChecked();
   await expect(pane().locator('input[type=radio]:checked')).toHaveCount(2);
 });
 
 test('a setting changed elsewhere updates the controls and the plot', async () => {
   await page.evaluate(() => MT.settings.set('histogram-axis-x', true));
   await expect.poll(async () => (await plot()).x).toBe('Degree');
-  await expect(pane().locator('label', { hasText: /^\s*X\s*$/ })).toHaveClass(/active/);
-  await expect(pane().locator('label', { hasText: /^\s*Y\s*$/ })).not.toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: /^\s*X\s*$/ }).locator('input')).toBeChecked();
+  await expect(pane().locator('label', { hasText: /^\s*Y\s*$/ }).locator('input')).not.toBeChecked();
 });
 
 test('redraws when the background color or the visible links change', async () => {

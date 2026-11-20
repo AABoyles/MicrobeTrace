@@ -11,8 +11,7 @@ const fs = require('fs');
 const path = require('path');
 
 const patched = {
-  tn93: 'resolutionsCount table fixed (scripts/patch-tn93.js)',
-  tidytree: 'interrupted redraws no longer reject (scripts/patch-tidytree.js)'
+  tn93: 'resolutionsCount table fixed (scripts/patch-tn93.js)'
 };
 
 const [out, ...names] = process.argv.slice(2);

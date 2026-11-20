@@ -113,6 +113,8 @@ test('a leaf tooltip shows the tooltip variable', async () => {
   });
   // (TidyTree listens for mouseenter)
   const leaf = leaves().first();
+  // Styling follows TidyTree's redraw, a frame later
+  await expect(leaf).toHaveAttribute('title', state == null ? '' : '' + state);
   await leaf.dispatchEvent('mouseenter');
   await expect(page.locator('#tooltip')).toHaveText(state == null ? '' : '' + state);
   await leaf.dispatchEvent('mouseout');

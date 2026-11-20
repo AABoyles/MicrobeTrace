@@ -81,7 +81,7 @@ test('redraws when the visible links change', async () => {
 test('reopening the view restores the dataset', async () => {
   await closeView(page, 'flow_diagram');
   await launchView(page, 'flow_diagram');
-  await expect(pane().locator('label', { hasText: 'Links' })).toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: 'Links' }).locator('input')).toBeChecked();
   await expect.poll(() => selectors().first().evaluate(el => Array.from(el.options).map(o => o.value))).toContain('distance');
 });
 

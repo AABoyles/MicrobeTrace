@@ -1,6 +1,6 @@
 {
   "name": "MicrobeTrace",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "The Visualization Multitool for Molecular Epidemiology and Bioinformatics",
   "homepage": "https://github.com/aaboyles/MicrobeTrace#readme",
   "keywords": [
@@ -60,7 +60,7 @@
     "@playwright/test": "^1.64.0",
     "alignment-viewer": "^0.3.4",
     "axe-core": "^4.14.0",
-    "bioseq": "^0.1.5",
+    "bioseq": "^0.2.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.2",
     "cssnano": "^9.6.0",
@@ -82,7 +82,7 @@
     "plotly.js": "^4.1.2",
     "postcss": "^8.5.29",
     "tabulator-tables": "^6.6.1",
-    "tidytree": "^0.7.0",
+    "tidytree": "^0.8.1",
     "tn93": "^0.3.5",
     "tom-select": "^2.6.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"

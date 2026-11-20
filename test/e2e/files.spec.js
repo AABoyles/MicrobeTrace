@@ -24,9 +24,9 @@ const get = key => page.evaluate(key => session.style.widgets[key], key);
 test('lists added files, reading each as its kind', async () => {
   await page.setInputFiles('#data-files', fixtures);
   await expect(rows()).toHaveCount(3);
-  await expect(row('links.csv').locator('label.active')).toHaveText('Link');
-  await expect(row('nodes.csv').locator('label.active')).toHaveText('Node');
-  await expect(row('seqs.fasta').locator('label.active')).toHaveText('FASTA');
+  await expect(row('links.csv').locator('label:has(> input:checked)')).toHaveText('Link');
+  await expect(row('nodes.csv').locator('label:has(> input:checked)')).toHaveText('Node');
+  await expect(row('seqs.fasta').locator('label:has(> input:checked)')).toHaveText('FASTA');
   // The fields named for what they hold are chosen
   expect(await fields('links.csv').evaluateAll(s => s.map(s => s.value))).toEqual(['source', 'target', 'distance']);
   expect(await fields('nodes.csv').nth(0).inputValue()).toBe('id');
@@ -81,7 +81,7 @@ test('sequences can be generated', async () => {
   await pane().locator('input.generate-number').fill('10');
   await pane().locator('button', { hasText: 'Sequences' }).click();
   await expect(rows()).toHaveCount(4);
-  await expect(row('generatedNodes.csv').locator('label.active')).toHaveText('Node');
+  await expect(row('generatedNodes.csv').locator('label:has(> input:checked)')).toHaveText('Node');
   await pane().locator('.nav-link', { hasText: 'Files' }).click();
   await view().locator('button[title="Files Settings"]').click();
   await expect(pane()).toBeHidden();
@@ -104,6 +104,8 @@ test('the sequence controls preview the sequences, and align them with Smith-Wat
   await modal.locator('label', { hasText: 'Smith-Waterman' }).click();
   await expect(modal.locator('.align-config-row').first()).toBeVisible();
   expect(await get('align-sw')).toBe(true);
+  // The band starts at 100, balancing speed and accuracy
+  await expect(modal.getByLabel('Band Width')).toHaveValue('100');
   // Consensus is the default, so there is no reference file to choose
   expect(await get('reference-source-consensus')).toBe(true);
   await expect(modal.locator('.reference-file-row')).toBeHidden();

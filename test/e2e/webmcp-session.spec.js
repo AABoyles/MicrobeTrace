@@ -81,6 +81,17 @@ test('gets and sets loading options', async () => {
   r = await call('set_loading_options', { distanceMetric: 'snps', linkThreshold: 5, ambiguityStrategy: 'RESOLVE', linkStorage: 'all', inferDirectionality: false, alignment: 'smith-waterman', referenceSource: 'first', distanceMetricsAlso: ['tn93'], aligner: { match: 2 } });
   expect(r).toMatchObject({ distanceMetric: 'snps', linkThreshold: 5, ambiguityStrategy: 'RESOLVE', linkStorage: 'all', alignment: 'smith-waterman', referenceSource: 'first', distanceMetricsAlso: ['tn93'] });
   expect(r.aligner.match).toBe(2);
+  // The Files view's default band
+  expect(r.aligner.band).toBe(100);
+  r = await call('set_loading_options', { aligner: { band: 50 } });
+  expect(r.aligner.band).toBe(50);
+  expect(await page.evaluate(() => document.querySelector('.aligner-band').value)).toBe('50');
+  expect(await fails('set_loading_options', { aligner: { band: 1.5 } })).toMatch(/whole number/);
+  // Blank in the Files view is no band
+  await page.evaluate(() => { document.querySelector('.aligner-band').value = ''; });
+  expect((await call('get_loading_options')).options.aligner.band).toBeNull();
+  r = await call('set_loading_options', { aligner: { band: 0 } });
+  expect(r.aligner.band).toBe(0);
   expect(await page.evaluate(() => document.querySelector('#default-distance-metric').value)).toBe('snps');
   expect(await fails('set_loading_options', { distanceMetric: 'snps', ambiguityStrategy: 'GAPMM' })).toMatch(/GAPMM/);
   expect(await fails('set_loading_options', { distanceMetric: 'bogus' })).toMatch(/"distanceMetric" must be one of/);

@@ -32,7 +32,7 @@ secondaryscripts=(
   "node_modules/d3-symbol-extra/build/d3-symbol-extra.min.js"
   "node_modules/d3-polygon/dist/d3-polygon.min.js"
   "$tmp/plotly.js"
-  "$tmp/tidytree.js"
+  "node_modules/tidytree/dist/tidytree.min.js"
   "node_modules/leaflet/dist/leaflet.js"
   "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
   "node_modules/html5sortable/dist/html5sortable.min.js"
@@ -107,9 +107,6 @@ echo 'Building Dependencies...'
 # tn93, with GapMM's resolution weights fixed (see scripts/patch-tn93.js). The
 # primary bundle includes this copy too, so it must be built first.
 node scripts/patch-tn93.js vendor/tn93.min.js
-
-# TidyTree, with interrupted redraws no longer rejecting (see scripts/patch-tidytree.js)
-node scripts/patch-tidytree.js "$tmp/tidytree.js"
 
 # Plotly with just the traces MicrobeTrace uses (see scripts/plotly-bundle.js).
 # The stylesheet it imports is for map traces, which MicrobeTrace doesn't use.

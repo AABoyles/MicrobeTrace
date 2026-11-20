@@ -8,22 +8,17 @@ onmessage = function(e) {
  let n = subset.length;
  for (let i = 0; i < n; i++) {
   let node = subset[i];
-  let rst = bioseq.align(
-   reference,
-   node.seq,
-   false,
-   e.data.match,
-   e.data.gap
-  );
-  let fmt = bioseq.cigar2gaps(
-   reference,
-   node.seq,
-   rst.position,
-   rst.CIGAR,
-   true
-  );
+  // A global alignment never returns null (only a local one with no positive score does)
+  let rst = bioseq.align(reference, node.seq, {
+   mode: "global",
+   matrix: e.data.match,
+   gap: e.data.gap,
+   // null compares every pair of positions (see MTAlignerScoring)
+   band: e.data.band
+  });
+  let fmt = bioseq.cigar2gaps(reference, node.seq, rst.refStart, rst.CIGAR, true);
   node._score = rst.score;
-  node._padding = rst.position;
+  node._padding = rst.refStart;
   node._cigar = rst.CIGAR;
   node._seq = fmt[1];
  }

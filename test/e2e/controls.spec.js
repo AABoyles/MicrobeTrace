@@ -47,8 +47,8 @@ test('links look like links, and say where they go', async () => {
 
 test("a toggle group's chosen option is marked in the primary color", async () => {
   await openSettings('Filtering');
-  const chosen = settings().locator('label.active', { has: page.locator('[data-setting="network-statistics-show"]') });
-  const other = settings().locator('label:not(.active)', { has: page.locator('[data-setting="network-statistics-show"]') });
+  const chosen = settings().locator('label:has(> input:checked)', { has: page.locator('[data-setting="network-statistics-show"]') });
+  const other = settings().locator('label:not(:has(> input:checked))', { has: page.locator('[data-setting="network-statistics-show"]') });
   const [on, off] = [await style(chosen, 'borderColor', 'fontWeight', 'backgroundColor'), await style(other, 'backgroundColor')];
   expect(on.borderColor).toBe(rgb(await primary()));
   expect(on.fontWeight).toBe('500');

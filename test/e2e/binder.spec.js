@@ -21,8 +21,8 @@ test.beforeAll(async ({ browser }) => {
       <input type="number" data-setting="t-number" value="3">
       <input type="text" data-setting="t-text" value="hello">
       <input type="checkbox" data-setting="t-check">
-      <div class="btn-group btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-light active" id="on"><input type="radio" name="t-flag" data-setting="t-flag" value="true" checked> On</label>
+      <div class="btn-group btn-group-toggle">
+        <label class="btn btn-light" id="on"><input type="radio" name="t-flag" data-setting="t-flag" value="true" checked> On</label>
         <label class="btn btn-light" id="off"><input type="radio" name="t-flag" data-setting="t-flag" value="false"> Off</label>
       </div>`;
     document.body.prepend(root);
@@ -40,8 +40,8 @@ test('controls show the stored values', async () => {
   await expect(root().locator('input[type=checkbox]')).toBeChecked();
   // t-flag is false: Off is checked and its label active, despite the markup
   await expect(root().locator('input[value=false]')).toBeChecked();
-  await expect(root().locator('#off')).toHaveClass(/active/);
-  await expect(root().locator('#on')).not.toHaveClass(/active/);
+  await expect(root().locator('#off input')).toBeChecked();
+  await expect(root().locator('#on input')).not.toBeChecked();
 });
 
 test('settings with no stored value take the control\'s initial value', async () => {
@@ -62,16 +62,33 @@ test('user changes are stored with their types', async () => {
   expect(await widget('t-check')).toBe(false);
   await root().locator('#on').click();
   expect(await widget('t-flag')).toBe(true);
-  await expect(root().locator('#on')).toHaveClass(/active/);
-  await expect(root().locator('#off')).not.toHaveClass(/active/);
+  await expect(root().locator('#on input')).toBeChecked();
+  await expect(root().locator('#off input')).not.toBeChecked();
 });
 
 test('settings changed elsewhere show in the controls', async () => {
   await page.evaluate(() => { MT.settings.set('t-select', 'a'); MT.settings.set('t-flag', false); MT.settings.set('t-check', true); });
   await expect(root().locator('select')).toHaveValue('a');
   await expect(root().locator('input[value=false]')).toBeChecked();
-  await expect(root().locator('#off')).toHaveClass(/active/);
+  await expect(root().locator('#off input')).toBeChecked();
   await expect(root().locator('input[type=checkbox]')).toBeChecked();
+});
+
+// The browser checks a toggle group's input when its label is clicked or an
+// arrow key moves it, and CSS styles the chosen label, with no script (#326)
+test('a toggle group shows its chosen option, by mouse or keyboard', async () => {
+  const highlighted = id => root().locator(id).evaluate(el => getComputedStyle(el).borderColor);
+  const primary = await page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--bs-primary').trim())
+    .then(hex => `rgb(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)})`);
+  await expect.poll(() => highlighted('#off')).toBe(primary);
+  expect(await highlighted('#on')).not.toBe(primary);
+  await root().locator('#off input').focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(root().locator('#on input')).toBeChecked();
+  expect(await widget('t-flag')).toBe(true);
+  await expect.poll(() => highlighted('#on')).toBe(primary);
+  await page.keyboard.press('ArrowRight');
+  expect(await widget('t-flag')).toBe(false);
 });
 
 test('unbinding disconnects controls and settings', async () => {

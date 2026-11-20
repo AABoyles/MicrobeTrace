@@ -411,7 +411,8 @@
         match: num('Reward for matching bases', { minimum: 0 }),
         mismatch: num('Cost of a mismatch', { minimum: 0 }),
         gapOpen: num('Cost of opening a gap', { minimum: 0 }),
-        gapExtend: num('Cost of extending a gap', { minimum: 0 })
+        gapExtend: num('Cost of extending a gap', { minimum: 0 }),
+        band: { type: 'integer', minimum: 0, description: 'How many bases a gap may shift a sequence beyond its difference in length from the reference. The default is 100; 0 is fastest, and wider is slower but places more gaps correctly, and one as long as the reference is no limit. Reads back null when the Files view has it blank (no limit)' }
       })
     }),
     execute: async (args) => {

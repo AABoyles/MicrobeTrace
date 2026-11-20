@@ -26,10 +26,10 @@
     MT.fillSelect($('[data-setting="tree-leaf-node-radius-variable"]'), treeVariables, { append: true });
     Array.from(root.querySelectorAll('[data-setting="tree-leaf-node-radius-variable"] option')).forEach(o => { if (o.value == 'respresenting') o.textContent = 'Representing'; });
 
-    // TidyTree hands its handlers the arguments of its d3 listener: the event
-    // (whose target's datum is the tree node), or under d3 v5 the tree node
-    const eventOf = args => args[0] instanceof Event ? args[0] : d3.event;
-    const branchOf = args => args[0] instanceof Event ? d3.select(args[0].currentTarget).datum() : args[0];
+    // Since 0.8, TidyTree hands each handler one array: [tree node, DOM event]
+    // (and the tooltip text for showtooltip)
+    const branchOf = args => args[0];
+    const eventOf = args => args[1];
     const nodeOf = id => session.data.nodes.find(d => d._id == id);
 
     function draw() {
@@ -37,7 +37,8 @@
       size = [root.clientWidth, root.clientHeight];
       if (tree) tree.destroy();
       tree = new TidyTree(data, {
-        parent: container,
+        // Since 0.8, a d3 selection (or a selector, which would find any view's .tree)
+        parent: d3.select(container),
         layout: settings.get('tree-layout'),
         type: settings.get('tree-type'),
         mode: settings.get('tree-mode'),
@@ -61,9 +62,14 @@
       style();
     }
 
+    // Since 0.8, TidyTree draws in the next animation frame. Frames run their
+    // callbacks in the order they were asked for, so asking for one after a
+    // change styles what that change drew.
+    const style = () => requestAnimationFrame(styleNow);
+
     // Leaf sizes, colors, selection, tooltips and labels, and branch distances
-    function style() {
-      if (!tree) return;
+    function styleNow() {
+      if (!tree || destroyed) return;
       const nodes = new Map(session.data.nodes.map(d => [d._id, d]));
       const variable = settings.get('node-color-variable'), color = settings.get('node-color'), selected = settings.get('selected-color');
       const tooltip = settings.get('tree-leaf-tooltip-variable'), label = settings.get('tree-leaf-label-variable');
@@ -77,7 +83,12 @@
       });
       tree.eachLeafNode((circle, d) => {
         const node = nodes.get(d.data.id);
+        // Since 0.8 an animated redraw also fades each leaf's fill to TidyTree's
+        // own color, which would end over this one: stop it, and show the leaf
+        // as it would have
         d3.select(circle)
+          .interrupt()
+          .style('opacity', tree.leafNodes ? 1 : 0)
           .attr('r', radius(d, node))
           .attr('title', node && tooltip && tooltip != 'None' ? (node[tooltip] == null ? '' : node[tooltip]) : d.data.id)
           .style('fill', node && variable != 'None' ? temp.style.nodeColorMap(node[variable]) : color)
@@ -171,8 +182,10 @@
 
     function showTooltip(args) {
       if (!settings.get('tree-tooltip-show')) return;
-      const e = eventOf(args);
-      MT.tooltip(MT.escape(e.target.getAttribute('title')), e);
+      // The leaf's circle carries the tooltip variable (see styleNow); since 0.8
+      // the event comes from the node's group around it
+      const e = eventOf(args), circle = e.currentTarget && e.currentTarget.querySelector('circle');
+      MT.tooltip(MT.escape(circle ? circle.getAttribute('title') : branchOf(args).data.id), e);
     }
 
     // The context menu: rotate, flip or reroot at a branch
@@ -287,11 +300,12 @@
       fn(value);
       style();
     };
+    // The redraw reads the animation time in the next frame, so it is put back then
     const instantly = fn => value => {
       const animation = tree.animation;
       tree.setAnimation(0);
       fn(value);
-      tree.setAnimation(animation);
+      requestAnimationFrame(() => tree && tree.setAnimation(animation));
     };
 
     const setBackground = () => { container.style.backgroundColor = settings.get('background-color'); };

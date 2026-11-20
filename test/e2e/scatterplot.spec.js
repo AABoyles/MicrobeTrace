@@ -76,7 +76,7 @@ test('reopening the view restores its settings', async () => {
   await launchView(page, 'scatterplot');
   await expect.poll(async () => (await plot()).points).toBe(310);
   expect([(await plot()).x, (await plot()).y]).toEqual(['Degree', 'Cluster']);
-  await expect(pane().locator('label', { hasText: 'Nodes' })).toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: 'Nodes' }).locator('input')).toBeChecked();
   await expect(pane().getByLabel('X Variable')).toHaveValue('degree');
   await expect(pane().getByLabel('Y Variable')).toHaveValue('cluster');
 });
@@ -84,7 +84,7 @@ test('reopening the view restores its settings', async () => {
 test('switching back to links offers link variables', async () => {
   await page.evaluate(() => MT.settings.set('scatterplot-showNodes', false));
   await expect.poll(() => options('X Variable')).toContain('distance');
-  await expect(pane().locator('label', { hasText: 'Links' })).toHaveClass(/active/);
+  await expect(pane().locator('label', { hasText: 'Links' }).locator('input')).toBeChecked();
   await page.evaluate(() => { MT.settings.set('scatterplot-xVar', 'index'); MT.settings.set('scatterplot-yVar', 'distance'); });
   await expect(pane().getByLabel('Y Variable')).toHaveValue('distance');
   await expect.poll(async () => (await plot()).points).toBe(476);

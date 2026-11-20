@@ -153,8 +153,8 @@
 Please note that this causes MicrobeTrace to store data on your computer's hard drive, which may have implications for PII.">
         <div class="col-5" id="stash-auto-label">Session Recovery</div>
         <div class="col-7">
-          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons" role="group" aria-labelledby="stash-auto-label" aria-describedby="stash-auto-help">
-            <label class="btn btn-light active col" title="Do Not Automatically Stash Sessions">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100" role="group" aria-labelledby="stash-auto-label" aria-describedby="stash-auto-help">
+            <label class="btn btn-light col" title="Do Not Automatically Stash Sessions">
               <input type="radio" name="stash-auto" value="false" autocomplete="off" checked> Off
             </label>
             <label class="btn btn-light col" title="Automatically Stash Sessions">
@@ -188,8 +188,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
       <div class="form-group row" title="Would you like to attempt to infer the direction of your links?">
         <div class="col-4">Directionality</div>
         <div class="col-8">
-          <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-            <label class="btn btn-light active col" title="Do Not infer transmission directionality.">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100">
+            <label class="btn btn-light col" title="Do Not infer transmission directionality.">
               <input type="radio" name="infer-directionality" data-setting="infer-directionality-false" value="true" autocomplete="off" checked> Off
             </label>
             <label class="btn btn-light col" title="Attempt to infer transmission directionality?">
@@ -237,8 +237,8 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <div class="form-group row">
               <div class="col-2" title="Should MicrobeTrace align your sequences?">Align</div>
               <div class="col-10">
-                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
-                  <label class="btn btn-light active col" title="Do Not Align Sequences">
+                <div class="btn-group btn-group-toggle btn-group-sm w-100">
+                  <label class="btn btn-light col" title="Do Not Align Sequences">
                     <input type="radio" name="shouldAlign" data-setting="align-sw" value="false" autocomplete="off" checked>
                     None
                   </label>
@@ -253,7 +253,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
             <div class="form-group row align-config-row">
               <div class="col-2" title="What should MicrobeTrace use as a reference to align your sequences?">Reference Source</div>
               <div class="col-10">
-                <div class="btn-group btn-group-toggle btn-group-sm w-100" data-toggle="buttons">
+                <div class="btn-group btn-group-toggle btn-group-sm w-100">
                   <label class="btn btn-light col" title="Load Reference from FASTA: pick one of its sequences">
                     <input type="radio" name="reference-source" value="file" autocomplete="off">
                     Load From FASTA
@@ -262,7 +262,7 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                     <input type="radio" name="reference-source" value="first" autocomplete="off">
                     First Sequence
                   </label>
-                  <label class="btn btn-light active col" title="Build a consensus from your sequences: the majority base at each site, after aligning them all to a provisional reference">
+                  <label class="btn btn-light col" title="Build a consensus from your sequences: the majority base at each site, after aligning them all to a provisional reference">
                     <input type="radio" name="reference-source" value="consensus" autocomplete="off" checked>
                     Consensus
                   </label>
@@ -299,6 +299,13 @@ Please note that this causes MicrobeTrace to store data on your computer's hard 
                 <label>Gap Extension Cost</label>
                 <input type="number" class="form-control aligner-gap-extend" value="2" min="0" aria-describedby="aligner-gap-extend-help"><div id="aligner-gap-extend-help" class="form-text small">Score taken off for each further position in a gap.</div>
               </div>
+            </div>
+            <div class="row align-config-row">
+              <div class="form-group col offset-2" title="How far may a gap shift a sequence against the reference?">
+                <label for="aligner-band">Band Width</label>
+                <input type="number" id="aligner-band" class="form-control aligner-band" value="100" min="0" step="1" aria-describedby="aligner-band-help"><div id="aligner-band-help" class="form-text small">How many bases a gap may shift a sequence, beyond the difference in length from the reference. 0 is fastest; wider places more gaps correctly but is slower. Leave it blank for no limit (slowest).</div>
+              </div>
+              <div class="col"></div>
             </div>
             <div class="row alignPreviewRow">
               <div class="w-100 text-center alignment-preview"></div>

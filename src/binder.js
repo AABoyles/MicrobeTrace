@@ -17,9 +17,7 @@
   // radio values "true"/"false" booleans. A setting with no stored value yet
   // takes the control's initial value. Text, number and range inputs store each
   // edit as it's made, unless they say data-setting-on="change" (for settings
-  // that are slow to apply). Toggle-button groups (.btn-group-toggle)
-  // have their .active labels kept in step, and color inputs show their value
-  // beside them.
+  // that are slow to apply). Color inputs show their value beside them.
   //
   // Returns a function that disconnects everything.
 
@@ -37,7 +35,6 @@
     if (el.type == 'checkbox') el.checked = !!value;
     else if (el.type == 'radio') el.checked = parseRadio(el.value) === value;
     else el.value = value == null ? '' : value;
-    syncToggleGroup(el);
     syncColorValue(el);
   }
 
@@ -53,11 +50,6 @@
     label.textContent = el.value;
   }
 
-  function syncToggleGroup(el) {
-    const group = el.closest && el.closest('.btn-group-toggle');
-    if (!group) return;
-    group.querySelectorAll('.btn > input').forEach(input => input.parentElement.classList.toggle('active', input.checked));
-  }
 
   function MTBind(root, settings) {
     const controls = Array.from(root.querySelectorAll('[data-setting]'));
@@ -86,7 +78,6 @@
           // A radio's change event fires only on the one being checked
           if (el.type == 'radio' && !el.checked) return;
           settings.set(key, read(el));
-          syncToggleGroup(el);
         };
         el.addEventListener(type, listener);
         cleanup.push(() => el.removeEventListener(type, listener));

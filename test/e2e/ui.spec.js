@@ -81,8 +81,8 @@ test('a toggle-button group switches the statistics panel', async () => {
   const pane = await page.evaluate(() => document.querySelector('[data-setting="network-statistics-show"][value="false"]').closest('.tab-pane').id);
   await dialog.locator(`a[href="#${pane}"]`).click();
   await dialog.locator('label:has([data-setting="network-statistics-show"][value="false"])').click();
-  await expect(page.locator('label:has([data-setting="network-statistics-show"][value="false"])')).toHaveClass(/active/);
-  await expect(page.locator('label:has([data-setting="network-statistics-show"][value="true"])')).not.toHaveClass(/active/);
+  await expect(page.locator('label:has([data-setting="network-statistics-show"][value="false"])').locator('input')).toBeChecked();
+  await expect(page.locator('label:has([data-setting="network-statistics-show"][value="true"])').locator('input')).not.toBeChecked();
   await expect(page.locator('#network-statistics-wrapper')).toBeHidden();
   await dialog.locator('label:has([data-setting="network-statistics-show"][value="true"])').click();
   await expect(page.locator('#network-statistics-wrapper')).toBeVisible();
