@@ -135,44 +135,39 @@
       launchButton.focus();
     }
 
-    function processFile(rawfile) {
+    // Reads a file as text, or as bytes for a spreadsheet. A read that fails
+    // never settles, as it never did (the reader's onload was all that was set).
+    const readFile = (rawfile, asBytes) => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      if (asBytes) reader.readAsArrayBuffer(rawfile); else reader.readAsText(rawfile);
+    });
+
+    async function processFile(rawfile) {
       const extension = rawfile.name.split('.').pop().toLowerCase();
       if (extension == 'zip') {
-        new JSZip().loadAsync(rawfile).then(zip => {
-          zip.forEach((relativePath, zipEntry) => {
-            zipEntry.async('string').then(c => MT.processJSON(c, zipEntry.name.split('.').pop()));
-          });
+        const zip = await new JSZip().loadAsync(rawfile);
+        // Each entry is read on its own, not one after another
+        zip.forEach(async (relativePath, zipEntry) => {
+          MT.processJSON(await zipEntry.async('string'), zipEntry.name.split('.').pop());
         });
         return;
       }
       if (extension == 'microbetrace' || extension == 'hivtrace') {
-        rawfile.text().then(text => MT.processJSON(text, extension));
+        MT.processJSON(await rawfile.text(), extension);
         return;
       }
       if (extension == 'svg') {
-        rawfile.text().then(text => MT.processSVG(text));
+        MT.processSVG(await rawfile.text());
         return;
       }
-      var extension_for_reader = (extension == 'xlsx' || extension == 'xls') ? 'ArrayBuffer' : 'Text';
-      new Promise((resolve) => {
-        var reader = new FileReader();
-        reader.onload = (e) => {
-          var file = { name: rawfile.name, lastModified: rawfile.lastModified, extension: extension };
-          file.contents = e.target.result;
-          resolve(file);
-        };
-        if (extension_for_reader == 'ArrayBuffer') {
-          reader.readAsArrayBuffer(rawfile);
-        } else {
-          reader.readAsText(rawfile);
-        }
-      }).then(file => {
-        file.rawName = file.name; // for the loading log, which shows text
-        file.name = MT.escape(file.name);
-        file.extension = file.name.split('.').pop().toLowerCase();
-        session.files.push(file);
-        addToTable(file);
-      });
+      const contents = await readFile(rawfile, extension == 'xlsx' || extension == 'xls');
+      const file = { name: rawfile.name, lastModified: rawfile.lastModified, extension: extension, contents: contents };
+      file.rawName = file.name; // for the loading log, which shows text
+      file.name = MT.escape(file.name);
+      file.extension = file.name.split('.').pop().toLowerCase();
+      session.files.push(file);
+      addToTable(file);
     }
 
     // What a file is, from what it holds rather than what it is called (#267):
@@ -659,7 +654,20 @@
       warnings.forEach(w => { message(' - Warning: ' + w); MT.toast.warning(w, 20); });
     }
 
-    launchButton.addEventListener('click', () => {
+    // The loading dialog, opened before the load starts so that the progress has
+    // somewhere to show. Resolves when it is shown, rejects if it is not within
+    // MODAL_WAIT_MS.
+    const openLoadingDialog = (loading, information) => new Promise((resolve, reject) => {
+      loading.addEventListener('shown.bs.modal', () => {
+        session.messages = [];
+        information.innerHTML = '';
+        resolve('done');
+      }, { once: true });
+      bootstrap.Modal.getOrCreateInstance(loading, { backdrop: false, keyboard: false }).show();
+      setTimeout(() => reject(new Error('Problem loading information modal!')), MODAL_WAIT_MS);
+    });
+
+    launchButton.addEventListener('click', async () => {
       session.meta.startTime = Date.now();
       launchButton.disabled = true;
       MT.startWork();
@@ -669,18 +677,13 @@
       const loading = document.getElementById('loading-information-modal');
       const n = session.files.length;
       document.getElementById('loading-title').textContent = `Loading ${n} file${n == 1 ? '' : 's'}`;
-      new Promise((resolve, reject) => {
-        loading.addEventListener('shown.bs.modal', () => {
-          session.messages = [];
-          information.innerHTML = '';
-          resolve('done');
-        }, { once: true });
-        bootstrap.Modal.getOrCreateInstance(loading, { backdrop: false, keyboard: false }).show();
-        setTimeout(() => reject(new Error('Problem loading information modal!')), MODAL_WAIT_MS);
-      }).then(
-        () => launch(),
-        error => { console.error(error); MT.toast.error('The information window did not open, so the files are loading anyway. If anything looks wrong, reload the page and try again.'); launch(); } // the information dialog didn't open
-      );
+      try {
+        await openLoadingDialog(loading, information);
+      } catch (error) { // the information dialog didn't open
+        console.error(error);
+        MT.toast.error('The information window did not open, so the files are loading anyway. If anything looks wrong, reload the page and try again.');
+      }
+      launch();
     });
 
     // What the load is doing, for the message when it fails (#222)
@@ -704,7 +707,14 @@
       MT.events.emit('session-load-failed', text);
     };
 
-    const launch = () => load().catch(loadFailed);
+    // Whatever the load throws ends in loadFailed (a file that cannot be read has already said so, in fail)
+    async function launch() {
+      try {
+        await load();
+      } catch (error) {
+        loadFailed(error);
+      }
+    }
 
     // Cancel stops the work (the workers are terminated), drops what the load
     // had read so far and goes back to the files, which stay listed. The dialog
@@ -723,451 +733,480 @@
       MT.toast.info('Loading was cancelled. Your files are still listed.', 8);
     });
 
-    const load = async () => {
+    // The load, in the order it happens (#240): load() starts every file's parser
+    // at once and waits for all of them, then reports what merged and processes
+    // the sequences. Each kind of file has its own parser below. A parser returns
+    // true when it is done and false when it has failed, having said so (in fail),
+    // which stops the load without an error.
+
+    // Says (in the log and a warning) how many links a file gave without a usable distance (#220)
+    function reportDistances(file, noColumn, missing, bad, example) {
+      const name = shownName(file);
+      if (noColumn) {
+        const text = `${name}: no distance column was chosen, so its ${noColumn.toLocaleString()} link${noColumn == 1 ? ' has' : 's have'} no distance and ${noColumn == 1 ? 'is' : 'are'} shown at any link threshold.`;
+        message(' - ' + text);
+        MT.toast.warning(text);
+      }
+      const parts = [];
+      if (missing) parts.push(`${missing.toLocaleString()} link${missing == 1 ? ' has' : 's have'} an empty distance`);
+      if (bad) parts.push(`${bad.toLocaleString()} distance${bad == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(example)}")`);
+      if (!parts.length) return;
+      message(` - ${name}: ${parts.join('; ')}. Such links are kept without a distance and are not shown by the link threshold.`);
+      MT.toast.warning(`${name}: ${parts.join('; ')}. Such links are not shown by the link threshold; fix the values and load the file again.`);
+    }
+
+    // A file that cannot be read stops the load, with the reason (the dialog is not left up)
+    function fail(file, kind, error) {
+      if (error && error.cancelled) return; // the user cancelled; the cancel said so
+      const reason = (error && error.message) || error;
+      console.error(error);
+      const text = `Could not read ${shownName(file)} as ${kind}: ${MT.escape('' + reason)}.`;
+      message(text);
+      MT.toast.error(text);
+      clearTimeout(temp.messageTimeout);
+      MT.progressDone();
+      MT.hideModal('loading-information-modal');
+      checkLaunch();
+    }
+
+    const kindName = { fasta: 'FASTA', link: 'a link list', node: 'a node list', matrix: 'a distance matrix', newick: 'a Newick tree' };
+
+    // Files are read in the order their kinds need, but where they disagree
+    // about a node, the values of the file nearest the top of the list win
+    const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
+
+    // The first sheet of a spreadsheet, as rows
+    function sheetRows(file) {
+      const workbook = XLSX.read(file.contents, { type: 'array' });
+      return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
+    }
+
+    // ctx is what the files of one load share: whether to check for repeats, what
+    // was merged, dropped or overwritten without a word (#219), the IDs from node
+    // and sequence files (taken) and from files of links (linked), and idOf.
+    async function parseFile(file, ctx) {
+      const start = Date.now();
+      const origin = [file.name];
+      const source = session.data.sources.add(file.name, session.files.indexOf(file));
+
+      // An empty file is said to be, not loaded as nothing (#222)
+      const contents = file.contents;
+      if (contents == null || (typeof contents === 'string' ? contents.trim() === '' : contents.byteLength === 0)) {
+        fail(file, kindName[file.format] || 'a network file', 'the file is empty');
+        return false;
+      }
+
+      if (file.format == 'fasta') return parseFastaFile(file, ctx, origin, source, start);
+      if (file.format == 'link') return parseLinkFile(file, ctx, origin, source, start);
+      if (file.format == 'node') return parseNodeFile(file, ctx, origin, source, start);
+      if (file.format == 'matrix') return parseMatrixFile(file, ctx, origin, source);
+      return parseNewickFile(file, ctx, origin, start);
+    }
+
+    async function parseFastaFile(file, ctx, origin, source, start) {
+      message(`Parsing ${shownName(file)} as FASTA...`);
+      let newNodes = 0;
+      try {
+        const seqs = await MT.parseFASTA(file.contents);
+        if (!seqs.length) {
+          fail(file, 'FASTA', 'it holds no sequences (a sequence starts with a ">" line)');
+          return false;
+        }
+        const n = seqs.length;
+        const seen = new Set();
+        for (let i = 0; i < n; i++) {
+          let node = seqs[i];
+          if (!node) continue;
+          const id = ctx.idOf(node.id, seen);
+          if (id === null) continue;
+          newNodes += MT.addNode({
+            _id: id,
+            seq: node.seq,
+            origin: origin
+          }, ctx.check, source);
+        }
+        seen.forEach(id => ctx.taken.add(id));
+        MT.time('FASTA Merge', start);
+        message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
+        return true;
+      } catch (error) {
+        fail(file, 'FASTA', error);
+        return false;
+      }
+    }
+
+    async function parseLinkFile(file, ctx, origin, source, start) {
+      message(`Parsing ${shownName(file)} as Link List...`);
+      let l = 0, noColumn = 0, missing = 0, bad = 0, badExample = null;
+      if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
+
+      // Known fields, looked up as a Set (the list is searched only for a miss)
+      const knownFields = new Set(session.data.linkFields);
+      const noteField = key => {
+        if (knownFields.has(key)) return;
+        knownFields.add(key);
+        if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key);
+      };
+
+      const forEachLink = link => {
+        const keys = Object.keys(link);
+        const n = keys.length;
+        let safeLink = {};
+        for (let i = 0; i < n; i++) {
+          // Read the row by its own header; store under its name as written (#217)
+          const value = link[keys[i]];
+          const key = keys[i];
+          safeLink[key] = value;
+          noteField(key);
+        }
+        const source = MT.cleanID(safeLink[file.field1]), target = MT.cleanID(safeLink[file.field2]);
+        if (source == '' || target == '') { ctx.report.blanks++; return; }
+        const out = Object.assign({ origin: origin, visible: true }, safeLink, { source, target });
+        // A file's distances are taken to be the distance metric's. A link with
+        // no distance has none (not 0, which every threshold would pass), and
+        // one with an unreadable distance has none rather than NaN (#220). Links
+        // from a file with no distance column are flagged unmeasured, so the
+        // threshold shows them rather than hiding them all
+        const metric = get('default-distance-metric');
+        const distance = file.field3 == 'None' ? null : MTGraph.parseDistance(safeLink[file.field3]);
+        if (distance === null || distance !== distance) {
+          if (file.field3 == 'None') { noColumn++; out.unmeasured = true; }
+          else if (distance === null) missing++;
+          else { bad++; if (badExample === null) badExample = '' + safeLink[file.field3]; }
+          if (file.field3 == 'None' || file.field3 == metric) delete out[metric];
+        } else {
+          out[metric] = distance;
+        }
+        const added = MT.addLink(out, ctx.check);
+        l += added;
+        if (!added) ctx.report[source == target ? 'selfLinks' : 'repeatedLinks']++;
+        ctx.linked.add(source).add(target);
+      };
+
+      if (file.extension == 'xls' || file.extension == 'xlsx') {
+
+        let data = sheetRows(file);
+        data.map(forEachLink);
+        message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
+        reportDistances(file, noColumn, missing, bad, badExample);
+        let n = 0, t = 0;
+        const nodeIDs = new Set();
+        const k = data.length;
+        for (let i = 0; i < k; i++) {
+          const l = data[i];
+          [l[file.field1], l[file.field2]].forEach(value => {
+            const id = MT.cleanID(value);
+            if (id == '' || nodeIDs.has(id)) return;
+            t++;
+            nodeIDs.add(id);
+            n += MT.addNode({
+              _id: id,
+              origin: origin
+            }, true, source);
+          });
+        }
+        MT.time('Link Excel Parse', start);
+        message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
+        return true;
+
+      }
+
+      try {
+        // The text is parsed in a worker, so a large list does not freeze the page
+        const results = await MT.runWorker('workers/parse-links.js', { text: file.contents, delimiter: file.delimiter, field1: file.field1, field2: file.field2 }, { name: 'The link list parser' });
+        let data = results.rows;
+        data.map(forEachLink);
+        message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
+        reportDistances(file, noColumn, missing, bad, badExample);
+        results.fields.forEach(noteField);
+        let newNodes = 0, totalNodes = 0;
+        const n = data.length;
+        // Each endpoint once (it used to count, and look up, every one)
+        const nodeIDs = new Set();
+        for (let i = 0; i < n; i++) {
+          const l = data[i];
+          [l[file.field1], l[file.field2]].forEach(value => {
+            const id = MT.cleanID(value);
+            if (id == '' || nodeIDs.has(id)) return;
+            totalNodes++;
+            nodeIDs.add(id);
+            newNodes += MT.addNode({
+              _id: id,
+              origin: origin
+            }, true, source);
+          });
+        }
+        MT.time('Link CSV Parse', start);
+        message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
+        return true;
+      } catch (error) {
+        fail(file, 'a link list', error);
+        return false;
+      }
+    }
+
+    // A node row's values, with the columns chosen as the ID and sequence kept out of its fields
+    const nodeFrom = (file, node, id, origin) => {
+      let safeNode = {
+        _id: id,
+        seq: (file.field2 == 'None') ? '' : node[file.field2],
+        origin: origin
+      };
+      Object.keys(node).forEach(key => {
+        if (key == file.field1 || key == file.field2) return;
+        MT.addNodeField(key);
+        safeNode[key] = node[key]; //#173
+      });
+      return safeNode;
+    };
+
+    // Papa.parse reports a CSV through callbacks; this settles when it is complete
+    const parseNodeCSV = (file, onRow) => new Promise(resolve => {
+      Papa.parse(file.contents, {
+        delimiter: file.delimiter || ",",
+        // newline: "\r\n",
+        header: true,
+        // Numbers are read as numbers, except IDs and sequences: 007 and 1E3 are names (#219)
+        dynamicTyping: field => field != file.field1 && field != file.field2,
+        skipEmptyLines: true,
+        step: data => onRow(data.data),
+        complete: resolve
+      });
+    });
+
+    async function parseNodeFile(file, ctx, origin, source, start) {
+      message(`Parsing ${shownName(file)} as Node List...`);
+
+      let m = 0, n = 0;
+      const seen = new Set();
+
+      if (file.extension == 'xls' || file.extension == 'xlsx') {
+
+        let data = sheetRows(file);
+        n = data.length;
+        data.forEach(node => {
+          const id = ctx.idOf(node[file.field1], seen);
+          if (id === null) return;
+          m += MT.addNode(nodeFrom(file, node, id, origin), ctx.check, source);
+        });
+        seen.forEach(id => ctx.taken.add(id));
+        MT.time('Node Excel Parse', start);
+        message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
+        return true;
+
+      }
+
+      await parseNodeCSV(file, node => {
+        n++;
+        const id = ctx.idOf(node[file.field1], seen);
+        if (id === null) return;
+        m += MT.addNode(nodeFrom(file, node, id, origin), ctx.check, source);
+      });
+      seen.forEach(id => ctx.taken.add(id));
+      MT.time('Node CSV Parse', start);
+      message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
+      return true;
+    }
+
+    async function parseMatrixFile(file, ctx, origin, source) {
+      message(`Parsing ${shownName(file)} as Distance Matrix...`);
+
+      // Excel sheets are read as CSV text by the same parser as CSV files, which
+      // finds the shape (square, or either triangle) from the first row
+      let matrixFile = file, nodeOrigin;
+      if (file.extension == 'xls' || file.extension == 'xlsx') {
+        try {
+          const workbook = XLSX.read(file.contents, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          if (!sheet) throw new Error('the workbook has no sheets');
+          matrixFile = Object.assign({}, file, { contents: XLSX.utils.sheet_to_csv(sheet, { rawNumbers: true, dateNF: 'yyyy-mm-dd' }) });
+          nodeOrigin = origin;
+        } catch (error) {
+          fail(file, 'a distance matrix', error);
+          return false;
+        }
+      }
+      let o;
+      try {
+        o = await MT.parseCSVMatrix(matrixFile, source, nodeOrigin);
+      } catch (error) { // (only the parse is caught: a throw below fails the whole load)
+        fail(file, 'a distance matrix', error);
+        return false;
+      }
+      o.ids.forEach(id => ctx.linked.add(MT.cleanID(id)));
+      message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
+      message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
+      if (o.unparseable) {
+        const text = `${shownName(file)}: ${o.unparseable.toLocaleString()} matrix cell${o.unparseable == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(o.example)}") and ${o.unparseable == 1 ? 'was' : 'were'} skipped.`;
+        message(' - ' + text);
+        MT.toast.warning(text);
+      }
+      return true;
+    }
+
+    // (A tree is parsed in place, so this is async only to match the others)
+    async function parseNewickFile(file, ctx, origin, start) {
+      if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
+      let links = 0;
+      let newLinks = 0;
+      let newNodes = 0;
+      const tree = patristic.parseNewick(file.contents);
+      temp.tree = tree;
+      let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids, n = labels.length;
+      for (let i = 0; i < n; i++) {
+        const source = labels[i];
+        newNodes += MT.addNode({
+          _id: source,
+          origin: origin
+        }, ctx.check, source);
+        for (let j = 0; j < i; j++) {
+          newLinks += MT.addLink({
+            source: source,
+            target: labels[j],
+            origin: origin,
+            [get('default-distance-metric')]: parseFloat(matrix[i][j])
+          }, ctx.check);
+          links++;
+        }
+      }
+      MT.time('Newick Tree Parse', start);
+      message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
+      message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
+      labels.forEach(id => ctx.linked.add(MT.cleanID(id)));
+      return true;
+    }
+
+    async function load() {
       step = 'reading the files';
       MT.progress('Reading the files');
       temp.messageTimeout = setTimeout(() => {
         MT.toast.info('Still working. Large sets of sequences can take several minutes to align and compare. Cancel in the loading dialog stops the work and keeps your files listed.', 15);
       }, STILL_WORKING_MS);
 
-      const check = session.files.length > 1;
-
-      // Says (in the log and a warning) how many links a file gave without a usable distance (#220)
-      const reportDistances = (file, noColumn, missing, bad, example) => {
-        const name = shownName(file);
-        if (noColumn) {
-          const text = `${name}: no distance column was chosen, so its ${noColumn.toLocaleString()} link${noColumn == 1 ? ' has' : 's have'} no distance and ${noColumn == 1 ? 'is' : 'are'} shown at any link threshold.`;
-          message(' - ' + text);
-          MT.toast.warning(text);
-        }
-        const parts = [];
-        if (missing) parts.push(`${missing.toLocaleString()} link${missing == 1 ? ' has' : 's have'} an empty distance`);
-        if (bad) parts.push(`${bad.toLocaleString()} distance${bad == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(example)}")`);
-        if (!parts.length) return;
-        message(` - ${name}: ${parts.join('; ')}. Such links are kept without a distance and are not shown by the link threshold.`);
-        MT.toast.warning(`${name}: ${parts.join('; ')}. Such links are not shown by the link threshold; fix the values and load the file again.`);
-      };
-
-      // A file that cannot be read stops the load, with the reason (the dialog is not left up)
-      const fail = (file, kind, error) => {
-        if (error && error.cancelled) return; // the user cancelled; the cancel said so
-        const reason = (error && error.message) || error;
-        console.error(error);
-        const text = `Could not read ${shownName(file)} as ${kind}: ${MT.escape('' + reason)}.`;
-        message(text);
-        MT.toast.error(text);
-        clearTimeout(temp.messageTimeout);
-        MT.progressDone();
-        MT.hideModal('loading-information-modal');
-        checkLaunch();
-      };
-
-      const kindName = { fasta: 'FASTA', link: 'a link list', node: 'a node list', matrix: 'a distance matrix', newick: 'a Newick tree' };
-
-      // Files are read in the order their kinds need, but where they disagree
-      // about a node, the values of the file nearest the top of the list win
-      const hierarchy = ['newick', 'matrix', 'link', 'node', 'fasta'];
       const files = session.files.slice().sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
       session.data.sources.reset();
 
       session.meta.anySequences = session.files.some(file => (file.format == "fasta") || (file.format == "node" && file.field2 !== "None"));
 
-      // Parsers finish in any order (FASTA and matrix parsing is asynchronous), so
-      // processing waits for every file, not for the last one in the list (#212)
-      const parsedFiles = [];
-
-      // What reading the files merged, dropped or overwrote without a word
-      // (#219): reported once they are all read
       const report = { duplicates: 0, blanks: 0, selfLinks: 0, repeatedLinks: 0 };
-      const taken = new Set(), linked = new Set(); // IDs from node and sequence files, and from files of links
-      // A node's ID as it is kept; a repeat within its file is counted, and a blank one is not a node
-      const idOf = (value, seen) => {
-        const id = MT.cleanID(value);
-        if (id == '') { report.blanks++; return null; }
-        if (seen.has(id)) report.duplicates++;
-        seen.add(id);
-        return id;
+      const ctx = {
+        check: session.files.length > 1,
+        report,
+        taken: new Set(), linked: new Set(),
+        // A node's ID as it is kept; a repeat within its file is counted, and a blank one is not a node
+        idOf: (value, seen) => {
+          const id = MT.cleanID(value);
+          if (id == '') { report.blanks++; return null; }
+          if (seen.has(id)) report.duplicates++;
+          seen.add(id);
+          return id;
+        }
       };
 
-      files.forEach(file => {
-        let parsed;
-        parsedFiles.push(new Promise(resolve => { parsed = resolve; }));
+      // Parsers finish in any order (FASTA and matrix parsing is asynchronous), so
+      // processing waits for every file, not for the last one in the list (#212).
+      // Each parser runs up to its first wait before the next one starts, which
+      // keeps the files' messages in the order of the list.
+      const parsed = await Promise.all(files.map(file => parseFile(file, ctx)));
+      if (parsed.includes(false)) return; // a file failed and said so
+      if (MT.workCancelled()) throw Object.assign(new Error('it was cancelled'), { cancelled: true });
+      reportMerges(ctx);
+      return processSequences();
+    }
+
+    // Merged, dropped and overwritten rows are said, not silent (#219)
+    function reportMerges({ report, taken, linked }) {
+      const unmatched = taken.size ? Array.from(linked).filter(id => !taken.has(id)).length : 0;
+      const plural = (n, one, many) => n.toLocaleString() + ' ' + (n == 1 ? one : many);
+      const notes = [];
+      if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the first row's values are kept, and later rows fill in its blanks)`);
+      if (report.blanks) notes.push(`${plural(report.blanks, 'row with a blank ID was', 'rows with a blank ID were')} skipped`);
+      if (report.selfLinks) notes.push(`${plural(report.selfLinks, 'link from a node to itself was', 'links from a node to itself were')} dropped`);
+      if (report.repeatedLinks) notes.push(`${plural(report.repeatedLinks, 'link repeated', 'links repeated')} a pair of nodes already linked (in either direction), so overwrote its values`);
+      if (unmatched) notes.push(`${plural(unmatched, 'node in the links is', 'nodes in the links are')} not in the node or sequence files`);
+      notes.forEach(note => message(' - ' + note[0].toUpperCase() + note.slice(1) + '.'));
+      if (notes.length) MT.toast.warning(notes.map(note => note[0].toUpperCase() + note.slice(1)).join('. ') + '. See the loading log for details.', 15);
+    }
+
+    // Sets the reference the sequences are aligned to, from the chosen source
+    async function chooseReference(subset) {
+      const source = referenceSource();
+      if (source == 'consensus') {
+        message('Building a consensus reference from the sequences...');
+        step = 'building the consensus reference';
+        MT.progress('Building a consensus reference');
+        session.data.reference = await MT.consensusReference(subset, alignerScoring());
+      } else if (source == 'first') {
+        session.data.reference = subset.length ? subset[0].seq : '';
+      }
+      if (!session.data.reference) {
+        throw new Error(source == 'file' ?
+          'no reference sequence was loaded: load one from a FASTA file, or use the consensus or the first sequence as the reference' :
+          'no reference sequence could be made from the sequences');
+      }
+    }
+
+    async function processSequences() {
+      if (!session.data.nodes.length) throw new Error('no nodes were found in the files (are they empty, or the wrong kind of file?)');
+      // Where files disagree about nodes, say so (the top file's values are used)
+      const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
+      if (differ) message(` - ${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files; the top file's are used.`);
+      if (!session.meta.anySequences) return MT.runHamsters();
+      MT.addNodeField('seq');
+      const nodes = session.data.nodes;
+      const subset = nodes.filter(d => d.seq);
+      const align = session.style.widgets['align-sw'];
+      if (align) await chooseReference(subset);
+      // Nodes without a sequence get only gaps, as long as the aligned
+      // sequences (the reference) or, unaligned, the longest sequence
+      let width = 0;
+      if (align) width = session.data.reference.length;
+      else for (const d of subset) if (d.seq.length > width) width = d.seq.length;
+      const gapString = '-'.repeat(width);
+      for (const d of nodes) if (!d.seq) d.seq = gapString;
+      if (align){
+        message('Aligning Sequences...');
+        step = 'aligning the sequences';
+        let output = await MT.align({
+          reference: session.data.reference,
+          isLocal: false,
+          ...alignerScoring(),
+          nodes: subset
+        });
         const start = Date.now();
-        const origin = [file.name];
-        const source = session.data.sources.add(file.name, session.files.indexOf(file));
-
-        // An empty file is said to be, not loaded as nothing (#222)
-        const contents = file.contents;
-        if (contents == null || (typeof contents === 'string' ? contents.trim() === '' : contents.byteLength === 0)) {
-          return fail(file, kindName[file.format] || 'a network file', 'the file is empty');
+        const m = subset.length;
+        for (let j = 0; j < m; j++) {
+          Object.assign(subset[j], output[j]);
         }
-
-        if (file.format == 'fasta') {
-
-          message(`Parsing ${shownName(file)} as FASTA...`);
-          let newNodes = 0;
-          MT.parseFASTA(file.contents).then(seqs => {
-            if (!seqs.length) return fail(file, 'FASTA', 'it holds no sequences (a sequence starts with a ">" line)');
-            const n = seqs.length;
-            const seen = new Set();
-            for (let i = 0; i < n; i++) {
-              let node = seqs[i];
-              if (!node) continue;
-              const id = idOf(node.id, seen);
-              if (id === null) continue;
-              newNodes += MT.addNode({
-                _id: id,
-                seq: node.seq,
-                origin: origin
-              }, check, source);
-            }
-            seen.forEach(id => taken.add(id));
-            MT.time('FASTA Merge', start);
-            message(` - Parsed ${newNodes} New, ${seqs.length} Total Nodes from FASTA.`);
-            parsed();
-          }).catch(error => fail(file, 'FASTA', error));
-
-        } else if (file.format == 'link') {
-
-          message(`Parsing ${shownName(file)} as Link List...`);
-          let l = 0, noColumn = 0, missing = 0, bad = 0, badExample = null;
-          if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
-
-          // Known fields, looked up as a Set (the list is searched only for a miss)
-          const knownFields = new Set(session.data.linkFields);
-          const noteField = key => {
-            if (knownFields.has(key)) return;
-            knownFields.add(key);
-            if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key);
-          };
-
-          let forEachLink = link => {
-            const keys = Object.keys(link);
-            const n = keys.length;
-            let safeLink = {};
-            for (let i = 0; i < n; i++) {
-              // Read the row by its own header; store under its name as written (#217)
-              const value = link[keys[i]];
-              const key = keys[i];
-              safeLink[key] = value;
-              noteField(key);
-            }
-            const source = MT.cleanID(safeLink[file.field1]), target = MT.cleanID(safeLink[file.field2]);
-            if (source == '' || target == '') { report.blanks++; return; }
-            const out = Object.assign({ origin: origin, visible: true }, safeLink, { source, target });
-            // A file's distances are taken to be the distance metric's. A link with
-            // no distance has none (not 0, which every threshold would pass), and
-            // one with an unreadable distance has none rather than NaN (#220). Links
-            // from a file with no distance column are flagged unmeasured, so the
-            // threshold shows them rather than hiding them all
-            const metric = get('default-distance-metric');
-            const distance = file.field3 == 'None' ? null : MTGraph.parseDistance(safeLink[file.field3]);
-            if (distance === null || distance !== distance) {
-              if (file.field3 == 'None') { noColumn++; out.unmeasured = true; }
-              else if (distance === null) missing++;
-              else { bad++; if (badExample === null) badExample = '' + safeLink[file.field3]; }
-              if (file.field3 == 'None' || file.field3 == metric) delete out[metric];
-            } else {
-              out[metric] = distance;
-            }
-            const added = MT.addLink(out, check);
-            l += added;
-            if (!added) report[source == target ? 'selfLinks' : 'repeatedLinks']++;
-            linked.add(source).add(target);
-          };
-
-          if (file.extension == 'xls' || file.extension == 'xlsx') {
-
-            let workbook = XLSX.read(file.contents, { type: 'array' });
-            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
-            data.map(forEachLink);
-            message(` - Parsed ${l} New, ${data.length} Total Links from Link Excel Table.`);
-            reportDistances(file, noColumn, missing, bad, badExample);
-            let n = 0, t = 0;
-            const nodeIDs = new Set();
-            const k = data.length;
-            for (let i = 0; i < k; i++) {
-              const l = data[i];
-              [l[file.field1], l[file.field2]].forEach(value => {
-                const id = MT.cleanID(value);
-                if (id == '' || nodeIDs.has(id)) return;
-                t++;
-                nodeIDs.add(id);
-                n += MT.addNode({
-                  _id: id,
-                  origin: origin
-                }, true, source);
-              });
-            }
-            MT.time('Link Excel Parse', start);
-            message(` - Parsed ${n} New, ${t} Total Nodes from Link Excel Table.`);
-            parsed();
-
-          } else {
-
-            // The text is parsed in a worker, so a large list does not freeze the page
-            MT.runWorker('workers/parse-links.js', { text: file.contents, delimiter: file.delimiter, field1: file.field1, field2: file.field2 }, { name: 'The link list parser' }).then(results => {
-              let data = results.rows;
-              data.map(forEachLink);
-              message(` - Parsed ${l} New, ${data.length} Total Links from Link CSV.`);
-              reportDistances(file, noColumn, missing, bad, badExample);
-              results.fields.forEach(noteField);
-              let newNodes = 0, totalNodes = 0;
-              const n = data.length;
-              // Each endpoint once (it used to count, and look up, every one)
-              const nodeIDs = new Set();
-              for (let i = 0; i < n; i++) {
-                const l = data[i];
-                [l[file.field1], l[file.field2]].forEach(value => {
-                  const id = MT.cleanID(value);
-                  if (id == '' || nodeIDs.has(id)) return;
-                  totalNodes++;
-                  nodeIDs.add(id);
-                  newNodes += MT.addNode({
-                    _id: id,
-                    origin: origin
-                  }, true, source);
-                });
-              }
-              MT.time('Link CSV Parse', start);
-              message(` - Parsed ${newNodes} New, ${totalNodes} Total Nodes from Link CSV.`);
-              parsed();
-            }).catch(error => fail(file, 'a link list', error));
-          }
-        } else if (file.format == 'node') {
-
-          message(`Parsing ${shownName(file)} as Node List...`);
-
-          let m = 0, n = 0;
-
-          if (file.extension == 'xls' || file.extension == 'xlsx') {
-
-            let workbook = XLSX.read(file.contents, { type: 'array' });
-            let data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, dateNF: 'yyyy-mm-dd'});
-            n = data.length;
-            const seen = new Set();
-            data.forEach(node => {
-              const id = idOf(node[file.field1], seen);
-              if (id === null) return;
-              let safeNode = {
-                _id: id,
-                seq: (file.field2 == 'None') ? '' : node[file.field2],
-                origin: origin
-              };
-              Object.keys(node).forEach(key => {
-                // The columns chosen as the ID and sequence are those, not fields too
-                if (key == file.field1 || key == file.field2) return;
-                MT.addNodeField(key);
-                safeNode[key] = node[key];
-              });
-              m += MT.addNode(safeNode, check, source);
-            });
-            seen.forEach(id => taken.add(id));
-            MT.time('Node Excel Parse', start);
-            message(` - Parsed ${m} New, ${n} Total Nodes from Node Excel Table.`);
-            parsed();
-
-          } else {
-
-            const seen = new Set();
-            Papa.parse(file.contents, {
-              delimiter: file.delimiter || ",",
-              // newline: "\r\n",
-              header: true,
-              // Numbers are read as numbers, except IDs and sequences: 007 and 1E3 are names (#219)
-              dynamicTyping: field => field != file.field1 && field != file.field2,
-              skipEmptyLines: true,
-              step: data => {
-                let node = data.data;
-                n++;
-                const id = idOf(node[file.field1], seen);
-                if (id === null) return;
-                let safeNode = {
-                  _id: id,
-                  seq: (file.field2 == 'None') ? '' : node[file.field2],
-                  origin: origin
-                };
-                Object.keys(node).forEach(key => {
-                  // The columns chosen as the ID and sequence are those, not fields too
-                  if (key == file.field1 || key == file.field2) return;
-                  MT.addNodeField(key);
-                  safeNode[key] = node[key]; //#173
-                });
-                m += MT.addNode(safeNode, check, source);
-              },
-              complete: () => {
-                seen.forEach(id => taken.add(id));
-                MT.time('Node CSV Parse', start);
-                message(` - Parsed ${m} New, ${n} Total Nodes from Node CSV.`);
-                parsed();
-              }
-            });
-          }
-
-        } else if (file.format == 'matrix') {
-
-          message(`Parsing ${shownName(file)} as Distance Matrix...`);
-
-          // Excel sheets are read as CSV text by the same parser as CSV files, which
-          // finds the shape (square, or either triangle) from the first row
-          let matrixFile = file, nodeOrigin;
-          if (file.extension == 'xls' || file.extension == 'xlsx') {
-            try {
-              const workbook = XLSX.read(file.contents, { type: 'array' });
-              const sheet = workbook.Sheets[workbook.SheetNames[0]];
-              if (!sheet) throw new Error('the workbook has no sheets');
-              matrixFile = Object.assign({}, file, { contents: XLSX.utils.sheet_to_csv(sheet, { rawNumbers: true, dateNF: 'yyyy-mm-dd' }) });
-              nodeOrigin = origin;
-            } catch (error) {
-              return fail(file, 'a distance matrix', error);
-            }
-          }
-          MT.parseCSVMatrix(matrixFile, source, nodeOrigin).then(o => {
-            o.ids.forEach(id => linked.add(MT.cleanID(id)));
-            message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
-            message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
-            if (o.unparseable) {
-              const text = `${shownName(file)}: ${o.unparseable.toLocaleString()} matrix cell${o.unparseable == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(o.example)}") and ${o.unparseable == 1 ? 'was' : 'were'} skipped.`;
-              message(' - ' + text);
-              MT.toast.warning(text);
-            }
-            parsed();
-          }, error => fail(file, 'a distance matrix', error));
-
-        } else { // if(file.format == 'newick'){
-
-          if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
-          let links = 0;
-          let newLinks = 0;
-          let newNodes = 0;
-          const tree = patristic.parseNewick(file.contents);
-          temp.tree = tree;
-          let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids, n = labels.length;
-          for (let i = 0; i < n; i++) {
-            const source = labels[i];
-            newNodes += MT.addNode({
-              _id: source,
-              origin: origin
-            }, check, source);
-            for (let j = 0; j < i; j++) {
-              newLinks += MT.addLink({
-                source: source,
-                target: labels[j],
-                origin: origin,
-                [get('default-distance-metric')]: parseFloat(matrix[i][j])
-              }, check);
-              links++;
-            }
-          }
-          MT.time('Newick Tree Parse', start);
-          message(` - Parsed ${newNodes} New, ${n} Total Nodes from Newick Tree.`);
-          message(` - Parsed ${newLinks} New, ${links} Total Links from Newick Tree.`);
-          labels.forEach(id => linked.add(MT.cleanID(id)));
-          parsed();
-        }
-      });
-
-      // (A synchronous parse that throws rejects here and is caught by launch)
-      return Promise.all(parsedFiles).then(() => {
-        if (MT.workCancelled()) throw Object.assign(new Error('it was cancelled'), { cancelled: true });
-        reportMerges();
-        return processSequences();
-      });
-
-      // Merged, dropped and overwritten rows are said, not silent (#219)
-      function reportMerges() {
-        const unmatched = taken.size ? Array.from(linked).filter(id => !taken.has(id)).length : 0;
-        const plural = (n, one, many) => n.toLocaleString() + ' ' + (n == 1 ? one : many);
-        const notes = [];
-        if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the first row's values are kept, and later rows fill in its blanks)`);
-        if (report.blanks) notes.push(`${plural(report.blanks, 'row with a blank ID was', 'rows with a blank ID were')} skipped`);
-        if (report.selfLinks) notes.push(`${plural(report.selfLinks, 'link from a node to itself was', 'links from a node to itself were')} dropped`);
-        if (report.repeatedLinks) notes.push(`${plural(report.repeatedLinks, 'link repeated', 'links repeated')} a pair of nodes already linked (in either direction), so overwrote its values`);
-        if (unmatched) notes.push(`${plural(unmatched, 'node in the links is', 'nodes in the links are')} not in the node or sequence files`);
-        notes.forEach(note => message(' - ' + note[0].toUpperCase() + note.slice(1) + '.'));
-        if (notes.length) MT.toast.warning(notes.map(note => note[0].toUpperCase() + note.slice(1)).join('. ') + '. See the loading log for details.', 15);
+        MT.time('Alignment Merge', start);
+        reportLengths(MT.lengthWarnings(output.fit));
+      } else {
+        reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));
       }
-
-      // Sets the reference the sequences are aligned to, from the chosen source
-      async function chooseReference(subset) {
-        const source = referenceSource();
-        if (source == 'consensus') {
-          message('Building a consensus reference from the sequences...');
-          step = 'building the consensus reference';
-          MT.progress('Building a consensus reference');
-          session.data.reference = await MT.consensusReference(subset, alignerScoring());
-        } else if (source == 'first') {
-          session.data.reference = subset.length ? subset[0].seq : '';
-        }
-        if (!session.data.reference) {
-          throw new Error(source == 'file' ?
-            'no reference sequence was loaded: load one from a FASTA file, or use the consensus or the first sequence as the reference' :
-            'no reference sequence could be made from the sequences');
-        }
+      // Nodes without a sequence hold only gaps; they are left out of the consensus
+      step = 'computing the consensus sequence';
+      MT.progress('Computing the consensus sequence');
+      session.data.consensus = await MT.computeConsensus(subset);
+      await MT.computeConsensusDistances();
+      subset.sort((a, b) => a['_diff'] - b['_diff']);
+      if(session.style.widgets['ambiguity-resolution-strategy']){
+        await MT.computeAmbiguityCounts();
       }
-
-      async function processSequences() {
-        if (!session.data.nodes.length) throw new Error('no nodes were found in the files (are they empty, or the wrong kind of file?)');
-        // Where files disagree about nodes, say so (the top file's values are used)
-        const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
-        if (differ) message(` - ${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files; the top file's are used.`);
-        if (!session.meta.anySequences) return MT.runHamsters();
-        MT.addNodeField('seq');
-        const nodes = session.data.nodes;
-        const subset = nodes.filter(d => d.seq);
-        const align = session.style.widgets['align-sw'];
-        if (align) await chooseReference(subset);
-        // Nodes without a sequence get only gaps, as long as the aligned
-        // sequences (the reference) or, unaligned, the longest sequence
-        let width = 0;
-        if (align) width = session.data.reference.length;
-        else for (const d of subset) if (d.seq.length > width) width = d.seq.length;
-        const gapString = '-'.repeat(width);
-        for (const d of nodes) if (!d.seq) d.seq = gapString;
-        if (align){
-          message('Aligning Sequences...');
-          step = 'aligning the sequences';
-          let output = await MT.align({
-            reference: session.data.reference,
-            isLocal: false,
-            ...alignerScoring(),
-            nodes: subset
-          });
-          const start = Date.now();
-          const m = subset.length;
-          for (let j = 0; j < m; j++) {
-            Object.assign(subset[j], output[j]);
-          }
-          MT.time('Alignment Merge', start);
-          reportLengths(MT.lengthWarnings(output.fit));
-        } else {
-          reportLengths(MT.lengthWarnings(null, subset.map(d => d.seq.length)));
-        }
-        // Nodes without a sequence hold only gaps; they are left out of the consensus
-        step = 'computing the consensus sequence';
-        MT.progress('Computing the consensus sequence');
-        session.data.consensus = await MT.computeConsensus(subset);
-        await MT.computeConsensusDistances();
-        subset.sort((a, b) => a['_diff'] - b['_diff']);
-        if(session.style.widgets['ambiguity-resolution-strategy']){
-          await MT.computeAmbiguityCounts();
-        }
-        message('Computing Links based on Genomic Proximity...');
-        step = 'computing the links';
-        MT.progress('Computing distances');
-        const k = await MT.computeLinks(subset);
-        // Every pair has a distance; the network shows those within the threshold
-        const threshold = parseFloat(session.style.widgets['link-threshold']);
-        let within = 0;
-        session.data.graph.forEachValue(get('default-distance-metric'), v => { if (v <= threshold) within++; });
-        message(` - Computed ${k.toLocaleString()} distances between sequences; ${within.toLocaleString()} links are within the link threshold (${threshold}).`);
-        const also = MT.computedMetrics().slice(1);
-        if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Settings.`);
-        step = 'drawing the network';
-        MT.progress('Drawing the network');
-        return MT.runHamsters();
-      };
-    };
+      message('Computing Links based on Genomic Proximity...');
+      step = 'computing the links';
+      MT.progress('Computing distances');
+      const k = await MT.computeLinks(subset);
+      // Every pair has a distance; the network shows those within the threshold
+      const threshold = parseFloat(session.style.widgets['link-threshold']);
+      let within = 0;
+      session.data.graph.forEachValue(get('default-distance-metric'), v => { if (v <= threshold) within++; });
+      message(` - Computed ${k.toLocaleString()} distances between sequences; ${within.toLocaleString()} links are within the link threshold (${threshold}).`);
+      const also = MT.computedMetrics().slice(1);
+      if (also.length) message(` - Also computed ${also.map(m => MT.distanceMetrics[m].label).join(', ')}, to filter links on in Settings.`);
+      step = 'drawing the network';
+      MT.progress('Drawing the network');
+      return MT.runHamsters();
+    }
 
     // Other metrics to compute too: any but the distance metric
     const alsoMenu = MT.multiSelect($('#distance-metrics-also'));
