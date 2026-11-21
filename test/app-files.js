@@ -36,6 +36,11 @@ function runAppFiles(ctx) {
     const body = fs.readFileSync(path.join(root, file), 'utf8')
       .replace(/^import \{ (.*) \} from '.*';$/gm, (m, list) => { names.push(...list.split(',').map(s => s.trim())); return ''; })
       .replace(/^export const MT = /m, 'const MT = ');
+    // Only one-line named imports are rewritten above; say so rather than fail later
+    // with a SyntaxError that doesn't name the cause.
+    if (/^\s*(import|export)\b/m.test(body)) {
+      throw new Error(file + ' has an import or export that runAppFiles cannot rewrite: use one-line `import { a, b } from \'./x.js\';`');
+    }
     const wrapped = '(function(){\n' + (names.length ? 'const { ' + names.join(', ') + ' } = self;' : '') + body + '\n})();';
     vm.runInContext(wrapped, ctx, { filename: path.join(root, file) });
   }
