@@ -8,7 +8,7 @@ client-side; `server.js` only serves static files. Node >= 26.
 
 ```sh
 npm ci
-npm test                                      # unit tests (node --test test/unit/*.test.js)
+npm test                                      # unit tests (node --test test/unit/*.test.js and *.test.mjs)
 npm run test:e2e                              # Playwright, Chromium only; starts its own server
 npm run test:e2e -- test/e2e/histogram.spec.js   # one spec
 npm start                                     # http://localhost:5000 (builds dist/ first if missing)
@@ -35,9 +35,14 @@ serially and is slow; run the specs for what you touched, not the whole suite, u
 
 ## How the code is written
 
-- No build step for app code and no ES modules: each file is a classic script, usually an IIFE that
-  attaches to globals (`MT`, `session`, `temp`, `MTSettings`, ...). Load order in `index.html`
-  matters. Libraries come from the bundles as globals (`d3`, `bootstrap`, `Plotly`, ...).
+- No build step for app code. Most files are still classic scripts, usually an IIFE that attaches to
+  globals (`MT`, `session`, `temp`, ...); load order in `index.html` matters. The leaf files
+  (`events`, `settings`, `graph`, `nodes`, `dates`, `db`, `session-format`, `binder`, `aligner`) are
+  ES modules (#323): they `export` their API and, until their users convert too, also set it on
+  `globalThis`. New code that other files depend on should be a module with `import`s, not a global.
+  Module scripts run before the `defer` scripts, in document order, so classic scripts may use them
+  from `defer` onwards but not at the top level of a synchronous script. Workers can't `importScripts`
+  a module, so a file a worker loads stays classic. Libraries come from the bundles as globals (`d3`, `bootstrap`, `Plotly`, ...).
 - State: `session` is what gets saved (data in `session.data`, settings in `session.style.widgets`);
   `temp` is everything rebuilt on load. Read and write settings through `MT.settings.get/set` so
   subscribers hear about it; new settings need a default in `MT.defaultWidgets` in `common.js`.

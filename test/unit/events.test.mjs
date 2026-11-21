@@ -1,7 +1,7 @@
 // Unit tests for src/events.js. Run with: node --test test/unit
-const test = require('node:test');
-const assert = require('node:assert');
-const MTEvents = require('../../src/events.js');
+import test from 'node:test';
+import assert from 'node:assert';
+import { MTEvents } from '../../src/events.js';
 
 test('emitTogether runs a function that listens to several of the events once', () => {
   const events = new MTEvents();

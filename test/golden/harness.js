@@ -76,10 +76,10 @@ function loadApp(widgets = {}) {
   const ctx = {
     console: quiet, TextDecoder, TextEncoder, Worker,
     navigator: { hardwareConcurrency: 4 },
-    MTGraph: require('../../src/graph.js'),
-    MTSettings: require('../../src/settings.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
+    MTGraph: require('../../src/graph.js').MTGraph,
+    MTSettings: require('../../src/settings.js').MTSettings,
+    MTDates: require('../../src/dates.js').MTDates,
+    MTEvents: require('../../src/events.js').MTEvents,
     document: stub()
   };
   ctx.self = ctx.window = ctx;

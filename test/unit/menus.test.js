@@ -45,12 +45,12 @@ function load() {
   const ctx = {
     console: { log() {}, error() {}, warn() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTSessionFormat: require('../../src/session-format.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
-    MTGraph: require('../../src/graph.js'),
-    MTNodeSources: require('../../src/nodes.js'),
+    MTSettings: require('../../src/settings.js').MTSettings,
+    MTSessionFormat: require('../../src/session-format.js').MTSessionFormat,
+    MTDates: require('../../src/dates.js').MTDates,
+    MTEvents: require('../../src/events.js').MTEvents,
+    MTGraph: require('../../src/graph.js').MTGraph,
+    MTNodeSources: require('../../src/nodes.js').MTNodeSources,
     d3: { schemePaired: ['#a6cee3', '#1f78b4'], schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c'] },
     document: stub()
   };

@@ -1,9 +1,11 @@
 // Unit tests for src/dates.js (issue #216: missing dates stay missing; issue
 // #231: numeric dates are read explicitly, in the order their column is in).
 // Run with: node --test test/unit
-const test = require('node:test');
-const assert = require('node:assert');
-const { parseDate, dateOrderOf, isUndated, countUndated, shownAt } = require('../../src/dates.js');
+import test from 'node:test';
+import assert from 'node:assert';
+import { MTDates } from '../../src/dates.js';
+
+const { parseDate, dateOrderOf, isUndated, countUndated, shownAt } = MTDates;
 
 const day = (y, m, d, h = 0, min = 0) => new Date(y, m - 1, d, h, min).getTime();
 const time = (value, order) => { const d = parseDate(value, order); return d && d.getTime(); };

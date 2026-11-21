@@ -1,8 +1,8 @@
 // src/db.js: writes resolve only once the transaction commits, and reject when
 // it aborts (#225). Run against a small hand-rolled fake of IndexedDB, in which
 // a transaction commits (or aborts) on a later tick, as a real one does.
-const test = require("node:test");
-const assert = require("node:assert");
+import test from 'node:test';
+import assert from 'node:assert';
 
 function fakeIndexedDB({ failWith } = {}) {
   const data = new Map();
@@ -50,16 +50,18 @@ function fakeIndexedDB({ failWith } = {}) {
   };
 }
 
-function load(options) {
+// Each load imports a fresh copy of the module (the query makes it a new one),
+// so every test starts with no open database
+let loads = 0;
+async function load(options) {
   const idb = fakeIndexedDB(options);
-  global.indexedDB = idb;
-  delete require.cache[require.resolve("../../src/db.js")];
-  require("../../src/db.js");
-  return { db: global.db, state: idb.state };
+  globalThis.indexedDB = idb;
+  const { db } = await import("../../src/db.js?load=" + ++loads);
+  return { db, state: idb.state };
 }
 
 test("setItem resolves only after the transaction has committed", async () => {
-  const { db, state } = load();
+  const { db, state } = await load();
   let resolved = false;
   const pending = db.setItem("a", "1").then(() => { resolved = true; });
   await new Promise(resolve => setTimeout(resolve, 1));
@@ -70,7 +72,7 @@ test("setItem resolves only after the transaction has committed", async () => {
 });
 
 test("removeItem resolves only after the commit, and keys and getItem still work", async () => {
-  const { db, state } = load();
+  const { db, state } = await load();
   await db.setItem("a", "1");
   await db.setItem("b", "2");
   assert.deepStrictEqual(await db.keys(), ["a", "b"]);
@@ -81,7 +83,7 @@ test("removeItem resolves only after the commit, and keys and getItem still work
 
 test("a failed write rejects with the transaction's error", async () => {
   const quota = Object.assign(new Error("full"), { name: "QuotaExceededError" });
-  const { db, state } = load({ failWith: quota });
+  const { db, state } = await load({ failWith: quota });
   await assert.rejects(db.setItem("a", "1"), error => error === quota);
   await assert.rejects(db.removeItem("a"), error => error === quota);
   assert.strictEqual(state.data.size, 0);

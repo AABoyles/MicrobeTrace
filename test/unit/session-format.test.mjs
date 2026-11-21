@@ -1,7 +1,7 @@
 // Unit tests for src/session-format.js. Run with: npm test
-const test = require('node:test');
-const assert = require('node:assert');
-const F = require('../../src/session-format.js');
+import test from 'node:test';
+import assert from 'node:assert';
+import { MTSessionFormat as F } from '../../src/session-format.js';
 
 const base = () => ({ data: { nodes: [], links: [] }, style: { widgets: {} }, files: [], layout: {} });
 

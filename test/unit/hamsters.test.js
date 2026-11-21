@@ -20,9 +20,9 @@ function load({ directionality = true, tree = null, failTree = false } = {}) {
   const ctx = {
     console: { log() {}, error() {}, warn() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
+    MTSettings: require('../../src/settings.js').MTSettings,
+    MTDates: require('../../src/dates.js').MTDates,
+    MTEvents: require('../../src/events.js').MTEvents,
     document: stub()
   };
   ctx.self = ctx.window = ctx;
@@ -84,9 +84,9 @@ function bare() {
   const ctx = {
     console: { log() {}, error() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
+    MTSettings: require('../../src/settings.js').MTSettings,
+    MTDates: require('../../src/dates.js').MTDates,
+    MTEvents: require('../../src/events.js').MTEvents,
     document: stub()
   };
   ctx.self = ctx.window = ctx;
@@ -140,9 +140,9 @@ test('computeDirectionality rejects, rather than hanging, when its worker throws
   const ctx = {
     console: { log() {}, error() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
+    MTSettings: require('../../src/settings.js').MTSettings,
+    MTDates: require('../../src/dates.js').MTDates,
+    MTEvents: require('../../src/events.js').MTEvents,
     document: stub()
   };
   ctx.self = ctx.window = ctx;

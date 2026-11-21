@@ -1,5 +1,7 @@
 # Unit Tests
 
+Tests of the ES-module files in `src/` are `*.test.mjs` and `import` them (#323); the rest are `*.test.js`. Tests that load files in a `vm` context `require` the modules (Node can require a synchronous ES module) and take the named export.
+
 This is where we're developing MicrobeTrace's unit tests.
 
 `graph.test.js` checks `src/graph.js`, the network store, against the old link-object semantics.

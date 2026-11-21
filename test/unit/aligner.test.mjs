@@ -1,10 +1,13 @@
 // Unit tests for src/aligner.js. Run with: npm test
-const test = require('node:test');
-const assert = require('node:assert');
-const MTAlignerScoring = require('../../src/aligner.js');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
+import test from 'node:test';
+import assert from 'node:assert';
+import { MTAlignerScoring } from '../../src/aligner.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The vendored copy is what the worker runs. Since 0.2 it is a browser script that defines a
 // global bioseq rather than a UMD module, so run it the way importScripts would.
