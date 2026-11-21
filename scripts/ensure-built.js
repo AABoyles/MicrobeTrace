@@ -3,7 +3,7 @@
 // and most of vendor/ (npm run bundle), and sw.js (npm run cache). Run by
 // `npm start` and by the Playwright web server, so a fresh clone works after
 // `npm ci` alone. The bundles are rebuilt when they are missing or older than
-// package-lock.json or scripts/bundle.js (a pull that changed a dependency);
+// package-lock.json or a script bundle.js reads (a pull that changed a dependency);
 // sw.js is cheap, so it is rewritten every time, which keeps its cache name in step
 // with files edited since the last start.
 //
@@ -18,7 +18,10 @@ const mtime = file => fs.statSync(path.join(root, file), { throwIfNoEntry: false
 
 // versions.json is written last by bundle.js, so it dates the build
 const built = mtime("dist/versions.json");
-const stale = !built || built < mtime("package-lock.json") || built < mtime("scripts/bundle.js")
+// Everything bundle.js reads besides node_modules, so editing any of it rebuilds
+const inputs = ["package-lock.json", "scripts/bundle.js", "scripts/plotly-bundle.js", "scripts/buffer-shim.js",
+  "scripts/minify-css.js", "scripts/write-versions.js", "postcss.config.js"];
+const stale = !built || inputs.some(file => built < mtime(file))
   || !fs.existsSync(path.join(root, "vendor/cosmos.min.js")) || !fs.existsSync(path.join(root, "fonts"));
 
 function run(script) {

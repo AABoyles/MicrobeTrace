@@ -91,13 +91,13 @@ const versionedPackages = [
   'papaparse', 'patristic', 'pdfmake', 'plotly.js', 'tabulator-tables', 'tidytree', 'tom-select', 'xlsx'
 ];
 
-// Joins files with a separator after each, like `cat` plus `printf`. Read as
-// UTF-8 strings; the inputs are valid UTF-8, so this round-trips exactly.
+// Joins files with a separator after each, like `cat` plus `printf`. Joined as
+// bytes, as cat did, so an input that isn't valid UTF-8 is copied unchanged.
 function concat(files, tmp, separator) {
-  return files.map(f => {
+  return Buffer.concat(files.flatMap(f => {
     const file = f.startsWith('tmp:') ? path.join(tmp, f.slice(4)) : f;
-    return fs.readFileSync(file, 'utf8') + separator;
-  }).join('');
+    return [fs.readFileSync(file), Buffer.from(separator)];
+  }));
 }
 
 async function build(tmp) {
