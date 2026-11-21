@@ -33,7 +33,7 @@ jobs:
 
   bundle:
     # dist/ and vendor/ are committed; rebuild them from the lockfile and fail
-    # if they differ, so a dependency or bundle.sh change can't land without
+    # if they differ, so a dependency or bundle.js change can't land without
     # its bundle, or a bundle without its source (#200)
     name: Bundles match the lockfile
     runs-on: ubuntu-latest

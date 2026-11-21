@@ -16,7 +16,7 @@ const TOOLS = ["@eslint/js", "@playwright/test", "axe-core", "cssnano", "esbuild
 test("every shipped dependency is listed in dist/versions.json at its locked version", () => {
   for (const name of Object.keys(pkg.devDependencies)) {
     if (TOOLS.includes(name)) continue;
-    assert.ok(packages[name], name + " is a dependency but not in dist/versions.json: add it to the list in scripts/bundle.sh");
+    assert.ok(packages[name], name + " is a dependency but not in dist/versions.json: add it to the list in scripts/bundle.js");
     assert.strictEqual(packages[name].version, lock.packages["node_modules/" + name].version, name + " in dist/versions.json differs from package-lock.json: run npm run bundle");
   }
 });

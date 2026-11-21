@@ -43,7 +43,7 @@ npm run test:e2e                  # end-to-end tests in Chromium (E2E_PORT sets 
 
 The build scripts (see [scripts/README.md](scripts/README.md)):
 
-* `npm run bundle` builds `dist/` and `vendor/` from `node_modules`. Run it after changing a dependency or `scripts/bundle.sh`, then commit the result. CI rebuilds them and fails if they differ.
+* `npm run bundle` builds `dist/` and `vendor/` from `node_modules`. Run it after changing a dependency or `scripts/bundle.js`, then commit the result. CI rebuilds them and fails if they differ.
 * `npm run cache` regenerates the service worker's precache list in `sw.js`. Run it after changing any file the app loads; `npm test` fails until you do.
 * `npm run compress` writes the `.br` and `.gz` copies of the largest files, which `server.js` serves when they exist. `npm run clean` removes them.
 * `npm run site` copies exactly the files the app needs into `_site/`.

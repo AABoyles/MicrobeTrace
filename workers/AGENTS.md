@@ -6,7 +6,7 @@ Classic (non-module) Web Workers, started through `MT.runWorker(script, message,
 - A worker sets `onmessage`, does one job, replies once with `postMessage` and calls `close()`.
   Send large numeric results as typed-array buffers in the transfer list, not JSON.
 - Libraries come from `vendor/` with `importScripts('../vendor/...')`, never from `dist/` or the
-  network. A library a worker needs must be copied into `vendor/` by `scripts/bundle.sh`.
+  network. A library a worker needs must be copied into `vendor/` by `scripts/bundle.js`.
 - No DOM, and nothing from `MT`. Keep workers pure functions of their message: the golden tests
   (`test/golden/harness.js`) run them in a Node `vm` context with only `importScripts`, `fetch`
   (for the WebAssembly in `vendor/`), `postMessage`, `close` and a few globals.

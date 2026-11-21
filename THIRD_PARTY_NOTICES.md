@@ -10,7 +10,7 @@ licence (Apache-2.0) is in `LICENSE`, and `NOTICE` gives the project's copyright
   `package-lock.json`. The two agree for every top-level package below. The installed copies in
   `node_modules` (checked from the main checkout, which has `node_modules`) match the lockfile.
 - **Licences** come from each package's `package.json` `license` field and its `LICENSE` file.
-- **What goes into each bundle** comes from `scripts/bundle.sh`. For the two packages built by
+- **What goes into each bundle** comes from `scripts/bundle.js`. For the two packages built by
   esbuild (`vendor/cosmos.min.js` and the Plotly part of `dist/bundle.secondary.js`), the packages
   actually included were read from an esbuild metafile, built with the same command. The
   `cosmos.min.js` output matches the committed file byte for byte, and a sample of the Plotly

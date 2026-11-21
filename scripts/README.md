@@ -1,10 +1,10 @@
 # Scripts
 
-_A directory for shell scripts_
+_A directory for build scripts_
 
 ...Because I don't like writing Makefiles.
 
-- [`bundle.sh`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/bundle.sh) -
+- [`bundle.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/bundle.js) -
   Takes all the JS and CSS dependencies and packages them into bundle files (see
   the contents of
   [`dist/`](https://github.com/aaboyles/MicrobeTrace/tree/master/dist)).

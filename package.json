@@ -34,7 +34,7 @@
   "scripts": {
     "start": "node server.js",
     "build": "npm run bundle && npm run cache && npm run compress",
-    "bundle": "scripts/bundle.sh",
+    "bundle": "node scripts/bundle.js",
     "cache": "node scripts/build-sw.js",
     "clean": "scripts/cleanup.sh",
     "site": "node scripts/build-site.js",
