@@ -12,6 +12,8 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 ### Build, deployment and project
 
 - `dist/`, `vendor/`, `fonts/` and `sw.js` are no longer committed: CI, the Pages deploy and the Docker build bundle them from the lockfile, and `npm start` does when they are missing. A copy of the repository needs `npm ci && npm run bundle && npm run cache` before it can be deployed. (#325)
+- `npm run bundle` is a Node script (`scripts/bundle.js`) instead of bash, so the bundles build on Windows. (#328)
+- The core of the app (`src/common.js` and the files split from it, and the settings, events, graph, nodes, dates and database stores) loads as native ES modules, with no build step. The file loader and the network view are broken into named functions. (#323, #240)
 
 ## 0.7.1 (2026-11-20)
 
