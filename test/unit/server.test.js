@@ -1,12 +1,15 @@
 // What server.js serves (#210): the files the app needs, and a real 404 for
 // everything else (never index.html under another URL).
-const test = require("node:test");
+const nodeTest = require("node:test");
 const assert = require("node:assert");
 const http = require("node:http");
 const fs = require("fs");
 const path = require("path");
 
-const app = require("../../server.js");
+// server.js lists the app's files, which includes the built dist/ (#325): skip until npm run bundle
+const skip = fs.existsSync(path.join(__dirname, "../../dist/versions.json")) ? false : "dist/ is missing: run `npm run bundle`";
+const test = Object.assign((name, fn) => nodeTest(name, { skip }, fn), nodeTest);
+const app = skip ? () => {} : require("../../server.js");
 const server = http.createServer(app);
 let base;
 test.before(async () => {
