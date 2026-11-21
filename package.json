@@ -83,7 +83,6 @@
     "postcss": "^8.5.29",
     "tabulator-tables": "^6.6.1",
     "tidytree": "^0.8.1",
-    "tn93": "^0.3.5",
     "tom-select": "^2.6.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }

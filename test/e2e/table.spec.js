@@ -66,7 +66,7 @@ test('the table starts below its toolbar, however many columns are chosen', asyn
 
 test('shows links and clusters', async () => {
   await dataset('Links');
-  await expect.poll(async () => (await table()).rows).toBe(476);
+  await expect.poll(async () => (await table()).rows).toBe(299);
   expect((await table()).columns).toContain('TN93');
   await dataset('Clusters');
   const clusters = await page.evaluate(() => session.data.clusters.length);

@@ -1,6 +1,6 @@
 // Golden tests for the genetic distances (#171): MicrobeTrace's own distance
-// code (workers/compute-links.js running bx-distance-models' WebAssembly, the
-// GapMM worker, and MT.computeLinks over them) against values derived
+// code (workers/compute-links.js running bx-distance-models' WebAssembly, and
+// MT.computeLinks over it) against values derived
 // independently of it, from the published formulas and HIV-TRACE's tn93. The
 // data, the expected values and how they were derived are in test/golden/.
 // Run with: npm test
@@ -8,10 +8,9 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { runWorker, loadApp, parseFasta, expected } = require('../golden/harness.js');
 const reference = require('../golden/reference.js');
-const tn93js = require('../../vendor/tn93.min.js');
 
 const METRICS = ['tn93', 'snps', 'hamming', 'p_distance', 'jc69', 'k2p', 'tn92', 'transitions', 'transversions', 'ts_tv_ratio'];
-const STRATEGIES = { skip: 'SKIP', resolve: 'RESOLVE', average: 'AVERAGE' };
+const STRATEGIES = { skip: 'SKIP', resolve: 'RESOLVE', average: 'AVERAGE', gapmm: 'GAPMM' };
 const FILES = ['distances', 'ambiguity'];
 
 // Expected values are stored as numbers, or 'Infinity' / 'NaN'
@@ -54,6 +53,20 @@ test('the stored expected values are the reference implementation\'s', async () 
   }
 });
 
+// Every metric's expected values for one mode of one file. The files store only
+// TN93 for GapMM (the value tn93 -a gapmm checks); the other metrics come from
+// the reference implementation, as the stored ones do.
+async function want(file, mode) {
+  const exp = expected(`${file}.expected.json`);
+  const seqs = await parseFasta(`${file}.fasta`);
+  const ids = seqs.map(s => s.id);
+  const values = Object.assign({}, exp.modes[mode]);
+  METRICS.filter(m => !values[m]).forEach(m => {
+    values[m] = exp.pairs.map(([a, b]) => reference.distances(seqs[ids.indexOf(a)].seq, seqs[ids.indexOf(b)].seq, mode)[m]);
+  });
+  return { exp, values };
+}
+
 // The worker as MT.computeLinks runs it, asked for every pair (a threshold no
 // pair exceeds) so it returns float64 distances rather than the float32 triangle
 async function workerDistances(seqs, mode) {
@@ -74,11 +87,11 @@ async function workerDistances(seqs, mode) {
 for (const file of FILES) {
   for (const mode of Object.keys(STRATEGIES)) {
     test(`${file}.fasta, ${mode}: each metric from compute-links.js matches the reference`, async t => {
-      const exp = expected(`${file}.expected.json`);
+      const { exp, values } = await want(file, mode);
       const results = await workerDistances(await parseFasta(`${file}.fasta`), mode);
       for (const [m, metric] of METRICS.entries()) {
         await t.test(metric, () =>
-          checkMetric(metric, results[m], exp.modes[mode][metric], exp.pairs, 1e-9));
+          checkMetric(metric, results[m], values[metric], exp.pairs, 1e-9));
       }
     });
   }
@@ -106,12 +119,12 @@ async function pipeline(file, strategy, widgets = {}) {
 for (const file of FILES) {
   for (const [mode, strategy] of Object.entries(STRATEGIES)) {
     test(`${file}.fasta, ${strategy}: MT.computeLinks stores the reference distances`, async t => {
-      const exp = expected(`${file}.expected.json`);
+      const { exp, values } = await want(file, mode);
       const { MT, ids } = await pipeline(file, strategy);
       for (const metric of METRICS) {
         await t.test(metric, () => {
           const { tri } = MT.getCondensedDM(metric, ids);
-          checkMetric(metric, Array.from(tri), exp.modes[mode][metric], exp.pairs, 1e-6);
+          checkMetric(metric, Array.from(tri), values[metric], exp.pairs, 1e-6);
         });
       }
     });
@@ -137,39 +150,26 @@ test('kept within the link threshold, MT.computeLinks stores exactly the pairs w
   assert.strictEqual(want.length, 12);
 });
 
-// GapMM (TN93 only) runs on tn93.js in workers/compute-links-legacy.js. tn93 -a
-// gapmm counts a gap facing anything but a gap as an N.
-for (const file of FILES) {
-  test(`${file}.fasta, GAPMM: compute-links-legacy.js`, async t => {
-    const exp = expected(`${file}.expected.json`);
-    const seqs = await parseFasta(`${file}.fasta`);
-    const out = await runWorker('workers/compute-links-legacy.js', { seqs: seqs.map(s => s.seq), rowStart: 0, rowEnd: seqs.length });
-    const got = Array.from(out.distances), want = exp.modes.gapmm.tn93;
-    // Pairs where no gap faces a base: GAPMM is plain averaging there
-    const gapFacesBase = exp.pairs.map(([a, b]) => {
-      const s1 = seqs.find(s => s.id == a).seq, s2 = seqs.find(s => s.id == b).seq;
-      return [...s1].some((c, p) => (c == '-') != (s2[p] == '-'));
-    });
-    await t.test('pairs where no gap faces a base', () => {
-      const k = exp.pairs.map((p, i) => i).filter(i => !gapFacesBase[i]);
-      checkMetric('tn93', k.map(i => got[i]), k.map(i => want[i]), k.map(i => exp.pairs[i]), 1e-6);
-    });
-    await t.test('pairs where a gap faces a base', () => {
-      const k = exp.pairs.map((p, i) => i).filter(i => gapFacesBase[i]);
-      checkMetric('tn93', k.map(i => got[i]), k.map(i => want[i]), k.map(i => exp.pairs[i]), 1e-6);
-    });
+// N and ? are fourfold ambiguity codes in resolve, average and GapMM, as tn93
+// reads them; skip leaves them out. The golden files have none, so these
+// sequences do: N facing bases, codes and a gap, and ? facing an R.
+const WITH_N = [
+  { id: 'n0', seq: 'ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT' },
+  { id: 'n1', seq: 'ACGTNCGTACGTACGTACRTACGTACGTANGTACGTACGT' },
+  { id: 'n2', seq: 'ACGTACGNACGTAC-TACGTACGTAC?TACGTNCGTACGA' },
+  { id: 'n3', seq: 'GCGTACGTACNTACGTACGTRCGTACGTACGTACGTAC-T' }
+];
+for (const mode of Object.keys(STRATEGIES)) {
+  test(`N and ?, ${mode}: each metric from compute-links.js matches the reference`, async t => {
+    const results = await workerDistances(WITH_N, mode);
+    const pairs = [], values = {};
+    WITH_N.forEach((a, i) => WITH_N.slice(i + 1).forEach(b => pairs.push([a, b])));
+    METRICS.forEach(m => { values[m] = pairs.map(([a, b]) => reference.distances(a.seq, b.seq, mode)[m]); });
+    for (const [m, metric] of METRICS.entries()) {
+      await t.test(metric, () => checkMetric(metric, results[m], values[metric], pairs.map(([a, b]) => [a.id, b.id]), 1e-9));
+    }
   });
 }
-
-// GapMM weights: each resolutionsCount entry is 1 / (bases its resolution covers), 0 if none
-test('tn93.min.js resolutionsCount matches resolutions', () => {
-  const { resolutions, resolutionsCount } = tn93js;
-  assert.strictEqual(resolutionsCount.length, resolutions.length);
-  resolutions.forEach((r, i) => {
-    const bases = r.reduce((a, b) => a + b, 0);
-    assert.strictEqual(resolutionsCount[i], bases ? 1 / bases : 0, `resolutionsCount[${i}]`);
-  });
-});
 
 // HIV-TRACE -g: hivtrace runs tn93 -a resolve -g FRACTION, which decides pair by
 // pair whether to average: when the pair's resolvable ambiguity codes (not gaps)

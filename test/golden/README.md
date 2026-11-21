@@ -3,8 +3,8 @@
 Small, hand-checkable datasets with reference answers worked out independently of MicrobeTrace,
 so the tests in `test/unit/golden-distances.test.js` and `test/unit/golden-graph.test.js` check
 that the app's numbers are right, not just that they agree with themselves (#171). Those tests run
-the app's own code: the Web Workers in `workers/` (bx-distance-models' WebAssembly, tn93.js,
-patristic, bioseq) and `src/common.js` (`MT.computeLinks`, `MT.computeMST`, `MT.computeNN`,
+the app's own code: the Web Workers in `workers/` (bx-distance-models' WebAssembly, patristic,
+bioseq) and `src/common.js` (`MT.computeLinks`, `MT.computeMST`, `MT.computeNN`,
 `MT.tagClusters`), in Node `vm` contexts set up by `harness.js`.
 
 ## Files
@@ -48,7 +48,7 @@ R and K at 44, 45 and 47; `h4` R at 17 and gaps at 70-89. Every code is resolvab
 ## How the expected values were derived
 
 **Distances** (`*.expected.json`, under `modes`) come from `reference.js`, which shares no code
-with MicrobeTrace, bx-distance-models or tn93.js. It counts each pair's sites into a 4 × 4 matrix,
+with MicrobeTrace or bx-distance-models. It counts each pair's sites into a 4 × 4 matrix,
 then applies:
 
 - TN93: Tamura & Nei (1993), *Mol Biol Evol* 10:512, eq. 7, with the base frequencies of the two
@@ -102,27 +102,22 @@ costs (match 1, mismatch 1, gap open 5, gap extend 2).
 ## Conventions where MicrobeTrace and tn93 differ by design
 
 - The FASTA parser keeps every `N` as an ambiguity code, as node-list CSV sequences do (#232), so
-  tn93 and MicrobeTrace resolve or average it the same way. The golden FASTA files have no N.
+  tn93 and MicrobeTrace resolve or average it the same way. The golden FASTA files have no N;
+  `golden-distances.test.js` checks sequences with `N` and `?` against `reference.js` instead.
 - A Ts/Tv ratio with neither transitions nor transversions has no value; MicrobeTrace gives 0.
 - When a base is missing from a pair, tn93 falls back to K2P, while bx-distance-models drops the
   TN93 terms that vanish. Every pair here has all four bases (each at least 20% of the pair's
   bases), so the data don't depend on it.
-- MicrobeTrace's HIV-TRACE -g decides by sequence: a pair is averaged if either sequence's share of
-  non-ACGT characters (gaps included) reaches the threshold. tn93 decides by pair (see above). The
-  two disagree on `h1`-`h2` and `h0`-`h4`; see below.
 
 ## Discrepancies found
 
-These tests are marked `todo`, so `npm test` passes, until the app is fixed.
+None open. Both found earlier are fixed, and bx-distance-models (0.2.0 on) now computes every
+ambiguity strategy:
 
-1. **GapMM** weighs a gap facing a base as 4/3 of a site. tn93.js's `resolutionsCount` table has
-   one 1/2 too many, so B counts 1/2 per base (not 1/3) and N, which GapMM puts in for a gap, 1/3
-   (not 1/4). `ref` against `gapped`: 0.1330724 against tn93's 0.1084786; with those weights the
-   reference gives the app's value exactly. Pairs with no gap facing a base agree.
-2. **HIV-TRACE -g** averages by sequence, not by pair, and counts gaps as ambiguity. `h1`-`h2`
-   (one resolvable code each, 2 of 100 sites): tn93 averages (0.0205196), MicrobeTrace resolves
-   (0.0102056). `h0`-`h4` (`h4` has one code and 20 gaps, 21% non-ACGT): tn93 resolves (0),
-   MicrobeTrace averages (0.0063275).
+1. **GapMM** ran on tn93.js, whose `resolutionsCount` table had one 1/2 too many, so a gap facing a
+   base weighed 4/3 of a site (CDCgov/tn93.js#20). bx-distance-models implements GapMM itself.
+2. **HIV-TRACE -g** decided by sequence and counted gaps as ambiguity. It now decides pair by pair,
+   counting the sites resolution touched, as tn93 does (`h1`-`h2`: 0.0205196; `h0`-`h4`: 0).
 
 ## Not covered
 

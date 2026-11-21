@@ -330,7 +330,7 @@
     AVERAGE: 'Average the possibilities of ambiguous bases',
     RESOLVE: 'Resolve ambiguous bases to the closest match',
     SKIP: 'Skip sites with ambiguous bases',
-    GAPMM: 'TN93 only: gaps as mismatches (slower engine)',
+    GAPMM: 'Average, with a gap facing a base compared as an N (mostly a mismatch)',
     'HIVTRACE-G': 'HIV-TRACE -g: resolve ambiguities only up to the ambiguity threshold'
   };
   const LINK_STORAGE = ['auto', 'all', 'threshold'];
@@ -392,12 +392,12 @@
     name: 'set_loading_options',
     title: 'Set loading options',
     description: 'Changes the settings that control how files become a network (see get_loading_options for what each means and its valid values). Only the options you pass change. They apply to the next launch. ' +
-      'Changing distanceMetric also resets linkThreshold to that metric\'s default (pass linkThreshold too to override it); GAPMM ambiguity handling needs the tn93 metric. ' +
+      'Changing distanceMetric also resets linkThreshold to that metric\'s default (pass linkThreshold too to override it). ' +
       'referenceSequence (a nucleotide string) sets the alignment reference used with referenceSource "file". ' +
       'Returns the options as set.',
     inputSchema: obj({
       distanceMetric: { type: 'string', enum: Object.keys((self.MT && self.MT.distanceMetrics) || { tn93: 1, tn92: 1, k2p: 1, jc69: 1, snps: 1, hamming: 1, p_distance: 1, transitions: 1, transversions: 1, ts_tv_ratio: 1 }), description: 'The genetic distance metric' },
-      distanceMetricsAlso: { type: 'array', items: { type: 'string' }, description: 'Other metric ids to compute as well (not the distance metric itself). Ignored by GAPMM' },
+      distanceMetricsAlso: { type: 'array', items: { type: 'string' }, description: 'Other metric ids to compute as well (not the distance metric itself)' },
       linkThreshold: num('Largest distance considered a link', { minimum: 0 }),
       ambiguityStrategy: { type: 'string', enum: Object.keys(STRATEGIES), description: 'How ambiguous bases are handled' },
       ambiguityThreshold: num('For HIVTRACE-G: the largest distance at which ambiguities are resolved', { minimum: 0 }),
@@ -423,8 +423,6 @@
       if (args.linkStorage !== undefined && !LINK_STORAGE.includes(args.linkStorage)) fail('linkStorage must be one of ' + LINK_STORAGE.join(', '));
       if (args.defaultView !== undefined && !viewNames().includes(MT.viewName(args.defaultView))) fail('Unknown view ' + JSON.stringify(args.defaultView) + '. Use one of ' + viewNames().join(', '));
       const metric = args.distanceMetric || widgets['default-distance-metric'];
-      const strategy = args.ambiguityStrategy || widgets['ambiguity-resolution-strategy'];
-      if (strategy == 'GAPMM' && metric != 'tn93') fail('GAPMM ambiguity handling works only with the tn93 metric');
       if (args.distanceMetricsAlso !== undefined) {
         const bad = args.distanceMetricsAlso.filter(m => !metrics[m]);
         if (bad.length) fail('Unknown metrics in distanceMetricsAlso: ' + bad.join(', '));
@@ -438,7 +436,6 @@
         if (idle) {
           settings.set('link-sort-variable', metric);
           settings.set('link-threshold', metrics[metric].threshold);
-          if (metric != 'tn93' && widgets['ambiguity-resolution-strategy'] == 'GAPMM') settings.set('ambiguity-resolution-strategy', 'AVERAGE');
         }
         self.db.setItem('default-distance-metric', metric);
       }

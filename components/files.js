@@ -574,9 +574,8 @@
 
     // The loading settings ----------------------------------------------------
 
-    // A distance metric brings its own link threshold (and GapMM is for TN93 only)
+    // A distance metric brings its own link threshold
     const thresholdInput = $('[data-setting="link-threshold"]');
-    const strategy = $('[data-setting="ambiguity-resolution-strategy"]');
     function applyMetric(resetThreshold) {
       const metric = get('default-distance-metric'), m = MT.distanceMetrics[metric];
       if (!m) return;
@@ -587,8 +586,6 @@
         if (resetThreshold) input.value = m.threshold;
       });
       if (resetThreshold) settings.set('link-threshold', m.threshold);
-      strategy.querySelector('option[value="GAPMM"]').disabled = metric != 'tn93';
-      if (metric != 'tn93' && get('ambiguity-resolution-strategy') == 'GAPMM') settings.set('ambiguity-resolution-strategy', 'AVERAGE');
     }
     const showAmbiguityRows = () => show($('.ambiguity-threshold-row'), get('ambiguity-resolution-strategy') == 'HIVTRACE-G');
 
@@ -1172,8 +1169,7 @@
       };
     };
 
-    // Other metrics to compute too: any but the distance metric (and none with
-    // GapMM, which computes TN93 alone)
+    // Other metrics to compute too: any but the distance metric
     const alsoMenu = MT.multiSelect($('#distance-metrics-also'));
     const showAlso = () => {
       const metric = get('default-distance-metric');
@@ -1186,9 +1182,6 @@
       alsoMenu.setValue(chosen, true);
       // (Rebuilding a focused menu opens it)
       alsoMenu.close();
-      const gapmm = get('ambiguity-resolution-strategy') == 'GAPMM';
-      if (gapmm) alsoMenu.disable(); else alsoMenu.enable();
-      $('.distance-metrics-also-row').classList.toggle('text-body-secondary', gapmm);
     };
     alsoMenu.on('change', () => {
       const chosen = alsoMenu.getValue();
@@ -1210,7 +1203,7 @@
       AVERAGE: 'Ambiguous bases (N, R, Y...) count as the average over every base they could be.',
       RESOLVE: 'Ambiguous bases are taken as whichever base they could be that matches the other sequence.',
       SKIP: 'Sites with an ambiguous base are left out of the comparison.',
-      GAPMM: 'Treats a gap as a mismatch (the original MicrobeTrace way). TN93 only, and slower.',
+      GAPMM: 'Like Average, but a gap facing a base counts as an N, so mostly as a mismatch (the original MicrobeTrace way).',
       'HIVTRACE-G': 'As HIV-TRACE does: resolve ambiguities, unless too many sites in a pair are ambiguous (see Ambiguity Threshold), then average.'
     };
     const showAmbiguityHelp = () => { $('#ambiguity-help').textContent = AMBIGUITY_HELP[get('ambiguity-resolution-strategy')] || ''; };
@@ -1230,7 +1223,6 @@
       settings.subscribe('ambiguity-resolution-strategy', () => {
         showAmbiguityHelp();
         showAmbiguityRows();
-        showAlso();
       }),
       settings.subscribe('default-view', view => {
         db.setItem('default-view', view);

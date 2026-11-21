@@ -8,7 +8,6 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { runWorker, loadApp, parseFasta, expected } = require('../golden/harness.js');
 const MTAlignerScoring = require('../../src/aligner.js');
-const tn93js = require('../../vendor/tn93.min.js');
 
 const golden = expected('graph.json');
 const pairKey = ([a, b]) => [a, b].sort().join('-');

@@ -1,9 +1,7 @@
 // workers/compute-ambiguity-counts.js (#170): the share of each sequence that is
-// not A, C, G or T, run as the app runs it (encoded by tn93.toInts, which gives
-// 0-3 for ACGT and more for N, the other codes and the gap). Run with: npm test
+// not A, C, G or T, run as the app runs it. Run with: npm test
 const test = require('node:test');
 const assert = require('node:assert');
-const tn93 = require('../../vendor/tn93.min.js');
 const { runWorker } = require('../golden/harness.js');
 
 // Each row: a sequence, and the count of non-ACGT characters over its length.
@@ -17,13 +15,15 @@ const CASES = [
   ['ACGTNNGT--', 4 / 10, 'two N and two gaps in ten'],
   ['NNNN', 1, 'all N'],
   ['RYKMSWBDHVN', 1, 'every IUPAC code, none of them ACGT'],
+  ['ACGU', 1 / 4, 'U is not one of A, C, G or T'],
+  ['AC?.', 2 / 4, '? and . count too'],
   ['A', 0, 'one base'],
   ['-', 1, 'one gap'],
 ];
 
 // Runs the worker on several sequences in one message, and reads its Float32Array back
 async function counts(seqs) {
-  const out = await runWorker('workers/compute-ambiguity-counts.js', seqs.map(s => ({ _seqInt: tn93.toInts(s) })));
+  const out = await runWorker('workers/compute-ambiguity-counts.js', seqs);
   return Array.from(new Float32Array(out.counts));
 }
 

@@ -28,7 +28,7 @@ const plot = () => view().locator('.js-plotly-plot').evaluate(el => ({
 }));
 
 test('plots link variables by default: distance by cluster, with one measurement', async () => {
-  await expect.poll(async () => (await plot()).points).toBe(476);
+  await expect.poll(async () => (await plot()).points).toBe(299);
   const p = await plot();
   expect([p.x, p.y]).toEqual(['Cluster', 'TN93']);
   expect(await options('X Variable')).toContain('distance');
@@ -87,7 +87,7 @@ test('switching back to links offers link variables', async () => {
   await expect(pane().locator('label', { hasText: 'Links' }).locator('input')).toBeChecked();
   await page.evaluate(() => { MT.settings.set('scatterplot-xVar', 'index'); MT.settings.set('scatterplot-yVar', 'distance'); });
   await expect(pane().getByLabel('Y Variable')).toHaveValue('distance');
-  await expect.poll(async () => (await plot()).points).toBe(476);
+  await expect.poll(async () => (await plot()).points).toBe(299);
 });
 
 test('the plot follows the panel size', async () => {
@@ -129,5 +129,5 @@ test('more than 2,000 points are drawn on a canvas, and still export under the C
   // (A blob: image the Content Security Policy refused would be logged as an error)
   expect(errors).toEqual([]);
   await setThreshold(0.015);
-  await expect.poll(async () => (await plot()).points).toBe(476);
+  await expect.poll(async () => (await plot()).points).toBe(299);
 });

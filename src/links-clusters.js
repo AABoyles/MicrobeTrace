@@ -58,10 +58,7 @@
       let nodes = session.data.nodes;
       let subset = nodes.filter(d => d.seq);
       const subsetLength = subset.length;
-      // The encoded sequences go to the worker alone: kept on the nodes they
-      // would be saved with the session
-      const encoded = subset.map(d => ({ _seqInt: tn93.toInts(d.seq) }));
-      MT.runWorker("workers/compute-ambiguity-counts.js", encoded, { name: "The ambiguity count" }).then(response => {
+      MT.runWorker("workers/compute-ambiguity-counts.js", subset.map(d => d.seq), { name: "The ambiguity count" }).then(response => {
         MT.time('Ambiguity Count Transit', response.start);
         let start = Date.now();
         const dists = new Float32Array(response.counts);
@@ -167,10 +164,9 @@
   };
 
   // The metrics computed from the sequences: the distance metric first, then
-  // any others chosen to compute too (GapMM computes TN93 alone)
+  // any others chosen to compute too
   MT.computedMetrics = (widgets = session.style.widgets) => {
     const metric = widgets['default-distance-metric'];
-    if ((widgets['ambiguity-resolution-strategy'] || '').toUpperCase() == 'GAPMM') return [metric];
     const also = (widgets['distance-metrics-also'] || []).filter(m => m != metric && MT.distanceMetrics[m]);
     return [metric, ...new Set(also)];
   };
@@ -191,14 +187,9 @@
     const widgets = session.style.widgets;
     const metrics = MT.computedMetrics(widgets), metric = metrics[0];
     const strategy = (widgets['ambiguity-resolution-strategy'] || 'SKIP').toUpperCase();
-    const legacy = strategy == 'GAPMM';
-    if (legacy && metric != 'tn93') {
-      throw new Error('The GapMM ambiguity strategy is only available for TN93.');
-    }
-
     // HIV-TRACE -g (tn93 -a resolve -g F) decides pair by pair, in the worker:
-    // a pair is averaged when its resolvable ambiguity codes (not gaps or N) are
-    // at least F times its compared sites, and resolved otherwise.
+    // a pair is averaged when the sites resolution touched are at least F of its
+    // compared sites, and resolved otherwise.
     const order = subset;
 
     const n = order.length;
@@ -229,17 +220,16 @@
       threshold: thresholds && thresholds[0],
       thresholds
     };
-    // Each worker's results, a part per metric (the legacy worker computes one)
-    // Progress is the share of the distance workers done: a worker reports its
-    // part as it goes (where it can) and counts as done when it replies
+    // Each worker's results, a part per metric
+    // Progress is the share of the distance workers done: a worker counts as
+    // done when it replies
     const done = splits.slice(1).map(() => 0);
     const report = () => MT.progress('Computing distances', done.reduce((a, b) => a + b, 0), done.length);
     report();
     const parts = await Promise.all(splits.slice(1).map((rowEnd, w) => new Promise((resolve, reject) => {
-      MT.runWorker(legacy ? 'workers/compute-links-legacy.js' : 'workers/compute-links.js',
-        Object.assign({ rowStart: splits[w], rowEnd }, message), { name: "The distance computation",
-          onProgress: fraction => { done[w] = fraction; report(); } })
-        .then(data => { done[w] = 1; report(); resolve(legacy ? { results: [data], start: data.start } : data); }, reject);
+      MT.runWorker('workers/compute-links.js',
+        Object.assign({ rowStart: splits[w], rowEnd }, message), { name: "The distance computation" })
+        .then(data => { done[w] = 1; report(); resolve(data); }, reject);
     })));
 
     MT.time('Links Transit', Math.min(...parts.map(p => p.start)));

@@ -52,7 +52,7 @@ const total = (page, field) => page.evaluate(field => {
 }, field);
 const visibleLinks = () => page.evaluate(() => MT.getVisibleLinks().length);
 
-test('Also Compute offers every metric but the distance metric, and none with GapMM', async () => {
+test('Also Compute offers every metric but the distance metric, with any ambiguity strategy', async () => {
   await page.locator('.lm_content:has(#file-table) .settings-toggle').click();
   await expect(also()).toBeVisible();
   await also().locator('.ts-control input').click();
@@ -69,10 +69,10 @@ test('Also Compute offers every metric but the distance metric, and none with Ga
   await set('default-distance-metric', 'tn93');
   await choose('k2p');
   expect(await get('distance-metrics-also')).toEqual(['snps', 'k2p']);
-  // GapMM computes TN93 alone
+  // GapMM computes every metric, as the other strategies do
   await set('ambiguity-resolution-strategy', 'GAPMM');
-  await expect(also().locator('.ts-wrapper')).toHaveClass(/disabled/);
-  expect(await page.evaluate(() => MT.computedMetrics())).toEqual(['tn93']);
+  await expect(also().locator('.ts-wrapper')).not.toHaveClass(/disabled/);
+  expect(await page.evaluate(() => MT.computedMetrics())).toEqual(['tn93', 'snps', 'k2p']);
   await set('ambiguity-resolution-strategy', 'AVERAGE');
   await expect(also().locator('.ts-wrapper')).not.toHaveClass(/disabled/);
   expect(await page.evaluate(() => MT.computedMetrics())).toEqual(['tn93', 'snps', 'k2p']);

@@ -46,7 +46,7 @@ async function openSettings(tab, section) {
 
 test('draws the visible nodes and links', async () => {
   expect(await page.evaluate(() => temp.network.points.length)).toBe(await visible());
-  expect(await page.evaluate(() => temp.network.links.length)).toBe(476);
+  expect(await page.evaluate(() => temp.network.links.length)).toBe(299);
 });
 
 test('the node size setting applies, and sizing by a variable spreads them', async () => {
@@ -266,7 +266,7 @@ for (const [filetype, filename] of [['svg', 'network-test.svg'], ['png', 'networ
     expect(download.suggestedFilename()).toBe(filename);
     if (filetype == 'svg') {
       const svg = fs.readFileSync(await download.path(), 'utf8');
-      expect((svg.match(/<line /g) || []).length).toBe(476);
+      expect((svg.match(/<line /g) || []).length).toBe(299);
     } else {
       // The network, at the view's size, with more than its background
       const stats = await imageStats(page, download);

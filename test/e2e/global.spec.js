@@ -43,7 +43,7 @@ test('the link threshold filters the links', async () => {
   await expect(threshold).toHaveValue('0.015');
   await threshold.fill('0.005');
   await threshold.press('Enter');
-  await expect.poll(() => stat('numberOfVisibleLinks')).toBeLessThan(476);
+  await expect.poll(() => stat('numberOfVisibleLinks')).toBeLessThan(299);
   expect(await get('link-threshold')).toBe(0.005);
   // A click on the histogram sets it too
   const sparkline = dialog().locator('#link-threshold-sparkline');
@@ -52,7 +52,7 @@ test('the link threshold filters the links', async () => {
   await expect.poll(() => get('link-threshold')).toBeGreaterThan(0.005);
   await threshold.fill('0.015');
   await threshold.press('Enter');
-  await expect.poll(() => stat('numberOfVisibleLinks')).toBe(476);
+  await expect.poll(() => stat('numberOfVisibleLinks')).toBe(299);
 });
 
 test('the minimum cluster size hides small clusters, and Reveal shows everything', async () => {
@@ -81,14 +81,14 @@ test('nearest neighbor and minimum spanning tree pruning each keep fewer links',
     await prune(value);
     await expect(dialog().locator('.filtering-epsilon-row')).toBeVisible();
     const want = await expected(value);
-    expect(want).toBeLessThan(476);
+    expect(want).toBeLessThan(299);
     await expect.poll(() => stat('numberOfVisibleLinks'), { timeout: 30000 }).toBe(want);
     // The minimum spanning tree keeps every cluster connected
     if (value == 'mst') expect(await clusters()).toBe(unpruned);
   }
   await prune('none');
   await expect(dialog().locator('.filtering-epsilon-row')).toBeHidden();
-  await expect.poll(() => stat('numberOfVisibleLinks')).toBe(476);
+  await expect.poll(() => stat('numberOfVisibleLinks')).toBe(299);
 });
 
 test('a session saved with the old Nearest Neighbor switch prunes by minimum spanning tree', async () => {
@@ -101,7 +101,7 @@ test('a session saved with the old Nearest Neighbor switch prunes by minimum spa
   });
   expect(prune).toEqual(['mst', false]);
   await page.evaluate(() => MT.settings.set('link-prune', 'none'));
-  await expect.poll(() => stat('numberOfVisibleLinks'), { timeout: 30000 }).toBe(476);
+  await expect.poll(() => stat('numberOfVisibleLinks'), { timeout: 30000 }).toBe(299);
 });
 
 test('coloring nodes by a variable lists its values in the node color table', async () => {

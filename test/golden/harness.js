@@ -80,7 +80,6 @@ function loadApp(widgets = {}) {
     MTSettings: require('../../src/settings.js'),
     MTDates: require('../../src/dates.js'),
     MTEvents: require('../../src/events.js'),
-    tn93: require('../../vendor/tn93.min.js'),
     document: stub()
   };
   ctx.self = ctx.window = ctx;
