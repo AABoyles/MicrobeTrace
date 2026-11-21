@@ -800,7 +800,7 @@
       if (file.format == 'link') return parseLinkFile(file, ctx, origin, source, start);
       if (file.format == 'node') return parseNodeFile(file, ctx, origin, source, start);
       if (file.format == 'matrix') return parseMatrixFile(file, ctx, origin, source);
-      return parseNewickFile(file, ctx, origin, start);
+      return parseNewickFile(file, ctx, origin, source, start);
     }
 
     async function parseFastaFile(file, ctx, origin, source, start) {
@@ -1045,7 +1045,7 @@
     }
 
     // (A tree is parsed in place, so this is async only to match the others)
-    async function parseNewickFile(file, ctx, origin, start) {
+    async function parseNewickFile(file, ctx, origin, source, start) {
       if (!session.data.linkFields.includes(get('default-distance-metric'))) session.data.linkFields.push(get('default-distance-metric'));
       let links = 0;
       let newLinks = 0;
@@ -1054,14 +1054,15 @@
       temp.tree = tree;
       let m = tree.toMatrix(), matrix = m.matrix, labels = m.ids, n = labels.length;
       for (let i = 0; i < n; i++) {
-        const source = labels[i];
+        // The node's provenance is the tree file, not its label: a label there made
+        // a tree loaded with a FASTA fail on their shared IDs
         newNodes += MT.addNode({
-          _id: source,
+          _id: labels[i],
           origin: origin
         }, ctx.check, source);
         for (let j = 0; j < i; j++) {
           newLinks += MT.addLink({
-            source: source,
+            source: labels[i],
             target: labels[j],
             origin: origin,
             [get('default-distance-metric')]: parseFloat(matrix[i][j])
@@ -1106,9 +1107,13 @@
       // Parsers finish in any order (FASTA and matrix parsing is asynchronous), so
       // processing waits for every file, not for the last one in the list (#212).
       // Each parser runs up to its first wait before the next one starts, which
-      // keeps the files' messages in the order of the list.
-      const parsed = await Promise.all(files.map(file => parseFile(file, ctx)));
-      if (parsed.includes(false)) return; // a file failed and said so
+      // keeps the files' messages in the order of the list. A parser that throws
+      // fails the load only once the others have settled, so none of them is still
+      // merging into the session after the user is told the load failed (#240).
+      const settled = await Promise.allSettled(files.map(file => parseFile(file, ctx)));
+      const thrown = settled.find(result => result.status === 'rejected');
+      if (thrown) throw thrown.reason;
+      if (settled.some(result => result.value === false)) return; // a file failed and said so
       if (MT.workCancelled()) throw Object.assign(new Error('it was cancelled'), { cancelled: true });
       reportMerges(ctx);
       return processSequences();

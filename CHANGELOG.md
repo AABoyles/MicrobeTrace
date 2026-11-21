@@ -9,6 +9,10 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 - Genetic distances agree with HIV-TRACE's tn93 in every ambiguity strategy (bx-distance-models 0.2.0). GapMM weighs a gap facing a base as one site, not 4/3 (#282), and works with every distance metric. MicrobeTrace no longer loads tn93.js.
 - **Sequences with N are farther apart under Average, the default ambiguity strategy.** N and ? now count as any base when resolving or averaging, as tn93 does, instead of being skipped: under Average an N facing a base is three quarters of a mismatch, and under HIV-TRACE -g it counts toward the ambiguity fraction. Resolve barely changes (an N facing a base is a match, where it used to be left out). On the test data (300 sequences, most with a few N), TN93 links within 0.015 fall from 466 to 289 under Average and from 483 to 453 under HIV-TRACE -g. Resolve gives nearly the same links as before.
 
+### Files and sessions
+
+- A Newick tree loads together with a FASTA file of the same IDs; it used to fail with "source.add is not a function". When one file can't be read, the load is reported as failed only after the other files have finished.
+
 ### Build, deployment and project
 
 - `dist/`, `vendor/`, `fonts/` and `sw.js` are no longer committed: CI, the Pages deploy and the Docker build bundle them from the lockfile, and `npm start` does when they are missing. A copy of the repository needs `npm ci && npm run bundle && npm run cache` before it can be deployed. (#325)

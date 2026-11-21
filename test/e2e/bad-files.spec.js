@@ -80,3 +80,36 @@ test('a FASTA cut off after a header keeps that record as a node, for the audit 
   await launch(file('header.fasta', 'text/plain', '>A\nACGTACGTAC\n>B'));
   expect(await ids()).toEqual(['A', 'B']);
 });
+
+// When one file's parser throws, the load fails only once the other files have
+// finished, so none of them is still adding to the session after the user is told
+// the load failed (#240)
+test('a file whose parser throws fails the load after the other files have finished', async () => {
+  await page.evaluate(() => {
+    // Registering the tree as a source happens before its parser first waits
+    const add = MTNodeSources.prototype.add;
+    MTNodeSources.prototype.add = function (name, ...rest) {
+      if (name == 'tree.nwk') throw new Error('a broken tree');
+      return add.call(this, name, ...rest);
+    };
+    self.nodesAtFailure = null;
+    MT.events.on('session-load-failed', () => { self.nodesAtFailure = session.data.nodes.length; });
+  });
+  await add(file('seqs.fasta', 'text/plain', '>A\nACGTACGTAC\n>B\nACGTACGTAG\n'), file('tree.nwk', 'text/plain', '(A:0.1,B:0.2);'));
+  await expect(page.locator('#launch')).toBeEnabled();
+  await page.click('#launch');
+  await expect(toast('The load failed')).toBeVisible({ timeout: 60000 });
+  const atFailure = await page.evaluate(() => self.nodesAtFailure);
+  await page.waitForTimeout(1000);
+  expect(await page.evaluate(() => session.data.nodes.length)).toBe(atFailure);
+  // loadFailed logs the error it reports
+  errors.splice(0, errors.length, ...errors.filter(e => !e.includes('a broken tree')));
+});
+
+// A tree's nodes have the tree file as their source, so a tree and a FASTA with
+// the same IDs load together
+test('a tree loads with a FASTA of the same IDs', async () => {
+  await launch(file('seqs.fasta', 'text/plain', '>A\nACGTACGTAC\n>B\nACGTACGTAG\n'), file('tree.nwk', 'text/plain', '(A:0.1,B:0.2);'));
+  expect(await ids()).toEqual(['A', 'B']);
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'A').seq)).toBe('ACGTACGTAC');
+});
