@@ -1,8 +1,8 @@
 // Unit tests for src/settings.js and src/events.js. Run with: npm test
-const test = require('node:test');
-const assert = require('node:assert');
-const MTSettings = require('../../src/settings.js');
-const MTEvents = require('../../src/events.js');
+import test from 'node:test';
+import assert from 'node:assert';
+import { MTSettings } from '../../src/settings.js';
+import { MTEvents } from '../../src/events.js';
 
 test('settings read and write the source object', () => {
   let widgets = { a: 1 };

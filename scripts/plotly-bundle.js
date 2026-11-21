@@ -1,4 +1,4 @@
-// The Plotly traces MicrobeTrace uses. scripts/bundle.sh builds this into the
+// The Plotly traces MicrobeTrace uses. scripts/bundle.js builds this into the
 // secondary bundle: Plotly's prebuilt partial bundles leave out sankey, which
 // the flow diagram needs, and scattergl, which the scatterplot draws large
 // datasets with (#252).

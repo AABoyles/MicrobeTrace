@@ -1,7 +1,7 @@
 // Unit tests for src/nodes.js. Run with: node --test test/unit
-const test = require('node:test');
-const assert = require('node:assert');
-const MTNodeSources = require('../../src/nodes.js');
+import test from 'node:test';
+import assert from 'node:assert';
+import { MTNodeSources } from '../../src/nodes.js';
 
 // Two node tables and a FASTA, as three files listed top to bottom
 function three() {

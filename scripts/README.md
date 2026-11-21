@@ -1,10 +1,10 @@
 # Scripts
 
-_A directory for shell scripts_
+_A directory for build scripts_
 
 ...Because I don't like writing Makefiles.
 
-- [`bundle.sh`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/bundle.sh) -
+- [`bundle.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/bundle.js) -
   Takes all the JS and CSS dependencies and packages them into bundle files (see
   the contents of
   [`dist/`](https://github.com/aaboyles/MicrobeTrace/tree/master/dist)).
@@ -17,8 +17,14 @@ _A directory for shell scripts_
 
   It also writes `dist/versions.json` (via `write-versions.js`), which records the
   version of every library in `dist/` and `vendor/`. Run it with `npm run
-  bundle` after `npm ci`, then `npm run cache`, and commit the result: CI
-  rebuilds both and fails if they differ from what was committed.
+  bundle` after `npm ci`, then `npm run cache`. The output (`dist/`, `fonts/` and the
+  generated files in `vendor/`) is not committed: CI, the Docker build and the Pages
+  deploy build it. It is plain Node, so it runs on Windows as well as Linux and macOS (#328).
+
+- [`ensure-built.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/ensure-built.js) -
+  Run by `npm start`, `npm test`, `npm run coverage` and the Playwright web server: runs `bundle.js`
+  if `dist/` is missing or older than `package-lock.json` or `bundle.js`, or if `fonts/` or
+  `vendor/cosmos.min.js` is missing, then `build-sw.js`.
 
 - `npm run build` runs `bundle`, `cache` and `compress` in that order.
 
@@ -32,10 +38,10 @@ _A directory for shell scripts_
   Removes all compressed files.
 
 - [`build-sw.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-sw.js) -
-  (`npm run cache`) Regenerates the precache list and cache name in
-  [`sw.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/sw.js) from the
-  files that exist. Run it after changing any file the app loads; `npm test`
-  fails if `sw.js` is out of date.
+  (`npm run cache`) Writes `sw.js` (not committed) from
+  [`sw.template.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/sw.template.js),
+  filling in the precache list and cache name from the files that exist, so run it after
+  `bundle`. The service worker's own code lives in the template.
 
 - To deploy only the files the app needs (for example, to a static host), run
   [`node scripts/build-site.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-site.js).

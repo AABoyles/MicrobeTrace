@@ -34,7 +34,7 @@ A new view touches more than this directory:
 4. Its entries in `common.js`'s per-view tables: the accessible summary and what the view needs of
    the session (the empty-state note). Search for an existing view's name, e.g. `waterfall`.
 5. Its entry in the view catalog in `src/webmcp/views.js`.
-6. `test/e2e/NAME.spec.js`, a row in `test/e2e/README.md`, and `npm run cache`.
+6. `test/e2e/NAME.spec.js`, and a row in `test/e2e/README.md`.
 
 Views must draw correctly in light and dark (`dark.spec.js`) and pass axe with their pane open
 (`a11y.spec.js`).

@@ -1,7 +1,7 @@
 // Unit tests for src/graph.js. Run with: node --test test/unit
-const test = require('node:test');
-const assert = require('node:assert');
-const MTGraph = require('../../src/graph.js');
+import test from 'node:test';
+import assert from 'node:assert';
+import { MTGraph } from '../../src/graph.js';
 
 const { IMPLICIT, pairIndex, pairRows } = MTGraph;
 

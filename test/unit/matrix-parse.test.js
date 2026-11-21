@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const Papa = require('papaparse');
-const MTGraph = require('../../src/graph.js');
+const MTGraph = require('../../src/graph.js').MTGraph;
 
 const source = fs.readFileSync(path.join(__dirname, '../../workers/parse-csv-matrix.js'), 'utf8');
 

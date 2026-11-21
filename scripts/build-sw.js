@@ -1,21 +1,23 @@
 #!/usr/bin/env node
-// Regenerates the precache list and cache name inside sw.js (#194).
+// Writes sw.js, the service worker (#194), from scripts/sw.template.js: the
+// template's generated block is filled in with the precache list and cache name.
+// sw.js is not committed (#325), so this runs wherever the app is built
+// (npm run cache, after npm run bundle, since dist/ is part of the list).
 //
-//   node scripts/build-sw.js          rewrite sw.js
-//   node scripts/build-sw.js --check  exit 1 if sw.js is out of date
+//   node scripts/build-sw.js
 //
 // The list is built from files that exist, so it cannot name a file that has
 // gone (which would make cache.addAll, and so the worker's install, fail). The
 // cache name ends in a hash of every precached file's path and contents, so it
 // changes exactly when something the worker serves changes, and a new worker
-// (and the "new version" prompt) follows. Run it after changing any of them;
-// test/unit/sw.test.js fails until you do.
+// (and the "new version" prompt) follows. Run it after changing any of them.
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
 const root = path.join(__dirname, "..");
 const swPath = path.join(root, "sw.js");
+const templatePath = path.join(__dirname, "sw.template.js");
 const BEGIN = "// BEGIN GENERATED (scripts/build-sw.js)";
 const END = "// END GENERATED";
 
@@ -28,6 +30,9 @@ const skip = name => /\.(br|gz|md|map)$/.test(name);
 
 function walk(dir) {
   const out = [];
+  if (!fs.existsSync(path.join(root, dir))) {
+    throw new Error(dir + "/ does not exist: run `npm ci && npm run bundle` first");
+  }
   for (const entry of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
     const rel = dir + "/" + entry.name;
     if (entry.isDirectory()) out.push(...walk(rel));
@@ -65,19 +70,17 @@ function generatedBlock() {
 
 function render(source) {
   const start = source.indexOf(BEGIN), end = source.indexOf(END);
-  if (start < 0 || end < start) throw new Error("sw.js has no generated block");
+  if (start < 0 || end < start) throw new Error("scripts/sw.template.js has no generated block");
   return source.slice(0, start) + generatedBlock() + source.slice(end + END.length);
 }
 
-module.exports = { precacheList, cacheName, render, swPath, root };
+module.exports = { precacheList, cacheName, render, swPath, templatePath, root, BEGIN, END };
 
 if (require.main === module) {
-  const current = fs.readFileSync(swPath, "utf8");
-  const next = render(current);
-  if (process.argv.includes("--check")) {
-    if (next !== current) { console.error("sw.js is out of date: run `npm run cache`"); process.exit(1); }
-  } else if (next !== current) {
+  const next = render(fs.readFileSync(templatePath, "utf8"));
+  const current = fs.existsSync(swPath) ? fs.readFileSync(swPath, "utf8") : null;
+  if (next !== current) {
     fs.writeFileSync(swPath, next);
-    console.log("sw.js updated");
+    console.log("sw.js written");
   } else console.log("sw.js is up to date");
 }
