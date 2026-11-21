@@ -4,6 +4,8 @@
 // replaces the old one. This file is the template: `npm run cache` (scripts/build-sw.js)
 // fills in the block below and writes the result to sw.js, which is not committed (#325).
 
+/* global self, caches, CACHE, PRECACHE -- the last two are filled in by build-sw.js */
+
 // BEGIN GENERATED (scripts/build-sw.js)
 // (replaced by `npm run cache`: the cache name and the list of files to precache)
 // END GENERATED
