@@ -13,7 +13,7 @@ licence (Apache-2.0) is in `LICENSE`, and `NOTICE` gives the project's copyright
 - **What goes into each bundle** comes from `scripts/bundle.js`. For the two packages built by
   esbuild (`vendor/cosmos.min.js` and the Plotly part of `dist/bundle.secondary.js`), the packages
   actually included were read from an esbuild metafile, built with the same command. The
-  `cosmos.min.js` output matches the committed file byte for byte, and a sample of the Plotly
+  `cosmos.min.js` output matched the file committed before #325 byte for byte, and a sample of the Plotly
   output appears verbatim in `dist/bundle.secondary.js`.
 - **Upstream URLs** come from each package's `repository` or `homepage` field. Where the field
   is missing, the URL is marked.
@@ -118,7 +118,7 @@ the nested copy is used.
 
 ### Packages inside cosmos.gl (`vendor/cosmos.min.js`)
 
-Read from the esbuild metafile. The `cosmos.min.js` output matches the committed file byte for byte.
+Read from the esbuild metafile. The `cosmos.min.js` output matched the file committed before #325 byte for byte.
 
 | Package | Version | Licence | Upstream |
 |---|---|---|---|

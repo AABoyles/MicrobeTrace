@@ -46,9 +46,11 @@ serially and is slow; run the specs for what you touched, not the whole suite, u
   no import cycles. `components/`, `src/index.js`, `src/webmcp*` and workers stay classic scripts that
   read `MT`, `session` and `temp` as globals. Unit tests that need a fresh `MT` per test use
   `runAppFiles` in `test/app-files.js`.
-  Module scripts run before the `defer` scripts, in document order, so classic scripts may use them
-  from `defer` onwards but not at the top level of a synchronous script. Workers can't `importScripts`
-  a module, so a file a worker loads stays classic. Libraries come from the bundles as globals (`d3`, `bootstrap`, `Plotly`, ...).
+  Module scripts are deferred: they run in document order with the `defer` scripts, after the
+  synchronous ones (such as `dist/bundle.primary.js`). So a synchronous script can't use `MT` or the
+  leaf modules, and a `defer` script can use only the modules placed before it in `index.html`.
+  Workers can't `importScripts` a module, so a file a worker loads stays classic. Libraries come from
+  the bundles as globals (`d3`, `bootstrap`, `Plotly`, ...).
 - State: `session` is what gets saved (data in `session.data`, settings in `session.style.widgets`);
   `temp` is everything rebuilt on load. Read and write settings through `MT.settings.get/set` so
   subscribers hear about it; new settings need a default in `MT.defaultWidgets` in `common.js`.

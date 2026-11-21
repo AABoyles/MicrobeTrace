@@ -19,11 +19,12 @@ _A directory for build scripts_
   version of every library in `dist/` and `vendor/`. Run it with `npm run
   bundle` after `npm ci`, then `npm run cache`. The output (`dist/`, `fonts/` and the
   generated files in `vendor/`) is not committed: CI, the Docker build and the Pages
-  deploy build it.
+  deploy build it. It is plain Node, so it runs on Windows as well as Linux and macOS (#328).
 
 - [`ensure-built.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/ensure-built.js) -
-  Run by `npm start`, `npm test` and the Playwright web server: runs `bundle.js` if `dist/` is
-  missing or older than `package-lock.json` or `bundle.js`, then `build-sw.js`.
+  Run by `npm start`, `npm test`, `npm run coverage` and the Playwright web server: runs `bundle.js`
+  if `dist/` is missing or older than `package-lock.json` or `bundle.js`, or if `fonts/` or
+  `vendor/cosmos.min.js` is missing, then `build-sw.js`.
 
 - `npm run build` runs `bundle`, `cache` and `compress` in that order.
 
