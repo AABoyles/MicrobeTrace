@@ -63,6 +63,8 @@ const common = { ecmaVersion: "latest" };
 const esModules = [
   "src/aligner.js", "src/binder.js", "src/dates.js", "src/db.js", "src/events.js",
   "src/graph.js", "src/nodes.js", "src/session-format.js", "src/settings.js",
+  "src/common.js", "src/loading.js", "src/links-clusters.js", "src/colors.js", "src/export.js",
+  "src/views.js", "src/ui.js",
 ];
 
 module.exports = [

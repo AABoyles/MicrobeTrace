@@ -6,7 +6,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const APP_FILES = require('../app-files.js');
+const { runAppFiles } = require('../app-files.js');
 
 const root = path.join(__dirname, '../..');
 const quiet = { log() {}, warn() {}, error: (...a) => console.error(...a) };
@@ -76,15 +76,11 @@ function loadApp(widgets = {}) {
   const ctx = {
     console: quiet, TextDecoder, TextEncoder, Worker,
     navigator: { hardwareConcurrency: 4 },
-    MTGraph: require('../../src/graph.js').MTGraph,
-    MTSettings: require('../../src/settings.js').MTSettings,
-    MTDates: require('../../src/dates.js').MTDates,
-    MTEvents: require('../../src/events.js').MTEvents,
     document: stub()
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), ctx, { filename: path.join(root, file) });
+  runAppFiles(ctx);
   const MT = ctx.MT;
   ctx.temp = {};
   ctx.session = {

@@ -40,6 +40,12 @@ serially and is slow; run the specs for what you touched, not the whole suite, u
   (`events`, `settings`, `graph`, `nodes`, `dates`, `db`, `session-format`, `binder`, `aligner`) are
   ES modules (#323): they `export` their API and, until their users convert too, also set it on
   `globalThis`. New code that other files depend on should be a module with `import`s, not a global.
+  The core scripts split from `common.js` (`common`, `loading`, `links-clusters`, `colors`, `export`,
+  `views`, `ui`) are modules too: `common.js` exports `MT` and sets `self.MT`, the others import `MT`
+  and the leaf modules they use, and they still call each other through `MT.x` at run time, so there are
+  no import cycles. `components/`, `src/index.js`, `src/webmcp*` and workers stay classic scripts that
+  read `MT`, `session` and `temp` as globals. Unit tests that need a fresh `MT` per test use
+  `runAppFiles` in `test/app-files.js`.
   Module scripts run before the `defer` scripts, in document order, so classic scripts may use them
   from `defer` onwards but not at the top level of a synchronous script. Workers can't `importScripts`
   a module, so a file a worker loads stays classic. Libraries come from the bundles as globals (`d3`, `bootstrap`, `Plotly`, ...).
