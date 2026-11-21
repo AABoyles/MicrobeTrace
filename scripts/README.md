@@ -17,8 +17,13 @@ _A directory for build scripts_
 
   It also writes `dist/versions.json` (via `write-versions.js`), which records the
   version of every library in `dist/` and `vendor/`. Run it with `npm run
-  bundle` after `npm ci`, then `npm run cache`, and commit the result: CI
-  rebuilds both and fails if they differ from what was committed.
+  bundle` after `npm ci`, then `npm run cache`. The output (`dist/`, `fonts/` and the
+  generated files in `vendor/`) is not committed: CI, the Docker build and the Pages
+  deploy build it.
+
+- [`ensure-built.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/ensure-built.js) -
+  Run by `npm start`, `npm test` and the Playwright web server: runs `bundle.js` if `dist/` is
+  missing or older than `package-lock.json` or `bundle.js`, then `build-sw.js`.
 
 - `npm run build` runs `bundle`, `cache` and `compress` in that order.
 
@@ -32,10 +37,10 @@ _A directory for build scripts_
   Removes all compressed files.
 
 - [`build-sw.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-sw.js) -
-  (`npm run cache`) Regenerates the precache list and cache name in
-  [`sw.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/sw.js) from the
-  files that exist. Run it after changing any file the app loads; `npm test`
-  fails if `sw.js` is out of date.
+  (`npm run cache`) Writes `sw.js` (not committed) from
+  [`sw.template.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/sw.template.js),
+  filling in the precache list and cache name from the files that exist, so run it after
+  `bundle`. The service worker's own code lives in the template.
 
 - To deploy only the files the app needs (for example, to a static host), run
   [`node scripts/build-site.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-site.js).

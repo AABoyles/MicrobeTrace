@@ -14,4 +14,4 @@ Classic (non-module) Web Workers, started through `MT.runWorker(script, message,
   1.
 - A numerical change should be checked against `test/golden/`, whose expected values come from an
   independent implementation; don't regenerate them to match new output.
-- After adding or renaming a worker, run `npm run cache`.
+- After adding or renaming a worker, run `npm run cache` to refresh `sw.js` (generated, not committed).

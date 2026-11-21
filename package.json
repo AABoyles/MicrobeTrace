@@ -32,6 +32,7 @@
     "node": ">=26"
   },
   "scripts": {
+    "prestart": "node scripts/ensure-built.js",
     "start": "node server.js",
     "build": "npm run bundle && npm run cache && npm run compress",
     "bundle": "node scripts/bundle.js",
@@ -39,7 +40,9 @@
     "clean": "scripts/cleanup.sh",
     "site": "node scripts/build-site.js",
     "compress": "scripts/compress.sh",
+    "pretest": "node scripts/ensure-built.js",
     "test": "node --test test/unit/*.test.js",
+    "precoverage": "node scripts/ensure-built.js",
     "coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='workers/**' --test-coverage-lines=64 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info test/unit/*.test.js",
     "lint": "eslint .",
     "test:e2e": "playwright test",

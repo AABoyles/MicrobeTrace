@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Builds dist/ and vendor/ from node_modules (run `npm ci` first). The output is
-// committed, and CI re-runs this and fails if it differs from what was committed
-// (#200), so run it (npm run bundle) after changing a dependency or this file.
+// Builds dist/, fonts/ and the generated files in vendor/ from node_modules (run
+// `npm ci` first). The output is not committed (#325): CI, the Docker build and
+// the Pages deploy run this, and `npm start` runs it when dist/ is missing or
+// older than package-lock.json (scripts/ensure-built.js). Run it (npm run bundle)
+// after changing a dependency or this file. Bundles are reproducible (#200).
 //
 // Plain Node with no shelling out, so it builds the same on Windows (#328).
 

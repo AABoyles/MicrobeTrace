@@ -18,9 +18,11 @@ MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC), w
 ## To Run Your Own Server:
 
 ```sh
-npm ci --omit=dev && npm start      # http://localhost:5000 (PORT sets the port)
+npm ci && npm start                 # http://localhost:5000 (PORT sets the port)
 docker build -t microbetrace . && docker run -p 5000:5000 microbetrace
 ```
+
+`dist/`, `vendor/`, `fonts/` and `sw.js` are built from `node_modules`, not stored in the repository, so a copy of the repository does not run on its own: `npm start` builds them the first time (`scripts/ensure-built.js`, which needs the dev dependencies), the Docker image builds them, and to deploy to a static host run `npm ci && npm run bundle && npm run cache && npm run site` and publish `_site/`.
 
 The server serves only the files the app needs (the same list the GitHub Pages
 deploy publishes, `scripts/build-site.js`); anything else is a 404. `/health`
@@ -43,13 +45,13 @@ npm run test:e2e                  # end-to-end tests in Chromium (E2E_PORT sets 
 
 The build scripts (see [scripts/README.md](scripts/README.md)):
 
-* `npm run bundle` builds `dist/` and `vendor/` from `node_modules`. Run it after changing a dependency or `scripts/bundle.js`, then commit the result. CI rebuilds them and fails if they differ.
-* `npm run cache` regenerates the service worker's precache list in `sw.js`. Run it after changing any file the app loads; `npm test` fails until you do.
+* `npm run bundle` builds `dist/`, `fonts/` and the generated files in `vendor/` from `node_modules`. None of them is committed; `npm start`, `npm test` and the E2E web server run it when `dist/` is missing or older than `package-lock.json`, and CI, the Docker build and the Pages deploy run it. Run it yourself after changing a dependency or `scripts/bundle.js`.
+* `npm run cache` writes `sw.js` (also not committed) from `scripts/sw.template.js`, filling in the precache list and cache name from the files that exist, so run it after `bundle`. Edit the template, not `sw.js`.
 * `npm run compress` writes the `.br` and `.gz` copies of the largest files, which `server.js` serves when they exist. `npm run clean` removes them.
 * `npm run site` copies exactly the files the app needs into `_site/`.
 * `npm run build` runs `bundle`, `cache` and `compress`. `npm run update` updates the dependencies and then runs `bundle` and `cache`.
 
-**Deployment.** A push to `master` runs `.github/workflows/pages.yml`. It runs the CI workflow (`.github/workflows/ci.yml`: unit tests, the bundle check and the end-to-end tests) and, if those pass, publishes the output of `scripts/build-site.js` to GitHub Pages. Pull requests run the CI workflow alone.
+**Deployment.** A push to `master` runs `.github/workflows/pages.yml`. It runs the CI workflow (`.github/workflows/ci.yml`: unit tests and the end-to-end tests, on a fresh `npm run bundle && npm run cache`) and, if those pass, bundles the app (`npm run bundle && npm run cache`) and publishes the output of `scripts/build-site.js` to GitHub Pages. Pull requests run the CI workflow alone.
 
 **Browsers.** The app names Chrome, Firefox, Safari and Edge as the browsers to use. At startup it checks for WebAssembly, Web Workers and IndexedDB, and a browser without one of them gets a message saying which it lacks (`src/index.js`). The end-to-end tests run in Chromium only (`playwright.config.js`).
 
