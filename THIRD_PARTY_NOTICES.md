@@ -24,9 +24,8 @@ licence (Apache-2.0) is in `LICENSE`, and `NOTICE` gives the project's copyright
   `bootstrap.bundle.js` (which includes Popper), and pdfmake's `pdfmake.js` and `vfs_fonts.js`. For
   those, the packages inside were found from the file's module markers and names, and their
   versions are the installed ones, since the file does not state them.
-- **Licence comments.** `scripts/bundle.js` builds `dist/` with `legalComments: 'none'`, so the
-  bundles in `dist/` carry no licence comments. The cosmos build keeps the licence comments of its
-  inputs at the end of the file.
+- **Licence comments.** `scripts/bundle.js` builds `dist/` and the cosmos build with
+  `legalComments: 'eof'`, so each bundle keeps its inputs' licence comments at the end of the file.
 - **Upstream URLs** come from each package's `repository` or `homepage` field. Where the field
   is missing, the URL is marked.
 - **Marks.** "Not verified" means the item could not be checked from the repository or

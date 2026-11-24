@@ -139,10 +139,12 @@ async function build(tmp) {
   // (scripts/buffer-shim.js), and a few packages look for Node's `global`.
   // golden-layout 2 and tidytree ship only ES modules or TypeScript, which is why
   // the libraries are bundled from their modules and not from prebuilt files (#342).
+  // The libraries' licence comments are kept, gathered at the end of each bundle, as
+  // the joined prebuilt files kept them before (#342)
   for (const b of bundles) {
     await esbuild.build({
       entryPoints: [`scripts/entries/${b.name}.js`],
-      bundle: true, minify: true, format: 'iife', target: 'es2020', legalComments: 'none',
+      bundle: true, minify: true, format: 'iife', target: 'es2020', legalComments: 'eof',
       define: { global: 'globalThis' }, loader: { '.css': 'empty' },
       alias: { buffer: './scripts/buffer-shim.js' }, logLevel: 'warning',
       outfile: path.join('dist', `bundle.${b.name}.js`)
