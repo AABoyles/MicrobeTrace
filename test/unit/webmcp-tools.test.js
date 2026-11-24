@@ -92,11 +92,11 @@ function withEnabled(fn) {
 
 // Walks a schema, calling fn on each schema node with its path
 function walkSchema(schema, fn, where = 'inputSchema') {
-  if (!schema || typeof schema != 'object') return;
+  if (!schema || typeof schema !== 'object') return;
   fn(schema, where);
   for (const [key, child] of Object.entries(schema.properties || {})) walkSchema(child, fn, where + '.' + key);
   if (schema.items) walkSchema(schema.items, fn, where + '[]');
-  if (schema.additionalProperties && typeof schema.additionalProperties == 'object') walkSchema(schema.additionalProperties, fn, where + '{}');
+  if (schema.additionalProperties && typeof schema.additionalProperties === 'object') walkSchema(schema.additionalProperties, fn, where + '{}');
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -111,15 +111,15 @@ test('the four tool modules define tools, each with a valid name, title, descrip
     assert.match(t.name, /^[A-Za-z0-9_.-]{1,128}$/, t.name);
     assert.ok(!names.has(t.name), 'duplicate ' + t.name);
     names.add(t.name);
-    assert.ok(typeof t.title == 'string' && t.title.length > 0, t.name + ' has no title');
-    assert.ok(typeof t.description == 'string' && t.description.length > 40, t.name + ' needs a fuller description');
+    assert.ok(typeof t.title === 'string' && t.title.length > 0, t.name + ' has no title');
+    assert.ok(typeof t.description === 'string' && t.description.length > 40, t.name + ' needs a fuller description');
     assert.strictEqual(t.inputSchema.type, 'object', t.name + ' input must be an object');
-    assert.ok(t.inputSchema.properties && typeof t.inputSchema.properties == 'object', t.name + ' needs properties');
+    assert.ok(t.inputSchema.properties && typeof t.inputSchema.properties === 'object', t.name + ' needs properties');
     for (const r of t.inputSchema.required || []) assert.ok(r in t.inputSchema.properties, t.name + ' requires undeclared ' + r);
     walkSchema(t.inputSchema, (node, where) => {
       if (node.type !== undefined) assert.ok(TYPES.includes(node.type), where + ' has type ' + node.type + ' in ' + t.name);
       if (node.enum !== undefined) assert.ok(Array.isArray(node.enum) && node.enum.length > 0, where + ' has a bad enum in ' + t.name);
-      if (node.type == 'array') assert.ok(node.items, where + ' is an array with no items in ' + t.name);
+      if (node.type === 'array') assert.ok(node.items, where + ' is an array with no items in ' + t.name);
       if (node.minimum !== undefined) assert.strictEqual(typeof node.minimum, 'number', where + ' in ' + t.name);
       if (node.maximum !== undefined) assert.strictEqual(typeof node.maximum, 'number', where + ' in ' + t.name);
       if (node.description !== undefined) assert.strictEqual(typeof node.description, 'string', where + ' in ' + t.name);
@@ -184,7 +184,7 @@ function placeholder(def) {
     case 'string': return 'x';
     case 'integer': case 'number': return def.minimum !== undefined ? Math.max(def.minimum, 1) : 1;
     case 'boolean': return true;
-    case 'array': return def.items && def.items.type == 'string' ? ['x'] : def.items ? [placeholder(def.items)] : [];
+    case 'array': return def.items && def.items.type === 'string' ? ['x'] : def.items ? [placeholder(def.items)] : [];
     default: {
       const value = {};
       for (const r of def.required || []) value[r] = placeholder(def.properties[r]);
@@ -218,11 +218,11 @@ function badArgumentCases(schema) {
       case 'object': if (def.properties || def.additionalProperties === undefined) bad(name + ' not an object', name, 'x', /must be an object/); break;
       default: break;
     }
-    if (typeof def.minimum == 'number' && !def.enum) bad(name + ' below ' + def.minimum, name, def.minimum - 1, /must be at least/);
-    if (typeof def.maximum == 'number' && !def.enum) bad(name + ' above ' + def.maximum, name, def.maximum + 1, /must be at most/);
-    if (def.type == 'array' && def.minItems) bad(name + ' too short', name, [], /must have at least/);
-    if (def.type == 'array' && def.items && def.items.type == 'string' && !def.items.enum) bad(name + ' item not text', name, [42], /must be a string/);
-    if (def.type == 'array' && def.items && def.items.enum) bad(name + ' item not an option', name, ['zz-not-an-option'], /must be one of/);
+    if (typeof def.minimum === 'number' && !def.enum) bad(name + ' below ' + def.minimum, name, def.minimum - 1, /must be at least/);
+    if (typeof def.maximum === 'number' && !def.enum) bad(name + ' above ' + def.maximum, name, def.maximum + 1, /must be at most/);
+    if (def.type === 'array' && def.minItems) bad(name + ' too short', name, [], /must have at least/);
+    if (def.type === 'array' && def.items && def.items.type === 'string' && !def.items.enum) bad(name + ' item not text', name, [42], /must be a string/);
+    if (def.type === 'array' && def.items && def.items.enum) bad(name + ' item not an option', name, ['zz-not-an-option'], /must be one of/);
   }
   return cases;
 }

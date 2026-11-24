@@ -74,7 +74,7 @@ test('the tree says it is computing, with progress, and Cancel stops its workers
   await expect(retry(view)).toBeFocused();
   const started = await workers();
   expect(started.length).toBeGreaterThan(0);
-  expect(started.every(w => w.terminated == 1)).toBe(true);
+  expect(started.every(w => w.terminated === 1)).toBe(true);
   expect(await page.evaluate(() => temp.tree)).toBeNull();
   await expect(leaves()).toHaveCount(0);
 });
@@ -100,7 +100,7 @@ test("a view's Cancel stops only its own workers, and closing a view stops its o
   await expect.poll(() => shown(treeView())).toBe(true);
   await expect.poll(() => shown(heatmapView())).toBe(true);
   await expect.poll(async () => (await workers()).length).toBe(2);
-  expect((await workers()).every(w => w.script == 'workers/expand-dm.js' && !w.terminated)).toBe(true);
+  expect((await workers()).every(w => w.script === 'workers/expand-dm.js' && !w.terminated)).toBe(true);
 
   await cancel(heatmapView()).click();
   await expect(status(heatmapView())).toHaveText('Computing the distance matrix was cancelled.');

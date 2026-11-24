@@ -86,17 +86,17 @@ async function readbacksOver(ms) {
   return (await readbacks()) - before;
 }
 const front = view => page.evaluate(view => {
-  const item = layout.contentItems.find(i => i.componentType == view);
+  const item = layout.contentItems.find(i => i.componentType === view);
   item.parent.setActiveComponentItem(item, true);
 }, view);
 
 test(`loading ${N} sequences takes under 20 seconds`, async () => {
   await open(page);
   await page.setInputFiles('#data-files', fasta);
-  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length == 1);
+  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length === 1);
   const start = Date.now();
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
   await page.waitForFunction(() => temp.network && temp.network.points.length > 0, null, { timeout: 60000 });
   results.loadMs = Date.now() - start;
   expect(await page.evaluate(() => session.data.graph.edgeCount)).toBe(N * (N - 1) / 2);

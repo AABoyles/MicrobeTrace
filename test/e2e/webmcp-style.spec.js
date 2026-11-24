@@ -26,7 +26,7 @@ test('the tools are defined', async () => {
 
 test('settings can be listed, read and set', async () => {
   const list = await call('list_settings', { prefix: 'node-color' });
-  const entry = list.items.find(i => i.key == 'node-color-variable');
+  const entry = list.items.find(i => i.key === 'node-color-variable');
   expect(entry.control).toBe('select');
   expect(entry.options.map(o => o.value)).toContain('None');
   expect(entry.default).toBe('None');
@@ -72,7 +72,7 @@ test('nodes can be selected, searched and expanded', async () => {
   expect(r.selectedCount).toBe(0);
   r = await call('search_nodes', { query: 'g1', field: 'group', wholeWord: true });
   expect(r.matched).toBeGreaterThan(0);
-  expect(await page.evaluate(() => session.data.nodes.filter(d => d.selected).every(d => d.group == 'g1'))).toBe(true);
+  expect(await page.evaluate(() => session.data.nodes.filter(d => d.selected).every(d => d.group === 'g1'))).toBe(true);
   r = await call('select_nodes', { ids: ['S0'] });
   const n1 = await call('select_neighbors', { depth: 1 });
   const n2 = await call('select_neighbors', { depth: 3 });
@@ -94,14 +94,14 @@ test('nodes are colored and their value colors edited', async () => {
   expect(await page.locator('#node-color-table tr').count()).toBe(r.legend.values.length + 1);
   const value = r.legend.values[0].value;
   const e = await call('set_node_value_colors', { values: [{ value, color: 'rgb(255, 0, 0)', opacity: 0.5 }] });
-  const row = e.legend.values.find(v => v.value == value);
+  const row = e.legend.values.find(v => v.value === value);
   expect(row.color).toBe('#ff0000');
   expect(row.opacity).toBe(0.5);
   expect(await page.evaluate(v => temp.style.nodeColorMap(v), value)).toBe('#ff0000');
   expect(await page.locator('#node-color-table input[type=color]').first().inputValue()).toMatch(/^#/);
   expect(await fails('set_node_value_colors', { values: [{ value: 'Atlantis', color: '#000000' }] })).toMatch(/No row/);
   await call('rename_legend_value', { kind: 'node', value, name: 'Renamed' });
-  expect((await call('get_color_legend', { kind: 'node' })).values.find(v => v.value == value).name).toBe('Renamed');
+  expect((await call('get_color_legend', { kind: 'node' })).values.find(v => v.value === value).name).toBe('Renamed');
   await expect(page.locator('#node-color-table td', { hasText: 'Renamed' })).toHaveCount(1);
   const p = await call('set_palette', { kind: 'node', scheme: 'schemeSet1' });
   expect(p.palette[0]).toBe('#e41a1c');

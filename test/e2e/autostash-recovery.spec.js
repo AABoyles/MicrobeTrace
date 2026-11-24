@@ -14,7 +14,7 @@ async function leaveAutostash(page) {
   await page.setInputFiles('#data-files', [links]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
   const nodes = await page.evaluate(() => session.data.nodes.length);
   await page.evaluate(() => { MT.syncLayout(); return db.setItem('stash-' + Date.now() + '-autostash', JSON.stringify(session)); });
   return nodes;
@@ -33,7 +33,7 @@ test('a write the browser refuses is rejected, not reported as stashed', async (
   await page.setInputFiles('#data-files', [links]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
   // A value IndexedDB cannot store makes the write fail
   await page.evaluate(() => { window.badWrite = db.setItem('x', () => {}).then(() => 'resolved', e => e.name); });
   expect(await page.evaluate(() => window.badWrite)).toBe('DataCloneError');
@@ -79,7 +79,7 @@ test('an unchanged session is not written again (#254)', async ({ page }) => {
   await page.setInputFiles('#data-files', [links]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '' && temp.autostash, null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '' && temp.autostash, null, { timeout: 120000 });
   // Each minute's copy, called directly rather than by waiting minutes (or
   // running a fake clock through every animation frame of those minutes).
   const tick = () => page.evaluate(() => temp.autostash.tick());
@@ -105,7 +105,7 @@ test('reopening a session drops any saved encoded sequences (#224)', async ({ pa
   await page.setInputFiles('#data-files', [links]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
   const left = await page.evaluate(async () => {
     MT.syncLayout();
     const saved = JSON.parse(JSON.stringify(session));

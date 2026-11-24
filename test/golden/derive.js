@@ -23,7 +23,7 @@ const TOLERANCE = 1e-12;
 function readFasta(file) {
   const out = [];
   fs.readFileSync(path.join(dir, file), 'utf8').split(/\r?\n/).forEach(line => {
-    if (line[0] == '>') out.push({ id: line.slice(1).trim(), seq: '' });
+    if (line[0] === '>') out.push({ id: line.slice(1).trim(), seq: '' });
     else if (line.trim()) out[out.length - 1].seq += line.trim().toUpperCase();
   });
   return out;
@@ -115,7 +115,7 @@ function derive(file, { modes = MODES, metrics = METRICS, gapmm = false, hivtrac
     out.modes['hivtrace-g'] = {
       fraction: hivtraceG,
       tn93: values.map(v => v.tn93),
-      averaged: values.map(v => v.mode == 'average'),
+      averaged: values.map(v => v.mode === 'average'),
       resolvedAmbiguities: values.map(v => v.resolved),
       sites: values.map(v => v.sites)
     };

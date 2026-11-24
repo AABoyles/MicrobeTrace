@@ -49,7 +49,7 @@ function inSomeMST(toy) {
       const u = stack.pop();
       toy.distances.forEach(([x, y, v]) => {
         if (v >= w) return;
-        const other = x == u ? y : y == u ? x : null;
+        const other = x === u ? y : y === u ? x : null;
         if (other && !seen.has(other)) { seen.add(other); stack.push(other); }
       });
     }
@@ -59,7 +59,7 @@ function inSomeMST(toy) {
 
 test('the hand-worked minimum spanning trees are right', () => {
   assert.deepStrictEqual(pairSet(inSomeMST(golden.toy)), pairSet(golden.toy.mst));
-  const weight = golden.toy.mst.reduce((s, p) => s + golden.toy.distances.find(d => pairKey(d) == pairKey(p))[2], 0);
+  const weight = golden.toy.mst.reduce((s, p) => s + golden.toy.distances.find(d => pairKey(d) === pairKey(p))[2], 0);
   assert.ok(Math.abs(weight - golden.toy.mstWeight) < 1e-12);
   assert.deepStrictEqual(pairSet(inSomeMST(golden.square)), pairSet(golden.square.mstUnion));
 });
@@ -104,7 +104,7 @@ test('MT.tagClusters on computed TN93 distances (distances.fasta, threshold 0.03
   // Clusters from the reference distances by union-find, against the app's
   const exp = expected('distances.expected.json');
   const parent = {};
-  const find = x => parent[x] == x ? x : (parent[x] = find(parent[x]));
+  const find = x => parent[x] === x ? x : (parent[x] = find(parent[x]));
   exp.ids.forEach(id => { parent[id] = id; });
   exp.pairs.forEach(([a, b], k) => { if (exp.modes.resolve.tn93[k] <= 0.03) parent[find(a)] = find(b); });
   const want = {};
@@ -161,8 +161,8 @@ test('the tree worker recovers the tree behind an additive matrix', async () => 
   // Each leaf's pendant branch, through a root of degree 2 if the tree was rooted on it
   Object.entries(t.leafLengths).forEach(([leaf, len]) => {
     let [[node, pendant]] = adj.get(leaf), prev = leaf;
-    while (adj.get(node).length == 2) {
-      const [nextNode, w] = adj.get(node).find(([v]) => v != prev);
+    while (adj.get(node).length === 2) {
+      const [nextNode, w] = adj.get(node).find(([v]) => v !== prev);
       pendant += w;
       prev = node;
       node = nextNode;

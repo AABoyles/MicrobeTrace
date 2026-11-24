@@ -123,7 +123,7 @@ test('a node list gives a node per row with its other columns, and keeps IDs and
 test('a node list with no sequence column gives empty sequences', () => {
   const r = nodes.parse('id,group\na,x\n', { field1: 'id', field2: 'None', origin });
   assert.deepStrictEqual(r.nodes, [{ _id: 'a', seq: '', origin, group: 'x' }]);
-  assert.deepStrictEqual(r.fields, ['id', 'group'].filter(f => f != 'id'));
+  assert.deepStrictEqual(r.fields, ['id', 'group'].filter(f => f !== 'id'));
 });
 
 test('a node list counts repeated and blank IDs, and a blank row adds no fields', () => {
@@ -154,7 +154,7 @@ test('a Newick tree gives its leaves as nodes and every pair as a link, each nod
   assert.strictEqual(r.nodes.length, 3);
   assert.strictEqual(r.links.length, 3);
   assert.ok(r.nodes.every(n => n.origin === origin));
-  const distance = (a, b) => r.links.find(l => (l.source == a && l.target == b) || (l.source == b && l.target == a)).tn93;
+  const distance = (a, b) => r.links.find(l => (l.source === a && l.target === b) || (l.source === b && l.target === a)).tn93;
   assert.strictEqual(distance('A', 'B'), 3);
   assert.strictEqual(distance('A', 'C'), 8);
   assert.strictEqual(distance('B', 'C'), 9);

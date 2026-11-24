@@ -63,9 +63,9 @@ for (const [filetype, filename] of [['fasta', 'seqs-test.fasta'], ['mega', 'seqs
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
     expect(download.suggestedFilename()).toBe(filename);
-    if (filetype != 'png') {
+    if (filetype !== 'png') {
       const text = fs.readFileSync(await download.path(), 'utf8');
-      expect(text.split(filetype == 'fasta' ? '>' : '#').length - 1).toBe(await sequences());
+      expect(text.split(filetype === 'fasta' ? '>' : '#').length - 1).toBe(await sequences());
     }
     expect(errors).toEqual([]);
   });

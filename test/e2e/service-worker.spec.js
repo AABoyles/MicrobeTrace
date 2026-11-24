@@ -40,7 +40,7 @@ test('the worker caches the shell, then each file when it is first used, and the
 
   // A view opened online is cached with its library, and opens again offline
   await page.evaluate(() => MT.launchView('histogram'));
-  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType == 'histogram') && typeof Plotly != 'undefined');
+  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'histogram') && typeof Plotly !== 'undefined');
   await expect.poll(() => page.evaluate(async name => {
     const cache = await caches.open(name);
     return (await cache.keys()).map(r => new URL(r.url).pathname.replace(/^\//, ''));
@@ -97,7 +97,7 @@ test('the worker caches the shell, then each file when it is first used, and the
   await expect(page).toHaveTitle(/MicrobeTrace/);
   // The view opened earlier (the histogram, whose library was cached with it) still opens offline
   await page.evaluate(() => MT.launchView('histogram'));
-  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType == 'histogram') && typeof Plotly != 'undefined');
+  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'histogram') && typeof Plotly !== 'undefined');
   await context.setOffline(false);
 });
 
@@ -107,7 +107,7 @@ test('everything a first visit fetches is in the shell, so it is cached before t
   await page.goto('/index.html');
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
-  const missing = [...requested].filter(file => file && file != 'index.html' && file != 'sw.js' && !precache.includes(file));
+  const missing = [...requested].filter(file => file && file !== 'index.html' && file !== 'sw.js' && !precache.includes(file));
   expect(missing).toEqual([]);
 });
 

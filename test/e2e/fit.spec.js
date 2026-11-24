@@ -30,8 +30,8 @@ const settled = locator => locator.evaluate(el => Promise.allSettled(el.getAnima
 async function launched() {
   if (await page.evaluate(() => session.data.clusters.length > 0)) return;
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
-  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
+  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType === 'files'));
 }
 async function openPane(name) {
   await launched();
@@ -82,7 +82,7 @@ test('in the tree’s pane, sliders fill their column, labels sit on one line, a
   const three = pane.locator('.btn-group-toggle').filter({ visible: true }).first();
   expect(await togglesFit(three)).toBe(true);
   const borders = await three.locator('.btn').evaluateAll(buttons => buttons.slice(1).map(b => getComputedStyle(b).borderLeftWidth));
-  expect(borders.every(w => w == '1px')).toBe(true);
+  expect(borders.every(w => w === '1px')).toBe(true);
   await closeView(page, 'phylogenetic_tree');
 });
 

@@ -23,10 +23,10 @@ test.afterAll(() => page.close());
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 async function opened(view) {
   await page.evaluate(view => {
-    const item = layout.contentItems.find(i => i.componentType == view);
+    const item = layout.contentItems.find(i => i.componentType === view);
     if (item) item.parent.setActiveComponentItem(item, true);
   }, view);
-  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType == view), view))) await launchView(page, view);
+  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
 }
 const titles = selector => page.locator(selector).evaluateAll(els => els.map(el => el.getAttribute('title')));
 

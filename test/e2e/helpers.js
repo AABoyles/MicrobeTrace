@@ -26,13 +26,13 @@ function watchErrors(page) {
   // missing file is an HTTP 404, caught below.
   page.on('requestfailed', r => {
     const text = r.failure() && r.failure().errorText;
-    if (text != 'net::ERR_ABORTED') failed(r.url(), `Request failed (${text}):`);
+    if (text !== 'net::ERR_ABORTED') failed(r.url(), `Request failed (${text}):`);
   });
   page.on('response', r => { if (r.status() >= 400) failed(r.url(), `HTTP ${r.status()}:`); });
   page.on('console', m => {
     // A failed resource is reported by the request and response events above,
     // with its URL, which this console line doesn't have
-    if (m.type() == 'error' && !/^Failed to load resource/.test(m.text())) add(m.text());
+    if (m.type() === 'error' && !/^Failed to load resource/.test(m.text())) add(m.text());
   });
   return errors;
 }
@@ -44,7 +44,7 @@ const waitForModal = (page, selector) => page.waitForFunction(selector => {
   // Opaque isn't enough: until Bootstrap has finished the transition it ignores
   // hide() and hasn't yet moved focus into the dialog (its focus trap)
   const instance = window.bootstrap && bootstrap.Modal.getInstance(modal);
-  return modal && modal.classList.contains('show') && getComputedStyle(modal).opacity == '1' &&
+  return modal && modal.classList.contains('show') && getComputedStyle(modal).opacity === '1' &&
     !(instance && instance._isTransitioning);
 }, selector);
 
@@ -124,8 +124,8 @@ async function loadNetwork(page, options) {
   await page.setInputFiles('#data-files', fixtures);
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 3);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
-  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
+  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType === 'files'));
 }
 
 const viewNames = page => page.evaluate(() => layout.contentItems.map(i => i.componentType));
@@ -133,11 +133,11 @@ const viewNames = page => page.evaluate(() => layout.contentItems.map(i => i.com
 // Launches a view and waits until its item is in the layout.
 async function launchView(page, view) {
   await page.evaluate(view => MT.launchView(view), view);
-  await page.waitForFunction(view => layout.contentItems.some(i => i.componentType == view), view);
+  await page.waitForFunction(view => layout.contentItems.some(i => i.componentType === view), view);
 }
 
 async function closeView(page, view) {
-  await page.evaluate(view => { const i = layout.contentItems.find(i => i.componentType == view); if (i) i.remove(); }, view);
+  await page.evaluate(view => { const i = layout.contentItems.find(i => i.componentType === view); if (i) i.remove(); }, view);
 }
 
 // Reads a downloaded image in the page: its size, and how many colors it

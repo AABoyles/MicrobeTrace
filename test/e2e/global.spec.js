@@ -73,7 +73,7 @@ test('nearest neighbor and minimum spanning tree pruning each keep fewer links',
   const unpruned = await clusters();
   // The links each method keeps, computed directly (the flags are left as they would be)
   const expected = value => page.evaluate(async value => {
-    await (value == 'nn' ? MT.computeNN() : MT.computeMST());
+    await (value === 'nn' ? MT.computeNN() : MT.computeMST());
     const g = session.data.graph;
     return g.computeVisible(MT.settings.get('link-sort-variable'), parseFloat(MT.settings.get('link-threshold')), true, () => true).length;
   }, value);
@@ -84,7 +84,7 @@ test('nearest neighbor and minimum spanning tree pruning each keep fewer links',
     expect(want).toBeLessThan(299);
     await expect.poll(() => stat('numberOfVisibleLinks'), { timeout: 30000 }).toBe(want);
     // The minimum spanning tree keeps every cluster connected
-    if (value == 'mst') expect(await clusters()).toBe(unpruned);
+    if (value === 'mst') expect(await clusters()).toBe(unpruned);
   }
   await prune('none');
   await expect(dialog().locator('.filtering-epsilon-row')).toBeHidden();
@@ -220,7 +220,7 @@ test('New Session starts over with the default settings', async () => {
   await page.click('#NewTab');
   await waitForModal(page, '#exit-modal');
   await page.click('#exit-button');
-  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType == 'files'));
+  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'files'));
   expect(await get('node-color-variable')).toBe('None');
   expect(await page.evaluate(() => MT.defaultWidgets['node-color-variable'])).toBe('None');
   await expect(page.locator('#node-color-table-wrapper')).toBeHidden();
@@ -228,7 +228,7 @@ test('New Session starts over with the default settings', async () => {
 
 test('a saved session opens as it was saved', async () => {
   await page.setInputFiles('#OpenTab', saved);
-  await page.waitForFunction(() => session.data.nodes.length == 310 && document.getElementById('numberOfNodes').textContent == '310', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length === 310 && document.getElementById('numberOfNodes').textContent === '310', null, { timeout: 60000 });
   expect(await get('node-color-variable')).toBe('group');
   await expect(page.locator('#node-color-table-wrapper')).toBeVisible();
   await openSettings('Styling');
@@ -250,7 +250,7 @@ test('a stashed session can be recalled', async () => {
   await page.click('#NewTab');
   await waitForModal(page, '#exit-modal');
   await page.click('#exit-button');
-  await page.waitForFunction(() => session.data.nodes.length == 0);
+  await page.waitForFunction(() => session.data.nodes.length === 0);
   await page.locator('nav .dropdown-toggle', { hasText: 'File' }).click();
   await page.click('#RecallDataTab');
   await waitForModal(page, '#session-recall-modal');
@@ -259,7 +259,7 @@ test('a stashed session can be recalled', async () => {
   await row.click();
   await expect(row).toHaveClass(/tabulator-selected/);
   await page.click('#recall-load-stash');
-  await page.waitForFunction(() => session.data.nodes.length == 310 && document.getElementById('numberOfNodes').textContent == '310', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length === 310 && document.getElementById('numberOfNodes').textContent === '310', null, { timeout: 60000 });
   expect(await get('node-color-variable')).toBe('group');
   expect(errors).toEqual([]);
 });

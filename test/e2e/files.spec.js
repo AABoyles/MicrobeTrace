@@ -38,12 +38,12 @@ test("changing a file's kind changes its fields", async () => {
   await row('links.csv').locator('label', { hasText: 'Node' }).click();
   await expect(row('links.csv').locator('label', { hasText: 'Sequence' })).toBeVisible();
   await expect(fields('links.csv').nth(2)).toBeHidden();
-  expect(await page.evaluate(() => session.files.find(f => f.name == 'links.csv').format)).toBe('node');
+  expect(await page.evaluate(() => session.files.find(f => f.name === 'links.csv').format)).toBe('node');
   await row('links.csv').locator('label', { hasText: 'Matrix' }).click();
   await expect(fields('links.csv').first()).toBeHidden();
   await row('links.csv').locator('label', { hasText: 'Link' }).click();
   await expect(fields('links.csv').nth(2)).toBeVisible();
-  expect(await page.evaluate(() => { const f = session.files.find(f => f.name == 'links.csv'); return [f.format, f.field1, f.field2, f.field3]; }))
+  expect(await page.evaluate(() => { const f = session.files.find(f => f.name === 'links.csv'); return [f.format, f.field1, f.field2, f.field3]; }))
     .toEqual(['link', 'source', 'target', 'distance']);
 });
 
@@ -141,8 +141,8 @@ test('the audit flags odd sequences, which can be excluded', async () => {
 
 test('launching builds the network', async () => {
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
-  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
+  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType === 'files'));
   expect(await page.evaluate(() => session.data.nodes.length)).toBe(310);
   expect(errors).toEqual([]);
 });

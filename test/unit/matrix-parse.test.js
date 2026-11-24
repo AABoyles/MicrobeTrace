@@ -61,7 +61,7 @@ test('empty cells are skipped, and never overwrite a real value', () => {
   // The lower half is empty, as in an upper triangle written as a square
   const p = parse(',A,B,C\nA,0,1,5\nB,,0,2\nC,,,0\n');
   assert.strictEqual(p.links.length, 3);
-  assert.ok(p.links.every(l => typeof l.distance == 'number' && !Number.isNaN(l.distance)));
+  assert.ok(p.links.every(l => typeof l.distance === 'number' && !Number.isNaN(l.distance)));
   // Loaded into the graph, as the app does, each pair keeps its value
   const g = new MTGraph();
   p.links.forEach(l => g.addLink(MTGraph.distanceLink(l, 'tn93')));

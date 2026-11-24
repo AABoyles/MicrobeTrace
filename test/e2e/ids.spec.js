@@ -28,8 +28,8 @@ test('IDs keep their leading zeros and exponents, and are trimmed, so a sequence
   await launch(fasta, csv('nodes.csv', 'id,age\n007,30\n 1E3,40\nA ,50\n'));
   expect(await ids()).toEqual(['007', '1E3', 'A']);
   // Other columns are still numbers
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == '007').age)).toBe(30);
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'A').seq)).toBe('ACGTACGTAA');
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === '007').age)).toBe(30);
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === 'A').seq)).toBe('ACGTACGTAA');
 });
 
 test('a link list names its nodes as written, and a blank ID is not a node called null', async () => {

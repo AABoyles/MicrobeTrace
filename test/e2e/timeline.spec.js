@@ -39,7 +39,7 @@ test('the curve can be cumulative', async () => {
   await pane().locator('label', { hasText: /^\s*Cumulative/ }).click();
   await expect.poll(async () => (await bars()).slice(-1)[0]).toBe(await dated());
   const b = await bars();
-  expect(b.every((v, i) => i == 0 || v >= b[i - 1])).toBe(true);
+  expect(b.every((v, i) => i === 0 || v >= b[i - 1])).toBe(true);
   await pane().locator('label', { hasText: 'Noncumulative' }).click();
   await expect.poll(async () => (await bars()).reduce((a, b) => a + b, 0)).toBe(await dated());
 });

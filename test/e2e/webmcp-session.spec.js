@@ -224,7 +224,7 @@ test('aligning to a file reference refuses to launch without one', async () => {
 
 test('generates as the Generate button does: up to 250,000, in several files when many', async () => {
   await call('new_session', { confirm: true });
-  expect(await page.evaluate(() => MTWebMCP.list().find(t => t.name == 'generate_sequences').inputSchema.properties.count.maximum)).toBe(250000);
+  expect(await page.evaluate(() => MTWebMCP.list().find(t => t.name === 'generate_sequences').inputSchema.properties.count.maximum)).toBe(250000);
   expect(await fails('generate_sequences', { count: 0 })).toMatch(/"count" must be at least 1/);
   expect(await fails('generate_sequences', { count: 2.5 })).toMatch(/"count" must be a whole number/);
   expect(await fails('generate_sequences', { count: 250001 })).toMatch(/"count" must be at most 250000/);

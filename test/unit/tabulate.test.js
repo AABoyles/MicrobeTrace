@@ -19,14 +19,14 @@ function fakeD3() {
     append(tag) { return sel(nodes.map(n => { const c = make(tag); n.children.push(c); return c; })); },
     attr(k, v) { nodes.forEach(n => { n.attrs[k] = v; }); return this; },
     style(k, v) { nodes.forEach(n => { n.styles[k] = v; }); return this; },
-    text(v) { nodes.forEach(n => { n.textValue = typeof v == 'function' ? v(n.datum) : v; }); return this; },
+    text(v) { nodes.forEach(n => { n.textValue = typeof v === 'function' ? v(n.datum) : v; }); return this; },
     html() { nodes.forEach(n => { n.htmlCalled = true; }); return this; },
-    selectAll(tag) { return sel(nodes.flatMap(n => n.children.filter(c => c.tag == tag)), nodes); },
+    selectAll(tag) { return sel(nodes.flatMap(n => n.children.filter(c => c.tag === tag)), nodes); },
     data(d) { this.pending = d; return this; },
     enter() {
       const out = [];
       parents.forEach((parent, i) => {
-        const items = typeof this.pending == 'function' ? this.pending(parent.datum, i) : this.pending;
+        const items = typeof this.pending === 'function' ? this.pending(parent.datum, i) : this.pending;
         items.forEach(it => out.push({ parent, datum: it }));
       });
       return { append: tag => sel(out.map(o => { const c = make(tag); c.datum = o.datum; o.parent.children.push(c); return c; })) };
@@ -50,20 +50,20 @@ const collect = (n, out = []) => { out.push(n); n.children.forEach(c => collect(
 test('values are written as text, not HTML', () => {
   const evil = '<img src=x onerror=alert(1)>';
   const root = run([{ Node: evil, Count: 3 }], ['Node', 'Count']);
-  const tds = collect(root).filter(n => n.tag == 'td');
+  const tds = collect(root).filter(n => n.tag === 'td');
   assert.deepStrictEqual(tds.map(t => t.textValue), [evil, '3']);
   assert.ok(!collect(root).some(n => n.htmlCalled));
 });
 
 test('missing values leave empty cells', () => {
   const root = run([{ Node: 'a' }], ['Node', 'Count']);
-  const tds = collect(root).filter(n => n.tag == 'td');
+  const tds = collect(root).filter(n => n.tag === 'td');
   assert.strictEqual(tds[1].textValue, undefined);
 });
 
 test('swatches are elements styled through the style API', () => {
   const root = run([{ Node: 'a', Color: { swatch: '"><script>x</script>' } }], ['Node', 'Color']);
-  const div = collect(root).find(n => n.tag == 'div');
+  const div = collect(root).find(n => n.tag === 'div');
   assert.strictEqual(div.styles.background, '"><script>x</script>'); // only ever a style value, which the DOM rejects if invalid
   assert.strictEqual(div.attrs.style, undefined);
   assert.ok(!collect(root).some(n => n.htmlCalled));

@@ -26,9 +26,9 @@ async function add(page, files) {
 }
 async function launch(page) {
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
 }
-const node = (page, id) => page.evaluate(id => { const d = session.data.nodes.find(d => d._id == id); return { state: d.state, date: d.date, lab: d.lab }; }, id);
+const node = (page, id) => page.evaluate(id => { const d = session.data.nodes.find(d => d._id === id); return { state: d.state, date: d.date, lab: d.lab }; }, id);
 
 test('the top file wins where files disagree, and other files fill its gaps', async ({ page }) => {
   const errors = watchErrors(page);
@@ -67,7 +67,7 @@ test('a node listed twice in one file is one node: its first row, filled in by t
   const twice = csv('nodes-twice.csv', ['id', 'state', 'date'], [['S0', 'Texas', ''], ['S1', 'Utah', '2020-01-02'], ['S0', 'Ohio', '2020-01-03']]);
   await add(page, [links, twice]);
   await launch(page);
-  expect(await page.evaluate(() => session.data.nodes.filter(d => d._id == 'S0').length)).toBe(1);
+  expect(await page.evaluate(() => session.data.nodes.filter(d => d._id === 'S0').length)).toBe(1);
   expect(await node(page, 'S0')).toMatchObject({ state: 'Texas', date: '2020-01-03' });
 });
 
@@ -90,7 +90,7 @@ test('nodes added without a source (sessions, imports) merge by ID, later values
   const merged = await page.evaluate(() => {
     MT.addNode({ _id: 'X1', state: 'Texas', origin: 'HIVTRACE Import' }, false);
     MT.addNode({ _id: 'X1', state: 'Ohio', origin: ['Other'] }, false);
-    const nodes = session.data.nodes.filter(d => d._id == 'X1');
+    const nodes = session.data.nodes.filter(d => d._id === 'X1');
     return { count: nodes.length, state: nodes[0].state, origin: nodes[0].origin, provenance: MT.provenance('X1', 'state') };
   });
   expect(merged).toEqual({ count: 1, state: 'Ohio', origin: ['Other', 'HIVTRACE Import'], provenance: [] });
@@ -121,7 +121,7 @@ test('a saved session keeps where its values came from', async ({ page }) => {
   expect(saved.data.nodeSources.sources.map(s => s.name)).toEqual(['links.csv', 'nodes-cases.csv', 'nodes-lab.csv']);
   await page.setInputFiles('#OpenTab', { name: 'reopened.microbetrace', mimeType: 'application/json', buffer: require('fs').readFileSync(file) });
   await confirmReplace(page);
-  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
   expect(await traced(page)).toEqual(before);
   expect((await node(page, 'S0')).state).toBe('Texas');
   expect(errors).toEqual([]);
@@ -149,7 +149,7 @@ test('a stashed session does too', async ({ page }) => {
   await stash.locator('.tabulator-cell').first().click();
   await expect(stash).toHaveClass(/tabulator-selected/);
   await page.click('#recall-load-stash');
-  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
   expect(await traced(page)).toEqual(before);
 });
 
@@ -164,7 +164,7 @@ test('a session saved before sources were, opens with none', async ({ page }) =>
   });
   await page.setInputFiles('#OpenTab', { name: 'old.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
   await confirmReplace(page);
-  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
   expect((await node(page, 'S0')).state).toBe('Texas');
   expect(await traced(page)).toEqual({ state: [], date: [], lab: [], conflicts: {} });
   expect(errors).toEqual([]);
@@ -179,7 +179,7 @@ test('saving sources adds little to a session', async ({ page }) => {
 });
 
 // The node fields that would be listed as "ID" in menus
-const idFields = page => page.evaluate(() => session.data.nodeFields.filter(f => MT.titleize(f) == 'ID'));
+const idFields = page => page.evaluate(() => session.data.nodeFields.filter(f => MT.titleize(f) === 'ID'));
 
 test('the column chosen as the ID is the ID, listed once', async ({ page }) => {
   const errors = watchErrors(page);
@@ -187,7 +187,7 @@ test('the column chosen as the ID is the ID, listed once', async ({ page }) => {
   await launch(page);
   expect(await idFields(page)).toEqual(['_id']);
   expect(await page.locator('#search-field option', { hasText: /^ID$/ }).count()).toBe(1);
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'S0').id)).toBeUndefined();
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === 'S0').id)).toBeUndefined();
   expect(errors).toEqual([]);
 });
 
@@ -204,7 +204,7 @@ test('so are columns chosen as the ID and sequence under other names', async ({ 
   expect(fieldsAfter).not.toContain('SampleID');
   expect(fieldsAfter).not.toContain('SEQUENCE');
   expect(fieldsAfter).toContain('state');
-  expect(await page.evaluate(() => { const d = session.data.nodes.find(d => d._id == 'S1'); return [d.seq.replace(/-/g, '').length, d.SEQUENCE]; })).toEqual([41, undefined]);
+  expect(await page.evaluate(() => { const d = session.data.nodes.find(d => d._id === 'S1'); return [d.seq.replace(/-/g, '').length, d.SEQUENCE]; })).toEqual([41, undefined]);
 });
 
 test('a session that lists the ID column as a field too opens listing it once', async ({ page }) => {
@@ -219,6 +219,6 @@ test('a session that lists the ID column as a field too opens listing it once', 
   });
   await page.setInputFiles('#OpenTab', { name: 'old.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
   await confirmReplace(page);
-  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
   expect(await idFields(page)).toEqual(['_id']);
 });

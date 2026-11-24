@@ -75,7 +75,7 @@ test('WebMCP is off until the user turns it on, for this tab only', async ({ pag
   // A reload of this tab keeps it on
   await page.reload();
   await page.waitForFunction(() => window.MTWebMCP && MTWebMCP.tools.has('get_view_image'));
-  await page.waitForFunction(() => document.readyState == 'complete');
+  await page.waitForFunction(() => document.readyState === 'complete');
   expect(await page.evaluate(() => MTWebMCP.enabled())).toBe(true);
   expect(await registered(page)).toBe(count);
 
@@ -122,7 +122,7 @@ test.describe('with WebMCP on', () => {
     const before = await autostash();
 
     // Reading needs no permission
-    expect((await page.evaluate(() => MTWebMCP.call('get_autostash'))).autostash).toBe(before == 'true');
+    expect((await page.evaluate(() => MTWebMCP.call('get_autostash'))).autostash).toBe(before === 'true');
     await expect(dialog(page)).toBeHidden();
 
     // Don't Allow

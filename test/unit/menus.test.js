@@ -105,10 +105,10 @@ test('an HIV-TRACE file keeps its attribute names as they are, and its menus sho
   const field = Object.keys(hivtrace.trace_results.Nodes[0].patient_attributes).find(f => f.includes('<img'));
   const fields = ctx.session.data.nodeFields;
   assert.ok(fields.includes(field) && fields.includes('note'));
-  const node = ctx.session.data.nodes.find(d => d._id == 'P2');
+  const node = ctx.session.data.nodes.find(d => d._id === 'P2');
   assert.strictEqual(node[field], hivtrace.trace_results.Nodes[1].patient_attributes[field]);
   const el = MT.fillSelect(select(), fields, { none: true });
-  const option = el.children.find(o => o.value == field);
+  const option = el.children.find(o => o.value === field);
   assert.ok(option, 'the attribute is offered');
   assert.ok(option.textContent.includes('<img'), 'as text');
   assert.strictEqual(el.children.length, fields.length + 1);
@@ -127,14 +127,14 @@ test('a session keeps its names and values as saved (they are not escaped again)
   const linkField = saved.data.linkFields.find(f => f.includes('<img'));
   assert.ok(ctx.session.data.nodeFields.includes(nodeField));
   assert.ok(ctx.session.data.linkFields.includes(linkField));
-  const s1 = ctx.session.data.nodes.find(d => d._id == 'S1');
+  const s1 = ctx.session.data.nodes.find(d => d._id === 'S1');
   assert.strictEqual(s1.note, saved.data.nodes[0].note);
   // As the views' menus are filled (setupView)
   const mixed = MT.fillSelect(select(), ctx.session.data.linkFields, { none: true, prefix: 'links-', label: 'Link ' });
   MT.fillSelect(mixed, ctx.session.data.nodeFields, { prefix: 'nodes-', label: 'Node ', append: true });
   assert.strictEqual(mixed.children.length, 1 + ctx.session.data.linkFields.length + ctx.session.data.nodeFields.length);
-  assert.ok(mixed.children.some(o => o.value == 'nodes-' + nodeField && o.textContent.startsWith('Node Gender"><img')));
-  assert.ok(mixed.children.some(o => o.value == 'links-' + linkField && o.textContent.startsWith('Link Kind"><img')));
+  assert.ok(mixed.children.some(o => o.value === 'nodes-' + nodeField && o.textContent.startsWith('Node Gender"><img')));
+  assert.ok(mixed.children.some(o => o.value === 'links-' + linkField && o.textContent.startsWith('Link Kind"><img')));
 });
 
 test('IDs are text without surrounding spaces, however they arrive (#219), and are not escaped (#218)', () => {

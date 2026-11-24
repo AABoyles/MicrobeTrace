@@ -122,11 +122,11 @@ test('a saved value the node has is 1, one it does not is kept, and none is 0', 
   const { sources } = three();
   const nodes = resolved(sources);
   const saved = sources.save(key => nodes.get(key));
-  const meta = saved.sources.find(s => s.name == 'meta.xlsx');
+  const meta = saved.sources.find(s => s.name === 'meta.xlsx');
   assert.deepStrictEqual(meta.keys, ['S1', 'S2']);
   assert.deepStrictEqual(meta.columns.state, [['Ohio'], 1]); // S1 uses Texas; S2's Utah agrees
   assert.deepStrictEqual(meta.columns.date, [['2020-01-05'], 1]);
-  const top = saved.sources.find(s => s.name == 'nodes.csv');
+  const top = saved.sources.find(s => s.name === 'nodes.csv');
   assert.deepStrictEqual(top.columns.date, [1, 0]); // S2's top date is empty
 });
 
@@ -134,7 +134,7 @@ test('a value saved as 1 for a node that is gone is no value', () => {
   const { sources } = three();
   const nodes = resolved(sources);
   const saved = sources.save(key => nodes.get(key));
-  const restored = MTNodeSources.restore(saved, key => key == 'S1' ? nodes.get(key) : undefined);
+  const restored = MTNodeSources.restore(saved, key => key === 'S1' ? nodes.get(key) : undefined);
   assert.strictEqual(restored.resolve('S2', 'state'), undefined);
   assert.strictEqual(restored.resolve('S1', 'state'), 'Texas');
 });

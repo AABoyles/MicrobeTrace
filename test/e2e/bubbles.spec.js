@@ -35,7 +35,7 @@ test('grouping by a variable labels its values', async () => {
   // The bubbles settle into columns, Georgia's left of Utah's
   await expect.poll(() => page.evaluate(() => {
     const x = state => {
-      const circles = Array.from(document.querySelectorAll('svg circle')).filter(c => d3.select(c).datum().node.state == state);
+      const circles = Array.from(document.querySelectorAll('svg circle')).filter(c => d3.select(c).datum().node.state === state);
       return circles.reduce((s, c) => s + +c.getAttribute('cx'), 0) / circles.length;
     };
     return x('Georgia') < x('Utah');

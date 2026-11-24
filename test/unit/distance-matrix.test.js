@@ -24,7 +24,7 @@ test('getDM is a flat, symmetric Float64Array with NaN for missing pairs', async
     assert.strictEqual(dm[i * 6 + i], 0);
     for (let j = 0; j < 6; j++) {
       assert.ok(Object.is(dm[i * 6 + j], dm[j * 6 + i]));
-      if (i != j) assert.ok((i + j) % 3 ? dm[i * 6 + j] == i + j : isNaN(dm[i * 6 + j]));
+      if (i !== j) assert.ok((i + j) % 3 ? dm[i * 6 + j] === i + j : isNaN(dm[i * 6 + j]));
     }
   }
 });

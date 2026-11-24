@@ -46,11 +46,11 @@ test('each view fetches the libraries it draws with, once', async ({ page }) => 
   for (const [view, bundle, global] of [['histogram', 'plotly', 'Plotly'], ['table', 'table', 'Tabulator'], ['geo_map', 'map', 'L'], ['phylogenetic_tree', 'tree', 'TidyTree']]) {
     await launchView(page, view);
     await expect.poll(() => typeOf(global), { message: view }).not.toBe('undefined');
-    expect(requested.filter(name => name == bundle), bundle).toHaveLength(1);
+    expect(requested.filter(name => name === bundle), bundle).toHaveLength(1);
   }
   // Another chart view reuses Plotly
   await launchView(page, 'scatterplot');
-  expect(requested.filter(name => name == 'plotly')).toHaveLength(1);
+  expect(requested.filter(name => name === 'plotly')).toHaveLength(1);
   expect(requested).not.toContain('xlsx');
   expect(errors).toEqual([]);
 });
@@ -65,7 +65,7 @@ test('adding an Excel file fetches the spreadsheet bundle', async ({ page }) => 
   expect(requested).not.toContain('xlsx');
   await page.setInputFiles('#data-files', [{ name: 'links.xlsx', mimeType: 'application/octet-stream', buffer: Buffer.from(XLSX.write(book, { type: 'buffer', bookType: 'xlsx' })) }]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
-  expect(requested.filter(name => name == 'xlsx')).toHaveLength(1);
+  expect(requested.filter(name => name === 'xlsx')).toHaveLength(1);
   expect(errors).toEqual([]);
 });
 

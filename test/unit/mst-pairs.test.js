@@ -56,7 +56,7 @@ const nearest_neighbour_graph = (V, weight, mst_parents, epsilon) => {
   for (let i = 0; i < V; ++i) {
     for (let j = 0; j < V; ++j) {
       const w = weight(i, j);
-      if (i != j && w < Infinity && w <= longest_edge[i * V + j] * (1.0 + epsilon)) {
+      if (i !== j && w < Infinity && w <= longest_edge[i * V + j] * (1.0 + epsilon)) {
         nng[i].push(j);
         nng[j].push(i);
       }
@@ -84,9 +84,9 @@ const bfs_update_matrix = (V, mst, weight, root, longest_edge) => {
 function reference(n, tri, epsilonPower) {
   const epsilon = Math.pow(10, epsilonPower);
   const weight = (u, v) => {
-    if (u == v) return 0;
+    if (u === v) return 0;
     const w = u < v ? tri[u * n - u * (u + 1) / 2 + v - u - 1] : tri[v * n - v * (v + 1) / 2 + u - v - 1];
-    return w == w ? w : Infinity;
+    return w === w ? w : Infinity;
   };
   const mst = primMST(n, weight);
   const nng = nearest_neighbour_graph(n, weight, mst, epsilon);

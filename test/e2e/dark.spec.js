@@ -26,7 +26,7 @@ const shade = locator => locator.first().evaluate(el => {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   };
   // (A faint tint, like a card header's, shows what's under it)
-  const seeThrough = color => color == 'transparent' || /rgba/.test(color) && +color.match(/[\d.]+/g)[3] < 0.5;
+  const seeThrough = color => color === 'transparent' || /rgba/.test(color) && +color.match(/[\d.]+/g)[3] < 0.5;
   let bg = el;
   while (bg && seeThrough(getComputedStyle(bg).backgroundColor)) bg = bg.parentElement;
   return { background: lum(getComputedStyle(bg || document.body).backgroundColor), text: lum(getComputedStyle(el).color) };
