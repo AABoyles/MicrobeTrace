@@ -54,6 +54,10 @@ serially and is slow; run the specs for what you touched, not the whole suite, u
 - State: `session` is what gets saved (data in `session.data`, settings in `session.style.widgets`);
   `temp` is everything rebuilt on load. Read and write settings through `MT.settings.get/set` so
   subscribers hear about it; new settings need a default in `MT.defaultWidgets` in `common.js`.
+  Write `session.data` through `MT.session` (`src/session.js`: `addNode(s)`, `addLink(s)`,
+  `addNodeField`, `addLinkField`, `excludeNodes`, `setReference`, `setClusters`, `reset`, ...), which
+  emits `session-data-change`; a lint rule (`noDirectData`) rejects direct writes. Add a function there
+  when you need a new kind of write. Node flags (`selected`, `visible`, ...) are still set in place.
 - The CSP (in both `index.html` and `server.js`) forbids inline scripts, `eval`, and fetching from
   other origins. Don't add inline handlers, `new Function`, CDN links, or `blob:` images.
 - Treat every loaded value (IDs, field names, values, session files) as hostile. Values are stored

@@ -40,21 +40,40 @@ const rules = {
   "eqeqeq": ["warn", "always", { null: "ignore" }],
 };
 
+// session.data is written through src/session.js, which tells the views what changed (#338).
+// The selectors catch assignments into session.data (or self.session.data), delete, ++ and --,
+// and calls that mutate what is in it: array methods (push, splice, sort, ...) and the Map,
+// Set and node-source methods (set, delete, clear, add, reset, prefer, pick). They can't follow
+// an alias (`const nodes = session.data.nodes; nodes.push(...)`), which code review must.
+// Only src/session.js is exempt (see the last block).
+const inSessionData = "MemberExpression[property.name='data']:matches([object.name='session'], [object.property.name='session'])";
+const sessionDataMessage = "Write session.data through src/session.js (MT.session.addNode, setReference, ...), which emits events, not directly (#338)";
+const mutators = "push|pop|shift|unshift|splice|sort|reverse|fill|copyWithin|set|delete|clear|add|reset|prefer|pick";
+const noDirectData = [
+  { selector: "AssignmentExpression > " + inSessionData + ".left", message: sessionDataMessage },
+  { selector: "AssignmentExpression > MemberExpression.left:has(" + inSessionData + ")", message: sessionDataMessage },
+  { selector: "UpdateExpression > MemberExpression.argument:has(" + inSessionData + ")", message: sessionDataMessage },
+  { selector: "UnaryExpression[operator='delete'] > MemberExpression.argument:has(" + inSessionData + ")", message: sessionDataMessage },
+  {
+    selector: "CallExpression > MemberExpression.callee[property.name=/^(" + mutators + ")$/]:has(" + inSessionData + ")",
+    message: sessionDataMessage,
+  },
+];
+
 // Settings are written through MT.settings.set, so that subscribers hear about them (#327).
 // The selectors catch X.widgets[k] =, X.widgets.k = and widgets[k] = in the app code.
 // The session upgrades in src/common.js are the exception, with disable comments.
-const noDirectWidgets = {
-  "no-restricted-syntax": ["error",
-    {
-      selector: "AssignmentExpression > MemberExpression.left[object.property.name='widgets']",
-      message: "Write settings through MT.settings.set (src/settings.js), not session.style.widgets directly (#327)",
-    },
-    {
-      selector: "AssignmentExpression > MemberExpression.left[object.name='widgets']",
-      message: "Write settings through MT.settings.set (src/settings.js), not a widgets object directly (#327)",
-    },
-  ],
-};
+const widgetSelectors = [
+  {
+    selector: "AssignmentExpression > MemberExpression.left[object.property.name='widgets']",
+    message: "Write settings through MT.settings.set (src/settings.js), not session.style.widgets directly (#327)",
+  },
+  {
+    selector: "AssignmentExpression > MemberExpression.left[object.name='widgets']",
+    message: "Write settings through MT.settings.set (src/settings.js), not a widgets object directly (#327)",
+  },
+];
+const noDirectWidgets = { "no-restricted-syntax": ["error", ...noDirectData, ...widgetSelectors] };
 
 const common = { ecmaVersion: "latest" };
 
@@ -62,7 +81,7 @@ const common = { ecmaVersion: "latest" };
 // for the classic scripts, so their names stay in libGlobals until those convert.
 const esModules = [
   "src/aligner.js", "src/binder.js", "src/dates.js", "src/db.js", "src/events.js",
-  "src/graph.js", "src/nodes.js", "src/session-format.js", "src/settings.js",
+  "src/graph.js", "src/nodes.js", "src/session-format.js", "src/session.js", "src/settings.js",
   "src/common.js", "src/loading.js", "src/links-clusters.js", "src/colors.js", "src/export.js",
   "src/views.js", "src/ui.js", "src/formats/*.js", "src/webmcp/**/*.js",
 ];
@@ -78,6 +97,11 @@ module.exports = [
     files: esModules,
     languageOptions: { ...common, sourceType: "module", globals: { ...globals.browser, ...appGlobals, ...libGlobals } },
     rules: { ...rules, ...noDirectWidgets },
+  },
+  {
+    // The owner of session.data may write it (#338); it still may not write settings
+    files: ["src/session.js"],
+    rules: { "no-restricted-syntax": ["error", ...widgetSelectors] },
   },
   {
     files: ["workers/*.js"],

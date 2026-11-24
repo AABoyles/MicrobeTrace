@@ -18,6 +18,8 @@ MT.registerView('histogram', (root, { settings, events }) => {
 - Read and write settings with `settings.get/set` and redraw from `settings.subscribe(keys, fn)`,
   not by reading the DOM or listening for other views' clicks. Unsubscribe in `destroy()`, along
   with every `events.on` handler, timer, observer and animation frame.
+- Never write `session.data` from a view: call `MT.session` (`src/session.js`), and redraw on its
+  `session-data-change` event (detail: what changed) if the view shows loaded data outside a load.
 - `resize()` runs on size changes and when the tab is shown; hidden views should do no work.
 - Use the shared helpers rather than reinventing them: `MT.paneToggle` for the `.left-pane`
   settings pane and its gear button, `MT.fillSelect` for variable menus (it builds elements, so field names
