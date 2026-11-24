@@ -3,18 +3,22 @@
 // Default and clean file names, the table export menu, PDFs, SVG, plot and map
 // images, saving a Blob, CSV, and the HIVTRACE export.
 //
-// An ES module (#323) that adds to MT (imported from common.js, which also sets
-// self.MT). It uses these MT names from the other files at run time, through MT:
+// An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
+// (#341). It uses these MT names from the other files at run time, through MT:
 //   common.js: today
 //   links-clusters.js: getVisibleLinks
 //   ui.js: titleize
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
-import { MT } from './common.js';
+// It reads the session and temp (and the layout) from env, which is self on the page and a
+// fake in tests; the browser and library globals (document, Worker, d3, ...) it reads bare.
+// The body of the installer is not indented, so that the diff of the change that wrapped it
+// stays small.
 
 // A file name as typed, made safe to save: characters no file system takes
 // are dropped, and an extension that will be added anyway (or one of
 // `extensions` that was typed) is stripped, so figure.png does not become
 // figure.png.png. An empty result falls back to `fallback`.
+
+export function installExport(MT, env) {
 MT.cleanFilename = (name, extensions = [], fallback = 'microbetrace-' + MT.today()) => {
   let clean = String(name || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').trim();
   const typed = /\.([A-Za-z0-9]+)$/.exec(clean);
@@ -28,7 +32,7 @@ MT.cleanFilename = (name, extensions = [], fallback = 'microbetrace-' + MT.today
 // what's saved. A name typed in is kept.
 MT.defaultFilename = (field, what = () => '') => {
   field.closest('.modal').addEventListener('show.bs.modal', () => {
-    if (field.value && field.value != field.dataset.suggested) return;
+    if (field.value && field.value !== field.dataset.suggested) return;
     field.value = field.dataset.suggested = ['microbetrace', what(), MT.today()].filter(Boolean).join('-');
   });
 };
@@ -36,7 +40,7 @@ MT.defaultFilename = (field, what = () => '') => {
 // What an export dialog inside a view suggests calling the file: the view's
 // name, e.g. epi-curve
 const exportName = root => {
-  const item = self.layout.contentItems.find(item => item.container.element.contains(root));
+  const item = env.layout.contentItems.find(item => item.container.element.contains(root));
   return item ? MT.titleize(item.componentType).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
 };
 
@@ -44,6 +48,11 @@ const exportName = root => {
 // dialog offers, and run({filetype, filename, scale, quality}), which its
 // button runs too. WebMCP's export_view runs it, so it needn't click the dialog.
 const exporters = new WeakMap();
+// A file type's library (the spreadsheet one, say) is fetched when it is first used (#324)
+const exportFailed = error => {
+  console.error(error);
+  MT.toast.error("The file couldn't be made: " + error.message + ". Check your connection and try again.");
+};
 const optionsOf = select => Array.from(select.options).map(o => ({ value: o.value, label: o.textContent.trim() }));
 MT.exporterOf = root => exporters.get(root) || null;
 
@@ -56,12 +65,12 @@ MT.tableExport = (root, formats) => {
   // Resolves to the base name used (the filename without its extension)
   const run = async ({ filetype, filename }) => {
     const name = filename === undefined ? field('export-filename').value || 'microbetrace-' + exportName(root) : filename;
-    formats[filetype](name);
+    await formats[filetype](name);
     return name;
   };
   exporters.set(root, { types: optionsOf(field('export-filetype')), run });
   root.querySelector('.export-button').addEventListener('click', () => {
-    run({ filetype: field('export-filetype').value, filename: field('export-filename').value });
+    run({ filetype: field('export-filetype').value, filename: field('export-filename').value }).catch(exportFailed);
   });
 };
 
@@ -80,8 +89,37 @@ MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, rej
   document.head.appendChild(script);
 }));
 
+// The libraries that are not in the page's first bundle (dist/bundle.NAME.js, one
+// per lazy bundle in scripts/bundle.js) are fetched the first time something needs
+// one (#324). A bundle's global tells whether it is already there (a test page, or
+// an older script, may have put it there); the ones with a stylesheet also fetch
+// dist/bundle.NAME.css, which goes ahead of main.css so that it can still override.
+// The promise is cached, so asking again, or from several views, loads it once.
+const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', plotly: 'Plotly', map: 'L', tree: 'TidyTree', alignment: 'alignmentViewer', pdf: 'pdfMake' };
+const LIBRARY_STYLES = ['table', 'map'];
+const styles = {};
+MT.loadStyle = href => styles[href] || (styles[href] = new Promise((resolve, reject) => {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  link.onload = resolve;
+  link.onerror = () => {
+    delete styles[href];
+    link.remove();
+    reject(new Error('Could not load ' + href));
+  };
+  document.head.insertBefore(link, document.querySelector('link[href$="main.css"]'));
+}));
+MT.loadLibrary = name => {
+  if (!LIBRARY_GLOBALS[name]) return Promise.reject(new Error('There is no library bundle named ' + name));
+  return Promise.all([
+    env[LIBRARY_GLOBALS[name]] ? null : MT.loadScript('dist/bundle.' + name + '.js'),
+    LIBRARY_STYLES.includes(name) ? MT.loadStyle('dist/bundle.' + name + '.css') : null
+  ]).then(() => {});
+};
+
 // pdfmake and its fonts (1.9 MB) are only fetched when a PDF is first made
-MT.loadPDF = () => self.pdfMake ? Promise.resolve() : MT.loadScript('dist/bundle.pdf.js');
+MT.loadPDF = () => MT.loadLibrary('pdf');
 
 // A PDF of tables ({ title, headers, rows })
 MT.tablesPDF = (heading, tables, filename) => MT.loadPDF().then(() => pdfMake.createPdf({
@@ -126,11 +164,11 @@ MT.svgExport = (root, getSVG, settings, formats = {}, done) => {
   const run = async ({ filetype, filename, scale, quality }) => {
     const name = MT.cleanFilename(filename === undefined ? field('export-filename').value : filename, [filetype, 'jpg', 'png', 'jpeg', 'webp', 'svg'], ['microbetrace', exportName(root), MT.today()].filter(Boolean).join('-'));
     if (formats[filetype]) {
-      formats[filetype](name);
+      await formats[filetype](name);
       return name;
     }
     const svg = getSVG();
-    if (filetype == 'svg') {
+    if (filetype === 'svg') {
       MT.exportBlob(MT.unparseSVG(svg), 'image/svg+xml', name + '.' + filetype);
       if (done) done(svg);
     } else {
@@ -151,7 +189,7 @@ MT.svgExport = (root, getSVG, settings, formats = {}, done) => {
   };
   exporters.set(root, { types: optionsOf(field('export-filetype')), run });
   $('.export-button').addEventListener('click', () => {
-    run({ filetype: field('export-filetype').value, filename: field('export-filename').value });
+    run({ filetype: field('export-filetype').value, filename: field('export-filename').value }).catch(exportFailed);
   });
 };
 
@@ -238,12 +276,12 @@ MT.svgImage = async (svg, { scale = 1, backgroundColor, type = 'image/png', qual
   let css = '';
   for (const sheet of document.styleSheets) {
     let rules;
-    try { rules = sheet.cssRules; } catch (e) { continue; } // another origin's
+    try { rules = sheet.cssRules; } catch { continue; } // another origin's
     for (const rule of rules || []) {
       if (!rule.selectorText) continue;
       try {
         if (svg.matches(rule.selectorText) || svg.querySelector(rule.selectorText)) css += rule.cssText + '\n';
-      } catch (e) { /* a selector this browser can't match, like ::-moz- */ }
+      } catch { /* a selector this browser can't match, like ::-moz- */ }
     }
   }
   if (css) {
@@ -259,7 +297,7 @@ MT.svgImage = async (svg, { scale = 1, backgroundColor, type = 'image/png', qual
       const data = await blobToDataURL(await (await fetch(href)).blob());
       image.setAttribute('href', data);
       image.removeAttribute('xlink:href');
-    } catch (e) {
+    } catch {
       image.remove();
     }
   }));
@@ -356,7 +394,7 @@ MT.unparseSVG = svgNode => {
       if (rule.selectorText.includes(selectorTextArr)) {
         extractedCSSText += rule.cssText;
       }
-      if (rule.selectorText == 'body') {  // issue #110
+      if (rule.selectorText === 'body') {  // issue #110
         extractedCSSText += rule.cssText.replace("body" , "text");;
       }
       // if (rule.selectorText == '.nodes path.selected') {  // issue #156
@@ -384,7 +422,7 @@ MT.exportHIVTRACE = () => {
     geneticLinks.map(l => l.target))
   ).size;
   let pas = {};
-  session.data.nodes.forEach(d => {
+  env.session.data.nodes.forEach(d => {
     Object.keys(d).forEach(key => {
       if (pas[key]) return;
       pas[key] = {
@@ -396,7 +434,7 @@ MT.exportHIVTRACE = () => {
   return JSON.stringify(
     {
       trace_results: {
-        "Cluster sizes": session.data.clusters.map(c => c.size),
+        "Cluster sizes": env.session.data.clusters.map(c => c.size),
         Degrees: {
           Distribution: [],
           Model: "Waring",
@@ -414,18 +452,18 @@ MT.exportHIVTRACE = () => {
         Edges: links.map(l => ({
           attributes: ["BULK"],
           directed: false,
-          length: l[session.style.widgets["link-sort-variable"]],
+          length: l[env.session.style.widgets["link-sort-variable"]],
           removed: false,
           sequences: [l.source, l.target],
-          source: session.data.nodes.findIndex(d => d._id == l.source),
+          source: env.session.data.nodes.findIndex(d => d._id == l.source), // eslint-disable-line eqeqeq -- node and link IDs may be numbers or text, depending on the file they came from
           support: 0,
-          target: session.data.nodes.findIndex(d => d._id == l.target)
+          target: env.session.data.nodes.findIndex(d => d._id == l.target) // eslint-disable-line eqeqeq -- node and link IDs may be numbers or text, depending on the file they came from
         })),
         "HIV Stages": {
           "A-1": 0,
           "A-2": 0,
           "A-3": 0,
-          Chronic: session.data.nodes.length,
+          Chronic: env.session.data.nodes.length,
           "E-1": 0,
           "E-2": 0,
           "E-3": 0
@@ -435,12 +473,12 @@ MT.exportHIVTRACE = () => {
           "Subjects with": 0
         },
         "Network Summary": {
-          Clusters: session.data.clusters.length,
+          Clusters: env.session.data.clusters.length,
           Edges: links.length,
-          Nodes: session.data.nodes.length,
+          Nodes: env.session.data.nodes.length,
           "Sequences used to make links": sequences
         },
-        Nodes: session.data.nodes.map(d => ({
+        Nodes: env.session.data.nodes.map(d => ({
           attributes: [],
           baseline: null,
           cluster: d.cluster,
@@ -453,7 +491,7 @@ MT.exportHIVTRACE = () => {
           "contaminant-ids": [],
           contaminants: "remove",
           "edge-filtering": "remove",
-          threshold: session.style.widgets["link-threshold"]
+          threshold: env.session.style.widgets["link-threshold"]
         }
       }
     },
@@ -461,3 +499,4 @@ MT.exportHIVTRACE = () => {
     2
   );
 };
+}

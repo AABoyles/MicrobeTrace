@@ -30,10 +30,10 @@ test('4,000 sequences load and every pair gets its distance', async ({ page }) =
   const errors = watchErrors(page);
   await open(page);
   await page.setInputFiles('#data-files', fasta);
-  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length == 1);
+  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length === 1);
   const start = Date.now();
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 80000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 80000 });
   await page.waitForFunction(() => !document.querySelector('#loading-information-modal.show'), null, { timeout: 80000 });
   console.log(`Loading ${N} sequences took ${Date.now() - start} ms`);
   expect(await page.evaluate(() => session.data.nodes.length)).toBe(N);

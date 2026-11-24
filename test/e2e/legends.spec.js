@@ -29,7 +29,7 @@ const colorBy = async (kind, variable) => {
 };
 // Whether the view's dock holds a color table
 const docked = (view, kind) => page.evaluate(([view, kind]) => {
-  const item = layout.contentItems.find(i => i.componentType == view);
+  const item = layout.contentItems.find(i => i.componentType === view);
   return !!item && item.container.element.contains(document.getElementById(kind + '-color-table-wrapper'));
 }, [view, kind]);
 
@@ -45,7 +45,7 @@ test('coloring by a number gives each node its legend row’s color', async () =
 
 test('empty values are drawn in their legend row’s color, with the timeline on too', async () => {
   await colorBy('node', 'group');
-  const empty = (await legend('node')).find(r => r.label == '(Empty)');
+  const empty = (await legend('node')).find(r => r.label === '(Empty)');
   expect(empty).toBeTruthy();
   expect(await page.evaluate(() => temp.style.nodeColorMap(null))).toBe(empty.color);
   // The bubbles draw them so
@@ -59,7 +59,7 @@ test('empty values are drawn in their legend row’s color, with the timeline on
   expect(new Set(fills)).toEqual(new Set([empty.color]));
   await closeView(page, 'bubbles');
   // With the timeline on, the colors are kept for each value, empty included
-  const g0 = (await legend('node')).find(r => r.label == 'g0');
+  const g0 = (await legend('node')).find(r => r.label === 'g0');
   await page.evaluate(() => MT.settings.set('node-timeline-variable', 'date'));
   await expect.poll(() => page.evaluate(() => temp.style.nodeColorMap(null))).toBe(empty.color);
   expect(empty.color).not.toBe(g0.color);
@@ -103,7 +103,8 @@ test('the histogram colors bars by the legend of its dataset, the only one it do
   await colorBy('node', 'group');
   const colors = (await legend('link')).map(r => r.color);
   await launchView(page, 'histogram');
-  const bars = () => page.evaluate(() => document.querySelector('.histogram-plot').data.map(t => t.marker.color));
+  // (The view mounts once Plotly has loaded, so the plot may not be there at first)
+  const bars = () => page.evaluate(() => (document.querySelector('.histogram-plot')?.data || []).map(t => t.marker.color));
   await expect.poll(async () => (await bars()).length).toBe(2);
   expect((await bars()).every(c => colors.includes(c))).toBe(true);
   await expect.poll(() => docked('histogram', 'link')).toBe(true);
@@ -169,7 +170,7 @@ test('the link color table counts the links between visible nodes, finding nodes
     // What a search over all the nodes finds
     const expected = () => {
       const seen = new Set();
-      const find = id => session.data.nodes.find(d => d._id == id || d.id == id);
+      const find = id => session.data.nodes.find(d => d._id === id || d.id === id);
       MT.getVisibleLinks().forEach(l => {
         const s = find(l.source), t = find(l.target);
         if (!l.visible || !s || s.visible === false || !t || t.visible === false) return;

@@ -14,7 +14,7 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
-const { precacheList, root } = require("./build-sw.js");
+const { appFiles, root } = require("./build-sw.js");
 
 const EXTRA_FILES = ["sw.js", "robots.txt", "package.json", "demo/Demo_outbreak_session.microbetrace",
   // the pieces the WebMCP load_demo tool can fetch one at a time
@@ -32,7 +32,7 @@ function filesIn(dir) {
 }
 
 function siteFiles() {
-  const list = [...precacheList(), ...EXTRA_FILES, ...EXTRA_DIRS.flatMap(filesIn)];
+  const list = [...appFiles(), ...EXTRA_FILES, ...EXTRA_DIRS.flatMap(filesIn)];
   return [...new Set(list)].sort();
 }
 

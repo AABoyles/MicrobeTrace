@@ -41,8 +41,8 @@ async function launch(page) {
   await page.setInputFiles('#data-files', fixtures);
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 3);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
-  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
+  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType === 'files'));
 }
 // The sum and count of a link field's values
 const total = (page, field) => page.evaluate(field => {
@@ -163,7 +163,7 @@ test('the metrics, and the one filtered on, are saved with the session', async (
   await page.evaluate(() => { window.before = session.style.widgets; });
   await page.setInputFiles('#OpenTab', saved);
   await confirmReplace(page);
-  await page.waitForFunction(() => session.style.widgets !== window.before && document.getElementById('numberOfNodes').textContent != '' && session.data.graph.edgeCount > 0, null, { timeout: 60000 });
+  await page.waitForFunction(() => session.style.widgets !== window.before && document.getElementById('numberOfNodes').textContent !== '' && session.data.graph.edgeCount > 0, null, { timeout: 60000 });
   const after = await total(page, 'k2p');
   expect(after.count).toBe(before.count);
   expect(after.sum).toBeCloseTo(before.sum, 3);

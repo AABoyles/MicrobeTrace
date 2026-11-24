@@ -26,6 +26,8 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 | `recall.spec.js` | The Recall dialog: stashes listed newest first by name and when they were stashed, choosing one anywhere on its row, recalling one by double-clicking it, undoing a deletion, a stash that can't be read, and nothing stashed |
 | `words.spec.js` | Tables and words: the aggregation sorted by count alone (as numbers), shares to one decimal and right-aligned; the table opening without its internal Index, columns sized to fit and lists comma-separated; a loading log that counts node rows and says how many links are within the threshold; a file that isn't a table saying so while Launch waits; File > New saying what it clears and offering to save first; Save's and exports' formats by name; hover text without typos; one name for each view and setting; blue main actions and Done or Close; the View menu's network above lined-up columns; and the tree's Label and Tooltip menus turning them off with None |
 | `framing.spec.js` | Views framed to their data: the network kept in view as its layout spreads (clear of the docked tables), its labels one size at any zoom and never overlapping; the choropleth opening on the regions with data under a titled legend; the globe zooming to the nodes, with a Fit button and Borders; plots below the toolbar and clear of the docked tables, with outlined scatterplot points; the heatmap naming its metric, greying missing pairs and labelling ids; the flow diagram naming its columns, values in order with empty last; the map and the tree clear of the docked tables; the timeline starting where the network is, with years, centered; and the waterfall saying what to choose and what it doesn't list |
+| `lazy-libraries.spec.js` | The libraries load when first needed (#324): a fresh page requests only the primary bundle and stays under a byte budget, each view fetches its own library once, adding an Excel file fetches the spreadsheet bundle, and every library `MT.loadLibrary` names has an entry module |
+| `pdf-lazy.spec.js` | The PDF library (`dist/bundle.pdf.js`) is fetched by the first PDF export, not on load (#251) |
 | `bench.spec.js` | Speed on 2,000 generated sequences: loading, a threshold change redrawing the network once (and soon), no position reads from the GPU while laying out once the user has zoomed, a hidden network paused and reading nothing, and opening a view; each time is logged to compare runs, and the time budgets are enforced only with `BENCH_STRICT=1` (see below) |
 | `bad-files.spec.js` | Files with duplicate IDs (a FASTA, a node list), and files cut off mid-record (a link list, a node list, a FASTA mid-sequence and after a header): each loads or says why, with a message, and Launch finishes |
 | `large-fasta.spec.js` | 4,000 generated sequences (8 million pairs) load through the Files view within the test timeout, with every pair's distance computed |
@@ -89,6 +91,5 @@ Software WebGL (CI, or a busy machine) varies too much for an absolute time to f
 the budgets are generous and off by default. `MT_PERF_BUDGET=1` holds the threshold change to
 2 s, for a machine with a GPU.
 
-When a view moves onto the settings store and `MT.registerView` (see `src/settings.js`,
-`src/binder.js` and the view contract in `src/common.js`), give it a spec like
-`histogram.spec.js` first, run it against the old version, then port the view.
+Before changing how a view works, give it a spec like `histogram.spec.js` first and run it
+against the old version (the view contract is in `components/AGENTS.md`).

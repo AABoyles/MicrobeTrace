@@ -14,7 +14,7 @@ const STRATEGIES = { skip: 'SKIP', resolve: 'RESOLVE', average: 'AVERAGE', gapmm
 const FILES = ['distances', 'ambiguity'];
 
 // Expected values are stored as numbers, or 'Infinity' / 'NaN'
-const num = v => typeof v == 'number' ? v : Number(v);
+const num = v => typeof v === 'number' ? v : Number(v);
 const near = (got, want, tol) => got === want || Math.abs(got - want) <= tol * Math.max(1, Math.abs(want));
 
 // Checks every pair of one metric; ts_tv_ratio has no value when a pair has
@@ -23,7 +23,7 @@ function checkMetric(metric, got, want, pairs, tol) {
   const bad = [];
   want.forEach((w, k) => {
     w = num(w);
-    const ok = metric == 'ts_tv_ratio' && Number.isNaN(w) ? got[k] === 0 : near(got[k], w, tol);
+    const ok = metric === 'ts_tv_ratio' && Number.isNaN(w) ? got[k] === 0 : near(got[k], w, tol);
     if (!ok) bad.push(`${pairs[k].join('-')}: app ${got[k]}, reference ${w}`);
   });
   assert.deepStrictEqual(bad, [], `${metric} differs from the reference`);
@@ -39,7 +39,7 @@ test('the stored expected values are the reference implementation\'s', async () 
     exp.pairs.forEach(([a, b], k) => {
       const s1 = seqs[ids.indexOf(a)].seq, s2 = seqs[ids.indexOf(b)].seq;
       Object.entries(exp.modes).forEach(([mode, values]) => {
-        const r = mode == 'hivtrace-g' ? reference.hivtraceG(s1, s2, values.fraction) : reference.distances(s1, s2, mode);
+        const r = mode === 'hivtrace-g' ? reference.hivtraceG(s1, s2, values.fraction) : reference.distances(s1, s2, mode);
         METRICS.filter(m => values[m]).forEach(m => {
           const w = num(values[m][k]);
           assert.ok(Number.isNaN(w) ? Number.isNaN(r[m]) : near(r[m], w, 1e-12), `${file} ${mode} ${m} ${a}-${b}`);
@@ -174,7 +174,7 @@ for (const mode of Object.keys(STRATEGIES)) {
 // HIV-TRACE -g: hivtrace runs tn93 -a resolve -g FRACTION, which decides pair by
 // pair whether to average: when the pair's resolvable ambiguity codes (not gaps)
 // are at least FRACTION of the sites compared.
-test('hivtrace-g.fasta, HIVTRACE-G: MT.computeLinks against tn93 -a resolve -g 0.015', async t => {
+test('hivtrace-g.fasta, HIVTRACE-G: MT.computeLinks against tn93 -a resolve -g 0.015', async () => {
   const exp = expected('hivtrace-g.expected.json');
   const g = exp.modes['hivtrace-g'];
   const { MT, ids } = await pipeline('hivtrace-g', 'HIVTRACE-G', { 'distance-metrics-also': [], 'ambiguity-threshold': g.fraction });
@@ -190,14 +190,14 @@ test('hivtrace-g.fasta, HIVTRACE-G with sparse storage keeps the same per-pair d
   });
   const { tri } = MT.getCondensedDM('tn93', ids);
   const k = exp.pairs.map((p, i) => i).filter(i => g.tn93[i] <= 0.03);
-  assert.ok(k.length > 0 && k.some(i => exp.pairs[i].join('-') == 'h1-h2'));
+  assert.ok(k.length > 0 && k.some(i => exp.pairs[i].join('-') === 'h1-h2'));
   checkMetric('tn93', k.map(i => tri[i]), k.map(i => g.tn93[i]), k.map(i => exp.pairs[i]), 1e-6);
 });
 
 test('the FASTA parser keeps N as an ambiguity code, as tn93 reads it (#232)', async () => {
   const seqs = await parseFasta('distances.fasta');
   assert.strictEqual(seqs.length, 8);
-  assert.ok(seqs.every(s => s.seq.length == 40));
+  assert.ok(seqs.every(s => s.seq.length === 40));
   const out = await runWorker('workers/parse-fasta.js', '>n\nACGNN\nNT\n');
   assert.deepStrictEqual(out.nodes, [{ id: 'n', seq: 'ACGNNNT' }]);
 });

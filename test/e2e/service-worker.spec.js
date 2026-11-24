@@ -1,7 +1,9 @@
-// The service worker (#194): it registers and activates, caches everything it
-// lists, serves the page with the network down, deletes old caches (keeping
-// data/ and demo/ files cached on first use), and the
-// server revalidates files rather than caching them for a year (#211).
+// The service worker (#194): it registers and activates, precaches the app shell
+// and nothing more (#343), caches the other files when they are first used so that
+// a view opened once opens offline, serves the page with the network down, deletes
+// old caches (keeping data/ and demo/ files cached on first use, and fetching again
+// what the old version had cached on use), and the server revalidates files rather
+// than caching them for a year (#211).
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +19,7 @@ test.beforeAll(() => {
 
 test.use({ serviceWorkers: 'allow' });
 
-test('the worker caches every listed file and the app loads offline', async ({ page, context }) => {
+test('the worker caches the shell, then each file when it is first used, and the app loads offline', async ({ page, context }) => {
   await page.goto('/index.html');
   await page.evaluate(() => navigator.serviceWorker.ready);
   // Installing is done once the (claimed) worker controls the page
@@ -28,6 +30,21 @@ test('the worker caches every listed file and the app loads offline', async ({ p
     return (await cache.keys()).map(r => new URL(r.url).pathname.replace(/^\//, ''));
   }, cacheName);
   for (const file of precache) expect(cached, file).toContain(file);
+  // Only the shell: the lazy libraries and the other views wait for first use
+  expect(precache).toContain('dist/bundle.primary.js');
+  expect(precache).toContain('components/files.js');
+  for (const file of ['dist/bundle.plotly.js', 'dist/bundle.pdf.js', 'vendor/cosmos.min.js', 'components/histogram.js', 'components/histogram.html']) {
+    expect(precache, file).not.toContain(file);
+    expect(cached, file).not.toContain(file);
+  }
+
+  // A view opened online is cached with its library, and opens again offline
+  await page.evaluate(() => MT.launchView('histogram'));
+  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'histogram') && typeof Plotly !== 'undefined');
+  await expect.poll(() => page.evaluate(async name => {
+    const cache = await caches.open(name);
+    return (await cache.keys()).map(r => new URL(r.url).pathname.replace(/^\//, ''));
+  }, cacheName)).toEqual(expect.arrayContaining(['components/histogram.html', 'components/histogram.js', 'dist/bundle.plotly.js']));
 
   // Activating deletes the caches of other versions, but keeps what they had
   // cached on first use from data/ and demo/ (#296); app code is not carried
@@ -36,6 +53,9 @@ test('the worker caches every listed file and the app loads offline', async ({ p
     await old.put(new URL('demo/carried.json', location.href).href, new Response('{"demo":1}'));
     await old.put(new URL('data/carried.json', location.href).href, new Response('{"data":1}'));
     await old.put(new URL('src/stale.js', location.href).href, new Response('// old code'));
+    // A view the old version cached when it was opened (fetched again), and a file that has gone
+    await old.put(new URL('components/gantt.html', location.href).href, new Response('<p>old gantt</p>'));
+    await old.put(new URL('components/gone.html', location.href).href, new Response('<p>gone</p>'));
     await (await navigator.serviceWorker.getRegistration()).unregister();
   });
   await page.reload();
@@ -47,6 +67,15 @@ test('the worker caches every listed file and the app loads offline', async ({ p
     return { demo: await text('demo/carried.json'), data: await text('data/carried.json'), code: await text('src/stale.js') };
   }, cacheName);
   expect(carried).toEqual({ demo: '{"demo":1}', data: '{"data":1}', code: null });
+  // The new version fetched the old one's gantt again (from the server, not the old copy) and dropped what has gone
+  const warmed = await page.evaluate(async name => {
+    const cache = await caches.open(name);
+    const text = async file => { const hit = await cache.match(new URL(file, location.href).href); return hit ? hit.text() : null; };
+    return { gantt: await text('components/gantt.html'), gone: await text('components/gone.html') };
+  }, cacheName);
+  expect(warmed.gone).toBeNull();
+  expect(warmed.gantt).not.toBeNull();
+  expect(warmed.gantt).not.toBe('<p>old gantt</p>');
 
   // A navigation is answered from the cache even online (no new index.html with
   // old scripts): plant a marker in the cached page and see it served
@@ -66,7 +95,20 @@ test('the worker caches every listed file and the app loads offline', async ({ p
   await page.reload();
   await expect(page.locator('nav.navbar')).toBeVisible();
   await expect(page).toHaveTitle(/MicrobeTrace/);
+  // The view opened earlier (the histogram, whose library was cached with it) still opens offline
+  await page.evaluate(() => MT.launchView('histogram'));
+  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'histogram') && typeof Plotly !== 'undefined');
   await context.setOffline(false);
+});
+
+test('everything a first visit fetches is in the shell, so it is cached before the second', async ({ page }) => {
+  const requested = new Set();
+  page.on('request', request => requested.add(new URL(request.url()).pathname.replace(/^\//, '')));
+  await page.goto('/index.html');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
+  const missing = [...requested].filter(file => file && file !== 'index.html' && file !== 'sw.js' && !precache.includes(file));
+  expect(missing).toEqual([]);
 });
 
 test('files are revalidated, not cached for a year', async ({ request }) => {

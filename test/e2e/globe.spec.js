@@ -20,7 +20,7 @@ const pane = () => view().locator('.left-pane');
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 // What the last frame drew
 const drawn = () => page.evaluate(() => temp.globe && temp.globe.drawn);
-const placed = () => page.evaluate(() => session.data.nodes.filter(d => d.visible && typeof d.lat == 'number').length);
+const placed = () => page.evaluate(() => session.data.nodes.filter(d => d.visible && typeof d.lat === 'number').length);
 
 test('places the nodes from their latitude and longitude fields', async () => {
   await expect.poll(async () => (await drawn() || {}).nodes).toBe(await placed());
@@ -144,10 +144,10 @@ for (const [filetype, filename] of [['geojson', 'globe-test.geojson'], ['png', '
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
     expect(download.suggestedFilename()).toBe(filename);
-    if (filetype == 'geojson') {
+    if (filetype === 'geojson') {
       const data = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
-      expect(data.features.filter(f => f.geometry.type == 'Point').length).toBe(await placed());
-      expect(data.features.find(f => f.properties._id == 'S0').geometry.coordinates).toEqual([-120, 30]);
+      expect(data.features.filter(f => f.geometry.type === 'Point').length).toBe(await placed());
+      expect(data.features.find(f => f.properties._id === 'S0').geometry.coordinates).toEqual([-120, 30]);
     }
     expect(errors).toEqual([]);
   });

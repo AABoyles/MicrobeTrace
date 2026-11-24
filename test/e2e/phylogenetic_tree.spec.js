@@ -109,7 +109,7 @@ test('a leaf tooltip shows the tooltip variable', async () => {
   await set('tree-leaf-tooltip-variable', 'state');
   const state = await leaves().first().evaluate(el => {
     const id = d3.select(el).datum().data.id;
-    return session.data.nodes.find(d => d._id == id).state;
+    return session.data.nodes.find(d => d._id === id).state;
   });
   // (TidyTree listens for mouseenter)
   const leaf = leaves().first();
@@ -160,7 +160,7 @@ for (const [filetype, filename] of [['nwk', 'tree-test.nwk'], ['svg', 'tree-test
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
     expect(download.suggestedFilename()).toBe(filename);
-    if (filetype == 'nwk') {
+    if (filetype === 'nwk') {
       const newick = fs.readFileSync(await download.path(), 'utf8');
       expect(newick.trim().endsWith(';')).toBe(true);
       expect(await page.evaluate(newick => patristic.parseNewick(newick).getLeaves().length, newick)).toBe(await leafCount());

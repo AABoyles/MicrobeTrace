@@ -4,10 +4,9 @@
 // Run with: npm test
 const test = require('node:test');
 const assert = require('node:assert');
-const vm = require('vm');
 const fs = require('fs');
 const path = require('path');
-const { APP_FILES, runAppFiles } = require('../app-files.js');
+const { createMT } = require('../../src/common.js');
 
 const root = path.join(__dirname, '../..');
 const fixture = name => JSON.parse(fs.readFileSync(path.join(root, 'test/security', name), 'utf8'));
@@ -42,18 +41,13 @@ const select = () => fakeDocument().createElement('select');
 const options = el => el.children.map(o => ({ value: o.value, text: o.textContent, selected: o.selected }));
 
 function load() {
-  const ctx = {
-    console: { log() {}, error() {}, warn() {} },
-    TextDecoder, TextEncoder,
-    d3: { schemePaired: ['#a6cee3', '#1f78b4'], schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c'] },
-    document: stub()
-  };
-  ctx.self = ctx.window = ctx;
-  vm.createContext(ctx);
-  runAppFiles(ctx);
+  globalThis.document = stub();
+  globalThis.d3 = { schemePaired: ['#a6cee3', '#1f78b4'], schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c'] };
+  const ctx = {};
+  ctx.MT = createMT(ctx);
   // MT.escape is defined in src/index.js, as the page loads: take it from there
   const escape = fs.readFileSync(path.join(root, 'src/index.js'), 'utf8').match(/const escape = (value => .*);\n/)[1];
-  ctx.MT.escape = vm.runInContext('(' + escape + ')', ctx);
+  ctx.MT.escape = new Function('return (' + escape + ')')();
   return { MT: ctx.MT, ctx };
 }
 
@@ -111,10 +105,10 @@ test('an HIV-TRACE file keeps its attribute names as they are, and its menus sho
   const field = Object.keys(hivtrace.trace_results.Nodes[0].patient_attributes).find(f => f.includes('<img'));
   const fields = ctx.session.data.nodeFields;
   assert.ok(fields.includes(field) && fields.includes('note'));
-  const node = ctx.session.data.nodes.find(d => d._id == 'P2');
+  const node = ctx.session.data.nodes.find(d => d._id === 'P2');
   assert.strictEqual(node[field], hivtrace.trace_results.Nodes[1].patient_attributes[field]);
   const el = MT.fillSelect(select(), fields, { none: true });
-  const option = el.children.find(o => o.value == field);
+  const option = el.children.find(o => o.value === field);
   assert.ok(option, 'the attribute is offered');
   assert.ok(option.textContent.includes('<img'), 'as text');
   assert.strictEqual(el.children.length, fields.length + 1);
@@ -133,14 +127,14 @@ test('a session keeps its names and values as saved (they are not escaped again)
   const linkField = saved.data.linkFields.find(f => f.includes('<img'));
   assert.ok(ctx.session.data.nodeFields.includes(nodeField));
   assert.ok(ctx.session.data.linkFields.includes(linkField));
-  const s1 = ctx.session.data.nodes.find(d => d._id == 'S1');
+  const s1 = ctx.session.data.nodes.find(d => d._id === 'S1');
   assert.strictEqual(s1.note, saved.data.nodes[0].note);
   // As the views' menus are filled (setupView)
   const mixed = MT.fillSelect(select(), ctx.session.data.linkFields, { none: true, prefix: 'links-', label: 'Link ' });
   MT.fillSelect(mixed, ctx.session.data.nodeFields, { prefix: 'nodes-', label: 'Node ', append: true });
   assert.strictEqual(mixed.children.length, 1 + ctx.session.data.linkFields.length + ctx.session.data.nodeFields.length);
-  assert.ok(mixed.children.some(o => o.value == 'nodes-' + nodeField && o.textContent.startsWith('Node Gender"><img')));
-  assert.ok(mixed.children.some(o => o.value == 'links-' + linkField && o.textContent.startsWith('Link Kind"><img')));
+  assert.ok(mixed.children.some(o => o.value === 'nodes-' + nodeField && o.textContent.startsWith('Node Gender"><img')));
+  assert.ok(mixed.children.some(o => o.value === 'links-' + linkField && o.textContent.startsWith('Link Kind"><img')));
 });
 
 test('IDs are text without surrounding spaces, however they arrive (#219), and are not escaped (#218)', () => {
@@ -161,7 +155,7 @@ test('IDs are text without surrounding spaces, however they arrive (#219), and a
 test('no menu of fields is built as markup any more', () => {
   // An option whose value or text is interpolated without escaping
   const unsafe = /<option value="(?:'\s*\+|\$\{(?!MT\.escape\(|text\())/;
-  const files = APP_FILES.concat(['src/index.js'])
+  const files = ['common', 'loading', 'links-clusters', 'colors', 'export', 'views', 'ui', 'index'].map(f => `src/${f}.js`)
     .concat(fs.readdirSync(path.join(root, 'components')).filter(f => /\.(html|js)$/.test(f)).map(f => 'components/' + f));
   const found = [];
   files.forEach(file => fs.readFileSync(path.join(root, file), 'utf8').split('\n').forEach((line, i) => {

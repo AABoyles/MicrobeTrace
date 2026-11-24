@@ -188,7 +188,7 @@ test("a node's context menu pins it and shows its attributes", async () => {
   // Its ID first, once
   const names = await page.locator('.modal.show tbody tr td:first-child').allInnerTexts();
   expect(names[0]).toBe('ID');
-  expect(names.filter(name => name == 'ID')).toHaveLength(1);
+  expect(names.filter(name => name === 'ID')).toHaveLength(1);
   await expect(page.locator('.modal.show tbody tr').first().locator('td').nth(1)).toHaveText(id);
   await page.locator('.modal.show .modal-footer button', { hasText: 'Close' }).click();
 });
@@ -264,7 +264,7 @@ for (const [filetype, filename] of [['svg', 'network-test.svg'], ['png', 'networ
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
     expect(download.suggestedFilename()).toBe(filename);
-    if (filetype == 'svg') {
+    if (filetype === 'svg') {
       const svg = fs.readFileSync(await download.path(), 'utf8');
       expect((svg.match(/<line /g) || []).length).toBe(299);
     } else {

@@ -47,7 +47,7 @@ for (const name of files) {
       await page.click('#launch');
     }
     await page.waitForFunction(() => session.data.nodes.length > 0 || session.data.graph.m > 0, null, { timeout: 60000 });
-    await page.waitForFunction(() => !document.querySelector('#loading-information-modal.show') && !layout.contentItems.some(i => i.componentType == 'files'), null, { timeout: 60000 });
+    await page.waitForFunction(() => !document.querySelector('#loading-information-modal.show') && !layout.contentItems.some(i => i.componentType === 'files'), null, { timeout: 60000 });
 
     for (const view of ['table', 'aggregation', 'crosstab', 'network']) {
       await launchView(page, view);
@@ -84,7 +84,7 @@ test('IDs and values are stored as loaded, not as HTML entities', async ({ brows
   await page.setInputFiles('#data-files', { name: 'nodes.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.nodes.length == 1, null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length === 1, null, { timeout: 60000 });
   expect(await page.evaluate(() => [session.data.nodes[0]._id, session.data.nodes[0].note])).toEqual(['A/B<1>', 'x & y <b>']);
   await page.close();
 });

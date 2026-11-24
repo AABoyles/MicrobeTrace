@@ -5,7 +5,7 @@ so the tests in `test/unit/golden-distances.test.js` and `test/unit/golden-graph
 that the app's numbers are right, not just that they agree with themselves (#171). Those tests run
 the app's own code: the Web Workers in `workers/` (bx-distance-models' WebAssembly, patristic,
 bioseq) and `src/common.js` (`MT.computeLinks`, `MT.computeMST`, `MT.computeNN`,
-`MT.tagClusters`), in Node `vm` contexts set up by `harness.js`, which loads the core modules with `runAppFiles` (`test/app-files.js`).
+`MT.tagClusters`), where `harness.js` builds `MT` with `createMT` (`src/common.js`) and runs the workers in Node `vm` contexts.
 
 ## Files
 

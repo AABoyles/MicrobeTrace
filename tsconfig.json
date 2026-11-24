@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": false,
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "types": [],
+    "skipLibCheck": true
+  },
+  "include": ["types/*.d.ts", "src/**/*.js", "components/*.js", "scripts/**/*.js"],
+  "exclude": ["scripts/entries"]
+}

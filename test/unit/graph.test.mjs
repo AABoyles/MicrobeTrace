@@ -20,7 +20,7 @@ function reference() {
     add(l) {
       matrix[l.source] = matrix[l.source] || {};
       matrix[l.target] = matrix[l.target] || {};
-      if (l.source == l.target) return 0;
+      if (l.source === l.target) return 0;
       const old = matrix[l.source][l.target];
       if (old) {
         const origin = [...new Set((l.origin || []).concat(old.origin))];
@@ -75,16 +75,16 @@ test('explicit links merge like MT.addLink', () => {
     assert.strictEqual(x.l.source, want.source);
     assert.strictEqual(x.l.target, want.target);
     assert.deepStrictEqual(x.l.origin, want.origin);
-    assert.strictEqual(x.l.distance, want.distance == undefined ? null : want.distance);
-    assert.strictEqual(x.l.label, want.label == undefined ? null : want.label);
+    assert.strictEqual(x.l.distance, want.distance == null ? null : want.distance);
+    assert.strictEqual(x.l.label, want.label == null ? null : want.label);
   });
   // Pair lookup through the CSR index, both directions
   for (let x = 0; x < 500; x++) {
     const s = Math.floor(r() * 60), t = Math.floor(r() * 60);
     const e = g.edgeBetween(g.index.get('n' + s), g.index.get('n' + t));
     const want = ref.get('n' + s, 'n' + t);
-    if (s == t || !want) assert.strictEqual(e, -1);
-    else assert.strictEqual(g.link(e).distance, want.distance == undefined ? null : want.distance);
+    if (s === t || !want) assert.strictEqual(e, -1);
+    else assert.strictEqual(g.link(e).distance, want.distance == null ? null : want.distance);
   }
   // Adding after freeze thaws the index
   g.addLink({ source: 'n0', target: 'zz', distance: 1 });
@@ -137,7 +137,7 @@ test('dense distances behave like one explicit link per pair', () => {
     const d = want.distance;
     if (isNaN(d)) assert.strictEqual(x.l.distance, null);
     else assert.strictEqual(x.l.distance, d);
-    assert.strictEqual(x.l.weight, want.weight == undefined ? null : want.weight);
+    assert.strictEqual(x.l.weight, want.weight == null ? null : want.weight);
   });
 
   // Every value seen once by forEachValue
@@ -291,7 +291,7 @@ test('visibleVersion changes only when the visible links do, version when the li
   // A different link in the place of one (as a cluster filter can leave)
   g.computeVisible('distance', 2, false, () => true);
   const before = g.visibleVersion;
-  g.computeVisible('distance', 3, false, s => s != 0);
+  g.computeVisible('distance', 3, false, s => s !== 0);
   assert.ok(g.visibleVersion > before);
   // Their data
   const version = g.version;

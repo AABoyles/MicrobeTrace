@@ -1,5 +1,5 @@
 // Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
-const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
+const debugTime = (label, start) => { if (globalThis.name === 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 // Flags the links of the minimum spanning tree plus the near-ties allowed by
 // epsilon. Takes the condensed distance matrix (NaN where there's no link) of n
 // nodes and returns the flagged links as pairs of node positions.
@@ -11,9 +11,9 @@ onmessage = function(e){
 
   // A missing link is no edge (Infinity), not a zero-weight one
   const weight = (u, v) => {
-   if (u == v) return 0;
+   if (u === v) return 0;
    const w = u < v ? tri[u * n - u * (u + 1) / 2 + v - u - 1] : tri[v * n - v * (v + 1) / 2 + u - v - 1];
-   return w == w ? w : Infinity;
+   return w === w ? w : Infinity;
   };
 
   const mst = primMST(n, weight);
@@ -107,11 +107,11 @@ const nearest_neighbour_pairs = (V, weight, mst_parents, epsilon) => {
   // component have no path (0), so only zero-length links to them count.
   let parentSeen = mst_parents[i] < 0;
   for (let j = 0; j < V; ++j) {
-   if (i == j) continue;
+   if (i === j) continue;
    const w = weight(i, j);
    if (w < Infinity && w <= longest_edge[j] * (1.0 + epsilon)) {
     pairs.push(i, j);
-    if (j == mst_parents[i]) parentSeen = true;
+    if (j === mst_parents[i]) parentSeen = true;
    }
   }
   if (!parentSeen) pairs.push(i, mst_parents[i]);

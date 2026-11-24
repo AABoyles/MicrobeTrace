@@ -1,5 +1,5 @@
 // Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
-const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
+const debugTime = (label, start) => { if (globalThis.name === 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 importScripts('../vendor/bx_distance_models.js');
 
 // Computes genetic distances with bx-distance-models (WebAssembly) for rows
@@ -26,7 +26,7 @@ onmessage = async function(e) {
  const { seqs, metrics, mode, fraction, rowStart, rowEnd } = e.data;
  const thresholds = e.data.thresholds ? e.data.thresholds.map(parseFloat) : null;
 
- const hivtrace = mode == 'hivtrace-g';
+ const hivtrace = mode === 'hivtrace-g';
  const set = new wasm_bindgen.SequenceSet(seqs, hivtrace ? 'resolve' : mode,
   hivtrace ? { maxAmbiguityFraction: fraction } : undefined);
  const results = metrics.map((metric, m) => {

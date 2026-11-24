@@ -17,7 +17,7 @@ test.beforeAll(async ({ browser }) => {
   await page.setInputFiles('#data-files', [links]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
   nodes = await page.evaluate(() => session.data.nodes.length);
 });
 test.afterAll(() => page.close());
@@ -92,11 +92,11 @@ test('double-clicking a stash recalls it', async () => {
   await page.click('#NewTab');
   await waitForModal(page, '#exit-modal');
   await page.click('#exit-button');
-  await page.waitForFunction(() => session.data.nodes.length == 0);
+  await page.waitForFunction(() => session.data.nodes.length === 0);
   await openRecall();
   // The one restored, too
   await row('Outbreak A').dblclick();
-  await page.waitForFunction(n => session.data.nodes.length == n && document.getElementById('numberOfNodes').textContent == '' + n, nodes, { timeout: 60000 });
+  await page.waitForFunction(n => session.data.nodes.length === n && document.getElementById('numberOfNodes').textContent === '' + n, nodes, { timeout: 60000 });
   await expect(dialog()).toBeHidden();
   expect(errors).toEqual([]);
 });

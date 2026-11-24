@@ -37,15 +37,15 @@ const toast = text => page.locator('.toast').filter({ hasText: text });
 test('a FASTA with a repeated ID keeps one node for it, with its first sequence, and says so', async () => {
   await launch(file('dup.fasta', 'text/plain', '>A\nACGTACGTAC\n>B\nACGTACGTAG\n>A\nTTTTACGTAC\n'));
   expect(await ids()).toEqual(['A', 'B']);
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'A').seq)).toBe('ACGTACGTAC');
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === 'A').seq)).toBe('ACGTACGTAC');
   await expect(toast('1 repeated ID was merged')).toBeVisible();
 });
 
 test('a node list with a repeated ID keeps its first row’s values, and a later row fills its blanks', async () => {
   await launch(file('nodes.csv', 'text/csv', 'id,age,group\nA,30,\nB,40,g1\nA,50,g0\n'));
   expect(await ids()).toEqual(['A', 'B']);
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'A').age)).toBe(30);
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'A').group)).toBe('g0');
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === 'A').age)).toBe(30);
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === 'A').group)).toBe('g0');
   await expect(toast('1 repeated ID was merged')).toBeVisible();
 });
 
@@ -67,7 +67,7 @@ test('a link list cut off mid-row is read from its header, and loads with the sh
 test('a node list cut off mid-row loads its complete rows', async () => {
   await launch(file('nodes.csv', 'text/csv', 'id,age,group\nA,30,g0\nB,4'));
   expect(await ids()).toEqual(['A', 'B']);
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'A').age)).toBe(30);
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === 'A').age)).toBe(30);
 });
 
 test('a FASTA cut off mid-sequence loads, and warns that its sequences differ in length', async () => {
@@ -89,7 +89,7 @@ test('a file whose parser throws fails the load after the other files have finis
     // Registering the tree as a source happens before its parser first waits
     const add = MTNodeSources.prototype.add;
     MTNodeSources.prototype.add = function (name, ...rest) {
-      if (name == 'tree.nwk') throw new Error('a broken tree');
+      if (name === 'tree.nwk') throw new Error('a broken tree');
       return add.call(this, name, ...rest);
     };
     self.nodesAtFailure = null;
@@ -111,5 +111,5 @@ test('a file whose parser throws fails the load after the other files have finis
 test('a tree loads with a FASTA of the same IDs', async () => {
   await launch(file('seqs.fasta', 'text/plain', '>A\nACGTACGTAC\n>B\nACGTACGTAG\n'), file('tree.nwk', 'text/plain', '(A:0.1,B:0.2);'));
   expect(await ids()).toEqual(['A', 'B']);
-  expect(await page.evaluate(() => session.data.nodes.find(d => d._id == 'A').seq)).toBe('ACGTACGTAC');
+  expect(await page.evaluate(() => session.data.nodes.find(d => d._id === 'A').seq)).toBe('ACGTACGTAC');
 });

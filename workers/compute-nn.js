@@ -1,5 +1,5 @@
 // Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
-const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
+const debugTime = (label, start) => { if (globalThis.name === 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 // Flags each node's nearest neighbors: its shortest link, and any other within
 // a fraction epsilon of it (the same tie rule as workers/compute-mst.js). Takes the condensed distance matrix (NaN where there's no link) of n
 // nodes and returns the flagged links as pairs of node positions.
@@ -13,14 +13,14 @@ onmessage = function(e){
  for(let i = 0; i < n; i++){
   let minDist = Number.MAX_VALUE;
   for(let j = 0; j < n; j++){
-   if(j == i) continue;
+   if(j === i) continue;
    const v = value(i, j);
    if(v < minDist) minDist = v;
   }
   for(let h = 0; h < n; h++){
-   if(h == i) continue;
+   if(h === i) continue;
    const v = value(i, h);
-   if(v == v && v <= minDist * (1 + epsilon)) pairs.push(i, h);
+   if(v === v && v <= minDist * (1 + epsilon)) pairs.push(i, h);
   }
  }
  const output = Uint32Array.from(pairs);

@@ -51,7 +51,7 @@ test('generated sequences too many for one file go in several, and all load (#30
   expect(await page.evaluate(() => session.files.map(f => f.name).sort()))
     .toEqual([1, 2, 3, 4, 5].map(i => `generatedNodes-${i}.csv`));
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
   expect(await page.evaluate(() => session.data.nodes.length)).toBe(23);
   expect(await page.evaluate(() => session.data.nodes.every(d => d.seq))).toBe(true);
   expect(errors).toEqual([]);

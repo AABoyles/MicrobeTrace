@@ -9,7 +9,7 @@ test('bundle.pdf.js is fetched by the first PDF export, not on load', async ({ p
   page.on('request', request => requested.push(new URL(request.url()).pathname));
   await loadNetwork(page);
   await launchView(page, 'crosstab');
-  expect(requested.some(path => path.endsWith('/dist/bundle.secondary.js'))).toBe(true);
+  expect(requested.some(path => path.endsWith('/dist/bundle.table.js'))).toBe(true);
   expect(requested.filter(path => path.endsWith('/dist/bundle.pdf.js'))).toEqual([]);
   expect(await page.evaluate(() => typeof pdfMake)).toBe('undefined');
 

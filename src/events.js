@@ -1,3 +1,4 @@
+// @ts-check
 // MTEvents: the app-wide events views use to tell each other about changes.
 //
 //   const off = events.on('node-color-change', () => redraw());
@@ -16,6 +17,7 @@ const EVENTS = {
   'node-values-change': 'nodes took other files\' values for a field (detail: the field)',
   'link-visibility': 'which links are visible changed',
   'cluster-visibility': 'which clusters are visible changed',
+  'session-data-change': 'session.data was written through src/session.js (detail: a list of what changed: nodes, links, fields, exclusions, reference, consensus, clusters, sources or reset)',
   'session-loaded': 'a network finished loading and its clusters are tagged (files were launched or a session was opened)',
   'session-load-failed': 'launching the files failed (detail: the message the user was shown)',
   'stop-force-simulation': 'the network layout should stop (a new session is replacing this one)'
@@ -24,6 +26,8 @@ const EVENTS = {
 export class MTEvents {
   constructor() {
     this.target = new EventTarget();
+    /** @type {Set<Function> | null} */
+    this.together = null;
   }
 
   // Calls fn(detail) on each event of this type. Returns a function that stops.
@@ -45,19 +49,19 @@ export class MTEvents {
     if (!(type in EVENTS)) throw new Error('Unknown MicrobeTrace event: ' + type);
     this.target.dispatchEvent(new CustomEvent(type, { detail }));
   }
-}
 
-// Emits events of several types as one change: a function that listens to
-// more than one of them (a view that redraws on each) runs once, not once per
-// event. Where they are listened to for different things, use emit.
-MTEvents.prototype.emitTogether = function(types, detail) {
-  this.together = new Set();
-  try {
-    types.forEach(type => this.emit(type, detail));
-  } finally {
-    this.together = null;
+  // Emits events of several types as one change: a function that listens to
+  // more than one of them (a view that redraws on each) runs once, not once per
+  // event. Where they are listened to for different things, use emit.
+  emitTogether(types, detail) {
+    this.together = new Set();
+    try {
+      types.forEach(type => this.emit(type, detail));
+    } finally {
+      this.together = null;
+    }
   }
-};
+}
 
 MTEvents.EVENTS = EVENTS;
 

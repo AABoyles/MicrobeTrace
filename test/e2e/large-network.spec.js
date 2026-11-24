@@ -15,8 +15,8 @@ const links = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'mt-large-')), 'li
   const random = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
   let out = 'source,target,distance\n';
   for (let i = 1; i < N; i++) {
-    if (i % 6 == 0 && random() < 0.5) continue;
-    const j = i % 6 == 0 ? Math.floor(random() * i) : i - 1 - Math.floor(random() * Math.min(i, 3));
+    if (i % 6 === 0 && random() < 0.5) continue;
+    const j = i % 6 === 0 ? Math.floor(random() * i) : i - 1 - Math.floor(random() * Math.min(i, 3));
     out += `n${i},n${Math.max(0, j)},${(random() * 0.01).toFixed(4)}\n`;
   }
   fs.writeFileSync(links, out);
@@ -27,7 +27,7 @@ test('a large network does not pile its nodes against the edge of the space', as
   const errors = watchErrors(page);
   await open(page);
   await page.setInputFiles('#data-files', links);
-  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length == 1);
+  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length === 1);
   await page.click('#launch');
   await page.waitForFunction(n => temp.network && temp.network.points.length > n, N / 2, { timeout: 120000 });
   // Lets the layout settle: the simulation doesn't stop on its own at this size

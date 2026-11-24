@@ -1,4 +1,4 @@
-// The WebMCP query tools (src/webmcp/query.js) against the fixture network
+// The WebMCP query tools (src/webmcp/query/) against the fixture network
 const { test, expect } = require('@playwright/test');
 const { loadNetwork, open, watchErrors } = require('./helpers');
 
@@ -58,7 +58,7 @@ test.describe('with a network', () => {
     expect(r.items[0].degree).toBeGreaterThanOrEqual(r.items[1].degree);
     const g0 = await call(page, 'query_nodes', { filter: [{ field: 'group', op: 'eq', value: 'g0' }], fields: ['_id', 'group'], count: false });
     expect(g0.total).toBeGreaterThan(0);
-    expect(g0.items.every(n => n.group == 'g0')).toBe(true);
+    expect(g0.items.every(n => n.group === 'g0')).toBe(true);
     const full = await call(page, 'query_nodes', { ids: ['S0'], fields: ['_id', 'seq'], sequences: 'truncated', maxSequenceLength: 10 });
     expect(full.items[0].seq).toContain('…');
 
@@ -82,7 +82,7 @@ test.describe('with a network', () => {
     expect(big.total).toBeGreaterThanOrEqual(all.total > 0 ? 1 : 0);
     const a = all.items[0];
     const touching = await call(page, 'query_links', { nodes: [a.source] });
-    expect(touching.items.every(l => l.source == a.source || l.target == a.source)).toBe(true);
+    expect(touching.items.every(l => l.source === a.source || l.target === a.source)).toBe(true);
     const between = await call(page, 'query_links', { between: { a: [a.source], b: [a.target] } });
     expect(between.total).toBe(1);
     const link = await call(page, 'get_link', { source: a.target, target: a.source });
@@ -90,7 +90,7 @@ test.describe('with a network', () => {
     expect(link.link.index).toBe(a.index);
 
     const nb = await call(page, 'get_neighbors', { ids: [a.source], depth: 2 });
-    expect(nb.nodes[0].neighbors.some(n => n.id == a.target && n.depth == 1)).toBe(true);
+    expect(nb.nodes[0].neighbors.some(n => n.id === a.target && n.depth === 1)).toBe(true);
     const path = await call(page, 'shortest_path', { source: a.source, target: a.target });
     expect(path.found).toBe(true);
     expect(path.hops).toBe(1);

@@ -1,0 +1,38 @@
+// @ts-check
+// A Newick tree: its leaves are the nodes, and the distances along the tree the links (#337).
+export const name = 'newick';
+export const label = 'a Newick tree';
+export const extensions = ['nwk', 'newick'];
+
+export const matchName = extension => extension.indexOf('nwk') > -1 || extension.indexOf('newick') > -1;
+
+// Parenthesised and ended by a ";", with the parentheses balanced
+const balanced = text => {
+  let depth = 0;
+  for (const c of text) {
+    if (c === '(') depth++;
+    else if (c === ')' && --depth < 0) return false;
+  }
+  return depth === 0;
+};
+
+export const detect = text => text.trimStart().startsWith('(') && /;\s*$/.test(text) && balanced(text);
+
+// The tree, its nodes ({ _id, origin }) and a link ({ source, target, origin, [metric]:
+// distance }) between every pair of them. The links are made on demand, because a
+// tree of n leaves has n(n - 1) / 2 of them (#337): linksOf(i) yields those between
+// nodes[i] and the nodes before it, and linkCount is how many there are in all. A
+// caller that adds each node before linksOf(its index) gets the pairs in the order
+// they are met. Needs patristic, a global of the bundle.
+export function parse(contents, { origin, metric }) {
+  const tree = patristic.parseNewick(contents);
+  const { matrix, ids } = tree.toMatrix();
+  const nodes = ids.map(_id => ({ _id, origin }));
+  function* linksOf(i) {
+    for (let j = 0; j < i; j++) {
+      yield { source: ids[i], target: ids[j], origin, [metric]: parseFloat(matrix[i][j]) };
+    }
+  }
+  const linkCount = ids.length * (ids.length - 1) / 2;
+  return { tree, nodes, linksOf, linkCount, labels: ids };
+}

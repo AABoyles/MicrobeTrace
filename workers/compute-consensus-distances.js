@@ -1,5 +1,5 @@
 // Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
-const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
+const debugTime = (label, start) => { if (globalThis.name === 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 // Each sequence's number of differences from the consensus: a site counts when
 // the sequence's character differs from the consensus's, so a gap where the
 // consensus is also a gap is not a difference, and every extra or missing

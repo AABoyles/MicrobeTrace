@@ -4,14 +4,17 @@
 // settings store and events, and the workers' progress and cancellation
 // (MT.runWorker, MT.viewComputing).
 //
-// An ES module (#323). It creates MT, exports it and sets self.MT for the classic
-// scripts; the other core modules import MT from here. It uses these MT names from
-// the other files at run time:
+// An ES module (#323). createMT(env) makes an MT, runs the other core modules'
+// installers on it and returns it; importing a module does nothing (#341). src/mt.js
+// calls it once for the page and sets self.MT for the classic scripts; tests call it
+// for each fake env. It uses these MT names from the other files at run time:
 //   colors.js: COLOR_BLIND_SAFE
 //   links-clusters.js: getVisibleLinks
 //   ui.js: enableSearch
 //   views.js: createLayout, launchView
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
+// env supplies session and temp (self on the page, a plain object in tests); document, Worker
+// and the libraries are read as globals. The body of createMT is not indented, so that the
+// diff of the change that wrapped it stays small.
 import { db } from './db.js';
 import { MTDates } from './dates.js';
 import { MTEvents } from './events.js';
@@ -19,9 +22,18 @@ import { MTGraph } from './graph.js';
 import { MTNodeSources } from './nodes.js';
 import { MTSessionFormat } from './session-format.js';
 import { MTSettings } from './settings.js';
+import { cleanID } from './formats/shared.js';
+import { makeSession } from './session.js';
 
-export const MT = {};
-self.MT = MT;
+import { installLoading } from './loading.js';
+import { installLinksClusters } from './links-clusters.js';
+import { installColors } from './colors.js';
+import { installExport } from './export.js';
+import { installViews } from './views.js';
+import { installUI } from './ui.js';
+
+export function createMT(env = self) {
+const MT = {};
 
 MT.dataSkeleton = () => MT.attachGraph({
   nodes: [],
@@ -364,19 +376,19 @@ MT.tempSkeleton = () => ({
   mapData: {},
   messageTimeout: null,
   style: {
-    linkAlphaMap: () => 1 - session.style.widgets["link-opacity"],
-    linkColorMap: () => session.style.widgets["link-color"],
+    linkAlphaMap: () => 1 - env.session.style.widgets["link-opacity"],
+    linkColorMap: () => env.session.style.widgets["link-color"],
     nodeAlphaMap: () => 1,
-    nodeColorMap: () => session.style.widgets["node-color"],
-    nodeSymbolMap: () => session.style.widgets["node-symbol"],
+    nodeColorMap: () => env.session.style.widgets["node-color"],
+    nodeSymbolMap: () => env.session.style.widgets["node-symbol"],
     polygonAlphaMap: () => 0.5,
-    polygonColorMap: () => session.style.widgets["polygon-color"]
+    polygonColorMap: () => env.session.style.widgets["polygon-color"]
   },
   trees: {}
 });
 
 MT.defaultNode = () => ({
-  index: session.data.nodes.length,
+  index: env.session.data.nodes.length,
   _id: "",
   selected: false,
   cluster: 1,
@@ -384,8 +396,6 @@ MT.defaultNode = () => ({
   degree: 0,
   origin: []
 });
-
-let isNumber = a => typeof a === "number";
 
 let uniq = a => {
   let seen = {};
@@ -404,105 +414,31 @@ let uniq = a => {
 // Used by loading.js too (session upgrades)
 MT.uniq = uniq;
 
-// Adds a node, or merges it into the node with the same ID. Returns 1 if
-// the node is new. (check is no longer needed: nodes are always merged.)
-//
-// Given the source it came from (session.data.sources), the node's values
-// are recorded there, and where files disagree the top file's win. Without
-// a source (a saved session, an import), its values replace any already set.
-// Lists node fields (once each) so they appear in variable menus and sessions
-MT.addNodeField = (...names) => {
-  const fields = session.data.nodeFields;
-  names.forEach(name => { if (!fields.includes(name)) fields.push(name); });
-};
-
 // An ID as the app keeps it: text, without the spaces around it. Every
 // path that loads data goes through this, so one ID from two sources is one
 // node. (Matching stays case-sensitive: "a" and "A" are different IDs.)
-MT.cleanID = id => id == null ? "" : String(id).trim();
+// One rule for IDs, shared with the format parsers so one ID from two files is one node (#337)
+MT.cleanID = cleanID;
 
-MT.addNode = (newNode, check, source) => {
-  if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
-  newNode._id = MT.cleanID(newNode._id);
-  if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
-  const index = session.data.nodeIndex;
-  let node = index.get(newNode._id);
-  if (!source) {
-    if (node) {
-      // (Imports may give one origin as text)
-      newNode.origin = uniq([].concat(newNode.origin || [], node.origin || []));
-      Object.assign(node, newNode);
-      return 0;
-    }
-    node = Object.assign(MT.defaultNode(), newNode);
-    session.data.nodes.push(node);
-    index.set(node._id, node);
-    return 1;
-  }
-  const added = !node;
-  if (added) {
-    node = Object.assign(MT.defaultNode(), { _id: newNode._id });
-    session.data.nodes.push(node);
-    index.set(node._id, node);
-  }
-  node.origin = uniq([].concat(newNode.origin || []).concat(node.origin));
-  const values = {};
-  for (const field in newNode) if (field != '_id' && field != 'origin') values[field] = newNode[field];
-  source.add(node._id, values);
-  // Each field takes the best source's value (an empty one, if none has more)
-  const sources = session.data.sources;
-  for (const field in values) {
-    const value = sources.resolve(node._id, field);
-    if (value !== undefined) node[field] = value;
-    else if (!(field in node)) node[field] = values[field];
-  }
-  return added ? 1 : 0;
-};
+// The session's owner (src/session.js): every write to session.data goes through it (#338).
+// These are its older names, which loading code and the tests use.
+MT.session = makeSession(MT, env);
+MT.addNodeField = MT.session.addNodeField;
+MT.addNode = MT.session.addNode;
+MT.addLink = MT.session.addLink;
 
 // Each file's value for a node's field, top file first, marking the one used
-MT.provenance = (id, field) => session.data.sources.provenance('' + id, field);
+MT.provenance = (id, field) => env.session.data.sources.provenance('' + id, field);
 
 // Where files disagree: each field, with the IDs of the nodes they disagree on
-MT.nodeConflicts = () => session.data.sources.conflicts();
+MT.nodeConflicts = () => env.session.data.sources.conflicts();
 
-// Gives nodes their fields' chosen values again, and tells the views
-const resolveNodes = (field, keys) => {
-  const sources = session.data.sources, index = session.data.nodeIndex;
-  keys.forEach(key => {
-    const node = index.get(key), value = sources.resolve(key, field);
-    if (node && value !== undefined) node[field] = value;
-  });
-  MT.events.emit("node-values-change", field);
-  // (The views redraw, and the color table follows)
-  MT.events.emit("node-visibility");
-};
-
-// Which file's values a field uses where files disagree: a file's name, or
-// null for the top file's
-MT.preferSource = (field, name) => {
-  session.data.sources.prefer(field, name);
-  resolveNodes(field, session.data.sources.keys(field));
-};
-
-// Which file's value a node's field uses (or several nodes'): a file's
-// name, or null for the field's choice
-MT.pickSource = (ids, field, name) => {
-  const keys = [].concat(ids).map(id => "" + id);
-  keys.forEach(key => session.data.sources.pick(key, field, name));
-  resolveNodes(field, keys);
-};
-
-// Adds a link, or merges it into the link between the same two nodes (its
-// fields win, origins are combined). Returns 1 if the link is new.
-MT.addLink = newLink => {
-  newLink.source = MT.cleanID(newLink.source);
-  newLink.target = MT.cleanID(newLink.target);
-  return session.data.graph.addLink(newLink);
-};
+MT.preferSource = MT.session.preferSource;
+MT.pickSource = MT.session.pickSource;
 
 // The link between two node IDs, or undefined.
 MT.getLink = (source, target) => {
-  const g = session.data.graph;
+  const g = env.session.data.graph;
   const a = g.index.get('' + source), b = g.index.get('' + target);
   if (a === undefined || b === undefined) return;
   const e = g.edgeBetween(a, b);
@@ -512,7 +448,7 @@ MT.getLink = (source, target) => {
 // A plain link object for edge e of the graph.
 // (With shareOrigin, its origin list is the graph's own, which must be left alone.)
 MT.linkObject = (e, visible, data, shareOrigin) => {
-  data = data || session.data;
+  data = data || env.session.data;
   const g = data.graph;
   const link = g.link(e, shareOrigin);
   data.linkFields.forEach(field => {
@@ -524,28 +460,28 @@ MT.linkObject = (e, visible, data, shareOrigin) => {
 };
 
 MT.isLinkVisible = e => {
-  const g = session.data.graph;
-  if (!temp.visibleSet || temp.visibleSet.graph !== g || temp.visibleSet.version !== g.visibleVersion) {
-    temp.visibleSet = { graph: g, version: g.visibleVersion, set: new Set(g.visible.subarray(0, g.visibleCount)) };
+  const g = env.session.data.graph;
+  if (!env.temp.visibleSet || env.temp.visibleSet.graph !== g || env.temp.visibleSet.version !== g.visibleVersion) {
+    env.temp.visibleSet = { graph: g, version: g.visibleVersion, set: new Set(g.visible.subarray(0, g.visibleCount)) };
   }
-  return temp.visibleSet.set.has(e);
+  return env.temp.visibleSet.set.has(e);
 };
 
 // The visible links of node id, as { neighbor: ID, link: link object }.
 MT.getVisibleNeighbors = id => {
-  const g = session.data.graph, x = g.index.get('' + id);
+  const g = env.session.data.graph, x = g.index.get('' + id);
   if (x === undefined) return [];
   const out = [];
   for (let v = 0; v < g.visibleCount; v++) {
     const e = g.visible[v], s = g.source(e), t = g.target(e);
-    if (s == x || t == x) out.push({ neighbor: g.ids[s == x ? t : s], link: MT.linkObject(e, true) });
+    if (s === x || t === x) out.push({ neighbor: g.ids[s === x ? t : s], link: MT.linkObject(e, true) });
   }
   return out;
 };
 
 // Every link as an object (what session files store).
 MT.getAllLinks = data => {
-  data = data || session.data;
+  data = data || env.session.data;
   const g = data.graph;
   const visible = new Set(g.visible.subarray(0, g.visibleCount));
   const out = [];
@@ -596,7 +532,7 @@ MT.workScope = () => {
 // the console, then reload. (Workers switch on with it too: runWorker starts
 // them with the name "debug", which each worker's debugTime reads.)
 MT.debugging = (() => {
-  try { return /[?&]debug\b/.test(location.search) || localStorage.getItem('MT.debug') == '1'; } catch (e) { return false; }
+  try { return /[?&]debug\b/.test(location.search) || localStorage.getItem('MT.debug') === '1'; } catch { return false; }
 })();
 MT.debug = (...args) => { if (MT.debugging) console.log(...args); };
 // start is the Date.now() value from when the work began
@@ -612,7 +548,7 @@ MT.runWorker = (script, message, { transfer, name, worker, onProgress, scope } =
       if (settled) return;
       settled = true;
       owners.delete(stop);
-      try { computer.terminate(); } catch (e) { /* already gone */ }
+      try { computer.terminate(); } catch { /* already gone */ }
       fn(value);
     };
     const what = name || script;
@@ -700,15 +636,15 @@ MT.viewComputing = (root, what) => {
   // mode: "busy" (Cancel), "stopped" (Retry) or "idle" (nothing shown)
   const setState = (message, mode) => {
     const focused = box.contains(document.activeElement) ? document.activeElement : null;
-    card.hidden = mode == "idle";
-    cancelButton.hidden = mode != "busy";
-    retryButton.hidden = mode != "stopped";
-    bar.parentElement.hidden = mode != "busy";
+    card.hidden = mode === "idle";
+    cancelButton.hidden = mode !== "busy";
+    retryButton.hidden = mode !== "stopped";
+    bar.parentElement.hidden = mode !== "busy";
     text.textContent = message;
     status.textContent = message;
     // Focus can't stay on a control that's gone: move it to the one that replaces it
     if (focused && (card.hidden || focused.hidden)) {
-      const next = mode == "stopped" ? retryButton : mode == "busy" ? cancelButton : root.querySelector(".view-controls button");
+      const next = mode === "stopped" ? retryButton : mode === "busy" ? cancelButton : root.querySelector(".view-controls button");
       if (next) next.focus();
     }
   };
@@ -719,7 +655,7 @@ MT.viewComputing = (root, what) => {
     bar.style.width = percent + "%";
     bar.setAttribute("aria-valuenow", percent);
     text.textContent = `Computing ${what} (${percent}%)...`;
-    if (Math.floor(percent / 10) != announced) {
+    if (Math.floor(percent / 10) !== announced) {
       announced = Math.floor(percent / 10);
       status.textContent = `Computing ${what} (${percent}%)...`;
     }
@@ -778,18 +714,8 @@ MT.viewComputing = (root, what) => {
   };
 };
 
-// The one place that replaces the session and temp globals (self.session and
-// self.temp). Everything else reads them and sets their fields. temp is replaced
-// unless `temp: false`; with `keepComponents`, temp keeps its componentCache, the
-// views' compiled components.
-MT.resetSession = ({ temp = true, keepComponents = false } = {}) => {
-  if (temp) {
-    const componentCache = keepComponents ? self.temp.componentCache : undefined;
-    self.temp = MT.tempSkeleton();
-    if (keepComponents) self.temp.componentCache = componentCache;
-  }
-  self.session = MT.sessionSkeleton();
-};
+// The one place that replaces the session and temp globals is MT.session.reset (src/session.js)
+MT.resetSession = MT.session.reset;
 
 MT.reset = () => {
 
@@ -809,7 +735,7 @@ MT.reset = () => {
 
 // The settings store and event bus that views use (see src/settings.js and
 // src/events.js)
-MT.settings = new MTSettings(() => session.style.widgets);
+MT.settings = new MTSettings(() => env.session.style.widgets);
 MT.events = new MTEvents();
 
 // Today, as YYYY-MM-DD in local time
@@ -823,10 +749,20 @@ MT.today = () => {
 MT.setAutostash = enabled => {
   enabled = !!enabled;
   db.setItem('stash-auto', enabled ? 'true' : 'false');
-  if (!enabled && temp.autostash) clearInterval(temp.autostash.interval);
+  if (!enabled && env.temp.autostash) clearInterval(env.temp.autostash.interval);
   const radio = document.querySelector('input[name="stash-auto"][value="' + (enabled ? 'true' : 'false') + '"]');
   if (radio) radio.checked = true;
 };
 
 // Reads a date field (see src/dates.js): null if it is not a date.
 MT.parseDate = MTDates.parseDate;
+
+installLoading(MT, env);
+installLinksClusters(MT, env);
+installColors(MT, env);
+installExport(MT, env);
+installViews(MT, env);
+installUI(MT, env);
+
+return MT;
+}
