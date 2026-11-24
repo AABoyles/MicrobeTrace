@@ -20,6 +20,7 @@ import { MTNodeSources } from './nodes.js';
 import { MTSessionFormat } from './session-format.js';
 import { MTSettings } from './settings.js';
 import { cleanID } from './formats/shared.js';
+import { makeSession } from './session.js';
 
 export const MT = {};
 self.MT = MT;
@@ -405,61 +406,18 @@ let uniq = a => {
 // Used by loading.js too (session upgrades)
 MT.uniq = uniq;
 
-// Adds a node, or merges it into the node with the same ID. Returns 1 if
-// the node is new. (check is no longer needed: nodes are always merged.)
-//
-// Given the source it came from (session.data.sources), the node's values
-// are recorded there, and where files disagree the top file's win. Without
-// a source (a saved session, an import), its values replace any already set.
-// Lists node fields (once each) so they appear in variable menus and sessions
-MT.addNodeField = (...names) => {
-  const fields = session.data.nodeFields;
-  names.forEach(name => { if (!fields.includes(name)) fields.push(name); });
-};
-
 // An ID as the app keeps it: text, without the spaces around it. Every
 // path that loads data goes through this, so one ID from two sources is one
 // node. (Matching stays case-sensitive: "a" and "A" are different IDs.)
 // One rule for IDs, shared with the format parsers so one ID from two files is one node (#337)
 MT.cleanID = cleanID;
 
-MT.addNode = (newNode, check, source) => {
-  if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
-  newNode._id = MT.cleanID(newNode._id);
-  if (session.data.nodeExclusions.indexOf(newNode._id) > -1) return 0;
-  const index = session.data.nodeIndex;
-  let node = index.get(newNode._id);
-  if (!source) {
-    if (node) {
-      // (Imports may give one origin as text)
-      newNode.origin = uniq([].concat(newNode.origin || [], node.origin || []));
-      Object.assign(node, newNode);
-      return 0;
-    }
-    node = Object.assign(MT.defaultNode(), newNode);
-    session.data.nodes.push(node);
-    index.set(node._id, node);
-    return 1;
-  }
-  const added = !node;
-  if (added) {
-    node = Object.assign(MT.defaultNode(), { _id: newNode._id });
-    session.data.nodes.push(node);
-    index.set(node._id, node);
-  }
-  node.origin = uniq([].concat(newNode.origin || []).concat(node.origin));
-  const values = {};
-  for (const field in newNode) if (field != '_id' && field != 'origin') values[field] = newNode[field];
-  source.add(node._id, values);
-  // Each field takes the best source's value (an empty one, if none has more)
-  const sources = session.data.sources;
-  for (const field in values) {
-    const value = sources.resolve(node._id, field);
-    if (value !== undefined) node[field] = value;
-    else if (!(field in node)) node[field] = values[field];
-  }
-  return added ? 1 : 0;
-};
+// The session's owner (src/session.js): every write to session.data goes through it (#338).
+// These are its older names, which loading code and the tests use.
+MT.session = makeSession(MT, self);
+MT.addNodeField = MT.session.addNodeField;
+MT.addNode = MT.session.addNode;
+MT.addLink = MT.session.addLink;
 
 // Each file's value for a node's field, top file first, marking the one used
 MT.provenance = (id, field) => session.data.sources.provenance('' + id, field);
@@ -467,40 +425,8 @@ MT.provenance = (id, field) => session.data.sources.provenance('' + id, field);
 // Where files disagree: each field, with the IDs of the nodes they disagree on
 MT.nodeConflicts = () => session.data.sources.conflicts();
 
-// Gives nodes their fields' chosen values again, and tells the views
-const resolveNodes = (field, keys) => {
-  const sources = session.data.sources, index = session.data.nodeIndex;
-  keys.forEach(key => {
-    const node = index.get(key), value = sources.resolve(key, field);
-    if (node && value !== undefined) node[field] = value;
-  });
-  MT.events.emit("node-values-change", field);
-  // (The views redraw, and the color table follows)
-  MT.events.emit("node-visibility");
-};
-
-// Which file's values a field uses where files disagree: a file's name, or
-// null for the top file's
-MT.preferSource = (field, name) => {
-  session.data.sources.prefer(field, name);
-  resolveNodes(field, session.data.sources.keys(field));
-};
-
-// Which file's value a node's field uses (or several nodes'): a file's
-// name, or null for the field's choice
-MT.pickSource = (ids, field, name) => {
-  const keys = [].concat(ids).map(id => "" + id);
-  keys.forEach(key => session.data.sources.pick(key, field, name));
-  resolveNodes(field, keys);
-};
-
-// Adds a link, or merges it into the link between the same two nodes (its
-// fields win, origins are combined). Returns 1 if the link is new.
-MT.addLink = newLink => {
-  newLink.source = MT.cleanID(newLink.source);
-  newLink.target = MT.cleanID(newLink.target);
-  return session.data.graph.addLink(newLink);
-};
+MT.preferSource = MT.session.preferSource;
+MT.pickSource = MT.session.pickSource;
 
 // The link between two node IDs, or undefined.
 MT.getLink = (source, target) => {
@@ -780,18 +706,8 @@ MT.viewComputing = (root, what) => {
   };
 };
 
-// The one place that replaces the session and temp globals (self.session and
-// self.temp). Everything else reads them and sets their fields. temp is replaced
-// unless `temp: false`; with `keepComponents`, temp keeps its componentCache, the
-// views' compiled components.
-MT.resetSession = ({ temp = true, keepComponents = false } = {}) => {
-  if (temp) {
-    const componentCache = keepComponents ? self.temp.componentCache : undefined;
-    self.temp = MT.tempSkeleton();
-    if (keepComponents) self.temp.componentCache = componentCache;
-  }
-  self.session = MT.sessionSkeleton();
-};
+// The one place that replaces the session and temp globals is MT.session.reset (src/session.js)
+MT.resetSession = MT.session.reset;
 
 MT.reset = () => {
 
