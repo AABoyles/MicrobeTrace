@@ -48,8 +48,9 @@ A new view touches more than this directory:
 1. `components/NAME.html` and `components/NAME.js` (a module: see the contract above).
 2. A `viewbutton` with `data-href="NAME"` in the View menu in `index.html`.
 3. Defaults for its settings (`NAME-...` keys) in `MT.defaultWidgets` in `src/common.js`.
-4. Its entries in `common.js`'s per-view tables: the accessible summary and what the view needs of
-   the session (the empty-state note). Search for an existing view's name, e.g. `waterfall`.
+4. Its entries in `MT.viewNeeds` in `src/views.js`: what the view needs of the session (the
+   empty-state note). Its accessible summary is set with `MT.describeView`, as `network.js` does.
+   Search for an existing view's name, e.g. `waterfall`.
 5. Its entry in the view catalog in `VIEWS` in `src/webmcp/views/helpers.js`.
 6. `test/e2e/NAME.spec.js`, and a row in `test/e2e/README.md`.
 

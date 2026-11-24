@@ -51,7 +51,7 @@ _A directory for build scripts_
   filling in the precache list and cache name from the files that exist, so run it after
   `bundle`. The service worker's own code lives in the template. Only the app shell is
   precached (`shellList()`: `index.html` and what it loads, the modules those import, the
-  primary bundle, the Files view, workers, fonts and images); every other file, such as the
+  primary bundle, the Files view, workers, vendor, fonts and images); every other file, such as the
   lazy library bundles and the other views, is cached the first time it is fetched (#343).
   The cache name hashes all of the app's files, so a changed view is a new version too.
 

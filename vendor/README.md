@@ -26,6 +26,6 @@ tolerate both.
 ## cosmos.gl
 
 `cosmos.min.js` is a build of [cosmos.gl](https://github.com/cosmosgl/graph) (`@cosmos.gl/graph`
-3.6.0, MIT), which lays out and draws the 2D network on the GPU. `components/network.html` loads
-it the first time that view opens. `scripts/bundle.js` builds it from `node_modules` unpatched: since
+3.6.0, MIT), which lays out and draws the 2D network on the GPU. `components/network.js` adds
+a script element for it the first time a network view opens. `scripts/bundle.js` builds it from `node_modules` unpatched: since
 3.6 cosmos.gl shifts the many-body force's grid every tick itself, which the earlier local patch did.

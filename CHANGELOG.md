@@ -13,11 +13,20 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 
 - A Newick tree loads together with a FASTA file of the same IDs; it used to fail with "source.add is not a function". When one file can't be read, the load is reported as failed only after the other files have finished.
 
+### Reliability and performance
+
+- The page loads faster. Its startup scripts are 1.6 MB instead of 4.9 MB: the spreadsheet, table, Plotly, map, tree, alignment and PDF libraries load the first time a feature needs them. (#324)
+- The service worker stores the app's shell when it is installed, and the other files (the other views and the libraries) the first time they are used, so a first visit downloads less. Whatever has been opened still works offline. (#343)
+
 ### Build, deployment and project
 
 - `dist/`, `vendor/`, `fonts/` and `sw.js` are no longer committed: CI, the Pages deploy and the Docker build bundle them from the lockfile, and `npm start` does when they are missing. A copy of the repository needs `npm ci && npm run bundle && npm run cache` before it can be deployed. (#325)
 - `npm run bundle` is a Node script (`scripts/bundle.js`) instead of bash, so the bundles build on Windows. (#328)
 - The core of the app (`src/common.js` and the files split from it, and the settings, events, graph, nodes, dates and database stores) loads as native ES modules, with no build step. The file loader and the network view are broken into named functions. (#323, #240)
+- Views are ES modules loaded with `import()`, each exporting `mount`. File formats are one module each in `src/formats/`, WebMCP tools one file each under `src/webmcp/`, and the session's data is written through `MT.session`, which emits `session-data-change`; a lint rule rejects direct writes. (#337, #338, #339, #340)
+- `createMT` builds `MT` for the page and for the tests, which import it instead of running the code in a `vm` context. `test/app-files.js` is gone. (#341)
+- Bundles are built by esbuild from entry modules in `scripts/entries/`, and are rebuilt when a hash of their inputs changes, not when file times change. The Docker build installs dependencies once and prunes the dev dependencies before it finishes. (#342, #344, #345)
+- ESLint reports no warnings: `no-unused-vars` and `eqeqeq` are errors, and `npm run typecheck` runs tsc over the JSDoc-annotated modules in CI. (#346)
 
 ## 0.7.1 (2026-11-20)
 
