@@ -28,7 +28,7 @@ export default {
     const labels = nodes.map(n => '' + n._id);
     const { tri } = MT.getCondensedDM(metric, labels);
     const n = labels.length, dec = args.decimals == null ? 6 : args.decimals;
-    if (args.format == 'pairs') {
+    if (args.format === 'pairs') {
       const pairs = [];
       let k = 0;
       for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++, k++) if (isFinite(tri[k])) pairs.push({ source: labels[i], target: labels[j], value: round(tri[k], dec) });

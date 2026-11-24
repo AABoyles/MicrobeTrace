@@ -26,7 +26,7 @@ export default {
     const wholeWord = args.wholeWord !== undefined ? args.wholeWord : !!w['search-whole-word'];
     const mode = args.mode || 'replace';
     if (args.mirrorSearchBox) {
-      if (mode != 'replace') fail('mirrorSearchBox works in replace mode only');
+      if (mode !== 'replace') fail('mirrorSearchBox works in replace mode only');
       const search = document.getElementById('search');
       S().set('search-case-sensitive', caseSensitive);
       S().set('search-whole-word', wholeWord);
@@ -48,7 +48,7 @@ export default {
     nodes().forEach(d => {
       const v = d[field];
       if (typeof v === 'string') { if (re.test(T.regexInput(v))) set.add(d); }
-      else if (typeof v === 'number') { if (v + '' == args.query) set.add(d); }
+      else if (typeof v === 'number') { if (v + '' === args.query) set.add(d); }
     });
     const changed = applySelection(set, mode);
     return Object.assign({ field, query: args.query, matched: set.size, changed }, selectionSummary());

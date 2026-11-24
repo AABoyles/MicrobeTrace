@@ -11,7 +11,7 @@ export default {
   execute: async ({ field, maxNodes = 100 }) => {
     requireData();
     const fields = [];
-    MT_().nodeConflicts().forEach((keys, f) => { if (!field || f == field) fields.push({ field: f, count: keys.length, nodes: Array.from(keys).slice(0, maxNodes) }); });
+    MT_().nodeConflicts().forEach((keys, f) => { if (!field || f === field) fields.push({ field: f, count: keys.length, nodes: Array.from(keys).slice(0, maxNodes) }); });
     return { total: fields.length, fields };
   }
 };

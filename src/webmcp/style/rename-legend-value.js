@@ -25,7 +25,7 @@ export default {
     }
     if (title !== undefined) {
       const variable = W()[cfg.variable];
-      if (variable == 'None') fail('There is no color table: color by a field first');
+      if (variable === 'None') fail('There is no color table: color by a field first');
       style.overwrite = style.overwrite || {};
       style.overwrite[kind + 'ColorHeaderVariable'] = variable;
       style.overwrite[kind + 'ColorHeaderTitle'] = title;

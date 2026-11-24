@@ -12,7 +12,7 @@ export default {
     const MT = MT_(), s = settings();
     const d = requireData();
     const vnodes = MT.getVisibleNodes(), g = d.graph;
-    const dated = s['timeline-date-field'] != 'None';
+    const dated = s['timeline-date-field'] !== 'None';
     let links = 0;
     const counts = new Map();
     if (!dated) {
@@ -35,7 +35,7 @@ export default {
       nodes: n,
       selectedNodes: vnodes.filter(x => x.selected).length,
       visibleLinks: links,
-      singletonNodes: vnodes.filter(x => x.degree == 0).length,
+      singletonNodes: vnodes.filter(x => x.degree === 0).length,
       disjointClusters: clusterCount,
       meanDegree: n ? round(2 * links / n, 4) : null,
       density: n > 1 ? round(2 * links / (n * (n - 1)), 6) : null,

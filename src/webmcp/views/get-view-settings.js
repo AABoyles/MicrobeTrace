@@ -21,7 +21,7 @@ export default {
     const item = await need(view, { open });
     let records = settingsOf(rootOf(item));
     if (keys) {
-      const missing = keys.filter(k => !records.some(r => r.key == k));
+      const missing = keys.filter(k => !records.some(r => r.key === k));
       if (missing.length) fail('The ' + item.componentType + ' view has no setting ' + missing.join(', ') + '. Its settings: ' + records.map(r => r.key).join(', '));
       records = records.filter(r => keys.includes(r.key));
     }

@@ -22,7 +22,7 @@ export default {
     return {
       scope, nodes: nodes.length,
       mean: ks.length ? round(ks.reduce((a, b) => a + b, 0) / ks.length, 4) : null, median: quantile(ks, 0.5), max: ks.length ? ks[ks.length - 1] : null,
-      singletons: ks.filter(k => k == 0).length,
+      singletons: ks.filter(k => k === 0).length,
       distribution: Array.from(hist, ([degree, count]) => ({ degree, count })).sort((a, b) => a.degree - b.degree),
       hubs: deg.sort((a, b) => b.k - a.k).slice(0, topHubs).map(x => ({ id: x.n._id, degree: x.k, cluster: x.n.cluster }))
     };

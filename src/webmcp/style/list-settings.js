@@ -23,7 +23,7 @@ export default {
     let items = allKeys().filter(k => !args.prefix || k.startsWith(args.prefix)).map(k => describeSetting(k, ctl));
     if (args.modifiedOnly) items = items.filter(i => i.modified);
     if (args.withControlOnly) items = items.filter(i => i.control);
-    if (args.view) items = items.filter(i => i.view == args.view);
+    if (args.view) items = items.filter(i => i.view === args.view);
     if (search) items = items.filter(i => i.key.toLowerCase().includes(search) || (i.label || '').toLowerCase().includes(search) ||
       (i.options || []).some(o => (o.label + ' ' + o.value).toLowerCase().includes(search)));
     return T.page(items, { offset: args.offset, limit: args.limit == null ? 200 : args.limit });

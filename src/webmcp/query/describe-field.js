@@ -25,12 +25,12 @@ export default {
     if (!entityFields(entity).includes(field)) fail('Unknown ' + entity + ' field ' + JSON.stringify(field) + '. Fields: ' + entityFields(entity).join(', '));
     let values, sampled = false, items;
     if (conditions && conditions.length) {
-      if (entity == 'link') {
+      if (entity === 'link') {
         const edges = filterSortEdges(edgeList(visibleOnly ? 'visible' : 'all'), { filter: conditions, match });
         const read = linkReader();
         values = edges.map(e => read(e, field)); items = edges.length;
       } else {
-        const list = entity == 'node' ? requireData().nodes.filter(n => !visibleOnly || n.visible) : requireData().clusters.filter(c => !visibleOnly || c.visible);
+        const list = entity === 'node' ? requireData().nodes.filter(n => !visibleOnly || n.visible) : requireData().clusters.filter(c => !visibleOnly || c.visible);
         values = filter(list, conditions, match).map(x => x[field]); items = values.length;
       }
     } else {

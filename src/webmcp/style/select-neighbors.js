@@ -20,7 +20,7 @@ export default {
     let seeds;
     if (ids && ids.length) {
       const unknown = ids.filter(id => !byId.has(String(id)));
-      if (unknown.length == ids.length) fail('None of those IDs match a node: ' + unknown.slice(0, 5).join(', '));
+      if (unknown.length === ids.length) fail('None of those IDs match a node: ' + unknown.slice(0, 5).join(', '));
       seeds = ids.map(id => byId.get(String(id))).filter(Boolean);
     } else {
       seeds = all.filter(d => d.selected);

@@ -34,7 +34,7 @@ export default {
     const blob = result.blob;
     const meta = { view: item.componentType, filename: result.name, format: result.format, mimeType: blob.type, size: blob.size, formats: result.formats };
     if (/^image\/(png|jpeg|webp)/.test(blob.type)) {
-      const out = await finish(await blobToDataURL(blob), { maxWidth, format: blob.type == 'image/jpeg' ? 'jpeg' : 'png' });
+      const out = await finish(await blobToDataURL(blob), { maxWidth, format: blob.type === 'image/jpeg' ? 'jpeg' : 'png' });
       return image(out.dataURL, Object.assign(meta, { width: out.width, height: out.height }));
     }
     let body = await blob.text();

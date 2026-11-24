@@ -21,7 +21,7 @@ export default {
     const nodes = selectNodes(args).filter(n => typeof n.seq === 'string' && n.seq);
     const result = page(nodes, { offset: args.offset, limit: args.limit == null ? 25 : args.limit });
     const items = result.items.map(n => ({ _id: n._id, seq: args.maxLength ? n.seq.slice(0, args.maxLength) : n.seq }));
-    if (args.format == 'fasta') {
+    if (args.format === 'fasta') {
       result.fasta = fasta(items.map(n => ({ _id: n._id, seq: n.seq })), args.wrap);
       delete result.items;
     } else {

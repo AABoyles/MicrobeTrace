@@ -15,7 +15,7 @@ export default {
     allowNew: bool('Create keys that are not existing settings (default false: they are skipped with a warning)')
   }, ['values']),
   execute: async ({ values, allowNew }) => {
-    if (!values || typeof values != 'object' || !Object.keys(values).length) fail('values must be an object of {key: value}');
+    if (!values || typeof values !== 'object' || !Object.keys(values).length) fail('values must be an object of {key: value}');
     const known = new Set(allKeys()), warnings = [];
     const map = {};
     Object.keys(values).sort((a, b) => rank(a) - rank(b)).forEach(k => {

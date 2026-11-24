@@ -16,7 +16,7 @@ export default {
   execute: async () => ({
     schemes: schemeNames().map(name => {
       const s = self.d3[name];
-      return typeof s[0] == 'string' ? { name, colors: s.length, sample: s.slice(0, 6) } :
+      return typeof s[0] === 'string' ? { name, colors: s.length, sample: s.slice(0, 6) } :
         { name, sizes: s.map((x, i) => x ? i : -1).filter(i => i >= 0), sample: (s[s.length - 1] || []).slice(0, 6) };
     }),
     current: { nodeColors: self.session.style.nodeColors, linkColors: self.session.style.linkColors }

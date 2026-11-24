@@ -33,7 +33,7 @@ export default {
     if (args.includeLinks !== false) {
       const set = new Set(members.map(n => g.index.get('' + n._id)));
       const vis = visibleSet();
-      const edges = edgeList(args.scope == 'all' ? 'all' : 'visible').filter(e => set.has(g.source(e)) && set.has(g.target(e)));
+      const edges = edgeList(args.scope === 'all' ? 'all' : 'visible').filter(e => set.has(g.source(e)) && set.has(g.target(e)));
       const lp = page(edges, args);
       lp.items = lp.items.map(e => linkOut(e, args.linkFields, vis));
       out.links = lp;

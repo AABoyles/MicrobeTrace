@@ -17,7 +17,7 @@ export default {
     const map = {}, warnings = [];
     if (variable !== undefined) {
       map['link-width-variable'] = checkVariable('link', variable);
-      if (variable != 'None' && !linkFieldNumeric(variable)) warnings.push('Link field ' + variable + ' does not look numeric; widths may not vary');
+      if (variable !== 'None' && !linkFieldNumeric(variable)) warnings.push('Link field ' + variable + ' does not look numeric; widths may not vary');
     }
     if (width !== undefined) map['link-width'] = width;
     if (min !== undefined) map['link-width-min'] = min;

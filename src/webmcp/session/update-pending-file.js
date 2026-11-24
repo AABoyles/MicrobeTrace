@@ -12,11 +12,11 @@ export default {
   }, fieldProps), ['name']),
   execute: async (args) => {
     const view = await filesView();
-    const file = view.list().find(f => f.name == self.MT.escape(args.name));
+    const file = view.list().find(f => f.name === self.MT.escape(args.name));
     if (!file) fail('No pending file is named ' + args.name + '. Pending: ' + JSON.stringify(view.list().map(f => f.name)));
     const format = args.format || file.format;
     const fields = fieldsFor(args, format, file.headers);
     view.update(file.name, Object.assign({ format: args.format }, withoutUndefined(fields)));
-    return Object.assign({ updated: view.list().find(f => f.name == file.name) }, pending(view));
+    return Object.assign({ updated: view.list().find(f => f.name === file.name) }, pending(view));
   }
 };

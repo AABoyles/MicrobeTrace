@@ -26,12 +26,12 @@ export default {
     if (el.tagName === 'SELECT') {
       const options = Array.from(el.options);
       const want = [].concat(value).map(v => {
-        const o = options.find(o => o.value === String(v)) || options.find(o => o.textContent.trim().toLowerCase() == String(v).toLowerCase());
+        const o = options.find(o => o.value === String(v)) || options.find(o => o.textContent.trim().toLowerCase() === String(v).toLowerCase());
         if (!o) fail('Not an option; the options are: ' + options.map(o => JSON.stringify(o.value)).join(', '));
         return o;
       });
       options.forEach(o => { o.selected = want.includes(o); });
-    } else if (el.type == 'checkbox' || el.type == 'radio') {
+    } else if (el.type === 'checkbox' || el.type === 'radio') {
       el.checked = !!(value === true || value === 'true');
     } else {
       el.value = value;
@@ -39,6 +39,6 @@ export default {
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
     await settle(150);
-    return otherControls(root).find(c => c.control == control) || { control, value: el.value };
+    return otherControls(root).find(c => c.control === control) || { control, value: el.value };
   }
 };

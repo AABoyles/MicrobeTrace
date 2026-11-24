@@ -50,7 +50,7 @@
   const OFF = 'WebMCP is turned off in MicrobeTrace. The user can turn it on in Settings > AI Agents.';
 
   function stored() {
-    try { return !!self.sessionStorage && self.sessionStorage.getItem(STORAGE_KEY) == 'on'; } catch { return false; }
+    try { return !!self.sessionStorage && self.sessionStorage.getItem(STORAGE_KEY) === 'on'; } catch { return false; }
   }
   function store(on) {
     try {
@@ -64,8 +64,8 @@
   const listeners = new Set();
 
   const modelContext = () => {
-    if (typeof document != 'undefined' && document.modelContext) return document.modelContext;
-    if (typeof navigator != 'undefined' && navigator.modelContext) return navigator.modelContext;
+    if (typeof document !== 'undefined' && document.modelContext) return document.modelContext;
+    if (typeof navigator !== 'undefined' && navigator.modelContext) return navigator.modelContext;
     return null;
   };
 
@@ -110,8 +110,8 @@
       return named + ' must be one of ' + schema.enum.map(v => JSON.stringify(v)).join(', ') + ' (not ' + JSON.stringify(value) + ')';
     }
     const type = schema.type || (schema.properties ? 'object' : null);
-    if (type == 'object') {
-      if (!value || typeof value != 'object' || Array.isArray(value)) return named + ' must be an object';
+    if (type === 'object') {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return named + ' must be an object';
       // An object that declares no properties takes any (as JSON Schema does)
       const declared = schema.properties;
       for (const key of schema.required || []) {
@@ -134,21 +134,21 @@
       return null;
     }
     if (value === undefined || value === null) return null;
-    if (type == 'string' && typeof value != 'string') return named + ' must be a string';
-    if ((type == 'number' || type == 'integer') && (typeof value != 'number' || !isFinite(value))) return named + ' must be a number';
-    if (type == 'integer' && !Number.isInteger(value)) return named + ' must be a whole number';
-    if (type == 'boolean' && typeof value != 'boolean') return named + ' must be true or false';
-    if (type == 'array') {
+    if (type === 'string' && typeof value !== 'string') return named + ' must be a string';
+    if ((type === 'number' || type === 'integer') && (typeof value !== 'number' || !isFinite(value))) return named + ' must be a number';
+    if (type === 'integer' && !Number.isInteger(value)) return named + ' must be a whole number';
+    if (type === 'boolean' && typeof value !== 'boolean') return named + ' must be true or false';
+    if (type === 'array') {
       if (!Array.isArray(value)) return named + ' must be a list';
-      if (schema.minItems && value.length < schema.minItems) return named + ' must have at least ' + schema.minItems + ' item' + (schema.minItems == 1 ? '' : 's');
+      if (schema.minItems && value.length < schema.minItems) return named + ' must have at least ' + schema.minItems + ' item' + (schema.minItems === 1 ? '' : 's');
       for (let i = 0; schema.items && i < value.length; i++) {
         const problem = checkArgs(schema.items, value[i], path + '[' + i + ']');
         if (problem) return problem;
       }
       return null;
     }
-    if ((type == 'number' || type == 'integer') && schema.minimum !== undefined && value < schema.minimum) return named + ' must be at least ' + schema.minimum;
-    if ((type == 'number' || type == 'integer') && schema.maximum !== undefined && value > schema.maximum) return named + ' must be at most ' + schema.maximum;
+    if ((type === 'number' || type === 'integer') && schema.minimum !== undefined && value < schema.minimum) return named + ' must be at least ' + schema.minimum;
+    if ((type === 'number' || type === 'integer') && schema.maximum !== undefined && value > schema.maximum) return named + ' must be at most ' + schema.maximum;
     return null;
   }
 
@@ -173,8 +173,8 @@
   function register(tool) {
     if (!enabled || controllers.has(tool.name)) return;
     const context = modelContext();
-    if (!context || typeof context.registerTool != 'function') return;
-    const controller = typeof AbortController != 'undefined' ? new AbortController() : null;
+    if (!context || typeof context.registerTool !== 'function') return;
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const descriptor = {
       name: tool.name,
       title: tool.title,
@@ -213,9 +213,9 @@
   function define(tool) {
     if (!tool || !NAME.test(tool.name)) throw new Error('Invalid WebMCP tool name: ' + (tool && tool.name));
     if (!tool.description) throw new Error('WebMCP tool ' + tool.name + ' needs a description');
-    if (typeof tool.execute != 'function') throw new Error('WebMCP tool ' + tool.name + ' needs execute()');
+    if (typeof tool.execute !== 'function') throw new Error('WebMCP tool ' + tool.name + ' needs execute()');
     if (tools.has(tool.name)) throw new Error('WebMCP tool ' + tool.name + ' is defined twice');
-    if (tool.confirm !== undefined && typeof tool.confirm != 'string' && typeof tool.confirm != 'function') {
+    if (tool.confirm !== undefined && typeof tool.confirm !== 'string' && typeof tool.confirm !== 'function') {
       throw new Error('WebMCP tool ' + tool.name + ': confirm must be a message or a function');
     }
     tool = Object.assign({ inputSchema: { type: 'object', properties: {} }, annotations: {} }, tool);
@@ -236,7 +236,7 @@
   function setEnabled(on) {
     on = !!on;
     store(on);
-    if (on == enabled) return;
+    if (on === enabled) return;
     enabled = on;
     if (on) tools.forEach(register);
     else {
@@ -413,7 +413,7 @@
   // The node with this ID, or a failure naming it
   function nodeById(id) {
     const data = requireData();
-    const node = data.nodeIndex && data.nodeIndex.get('' + id) || data.nodes.find(d => d._id == id);
+    const node = data.nodeIndex && data.nodeIndex.get('' + id) || data.nodes.find(d => d._id == id); // eslint-disable-line eqeqeq -- node IDs may be numbers or text, depending on the file they came from
     if (!node) fail('No node has the ID ' + JSON.stringify(id));
     return node;
   }
@@ -423,7 +423,7 @@
     const out = {};
     (fields && fields.length ? fields : Object.keys(item)).forEach(f => {
       const v = item[f];
-      if (typeof v != 'function') out[f] = v === undefined ? null : v;
+      if (typeof v !== 'function') out[f] = v === undefined ? null : v;
     });
     return out;
   }
@@ -453,20 +453,20 @@
     const stack = [{ repeats: false }];
     const repeatAt = i => {
       const c = pattern[i];
-      if (c == '*' || c == '+') return true;
-      if (c != '{') return false;
+      if (c === '*' || c === '+') return true;
+      if (c !== '{') return false;
       const m = /^\{(\d+)(,(\d*))?\}/.exec(pattern.slice(i));
       return !!m && (m[2] ? m[3] === '' || +m[3] > 1 : +m[1] > 1);
     };
     for (let i = 0; i < pattern.length; i++) {
       const c = pattern[i];
-      if (c == '\\') { i++; continue; }
-      if (c == '[') { // a character class: skip to its end
-        for (i++; i < pattern.length && pattern[i] != ']'; i++) if (pattern[i] == '\\') i++;
+      if (c === '\\') { i++; continue; }
+      if (c === '[') { // a character class: skip to its end
+        for (i++; i < pattern.length && pattern[i] !== ']'; i++) if (pattern[i] === '\\') i++;
         continue;
       }
-      if (c == '(') { stack.push({ repeats: false }); continue; }
-      if (c == ')' && stack.length > 1) {
+      if (c === '(') { stack.push({ repeats: false }); continue; }
+      if (c === ')' && stack.length > 1) {
         const group = stack.pop();
         const repeated = repeatAt(i + 1);
         if (group.repeats && repeated) return true;
@@ -533,7 +533,7 @@
   // A function that tests an item against a condition. What is slow to prepare
   // (a regex) is prepared here, once per query, not once per item.
   function compile({ field, op, value, caseSensitive }) {
-    if (op == 'regex') {
+    if (op === 'regex') {
       const re = regex(value, caseSensitive ? '' : 'i');
       return item => {
         const v = item[field];
@@ -549,8 +549,8 @@
     const equals = (x, y) => {
       if (isEmpty(x) || isEmpty(y)) return isEmpty(x) && isEmpty(y);
       const nx = asNumber(x), ny = asNumber(y);
-      if (!isNaN(nx) && !isNaN(ny)) return nx == ny;
-      return text(x) == text(y);
+      if (!isNaN(nx) && !isNaN(ny)) return nx === ny;
+      return text(x) === text(y);
     };
     const values = [].concat(v); // links' origins and the like are lists
     switch (op) {
@@ -576,7 +576,7 @@
     if (!conditions || !conditions.length) return items;
     conditions.forEach(c => { if (!c || !c.field || !OPS.includes(c.op)) fail('Each filter condition needs a field and an op (' + OPS.join(', ') + ')'); });
     const tests = conditions.map(compile);
-    const any = match == 'any';
+    const any = match === 'any';
     return items.filter(item => any ? tests.some(t => t(item)) : tests.every(t => t(item)));
   }
 
@@ -587,7 +587,7 @@
     return items.slice().sort((a, b) => {
       for (const { field, descending } of by) {
         const ea = isEmpty(a[field]), eb = isEmpty(b[field]);
-        if (ea || eb) { if (ea != eb) return ea ? 1 : -1; continue; } // empty last
+        if (ea || eb) { if (ea !== eb) return ea ? 1 : -1; continue; } // empty last
         const c = compare(a[field], b[field]);
         if (c) return descending ? -c : c;
       }
@@ -647,9 +647,9 @@
     onChange(show);
     show();
   }
-  if (typeof document != 'undefined') {
+  if (typeof document !== 'undefined') {
     // After the tool files (deferred scripts too) have defined their tools
-    if (document.readyState == 'complete') bindSwitch();
+    if (document.readyState === 'complete') bindSwitch();
     else document.addEventListener('DOMContentLoaded', bindSwitch);
   }
 

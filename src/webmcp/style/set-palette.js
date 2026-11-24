@@ -5,7 +5,7 @@ import { T, strList, toHex, KINDS, legend, refreshTable } from './helpers.js';
 function schemeColors(name, size) {
   const s = self.d3[name];
   if (!Array.isArray(s)) fail('Unknown scheme ' + name + '. See list_palettes');
-  if (typeof s[0] == 'string') return s.slice();
+  if (typeof s[0] === 'string') return s.slice();
   const sizes = s.map((x, i) => x ? i : -1).filter(i => i >= 0);
   const n = size && s[size] ? size : sizes[sizes.length - 1];
   return s[n].slice();

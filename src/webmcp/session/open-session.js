@@ -20,9 +20,9 @@ export default {
     let text = args.contents, extension = args.extension || 'auto';
     if (args.contentsBase64 !== undefined) {
       const bytes = bytesOf(args.contentsBase64);
-      if (extension == 'zip' || (extension == 'auto' && bytes[0] == 0x50 && bytes[1] == 0x4b)) ({ text, extension } = await sessionInZip(bytes));
+      if (extension === 'zip' || (extension === 'auto' && bytes[0] === 0x50 && bytes[1] === 0x4b)) ({ text, extension } = await sessionInZip(bytes));
       else text = new TextDecoder().decode(bytes);
-    } else if (extension == 'zip') {
+    } else if (extension === 'zip') {
       fail('A zip must be given as contentsBase64');
     }
     await loading(() => openJSON(text, extension), args.timeoutMs || 300000);

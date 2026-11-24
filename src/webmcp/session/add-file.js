@@ -30,9 +30,9 @@ export default {
     if (!name) fail('name is required');
     if (args.contents === undefined && args.contentsBase64 === undefined) fail('Give the file\'s text as contents, or its bytes as contentsBase64');
     const extension = name.split('.').pop().toLowerCase();
-    if (extension == 'microbetrace' || extension == 'hivtrace' || extension == 'zip') {
+    if (extension === 'microbetrace' || extension === 'hivtrace' || extension === 'zip') {
       let text = args.contents, ext = extension;
-      if (extension == 'zip') {
+      if (extension === 'zip') {
         if (args.contentsBase64 === undefined) fail('A zip file must be given as contentsBase64');
         ({ text, extension: ext } = await sessionInZip(bytesOf(args.contentsBase64)));
       } else if (text === undefined) {
@@ -41,8 +41,8 @@ export default {
       await loading(() => openJSON(text, ext), 300000);
       return Object.assign({ opened: 'session', name }, summary());
     }
-    if (extension == 'svg') fail('SVG files are not data files; they are not supported here');
-    const binary = extension == 'xlsx' || extension == 'xls';
+    if (extension === 'svg') fail('SVG files are not data files; they are not supported here');
+    const binary = extension === 'xlsx' || extension === 'xls';
     let contents;
     if (args.contentsBase64 !== undefined) {
       const bytes = bytesOf(args.contentsBase64);
@@ -56,12 +56,12 @@ export default {
     // The view stores names escaped (view.add escapes the raw name it is given), so the
     // duplicate check compares escaped names. Pass the raw name to view.add, not safeName.
     const safeName = self.MT.escape(name);
-    const existing = self.session.files.find(f => f.name == safeName);
+    const existing = self.session.files.find(f => f.name === safeName);
     if (existing) {
       if (!args.replace) fail('A file named ' + name + ' is already added. Use replace: true, or remove_pending_file first.');
       view.remove(safeName);
     }
-    const format = args.format && args.format != 'auto' ? args.format : undefined;
+    const format = args.format && args.format !== 'auto' ? args.format : undefined;
     const added = view.add({ name, contents, extension, format });
     try {
       const fields = fieldsFor(args, added.format, added.headers);
@@ -70,6 +70,6 @@ export default {
       view.remove(added.name);
       throw error;
     }
-    return Object.assign({ added: view.list().find(f => f.name == added.name) }, pending(view));
+    return Object.assign({ added: view.list().find(f => f.name === added.name) }, pending(view));
   }
 };

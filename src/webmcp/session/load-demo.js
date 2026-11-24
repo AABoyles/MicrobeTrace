@@ -28,7 +28,7 @@ export default {
   execute: async (args) => {
     const source = args.source || 'session';
     const timeout = args.timeoutMs || 300000;
-    if (source == 'session') {
+    if (source === 'session') {
       const response = await fetch('demo/Demo_outbreak_session.microbetrace');
       if (!response.ok) fail('Could not fetch the demo session (HTTP ' + response.status + ')');
       const session = await response.json();

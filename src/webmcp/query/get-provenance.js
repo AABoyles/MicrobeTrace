@@ -16,7 +16,7 @@ export default {
     const node = nodeById(id);
     const out = {};
     (field ? [field] : d.nodeFields).forEach(f => {
-      if (f == 'seq' && !field) return;
+      if (f === 'seq' && !field) return;
       const p = MT.provenance(node._id, f).map(x => Object.assign({}, x, { value: clip(x.value, 100) }));
       if (p.length > (includeSingle || field ? 0 : 1)) out[f] = p;
     });

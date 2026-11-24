@@ -20,7 +20,7 @@ export default {
     if (!Object.keys(map).length) fail('Give at least one panel');
     await applyAll(map);
     const w = W();
-    const visible = id => { const el = document.getElementById(id); return !!el && el.style.display != 'none' && !el.hidden && getComputedStyle(el).display != 'none'; };
+    const visible = id => { const el = document.getElementById(id); return !!el && el.style.display !== 'none' && !el.hidden && getComputedStyle(el).display !== 'none'; };
     return {
       settings: Object.fromEntries(Object.values(keys).map(k => [k, !!w[k]])),
       displayed: { nodeColorTable: visible('node-color-table-wrapper'), linkColorTable: visible('link-color-table-wrapper'), statistics: visible('network-statistics-wrapper') }

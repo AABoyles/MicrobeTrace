@@ -7,7 +7,7 @@ const cssColor = value => {
   c.fillStyle = '#000001';
   c.fillStyle = String(value);
   const v = c.fillStyle;
-  if (v == '#000001' && !/^(#000001|rgb\(0, 0, 1\))$/i.test(String(value))) return null;
+  if (v === '#000001' && !/^(#000001|rgb\(0, 0, 1\))$/i.test(String(value))) return null;
   return v.startsWith('#') ? v : null;
 };
 
@@ -32,13 +32,13 @@ function coerce(rec, value) {
     case 'choice': {
       const s = String(value);
       const exact = rec.options.find(o => String(o.value) === s);
-      const loose = exact || rec.options.find(o => o.label.toLowerCase() == s.toLowerCase() || String(o.value).toLowerCase() == s.toLowerCase());
-      if (!loose) fail(name + ' must be one of: ' + rec.options.map(o => JSON.stringify(o.value) + (o.label && o.label != o.value ? ' (' + o.label + ')' : '')).join(', '));
+      const loose = exact || rec.options.find(o => o.label.toLowerCase() === s.toLowerCase() || String(o.value).toLowerCase() === s.toLowerCase());
+      if (!loose) fail(name + ' must be one of: ' + rec.options.map(o => JSON.stringify(o.value) + (o.label && o.label != o.value ? ' (' + o.label + ')' : '')).join(', ')); // eslint-disable-line eqeqeq -- option values and labels may be numbers or text
       return loose.value;
     }
     case 'multi-choice': {
       const list = [].concat(value).map(v => {
-        const o = rec.options.find(o => String(o.value) === String(v) || o.label.toLowerCase() == String(v).toLowerCase());
+        const o = rec.options.find(o => String(o.value) === String(v) || o.label.toLowerCase() === String(v).toLowerCase());
         if (!o) fail(name + ' has no option ' + JSON.stringify(v) + '; options: ' + rec.options.map(o => o.value).join(', '));
         return o.value;
       });
@@ -78,7 +78,7 @@ export default {
     if (!entries.length) fail('settings is empty');
     const errors = [], plan = [];
     entries.forEach(([key, value]) => {
-      const rec = records.find(r => r.key == key);
+      const rec = records.find(r => r.key === key);
       if (!rec) return errors.push('No setting "' + key + '" in the ' + item.componentType + ' view (see get_view_settings)');
       try { plan.push({ rec, key, value: coerce(rec, value) }); } catch (e) { errors.push(e.message); }
     });
@@ -96,17 +96,17 @@ export default {
       rec._controls.forEach(el => {
         if (!self.MTBind) return;
         if (el.tagName === 'SELECT' && el.multiple) return;
-        const now = el.type == 'radio' ? (el.checked ? self.MTBind.read(el) : undefined) : self.MTBind.read(el);
-        const shown = el.type == 'radio' ? el.checked === (self.MTBind.read(el) === value) : same(now, value);
+        const now = el.type === 'radio' ? (el.checked ? self.MTBind.read(el) : undefined) : self.MTBind.read(el);
+        const shown = el.type === 'radio' ? el.checked === (self.MTBind.read(el) === value) : same(now, value);
         if (!shown) {
           self.MTBind.write(el, value);
-          const type = el.type == 'range' || el.type == 'number' || el.type == 'text' ? 'input' : 'change';
-          if (el.type != 'radio' || el.checked) el.dispatchEvent(new Event(type, { bubbles: true }));
+          const type = el.type === 'range' || el.type === 'number' || el.type === 'text' ? 'input' : 'change';
+          if (el.type !== 'radio' || el.checked) el.dispatchEvent(new Event(type, { bubbles: true }));
         }
       });
     });
     await settle(100);
-    const after = settingsOf(root).filter(r => plan.some(p => p.key == r.key)).map(publicRecord);
+    const after = settingsOf(root).filter(r => plan.some(p => p.key === r.key)).map(publicRecord);
     return { view: item.componentType, changes, settings: after };
   }
 };

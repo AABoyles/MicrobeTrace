@@ -21,11 +21,11 @@ export default {
     const visibleNodes = d.nodes.filter(n => n.visible);
     out.nodes = { total: d.nodes.length, visible: visibleNodes.length, selected: d.nodes.filter(n => n.selected).length, withSequences: d.nodes.filter(n => n.seq).length };
     out.links = { total: g.edgeCount, explicit: g.m, computedDistances: g.edgeCount - g.m, visible: g.visibleCount };
-    out.clusters = { total: d.clusters.length, visible: d.clusters.filter(c => c.visible).length, withMultipleNodes: d.clusters.filter(c => c.nodes > 1).length, singletons: d.clusters.filter(c => c.nodes == 1).length };
+    out.clusters = { total: d.clusters.length, visible: d.clusters.filter(c => c.visible).length, withMultipleNodes: d.clusters.filter(c => c.nodes > 1).length, singletons: d.clusters.filter(c => c.nodes === 1).length };
     out.filters = {
       linkMetric: s['link-sort-variable'], linkThreshold: s['link-threshold'], clusterMinimumSize: s['cluster-minimum-size'],
       linkPruning: s['link-prune'], timelineDateField: s['timeline-date-field'],
-      timelineEnd: s['timeline-date-field'] != 'None' && sess.state ? sess.state.timeEnd : undefined
+      timelineEnd: s['timeline-date-field'] !== 'None' && sess.state ? sess.state.timeEnd : undefined
     };
     out.defaultDistanceMetric = s['default-distance-metric'];
     out.nodeFields = d.nodeFields.filter(f => !isInternal(f));

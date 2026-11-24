@@ -14,21 +14,21 @@ export default {
   execute: async ({ kind, sortBy = 'count', offset, limit }) => {
     T.requireData();
     const l = legend(kind);
-    if (sortBy == 'count') l.values.sort((a, b) => b.count - a.count);
-    else if (sortBy == 'value') l.values.sort((a, b) => T.compare(a.value, b.value));
+    if (sortBy === 'count') l.values.sort((a, b) => b.count - a.count);
+    else if (sortBy === 'value') l.values.sort((a, b) => T.compare(a.value, b.value));
     const p = T.page(l.values, { offset, limit: limit == null ? 200 : limit });
     const out = Object.assign({}, l, { values: p.items, returned: p.returned, offset: p.offset });
-    if (kind == 'node') {
+    if (kind === 'node') {
       const sv = W()['node-symbol-variable'];
       out.shapeVariable = sv;
       out.defaultShape = W()['node-symbol'];
-      if (sv != 'None' && self.session.style.nodeSymbolsTable[sv]) {
+      if (sv !== 'None' && self.session.style.nodeSymbolsTable[sv]) {
         const keys = self.session.style.nodeSymbolsTableKeys[sv] || [], symbols = self.session.style.nodeSymbolsTable[sv];
         out.shapes = keys.map((value, i) => ({ value: String(value), shape: symbols[i] }));
       }
     }
     const o = self.session.style.overwrite || {};
-    if (o[kind + 'ColorHeaderVariable'] == l.variable) out.title = o[kind + 'ColorHeaderTitle'];
+    if (o[kind + 'ColorHeaderVariable'] == l.variable) out.title = o[kind + 'ColorHeaderTitle']; // eslint-disable-line eqeqeq -- variable names may come from a saved session, where they may be stored as numbers
     return out;
   }
 };

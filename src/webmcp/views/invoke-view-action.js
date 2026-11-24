@@ -22,8 +22,8 @@ export default {
     const root = rootOf(item);
     const actions = actionsOf(root, false);
     const q = String(action).trim().toLowerCase();
-    let found = actions.filter(a => a.id == q);
-    if (!found.length) found = actions.filter(a => a.title.toLowerCase() == q);
+    let found = actions.filter(a => a.id == q); // eslint-disable-line eqeqeq -- action ids are matched as text or number alike
+    if (!found.length) found = actions.filter(a => a.title.toLowerCase() === q);
     if (!found.length) found = actions.filter(a => a.title.toLowerCase().includes(q) || a.id.includes(slug(q)));
     if (!found.length) fail('No action matching ' + JSON.stringify(action) + ' in the ' + item.componentType + ' view. Actions: ' + actions.map(a => a.id).join(', '));
     if (found.length > 1) fail('"' + action + '" matches several actions: ' + found.map(a => a.id + ' (' + a.title + ')').join('; ') + '. Use an id.');
@@ -33,8 +33,8 @@ export default {
     target.el.click();
     await settle(300);
     const after = actionsOf(root, false).map(publicAction);
-    const now = after.find(a => a.id == target.id);
-    const changed = after.filter(a => { const b = before.find(x => x.id == a.id); return b && JSON.stringify(b) != JSON.stringify(a) && a.id != target.id; });
+    const now = after.find(a => a.id == target.id); // eslint-disable-line eqeqeq -- action ids are matched as text or number alike
+    const changed = after.filter(a => { const b = before.find(x => x.id == a.id); return b && JSON.stringify(b) != JSON.stringify(a) && a.id != target.id; }); // eslint-disable-line eqeqeq -- action ids are matched as text or number alike
     return { view: item.componentType, invoked: target.title, id: target.id, state: now || null, otherChanges: changed };
   }
 };

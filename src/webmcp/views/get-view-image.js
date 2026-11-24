@@ -70,15 +70,15 @@ export default {
     await settle(150);
     let dataURL, used;
     const exporter = exporterOf(item);
-    if (method != 'dom' && exporter && IMAGE_TYPES.some(t => exporter.types.some(o => o.value == t))) {
+    if (method !== 'dom' && exporter && IMAGE_TYPES.some(t => exporter.types.some(o => o.value === t))) {
       try {
         const result = await runExport(item, { format: 'png', scale, download: false });
         dataURL = await blobToDataURL(result.blob);
         used = 'export';
       } catch (e) {
-        if (method == 'export') throw e;
+        if (method === 'export') throw e;
       }
-    } else if (method == 'export') {
+    } else if (method === 'export') {
       fail('The ' + item.componentType + ' view has no image export; use method auto or dom.');
     }
     if (!dataURL) {

@@ -11,10 +11,10 @@ export default {
     clearValueColors: bool('Also reset per-value colors, opacities, names and palettes for the scope (default true)')
   }),
   annotations: { consequentialHint: true },
-  confirm: ({ scope = 'all' }) => 'Reset ' + (scope == 'all' ? 'all the styling' : 'the ' + ({ nodes: 'node', links: 'link', page: 'page' }[scope] || scope) + ' styling') + ' to the defaults. Custom colors and settings for it are lost.',
+  confirm: ({ scope = 'all' }) => 'Reset ' + (scope === 'all' ? 'all the styling' : 'the ' + ({ nodes: 'node', links: 'link', page: 'page' }[scope] || scope) + ' styling') + ' to the defaults. Custom colors and settings for it are lost.',
   execute: async ({ scope = 'all', clearValueColors = true }) => {
     T.requireData();
-    const groups = scope == 'all' ? ['nodes', 'links', 'page'] : [scope];
+    const groups = scope === 'all' ? ['nodes', 'links', 'page'] : [scope];
     const defaults = self.MT.defaultWidgets, style = self.session.style, fresh = self.MT.sessionSkeleton().style;
     const keys = groups.flatMap(g => STYLE_KEYS[g]);
     const map = {};
@@ -26,14 +26,14 @@ export default {
       if (r.changed) changes[k] = { old: r.old, new: r.new };
     }
     if (clearValueColors) {
-      groups.filter(g => g != 'page').forEach(g => {
-        const kind = g == 'nodes' ? 'node' : 'link', cfg = KINDS[kind];
+      groups.filter(g => g !== 'page').forEach(g => {
+        const kind = g === 'nodes' ? 'node' : 'link', cfg = KINDS[kind];
         style[cfg.table] = {};
         style[cfg.keys] = {};
         style[cfg.alphas] = fresh[cfg.alphas].slice();
         style[cfg.names] = {};
         style[cfg.palette] = fresh[cfg.palette].slice();
-        if (kind == 'node') { style.nodeSymbolsTable = {}; style.nodeSymbolsTableKeys = {}; }
+        if (kind === 'node') { style.nodeSymbolsTable = {}; style.nodeSymbolsTableKeys = {}; }
         style.overwrite = style.overwrite || {};
         delete style.overwrite[kind + 'ColorHeaderVariable'];
         delete style.overwrite[kind + 'ColorHeaderTitle'];

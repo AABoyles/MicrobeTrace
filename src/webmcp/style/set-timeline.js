@@ -24,7 +24,7 @@ export default {
       if (W()['node-timeline-variable'] !== f) S().set('node-timeline-variable', f);
     }
     if (date !== undefined || position !== undefined) {
-      if (W()['node-timeline-variable'] == 'None' || !self.MT.scrubTimeline) fail('The timeline is not on. Pass variable (a date field) to start it');
+      if (W()['node-timeline-variable'] === 'None' || !self.MT.scrubTimeline) fail('The timeline is not on. Pass variable (a date field) to start it');
       let when;
       if (date !== undefined) {
         when = self.MT.parseDate(date);

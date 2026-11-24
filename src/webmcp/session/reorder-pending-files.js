@@ -10,7 +10,7 @@ export default {
   execute: async (args) => {
     const view = await filesView();
     const names = args.order.map(n => self.MT.escape(n));
-    const missing = names.filter(n => !view.list().some(f => f.name == n));
+    const missing = names.filter(n => !view.list().some(f => f.name === n));
     if (missing.length) fail('No pending file is named ' + missing.join(', ') + '. Pending: ' + JSON.stringify(view.list().map(f => f.name)));
     view.reorder(names);
     return pending(view);

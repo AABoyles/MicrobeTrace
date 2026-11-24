@@ -30,7 +30,7 @@ export default {
     const map = {}, warnings = [];
     if (variable !== undefined) {
       map['node-radius-variable'] = checkVariable('node', variable);
-      if (variable != 'None' && !numericNodeField(variable)) warnings.push('Field ' + variable + ' does not look numeric; sizes may not vary');
+      if (variable !== 'None' && !numericNodeField(variable)) warnings.push('Field ' + variable + ' does not look numeric; sizes may not vary');
     }
     if (radius !== undefined) map['node-radius'] = radius;
     if (min !== undefined) map['node-radius-min'] = min;

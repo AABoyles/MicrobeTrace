@@ -15,7 +15,7 @@ export default {
     requireData();
     const t = self.temp;
     let computed = false;
-    if (compute == 'always' || (compute == 'if-missing' && !(t && t.tree))) {
+    if (compute === 'always' || (compute === 'if-missing' && !(t && t.tree))) {
       await MT_().computeTree();
       computed = true;
     }

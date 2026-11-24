@@ -46,7 +46,7 @@ export const hasLayout = () => self.layout && self.layout.rootItem;
 
 export const items = () => hasLayout() ? self.layout.contentItems : [];
 
-export const itemOf = view => items().find(i => i.componentType == view);
+export const itemOf = view => items().find(i => i.componentType === view);
 
 export const rootOf = item => item.container.element;
 
@@ -59,7 +59,7 @@ export const isActive = item => item.parent && activeOf(item.parent) === item;
 // Waits for a view's element to be filled in (and, for the network, its graph)
 export async function mounted(item) {
   await waitFor(() => rootOf(item).children.length > 0, { timeout: 30000, message: 'The ' + item.componentType + ' view did not finish opening' });
-  if (item.componentType == 'network') {
+  if (item.componentType === 'network') {
     await waitFor(() => self.temp && self.temp.network && self.temp.network.graph, { timeout: GRAPH_WAIT_MS }).catch(() => {});
   }
   await settle(50);
@@ -109,7 +109,7 @@ export function snapshot(item = self.layout.rootItem) {
   if (!item) return { type: 'stack', content: [] };
   if (item.isComponent) return { type: item.componentType };
   const out = { type: item.type, content: item.contentItems.map(snapshot) };
-  if (item.type == 'stack') { const a = activeOf(item); if (a) out.active = a.componentType; }
+  if (item.type === 'stack') { const a = activeOf(item); if (a) out.active = a.componentType; }
   return out;
 }
 
@@ -121,7 +121,7 @@ function describe(item = self.layout.rootItem) {
     return { type: 'view', view: item.componentType, title: item.title, active: isActive(item), width: r ? r.clientWidth : 0, height: r ? r.clientHeight : 0 };
   }
   const out = { type: item.type, content: item.contentItems.map(describe) };
-  if (item.type == 'stack') { const a = activeOf(item); out.activeView = a ? a.componentType : null; }
+  if (item.type === 'stack') { const a = activeOf(item); out.activeView = a ? a.componentType : null; }
   return out;
 }
 
@@ -137,7 +137,7 @@ export const layoutState = () => ({
 export async function applyLayout(tree) {
   const views = [];
   const check = (node, path) => {
-    if (!node || typeof node != 'object' || typeof node.type != 'string') fail('Layout node at ' + path + ' needs a type');
+    if (!node || typeof node !== 'object' || typeof node.type !== 'string') fail('Layout node at ' + path + ' needs a type');
     if (['stack', 'row', 'column'].includes(node.type)) {
       if (!Array.isArray(node.content)) fail('Layout node at ' + path + ' (' + node.type + ') needs a content array');
       node.content.forEach((c, i) => check(c, path + '.content[' + i + ']'));
@@ -158,7 +158,7 @@ export async function applyLayout(tree) {
   await Promise.all(items().map(mounted));
   const front = node => {
     if (!node.content) return;
-    if (node.type == 'stack' && node.active) {
+    if (node.type === 'stack' && node.active) {
       const it = itemOf(canon(node.active));
       if (it) it.parent.setActiveComponentItem(it, false);
     }
@@ -176,7 +176,7 @@ const text = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
 const isOff = (el, root) => {
   for (let e = el; e && e !== root; e = e.parentElement) {
     if (e.matches('.left-pane, .tab-pane, .collapse, .modal')) continue;
-    if (e.hidden || e.style.display == 'none' || e.classList.contains('d-none') || getComputedStyle(e).display === 'none') return true;
+    if (e.hidden || e.style.display === 'none' || e.classList.contains('d-none') || getComputedStyle(e).display === 'none') return true;
   }
   return false;
 };
@@ -238,15 +238,15 @@ export function settingsOf(root) {
   return Array.from(records.values()).map(({ key, controls }) => {
     const el = controls[0];
     const rec = Object.assign({ key, label: labelOf(el, root) || self.MT.titleize(key), description: descriptionOf(el) }, sectionOf(el, root));
-    if (el.type == 'checkbox') rec.type = 'boolean';
-    else if (el.type == 'radio') {
+    if (el.type === 'checkbox') rec.type = 'boolean';
+    else if (el.type === 'radio') {
       const options = controls.map(c => {
         const lab = c.closest('label');
         return { value: c.value, label: text(lab) || c.value };
       });
-      if (options.every(o => o.value == 'true' || o.value == 'false')) {
+      if (options.every(o => o.value === 'true' || o.value === 'false')) {
         rec.type = 'boolean';
-        rec.options = options.map(o => ({ value: o.value == 'true', label: o.label }));
+        rec.options = options.map(o => ({ value: o.value === 'true', label: o.label }));
       } else {
         rec.type = 'choice';
         rec.options = options;
@@ -254,11 +254,11 @@ export function settingsOf(root) {
     } else if (el.tagName === 'SELECT') {
       rec.type = el.multiple ? 'multi-choice' : 'choice';
       rec.options = optionsOf(el);
-    } else if (el.type == 'range' || el.type == 'number') {
+    } else if (el.type === 'range' || el.type === 'number') {
       rec.type = 'number';
-      rec.control = el.type == 'range' ? 'slider' : 'number';
+      rec.control = el.type === 'range' ? 'slider' : 'number';
       ['min', 'max', 'step'].forEach(a => { if (el.getAttribute(a) !== null && el.getAttribute(a) !== '') rec[a] = Number(el.getAttribute(a)); });
-    } else if (el.type == 'color') rec.type = 'color';
+    } else if (el.type === 'color') rec.type = 'color';
     else rec.type = 'text';
     rec.value = MTs.get(key);
     if (rec.value === undefined) rec.value = null;
@@ -276,11 +276,11 @@ export const publicRecord = r => Object.fromEntries(Object.entries(r).filter(([k
 export function otherControls(root) {
   const out = [];
   root.querySelectorAll('select, input, textarea').forEach(el => {
-    if (el.dataset.setting || el.closest('.modal, .tabulator, .js-plotly-plot, .ts-wrapper, .dropdown-menu') || el.type == 'hidden' || el.type == 'file' || el.type == 'button') return;
+    if (el.dataset.setting || el.closest('.modal, .tabulator, .js-plotly-plot, .ts-wrapper, .dropdown-menu') || el.type === 'hidden' || el.type === 'file' || el.type === 'button') return;
     if (el.classList.contains('ts-control') || el.closest('.btn-group-toggle')) return;
     const control = controlSelector(root, el);
     if (!control) return;
-    const rec = { control, label: labelOf(el, root) || el.title || '', type: el.tagName === 'SELECT' ? (el.multiple ? 'multi-choice' : 'choice') : el.type == 'checkbox' ? 'boolean' : el.type, value: el.type == 'checkbox' ? el.checked : (el.multiple ? Array.from(el.selectedOptions).map(o => o.value) : el.value), disabled: el.disabled };
+    const rec = { control, label: labelOf(el, root) || el.title || '', type: el.tagName === 'SELECT' ? (el.multiple ? 'multi-choice' : 'choice') : el.type === 'checkbox' ? 'boolean' : el.type, value: el.type === 'checkbox' ? el.checked : (el.multiple ? Array.from(el.selectedOptions).map(o => o.value) : el.value), disabled: el.disabled };
     if (el.tagName === 'SELECT') rec.options = optionsOf(el);
     out.push(rec);
   });
@@ -305,9 +305,9 @@ export function actionsOf(root, includeExport) {
     if (el.closest('.modal') || el.classList.contains('btn-close') || el.matches('label')) return;
     if (el.closest('.tabulator, .js-plotly-plot, .ts-wrapper, .leaflet-control-container')) return;
     const toggle = el.dataset.bsToggle;
-    if (toggle == 'tab' || toggle == 'collapse') return;
+    if (toggle === 'tab' || toggle === 'collapse') return;
     if (el.dataset.setting || el.querySelector('[data-setting]') || el.closest('.btn-group-toggle')) return;
-    const exportOpener = toggle == 'modal';
+    const exportOpener = toggle === 'modal';
     if (exportOpener && !includeExport) return;
     const name = el.getAttribute('aria-label') || el.title || text(el) || el.dataset.bsOriginalTitle || '';
     if (!name) return;
@@ -320,9 +320,9 @@ export function actionsOf(root, includeExport) {
       title: name,
       text: text(el),
       where: el.closest('.view-controls') ? 'toolbar' : el.closest('.left-pane') ? 'settings pane' : 'view',
-      kind: exportOpener ? 'export' : toggle == 'dropdown' ? 'menu' : menu ? 'menu item' : 'button',
+      kind: exportOpener ? 'export' : toggle === 'dropdown' ? 'menu' : menu ? 'menu item' : 'button',
       menu: toggler ? (toggler.title || text(toggler)) : undefined,
-      pressed: el.getAttribute('aria-pressed') == 'true' || (el.classList.contains('active') && el.matches('.settings-toggle, [class*="toggle"]')) || undefined,
+      pressed: el.getAttribute('aria-pressed') === 'true' || (el.classList.contains('active') && el.matches('.settings-toggle, [class*="toggle"]')) || undefined,
       enabled: !el.disabled && !el.classList.contains('disabled'),
       visible: !isOff(el, root),
       el
@@ -353,12 +353,12 @@ export async function finish(dataURL, { maxWidth, format = 'png', quality = 0.9,
   let w = img.naturalWidth, h = img.naturalHeight;
   const wanted = 'image/' + format;
   const scale = maxWidth && w > maxWidth ? maxWidth / w : 1;
-  if (scale == 1 && dataURL.startsWith('data:' + wanted + ';')) return { dataURL, width: w, height: h };
+  if (scale === 1 && dataURL.startsWith('data:' + wanted + ';')) return { dataURL, width: w, height: h };
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(w * scale));
   canvas.height = Math.max(1, Math.round(h * scale));
   const c = canvas.getContext('2d');
-  if (format == 'jpeg') { c.fillStyle = background || '#ffffff'; c.fillRect(0, 0, canvas.width, canvas.height); }
+  if (format === 'jpeg') { c.fillStyle = background || '#ffffff'; c.fillRect(0, 0, canvas.width, canvas.height); }
   c.imageSmoothingQuality = 'high';
   c.drawImage(img, 0, 0, canvas.width, canvas.height);
   return { dataURL: canvas.toDataURL(wanted, quality), width: canvas.width, height: canvas.height };
@@ -374,7 +374,7 @@ export async function runExport(item, { format, filename, scale, quality, downlo
   if (!exporter) fail('The ' + item.componentType + ' view has no export dialog.');
   const formats = exporter.types;
   format = format ? String(format).toLowerCase().replace('jpg', 'jpeg') : formats[0].value;
-  const chosen = formats.find(f => f.value == format || f.label.toLowerCase() == format);
+  const chosen = formats.find(f => f.value === format || f.label.toLowerCase() === format);
   if (!chosen) fail('The ' + item.componentType + ' view exports: ' + formats.map(f => f.value).join(', ') + ' (not ' + format + ')');
   const m = MT(), original = m.saveAs;
   let saved = null;

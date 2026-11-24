@@ -29,7 +29,7 @@ export default {
       counts.set(a + '\u0000' + b, (counts.get(a + '\u0000' + b) || 0) + 1);
       rowT.set(a, (rowT.get(a) || 0) + 1); colT.set(b, (colT.get(b) || 0) + 1); total++;
     });
-    const order = totals => Array.from(totals.keys()).sort((a, b) => orderBy == 'count' ? totals.get(b) - totals.get(a) || W.compare(a, b) : W.compare(a, b));
+    const order = totals => Array.from(totals.keys()).sort((a, b) => orderBy === 'count' ? totals.get(b) - totals.get(a) || W.compare(a, b) : W.compare(a, b));
     const rows = order(rowT), columns = order(colT);
     return {
       fieldA, fieldB, rows, columns,

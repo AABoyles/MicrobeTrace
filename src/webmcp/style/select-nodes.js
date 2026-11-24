@@ -7,8 +7,8 @@ function resolveNodes({ ids, filter, match, all, visibleOnly }) {
   if (visibleOnly) candidates = candidates.filter(d => d.visible);
   if (ids && ids.length) {
     const wanted = new Set(ids.map(String));
-    const missing = ids.map(String).filter(id => !self.session.data.nodes.some(d => d._id == id));
-    if (missing.length == ids.length) fail('None of those IDs match a node: ' + missing.slice(0, 5).join(', '));
+    const missing = ids.map(String).filter(id => !self.session.data.nodes.some(d => d._id == id)); // eslint-disable-line eqeqeq -- node IDs may be numbers or text, depending on the file they came from
+    if (missing.length === ids.length) fail('None of those IDs match a node: ' + missing.slice(0, 5).join(', '));
     candidates = candidates.filter(d => wanted.has(String(d._id)));
     var unknown = missing;
   } else if (!filter && !all) {

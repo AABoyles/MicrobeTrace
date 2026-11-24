@@ -7,7 +7,7 @@ export default {
   description: 'Turns the global timeline off (node-timeline-variable = None): hides the timeline bar and shows nodes of all dates again. Returns the timeline state.',
   inputSchema: obj({}),
   execute: async () => {
-    if (W()['node-timeline-variable'] != 'None') S().set('node-timeline-variable', 'None');
+    if (W()['node-timeline-variable'] !== 'None') S().set('node-timeline-variable', 'None');
     return timelineState();
   }
 };

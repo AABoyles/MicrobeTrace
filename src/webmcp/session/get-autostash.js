@@ -7,5 +7,5 @@ export default {
   inputSchema: obj({}),
   annotations: { readOnlyHint: true },
   untrusted: false,
-  execute: async () => ({ autostash: (await self.db.getItem('stash-auto')) == 'true', running: !!(self.temp && self.temp.autostash) })
+  execute: async () => ({ autostash: (await self.db.getItem('stash-auto')) === 'true', running: !!(self.temp && self.temp.autostash) })
 };

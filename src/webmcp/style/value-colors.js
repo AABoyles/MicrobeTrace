@@ -3,7 +3,7 @@ import { obj, str, num, bool } from '../schema.js';
 import { T, S, W, checkVariable, toHex, KINDS, legend, refreshTable } from './helpers.js';
 
 function valueColorTool(kind) {
-  const cfg = KINDS[kind], Kind = kind == 'node' ? 'node' : 'link';
+  const cfg = KINDS[kind], Kind = kind === 'node' ? 'node' : 'link';
   return {
     name: 'set_' + kind + '_value_colors',
     title: 'Set ' + Kind + ' value colors',
@@ -28,7 +28,7 @@ function valueColorTool(kind) {
         if (W()[cfg.variable] !== v) S().set(cfg.variable, v);
       }
       const current = W()[cfg.variable];
-      if (current == 'None') fail('The ' + Kind + 's are not colored by a field. Use color_' + Kind + 's with a variable first, or pass variable');
+      if (current === 'None') fail('The ' + Kind + 's are not colored by a field. Use color_' + Kind + 's with a variable first, or pass variable');
       const style = self.session.style;
       if (reset) {
         delete style[cfg.table][current];
@@ -44,7 +44,7 @@ function valueColorTool(kind) {
         if (index < 0) { errors.push('No row for value ' + JSON.stringify(key)); return null; }
         let hex = null;
         if (color !== undefined) { try { hex = toHex(color); } catch (e) { errors.push(e.message); return null; } }
-        if (opacity !== undefined && (typeof opacity != 'number' || opacity < 0 || opacity > 1)) { errors.push('opacity for ' + key + ' must be 0..1'); return null; }
+        if (opacity !== undefined && (typeof opacity !== 'number' || opacity < 0 || opacity > 1)) { errors.push('opacity for ' + key + ' must be 0..1'); return null; }
         return { index, hex, opacity };
       });
       if (errors.length) fail(errors.slice(0, 10).join('; ') + (errors.length > 10 ? '; ...' : '') + '. Values available: ' + keys.slice(0, 30).join(', ') + (keys.length > 30 ? ', ...' : ''));

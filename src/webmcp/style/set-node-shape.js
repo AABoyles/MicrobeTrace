@@ -5,11 +5,11 @@ import { T, W, checkVariable, applyAll, result } from './helpers.js';
 const SHAPES = () => self.session.style.nodeSymbols.slice();
 
 const shapeName = s => {
-  if (typeof s != 'string') fail('shape must be text');
+  if (typeof s !== 'string') fail('shape must be text');
   const all = SHAPES();
   if (all.includes(s)) return s;
   const t = 'symbol' + s.replace(/[^A-Za-z]/g, '').replace(/^symbol/i, '');
-  const found = all.find(x => x.toLowerCase() == t.toLowerCase());
+  const found = all.find(x => x.toLowerCase() === t.toLowerCase());
   if (!found) fail('Unknown shape ' + JSON.stringify(s) + '. Shapes: ' + all.join(', '));
   return found;
 };

@@ -24,7 +24,7 @@ export default {
     let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
     h.points.forEach((d, i) => {
       const x = p[2 * i], y = p[2 * i + 1];
-      if (x != x) return;
+      if (x !== x) return;
       if (x < xmin) xmin = x; if (x > xmax) xmax = x; if (y < ymin) ymin = y; if (y > ymax) ymax = y;
       if (want && !want.has(String(d._id))) return;
       if (nodes.length < limit) nodes.push({ id: d._id, x: Math.round(x * k) / k, y: Math.round(y * k) / k, pinned: !!d.fixed, cluster: d.cluster === undefined ? null : d.cluster });

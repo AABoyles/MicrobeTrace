@@ -15,7 +15,7 @@ export default {
       files: s.files.map(f => ({ name: f.name, extension: f.extension, format: f.format, field1: f.field1, field2: f.field2, field3: f.field3 })),
       nodeExclusions: s.data.nodeExclusions.slice(),
       filesViewOpen: !!self.MT.filesView,
-      autostash: autostash == 'true',
+      autostash: autostash === 'true',
       startedAt: s.meta.readyTime ? new Date(s.meta.readyTime).toISOString() : null
     });
   }

@@ -24,8 +24,8 @@ export default {
     switch (action) {
       case 'fit': h.fit(); break;
       case 'zoom':
-        if (typeof level != 'number') fail('zoom needs a level');
-        if (typeof g.setZoomLevel != 'function') fail('This network build cannot set a zoom level; use fit.');
+        if (typeof level !== 'number') fail('zoom needs a level');
+        if (typeof g.setZoomLevel !== 'function') fail('This network build cannot set a zoom level; use fit.');
         g.setZoomLevel(level, duration);
         break;
       case 'pin_all': if (!self.session.network.allPinned) h.pinAll(); break;
@@ -34,7 +34,7 @@ export default {
       case 'resume': g.start(0.3); break;
       case 'reheat': g.start(1); break;
     }
-    await settle(action == 'fit' ? 900 : 300);
+    await settle(action === 'fit' ? 900 : 300);
     return Object.assign({ action }, networkState(networkHandle()));
   }
 };

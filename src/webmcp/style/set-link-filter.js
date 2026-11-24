@@ -24,7 +24,7 @@ export default {
       map['link-sort-variable'] = f;
     }
     if (args.threshold !== undefined) {
-      if (typeof args.threshold != 'number' || !isFinite(args.threshold) || args.threshold < 0) fail('threshold must be a number >= 0');
+      if (typeof args.threshold !== 'number' || !isFinite(args.threshold) || args.threshold < 0) fail('threshold must be a number >= 0');
       map['link-threshold'] = args.threshold;
     }
     if (args.prune !== undefined) {
@@ -32,7 +32,7 @@ export default {
       map['link-prune'] = args.prune;
     }
     if (args.epsilon !== undefined) {
-      if (typeof args.epsilon != 'number' || !isFinite(args.epsilon)) fail('epsilon must be a number');
+      if (typeof args.epsilon !== 'number' || !isFinite(args.epsilon)) fail('epsilon must be a number');
       map['filtering-epsilon'] = args.epsilon;
     }
     if (!Object.keys(map).length) fail('Give at least one of variable, threshold, prune, epsilon (get_filter_state reads the current state)');

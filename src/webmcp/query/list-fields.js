@@ -36,11 +36,11 @@ export default {
     const rows = fields.map(field => {
       const { values, sampled } = fieldValues(entity, field, { visibleOnly, limit: sampleLimit });
       const present = values.filter(v => !isEmpty(v));
-      const distinct = field == 'seq' ? present.length : new Set(present.map(v => typeof v === 'object' ? JSON.stringify(v) : v)).size;
-      const row = { field, type: inferType(present, field), nonEmpty: present.length, distinct, internal: isInternal(field), examples: field == 'seq' ? [] : examples(present) };
+      const distinct = field === 'seq' ? present.length : new Set(present.map(v => typeof v === 'object' ? JSON.stringify(v) : v)).size;
+      const row = { field, type: inferType(present, field), nonEmpty: present.length, distinct, internal: isInternal(field), examples: field === 'seq' ? [] : examples(present) };
       if (sampled) row.sampled = true;
       return row;
     });
-    return { entity, items: entity == 'node' ? (visibleOnly ? requireData().nodes.filter(n => n.visible).length : requireData().nodes.length) : entity == 'cluster' ? requireData().clusters.length : (visibleOnly ? graph().visibleCount : graph().edgeCount), fields: rows };
+    return { entity, items: entity === 'node' ? (visibleOnly ? requireData().nodes.filter(n => n.visible).length : requireData().nodes.length) : entity === 'cluster' ? requireData().clusters.length : (visibleOnly ? graph().visibleCount : graph().edgeCount), fields: rows };
   }
 };

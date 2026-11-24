@@ -17,7 +17,7 @@ export const MAX_ALL_EDGES = 4e6;
 // Field names MicrobeTrace keeps for itself, or that identify items
 const INTERNAL = ['index', '_id', 'id', 'selected', 'visible', 'origin', 'seq', 'source', 'target', 'nn', 'directed', 'degree', 'cluster', 'x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed', 'preFixed'];
 
-export const isInternal = f => INTERNAL.includes(f) || f[0] == '_';
+export const isInternal = f => INTERNAL.includes(f) || f[0] === '_';
 
 export const isEmpty = W.isEmpty;
 
@@ -44,7 +44,7 @@ export function selectNodes(args) {
   let nodes = data.nodes;
   if (args.ids && args.ids.length) {
     const wanted = new Set(args.ids.map(String));
-    const missing = args.ids.filter(id => !(data.nodeIndex && data.nodeIndex.has('' + id)) && !nodes.some(n => n._id == id));
+    const missing = args.ids.filter(id => !(data.nodeIndex && data.nodeIndex.has('' + id)) && !nodes.some(n => n._id == id)); // eslint-disable-line eqeqeq -- node IDs may be numbers or text, depending on the file they came from
     if (missing.length) fail('No node has the ID ' + missing.slice(0, 5).map(m => JSON.stringify(m)).join(', ') + (missing.length > 5 ? ' (and ' + (missing.length - 5) + ' more)' : ''));
     nodes = nodes.filter(n => wanted.has('' + n._id));
   }
@@ -56,17 +56,17 @@ export function selectNodes(args) {
 // A plain, JSON-friendly copy of a node. sequences: 'none' (default: gives
 // seq_length instead), 'truncated' or 'full'.
 export function nodeOut(node, { fields, sequences = 'none', maxSequenceLength = 60 } = {}) {
-  const names = fields && fields.length ? fields : Object.keys(node).filter(k => k != 'seq' && typeof node[k] != 'function');
+  const names = fields && fields.length ? fields : Object.keys(node).filter(k => k !== 'seq' && typeof node[k] !== 'function');
   const out = {};
   names.forEach(f => {
     let v = node[f];
-    if (f == 'seq') {
-      if (sequences == 'none') return;
-      v = sequences == 'truncated' ? clip(v, maxSequenceLength) : v;
+    if (f === 'seq') {
+      if (sequences === 'none') return;
+      v = sequences === 'truncated' ? clip(v, maxSequenceLength) : v;
     }
     out[f] = v === undefined ? null : v instanceof Date ? v.toISOString() : v;
   });
-  if ((!fields || !fields.length || fields.includes('seq_length')) && sequences == 'none') out.seq_length = typeof node.seq === 'string' ? node.seq.length : 0;
+  if ((!fields || !fields.length || fields.includes('seq_length')) && sequences === 'none') out.seq_length = typeof node.seq === 'string' ? node.seq.length : 0;
   return out;
 }
 
@@ -102,7 +102,7 @@ export function linkReader() {
 
 export function edgeList(scope) {
   const g = graph();
-  if (scope == 'all') {
+  if (scope === 'all') {
     if (g.edgeCount > MAX_ALL_EDGES) fail('There are ' + g.edgeCount.toLocaleString() + ' links in all; use scope "visible" or restrict by nodes.');
     const out = [];
     g.forEachEdge(e => out.push(e));
@@ -139,7 +139,7 @@ export function linkOut(e, fields, vis) {
 // Adjacency over links: arrays of neighbors and edges per node index
 export function adjacency(scope) {
   const g = graph();
-  const edges = edgeList(scope == 'all' ? 'all' : 'visible');
+  const edges = edgeList(scope === 'all' ? 'all' : 'visible');
   const nbr = new Array(g.nodeCount), eds = new Array(g.nodeCount);
   for (let i = 0; i < g.nodeCount; i++) { nbr[i] = []; eds[i] = []; }
   edges.forEach(e => {
@@ -155,12 +155,12 @@ class Stop {}
 // The values of a field across nodes, links or clusters: { values, items, sampled }
 export function fieldValues(entity, field, { visibleOnly = false, limit = 2e6 } = {}) {
   const data = requireData();
-  if (entity == 'node') {
+  if (entity === 'node') {
     let nodes = data.nodes;
     if (visibleOnly) nodes = nodes.filter(n => n.visible);
     return { values: nodes.map(n => n[field]), items: nodes.length, sampled: false };
   }
-  if (entity == 'cluster') {
+  if (entity === 'cluster') {
     let clusters = data.clusters;
     if (visibleOnly) clusters = clusters.filter(c => c.visible);
     return { values: clusters.map(c => c[field]), items: clusters.length, sampled: false };
@@ -195,7 +195,7 @@ export function fieldValues(entity, field, { visibleOnly = false, limit = 2e6 } 
 
 export const entityFields = entity => {
   const d = requireData();
-  return entity == 'node' ? d.nodeFields.slice() : entity == 'cluster' ? (d.clusterFields || Object.keys(d.clusters[0] || {})) : linkFieldNames();
+  return entity === 'node' ? d.nodeFields.slice() : entity === 'cluster' ? (d.clusterFields || Object.keys(d.clusters[0] || {})) : linkFieldNames();
 };
 
 export const quantile = (sorted, p) => {
@@ -212,7 +212,7 @@ const asTime = v => {
 
 // The kind of data in a list of values (empties excluded)
 export function inferType(values, field) {
-  if (field == 'seq') return 'sequence';
+  if (field === 'seq') return 'sequence';
   if (!values.length) return 'empty';
   if (values.every(v => typeof v === 'boolean')) return 'boolean';
   if (values.some(v => Array.isArray(v))) return 'list';
@@ -232,12 +232,12 @@ export function summarizeValues(values, { field, top = 20, bins = 10 } = {}) {
   const type = inferType(present, field);
   const out = { type, count: present.length, empty: values.length - present.length - infinite };
   if (infinite) out.infinite = infinite;
-  if (type == 'sequence') {
+  if (type === 'sequence') {
     const lengths = present.map(s => String(s).length).sort((a, b) => a - b);
     out.length = { min: lengths[0] ?? null, max: lengths[lengths.length - 1] ?? null, median: quantile(lengths, 0.5) };
     return out;
   }
-  if (type == 'numeric' || type == 'numeric-text') {
+  if (type === 'numeric' || type === 'numeric-text') {
     const nums = Float64Array.from(present, Number).sort();
     const n = nums.length;
     let sum = 0;
@@ -257,7 +257,7 @@ export function summarizeValues(values, { field, top = 20, bins = 10 } = {}) {
     out.histogram = hist;
     return out;
   }
-  if (type == 'date') {
+  if (type === 'date') {
     const times = present.map(asTime).filter(t => !isNaN(t)).sort((a, b) => a - b);
     const iso = t => new Date(t).toISOString().slice(0, 10);
     out.distinct = new Set(present.map(v => v instanceof Date ? v.getTime() : String(v))).size;
@@ -313,7 +313,7 @@ export function neighborRows(rows, { includeNode, nodeFields, linkFields, limit 
       const o = { id: n.id, depth: n.depth };
       if (n.depth > 1) o.via = n.via;
       o.link = linkFieldsOf(n.edge, linkFields, vis);
-      if (includeNode) o.node = nodeOut(data.nodeIndex.get(n.id) || data.nodes.find(x => x._id == n.id), { fields: nodeFields });
+      if (includeNode) o.node = nodeOut(data.nodeIndex.get(n.id) || data.nodes.find(x => x._id == n.id), { fields: nodeFields }); // eslint-disable-line eqeqeq -- node IDs may be numbers or text, depending on the file they came from
       return o;
     });
     return { id: r.id, total, returned: list.length, neighbors: list };

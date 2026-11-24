@@ -16,7 +16,7 @@ export default {
       if (args.contents === undefined) fail('Give the style as contents (JSON text) or style (an object)');
       try { style = JSON.parse(args.contents); } catch (error) { fail('That is not valid JSON: ' + error.message); }
     }
-    if (!style || typeof style != 'object' || typeof style.widgets != 'object') fail('That is not a MicrobeTrace style: it needs a "widgets" object (save one with save_session, format microbetracestyle).');
+    if (!style || typeof style !== 'object' || typeof style.widgets !== 'object') fail('That is not a MicrobeTrace style: it needs a "widgets" object (save one with save_session, format microbetracestyle).');
     const MT = self.MT;
     MT.applyStyle(style);
     if (MT.showColorTable) { MT.showColorTable('node'); MT.showColorTable('link'); }

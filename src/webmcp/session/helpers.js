@@ -35,7 +35,7 @@ export async function filesView() {
 // After a network loads: wait until the Files view has gone and the loading dialog has closed (the app does that a moment later)
 async function settle() {
   const modal = document.getElementById('loading-information-modal');
-  await waitFor(() => !self.layout.contentItems.some(i => i.componentType == 'files') && !(modal && modal.classList.contains('show')),
+  await waitFor(() => !self.layout.contentItems.some(i => i.componentType === 'files') && !(modal && modal.classList.contains('show')),
     { timeout: 6000, interval: 100 }).catch(() => {});
 }
 
@@ -99,7 +99,7 @@ function column(name, headers, role, allowNone) {
     if (!allowNone) fail('The ' + role + ' column can\'t be None. Columns in this file: ' + JSON.stringify(headers));
     return 'None';
   }
-  const exact = headers.find(h => h === name) || headers.find(h => h.toLowerCase() == String(name).toLowerCase());
+  const exact = headers.find(h => h === name) || headers.find(h => h.toLowerCase() === String(name).toLowerCase());
   if (!exact) fail('This file has no column named ' + JSON.stringify(name) + ' (for ' + role + '). Columns in this file: ' + JSON.stringify(headers));
   return exact;
 }
@@ -108,7 +108,7 @@ function column(name, headers, role, allowNone) {
 export function fieldsFor(args, format, headers) {
   const given = ['source', 'target', 'distance', 'id', 'sequence'].filter(k => args[k] !== undefined);
   if (!given.length) return {};
-  if (format == 'link') {
+  if (format === 'link') {
     const wrong = ['id', 'sequence'].filter(k => args[k] !== undefined);
     if (wrong.length) fail('A link file takes source, target and distance, not ' + wrong.join(' or '));
     return {
@@ -117,7 +117,7 @@ export function fieldsFor(args, format, headers) {
       field3: column(args.distance, headers, 'distance', true)
     };
   }
-  if (format == 'node') {
+  if (format === 'node') {
     const wrong = ['source', 'target', 'distance'].filter(k => args[k] !== undefined);
     if (wrong.length) fail('A node file takes id and sequence, not ' + wrong.join(' or '));
     return {
@@ -151,12 +151,12 @@ export function openJSON(text, extension) {
   } catch (error) {
     fail('That is not valid JSON, so it is not a MicrobeTrace session (.microbetrace) or HIV-TRACE output (.hivtrace): ' + error.message);
   }
-  if (!extension || extension == 'auto' || extension == 'json') {
+  if (!extension || extension === 'auto' || extension === 'json') {
     extension = data && data.data && data.style ? 'microbetrace' : data && (data.trace_results || data.samples) ? 'hivtrace' : '';
     if (!extension) fail('Could not tell what kind of file this is. A MicrobeTrace session has "data" and "style"; HIV-TRACE output has "trace_results". Set extension to microbetrace or hivtrace.');
   }
-  if (extension == 'microbetrace') checkSession(data);
-  if (extension != 'microbetrace' && !(data && (data.trace_results || data.samples))) fail('That JSON is not HIV-TRACE (trace_results) or GHOST (samples) output.');
+  if (extension === 'microbetrace') checkSession(data);
+  if (extension !== 'microbetrace' && !(data && (data.trace_results || data.samples))) fail('That JSON is not HIV-TRACE (trace_results) or GHOST (samples) output.');
   self.MT.processJSON(text, extension);
 }
 
@@ -186,7 +186,7 @@ export const STRATEGIES = {
 
 export const viewNames = () => {
   const names = ['network', 'bubbles', 'table'];
-  return unique(names.concat(self.MT.views ? Object.keys(self.MT.views).filter(v => v != 'files') : []));
+  return unique(names.concat(self.MT.views ? Object.keys(self.MT.views).filter(v => v !== 'files') : []));
 };
 
 export function readOptions() {
@@ -211,7 +211,7 @@ export function readOptions() {
 
 export function sessionText(format) {
   const MT = self.MT;
-  if (format == 'microbetracestyle') return JSON.stringify(self.session.style);
+  if (format === 'microbetracestyle') return JSON.stringify(self.session.style);
   if (!dataLoaded()) fail('No data is loaded, so there is nothing to save. Load data first.');
   return MT.sessionText(format);
 }
@@ -227,7 +227,7 @@ export const listStashes = async () => (await self.db.keys()).map(stashOf).filte
 
 export async function findStash(args) {
   const all = await listStashes();
-  const found = args.key ? all.find(s => s.key == args.key) : all.find(s => s.name == args.name);
+  const found = args.key ? all.find(s => s.key === args.key) : all.find(s => s.name === args.name);
   if (!found) fail('No stash ' + (args.key ? 'with key ' + args.key : 'named ' + JSON.stringify(args.name)) + '. Stashes: ' + JSON.stringify(all.map(s => ({ key: s.key, name: s.name }))));
   return found;
 }
@@ -242,11 +242,11 @@ export const checksSchema = obj(Object.fromEntries(AUDITS.map(a => [a, bool('Loo
 export async function pendingSequences() {
   const MT = self.MT, data = [];
   for (const file of self.session.files) {
-    if (file.format == 'fasta') {
+    if (file.format === 'fasta') {
       for (const d of await MT.parseFASTA(file.contents)) data.push(d); // (no spread: it overflows the stack on large files)
-    } else if (file.format == 'node' && file.field2 && file.field2 != 'None') {
+    } else if (file.format === 'node' && file.field2 && file.field2 !== 'None') {
       let rows;
-      if (file.extension == 'xlsx' || file.extension == 'xls') {
+      if (file.extension === 'xlsx' || file.extension === 'xls') {
         await MT.loadLibrary('xlsx');
         const workbook = self.XLSX.read(file.contents, { type: 'array' });
         rows = self.XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false });

@@ -67,17 +67,17 @@ export default {
     }
     if (args.inferDirectionality !== undefined) settings.set('infer-directionality-false', !args.inferDirectionality);
     if (args.alignment !== undefined) {
-      settings.set('align-sw', args.alignment == 'smith-waterman');
-      settings.set('align-none', args.alignment != 'smith-waterman');
+      settings.set('align-sw', args.alignment === 'smith-waterman');
+      settings.set('align-none', args.alignment !== 'smith-waterman');
     }
-    if (args.referenceSource !== undefined) ['file', 'first', 'consensus'].forEach(s => settings.set('reference-source-' + s, s == args.referenceSource));
+    if (args.referenceSource !== undefined) ['file', 'first', 'consensus'].forEach(s => settings.set('reference-source-' + s, s === args.referenceSource));
     if (args.referenceSequence !== undefined) {
       const seq = String(args.referenceSequence).replace(/\s+/g, '').toUpperCase();
       if (!/^[ACGTURYMKWSBDHVN-]+$/.test(seq)) fail('referenceSequence must be nucleotides (ACGT and ambiguity codes)');
       self.MT.session.setReference(seq);
     }
     if (args.distanceMetricsAlso !== undefined) {
-      const also = unique(args.distanceMetricsAlso.filter(m => m != metric));
+      const also = unique(args.distanceMetricsAlso.filter(m => m !== metric));
       settings.set('distance-metrics-also', also);
       self.db.setItem('distance-metrics-also', also);
     }

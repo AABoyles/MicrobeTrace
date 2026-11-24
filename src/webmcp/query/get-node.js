@@ -30,7 +30,7 @@ export default {
     if (args.provenance !== false) {
       const prov = {};
       data.nodeFields.forEach(f => {
-        if (f == 'seq') return;
+        if (f === 'seq') return;
         const p = MT.provenance(node._id, f);
         if (p.length > 1) prov[f] = p;
       });

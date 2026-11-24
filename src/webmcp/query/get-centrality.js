@@ -38,13 +38,13 @@ export default {
           stack.push(v);
           nbr[v].forEach(w => {
             if (dist[w] < 0) { dist[w] = dist[v] + 1; queue.push(w); sum += dist[w]; reached++; }
-            if (dist[w] == dist[v] + 1) { sigma[w] += sigma[v]; (pred[w] || (pred[w] = [])).push(v); }
+            if (dist[w] === dist[v] + 1) { sigma[w] += sigma[v]; (pred[w] || (pred[w] = [])).push(v); }
           });
         }
         while (stack.length) {
           const w = stack.pop();
           (pred[w] || []).forEach(v => { delta[v] += sigma[v] / sigma[w] * (1 + delta[w]); });
-          if (w != s) bet[w] += delta[w];
+          if (w !== s) bet[w] += delta[w];
         }
         close[s] = reached ? (reached / sum) * (reached / (connected.length - 1 || 1)) : 0;
       });

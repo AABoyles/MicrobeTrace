@@ -15,7 +15,7 @@ function nodeIndexSet(ids, what) {
 // Edges (as a list) matching: scope, touching nodes, between node sets, filter
 function selectEdges(args) {
   const g = graph();
-  let edges = edgeList(args.scope == 'all' ? 'all' : 'visible');
+  let edges = edgeList(args.scope === 'all' ? 'all' : 'visible');
   if (args.nodes && args.nodes.length) {
     const set = nodeIndexSet(args.nodes);
     edges = edges.filter(e => set.has(g.source(e)) || set.has(g.target(e)));
