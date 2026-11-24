@@ -140,6 +140,15 @@ test('a node list counts repeated and blank IDs, and a blank row adds no fields'
   assert.deepStrictEqual(late.fields, ['a', 'b']);
 });
 
+test('a node list column named _id, origin or seq cannot overwrite the node', () => {
+  const text = 'name,_id,origin,seq,group\na,evil,elsewhere,TTTT,x\n';
+  const none = nodes.parse(text, { field1: 'name', field2: 'None', origin });
+  assert.deepStrictEqual(none.nodes, [{ _id: 'a', seq: '', origin, group: 'x' }]);
+  assert.deepStrictEqual(none.fields, ['group']);
+  const other = nodes.parse('name,dna,seq\na,ACGT,TTTT\n', { field1: 'name', field2: 'dna', origin });
+  assert.deepStrictEqual(other.nodes, [{ _id: 'a', seq: 'ACGT', origin }]);
+});
+
 test('a node list reads its delimiter, and a file cut off mid-row', () => {
   const tab = nodes.parse('id\tseq\na\tACGT\nb\tAC', { field1: 'id', field2: 'seq', origin, delimiter: '\t' });
   assert.deepStrictEqual(tab.nodes.map(n => [n._id, n.seq]), [['a', 'ACGT'], ['b', 'AC']]);

@@ -26,6 +26,10 @@ export function detect(text, fileName, table) {
 // each row with an ID (a repeat is a node again, for the caller to merge), the
 // other columns in the order they were first met (the node fields to list), the IDs
 // the file gave, and how many rows it had.
+// Columns that would overwrite what the node is: its identity, provenance and sequence.
+// The old loader had the same hole; a column named so was copied over them (#337).
+const RESERVED = new Set(['_id', 'origin', 'seq']);
+
 export function parse(contents, { field1, field2, delimiter, origin, sheet }) {
   const result = { nodes: [], fields: [], ids: new Set(), total: 0, blanks: 0, duplicates: 0 };
   const known = new Set();
@@ -35,7 +39,7 @@ export function parse(contents, { field1, field2, delimiter, origin, sheet }) {
     if (id === null) return;
     const node = { _id: id, seq: field2 === 'None' ? '' : row[field2], origin };
     Object.keys(row).forEach(key => {
-      if (key == field1 || key == field2) return; // eslint-disable-line eqeqeq -- field names arrive from menus and files; a number and its text name the same column
+      if (RESERVED.has(key) || key == field1 || key == field2) return; // eslint-disable-line eqeqeq -- field names arrive from menus and files; a number and its text name the same column
       if (!known.has(key)) { known.add(key); result.fields.push(key); }
       node[key] = row[key]; // (#173)
     });
