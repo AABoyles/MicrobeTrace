@@ -47,9 +47,8 @@ The build scripts (see [scripts/README.md](scripts/README.md)):
 
 * `npm run bundle` builds `dist/`, `fonts/` and the generated files in `vendor/` from `node_modules`. None of them is committed; `npm start`, `npm test`, `npm run coverage` and the E2E web server run it when `dist/` is missing or its inputs have changed (the hash in `dist/versions.json`, not file times), and CI, the Docker build and the Pages deploy run it. Run it yourself after changing a dependency or `scripts/bundle.js`.
 * `npm run cache` writes `sw.js` (also not committed) from `scripts/sw.template.js`, filling in the precache list and cache name from the files that exist, so run it after `bundle`. Edit the template, not `sw.js`.
-* `npm run compress` writes the `.br` and `.gz` copies of the largest files, which `server.js` serves when they exist. `npm run clean` removes them.
-* `npm run site` copies exactly the files the app needs into `_site/`.
-* `npm run build` runs `bundle`, `cache` and `compress`. `npm run update` updates the dependencies and then runs `bundle` and `cache`.
+* `npm run site` copies exactly the files the app needs into `_site/`, with a `.br` and a `.gz` copy of each text file, which `server.js` sends to browsers that accept them (`SITE_DIR=_site npm start` serves it; the Docker image does).
+* `npm run build` runs `bundle`, `cache` and `site`. `npm run update` updates the dependencies and then runs `bundle` and `cache`.
 
 **Deployment.** A push to `master` runs `.github/workflows/pages.yml`. It runs the CI workflow (`.github/workflows/ci.yml`: unit tests and the end-to-end tests, on a fresh `npm run bundle && npm run cache`) and, if those pass, bundles the app (`npm run bundle && npm run cache`) and publishes the output of `scripts/build-site.js` to GitHub Pages. Pull requests run the CI workflow alone.
 

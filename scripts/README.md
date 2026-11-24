@@ -34,16 +34,7 @@ _A directory for build scripts_
   used, since a checkout changes them, #345), or if a bundle, `fonts/` or
   `vendor/cosmos.min.js` is missing, then `build-sw.js`.
 
-- `npm run build` runs `bundle`, `cache` and `compress` in that order.
-
-- [`compress.sh`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/compress.sh) -
-  Generates compressed versions of the largest, most important files to
-  MicrobeTrace. On systems that run
-  [`server.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/server.js), the
-  compressed versions will get served, resulting in faster loadtimes.
-
-- [`cleanup.sh`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/cleanup.sh) -
-  Removes all compressed files.
+- `npm run build` runs `bundle`, `cache` and `site` in that order.
 
 - [`build-sw.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-sw.js) -
   (`npm run cache`) Writes `sw.js` (not committed) from
@@ -58,6 +49,9 @@ _A directory for build scripts_
 - To deploy only the files the app needs (for example, to a static host), run
   [`node scripts/build-site.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-site.js).
   It copies exactly those files into `_site/` and leaves everything else in the repository behind.
+  It also writes a Brotli (`.br`) and a gzip (`.gz`) copy of each text file of 1 KB or more,
+  which `server.js` sends to browsers that accept them (#350); `server.js` compresses nothing
+  itself, so serve the built site (`SITE_DIR=_site npm start`, as the Docker image does).
 
 - [`build-bx.sh`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/build-bx.sh) -
   Rebuilds the [bx-distance-models](https://github.com/AABoyles/bx-distance-models)
