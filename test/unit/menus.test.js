@@ -4,10 +4,9 @@
 // Run with: npm test
 const test = require('node:test');
 const assert = require('node:assert');
-const vm = require('vm');
 const fs = require('fs');
 const path = require('path');
-const { APP_FILES, runAppFiles } = require('../app-files.js');
+const { createMT } = require('../../src/common.js');
 
 const root = path.join(__dirname, '../..');
 const fixture = name => JSON.parse(fs.readFileSync(path.join(root, 'test/security', name), 'utf8'));
@@ -42,18 +41,13 @@ const select = () => fakeDocument().createElement('select');
 const options = el => el.children.map(o => ({ value: o.value, text: o.textContent, selected: o.selected }));
 
 function load() {
-  const ctx = {
-    console: { log() {}, error() {}, warn() {} },
-    TextDecoder, TextEncoder,
-    d3: { schemePaired: ['#a6cee3', '#1f78b4'], schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c'] },
-    document: stub()
-  };
-  ctx.self = ctx.window = ctx;
-  vm.createContext(ctx);
-  runAppFiles(ctx);
+  globalThis.document = stub();
+  globalThis.d3 = { schemePaired: ['#a6cee3', '#1f78b4'], schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c'] };
+  const ctx = {};
+  ctx.MT = createMT(ctx);
   // MT.escape is defined in src/index.js, as the page loads: take it from there
   const escape = fs.readFileSync(path.join(root, 'src/index.js'), 'utf8').match(/const escape = (value => .*);\n/)[1];
-  ctx.MT.escape = vm.runInContext('(' + escape + ')', ctx);
+  ctx.MT.escape = new Function('return (' + escape + ')')();
   return { MT: ctx.MT, ctx };
 }
 
@@ -161,7 +155,7 @@ test('IDs are text without surrounding spaces, however they arrive (#219), and a
 test('no menu of fields is built as markup any more', () => {
   // An option whose value or text is interpolated without escaping
   const unsafe = /<option value="(?:'\s*\+|\$\{(?!MT\.escape\(|text\())/;
-  const files = APP_FILES.concat(['src/index.js'])
+  const files = ['common', 'loading', 'links-clusters', 'colors', 'export', 'views', 'ui', 'index'].map(f => `src/${f}.js`)
     .concat(fs.readdirSync(path.join(root, 'components')).filter(f => /\.(html|js)$/.test(f)).map(f => 'components/' + f));
   const found = [];
   files.forEach(file => fs.readFileSync(path.join(root, file), 'utf8').split('\n').forEach((line, i) => {

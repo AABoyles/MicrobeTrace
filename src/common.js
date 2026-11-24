@@ -4,14 +4,17 @@
 // settings store and events, and the workers' progress and cancellation
 // (MT.runWorker, MT.viewComputing).
 //
-// An ES module (#323). It creates MT, exports it and sets self.MT for the classic
-// scripts; the other core modules import MT from here. It uses these MT names from
-// the other files at run time:
+// An ES module (#323). createMT(env) makes an MT, runs the other core modules'
+// installers on it and returns it; importing a module does nothing (#341). src/mt.js
+// calls it once for the page and sets self.MT for the classic scripts; tests call it
+// for each fake env. It uses these MT names from the other files at run time:
 //   colors.js: COLOR_BLIND_SAFE
 //   links-clusters.js: getVisibleLinks
 //   ui.js: enableSearch
 //   views.js: createLayout, launchView
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
+// env supplies session and temp (self on the page, a plain object in tests); document, Worker
+// and the libraries are read as globals. The body of createMT is not indented, so that the
+// diff of the change that wrapped it stays small.
 import { db } from './db.js';
 import { MTDates } from './dates.js';
 import { MTEvents } from './events.js';
@@ -22,8 +25,15 @@ import { MTSettings } from './settings.js';
 import { cleanID } from './formats/shared.js';
 import { makeSession } from './session.js';
 
-export const MT = {};
-self.MT = MT;
+import { installLoading } from './loading.js';
+import { installLinksClusters } from './links-clusters.js';
+import { installColors } from './colors.js';
+import { installExport } from './export.js';
+import { installViews } from './views.js';
+import { installUI } from './ui.js';
+
+export function createMT(env = self) {
+const MT = {};
 
 MT.dataSkeleton = () => MT.attachGraph({
   nodes: [],
@@ -366,19 +376,19 @@ MT.tempSkeleton = () => ({
   mapData: {},
   messageTimeout: null,
   style: {
-    linkAlphaMap: () => 1 - session.style.widgets["link-opacity"],
-    linkColorMap: () => session.style.widgets["link-color"],
+    linkAlphaMap: () => 1 - env.session.style.widgets["link-opacity"],
+    linkColorMap: () => env.session.style.widgets["link-color"],
     nodeAlphaMap: () => 1,
-    nodeColorMap: () => session.style.widgets["node-color"],
-    nodeSymbolMap: () => session.style.widgets["node-symbol"],
+    nodeColorMap: () => env.session.style.widgets["node-color"],
+    nodeSymbolMap: () => env.session.style.widgets["node-symbol"],
     polygonAlphaMap: () => 0.5,
-    polygonColorMap: () => session.style.widgets["polygon-color"]
+    polygonColorMap: () => env.session.style.widgets["polygon-color"]
   },
   trees: {}
 });
 
 MT.defaultNode = () => ({
-  index: session.data.nodes.length,
+  index: env.session.data.nodes.length,
   _id: "",
   selected: false,
   cluster: 1,
@@ -414,23 +424,23 @@ MT.cleanID = cleanID;
 
 // The session's owner (src/session.js): every write to session.data goes through it (#338).
 // These are its older names, which loading code and the tests use.
-MT.session = makeSession(MT, self);
+MT.session = makeSession(MT, env);
 MT.addNodeField = MT.session.addNodeField;
 MT.addNode = MT.session.addNode;
 MT.addLink = MT.session.addLink;
 
 // Each file's value for a node's field, top file first, marking the one used
-MT.provenance = (id, field) => session.data.sources.provenance('' + id, field);
+MT.provenance = (id, field) => env.session.data.sources.provenance('' + id, field);
 
 // Where files disagree: each field, with the IDs of the nodes they disagree on
-MT.nodeConflicts = () => session.data.sources.conflicts();
+MT.nodeConflicts = () => env.session.data.sources.conflicts();
 
 MT.preferSource = MT.session.preferSource;
 MT.pickSource = MT.session.pickSource;
 
 // The link between two node IDs, or undefined.
 MT.getLink = (source, target) => {
-  const g = session.data.graph;
+  const g = env.session.data.graph;
   const a = g.index.get('' + source), b = g.index.get('' + target);
   if (a === undefined || b === undefined) return;
   const e = g.edgeBetween(a, b);
@@ -440,7 +450,7 @@ MT.getLink = (source, target) => {
 // A plain link object for edge e of the graph.
 // (With shareOrigin, its origin list is the graph's own, which must be left alone.)
 MT.linkObject = (e, visible, data, shareOrigin) => {
-  data = data || session.data;
+  data = data || env.session.data;
   const g = data.graph;
   const link = g.link(e, shareOrigin);
   data.linkFields.forEach(field => {
@@ -452,16 +462,16 @@ MT.linkObject = (e, visible, data, shareOrigin) => {
 };
 
 MT.isLinkVisible = e => {
-  const g = session.data.graph;
-  if (!temp.visibleSet || temp.visibleSet.graph !== g || temp.visibleSet.version !== g.visibleVersion) {
-    temp.visibleSet = { graph: g, version: g.visibleVersion, set: new Set(g.visible.subarray(0, g.visibleCount)) };
+  const g = env.session.data.graph;
+  if (!env.temp.visibleSet || env.temp.visibleSet.graph !== g || env.temp.visibleSet.version !== g.visibleVersion) {
+    env.temp.visibleSet = { graph: g, version: g.visibleVersion, set: new Set(g.visible.subarray(0, g.visibleCount)) };
   }
-  return temp.visibleSet.set.has(e);
+  return env.temp.visibleSet.set.has(e);
 };
 
 // The visible links of node id, as { neighbor: ID, link: link object }.
 MT.getVisibleNeighbors = id => {
-  const g = session.data.graph, x = g.index.get('' + id);
+  const g = env.session.data.graph, x = g.index.get('' + id);
   if (x === undefined) return [];
   const out = [];
   for (let v = 0; v < g.visibleCount; v++) {
@@ -473,7 +483,7 @@ MT.getVisibleNeighbors = id => {
 
 // Every link as an object (what session files store).
 MT.getAllLinks = data => {
-  data = data || session.data;
+  data = data || env.session.data;
   const g = data.graph;
   const visible = new Set(g.visible.subarray(0, g.visibleCount));
   const out = [];
@@ -727,7 +737,7 @@ MT.reset = () => {
 
 // The settings store and event bus that views use (see src/settings.js and
 // src/events.js)
-MT.settings = new MTSettings(() => session.style.widgets);
+MT.settings = new MTSettings(() => env.session.style.widgets);
 MT.events = new MTEvents();
 
 // Today, as YYYY-MM-DD in local time
@@ -741,10 +751,20 @@ MT.today = () => {
 MT.setAutostash = enabled => {
   enabled = !!enabled;
   db.setItem('stash-auto', enabled ? 'true' : 'false');
-  if (!enabled && temp.autostash) clearInterval(temp.autostash.interval);
+  if (!enabled && env.temp.autostash) clearInterval(env.temp.autostash.interval);
   const radio = document.querySelector('input[name="stash-auto"][value="' + (enabled ? 'true' : 'false') + '"]');
   if (radio) radio.checked = true;
 };
 
 // Reads a date field (see src/dates.js): null if it is not a date.
 MT.parseDate = MTDates.parseDate;
+
+installLoading(MT, env);
+installLinksClusters(MT, env);
+installColors(MT, env);
+installExport(MT, env);
+installViews(MT, env);
+installUI(MT, env);
+
+return MT;
+}

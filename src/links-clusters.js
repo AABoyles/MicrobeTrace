@@ -4,21 +4,25 @@
 // trees and nearest-neighbour and spanning-tree pruning, clusters, what is
 // visible, and the statistics.
 //
-// An ES module (#323) that adds to MT (imported from common.js, which also sets
-// self.MT). It uses these MT names from the other files at run time, through MT:
+// An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
+// (#341). It uses these MT names from the other files at run time, through MT:
 //   common.js: addNodeField, debug, events, linkObject, nodeConflicts,
 //     parseDate, progress, progressDone, runWorker, settings, time
 //   loading.js: align, reportDateColumns
 //   ui.js: enableSearch, fillSelect, hideModal
 //   views.js: launchView, loadLayout, updateAllViewNeeds
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
-import { MT } from './common.js';
+// It reads the session and temp (and the layout) from env, which is self on the page and a
+// fake in tests; the browser and library globals (document, Worker, d3, ...) it reads bare.
+// The body of the installer is not indented, so that the diff of the change that wrapped it
+// stays small.
 import { db } from './db.js';
 import { MTDates } from './dates.js';
 import { MTGraph } from './graph.js';
 
+export function installLinksClusters(MT, env) {
+
 MT.computeConsensus = nodes => {
-  if (!nodes) nodes = session.data.nodes.filter(d => d.seq);
+  if (!nodes) nodes = env.session.data.nodes.filter(d => d.seq);
   return MT.runWorker("workers/compute-consensus.js", nodes, { name: "The consensus computation" }).then(response => {
     MT.time('Consensus Transit', response.start);
     return response.consensus;
@@ -57,7 +61,7 @@ MT.consensusReference = async (nodes, scoring) => {
 
 MT.computeAmbiguityCounts = () => {
   return new Promise((resolve, reject) => {
-    let nodes = session.data.nodes;
+    let nodes = env.session.data.nodes;
     let subset = nodes.filter(d => d.seq);
     const subsetLength = subset.length;
     MT.runWorker("workers/compute-ambiguity-counts.js", subset.map(d => d.seq), { name: "The ambiguity count" }).then(response => {
@@ -77,7 +81,7 @@ MT.computeAmbiguityCounts = () => {
 MT.computeConsensusDistances = () => {
   return new Promise((resolve, reject) => {
     let start = Date.now();
-    let nodes = session.data.nodes;
+    let nodes = env.session.data.nodes;
     let nodesLength = nodes.length;
     let subset = [];
     for (let i = 0; i < nodesLength; i++) {
@@ -96,7 +100,7 @@ MT.computeConsensusDistances = () => {
     }
     let subsetLength = subset.length;
     MT.runWorker("workers/compute-consensus-distances.js", {
-      consensus: session.data.consensus,
+      consensus: env.session.data.consensus,
       subset: subset,
       start: start
     }, { name: "The consensus distance computation" }).then(response => {
@@ -167,7 +171,7 @@ MT.rowSplits = (n, parts) => {
 
 // The metrics computed from the sequences: the distance metric first, then
 // any others chosen to compute too
-MT.computedMetrics = (widgets = session.style.widgets) => {
+MT.computedMetrics = (widgets = env.session.style.widgets) => {
   const metric = widgets['default-distance-metric'];
   const also = (widgets['distance-metrics-also'] || []).filter(m => m != metric && MT.distanceMetrics[m]);
   return [metric, ...new Set(also)];
@@ -181,12 +185,12 @@ MT.fieldMetric = field => MT.distanceMetrics[field] ? field : null;
 // The threshold the stored links of a field were limited to, if a threshold
 // above it would show fewer links than the data has (sparse storage), else null.
 MT.storedThresholdBelow = (field, threshold) => {
-  const stored = (session.style.widgets['link-stored-thresholds'] || {})[field];
+  const stored = (env.session.style.widgets['link-stored-thresholds'] || {})[field];
   return stored != null && parseFloat(threshold) > stored ? stored : null;
 };
 
 MT.computeLinks = async subset => {
-  const widgets = session.style.widgets;
+  const widgets = env.session.style.widgets;
   const metrics = MT.computedMetrics(widgets), metric = metrics[0];
   const strategy = (widgets['ambiguity-resolution-strategy'] || 'SKIP').toUpperCase();
   // HIV-TRACE -g (tn93 -a resolve -g F) decides pair by pair, in the worker:
@@ -236,7 +240,7 @@ MT.computeLinks = async subset => {
 
   MT.time('Links Transit', Math.min(...parts.map(p => p.start)));
   let start = Date.now();
-  const g = session.data.graph;
+  const g = env.session.data.graph;
   const before = g.edgeCount;
   metrics.forEach((m, i) => {
     const field = m;
@@ -272,8 +276,8 @@ MT.computeLinks = async subset => {
 // Distances between every pair of nodes, for the given link field, as a
 // condensed upper triangle (NaN where there's no link) over labels.
 MT.getCondensedDM = (metric, labels) => {
-  const g = session.data.graph;
-  metric = metric || session.style.widgets['link-sort-variable'];
+  const g = env.session.data.graph;
+  metric = metric || env.session.style.widgets['link-sort-variable'];
   labels = labels || MT.getDMLabels();
   const n = labels.length;
   const pos = new Int32Array(g.nodeCount).fill(-1);
@@ -293,7 +297,7 @@ MT.getCondensedDM = (metric, labels) => {
 };
 
 // The row order of MT.getDM (every node, in session order).
-MT.getDMLabels = () => session.data.nodes.map(d => d._id);
+MT.getDMLabels = () => env.session.data.nodes.map(d => d._id);
 
 // The most nodes MT.getDM builds a matrix for by default: a Float64Array of
 // n * n is 200 MB at 5,000 nodes, and 800 MB at 10,000 (#248).
@@ -301,7 +305,7 @@ MT.DM_MAX_NODES = 5000;
 
 // Why the distance matrix of the current nodes can't be built, or null if it can
 MT.dmTooLargeMessage = (maxNodes = MT.DM_MAX_NODES) => {
-  const n = session.data.nodes.length;
+  const n = env.session.data.nodes.length;
   if (n <= maxNodes) return null;
   return 'The distance matrix of ' + n.toLocaleString() + ' nodes (' + (n * n / 1e6).toLocaleString(undefined, { maximumFractionDigits: 0 }) +
     ' million cells) is too large to build; the limit is ' + maxNodes.toLocaleString() + ' nodes. Filter the data to fewer nodes to use it.';
@@ -322,8 +326,8 @@ MT.getDM = (maxNodes = MT.DM_MAX_NODES, { scope, onProgress } = {}) => {
   return Promise.resolve().then(() => {
     const tooLarge = MT.dmTooLargeMessage(maxNodes);
     if (tooLarge) throw new Error(tooLarge);
-    const g = session.data.graph, nodes = session.data.nodes;
-    const n = nodes.length, metric = session.style.widgets['link-sort-variable'];
+    const g = env.session.data.graph, nodes = env.session.data.nodes;
+    const n = nodes.length, metric = env.session.style.widgets['link-sort-variable'];
     const c = dmCache;
     if (c && c.graph === g && c.version === g.version && c.metric === metric && c.nodes === nodes && c.n === n) return c.dm;
     const start = Date.now(), version = g.version;
@@ -346,10 +350,10 @@ MT.computeTree = ({ scope, onProgress } = {}) => {
     return MT.runWorker("workers/compute-tree.js", {
       labels: MT.getDMLabels(),
       matrix,
-      round: session.style.widgets["tree-round"]
+      round: env.session.style.widgets["tree-round"]
     }, { transfer: [matrix.buffer], name: "The tree computation", scope });
   }).then(response => {
-    temp.tree = patristic.parseJSON(response.tree);
+    env.temp.tree = patristic.parseJSON(response.tree);
     MT.time('Tree Transit', response.start);
   });
 };
@@ -357,8 +361,8 @@ MT.computeTree = ({ scope, onProgress } = {}) => {
 MT.computeDirectionality = () => {
   return new Promise((resolve, reject) => {
     // Directions are inferred from the tree (see MT.runHamsters).
-    if (!temp.tree) return resolve();
-    const g = session.data.graph;
+    if (!env.temp.tree) return resolve();
+    const g = env.session.data.graph;
     const ids = new Uint32Array(g.edgeCount), sources = [], targets = [];
     let x = 0;
     g.forEachEdge((e, s, t) => {
@@ -369,7 +373,7 @@ MT.computeDirectionality = () => {
     MT.runWorker("workers/compute-directionality.js", {
       sources: sources,
       targets: targets,
-      tree: temp.tree
+      tree: env.temp.tree
     }, { name: "The directionality computation" }).then(response => {
       let flips = new Uint8Array(response.output);
       MT.time('Directionality Transit', response.start);
@@ -398,14 +402,14 @@ MT.computeDirectionality = () => {
 // unless one is given.
 MT.computeNNFlags = (script, name, metric) => {
   return new Promise((resolve, reject) => {
-    const g = session.data.graph;
-    metric = metric || session.style.widgets['link-sort-variable'];
+    const g = env.session.data.graph;
+    metric = metric || env.session.style.widgets['link-sort-variable'];
     const labels = g.ids.slice();
     const { tri } = MT.getCondensedDM(metric, labels);
     MT.runWorker(script, {
       n: labels.length,
       matrix: tri,
-      epsilon: session.style.widgets["filtering-epsilon"]
+      epsilon: env.session.style.widgets["filtering-epsilon"]
     }, { transfer: [tri.buffer], name }).then(response => {
       let pairs = new Uint32Array(response.pairs);
       MT.time(name + ' Transit', response.start);
@@ -433,7 +437,7 @@ MT.computeNN = metric => MT.computeNNFlags("workers/compute-nn.js", "NN", metric
 
 // Flags the links the link-prune setting keeps (nothing to do for "none")
 MT.computePruning = () => {
-  const prune = session.style.widgets["link-prune"];
+  const prune = env.session.style.widgets["link-prune"];
   if (prune == "nn") return MT.computeNN();
   if (prune == "mst") return MT.computeMST();
   return Promise.resolve();
@@ -447,9 +451,9 @@ MT.computePruning = () => {
 // builds it when opened (and reuses the one built here).
 MT.runHamsters = async () => {
   // MT.computeMST();
-  if (!session.style.widgets['infer-directionality-false']) {
+  if (!env.session.style.widgets['infer-directionality-false']) {
     try {
-      if (!temp.tree) await MT.computeTree();
+      if (!env.temp.tree) await MT.computeTree();
       await MT.computeDirectionality();
     } catch (error) {
       console.error(error);
@@ -460,19 +464,19 @@ MT.runHamsters = async () => {
 };
 
 MT.finishUp = async (oldSession) => { 
-  clearTimeout(temp.messageTimeout);
+  clearTimeout(env.temp.messageTimeout);
   // Where the files just read disagree, say so, and offer to show where
   if (!oldSession) {
     const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
     if (differ) MT.toast.warning(`${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files. Click to review them.`, 15,
       clicked => { if (clicked) MT.launchView("conflicts"); }, { action: "Review" });
-    MT.reportDateColumns(session.data.nodes, session.data.nodeFields);
+    MT.reportDateColumns(env.session.data.nodes, env.session.data.nodeFields);
   }
   // Links are done loading: swap the graph's pair lookup for its compact index.
   // (Link objects get null for missing link fields as they're built.)
-  session.data.graph.freeze();
-  let nodeFields = session.data.nodeFields;
-  session.data.nodes.forEach(d => {
+  env.session.data.graph.freeze();
+  let nodeFields = env.session.data.nodeFields;
+  env.session.data.nodes.forEach(d => {
     nodeFields.forEach(field => {
       if (!(field in d)) d[field] = null;
     });
@@ -482,29 +486,29 @@ MT.finishUp = async (oldSession) => {
   const fill = (id, fields, none = false) => {
     const select = document.getElementById(id);
     MT.fillSelect(select, fields, { none });
-    select.value = session.style.widgets[id];
+    select.value = env.session.style.widgets[id];
   };
-  fill("search-field", session.data.nodeFields);
+  fill("search-field", env.session.data.nodeFields);
   MT.enableSearch(true);
-  fill("link-sort-variable", session.data.linkFields);
-  fill("node-color-variable", session.data.nodeFields, true);
-  fill("node-timeline-variable", session.data.nodeFields, true);
-  fill("link-color-variable", session.data.linkFields, true);
+  fill("link-sort-variable", env.session.data.linkFields);
+  fill("node-color-variable", env.session.data.nodeFields, true);
+  fill("node-timeline-variable", env.session.data.nodeFields, true);
+  fill("link-color-variable", env.session.data.linkFields, true);
   try {
     MT.updateThresholdHistogram();
   } catch (error) {
     console.error(error);
     MT.hideModal("loading-information-modal");
-    MT.toast.error("Something went wrong! A new session will start in 5 seconds.");
+    MT.toast.error("Something went wrong! A new env.session will start in 5 seconds.");
     setTimeout(() => MT.reload(), 5000); // the 5 seconds the message above names
   }
   MT.setLinkVisibility(true);
-  session.meta.loadTime = Date.now() - session.meta.startTime;
-  MT.debug("Total load time:", session.meta.loadTime.toLocaleString(), "ms");
+  env.session.meta.loadTime = Date.now() - env.session.meta.startTime;
+  MT.debug("Total load time:", env.session.meta.loadTime.toLocaleString(), "ms");
   if (oldSession) {
-    MT.loadLayout(session.layout);
+    MT.loadLayout(env.session.layout);
   } else {
-    MT.launchView(session.style.widgets['default-view']);
+    MT.launchView(env.session.style.widgets['default-view']);
   }
   MT.tagClusters().then(() => {
     MT.setClusterVisibility(true);
@@ -517,11 +521,11 @@ MT.finishUp = async (oldSession) => {
   });
   db.getItem("stash-auto").then(autostash => {
     if (autostash != "true") return;
-    if (temp.autostash) clearInterval(temp.autostash.interval);
+    if (env.temp.autostash) clearInterval(env.temp.autostash.interval);
     // The new copy is written first, and the previous one removed only once
     // it has committed, so a failed write (the quota, say) keeps the old copy.
     // The user is told the first time it fails, not every minute.
-    const state = temp.autostash = { time: Date.now(), key: null, warned: false, busy: false };
+    const state = env.temp.autostash = { time: Date.now(), key: null, warned: false, busy: false };
     // (Each minute's copy; tests call it directly)
     state.tick = async () => {
       if (state.busy) return;
@@ -529,7 +533,7 @@ MT.finishUp = async (oldSession) => {
       try {
         const newKey = "stash-" + Date.now() + "-autostash";
         MT.syncLayout();
-        const text = JSON.stringify(session);
+        const text = JSON.stringify(env.session);
         // Nothing has changed since the last copy: it stays, and isn't written again
         if (state.key && text === state.text) {
           state.time = Date.now();
@@ -546,7 +550,7 @@ MT.finishUp = async (oldSession) => {
         console.error("Autostash failed:", error);
         if (!state.warned) {
           state.warned = true;
-          MT.toast.error("Autostash couldn't save your session, so the last copy was kept. " + MT.escape(db.describeError(error)), 15);
+          MT.toast.error("Autostash couldn't save your env.session, so the last copy was kept. " + MT.escape(db.describeError(error)), 15);
         }
       } finally {
         state.busy = false;
@@ -556,7 +560,7 @@ MT.finishUp = async (oldSession) => {
   });
   document.querySelectorAll(".hideForHIVTrace").forEach(el => el.style.display = "flex");
   setTimeout(() => {
-    let files = self.layout.contentItems.find(item => item.componentType == "files");
+    let files = env.layout.contentItems.find(item => item.componentType == "files");
     if (files) files.remove();
     MT.progressDone();
     MT.hideModal("loading-information-modal");
@@ -572,9 +576,9 @@ MT.tagClusters = () => {
   return new Promise(resolve => {
     let start = Date.now();
     const clusters = [];
-    const nodes = session.data.nodes;
-    const g = session.data.graph;
-    const lsv = session.style.widgets["link-sort-variable"];
+    const nodes = env.session.data.nodes;
+    const g = env.session.data.graph;
+    const lsv = env.session.style.widgets["link-sort-variable"];
     const nodeIndex = nodes.map(d => g.node(d._id));
     const component = g.components();
 
@@ -635,8 +639,8 @@ MT.tagClusters = () => {
 // timeline asks for them at each step). The order of a date like 3/4/2020
 // is that of all the field's values (see MTDates.dateOrderOf).
 MT.nodeTimes = field => {
-  const nodes = session.data.nodes, n = nodes.length;
-  const cache = temp.nodeTimes;
+  const nodes = env.session.data.nodes, n = nodes.length;
+  const cache = env.temp.nodeTimes;
   if (cache && cache.field === field && cache.raw.length == n) {
     let i = 0;
     while (i < n && nodes[i][field] === cache.raw[i]) i++;
@@ -649,17 +653,17 @@ MT.nodeTimes = field => {
     const date = MTDates.parseDate(value, order);
     times[i] = date ? +date : NaN;
   });
-  temp.nodeTimes = { field, raw, times };
+  env.temp.nodeTimes = { field, raw, times };
   return times;
 };
 
 MT.setNodeVisibility = silent => { 
   let start = Date.now();
-  let dateField = session.style.widgets["timeline-date-field"];
-  let nodes = session.data.nodes,
-    clusters = session.data.clusters;
+  let dateField = env.session.style.widgets["timeline-date-field"];
+  let nodes = env.session.data.nodes,
+    clusters = env.session.data.clusters;
   let n = nodes.length;
-  let timeEnd = dateField != "None" && MT.parseDate(session.state.timeEnd);
+  let timeEnd = dateField != "None" && MT.parseDate(env.session.state.timeEnd);
   const times = timeEnd ? MT.nodeTimes(dateField) : null;
   const until = timeEnd ? +timeEnd : 0;
   for (let i = 0; i < n; i++) {
@@ -678,11 +682,11 @@ MT.setNodeVisibility = silent => {
 
 MT.setLinkVisibility = silent => { 
   let start = Date.now();
-  let metric = session.style.widgets["link-sort-variable"],
-    threshold = parseFloat(session.style.widgets["link-threshold"]),
-    showNN = session.style.widgets["link-prune"] != "none";
-  const g = session.data.graph;
-  const clusters = session.data.clusters;
+  let metric = env.session.style.widgets["link-sort-variable"],
+    threshold = parseFloat(env.session.style.widgets["link-threshold"]),
+    showNN = env.session.style.widgets["link-prune"] != "none";
+  const g = env.session.data.graph;
+  const clusters = env.session.data.clusters;
   const nodeCluster = g.nodeCluster;
   const keep = nodeCluster && clusters.length ? s => {
     const cluster = clusters[nodeCluster[s]];
@@ -695,8 +699,8 @@ MT.setLinkVisibility = silent => {
 
 MT.setClusterVisibility = silent => { 
   let start = Date.now();
-  let min = session.style.widgets["cluster-minimum-size"];
-  let clusters = session.data.clusters;
+  let min = env.session.style.widgets["cluster-minimum-size"];
+  let clusters = env.session.data.clusters;
   let n = clusters.length;
   for (let i = 0; i < n; i++) {
     let cluster = clusters[i];
@@ -710,24 +714,24 @@ MT.setClusterVisibility = silent => {
 // what reads it there (saving, the timeline). The network does this itself
 // only when its layout settles: reading it back waits for the GPU.
 MT.syncLayout = () => {
-  if (temp.network && temp.network.syncPositions) temp.network.syncPositions();
+  if (env.temp.network && env.temp.network.syncPositions) env.temp.network.syncPositions();
 };
 
 MT.getNetworkNodes = () => {
   MT.syncLayout();
   // Their own fields, not the values those hold: the places and pins are
   // kept in the copies, and nothing changes what's inside a node
-  return session.network.nodes.map(node => Object.assign({}, node));
+  return env.session.network.nodes.map(node => Object.assign({}, node));
 };
 
 MT.updatePinNodes = copy => {
   MT.syncLayout();
-  let nodes = session.network.nodes;
+  let nodes = env.session.network.nodes;
   let n = nodes.length;
   for (let i = 0; i < n; i++) {
     let node = nodes[i]; 
     if (copy && node.fixed) node.preFixed = true;
-    if (!copy && session.network.timelineNodes[i].preFixed) {
+    if (!copy && env.session.network.timelineNodes[i].preFixed) {
       node.fixed = true;
       node.fx = node.x;
       node.fy = node.y;
@@ -739,7 +743,7 @@ MT.updatePinNodes = copy => {
 // values those hold: a copy through JSON took a second for a few thousand
 // nodes, most of it their sequences)
 MT.getVisibleNodes = copy => {
-  let nodes = session.data.nodes;
+  let nodes = env.session.data.nodes;
   let n = nodes.length;
   let out = [];
   if (copy) {
@@ -766,9 +770,9 @@ MT.getVisibleNodes = copy => {
 // change them (nor their origin lists); with copy they're copies of their
 // own fields, to place or to change.
 MT.getVisibleLinks = copy => {
-  const g = session.data.graph;
-  const fields = session.data.linkFields.length;
-  let cache = temp.visibleLinks;
+  const g = env.session.data.graph;
+  const fields = env.session.data.linkFields.length;
+  let cache = env.temp.visibleLinks;
   // (The data of the links is the same: what's changed is which are visible, or their clusters)
   const kept = cache && cache.graph === g && cache.version === g.version && cache.fields === fields;
   if (!kept || cache.visibleVersion !== g.visibleVersion || cache.nodeCluster !== g.nodeCluster) {
@@ -779,21 +783,21 @@ MT.getVisibleLinks = copy => {
       const link = old && old.get(e);
       links[x] = link && link.cluster === (g.nodeCluster ? g.nodeCluster[g.source(e)] : 1) ? link : MT.linkObject(e, true, undefined, true);
     }
-    cache = temp.visibleLinks = { graph: g, version: g.version, nodeCluster: g.nodeCluster, fields, visibleVersion: g.visibleVersion, edges: g.visible.slice(0, g.visibleCount), links };
+    cache = env.temp.visibleLinks = { graph: g, version: g.version, nodeCluster: g.nodeCluster, fields, visibleVersion: g.visibleVersion, edges: g.visible.slice(0, g.visibleCount), links };
   }
   if (copy) return cache.links.map(link => Object.assign({}, link, { origin: link.origin.slice() }));
   return cache.links.slice();
 };
 
 MT.updateStatistics = () => {
-  if (!session.style.widgets["network-statistics-show"]) return;
+  if (!env.session.style.widgets["network-statistics-show"]) return;
   let vnodes = MT.getVisibleNodes();
-  const g = session.data.graph;
+  const g = env.session.data.graph;
   let linkCount = 0;
   let clusterCount = 0;
-  if (session.style.widgets["timeline-date-field"]== 'None') {
+  if (env.session.style.widgets["timeline-date-field"]== 'None') {
     linkCount = g.visibleCount;
-    clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(cluster.nodes)).length;
+    clusterCount = env.session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(cluster.nodes)).length;
   } else {
     // (Looked up by ID, as the links name nodes by their ID)
     const visibleIds = new Set();
@@ -806,7 +810,7 @@ MT.updateStatistics = () => {
 
     const sizes = new Map();
     vnodes.forEach(d => sizes.set(d.cluster, (sizes.get(d.cluster) || 0) + 1));
-    clusterCount = session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(sizes.get(cluster.id))).length;
+    clusterCount = env.session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(sizes.get(cluster.id))).length;
   }
   let singletons = vnodes.filter(d => d.degree == 0).length;
   const show = (id, n) => { document.getElementById(id).textContent = n.toLocaleString(); };
@@ -816,3 +820,4 @@ MT.updateStatistics = () => {
   show("numberOfSingletonNodes", singletons);
   show("numberOfDisjointComponents", clusterCount); // #187
 };
+}

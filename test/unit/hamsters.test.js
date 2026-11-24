@@ -1,13 +1,10 @@
 // Unit tests for the order of MT.runHamsters in src/links-clusters.js (#233).
 // Run with: npm test
 const test = require('node:test');
-const { runAppFiles } = require('../app-files.js');
+const { createMT } = require('../../src/common.js');
 const assert = require('node:assert');
-const vm = require('vm');
-const fs = require('fs');
-const path = require('path');
 
-// A stand-in for anything common.js touches in the page as it loads
+// A stand-in for the page's document, which the installers touch as MT is built
 const stub = () => new Proxy(function() {}, {
   get: (t, k) => k === Symbol.toPrimitive ? () => '' : stub(),
   apply: () => stub(),
@@ -17,17 +14,9 @@ const stub = () => new Proxy(function() {}, {
 // Loads common.js afresh, with the compute steps replaced by ones that log
 // when they start and finish, each finishing on a later tick.
 function load({ directionality = true, tree = null, failTree = false } = {}) {
-  const ctx = {
-    console: { log() {}, error() {}, warn() {} },
-    TextDecoder, TextEncoder,
-    document: stub()
-  };
-  ctx.self = ctx.window = ctx;
-  vm.createContext(ctx);
-  runAppFiles(ctx);
-  const MT = ctx.MT, log = [], warnings = [];
-  ctx.session = { style: { widgets: { 'infer-directionality-false': !directionality } } };
-  ctx.temp = { tree };
+  globalThis.document = stub();
+  const ctx = { session: { style: { widgets: { 'infer-directionality-false': !directionality } } }, temp: { tree } };
+  const MT = createMT(ctx), log = [], warnings = [];
   const later = (name, fn) => async () => {
     log.push(name + ' start');
     await new Promise(r => setTimeout(r, 5));
@@ -78,23 +67,16 @@ test('a tree that fails to build warns and still finishes the load', async () =>
 
 // Loads common.js with nothing replaced, for the compute steps themselves
 function bare() {
-  const ctx = {
-    console: { log() {}, error() {} },
-    TextDecoder, TextEncoder,
-    document: stub()
-  };
-  ctx.self = ctx.window = ctx;
-  vm.createContext(ctx);
-  runAppFiles(ctx);
-  ctx.session = { style: { widgets: {} } };
-  ctx.temp = {};
+  globalThis.document = stub();
+  const ctx = { session: { style: { widgets: {} } }, temp: {} };
+  ctx.MT = createMT(ctx);
   return ctx;
 }
 
 // A tree worker that answers with a tree, and notes when it's terminated
 function treeWorker(ctx) {
   const worker = { terminated: false };
-  ctx.Worker = class {
+  globalThis.Worker = class {
     postMessage() {
       const tree = { id: 'root' };
       setTimeout(() => this.onmessage({ data: { tree, start: Date.now() } }), 1);
@@ -108,7 +90,7 @@ function treeWorker(ctx) {
 
 test('computeTree rejects, rather than hanging, when the tree is too deep to parse', async () => {
   const ctx = bare(), worker = treeWorker(ctx);
-  ctx.patristic = { parseJSON: () => { throw new RangeError('Maximum call stack size exceeded'); } };
+  globalThis.patristic = { parseJSON: () => { throw new RangeError('Maximum call stack size exceeded'); } };
   await assert.rejects(ctx.MT.computeTree(), /Maximum call stack/);
   assert.ok(worker.terminated);
   assert.strictEqual(ctx.temp.tree, undefined);
@@ -124,23 +106,16 @@ test('computeTree rejects when the distance matrix fails', async () => {
 
 test('computeTree sets the tree and terminates its worker', async () => {
   const ctx = bare(), worker = treeWorker(ctx);
-  ctx.patristic = { parseJSON: tree => tree };
+  globalThis.patristic = { parseJSON: tree => tree };
   await ctx.MT.computeTree();
   assert.strictEqual(ctx.temp.tree.id, 'root');
   assert.ok(worker.terminated);
 });
 
 test('computeDirectionality rejects, rather than hanging, when its worker throws', async () => {
-  const ctx = {
-    console: { log() {}, error() {} },
-    TextDecoder, TextEncoder,
-    document: stub()
-  };
-  ctx.self = ctx.window = ctx;
-  vm.createContext(ctx);
-  runAppFiles(ctx);
+  const ctx = bare();
   let terminated = false;
-  ctx.Worker = class {
+  globalThis.Worker = class {
     postMessage() { setTimeout(() => this.onerror(new Error('too deep')), 1); }
     terminate() { terminated = true; }
   };

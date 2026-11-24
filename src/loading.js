@@ -4,17 +4,21 @@
 // GHOST formats, generates and aligns sequences, infers fields, and loads
 // geodata and the demo.
 //
-// An ES module (#323) that adds to MT (imported from common.js, which also sets
-// self.MT). It uses these MT names from the other files at run time, through MT:
+// An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
+// (#341). It uses these MT names from the other files at run time, through MT:
 //   colors.js: createLinkColorMap, createNodeColorMap, createPolygonColorMap
 //   common.js: addLink, addNode, addNodeField, defaultWidgets, events,
 //     parseDate, reset, runWorker, sessionSkeleton, settings, time, uniq
 //   links-clusters.js: finishUp, runHamsters
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
-import { MT } from './common.js';
+// It reads the session and temp (and the layout) from env, which is self on the page and a
+// fake in tests; the browser and library globals (document, Worker, d3, ...) it reads bare.
+// The body of the installer is not indented, so that the diff of the change that wrapped it
+// stays small.
 import { MTDates } from './dates.js';
 import { MTGraph } from './graph.js';
 import { MTSessionFormat } from './session-format.js';
+
+export function installLoading(MT, env) {
 
 MT.processSVG = svg => {
   const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
@@ -42,7 +46,7 @@ MT.processSVG = svg => {
         color: link.getAttribute("stroke"),
         origin: ["Scraped MicrobeTrace SVG"]
       };
-      base[session.style.widgets['default-distance-metric']] = 0;
+      base[env.session.style.widgets['default-distance-metric']] = 0;
       MT.addLink(base);
     });
     MT.session.addLinkField("color");
@@ -61,7 +65,7 @@ MT.processSVG = svg => {
         target: target + "",
         origin: ["Scraped SVG"]
       };
-      base[session.style.widgets['default-distance-metric']] = 0;
+      base[env.session.style.widgets['default-distance-metric']] = 0;
       MT.addLink(base);
     });
   }
@@ -107,30 +111,30 @@ MT.applySession = oldSession => {
   MT.reset();
   const launch = document.getElementById("launch");
   if (launch) launch.disabled = true;
-  session.files = oldSession.files || [];
-  session.state = oldSession.state || session.state;
-  session.style = Object.assign({},
-    session.style,
+  env.session.files = oldSession.files || [];
+  env.session.state = oldSession.state || env.session.state;
+  env.session.style = Object.assign({},
+    env.session.style,
     oldSession.style
   );
-  if (oldSession.layout) session.layout = oldSession.layout;
-  session.meta.startTime = Date.now();
+  if (oldSession.layout) env.session.layout = oldSession.layout;
+  env.session.meta.startTime = Date.now();
   MT.session.restoreData(oldSession.data);
-  if(oldSession.network) session.network = oldSession.network;
+  if(oldSession.network) env.session.network = oldSession.network;
   // Sessions from before distances were kept under their metric's name (#249)
   // kept the distance metric's as distance: they filter on that
-  const widgets = session.style.widgets;
-  if (!session.data.linkFields.includes(widgets['link-sort-variable']) && session.data.linkFields.includes('distance')) {
+  const widgets = env.session.style.widgets;
+  if (!env.session.data.linkFields.includes(widgets['link-sort-variable']) && env.session.data.linkFields.includes('distance')) {
     // eslint-disable-next-line no-restricted-syntax -- session upgrade, before anything subscribes (#249)
     widgets['link-sort-variable'] = 'distance';
   }
-  MT.applyStyle(session.style);
+  MT.applyStyle(env.session.style);
   MT.finishUp(true);
   return true;
 };
 
 MT.applyStyle = style => {
-  session.style = style;
+  env.session.style = style;
   // Sessions from before there were two ways to prune (#236) had an on/off
   // link-show-nn, which ran the minimum spanning tree
   const old = style.widgets && style.widgets["link-show-nn"];
@@ -139,7 +143,7 @@ MT.applyStyle = style => {
     if (style.widgets["link-prune"] === undefined) style.widgets["link-prune"] = (old === true || old === "true") ? "mst" : "none";
     delete style.widgets["link-show-nn"];
   }
-  session.style.widgets = Object.assign({},
+  env.session.style.widgets = Object.assign({},
     MT.defaultWidgets,
     style.widgets
   );
@@ -151,7 +155,7 @@ MT.applyStyle = style => {
 
 MT.applyHIVTrace = hivtrace => {
   MT.resetSession({ temp: false });
-  session.meta.startTime = Date.now();
+  env.session.meta.startTime = Date.now();
   hivtrace["trace_results"]["Nodes"].forEach(node => {
     let newNode = JSON.parse(JSON.stringify(node.patient_attributes));
     newNode._id = node._id;
@@ -164,7 +168,7 @@ MT.applyHIVTrace = hivtrace => {
     MT.addNodeField(key);
   });
   let n = hivtrace["trace_results"]["Edges"].length;
-  let metric = session.style.widgets['default-distance-metric'];
+  let metric = env.session.style.widgets['default-distance-metric'];
   for (let i = 0; i < n; i++) {
     let link = hivtrace["trace_results"]["Edges"][i];
     let newLink = {
@@ -182,7 +186,7 @@ MT.applyHIVTrace = hivtrace => {
 
 MT.applyGHOST = ghost => {
   MT.resetSession({ temp: false });   
-  session.meta.startTime = Date.now();
+  env.session.meta.startTime = Date.now();
   ghost["samples"].forEach(node => {     
     let newNode = JSON.parse(JSON.stringify(node));     
     newNode.origin = ["GHOST Import"];     
@@ -199,11 +203,11 @@ MT.applyGHOST = ghost => {
     let newLink = Object.assign({}, link, { 
       source: "" + link.source, 
       target: "" + link.target, 
-      [session.style.widgets['default-distance-metric']]: parseFloat(link.dist), 
+      [env.session.style.widgets['default-distance-metric']]: parseFloat(link.dist), 
       origin: ["GHOST Import"], visible: true });     
     MT.addLink(newLink);   
   }
-  MT.session.addLinkField(session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps");
+  MT.session.addLinkField(env.session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps");
 //	MT.finishUp(); 
   MT.runHamsters();
 }; 
@@ -238,7 +242,7 @@ MT.parseCSVMatrix = (file, source, nodeOrigin) => {
       const links = data.links;
       const tl = links.length;
       // Distances go under the distance metric, which the threshold filters on (#213)
-      const field = session.style.widgets["default-distance-metric"];
+      const field = env.session.style.widgets["default-distance-metric"];
       MT.session.addLinkField(field);
       // (A matrix can hold millions of links, so they are made as they are added)
       nl += MT.session.addLinks((function*() { for (const link of links) yield MTGraph.distanceLink(Object.assign(link, { origin: origin }), field); })());
@@ -266,7 +270,7 @@ MT.generateSeqs = (idPrefix, count, snps, seed) => {
   let start = Date.now();
   if (!count) count = 1000;
   if (!snps) snps = 100;
-  if (!seed) seed = session.data.reference;
+  if (!seed) seed = env.session.data.reference;
   // No reference to start from (the consensus is built later, from the data)
   if (!seed) seed = Array.from({ length: MT.generatedSeedLength }, () => "ACGT"[Math.floor(MT.r01() * 4)]).join("");
 
@@ -472,17 +476,17 @@ MT.getMapData = type => {
     let parts = type.split(".");
     let name = parts[0],
         format = parts[1];
-    if (temp.mapData[name]) {
-      return resolve(temp.mapData[name]);
+    if (env.temp.mapData[name]) {
+      return resolve(env.temp.mapData[name]);
     }
     fetch("data/" + type).then(response => format == "json" ? response.json() : response.text()).then(response => {
       if (format == "csv") {
-        temp.mapData[name] = Papa.parse(response, { header: true }).data;
+        env.temp.mapData[name] = Papa.parse(response, { header: true }).data;
       }
       if (format == "json") {
-        temp.mapData[name] = response;
+        env.temp.mapData[name] = response;
       }
-      resolve(temp.mapData[name]);
+      resolve(env.temp.mapData[name]);
     });
   });
 };
@@ -628,7 +632,7 @@ MT.pickLocationFields = (settings, prefix) => {
   const kinds = [...MT.locationKinds, 'lat', 'lon'];
   if (kinds.some(kind => ![undefined, null, 'None'].includes(settings.get(prefix + kind)))) return;
   kinds.forEach(kind => {
-    if (session.data.nodeFields.includes(kind)) settings.set(prefix + kind, kind);
+    if (env.session.data.nodeFields.includes(kind)) settings.set(prefix + kind, kind);
   });
 };
 
@@ -740,7 +744,7 @@ MT.demoURL = "demo/Demo_outbreak_session.microbetrace";
 // worker has kept a copy (it caches the demo on first use, #296)
 MT.demoAvailable = async () => {
   if (navigator.onLine) return true;
-  try { return !!(self.caches && await caches.match(new URL(MT.demoURL, location.href).href)); }
+  try { return !!(env.caches && await caches.match(new URL(MT.demoURL, location.href).href)); }
   catch (error) { return false; }
 };
 
@@ -753,9 +757,9 @@ MT.updateDemoButtons = async () => {
   });
 };
 // Only in a browser: the unit tests load this file in Node, without a DOM
-if (typeof self.addEventListener === "function") {
-  self.addEventListener("online", () => MT.updateDemoButtons());
-  self.addEventListener("offline", () => MT.updateDemoButtons());
+if (typeof env.addEventListener === "function") {
+  env.addEventListener("online", () => MT.updateDemoButtons());
+  env.addEventListener("offline", () => MT.updateDemoButtons());
 }
 
 MT.loadDemo = () => fetch(MT.demoURL)
@@ -765,3 +769,4 @@ MT.loadDemo = () => fetch(MT.demoURL)
     console.error(error);
     MT.toast.error(navigator.onLine ? "The demo data couldn't be loaded." : "The demo data couldn't be loaded. This browser is offline and hasn't saved it yet.");
   });
+}

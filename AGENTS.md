@@ -41,11 +41,14 @@ serially and is slow; run the specs for what you touched, not the whole suite, u
   ES modules (#323): they `export` their API and, until their users convert too, also set it on
   `globalThis`. New code that other files depend on should be a module with `import`s, not a global.
   The core scripts split from `common.js` (`common`, `loading`, `links-clusters`, `colors`, `export`,
-  `views`, `ui`) are modules too: `common.js` exports `MT` and sets `self.MT`, the others import `MT`
-  and the leaf modules they use, and they still call each other through `MT.x` at run time, so there are
-  no import cycles. `components/`, `src/index.js`, `src/webmcp*` and workers stay classic scripts that
-  read `MT`, `session` and `temp` as globals. Unit tests that need a fresh `MT` per test use
-  `runAppFiles` in `test/app-files.js`.
+  `views`, `ui`) are modules too, and importing one does nothing (#341): `createMT(env)` in `common.js`
+  makes an `MT`, runs the others' `installX(MT, env)` on it and returns it. `src/mt.js` calls it once
+  and sets `self.MT`. `env` is `self` on the page; it supplies `session`, `temp` and `layout`, which the
+  installed functions read as `env.session` and so on, while `document`, `Worker` and the libraries are
+  read as globals. They still call each other through `MT.x` at run time. `components/`, `src/index.js`,
+  `src/webmcp*` and workers stay classic scripts that read `MT`, `session` and `temp` as globals. Unit
+  tests that need a fresh `MT` per test call `createMT` with a fake `env` and set the globals they fake
+  on `globalThis` (see `test/golden/harness.js`).
   Module scripts are deferred: they run in document order with the `defer` scripts, after the
   synchronous ones (such as `dist/bundle.primary.js`). So a synchronous script can't use `MT` or the
   leaf modules, and a `defer` script can use only the modules placed before it in `index.html`.

@@ -8,6 +8,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { runWorker, loadApp, parseFasta, expected } = require('../golden/harness.js');
 const MTAlignerScoring = require('../../src/aligner.js').MTAlignerScoring;
+const { MTGraph } = require('../../src/graph.js');
 
 const golden = expected('graph.json');
 const pairKey = ([a, b]) => [a, b].sort().join('-');
@@ -30,10 +31,10 @@ function load(toy, widgets = {}) {
 }
 
 // The links MT.computeMST / MT.computeNN flagged
-function flagged({ ctx, session }) {
+function flagged({ session }) {
   const g = session.data.graph, out = [];
   g.forEachEdge((e, s, t) => {
-    if (g.getFlags(e) & ctx.MTGraph.NN) out.push([g.ids[s], g.ids[t]]);
+    if (g.getFlags(e) & MTGraph.NN) out.push([g.ids[s], g.ids[t]]);
   });
   return pairSet(out);
 }

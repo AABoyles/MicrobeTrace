@@ -4,15 +4,19 @@
 // lists, editable names, tooltips, toasts, announcements, and names for
 // icon-only buttons.
 //
-// An ES module (#323) that adds to MT (imported from common.js, which also sets
-// self.MT). It uses these MT names from the other files at run time, through MT:
+// An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
+// (#341). It uses these MT names from the other files at run time, through MT:
 //   links-clusters.js: distanceMetrics
 //   views.js: panelDock
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
-import { MT } from './common.js';
+// It reads the session and temp (and the layout) from env, which is self on the page and a
+// fake in tests; the browser and library globals (document, Worker, d3, ...) it reads bare.
+// The body of the installer is not indented, so that the diff of the change that wrapped it
+// stays small.
 
 // A column heading for a Tabulator table, shown as text (Tabulator reads a
 // plain title as markup, and names come from the loaded files)
+
+export function installUI(MT, env) {
 MT.columnTitle = (title, definition) => ({ ...definition, title, titleFormatter: () => document.createTextNode(title) });
 
 MT.titleize = title => {
@@ -50,7 +54,7 @@ MT.fillSelect = (select, fields, { prefix = "", label = "", none = false, select
 };
 
 // Whether the user asked their system for less motion (#191)
-MT.reducedMotion = () => !!(self.matchMedia && self.matchMedia('(prefers-reduced-motion: reduce)').matches);
+MT.reducedMotion = () => !!(env.matchMedia && env.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // Closes a Bootstrap dialog by its id
 MT.hideModal = id => {
@@ -504,3 +508,4 @@ MT.showOnline = element => element.querySelectorAll(".ifOnline").forEach(el => {
     new MutationObserver(sweep).observe(document.body, { childList: true, subtree: true });
   }
 })();
+}

@@ -3,18 +3,22 @@
 // Default and clean file names, the table export menu, PDFs, SVG, plot and map
 // images, saving a Blob, CSV, and the HIVTRACE export.
 //
-// An ES module (#323) that adds to MT (imported from common.js, which also sets
-// self.MT). It uses these MT names from the other files at run time, through MT:
+// An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
+// (#341). It uses these MT names from the other files at run time, through MT:
 //   common.js: today
 //   links-clusters.js: getVisibleLinks
 //   ui.js: titleize
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
-import { MT } from './common.js';
+// It reads the session and temp (and the layout) from env, which is self on the page and a
+// fake in tests; the browser and library globals (document, Worker, d3, ...) it reads bare.
+// The body of the installer is not indented, so that the diff of the change that wrapped it
+// stays small.
 
 // A file name as typed, made safe to save: characters no file system takes
 // are dropped, and an extension that will be added anyway (or one of
 // `extensions` that was typed) is stripped, so figure.png does not become
 // figure.png.png. An empty result falls back to `fallback`.
+
+export function installExport(MT, env) {
 MT.cleanFilename = (name, extensions = [], fallback = 'microbetrace-' + MT.today()) => {
   let clean = String(name || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').trim();
   const typed = /\.([A-Za-z0-9]+)$/.exec(clean);
@@ -36,7 +40,7 @@ MT.defaultFilename = (field, what = () => '') => {
 // What an export dialog inside a view suggests calling the file: the view's
 // name, e.g. epi-curve
 const exportName = root => {
-  const item = self.layout.contentItems.find(item => item.container.element.contains(root));
+  const item = env.layout.contentItems.find(item => item.container.element.contains(root));
   return item ? MT.titleize(item.componentType).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
 };
 
@@ -81,7 +85,7 @@ MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, rej
 }));
 
 // pdfmake and its fonts (1.9 MB) are only fetched when a PDF is first made
-MT.loadPDF = () => self.pdfMake ? Promise.resolve() : MT.loadScript('dist/bundle.pdf.js');
+MT.loadPDF = () => env.pdfMake ? Promise.resolve() : MT.loadScript('dist/bundle.pdf.js');
 
 // A PDF of tables ({ title, headers, rows })
 MT.tablesPDF = (heading, tables, filename) => MT.loadPDF().then(() => pdfMake.createPdf({
@@ -384,7 +388,7 @@ MT.exportHIVTRACE = () => {
     geneticLinks.map(l => l.target))
   ).size;
   let pas = {};
-  session.data.nodes.forEach(d => {
+  env.session.data.nodes.forEach(d => {
     Object.keys(d).forEach(key => {
       if (pas[key]) return;
       pas[key] = {
@@ -396,7 +400,7 @@ MT.exportHIVTRACE = () => {
   return JSON.stringify(
     {
       trace_results: {
-        "Cluster sizes": session.data.clusters.map(c => c.size),
+        "Cluster sizes": env.session.data.clusters.map(c => c.size),
         Degrees: {
           Distribution: [],
           Model: "Waring",
@@ -414,18 +418,18 @@ MT.exportHIVTRACE = () => {
         Edges: links.map(l => ({
           attributes: ["BULK"],
           directed: false,
-          length: l[session.style.widgets["link-sort-variable"]],
+          length: l[env.session.style.widgets["link-sort-variable"]],
           removed: false,
           sequences: [l.source, l.target],
-          source: session.data.nodes.findIndex(d => d._id == l.source),
+          source: env.session.data.nodes.findIndex(d => d._id == l.source),
           support: 0,
-          target: session.data.nodes.findIndex(d => d._id == l.target)
+          target: env.session.data.nodes.findIndex(d => d._id == l.target)
         })),
         "HIV Stages": {
           "A-1": 0,
           "A-2": 0,
           "A-3": 0,
-          Chronic: session.data.nodes.length,
+          Chronic: env.session.data.nodes.length,
           "E-1": 0,
           "E-2": 0,
           "E-3": 0
@@ -435,12 +439,12 @@ MT.exportHIVTRACE = () => {
           "Subjects with": 0
         },
         "Network Summary": {
-          Clusters: session.data.clusters.length,
+          Clusters: env.session.data.clusters.length,
           Edges: links.length,
-          Nodes: session.data.nodes.length,
+          Nodes: env.session.data.nodes.length,
           "Sequences used to make links": sequences
         },
-        Nodes: session.data.nodes.map(d => ({
+        Nodes: env.session.data.nodes.map(d => ({
           attributes: [],
           baseline: null,
           cluster: d.cluster,
@@ -453,7 +457,7 @@ MT.exportHIVTRACE = () => {
           "contaminant-ids": [],
           contaminants: "remove",
           "edge-filtering": "remove",
-          threshold: session.style.widgets["link-threshold"]
+          threshold: env.session.style.widgets["link-threshold"]
         }
       }
     },
@@ -461,3 +465,4 @@ MT.exportHIVTRACE = () => {
     2
   );
 };
+}

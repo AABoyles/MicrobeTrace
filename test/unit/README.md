@@ -1,6 +1,6 @@
 # Unit Tests
 
-Tests of the ES-module files in `src/` are `*.test.mjs` and `import` them (#323); the rest are `*.test.js`. Tests that load files in a `vm` context `require` the modules (Node can require a synchronous ES module) and take the named export. Tests that need a fresh `MT` for each test load the core modules with `runAppFiles` from `test/app-files.js`, since an `import` is evaluated only once.
+Tests of the ES-module files in `src/` are `*.test.mjs` and `import` them (#323); the rest are `*.test.js`. Tests that load files in a `vm` context `require` the modules (Node can require a synchronous ES module) and take the named export. Tests that need a fresh `MT` for each test `require` `createMT` from `src/common.js` (#341) and call it with a fake `env` (`{ session, temp }`), setting any browser global they fake (`document`, `Worker`, `d3`) on `globalThis`.
 
 This is where we're developing MicrobeTrace's unit tests.
 
