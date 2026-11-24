@@ -58,7 +58,7 @@ export function mount(root, ctx) {
     const undated = field ? MTDates.countUndated(ctx.session.data.nodes, field, order) : 0;
     undatedNote
       .attr('x', margin.left + width).attr('y', margin.top - 30)
-      .text(dates.length && undated ? `${undated.toLocaleString()} undated ${undated == 1 ? 'node' : 'nodes'} not shown` : '');
+      .text(dates.length && undated ? `${undated.toLocaleString()} undated ${undated === 1 ? 'node' : 'nodes'} not shown` : '');
     // Without dates, a note saying what to choose instead of an empty chart
     $('.view-message').hidden = dates.length > 0;
     svg.style('display', dates.length ? null : 'none');
@@ -87,7 +87,7 @@ export function mount(root, ctx) {
       .attr('height', (d, i) => height - y(counts[i]))
       .attr('fill', settings.get('node-color'))
       .select('title')
-      .text((d, i) => `${name(d.x0)}: ${counts[i]} ${counts[i] == 1 ? 'node' : 'nodes'}${cumulative ? ' so far' : ''}`);
+      .text((d, i) => `${name(d.x0)}: ${counts[i]} ${counts[i] === 1 ? 'node' : 'nodes'}${cumulative ? ' so far' : ''}`);
 
     axis
       .attr('transform', `translate(${margin.left},${height})`)
@@ -108,7 +108,7 @@ export function mount(root, ctx) {
     if (!event.sourceEvent) return;
     const selection = event.selection;
     if (selection && selection[0] > 0) brushG.call(brush.move, [0, selection[1]]);
-    if (event.type == 'end') filter(selection ? x.invert(selection[1]) : null);
+    if (event.type === 'end') filter(selection ? x.invert(selection[1]) : null);
   });
 
   function filter(end) {
@@ -139,13 +139,13 @@ export function mount(root, ctx) {
   let [detected] = MT.dateFields(ctx.session.data.nodes, ctx.session.data.nodeFields);
   const chosen = () => {
     const field = settings.get('timeline-date-field');
-    return field && field != 'None' ? field : null;
+    return field && field !== 'None' ? field : null;
   };
   const dateField = () => chosen() || detected || null;
   const showField = () => { menu.value = dateField() || 'None'; };
   // Choosing None leaves the curve empty
   menu.addEventListener('change', () => {
-    if (menu.value == 'None') detected = null;
+    if (menu.value === 'None') detected = null;
     draw();
   });
 

@@ -29,7 +29,7 @@ export function mount(root, ctx) {
     const items = MT['getVisible' + dataset[0].toUpperCase() + dataset.slice(1) + 's']();
     const counts = new Map();
     items.forEach(d => {
-      const value = MT.valueLabel(d[column]) == '(Empty)' ? '(Empty)' : d[column];
+      const value = MT.valueLabel(d[column]) === '(Empty)' ? '(Empty)' : d[column];
       counts.set(value, (counts.get(value) || 0) + 1);
     });
     // Most common first (ties in the values' order), each a share to one decimal

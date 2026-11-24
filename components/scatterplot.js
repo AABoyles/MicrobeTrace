@@ -71,7 +71,7 @@ export function mount(root, ctx) {
       // the Content Security Policy refuses
       Plotly.toImage(plot, { format: 'svg', width: plot.clientWidth, height: plot.clientHeight }).then(url => {
         const text = decodeURIComponent(url.slice(url.indexOf(',') + 1));
-        if (type == 'svg') return MT.exportBlob(text, 'image/svg+xml', filename + '.svg');
+        if (type === 'svg') return MT.exportBlob(text, 'image/svg+xml', filename + '.svg');
         const svg = new DOMParser().parseFromString(text, 'image/svg+xml').documentElement;
         return MT.svgImage(svg, {
           scale,

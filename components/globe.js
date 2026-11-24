@@ -21,7 +21,7 @@ export function mount(root, ctx) {
 
   const field = kind => {
     const value = settings.get('globe-field-' + kind);
-    return value && value != 'None' ? value : null;
+    return value && value !== 'None' ? value : null;
   };
   const fieldKeys = [...MT.locationKinds, 'lat', 'lon'].map(kind => 'globe-field-' + kind);
 
@@ -32,7 +32,7 @@ export function mount(root, ctx) {
   async function place() {
     const ticket = ++request;
     const located = await MT.locateNodes(MT.getVisibleNodes(), field);
-    if (ticket != request || destroyed) return;
+    if (ticket !== request || destroyed) return;
     positions = located;
     cache = null;
     // The first time there are nodes to show, turn and zoom to them
@@ -101,13 +101,13 @@ export function mount(root, ctx) {
         s,
         t,
         m: d3.geoInterpolate(s, t)(0.5),
-        stroke: linkVariable == 'None' ? linkColor : ctx.temp.style.linkColorMap(MT.linkColorValue(d, linkVariable))
+        stroke: linkVariable === 'None' ? linkColor : ctx.temp.style.linkColorMap(MT.linkColorValue(d, linkVariable))
       });
     });
     const nodeVariable = settings.get('node-color-variable'), nodeColor = settings.get('node-color');
     MT.getVisibleNodes().forEach(d => {
       if (!positions.has(d._id)) return;
-      const fill = nodeVariable == 'None' ? nodeColor : ctx.temp.style.nodeColorMap(d[nodeVariable]);
+      const fill = nodeVariable === 'None' ? nodeColor : ctx.temp.style.nodeColorMap(d[nodeVariable]);
       if (!nodes.has(fill)) nodes.set(fill, []);
       nodes.get(fill).push({ type: 'Point', coordinates: point(d._id) });
     });
@@ -221,7 +221,7 @@ export function mount(root, ctx) {
   }
 
   // Dragging turns the globe; the wheel zooms
-  const zoomer = d3.zoom().scaleExtent([0.5, 50]).filter(e => e.type == 'wheel').on('zoom', e => {
+  const zoomer = d3.zoom().scaleExtent([0.5, 50]).filter(e => e.type === 'wheel').on('zoom', e => {
     zoom = e.transform.k;
     projection.scale(baseScale * zoom);
     draw();
@@ -311,8 +311,8 @@ export function mount(root, ctx) {
     collection.features.forEach(feature => {
       if (d3.geoArea(feature) <= 2 * Math.PI) return;
       const { type, coordinates } = feature.geometry;
-      if (type == 'Polygon') coordinates.forEach(ring => ring.reverse());
-      else if (type == 'MultiPolygon') coordinates.forEach(polygon => polygon.forEach(ring => ring.reverse()));
+      if (type === 'Polygon') coordinates.forEach(ring => ring.reverse());
+      else if (type === 'MultiPolygon') coordinates.forEach(polygon => polygon.forEach(ring => ring.reverse()));
     });
     return collection;
   }

@@ -42,7 +42,7 @@ export function mount(root, ctx) {
     const index = new Map(), labels = [], columns = [];
     order.forEach((variable, column) => {
       // Each column's values in order (numbers by number), empty ones last
-      const empty = value => MT.valueLabel(value) != value;
+      const empty = value => MT.valueLabel(value) != value; // eslint-disable-line eqeqeq -- a value may be a number whose label is its text
       Array.from(new Set(items.map(d => d[variable] + '')))
         .sort((a, b) => empty(a) - empty(b) || a.localeCompare(b, undefined, { numeric: true }))
         .forEach(value => {
@@ -68,14 +68,14 @@ export function mount(root, ctx) {
     // Plotly would reorder each column's values; placing them keeps their
     // order, top to bottom, each as tall as its flow
     const flow = labels.map((label, i) => Math.max(
-      d3.sum(value.filter((v, j) => source[j] == i)),
-      d3.sum(value.filter((v, j) => target[j] == i))
+      d3.sum(value.filter((v, j) => source[j] === i)),
+      d3.sum(value.filter((v, j) => target[j] === i))
     ));
     const column = [], x = [], y = [];
     index.forEach((i, key) => { column[i] = +key.split('\u0000')[0]; });
     const edge = 0.001;
     order.forEach((variable, c) => {
-      const members = column.map((m, i) => m == c ? i : -1).filter(i => i >= 0);
+      const members = column.map((m, i) => m === c ? i : -1).filter(i => i >= 0);
       const total = d3.sum(members, i => flow[i]) || 1;
       let above = 0;
       members.forEach(i => {
@@ -110,7 +110,7 @@ export function mount(root, ctx) {
         text: '<b>' + MT.titleize(variable) + '</b>',
         xref: 'paper', yref: 'paper', y: 1, yanchor: 'bottom', yshift: 6, showarrow: false,
         x: order.length > 1 ? i / (order.length - 1) : 0.5,
-        xanchor: order.length < 2 ? 'center' : i == 0 ? 'left' : i == order.length - 1 ? 'right' : 'center'
+        xanchor: order.length < 2 ? 'center' : i === 0 ? 'left' : i === order.length - 1 ? 'right' : 'center'
       }))
     }, {
       displaylogo: false,

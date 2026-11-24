@@ -40,10 +40,10 @@ export function mount(root, ctx) {
     if (columnsMenu) columnsMenu.destroy();
     // The first five, less the internal counter (still there to choose), and
     // for links, the field they're filtered on after their ends
-    let order = fields.filter(f => f != 'index');
+    let order = fields.filter(f => f !== 'index');
     const filtered = settings.get('link-sort-variable');
-    if (dataset == 'links' && order.includes(filtered)) {
-      const rest = order.filter(f => f != filtered);
+    if (dataset === 'links' && order.includes(filtered)) {
+      const rest = order.filter(f => f !== filtered);
       order = [...rest.slice(0, 2), filtered, ...rest.slice(2)];
     }
     const shown = order.slice(0, 5);
@@ -60,7 +60,7 @@ export function mount(root, ctx) {
 
   // Every node and cluster, but only the links that are visible: the full
   // set includes every computed distance (n² of them).
-  const items = () => dataset == 'links' ? MT.getVisibleLinks() : ctx.session.data[dataset];
+  const items = () => dataset === 'links' ? MT.getVisibleLinks() : ctx.session.data[dataset];
 
   async function showData() {
     await built;
@@ -123,7 +123,7 @@ export function mount(root, ctx) {
   const controls = $('.view-controls');
   const belowControls = new ResizeObserver(() => {
     const top = controls.offsetTop + controls.offsetHeight + 8;
-    if (grid.style.paddingTop == top + 'px') return;
+    if (grid.style.paddingTop === top + 'px') return;
     grid.style.paddingTop = top + 'px';
     built.then(() => table.redraw());
   });
@@ -131,8 +131,8 @@ export function mount(root, ctx) {
 
   const stop = [
     events.on('link-visibility', showData),
-    events.on('node-values-change', () => { if (dataset == 'nodes') showData(); }),
-    events.on('node-selected', view => { if (view != 'table') restyle(); }),
+    events.on('node-values-change', () => { if (dataset === 'nodes') showData(); }),
+    events.on('node-selected', view => { if (view !== 'table') restyle(); }),
     events.on('selected-color-change', restyle)
   ];
   showColumns();

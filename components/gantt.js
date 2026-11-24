@@ -35,7 +35,7 @@ export function mount(root, ctx) {
   // a transparency
   const dates = () => settings.get('gantt-dates') || [];
   const setDates = value => settings.set('gantt-dates', value);
-  const update = (i, change) => setDates(dates().map((d, j) => j == i ? { ...d, ...change } : d));
+  const update = (i, change) => setDates(dates().map((d, j) => j === i ? { ...d, ...change } : d));
 
   // A node's date: spreadsheet day numbers, or anything MT.parseDate reads in
   // the order its field's dates are written in
@@ -46,8 +46,8 @@ export function mount(root, ctx) {
     const nodes = ctx.session.data.nodes.filter(d => d.visible);
     const out = [];
     dates().forEach((date, i) => {
-      if (!date.start || date.start == 'None') return;
-      const endField = date.end && date.end != 'None' ? date.end : date.start;
+      if (!date.start || date.start === 'None') return;
+      const endField = date.end && date.end !== 'None' ? date.end : date.start;
       const startOrder = orderOf(date.start), endOrder = orderOf(endField);
       nodes.forEach(d => {
         const start = dateOf(d[date.start], startOrder), end = dateOf(d[endField], endOrder);
@@ -117,7 +117,7 @@ export function mount(root, ctx) {
       .attr('fill', b => list[b.date].color)
       .attr('fill-opacity', b => 1 - list[b.date].transparency)
       .select('title')
-      .text(b => b.row + ': ' + tickFormat(b.start) + (+b.end != +b.start ? ' to ' + tickFormat(b.end) : ''));
+      .text(b => b.row + ': ' + tickFormat(b.start) + (+b.end !== +b.start ? ' to ' + tickFormat(b.end) : ''));
 
     hoverBox.attr('width', width).attr('height', height);
     svg
@@ -174,7 +174,7 @@ export function mount(root, ctx) {
       field('transparency').addEventListener('input', e => update(i, { transparency: parseFloat(e.target.value) }));
       row.querySelector('a').addEventListener('click', e => {
         e.preventDefault();
-        setDates(dates().filter((d, j) => j != i));
+        setDates(dates().filter((d, j) => j !== i));
         showDates();
       });
       list.append(row);

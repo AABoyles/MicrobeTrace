@@ -12,14 +12,14 @@ export function mount(root, ctx) {
   // One histogram trace per color when the bars are colored by a variable,
   // as the color table for the dataset gives them (links by their first origin)
   function traces(source, field, axis) {
-    const items = source == 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks();
+    const items = source === 'nodes' ? MT.getVisibleNodes() : MT.getVisibleLinks();
     const trace = (values, color) => ({ type: 'histogram', [axis]: values, marker: { color }, showlegend: false, hoverinfo: 'skip' });
-    const colorBy = settings.get(source == 'nodes' ? 'node-color-variable' : 'link-color-variable');
-    if (colorBy == 'None') {
-      return [trace(items.map(d => d[field]), settings.get(source == 'nodes' ? 'node-color' : 'link-color'))];
+    const colorBy = settings.get(source === 'nodes' ? 'node-color-variable' : 'link-color-variable');
+    if (colorBy === 'None') {
+      return [trace(items.map(d => d[field]), settings.get(source === 'nodes' ? 'node-color' : 'link-color'))];
     }
-    const valueOf = source == 'nodes' ? d => d[colorBy] : d => MT.linkColorValue(d, colorBy);
-    const colorMap = source == 'nodes' ? ctx.temp.style.nodeColorMap : ctx.temp.style.linkColorMap;
+    const valueOf = source === 'nodes' ? d => d[colorBy] : d => MT.linkColorValue(d, colorBy);
+    const colorMap = source === 'nodes' ? ctx.temp.style.nodeColorMap : ctx.temp.style.linkColorMap;
     const groups = new Map();
     items.forEach(d => {
       const key = String(valueOf(d));
@@ -40,7 +40,7 @@ export function mount(root, ctx) {
     if (!width || !height) return;
     const [source, ...rest] = settings.get('histogram-variable').split('-');
     const field = rest.join('-');
-    const axis = settings.get('histogram-axis-x') ? 'x' : 'y', countAxis = axis == 'x' ? 'y' : 'x';
+    const axis = settings.get('histogram-axis-x') ? 'x' : 'y', countAxis = axis === 'x' ? 'y' : 'x';
     const data = traces(source, field, axis);
     Plotly.react(plot, data, {
       width, height,
@@ -61,7 +61,7 @@ export function mount(root, ctx) {
 
   // A link field the links don't have charts the one they're filtered on
   const [source, ...rest] = settings.get('histogram-variable').split('-');
-  if (source == 'links' && !ctx.session.data.linkFields.includes(rest.join('-'))) {
+  if (source === 'links' && !ctx.session.data.linkFields.includes(rest.join('-'))) {
     settings.set('histogram-variable', 'links-' + settings.get('link-sort-variable'));
   }
 
@@ -84,7 +84,7 @@ export function mount(root, ctx) {
 
   return {
     // The page's floating panels this view shows (see MT.placePanels)
-    panels: () => [dataset() == 'nodes' ? 'node-colors' : 'link-colors'],
+    panels: () => [dataset() === 'nodes' ? 'node-colors' : 'link-colors'],
     resize: draw,
     destroy() {
       stop.forEach(fn => fn());

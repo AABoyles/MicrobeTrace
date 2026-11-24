@@ -59,7 +59,7 @@ export function mount(root, ctx) {
     const variable = settings.get('node-color-variable'), color = settings.get('node-color'), selected = settings.get('selected-color');
     circles
       .attr('stroke', b => b.node.selected ? selected : '#ffffff')
-      .attr('fill', b => variable == 'None' ? color : ctx.temp.style.nodeColorMap(b.node[variable]));
+      .attr('fill', b => variable === 'None' ? color : ctx.temp.style.nodeColorMap(b.node[variable]));
   }
 
   // Each axis spreads the bubbles over the values of its variable, labelled,
@@ -68,8 +68,8 @@ export function mount(root, ctx) {
     [['x', width, 'bubble-x'], ['y', height, 'bubble-y']].forEach(([axis, length, key]) => {
       const field = settings.get(key);
       const label = svg.select(`.${axis}-label`);
-      const force = axis == 'x' ? d3.forceX() : d3.forceY();
-      if (!field || field == 'None') {
+      const force = axis === 'x' ? d3.forceX() : d3.forceY();
+      if (!field || field === 'None') {
         label.text('');
         svg.selectAll(`.${axis}title`).remove();
         simulation.force(axis, force.strength(0.03)[axis](length / 2));
@@ -77,7 +77,7 @@ export function mount(root, ctx) {
       }
       label.text(MT.titleize(field));
       const values = Array.from(new Set(bubbles.map(b => b.node[field])));
-      if (values.every(v => typeof v === 'number')) values.sort((a, b) => axis == 'x' ? a - b : b - a);
+      if (values.every(v => typeof v === 'number')) values.sort((a, b) => axis === 'x' ? a - b : b - a);
       else values.sort();
       const ratio = length / (values.length + 1);
       const place = v => ratio * values.indexOf(v) + ratio;
@@ -89,7 +89,7 @@ export function mount(root, ctx) {
         .text(v => v)
         .each(function (v) {
           const title = d3.select(this);
-          if (axis == 'x') title.attr('x', place(v)).attr('y', 50).attr('transform', null);
+          if (axis === 'x') title.attr('x', place(v)).attr('y', 50).attr('transform', null);
           else title.attr('x', 50).attr('y', place(v)).attr('transform', `rotate(270, 50, ${place(v)})`);
         });
       simulation.force(axis, force.strength(0.03)[axis](b => place(b.node[field])));

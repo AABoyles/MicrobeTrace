@@ -26,7 +26,7 @@ export function mount(root, ctx) {
   }
 
   // Values in natural order (2 before 10), missing ones last
-  const missing = v => MT.valueLabel(v) == '(Empty)';
+  const missing = v => MT.valueLabel(v) === '(Empty)';
   const natural = (a, b) => (missing(a) - missing(b)) || a.localeCompare(b, undefined, { numeric: true });
 
   // One row per Y value, headed by the Y variable, and one column per X value,

@@ -38,7 +38,7 @@ export function mount(root, ctx) {
   // With no field chosen, a node field named for the kind of region is used
   function pickField() {
     const field = settings.get('choropleth-aggregate-on');
-    if (field && field != 'None' && ctx.session.data.nodeFields.includes(field)) return;
+    if (field && field !== 'None' && ctx.session.data.nodeFields.includes(field)) return;
     const match = ctx.session.data.nodeFields.find(f => unit().fields.includes(f.toLowerCase()));
     if (match) settings.set('choropleth-aggregate-on', match);
   }
@@ -49,13 +49,13 @@ export function mount(root, ctx) {
     const ticket = ++request, { file, keys } = unit();
     const data = await MT.getMapData(file);
     // A newer request, or a closed view, makes this one moot
-    if (ticket != request || destroyed) return;
+    if (ticket !== request || destroyed) return;
     const index = new Map();
     data.features.forEach(f => keys(f).forEach(k => {
       if (k != null && k === k) index.set(String(k), f);
     }));
     const counts = new Map(), field = settings.get('choropleth-aggregate-on');
-    if (field && field != 'None') MT.getVisibleNodes().forEach(d => {
+    if (field && field !== 'None') MT.getVisibleNodes().forEach(d => {
       const v = d[field];
       if (v == null || v === '') return;
       const number = parseFloat(v);
@@ -104,7 +104,7 @@ export function mount(root, ctx) {
 
   function drawLegend(color, min, max) {
     const field = settings.get('choropleth-aggregate-on');
-    const title = field && field != 'None' ? 'Nodes by ' + MT.titleize(field) : 'Nodes';
+    const title = field && field !== 'None' ? 'Nodes by ' + MT.titleize(field) : 'Nodes';
     legendState = { color, min, max, title };
     legendDiv.querySelector('.legend-title').textContent = title;
     legendDiv.querySelector('.legend-ramp').style.background = `linear-gradient(to right, ${[0, 0.5, 1].map(t => d3.rgb(color(t)).formatHex()).join(', ')})`;

@@ -22,7 +22,7 @@ export function mount(root, ctx) {
 
   const field = name => {
     const value = settings.get('map-field-' + name);
-    return value && value != 'None' ? value : null;
+    return value && value !== 'None' ? value : null;
   };
 
   // Where each node goes ([lat, lon], by _id), moved by the jitter setting
@@ -35,7 +35,7 @@ export function mount(root, ctx) {
     const ticket = ++request;
     const located = await MT.locateNodes(MT.getVisibleNodes(), field);
     // A newer request, or a closed view, makes this one moot
-    if (ticket != request || destroyed) return;
+    if (ticket !== request || destroyed) return;
     positions = located;
     drawLinks();
     drawNodes();
@@ -55,7 +55,7 @@ export function mount(root, ctx) {
       weight: 1,
       opacity,
       color: d.selected ? selected : '#000000',
-      fillColor: colorVariable == 'None' ? color : ctx.temp.style.nodeColorMap(d[colorVariable]),
+      fillColor: colorVariable === 'None' ? color : ctx.temp.style.nodeColorMap(d[colorVariable]),
       fillOpacity: opacity,
       data: d
     }));
@@ -82,11 +82,11 @@ export function mount(root, ctx) {
     // mouse (which the canvas checks against every one on each move) when
     // there is a tooltip to show
     const tooltip = settings.get('map-link-tooltip-variable');
-    const interactive = !!tooltip && tooltip != 'None';
+    const interactive = !!tooltip && tooltip !== 'None';
     layers.links = L.featureGroup(MT.getVisibleLinks()
       .filter(d => positions.has(d.source) && positions.has(d.target))
       .map(d => L.polyline([jittered(d.source), jittered(d.target)], {
-        color: colorVariable == 'None' ? color : ctx.temp.style.linkColorMap(MT.linkColorValue(d, colorVariable)),
+        color: colorVariable === 'None' ? color : ctx.temp.style.linkColorMap(MT.linkColorValue(d, colorVariable)),
         opacity,
         interactive,
         data: d
@@ -99,7 +99,7 @@ export function mount(root, ctx) {
 
   function showTooltip(e, key) {
     const v = settings.get(key), d = e.layer && e.layer.options.data;
-    if (d && v && v != 'None' && d[v] != null && d[v] !== '') MT.tooltip(MT.escape(d[v]), e.originalEvent);
+    if (d && v && v !== 'None' && d[v] != null && d[v] !== '') MT.tooltip(MT.escape(d[v]), e.originalEvent);
   }
 
   // Clicking a node selects it alone (with Ctrl, adds or removes it)

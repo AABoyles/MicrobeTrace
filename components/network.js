@@ -209,7 +209,7 @@ function syncPositions(view) {
   if (p.length < 2 * view.points.length) return;
   view.points.forEach((d, i) => {
     const x = p[2 * i], y = p[2 * i + 1];
-    if (x != x) return;
+    if (x !== x) return;
     d.x = x;
     d.y = y;
     if (d.fixed) {
@@ -261,13 +261,13 @@ function render(view) {
   const start = Date.now();
   // While the global timeline plays, positions are kept in its nodes. (The
   // Epi Curve's date field is set then too, but also on its own.)
-  const timeline = view.get('node-timeline-variable') != 'None';
+  const timeline = view.get('node-timeline-variable') !== 'None';
   const newNodes = app.MT.getVisibleNodes(true);
   if (newNodes.length === 0 && !timeline) return;
   // The same nodes (as a new threshold usually leaves them) keep their
   // places on the GPU: only the links change. Reading the places back
   // waits for the GPU to finish all it has queued.
-  const same = !timeline && newNodes.length == view.points.length && newNodes.every((d, i) => d._id === view.points[i]._id);
+  const same = !timeline && newNodes.length === view.points.length && newNodes.every((d, i) => d._id === view.points[i]._id);
   if (!same) syncPositions(view);
   const oldNodes = same ? view.points : timeline ? app.session.network.timelineNodes : app.session.network.nodes;
 
@@ -276,7 +276,7 @@ function render(view) {
     const match = previous.get(d._id);
     if (match) {
       ['x', 'y', 'fx', 'fy', 'vx', 'vy', 'fixed'].forEach(v => {
-        if (typeof match[v] != 'undefined') d[v] = match[v];
+        if (typeof match[v] !== 'undefined') d[v] = match[v];
       });
     }
   });
@@ -321,7 +321,7 @@ function initialPositions(view) {
   view.points.forEach((d, i) => {
     const x = d.fixed && isNumber(d.fx) ? d.fx : d.x,
           y = d.fixed && isNumber(d.fy) ? d.fy : d.y;
-    if (isNumber(x) && isNumber(y) && x == x && y == y) {
+    if (isNumber(x) && isNumber(y) && x === x && y === y) {
       pos[2 * i] = x;
       pos[2 * i + 1] = y;
       placed[i] = 1;
@@ -434,7 +434,7 @@ function fit(view, duration = 750) {
 function clickHandler(view, index, position, event) {
   const n = view.points[index];
   if (!n) return;
-  const node = app.session.data.nodes.find(d => d._id == n._id);
+  const node = app.session.data.nodes.find(d => d._id == n._id); // eslint-disable-line eqeqeq -- node IDs may be numbers or text, depending on the file they came from
   if (!node) return;
   const was = node.selected;
   if (!(event && event.ctrlKey)) app.session.data.nodes.forEach(d => d.selected = false);
@@ -495,11 +495,11 @@ function bindContextMenu(view) {
     const fromKeys = view.menu.contains(document.activeElement);
     hideContextMenu(view);
     if (!view.menuNode) return;
-    const node = app.session.data.nodes.find(d => d._id == view.menuNode._id) || view.menuNode;
+    const node = app.session.data.nodes.find(d => d._id == view.menuNode._id) || view.menuNode; // eslint-disable-line eqeqeq -- node IDs may be numbers or text, depending on the file they came from
     const modal = view.$('.network-attribute-modal');
     if (fromKeys) modal.addEventListener('hidden.bs.modal', () => view.container.focus(), { once: true });
     // Its ID first (_id), then the attributes that aren't MicrobeTrace's own
-    modal.querySelector('tbody').innerHTML = ['_id'].concat(Object.keys(node).filter(attribute => attribute[0] != '_'))
+    modal.querySelector('tbody').innerHTML = ['_id'].concat(Object.keys(node).filter(attribute => attribute[0] !== '_'))
       .map(attribute => `<tr><td><strong>${app.MT.escape(app.MT.titleize(attribute))}</strong></td><td>${app.MT.escape(node[attribute])}</td></tr>`)
       .join('');
     bootstrap.Modal.getOrCreateInstance(modal).show();
@@ -597,7 +597,7 @@ function bindBrush(view) {
 // Tooltips: a node's tooltip variables (a table when there are several),
 // a link's tooltip variable
 function tooltipVariables(view) {
-  return [].concat(view.get('node-tooltip-variable')).filter(v => v && v != 'None');
+  return [].concat(view.get('node-tooltip-variable')).filter(v => v && v !== 'None');
 }
 
 function showNodeTooltip(view, index, position, event) {
@@ -607,7 +607,7 @@ function showNodeTooltip(view, index, position, event) {
   // With no tooltip variable chosen, the tooltip gives the value the node
   // is colored by, so a category is never told by its color alone
   let variables = tooltipVariables(view);
-  if (!variables.length && view.get('node-color-variable') && view.get('node-color-variable') != 'None') variables = [view.get('node-color-variable')];
+  if (!variables.length && view.get('node-color-variable') && view.get('node-color-variable') !== 'None') variables = [view.get('node-color-variable')];
   if (!variables.length) return;
   const html = variables.length === 1 ? app.MT.escape(d[variables[0]] == null ? '' : d[variables[0]]) :
     '<table><tbody>' + variables.map(v => `<tr><td>${app.MT.escape(app.MT.titleize(v))}</td><td>${app.MT.escape(d[v] == null ? '' : d[v])}</td></tr>`).join('') + '</tbody></table>';
@@ -623,8 +623,8 @@ function highlightNeighbors(view, index) {
 
 function showLinkTooltip(view, index) {
   let v = view.get('link-tooltip-variable'); const d = view.links[index];
-  if ((!v || v == 'None') && view.get('link-color-variable') && view.get('link-color-variable') != 'None') v = view.get('link-color-variable');
-  if (!v || v == 'None' || !d) return;
+  if ((!v || v === 'None') && view.get('link-color-variable') && view.get('link-color-variable') !== 'None') v = view.get('link-color-variable');
+  if (!v || v === 'None' || !d) return;
   app.MT.tooltip(app.MT.escape(d[v] == null ? '' : d[v]), view.mouse);
 }
 
@@ -647,7 +647,7 @@ function nodeAreas(view) {
   const defaultSize = view.get('node-radius');
   const sizeVariable = view.get('node-radius-variable');
   if (sizeVariable === 'None') return view.points.map(() => defaultSize);
-  const nodes = view.get('node-timeline-variable') == 'None' ? view.points : app.session.network.timelineNodes;
+  const nodes = view.get('node-timeline-variable') === 'None' ? view.points : app.session.network.timelineNodes;
   let min = Number.MAX_VALUE, max = Number.MIN_VALUE;
   nodes.forEach(d => {
     const size = d[sizeVariable];
@@ -683,7 +683,7 @@ function redrawLabels(view) {
 // where each can be changed
 function showSymbolTable(view) {
   const variable = view.get('node-symbol-variable');
-  if (!variable || variable == 'None') {
+  if (!variable || variable === 'None') {
     app.temp.style.nodeSymbolMap = () => view.get('node-symbol');
     view.symbolWrapper.hidden = true;
     view.symbolTable.innerHTML = '';
@@ -717,7 +717,7 @@ function showSymbolTable(view) {
   const { aggregates, values, count } = tally(app.session.data.nodes);
   if (values.length > nodeSymbols.length) nodeSymbols = repeat(nodeSymbols, values.length);
 
-  if (view.get('node-timeline-variable') == 'None') {
+  if (view.get('node-timeline-variable') === 'None') {
     app.session.style.nodeSymbolsTableKeys[variable] = values;
     app.session.style.nodeSymbolsTable[variable] = nodeSymbols;
   } else {
@@ -754,7 +754,7 @@ function showSymbolTable(view) {
       nodeSymbols.splice(i, 1, select.value);
       app.temp.style.nodeSymbolMap = d3.scaleOrdinal(nodeSymbols).domain(values);
       // During the timeline, the saved shapes change too
-      if (view.get('node-timeline-variable') != 'None') {
+      if (view.get('node-timeline-variable') !== 'None') {
         const key = app.session.style.nodeSymbolsTableKeys[variable].findIndex(k => k === v);
         app.session.style.nodeSymbolsTable[variable].splice(key, 1, select.value);
       }
@@ -772,7 +772,7 @@ function showSymbolTable(view) {
 
 function nodeColor(view, d) {
   const variable = view.get('node-color-variable');
-  if (variable == 'None') return rgba(view.get('node-color'), 1);
+  if (variable === 'None') return rgba(view.get('node-color'), 1);
   return rgba(app.temp.style.nodeColorMap(d[variable]), app.temp.style.nodeAlphaMap(d[variable]));
 }
 
@@ -804,7 +804,7 @@ function updateArrows(view) {
 // their first origin.
 function linkColor(view, l) {
   const variable = view.get('link-color-variable');
-  if (variable == 'None') return rgba(view.get('link-color'), 1);
+  if (variable === 'None') return rgba(view.get('link-color'), 1);
   const v = app.MT.linkColorValue(l, variable);
   return rgba(app.temp.style.linkColorMap(v), app.temp.style.linkAlphaMap(v));
 }
@@ -814,7 +814,7 @@ function linkColor(view, l) {
 // still tell those values apart.
 function dashStyles(view) {
   const variable = view.get('link-dash-variable');
-  if (variable == 'None') return null;
+  if (variable === 'None') return null;
   const values = [...new Set(view.links.map(l => String(app.MT.linkColorValue(l, variable))))]
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   return { variable, values, patterns: new Map(values.map((v, i) => [v, LINK_PATTERNS[i % LINK_PATTERNS.length]])) };
@@ -824,7 +824,7 @@ function dashStyles(view) {
 // it has several origins and is colored by file (as it always was)
 function linkPattern(view, l, dash) {
   if (dash) return dash.patterns.get(String(app.MT.linkColorValue(l, dash.variable)));
-  return view.get('link-color-variable') != 'None' && l.origin.length > 1 ? 'Dashed' : 'Solid';
+  return view.get('link-color-variable') !== 'None' && l.origin.length > 1 ? 'Dashed' : 'Solid';
 }
 
 function updateLinkColor(view) {
@@ -866,7 +866,7 @@ function setLinkOpacity(view) {
 function linkWidths(view) {
   const scalar = view.get('link-width');
   const variable = view.get('link-width-variable');
-  if (variable == 'None') return view.links.map(() => scalar);
+  if (variable === 'None') return view.links.map(() => scalar);
   let max = -Infinity, min = Infinity;
   for (const link of view.links) {
     const l = link[variable];
@@ -933,7 +933,7 @@ function showPolygonTable(view) {
   const sortLink = app.MT.sortButton;
   const flip = key => view.settings.set(key, view.get(key) === 'ASC' ? 'DESC' : 'ASC');
   const foci = view.get('polygons-foci');
-  const title = app.session.style.overwrite && app.session.style.overwrite.polygonColorHeaderVariable == foci ? app.session.style.overwrite.polygonColorHeaderTitle : 'Polygon ' + app.MT.titleize(foci);
+  const title = app.session.style.overwrite && app.session.style.overwrite.polygonColorHeaderVariable == foci ? app.session.style.overwrite.polygonColorHeaderTitle : 'Polygon ' + app.MT.titleize(foci); // eslint-disable-line eqeqeq -- variable names may come from a saved session, where they may be stored as numbers
   const counts = view.get('polygon-color-table-counts'), frequencies = view.get('polygon-color-table-frequencies');
   view.polygonTable.innerHTML = '<tr></tr>';
   const header = view.polygonTable.querySelector('tr');
@@ -971,10 +971,10 @@ function showPolygonTable(view) {
   if (!app.session.style.polygonValueNames) app.session.style.polygonValueNames = {};
   const aggregates = app.MT.createPolygonColorMap();
   const values = Object.keys(aggregates);
-  if (view.get('polygon-color-table-counts-sort') == 'ASC') values.sort((a, b) => aggregates[a] - aggregates[b]);
-  else if (view.get('polygon-color-table-counts-sort') == 'DESC') values.sort((a, b) => aggregates[b] - aggregates[a]);
-  if (view.get('polygon-color-table-name-sort') == 'ASC') values.sort((a, b) => a - b);
-  else if (view.get('polygon-color-table-name-sort') == 'DESC') values.sort((a, b) => b - a);
+  if (view.get('polygon-color-table-counts-sort') === 'ASC') values.sort((a, b) => aggregates[a] - aggregates[b]);
+  else if (view.get('polygon-color-table-counts-sort') === 'DESC') values.sort((a, b) => aggregates[b] - aggregates[a]);
+  if (view.get('polygon-color-table-name-sort') === 'ASC') values.sort((a, b) => a - b);
+  else if (view.get('polygon-color-table-name-sort') === 'DESC') values.sort((a, b) => b - a);
   const total = values.reduce((sum, v) => sum + aggregates[v], 0);
   const remap = () => {
     app.temp.style.polygonColorMap = d3.scaleOrdinal(app.session.style.polygonColors).domain(values);
@@ -1131,13 +1131,13 @@ function exportLabels(view, svg) {
 function exportLegends(view, svgNode) {
   const legend = (kind, aggregates, total) => {
     const variable = view.get(kind + '-color-variable');
-    const columns = [(kind == 'node' ? 'Node ' : 'Link ') + app.MT.titleize(variable)];
+    const columns = [(kind === 'node' ? 'Node ' : 'Link ') + app.MT.titleize(variable)];
     if (view.get(kind + '-color-table-counts')) columns.push('Count');
     if (view.get(kind + '-color-table-frequencies')) columns.push('Frequency');
     columns.push('Color');
     const names = app.session.style[kind + 'ValueNames'], colorMap = app.temp.style[kind + 'ColorMap'];
     const data = Object.keys(aggregates).map(value => ({
-      [kind == 'node' ? 'Node' : 'Link']: names[value] ? names[value] : app.MT.valueLabel(value),
+      [kind === 'node' ? 'Node' : 'Link']: names[value] ? names[value] : app.MT.valueLabel(value),
       Count: view.get(kind + '-color-table-counts') ? aggregates[value] : undefined,
       Frequency: view.get(kind + '-color-table-frequencies') ? (aggregates[value] / total).toLocaleString() : undefined,
       Color: { swatch: colorMap(value) }
@@ -1167,7 +1167,7 @@ function exportStatistics(view, svg) {
 // Points whose positions the overlays need every frame (labels, polygons)
 function updateTracking(view) {
   if (!view.graph) return;
-  const needAll = view.get('polygons-show') || (view.get('node-label-variable') != 'None' && view.points.length <= 2000);
+  const needAll = view.get('polygons-show') || (view.get('node-label-variable') !== 'None' && view.points.length <= 2000);
   // (and the keyboard's, for its ring)
   view.graph.trackPointPositionsByIndices(needAll ? view.points.map((d, i) => i) : view.focused !== undefined ? [view.focused] : []);
 }
@@ -1184,7 +1184,7 @@ function spacePosition(view, i, tracked) {
 // follows the node's size).
 function labelPositions(view) {
   const labelVar = view.get('node-label-variable');
-  if (!labelVar || labelVar == 'None' || !view.graph || !view.points.length) return [];
+  if (!labelVar || labelVar === 'None' || !view.graph || !view.points.length) return [];
   const k = zoomScale(view), size = view.get('node-label-size');
   const tracked = view.graph.getTrackedPointPositionsMap();
   const sample = view.points.length <= 2000 ? null : view.graph.getSampledPointPositionsMap();
@@ -1214,7 +1214,7 @@ function drawOverlays(view) {
 function sizeCanvas(view, canvas) {
   const ratio = window.devicePixelRatio || 1;
   const w = view.container.clientWidth, h = view.container.clientHeight;
-  if (canvas.width != Math.round(w * ratio) || canvas.height != Math.round(h * ratio)) {
+  if (canvas.width !== Math.round(w * ratio) || canvas.height !== Math.round(h * ratio)) {
     canvas.width = Math.round(w * ratio);
     canvas.height = Math.round(h * ratio);
     canvas.style.width = w + 'px';
@@ -1272,9 +1272,9 @@ function paintOverlays(view) {
   const placed = [];
   labelPositions(view).forEach(({ text, x, y, anchor, size }) => {
     over.font = size + 'px sans-serif';
-    over.textAlign = anchor == 'middle' ? 'center' : anchor == 'end' ? 'right' : 'left';
+    over.textAlign = anchor === 'middle' ? 'center' : anchor === 'end' ? 'right' : 'left';
     const width = over.measureText(text).width;
-    const left = anchor == 'middle' ? x - width / 2 : anchor == 'end' ? x - width : x;
+    const left = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x;
     const box = [left - 2, y - size, left + width + 2, y + size * 0.25];
     if (box[0] < 0 || box[2] > w || box[1] < 0 || box[3] > h) return;
     if (placed.some(b => box[0] < b[2] && b[0] < box[2] && box[1] < b[3] && b[1] < box[3])) return;
@@ -1285,7 +1285,7 @@ function paintOverlays(view) {
   });
 
   const linkLabel = view.get('link-label-variable');
-  if (linkLabel && linkLabel != 'None' && view.links.length) {
+  if (linkLabel && linkLabel !== 'None' && view.links.length) {
     const size = 16 * k;
     if (size >= 4) {
       const { indices, positions, angles } = view.graph.getSampledLinks();
@@ -1386,7 +1386,7 @@ function setHovered(view, index) {
 // described in the status region (its ID, cluster, label and tooltip
 // variables, and its visible links, closest first). Only the ring is drawn
 // per frame; the rest runs on a key press.
-const plural = (n, word) => n.toLocaleString() + ' ' + word + (n == 1 ? '' : 's');
+const plural = (n, word) => n.toLocaleString() + ' ' + word + (n === 1 ? '' : 's');
 const format = v => isNumber(v) ? v.toLocaleString(undefined, { maximumSignificantDigits: 3 }) : app.MT.valueLabel(v);
 const ringed = view => view.keyed && view.focused !== undefined && view.points[view.focused] &&
   (document.activeElement === view.container || view.menu.contains(document.activeElement));
@@ -1401,7 +1401,7 @@ function describeView(view) {
 
 function announce(view, text) {
   // (The same words again are still spoken)
-  view.spoken = text == view.spoken.trim() ? text + ' ' : text;
+  view.spoken = text === view.spoken.trim() ? text + ' ' : text;
   view.live.textContent = view.spoken;
 }
 
@@ -1425,7 +1425,7 @@ function describe(view, i, where) {
   const d = view.points[i];
   const parts = ['Node ' + d._id + (where ? ', ' + where : '')];
   const variables = [...new Set(['cluster', view.get('node-label-variable')].concat(tooltipVariables(view)))]
-    .filter(v => v && v != 'None' && v != '_id' && d[v] != null && d[v] !== '' && d[v] !== d._id);
+    .filter(v => v && v !== 'None' && v !== '_id' && d[v] != null && d[v] !== '' && d[v] !== d._id);
   if (variables.length) parts.push(variables.map(v => app.MT.titleize(v) + ' ' + format(d[v])).join(', '));
   const state = [d.selected && 'Selected', d.fixed && 'Pinned'].filter(Boolean);
   if (state.length) parts.push(state.join(', '));
@@ -1523,11 +1523,11 @@ function onKey(view, e) {
     if (i === undefined) announce(view, 'No node that way.');
     else focusPoint(view, i);
   };
-  else if (!ctrl && (key == 'n' || key == 'p' || key == 'Home' || key == 'End')) action = () => {
-    const i = key == 'Home' ? 0 : key == 'End' ? n - 1 : view.focused === undefined ? (key == 'n' ? 0 : n - 1) : (view.focused + (key == 'n' ? 1 : n - 1)) % n;
+  else if (!ctrl && (key === 'n' || key === 'p' || key === 'Home' || key === 'End')) action = () => {
+    const i = key === 'Home' ? 0 : key === 'End' ? n - 1 : view.focused === undefined ? (key === 'n' ? 0 : n - 1) : (view.focused + (key === 'n' ? 1 : n - 1)) % n;
     focusPoint(view, i, `${(i + 1).toLocaleString()} of ${n.toLocaleString()}`);
   };
-  else if (key == 'l' && !ctrl) action = needsFocus(() => {
+  else if (key === 'l' && !ctrl) action = needsFocus(() => {
     if (!view.walk || view.walk.at !== view.focused) view.walk = { from: view.focused, k: e.shiftKey ? 0 : -1 };
     const list = neighbours(view, view.walk.from), from = view.points[view.walk.from]._id;
     if (!list.length) return announce(view, `Node ${from} has no links.`);
@@ -1537,16 +1537,16 @@ function onKey(view, e) {
       (value == null ? '.' : `, ${app.MT.titleize(view.get('link-sort-variable'))} ${format(value)}.`));
     view.walk.at = index;
   });
-  else if (key == 'Enter' || key == ' ') action = needsFocus(d => {
+  else if (key === 'Enter' || key === ' ') action = needsFocus(d => {
     clickHandler(view, view.focused, null, { ctrlKey: ctrl });
     const count = app.session.data.nodes.filter(node => node.selected).length;
     announce(view, `${d._id} ${d.selected ? 'selected' : 'deselected'}. ${plural(count, 'node')} selected.`);
   });
-  else if (key == 'f' && !ctrl) action = needsFocus(d => {
+  else if (key === 'f' && !ctrl) action = needsFocus(d => {
     togglePin(view, d);
     announce(view, `${d._id} ${d.fixed ? 'pinned' : 'unpinned'}.`);
   });
-  else if ((key == 'm' && !ctrl) || key == 'ContextMenu' || (key == 'F10' && e.shiftKey)) action = needsFocus(() => {
+  else if ((key === 'm' && !ctrl) || key === 'ContextMenu' || (key === 'F10' && e.shiftKey)) action = needsFocus(() => {
     const [x, y] = screenOf(view, view.focused), box = view.container.getBoundingClientRect();
     showContextMenu(view, view.focused, null, new MouseEvent('contextmenu', { clientX: box.left + x, clientY: box.top + y }));
     view.menu.querySelector('.dropdown-item').focus();
@@ -1554,29 +1554,29 @@ function onKey(view, e) {
   // A group around the focused node (#295): its neighbours, and each press
   // after takes in the nodes one more link out. Shift adds them to the
   // selection, as it does for a cluster.
-  else if (key == 'g' && !ctrl) action = needsFocus(d => {
+  else if (key === 'g' && !ctrl) action = needsFocus(d => {
     if (!neighbours(view, view.focused).length) return announce(view, `Node ${d._id} has no links.`);
     const again = !!view.ring && view.ring.from === view.focused;
     const radius = again ? view.ring.radius + 1 : 1, members = within(view, view.focused, radius);
-    if (again && members.size == view.ring.size) return announce(view, `No more nodes within ${view.ring.radius} link${view.ring.radius == 1 ? '' : 's'} of ${d._id}.`);
+    if (again && members.size === view.ring.size) return announce(view, `No more nodes within ${view.ring.radius} link${view.ring.radius === 1 ? '' : 's'} of ${d._id}.`);
     view.ring = { from: view.focused, radius, size: members.size };
     selectGroup(view, new Set(Array.from(members, i => view.points[i]._id)), e.shiftKey);
     const selected = app.session.data.nodes.filter(node => node.selected).length;
-    announce(view, `${plural(members.size, 'node')} within ${radius} link${radius == 1 ? '' : 's'} of ${d._id} selected. ${plural(selected, 'node')} selected in all.`);
+    announce(view, `${plural(members.size, 'node')} within ${radius} link${radius === 1 ? '' : 's'} of ${d._id} selected. ${plural(selected, 'node')} selected in all.`);
   });
   // A group of nodes without the mouse (#185): the focused node's cluster
   // (Shift adds it to the selection), or every node drawn
-  else if (key == 'c' && !ctrl) action = needsFocus(d => {
+  else if (key === 'c' && !ctrl) action = needsFocus(d => {
     const ids = new Set(view.points.filter(p => p.cluster === d.cluster).map(p => p._id));
     selectGroup(view, ids, e.shiftKey);
     announce(view, `Cluster ${d.cluster} selected, ${plural(ids.size, 'node')}. ${plural(app.session.data.nodes.filter(node => node.selected).length, 'node')} selected in all.`);
   });
-  else if (key == 'a') action = () => {
+  else if (key === 'a') action = () => {
     selectGroup(view, new Set(view.points.map(p => p._id)), false);
     announce(view, `All ${plural(view.points.length, 'node')} selected.`);
   };
-  else if (key == 'i' && !ctrl) action = needsFocus(() => announce(view, describe(view, view.focused)));
-  else if (key == '?') action = () => toggleKeys(view);
+  else if (key === 'i' && !ctrl) action = needsFocus(() => announce(view, describe(view, view.focused)));
+  else if (key === '?') action = () => toggleKeys(view);
   if (!action) return;
   e.preventDefault();
   e.stopPropagation();
@@ -1597,7 +1597,7 @@ function onKeyFirst(view, e) {
     else if (e.key === ' ') e.target.click();
     else if (e.key === 'Escape' || e.key === 'Tab') hideContextMenu(view);
     else return;
-  } else if (e.key != 'Escape' || e.target !== view.container) return;
+  } else if (e.key !== 'Escape' || e.target !== view.container) return;
   else if (!view.keysPanel.hidden) toggleKeys(view, false);
   else if (app.session.data.nodes.some(d => d.selected)) {
     app.session.data.nodes.forEach(d => { d.selected = false; });
@@ -1643,7 +1643,7 @@ function bindKeyboard(view) {
 // Rows that only apply with some settings
 function showRows(view) {
   const rows = (selector, show) => view.root.querySelectorAll(selector).forEach(row => row.hidden = !show);
-  const none = key => !view.get(key) || view.get(key) == 'None';
+  const none = key => !view.get(key) || view.get(key) === 'None';
   rows('.node-label-row', !none('node-label-variable'));
   rows('.node-symbol-table-row', !none('node-symbol-variable'));
   rows('.node-symbol-row', none('node-symbol-variable'));
@@ -1703,10 +1703,10 @@ function bindControls(view) {
   // The global timeline replays itself when the window changes size
   // (once it stops: it's redrawn for every size it passes through otherwise)
   view.onWindowResize = () => {
-    if (view.get('node-timeline-variable') == 'None') return;
+    if (view.get('node-timeline-variable') === 'None') return;
     clearTimeout(view.resizeTimer);
     view.resizeTimer = setTimeout(() => {
-      if (view.get('node-timeline-variable') == 'None') return;
+      if (view.get('node-timeline-variable') === 'None') return;
       app.MT.showTimeline();
       setTimeout(() => fit(view), 0);
     }, 150);
@@ -1726,7 +1726,7 @@ function subscribeSettings(view, floaters) {
     settings.subscribe(['node-label-variable', 'node-label-size', 'node-label-orientation'], () => redrawLabels(view)),
     settings.subscribe(['node-symbol', 'node-radius', 'node-radius-max', 'node-radius-min', 'node-radius-variable'], () => redrawNodes(view)),
     settings.subscribe(['node-symbol-variable', 'node-symbol-table-counts', 'node-symbol-table-frequencies'], () => showSymbolTable(view)),
-    settings.subscribe('node-symbol-table-show', show => { symbolWrapper.hidden = !show || view.get('node-symbol-variable') == 'None'; }),
+    settings.subscribe('node-symbol-table-show', show => { symbolWrapper.hidden = !show || view.get('node-symbol-variable') === 'None'; }),
     settings.subscribe('node-border-width', () => events.emit('node-border-change')),
     settings.subscribe(['node-charge', 'network-gravity', 'network-friction', 'network-link-strength', 'link-length'], () => reheat(view)),
     settings.subscribe('link-directed', () => updateArrows(view)),
@@ -1759,7 +1759,7 @@ function startGraph(view, handle) {
     handle.graph = view.graph;
     app.temp.network = handle;
     render(view);
-    if (view.get('node-timeline-variable') != 'None') view.onWindowResize();
+    if (view.get('node-timeline-variable') !== 'None') view.onWindowResize();
     setTimeout(() => fit(view), 1200);
   }).catch(e => {
     console.error(e);
@@ -1793,7 +1793,7 @@ export function mount(root, ctx) {
   showPolygonTable(view);
 
   // With links from several files, the links are colored by their file
-  if (app.session.files.length > 1 && view.get('link-color-variable') == 'None') settings.set('link-color-variable', 'origin');
+  if (app.session.files.length > 1 && view.get('link-color-variable') === 'None') settings.set('link-color-variable', 'origin');
 
   const handle = {
     graph: null,

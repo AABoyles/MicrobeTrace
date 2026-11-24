@@ -18,7 +18,7 @@ export function mount(root, ctx) {
   // its letter; anything else (gaps, ambiguity codes) is pale grey
   const colors = { A: '#8dd38d', C: '#7fb3e6', G: '#ffd54f', T: '#f28482', ambig: '#ececec' };
   $('.sequences-key').innerHTML = Object.entries(colors).map(([base, color]) =>
-    `<span><i style="background:${color}"></i>${base == 'ambig' ? 'Other' : base}</span>`).join('');
+    `<span><i style="background:${color}"></i>${base === 'ambig' ? 'Other' : base}</span>`).join('');
   // Letters only where they fit; smaller cells would turn them to hatching
   const lettersFit = (width, height) => width >= 7 && height >= 8;
 

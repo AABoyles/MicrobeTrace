@@ -61,7 +61,7 @@ export function mount(root, ctx) {
     const metric = MT.titleize(settings.get('link-sort-variable'));
     // Pairs without a distance show the grey behind the cells, said in a note
     let missing = false;
-    for (let i = 0; i < dm.length && !missing; i++) missing = dm[i] != dm[i];
+    for (let i = 0; i < dm.length && !missing; i++) missing = dm[i] !== dm[i];
     Plotly.react(plot, [{
       x, y, z,
       type: 'heatmap',
@@ -98,7 +98,7 @@ export function mount(root, ctx) {
   const table = () => {
     const n = labels.length;
     return [[''].concat(labels)].concat(labels.map((label, i) =>
-      [label].concat(Array.from(matrix.subarray(i * n, (i + 1) * n), v => v == v ? v : null))));
+      [label].concat(Array.from(matrix.subarray(i * n, (i + 1) * n), v => v === v ? v : null))));
   };
   MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.heatmap-plot'), resize });
   MT.plotExport(root, plot, settings, {

@@ -21,7 +21,7 @@ export function mount(root, ctx) {
   Object.entries(choices).forEach(([key, values]) => {
     if (!values.includes(settings.get(key))) settings.set(key, values.find(v => settings.get(`${key}-${v}`)) || fallback[key]);
   });
-  const syncChoice = key => value => choices[key].forEach(v => settings.set(`${key}-${v}`, v == value));
+  const syncChoice = key => value => choices[key].forEach(v => settings.set(`${key}-${v}`, v === value));
   Object.keys(choices).forEach(key => syncChoice(key)(settings.get(key)));
   if (settings.get('tree-leaf-tooltip-variable') === undefined) settings.set('tree-leaf-tooltip-variable', '_id');
 
@@ -29,13 +29,13 @@ export function mount(root, ctx) {
   // ('respresenting' is patristic's own spelling, so it stays the value; the label is spelled right)
   const treeVariables = ['height', 'depth', 'length', 'respresenting', 'value'];
   MT.fillSelect($('[data-setting="tree-leaf-node-radius-variable"]'), treeVariables, { append: true });
-  Array.from(root.querySelectorAll('[data-setting="tree-leaf-node-radius-variable"] option')).forEach(o => { if (o.value == 'respresenting') o.textContent = 'Representing'; });
+  Array.from(root.querySelectorAll('[data-setting="tree-leaf-node-radius-variable"] option')).forEach(o => { if (o.value === 'respresenting') o.textContent = 'Representing'; });
 
   // Since 0.8, TidyTree hands each handler one array: [tree node, DOM event]
   // (and the tooltip text for showtooltip)
   const branchOf = args => args[0];
   const eventOf = args => args[1];
-  const nodeOf = id => ctx.session.data.nodes.find(d => d._id == id);
+  const nodeOf = id => ctx.session.data.nodes.find(d => d._id == id); // eslint-disable-line eqeqeq -- node IDs may be numbers or text, depending on the file they came from
 
   function draw() {
     if (!data || !root.clientWidth || !root.clientHeight) return;
@@ -81,7 +81,7 @@ export function mount(root, ctx) {
     const radius = radiusOf(nodes);
     leafCircles().forEach((c, i) => {
       const d = d3.select(c).datum();
-      c.setAttribute('tabindex', i == 0 ? 0 : -1);
+      c.setAttribute('tabindex', i === 0 ? 0 : -1);
       c.setAttribute('role', 'button');
       c.setAttribute('aria-haspopup', 'menu');
       c.setAttribute('aria-label', 'Tree branch ' + d.data.id + ', press Enter for its menu');
@@ -95,15 +95,15 @@ export function mount(root, ctx) {
         .interrupt()
         .style('opacity', tree.leafNodes ? 1 : 0)
         .attr('r', radius(d, node))
-        .attr('title', node && tooltip && tooltip != 'None' ? (node[tooltip] == null ? '' : node[tooltip]) : d.data.id)
-        .style('fill', node && variable != 'None' ? ctx.temp.style.nodeColorMap(node[variable]) : color)
+        .attr('title', node && tooltip && tooltip !== 'None' ? (node[tooltip] == null ? '' : node[tooltip]) : d.data.id)
+        .style('fill', node && variable !== 'None' ? ctx.temp.style.nodeColorMap(node[variable]) : color)
         .style('stroke', node && node.selected ? selected : '#ffffff')
         .style('stroke-width', node && node.selected ? 2 : 1);
     });
     tree.eachLeafLabel((text, d) => {
       const node = nodes.get(d.data.id);
       d3.select(text)
-        .text(node && label && label != 'None' ? (node[label] == null ? '' : node[label]) : d.data.id)
+        .text(node && label && label !== 'None' ? (node[label] == null ? '' : node[label]) : d.data.id)
         .attr('dx', 8)
         .style('font-size', settings.get('tree-leaf-label-size') + 'px');
     });
@@ -118,8 +118,8 @@ export function mount(root, ctx) {
     tree.eachBranchDistance((text, d) => {
       const length = d.target.data.length || 0;
       const label = round ? '' + Math.round(length) : length.toFixed(3);
-      if (text.textContent != label) text.textContent = label;
-      if (text.style.fontSize != size) text.style.fontSize = size;
+      if (text.textContent != label) text.textContent = label; // eslint-disable-line eqeqeq -- the label may be a number, and the DOM keeps text
+      if (text.style.fontSize != size) text.style.fontSize = size; // eslint-disable-line eqeqeq -- the size may be a number, and the DOM keeps text like "12px"
     });
   }
   // An animated redraw resets the labels' text halfway through, after
@@ -138,7 +138,7 @@ export function mount(root, ctx) {
   // The leaves' size by default: just under half the usual space between
   // neighboring leaves, so they don't overlap
   function fittedRadius() {
-    const circular = settings.get('tree-layout') == 'circular';
+    const circular = settings.get('tree-layout') === 'circular';
     const leaves = [];
     tree.eachLeafNode((circle, d) => leaves.push(d));
     leaves.sort((a, b) => a.x - b.x);
@@ -157,7 +157,7 @@ export function mount(root, ctx) {
     const v = settings.get('tree-leaf-node-radius-variable');
     let cap = settings.get('tree-leaf-node-size');
     if (!cap) $('[data-setting="tree-leaf-node-size"]').value = cap = fittedRadius();
-    if (!v || v == 'None') return () => cap;
+    if (!v || v === 'None') return () => cap;
     const value = (d, node) => treeVariables.includes(v) ? d.data[v] : node && node[v];
     const values = [];
     tree.eachLeafNode((circle, d) => {
@@ -165,7 +165,7 @@ export function mount(root, ctx) {
       if (isFinite(x)) values.push(x);
     });
     const [min, max] = d3.extent(values);
-    if (min === undefined || min == max) return () => cap;
+    if (min === undefined || min === max) return () => cap;
     const least = Math.min(4, cap);
     const scale = d3.scaleLinear().domain([min, max]).range([least, cap]);
     return (d, node) => {
@@ -236,7 +236,7 @@ export function mount(root, ctx) {
     }
   });
   $('.tree-menu-button').addEventListener('click', e => {
-    const circle = leafCircles().find(c => c.getAttribute('tabindex') == '0' && c === document.activeElement) || null;
+    const circle = leafCircles().find(c => c.getAttribute('tabindex') === '0' && c === document.activeElement) || null;
     openMenuAt(circle, e.currentTarget);
   });
   // (Taken before Bootstrap's dropdown keys, which look for a toggle this menu doesn't have)
@@ -259,7 +259,7 @@ export function mount(root, ctx) {
     if (!item || !target) return;
     e.preventDefault();
     const action = item.dataset.action;
-    setData(action == 'reroot' ? target.reroot() : action == 'rotate' ? target.rotate().getRoot() : target.flip().getRoot());
+    setData(action === 'reroot' ? target.reroot() : action === 'rotate' ? target.rotate().getRoot() : target.flip().getRoot());
     hideMenu();
   });
   container.addEventListener('click', hideMenu);
@@ -279,12 +279,12 @@ export function mount(root, ctx) {
   const menuToggles = [];
   [['tree-leaf-label-variable', 'tree-leaf-label-show'], ['tree-leaf-tooltip-variable', 'tree-tooltip-show']].forEach(([variable, show]) => {
     const sync = () => {
-      if (settings.get(show) && settings.get(variable) == 'None') settings.set(variable, '_id');
-      else if (!settings.get(show) && settings.get(variable) != 'None') settings.set(variable, 'None');
+      if (settings.get(show) && settings.get(variable) === 'None') settings.set(variable, '_id');
+      else if (!settings.get(show) && settings.get(variable) !== 'None') settings.set(variable, 'None');
     };
     sync();
     menuToggles.push(
-      settings.subscribe(variable, value => { if (settings.get(show) != (value != 'None')) settings.set(show, value != 'None'); }),
+      settings.subscribe(variable, value => { if (settings.get(show) != (value != 'None')) settings.set(show, value != 'None'); }), // eslint-disable-line eqeqeq -- the shown setting may be stored as 0 or 1 in a saved session
       settings.subscribe(show, sync)
     );
   });
@@ -292,7 +292,7 @@ export function mount(root, ctx) {
   // Rows that only apply with some settings
   function showRows() {
     const rows = (selector, show) => root.querySelectorAll(selector).forEach(row => row.hidden = !show);
-    rows('.hideForCircular', settings.get('tree-layout') != 'circular');
+    rows('.hideForCircular', settings.get('tree-layout') !== 'circular');
     rows('.tree-branch-distance-row', !settings.get('tree-branch-distances-hide'));
     rows('.tree-leaf-label-size-row', settings.get('tree-leaf-label-show'));
     rows('.tree-leaf-node-row', settings.get('tree-leaf-node-show'));
@@ -349,7 +349,7 @@ export function mount(root, ctx) {
   // Computing it shows in the view, which can cancel it (#293).
   computing.run((scope, onProgress) => {
     if (ctx.temp.tree) return;
-    if (ctx.session.files.length === 1 && ctx.session.files[0].format == 'newick') ctx.temp.tree = patristic.parseNewick(ctx.session.files[0].contents);
+    if (ctx.session.files.length === 1 && ctx.session.files[0].format === 'newick') ctx.temp.tree = patristic.parseNewick(ctx.session.files[0].contents);
     else return MT.computeTree({ scope, onProgress });
   }, () => {
     data = ctx.temp.tree.clone();
@@ -362,7 +362,7 @@ export function mount(root, ctx) {
     panels: ['node-colors'],
     // TidyTree lays the tree out for the size it's drawn at
     resize() {
-      if (!size || size[0] != root.clientWidth || size[1] != root.clientHeight) draw();
+      if (!size || size[0] !== root.clientWidth || size[1] !== root.clientHeight) draw();
     },
     destroy() {
       destroyed = true;

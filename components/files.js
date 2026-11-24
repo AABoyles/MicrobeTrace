@@ -47,8 +47,8 @@ export function mount(root, app) {
   function refreshMoves() {
     const rows = $$('.file-table-row');
     rows.forEach((row, i) => {
-      row.querySelector('.file-move-up').disabled = i == 0;
-      row.querySelector('.file-move-down').disabled = i == rows.length - 1;
+      row.querySelector('.file-move-up').disabled = i === 0;
+      row.querySelector('.file-move-down').disabled = i === rows.length - 1;
     });
   }
   const moveRow = (row, by) => {
@@ -70,7 +70,7 @@ export function mount(root, app) {
     (button.disabled ? row.querySelector(by < 0 ? '.file-move-down' : '.file-move-up') : button).focus();
   });
   table.addEventListener('keydown', e => {
-    if (!e.altKey || (e.key != 'ArrowUp' && e.key != 'ArrowDown')) return;
+    if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
     const row = e.target.closest('.file-table-row');
     if (!row) return;
     e.preventDefault();
@@ -153,7 +153,7 @@ export function mount(root, app) {
   async function processFile(rawfile) {
     const extension = rawfile.name.split('.').pop().toLowerCase();
     // The spreadsheet and zip reader is fetched the first time one is added (#324)
-    if (extension == 'zip' || extension == 'xlsx' || extension == 'xls') {
+    if (extension === 'zip' || extension === 'xlsx' || extension === 'xls') {
       try {
         await MT.loadLibrary('xlsx');
       } catch {
@@ -161,7 +161,7 @@ export function mount(root, app) {
         return;
       }
     }
-    if (extension == 'zip') {
+    if (extension === 'zip') {
       const zip = await new JSZip().loadAsync(rawfile);
       // Each entry is read on its own, not one after another
       zip.forEach(async (relativePath, zipEntry) => {
@@ -169,15 +169,15 @@ export function mount(root, app) {
       });
       return;
     }
-    if (extension == 'microbetrace' || extension == 'hivtrace') {
+    if (extension === 'microbetrace' || extension === 'hivtrace') {
       MT.processJSON(await rawfile.text(), extension);
       return;
     }
-    if (extension == 'svg') {
+    if (extension === 'svg') {
       MT.processSVG(await rawfile.text());
       return;
     }
-    const contents = await readFile(rawfile, extension == 'xlsx' || extension == 'xls');
+    const contents = await readFile(rawfile, extension === 'xlsx' || extension === 'xls');
     const file = { name: rawfile.name, lastModified: rawfile.lastModified, extension: extension, contents: contents };
     file.rawName = file.name; // for the loading log, which shows text
     file.name = MT.escape(file.name);
@@ -200,7 +200,7 @@ export function mount(root, app) {
     if (!file.delimiter) file.delimiter = guess.delimiter;
     const kind = file.format || guess.kind || guessByName(file.name, extension);
     const detected = !file.format && guess.kind ? `Read as ${formatByName(guess.kind).label} from its contents` : '';
-    if (extension == 'xlsx' || extension == 'xls') {
+    if (extension === 'xlsx' || extension === 'xls') {
       const workbook = XLSX.read(file.contents, { type: 'array' });
       const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false, dateNF: 'yyyy-mm-dd' });
       const headers = [];
@@ -215,8 +215,8 @@ export function mount(root, app) {
       // A file cut off mid-row ends in a short row, which doesn't make it prose
       // (in a short file, that one row would otherwise be most of the sample)
       const rows = sample.slice(1);
-      const body = rows.length > 1 && rows[rows.length - 1].length != sample[0].length ? rows.slice(0, -1) : rows;
-      const tabular = sample.length > 1 && body.filter(r => r.length == sample[0].length).length >= 0.8 * body.length;
+      const body = rows.length > 1 && rows[rows.length - 1].length !== sample[0].length ? rows.slice(0, -1) : rows;
+      const tabular = sample.length > 1 && body.filter(r => r.length === sample[0].length).length >= 0.8 * body.length;
       Papa.parse(file.contents, {
         delimiter: file.delimiter,
         header: true,
@@ -242,7 +242,7 @@ export function mount(root, app) {
           <span class="file-title p-1"></span>
           <div class="btn-group btn-group-toggle btn-group-sm">
             ${kinds.map(([value, label]) => `<label class="btn btn-light">
-              <input type="radio" name="${group}" value="${value}" autocomplete="off"${value == kind ? ' checked' : ''}>${label}
+              <input type="radio" name="${group}" value="${value}" autocomplete="off"${value === kind ? ' checked' : ''}>${label}
             </label>`).join('')}
           </div>
           <a href="#" class="icon-action bi bi-download p-1 ms-2" title="Resave this file" aria-label="Resave this file"></a>
@@ -262,7 +262,7 @@ export function mount(root, app) {
     const note = row.querySelector('.file-detected');
     if (detected) {
       const d = delimiterNames[file.delimiter];
-      note.textContent = detected + (d && d != 'comma' && !['fasta', 'newick'].includes(kind) ? ` (${d}-separated)` : '') + '. Change it with the buttons if that is wrong.';
+      note.textContent = detected + (d && d !== 'comma' && !['fasta', 'newick'].includes(kind) ? ` (${d}-separated)` : '') + '. Change it with the buttons if that is wrong.';
       note.hidden = false;
     }
     rowOf.set(file, row);
@@ -294,15 +294,15 @@ export function mount(root, app) {
         return;
       }
       const names = [
-        type == 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
-        type == 'node' ? ['SEQUENCE', 'SEQ', 'SEQS', 'Sequence', 'Seqs', 'sequence', 'seq', 'seqs'] : ['TARGET', 'Target', 'target'],
+        type === 'node' ? ['ID', 'Id', 'id'] : ['SOURCE', 'Source', 'source'],
+        type === 'node' ? ['SEQUENCE', 'SEQ', 'SEQS', 'Sequence', 'Seqs', 'sequence', 'seq', 'seqs'] : ['TARGET', 'Target', 'target'],
         ['length', 'Length', 'distance', 'Distance'].concat(...Object.keys(MT.distanceMetrics).reverse().map(k => [k, MT.distanceMetrics[k].label]))
       ];
       names.forEach((list, i) => {
         selects[i].value = 'None';
         list.forEach(title => { if (headers.includes(title)) selects[i].value = title; });
         // A node's sequence and a link's distance stay None when no field is named for them
-        if (selects[i].value == 'None' && !(i == 1 && type == 'node') && !(i == 2 && type == 'link') && headers[i] !== undefined) {
+        if (selects[i].value === 'None' && !(i === 1 && type === 'node') && !(i === 2 && type === 'link') && headers[i] !== undefined) {
           selects[i].value = headers[i];
         }
       });
@@ -315,11 +315,11 @@ export function mount(root, app) {
 
     function refit(rematch) {
       const type = kindOf();
-      const labels = type == 'node' ? ['ID', 'Sequence', 'Distance'] : ['Source', 'Target', 'Distance'];
+      const labels = type === 'node' ? ['ID', 'Sequence', 'Distance'] : ['Source', 'Target', 'Distance'];
       fields.forEach((f, i) => { f.querySelector('label').textContent = labels[i]; });
-      show(fields.slice(0, 2), type == 'node' || type == 'link');
-      show(fields[2], type == 'link');
-      if (rematch && (type == 'node' || type == 'link')) {
+      show(fields.slice(0, 2), type === 'node' || type === 'link');
+      show(fields[2], type === 'link');
+      if (rematch && (type === 'node' || type === 'link')) {
         delete file.field1;
         matchHeaders(type);
       }
@@ -329,14 +329,14 @@ export function mount(root, app) {
     // What keeps this file from being read as what it's marked, if anything
     problems.set(row, () => {
       const type = kindOf(), [first, second] = selects.map(select => select.value);
-      if (type == 'link') {
+      if (type === 'link') {
         if (headers.length < 2) return `No columns were found in this file (read as ${delimiterNames[file.delimiter] || 'comma'}-separated), so it can’t be read as a link list.`;
-        if (first == 'None' || second == 'None') return 'Choose the Source and Target columns.';
-        if (first == second) return 'Source and Target need to be different columns.';
+        if (first === 'None' || second === 'None') return 'Choose the Source and Target columns.';
+        if (first === second) return 'Source and Target need to be different columns.';
       }
-      if (type == 'node') {
+      if (type === 'node') {
         if (!headers.length) return `No columns were found in this file (read as ${delimiterNames[file.delimiter] || 'comma'}-separated), so it can’t be read as a node list.`;
-        if (first == 'None') return 'Choose the ID column.';
+        if (first === 'None') return 'Choose the ID column.';
       }
       return '';
     });
@@ -388,11 +388,11 @@ export function mount(root, app) {
   let previewConsensus = { key: null, reference: '' };
   async function previewReference(data) {
     const source = referenceSource();
-    if (source == 'first') return data.length ? data[0].seq : '';
-    if (source == 'file') return app.session.data.reference;
+    if (source === 'first') return data.length ? data[0].seq : '';
+    if (source === 'file') return app.session.data.reference;
     const scoring = alignerScoring();
     const key = JSON.stringify(scoring) + '|' + data.map(d => d.id + ':' + d.seq.length).join(',');
-    if (previewConsensus.key != key) {
+    if (previewConsensus.key !== key) {
       previewConsensus = { key, reference: await MT.consensusReference(data, scoring) };
     }
     return previewConsensus.reference;
@@ -404,7 +404,7 @@ export function mount(root, app) {
       const reference = await previewReference(data);
       if (!reference) {
         preview.innerHTML = '';
-        preview.textContent = referenceSource() == 'file' ? 'Load a reference from a FASTA file to preview the alignment.' : 'No reference could be made from these sequences.';
+        preview.textContent = referenceSource() === 'file' ? 'Load a reference from a FASTA file to preview the alignment.' : 'No reference could be made from these sequences.';
         return;
       }
       data = await MT.align({
@@ -422,19 +422,19 @@ export function mount(root, app) {
   const referenceSource = () => ['file', 'first', 'consensus'].find(s => get('reference-source-' + s)) || 'consensus';
   function showAlignmentRows() {
     show($$('.align-config-row'), get('align-sw'));
-    show($('.reference-file-row'), get('align-sw') && referenceSource() == 'file');
+    show($('.reference-file-row'), get('align-sw') && referenceSource() === 'file');
   }
 
   // The reference source is three settings, one per choice
   $$('input[name="reference-source"]').forEach(input => {
-    input.checked = input.value == referenceSource();
+    input.checked = input.value === referenceSource();
     input.closest('.btn').classList.toggle('active', input.checked);
     input.addEventListener('change', () => {
       if (!input.checked) return;
-      ['file', 'first', 'consensus'].forEach(s => settings.set('reference-source-' + s, s == input.value));
+      ['file', 'first', 'consensus'].forEach(s => settings.set('reference-source-' + s, s === input.value));
       // (Even when no file is loaded: a reference left from another source
       // must not be used as though it had been loaded)
-      if (input.value == 'file') MT.session.setReference(referenceSelect.value);
+      if (input.value === 'file') MT.session.setReference(referenceSelect.value);
       showAlignmentRows();
     });
   });
@@ -444,7 +444,7 @@ export function mount(root, app) {
     if (!file) return;
     file.text().then(text => MT.parseFASTA(text)).then(nodes => {
       if (!nodes.length) return MT.toast.error(`${MT.escape(file.name)} holds no sequences, so it can't be the reference.`);
-      referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${MT.escape(d.seq)}"${i == 0 ? ' selected' : ''}>${MT.escape(d.id)}</option>`).join('');
+      referenceSelect.innerHTML = nodes.map((d, i) => `<option value="${MT.escape(d.seq)}"${i === 0 ? ' selected' : ''}>${MT.escape(d.id)}</option>`).join('');
       referenceSelect.dispatchEvent(new Event('change'));
     }).catch(error => MT.toast.error(`Could not read ${MT.escape(file.name)} as FASTA: ${MT.escape((error && error.message) || '' + error)}.`));
     $('.reference-file-name').textContent = file.name;
@@ -496,7 +496,7 @@ export function mount(root, app) {
     const lengths = data.map(d => d.seq.replace(/-/g, '').length).sort((a, b) => a - b);
     const median = lengths[Math.floor(lengths.length / 2)];
     data.forEach(({ seq, id }) => {
-      if (check('empty') && seq == '') log(id, 'empty');
+      if (check('empty') && seq === '') log(id, 'empty');
       if (check('gaps') && isGaps.test(seq)) log(id, 'all gaps');
       if (check('RNA') && isRNA.test(seq) && !isGaps.test(seq) && /U/.test(seq)) log(id, 'RNA');
       if (check('amino-acids') && isAA.test(seq) && !isDNA.test(seq)) log(id, 'amino acids');
@@ -532,7 +532,7 @@ export function mount(root, app) {
     });
     if (resetThreshold) settings.set('link-threshold', m.threshold);
   }
-  const showAmbiguityRows = () => show($('.ambiguity-threshold-row'), get('ambiguity-resolution-strategy') == 'HIVTRACE-G');
+  const showAmbiguityRows = () => show($('.ambiguity-threshold-row'), get('ambiguity-resolution-strategy') === 'HIVTRACE-G');
 
   // The saved layout may not include this view yet (golden-layout saves it
   // shortly after each change)
@@ -555,7 +555,7 @@ export function mount(root, app) {
     const perFile = Math.max(1, Math.floor(MT.generatedFileChars / ((nodes[0] ? nodes[0].seq.length : 0) + 50)));
     const files = Math.ceil(nodes.length / perFile);
     return Array.from({ length: files }, (_, i) => ({
-      name: files == 1 ? 'generatedNodes.csv' : `generatedNodes-${i + 1}.csv`,
+      name: files === 1 ? 'generatedNodes.csv' : `generatedNodes-${i + 1}.csv`,
       contents: Papa.unparse(nodes.slice(i * perFile, (i + 1) * perFile))
     }));
   };
@@ -575,10 +575,10 @@ export function mount(root, app) {
 
   // Autostashing is kept by the browser
   $$('input[name="stash-auto"]').forEach(input => input.addEventListener('change', () => {
-    if (input.checked) MT.setAutostash(input.value == 'true');
+    if (input.checked) MT.setAutostash(input.value === 'true');
   }));
   db.getItem('stash-auto').then(autostash => {
-    if (autostash == 'true') $('input[name="stash-auto"][value="true"]').click();
+    if (autostash === 'true') $('input[name="stash-auto"][value="true"]').click();
   });
 
   // Launching -----------------------------------------------------------------
@@ -626,7 +626,7 @@ export function mount(root, app) {
     information.innerHTML = '<p>Processing file(s)...</p>';
     const loading = document.getElementById('loading-information-modal');
     const n = app.session.files.length;
-    document.getElementById('loading-title').textContent = `Loading ${n} file${n == 1 ? '' : 's'}`;
+    document.getElementById('loading-title').textContent = `Loading ${n} file${n === 1 ? '' : 's'}`;
     try {
       await openLoadingDialog(loading, information);
     } catch (error) { // the information dialog didn't open
@@ -691,13 +691,13 @@ export function mount(root, app) {
   function reportDistances(file, noColumn, missing, bad, example) {
     const name = shownName(file);
     if (noColumn) {
-      const text = `${name}: no distance column was chosen, so its ${noColumn.toLocaleString()} link${noColumn == 1 ? ' has' : 's have'} no distance and ${noColumn == 1 ? 'is' : 'are'} shown at any link threshold.`;
+      const text = `${name}: no distance column was chosen, so its ${noColumn.toLocaleString()} link${noColumn === 1 ? ' has' : 's have'} no distance and ${noColumn === 1 ? 'is' : 'are'} shown at any link threshold.`;
       message(' - ' + text);
       MT.toast.warning(text);
     }
     const parts = [];
-    if (missing) parts.push(`${missing.toLocaleString()} link${missing == 1 ? ' has' : 's have'} an empty distance`);
-    if (bad) parts.push(`${bad.toLocaleString()} distance${bad == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(example)}")`);
+    if (missing) parts.push(`${missing.toLocaleString()} link${missing === 1 ? ' has' : 's have'} an empty distance`);
+    if (bad) parts.push(`${bad.toLocaleString()} distance${bad === 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(example)}")`);
     if (!parts.length) return;
     message(` - ${name}: ${parts.join('; ')}. Such links are kept without a distance and are not shown by the link threshold.`);
     MT.toast.warning(`${name}: ${parts.join('; ')}. Such links are not shown by the link threshold; fix the values and load the file again.`);
@@ -736,10 +736,10 @@ export function mount(root, app) {
       return false;
     }
 
-    if (file.format == 'fasta') return parseFastaFile(file, ctx, origin, source, start);
-    if (file.format == 'link') return parseLinkFile(file, ctx, origin, source, start);
-    if (file.format == 'node') return parseNodeFile(file, ctx, origin, source, start);
-    if (file.format == 'matrix') return parseMatrixFile(file, ctx, origin, source);
+    if (file.format === 'fasta') return parseFastaFile(file, ctx, origin, source, start);
+    if (file.format === 'link') return parseLinkFile(file, ctx, origin, source, start);
+    if (file.format === 'node') return parseNodeFile(file, ctx, origin, source, start);
+    if (file.format === 'matrix') return parseMatrixFile(file, ctx, origin, source);
     return parseNewickFile(file, ctx, origin, source, start);
   }
 
@@ -781,7 +781,7 @@ export function mount(root, app) {
     message(`Parsing ${shownName(file)} as Link List...`);
     const metric = get('default-distance-metric');
     MT.session.addLinkField(metric);
-    const sheet = file.extension == 'xls' || file.extension == 'xlsx';
+    const sheet = file.extension === 'xls' || file.extension === 'xlsx';
     const options = { field1: file.field1, field2: file.field2, field3: file.field3, metric, origin, delimiter: file.delimiter, sheet };
     const linkFormat = formatByName('link');
 
@@ -793,7 +793,7 @@ export function mount(root, app) {
         const { source, target } = link;
         const added = MT.addLink(link, ctx.check);
         l += added;
-        if (!added) ctx.report[source == target ? 'selfLinks' : 'repeatedLinks']++;
+        if (!added) ctx.report[source === target ? 'selfLinks' : 'repeatedLinks']++;
         ctx.linked.add(source).add(target);
       });
       return l;
@@ -830,7 +830,7 @@ export function mount(root, app) {
 
   async function parseNodeFile(file, ctx, origin, source, start) {
     message(`Parsing ${shownName(file)} as Node List...`);
-    const sheet = file.extension == 'xls' || file.extension == 'xlsx';
+    const sheet = file.extension === 'xls' || file.extension === 'xlsx';
     const parsed = formatByName('node').parse(file.contents, { field1: file.field1, field2: file.field2, delimiter: file.delimiter, origin, sheet });
     // A CSV used to be read through a promise, so the other files' parsers got to
     // start before this one went on; their messages stay in the order of the list
@@ -851,7 +851,7 @@ export function mount(root, app) {
     // Excel sheets are read as CSV text by the same parser as CSV files, which
     // finds the shape (square, or either triangle) from the first row
     let matrixFile = file, nodeOrigin;
-    if (file.extension == 'xls' || file.extension == 'xlsx') {
+    if (file.extension === 'xls' || file.extension === 'xlsx') {
       try {
         matrixFile = Object.assign({}, file, { contents: formatByName('matrix').toText(file.contents) });
         nodeOrigin = origin;
@@ -871,7 +871,7 @@ export function mount(root, app) {
     message(` - Parsed ${o.nn} New, ${o.tn} Total Nodes from Distance Matrix.`);
     message(` - Parsed ${o.nl} New, ${o.tl} Total Links from Distance Matrix.`);
     if (o.unparseable) {
-      const text = `${shownName(file)}: ${o.unparseable.toLocaleString()} matrix cell${o.unparseable == 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(o.example)}") and ${o.unparseable == 1 ? 'was' : 'were'} skipped.`;
+      const text = `${shownName(file)}: ${o.unparseable.toLocaleString()} matrix cell${o.unparseable === 1 ? ' is' : 's are'} not numbers (for example "${MT.escape(o.example)}") and ${o.unparseable === 1 ? 'was' : 'were'} skipped.`;
       message(' - ' + text);
       MT.toast.warning(text);
     }
@@ -911,7 +911,7 @@ export function mount(root, app) {
     const files = app.session.files.slice().sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
     MT.session.resetSources();
 
-    app.session.meta.anySequences = app.session.files.some(file => (file.format == "fasta") || (file.format == "node" && file.field2 !== "None"));
+    app.session.meta.anySequences = app.session.files.some(file => (file.format === "fasta") || (file.format === "node" && file.field2 !== "None"));
 
     const report = { duplicates: 0, blanks: 0, selfLinks: 0, repeatedLinks: 0 };
     const ctx = {
@@ -921,7 +921,7 @@ export function mount(root, app) {
       // A node's ID as it is kept; a repeat within its file is counted, and a blank one is not a node
       idOf: (value, seen) => {
         const id = MT.cleanID(value);
-        if (id == '') { report.blanks++; return null; }
+        if (id === '') { report.blanks++; return null; }
         if (seen.has(id)) report.duplicates++;
         seen.add(id);
         return id;
@@ -946,7 +946,7 @@ export function mount(root, app) {
   // Merged, dropped and overwritten rows are said, not silent (#219)
   function reportMerges({ report, taken, linked }) {
     const unmatched = taken.size ? Array.from(linked).filter(id => !taken.has(id)).length : 0;
-    const plural = (n, one, many) => n.toLocaleString() + ' ' + (n == 1 ? one : many);
+    const plural = (n, one, many) => n.toLocaleString() + ' ' + (n === 1 ? one : many);
     const notes = [];
     if (report.duplicates) notes.push(`${plural(report.duplicates, 'repeated ID was', 'repeated IDs were')} merged into the node with the same ID (the first row's values are kept, and later rows fill in its blanks)`);
     if (report.blanks) notes.push(`${plural(report.blanks, 'row with a blank ID was', 'rows with a blank ID were')} skipped`);
@@ -960,16 +960,16 @@ export function mount(root, app) {
   // Sets the reference the sequences are aligned to, from the chosen source
   async function chooseReference(subset) {
     const source = referenceSource();
-    if (source == 'consensus') {
+    if (source === 'consensus') {
       message('Building a consensus reference from the sequences...');
       step = 'building the consensus reference';
       MT.progress('Building a consensus reference');
       MT.session.setReference(await MT.consensusReference(subset, alignerScoring()));
-    } else if (source == 'first') {
+    } else if (source === 'first') {
       MT.session.setReference(subset.length ? subset[0].seq : '');
     }
     if (!app.session.data.reference) {
-      throw new Error(source == 'file' ?
+      throw new Error(source === 'file' ?
         'no reference sequence was loaded: load one from a FASTA file, or use the consensus or the first sequence as the reference' :
         'no reference sequence could be made from the sequences');
     }
@@ -979,7 +979,7 @@ export function mount(root, app) {
     if (!app.session.data.nodes.length) throw new Error('no nodes were found in the files (are they empty, or the wrong kind of file?)');
     // Where files disagree about nodes, say so (the top file's values are used)
     const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
-    if (differ) message(` - ${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files; the top file's are used.`);
+    if (differ) message(` - ${differ.toLocaleString()} node value${differ === 1 ? '' : 's'} differ between files; the top file's are used.`);
     if (!app.session.meta.anySequences) return MT.runHamsters();
     MT.addNodeField('seq');
     const nodes = app.session.data.nodes;
@@ -1041,11 +1041,11 @@ export function mount(root, app) {
   const alsoMenu = MT.multiSelect($('#distance-metrics-also'));
   const showAlso = () => {
     const metric = get('default-distance-metric');
-    const chosen = (get('distance-metrics-also') || []).filter(m => m != metric && MT.distanceMetrics[m]);
+    const chosen = (get('distance-metrics-also') || []).filter(m => m !== metric && MT.distanceMetrics[m]);
     alsoMenu.clear(true);
     alsoMenu.clearOptions();
     alsoMenu.addOptions(Array.from($('#default-distance-metric').options)
-      .filter(o => o.value != metric)
+      .filter(o => o.value !== metric)
       .map(o => ({ value: o.value, text: o.text })));
     alsoMenu.setValue(chosen, true);
     // (Rebuilding a focused menu opens it)
@@ -1126,7 +1126,7 @@ export function mount(root, app) {
 
   // A programmatic way to do what the view does, for scripts and agents (see
   // src/webmcp/session/). It goes with the view.
-  const named = name => app.session.files.find(f => f.name == name);
+  const named = name => app.session.files.find(f => f.name === name);
   const describe = file => {
     const row = rowOf.get(file);
     const problem = row && problems.has(row) ? problems.get(row)() : '';
@@ -1162,7 +1162,7 @@ export function mount(root, app) {
     update(name, changes) {
       const file = named(name), row = file && rowOf.get(file);
       if (!row) return null;
-      if (changes.format && changes.format != file.format) {
+      if (changes.format && changes.format !== file.format) {
         const radio = row.querySelector(`input[type="radio"][value="${changes.format}"]`);
         if (radio) {
           radio.checked = true;
@@ -1225,7 +1225,7 @@ export function mount(root, app) {
       showAmbiguityRows();
       showAlignmentRows();
       $$('input[name="reference-source"]').forEach(input => {
-        input.checked = input.value == referenceSource();
+        input.checked = input.value === referenceSource();
         input.closest('.btn').classList.toggle('active', input.checked);
       });
     }

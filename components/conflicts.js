@@ -13,7 +13,7 @@ export function mount(root, ctx) {
   const sources = () => ctx.session.data.sources;
   const text = value => String(value).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   // Sequences are compared when files are read, so they're changed there
-  const fixed = field => field == 'seq';
+  const fixed = field => field === 'seq';
   let conflicts = new Map(), field = null, having = [];
 
   const table = MT.table($('.conflicts-grid'), { layout: 'fitColumns', maxHeight: '100%', data: [], columns: [] });
@@ -25,7 +25,7 @@ export function mount(root, ctx) {
   const rows = () => (conflicts.get(field) || []).slice().sort(byID).map(id => {
     const row = { id, picked: !!sources().picked(id, field), used: -1 };
     sources().provenance(id, field).forEach(p => {
-      const i = having.findIndex(s => s.name == p.source);
+      const i = having.findIndex(s => s.name === p.source);
       row['v' + i] = p.value;
       if (p.used) row.used = i;
     });
@@ -41,7 +41,7 @@ export function mount(root, ctx) {
       'Where this session\'s values came from isn\'t known. Files read from now on will be.';
     fieldMenu.innerHTML = fields.map(f => {
       const n = conflicts.get(f).length;
-      return `<option value="${text(f)}">${text(MT.titleize(f))} (${n.toLocaleString()} node${n == 1 ? '' : 's'})</option>`;
+      return `<option value="${text(f)}">${text(MT.titleize(f))} (${n.toLocaleString()} node${n === 1 ? '' : 's'})</option>`;
     }).join('');
     if (!fields.includes(field)) field = fields[0] || null;
     fieldMenu.value = field;
@@ -55,7 +55,7 @@ export function mount(root, ctx) {
     const rule = sources().rules.get(field) || '';
     ruleMenu.innerHTML = `<option value="">The top file's (${text(having[0].name)})</option>` +
       having.slice(1).map(s => `<option value="${text(s.name)}">${text(s.name)}'s</option>`).join('');
-    ruleMenu.value = having.some(s => s.name == rule) ? rule : '';
+    ruleMenu.value = having.some(s => s.name === rule) ? rule : '';
     ruleMenu.disabled = fixed(field);
     note.innerHTML = fixed(field) ?
       'Sequences are compared when files are read: to use another file\'s, drag it to the top in the Files view and launch again.' :
@@ -68,12 +68,12 @@ export function mount(root, ctx) {
         formatter: cell => {
           const value = cell.getValue();
           if (value === undefined) return '<span class="text-muted">—</span>';
-          const used = cell.getRow().getData().used == i;
+          const used = cell.getRow().getData().used === i;
           return `<span class="conflict-value${used ? ' used' : ''}">${used ? '<span class="bi bi-check2"></span> ' : ''}${text(value)}</span>`;
         },
         cellClick: (e, cell) => {
           const row = cell.getRow().getData();
-          if (fixed(field) || cell.getValue() === undefined || row.used == i) return;
+          if (fixed(field) || cell.getValue() === undefined || row.used === i) return;
           MT.pickSource(row.id, field, s.name);
         }
       }))));

@@ -40,9 +40,9 @@ export function mount(root, ctx) {
     lists.clusters.innerHTML = '';
     const clusters = ctx.session.data.clusters.filter(c => c.visible && c.nodes > 1);
     // Single nodes aren't listed (they've no links to show): say how many
-    const singles = ctx.session.data.clusters.filter(c => c.visible && c.nodes == 1).length;
+    const singles = ctx.session.data.clusters.filter(c => c.visible && c.nodes === 1).length;
     $('.waterfall-skipped').hidden = !singles;
-    $('.waterfall-skipped').textContent = singles == 1 ? '1 cluster of a single node isn’t listed.' : `${singles.toLocaleString()} clusters of a single node aren’t listed.`;
+    $('.waterfall-skipped').textContent = singles === 1 ? '1 cluster of a single node isn’t listed.' : `${singles.toLocaleString()} clusters of a single node aren’t listed.`;
     if (!clusters.some(c => c.id === cluster)) cluster = undefined;
     clusters.forEach(c => {
       item(lists.clusters, c.id, c.nodes, `Links: ${c.links}<br>
