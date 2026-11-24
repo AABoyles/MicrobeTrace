@@ -20,7 +20,7 @@ export function readRows(contents, { field1, field2, delimiter, sheet }) {
   Papa.parse(contents, {
     delimiter: delimiter || ',',
     header: true,
-    dynamicTyping: field => field != field1 && field != field2,
+    dynamicTyping: field => field != field1 && field != field2, // eslint-disable-line eqeqeq -- field names arrive from menus and files; a number and its text name the same column
     skipEmptyLines: true,
     complete: output => { result = { rows: output.data, fields: output.meta.fields || [] }; }
   });
@@ -56,15 +56,15 @@ export function parse(contents, options) {
       noteField(key);
     }
     const source = cleanID(copy[field1]), target = cleanID(copy[field2]);
-    if (source == '' || target == '') { result.blanks++; continue; }
+    if (source === '' || target === '') { result.blanks++; continue; }
     const link = Object.assign({ origin, visible: true }, copy, { source, target });
     // A file's distances are taken to be the distance metric's
-    const distance = field3 == 'None' ? null : MTGraph.parseDistance(copy[field3]);
+    const distance = field3 === 'None' ? null : MTGraph.parseDistance(copy[field3]);
     if (distance === null || distance !== distance) {
-      if (field3 == 'None') { result.noColumn++; link.unmeasured = true; }
+      if (field3 === 'None') { result.noColumn++; link.unmeasured = true; }
       else if (distance === null) result.missing++;
       else { result.bad++; if (result.badExample === null) result.badExample = '' + copy[field3]; }
-      if (field3 == 'None' || field3 == metric) delete link[metric];
+      if (field3 === 'None' || field3 == metric) delete link[metric]; // eslint-disable-line eqeqeq -- field names arrive from menus and files; a number and its text name the same column
     } else {
       link[metric] = distance;
     }
@@ -77,7 +77,7 @@ export function parse(contents, options) {
   for (const row of rows) {
     for (const value of [row[field1], row[field2]]) {
       const id = cleanID(value);
-      if (id == '' || seen.has(id)) continue;
+      if (id === '' || seen.has(id)) continue;
       seen.add(id);
       result.nodes.push({ _id: id, origin });
     }

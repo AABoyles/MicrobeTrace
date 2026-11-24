@@ -32,9 +32,9 @@ export function parse(contents, { field1, field2, delimiter, origin, sheet }) {
     result.total++;
     const id = claimId(row[field1], result.ids, result);
     if (id === null) return;
-    const node = { _id: id, seq: field2 == 'None' ? '' : row[field2], origin };
+    const node = { _id: id, seq: field2 === 'None' ? '' : row[field2], origin };
     Object.keys(row).forEach(key => {
-      if (key == field1 || key == field2) return;
+      if (key == field1 || key == field2) return; // eslint-disable-line eqeqeq -- field names arrive from menus and files; a number and its text name the same column
       if (!known.has(key)) { known.add(key); result.fields.push(key); }
       node[key] = row[key]; // (#173)
     });
@@ -47,7 +47,7 @@ export function parse(contents, { field1, field2, delimiter, origin, sheet }) {
       delimiter: delimiter || ',',
       header: true,
       // Numbers are read as numbers, except IDs and sequences: 007 and 1E3 are names (#219)
-      dynamicTyping: field => field != field1 && field != field2,
+      dynamicTyping: field => field != field1 && field != field2, // eslint-disable-line eqeqeq -- field names arrive from menus and files; a number and its text name the same column
       skipEmptyLines: true,
       step: output => addRow(output.data)
     });

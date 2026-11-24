@@ -40,7 +40,7 @@ export function detectFormat(contents, fileName = '') {
       return { delimiter: ',' };
     }
   }
-  if (typeof text != 'string') return { delimiter: ',' };
+  if (typeof text !== 'string') return { delimiter: ',' };
   text = text.replace(/^﻿/, '');
   let sample = null;
   const table = () => sample || (sample = tableSample(text));

@@ -26,11 +26,11 @@ export function detect(text, fileName, table) {
   const values = rows.slice(1).reduce((all, r) => all.concat(r.slice(1)), []).filter(c => !blankCell(c));
   const mostlyNumbers = values.length > 0 && values.filter(isNumber).length >= 0.9 * values.length;
   const k = Math.min(rows.length - 1, header.length - 1);
-  if (blankCell(rows[0][0]) && header.length - 1 == lines - 1 && k >= 2 && mostlyNumbers
-    && rows.slice(1, k + 1).every((r, i) => cleanCell(r[0]) !== '' && cleanCell(r[0]) == cleanCell(header[i + 1]))) {
+  if (blankCell(rows[0][0]) && header.length - 1 === lines - 1 && k >= 2 && mostlyNumbers
+    && rows.slice(1, k + 1).every((r, i) => cleanCell(r[0]) !== '' && cleanCell(r[0]) === cleanCell(header[i + 1]))) {
     return true;
   }
-  return !blankCell(rows[0][0]) && !isNumber(rows[0][0]) && rows[0].length - 1 == lines && lines >= 3
-    && rows.every(r => r.length == rows[0].length && !isNumber(r[0])) && mostlyNumbers
+  return !blankCell(rows[0][0]) && !isNumber(rows[0][0]) && rows[0].length - 1 === lines && lines >= 3
+    && rows.every(r => r.length === rows[0].length && !isNumber(r[0])) && mostlyNumbers
     && rows.slice(1).flat().length > 0 && rows[0].slice(1).every(isNumber);
 }

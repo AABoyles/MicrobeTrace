@@ -9,10 +9,10 @@ export const matchName = extension => extension.indexOf('nwk') > -1 || extension
 const balanced = text => {
   let depth = 0;
   for (const c of text) {
-    if (c == '(') depth++;
-    else if (c == ')' && --depth < 0) return false;
+    if (c === '(') depth++;
+    else if (c === ')' && --depth < 0) return false;
   }
-  return depth == 0;
+  return depth === 0;
 };
 
 export const detect = text => text.trimStart().startsWith('(') && /;\s*$/.test(text) && balanced(text);

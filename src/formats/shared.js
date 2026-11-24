@@ -14,7 +14,7 @@ export const cleanID = id => id == null ? '' : String(id).trim();
 // or null when it is blank (#219).
 export function claimId(value, seen, tally) {
   const id = cleanID(value);
-  if (id == '') { tally.blanks++; return null; }
+  if (id === '') { tally.blanks++; return null; }
   if (seen.has(id)) tally.duplicates++;
   seen.add(id);
   return id;
@@ -53,4 +53,4 @@ export function sheetText(contents, { dates = false } = {}) {
 }
 
 // Whether a file's extension says it is a spreadsheet
-export const isSheet = extension => extension == 'xlsx' || extension == 'xls';
+export const isSheet = extension => extension === 'xlsx' || extension === 'xls';
