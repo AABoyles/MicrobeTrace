@@ -1,6 +1,6 @@
 // The demo outbreak in demo/ (#297). The saved session that #demo and the WebMCP demo tool load
 // must use the node list's field names, and none of them may be a name MicrobeTrace keeps for
-// itself (INTERNAL in src/webmcp/query.js), or the session's values are read as computed ones.
+// itself (INTERNAL in src/webmcp/query/helpers.js), or the session's values are read as computed ones.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
@@ -11,8 +11,8 @@ const demo = name => path.join(__dirname, '..', '..', 'demo', name);
 const lines = text => text.split(/\r?\n/).filter(line => line !== '');
 const read = name => fs.readFileSync(demo(name), 'utf8');
 
-// query.js keeps its list in a closure, so the literal is read from its source
-const queryJS = fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'webmcp', 'query.js'), 'utf8');
+// The query tools keep their list in a module, so the literal is read from its source
+const queryJS = fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'webmcp', 'query', 'helpers.js'), 'utf8');
 const internal = new Function('return ' + queryJS.match(/const INTERNAL = (\[[^\]]*\]);/)[1])();
 const isInternal = field => internal.includes(field) || field[0] == '_';
 

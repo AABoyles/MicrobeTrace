@@ -6,8 +6,24 @@ loading files, launching a network, querying nodes and links, styling, selecting
 An agent can then load a dataset, color it, and look at the result without the user clicking through
 the interface.
 
-The code is in `src/webmcp.js` (the core) and `src/webmcp/*.js` (the tools, in four groups). The
-page loads them in that order, from `index.html`.
+The code is in `src/webmcp.js` (the core, a classic script) and `src/webmcp/` (the tools, as ES
+modules). `index.html` loads the core first and then `src/webmcp/index.js`, which imports every
+tool and registers it with `MTWebMCP.define`.
+
+```
+src/webmcp/
+  index.js        registers every tool, in the order MTWebMCP.list() gives
+  core.js         the MTWebMCP helpers the tools use (fail, requireData, filter, ...), as named exports
+  schema.js       JSON Schema builders (obj, str, num, bool) and `same`
+  <group>/        session, query, style and views
+    index.js      the group's tools, in order
+    <tool>.js     one tool: its schema and its handler, as the default export
+    helpers.js    private helpers that two or more tools in the group share
+```
+
+A helper used by one tool lives in that tool's file; once a second tool needs it, it moves to the
+group's `helpers.js` (#340). `style/value-colors.js` holds two tools (node and link) built by one
+function.
 
 ## Security: opt-in, confirmation, and untrusted data
 
@@ -213,7 +229,7 @@ Tools marked "consequential" carry `consequentialHint`: they replace or delete d
 download a file, so a client may want to confirm first. Those that also ask the user in the page are
 listed under [Consequential tools ask the user first](#consequential-tools-ask-the-user-first).
 
-### Session and data loading (`src/webmcp/session.js`, 24 tools)
+### Session and data loading (`src/webmcp/session/`, 24 tools)
 
 | Tool | Read-only? | What it does |
 |---|---|---|
@@ -242,7 +258,7 @@ listed under [Consequential tools ask the user first](#consequential-tools-ask-t
 | `audit_sequences` | Yes | Checks pending sequences (or the loaded ones) for empty, all-gap, RNA, amino acid, CIGAR and illegal entries. |
 | `exclude_sequences` | No (consequential) | Manages the node IDs left out when files are launched (add, remove or set). |
 
-### Querying data (`src/webmcp/query.js`, 22 tools)
+### Querying data (`src/webmcp/query/`, 22 tools)
 
 All of these are read-only.
 
@@ -271,7 +287,7 @@ All of these are read-only.
 | `get_degree_distribution` | Yes | A histogram of links per node, summary statistics, and the hub nodes. |
 | `get_centrality` | Yes | Degree, betweenness and closeness centrality for nodes. |
 
-### Settings, filtering, selection and styling (`src/webmcp/style.js`, 39 tools)
+### Settings, filtering, selection and styling (`src/webmcp/style/`, 39 tools)
 
 | Tool | Read-only? | What it does |
 |---|---|---|
@@ -315,7 +331,7 @@ All of these are read-only.
 | `show_panels` | No | Shows or hides the floating panels: the color tables, the shape table, and the statistics. |
 | `reset_style` | No (consequential) | Resets styling to the defaults. `scope` limits what is reset. |
 
-### Views and layout (`src/webmcp/views.js`, 15 tools)
+### Views and layout (`src/webmcp/views/`, 15 tools)
 
 | Tool | Read-only? | What it does |
 |---|---|---|
@@ -337,12 +353,16 @@ All of these are read-only.
 
 ## Adding a tool
 
-1. Pick the group file that fits (session, query, style or views). If none fits, add a new file,
-   and add a `<script defer src="src/webmcp/NAME.js">` tag to `index.html` after the others.
-2. Call `define` with these fields:
+1. Pick the group that fits (session, query, style or views) and add `src/webmcp/<group>/<tool-name>.js`
+   (the tool's name with dashes). Import what it needs from `../core.js`, `../schema.js` and the
+   group's `./helpers.js`, then add the tool to the group's `index.js`, in the position you want it
+   listed. A new group is a new directory with an `index.js`, imported in `src/webmcp/index.js`.
+   Nothing else lists the files: `npm run cache` and the site build pick them up from the folder.
+2. Export the tool as the default export, with these fields (the module does not call `define`;
+   `src/webmcp/index.js` does):
 
    ```js
-   define({
+   export default {
      name: 'get_node',                    // required; [A-Za-z0-9_.-], 1 to 128 characters, unique
      title: 'Get node',                   // optional, for people
      description: 'What it does, for the agent choosing a tool',   // required
@@ -351,7 +371,7 @@ All of these are read-only.
      confirm: args => 'What the user is asked to allow',   // optional; see below
      untrusted: false,                    // optional; only if the result holds no text from the data
      execute: async (args, { signal }) => ({ ... })   // required; returns any JSON value
-   });
+   };
    ```
 
    `define` throws if the name is invalid or already used, if there is no description, or if there is no
@@ -366,7 +386,7 @@ All of these are read-only.
    every description unless `untrusted: false`.
 3. Write the description for an agent, not a person. Say what the tool returns and what its arguments
    mean. Name the related tools to use instead.
-4. Reuse the shared helpers (`requireData`, `nodeById`, `filter`, `sort`, `page`, `schemas.filter`,
+4. Reuse the shared helpers from `core.js` (`requireData`, `nodeById`, `filter`, `sort`, `page`, `schemas.filter`,
    `schemas.page`, and so on) rather than writing new ones. Fail with `fail('...')` when the agent
    asks for something that cannot be done.
 5. Set `readOnlyHint: true` only if the tool changes nothing. Set `consequentialHint: true` if it
@@ -383,7 +403,7 @@ npx playwright test test/e2e/webmcp-*.spec.js   # end-to-end tests of the four g
 
 The unit tests run in Node with no browser. `test/unit/webmcp.test.js` covers the filter, sort and
 paging helpers, the regex bounds, `define` and `call`, turning WebMCP on and off, and the description
-notes. `test/unit/webmcp-tools.test.js` loads the four tool files against a mocked `MT` and session:
+notes. `test/unit/webmcp-tools.test.js` loads the tool modules against a mocked `MT` and session:
 every tool's name, description, schema and annotations; registration with `navigator.modelContext`;
 bad arguments for every tool (generated from its schema); and the query, autostash, save, reveal and
 timeline tools.

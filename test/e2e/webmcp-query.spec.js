@@ -1,4 +1,4 @@
-// The WebMCP query tools (src/webmcp/query.js) against the fixture network
+// The WebMCP query tools (src/webmcp/query/) against the fixture network
 const { test, expect } = require('@playwright/test');
 const { loadNetwork, open, watchErrors } = require('./helpers');
 

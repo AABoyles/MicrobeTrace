@@ -4,7 +4,8 @@
   // MTWebMCP: MicrobeTrace's tools for AI agents, through WebMCP
   // (https://webmachinelearning.github.io/webmcp/).
   //
-  // Each file in src/webmcp/ defines a group of tools:
+  // Each file in src/webmcp/<group>/ defines one tool, which src/webmcp/index.js
+  // passes to define (#340):
   //
   //   MTWebMCP.define({
   //     name: 'get_node',                       // [A-Za-z0-9_.-]{1,128}

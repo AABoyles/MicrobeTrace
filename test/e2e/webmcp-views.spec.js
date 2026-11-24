@@ -1,4 +1,4 @@
-// WebMCP tools for views (src/webmcp/views.js)
+// WebMCP tools for views (src/webmcp/views/)
 const { test, expect } = require('@playwright/test');
 const { watchErrors, loadNetwork, webmcp } = require('./helpers');
 

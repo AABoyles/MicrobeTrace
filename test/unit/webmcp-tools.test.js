@@ -1,5 +1,5 @@
-// Unit tests for the WebMCP tool modules (src/webmcp/session.js, query.js, style.js
-// and views.js), run against a mocked MT and session, with no browser. The
+// Unit tests for the WebMCP tool modules (the files under src/webmcp/session,
+// query, style and views), run against a mocked MT and session, with no browser. The
 // shared core (src/webmcp.js) is in webmcp.test.js. Run with: node --test test/unit
 const test = require('node:test');
 const assert = require('node:assert');
@@ -70,8 +70,10 @@ self.MT = makeMT();
 self.session = makeSession();
 
 // (`document` is only used when a tool runs, and these tests run none that need it)
-// schema.js first: the others take their schema helpers from it
-for (const file of ['schema.js', 'session.js', 'query.js', 'style.js', 'views.js']) load('src/webmcp/' + file);
+// The tool modules are ES modules that read the page's globals, so `self` has to be
+// the mock before they are required (#340)
+globalThis.self = self;
+require('../../src/webmcp/index.js');
 
 const tools = () => W.list();
 const byName = name => tools().find(t => t.name == name);

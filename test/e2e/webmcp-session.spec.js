@@ -1,4 +1,4 @@
-// WebMCP tools for loading data and managing sessions (src/webmcp/session.js)
+// WebMCP tools for loading data and managing sessions (src/webmcp/session/)
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
