@@ -5,7 +5,7 @@ export default {
   name: 'save_session',
   title: 'Save the session',
   description: 'Saves the current session like the Save dialog: with download true it downloads a file named <filename>.<format> (or <filename>.zip with compress true) through the browser; returnContents (default true) also returns the JSON text. ' +
-    'Use returnContents false with download true to avoid a large result. Formats: microbetrace (whole session), microbetracestyle (settings only), hivtrace. For just reading the JSON without downloading use get_session_json.',
+    'Use returnContents false with download true to avoid a large result. Formats: microbetrace (whole session), hivtrace. For just reading the JSON without downloading use get_session_json.',
   inputSchema: obj({
     format: formatSchema,
     download: bool('Download a file in the browser', false),

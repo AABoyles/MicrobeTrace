@@ -316,8 +316,8 @@ test('set_autostash turning it off calls MT.setAutostash; turning it on needs th
 
 test('save_session with download saves through MT.saveSession, with the name given (or the dialog\'s)', withEnabled(async () => {
   self.MT.calls.length = 0;
-  const r = JSON.parse((await agent('save_session', { download: false, returnContents: false, format: 'microbetracestyle' })).content[0].text);
-  assert.deepStrictEqual(r, { format: 'microbetracestyle', characters: JSON.stringify(self.session.style).length });
+  const r = JSON.parse((await agent('save_session', { download: false, returnContents: false, format: 'hivtrace' })).content[0].text);
+  assert.deepStrictEqual(r, { format: 'hivtrace', characters: self.MT.sessionText('hivtrace').length });
   assert.deepStrictEqual(self.MT.calls, [], 'a read does not save');
   // Downloading needs the user's permission, which this page cannot give, so nothing is saved
   assert.match(errorOf(await agent('save_session', { download: true, filename: 'x' })), /needs the user's permission/);

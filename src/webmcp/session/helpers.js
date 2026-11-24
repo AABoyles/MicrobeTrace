@@ -211,12 +211,11 @@ export function readOptions() {
 
 export function sessionText(format) {
   const MT = self.MT;
-  if (format === 'microbetracestyle') return JSON.stringify(self.session.style);
   if (!dataLoaded()) fail('No data is loaded, so there is nothing to save. Load data first.');
   return MT.sessionText(format);
 }
 
-export const formatSchema = { type: 'string', enum: ['microbetrace', 'microbetracestyle', 'hivtrace'], default: 'microbetrace', description: 'microbetrace: the whole session (data, style, layout); microbetracestyle: only the style/settings; hivtrace: HIV-TRACE-style output of the visible network' };
+export const formatSchema = { type: 'string', enum: ['microbetrace', 'hivtrace'], default: 'microbetrace', description: 'microbetrace: the whole session (data, style, layout); hivtrace: HIV-TRACE-style output of the visible network' };
 
 export const stashOf = key => {
   const parts = /^stash-(\d+)-([\s\S]*)$/.exec(key);

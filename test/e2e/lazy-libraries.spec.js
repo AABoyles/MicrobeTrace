@@ -31,7 +31,7 @@ test('a fresh page loads only the primary bundle, within a byte budget', async (
   console.log('Startup JS and CSS bytes:', total);
   // About 1.6 MB today (it was 4.9 MB before the libraries were split out)
   expect(total).toBeLessThan(2.2 * 1024 * 1024);
-  for (const global of ['XLSX', 'JSZip', 'Tabulator', 'Plotly', 'L', 'TidyTree', 'alignmentViewer', 'pdfMake']) {
+  for (const global of ['XLSX', 'JSZip', 'Tabulator', 'Plotly', 'L', 'TidyTree', 'alignmentViewer']) {
     expect(await page.evaluate(name => typeof self[name], global), global).toBe('undefined');
   }
   expect(errors).toEqual([]);

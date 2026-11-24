@@ -47,7 +47,7 @@ autostash) and not a session setting (in `session.style.widgets`):
 - A saved preference would quietly expose every dataset loaded afterwards, perhaps by someone else
   on a shared computer, to whichever agent the browser connects to. Exposure should last as long as
   the task the user turned it on for.
-- A session setting could be switched on by opening a session or style file, which is exactly the
+- A session setting could be switched on by opening a session file, which is exactly the
   kind of content an attacker controls.
 - The cost is one click per tab, which is small next to the work an agent is asked to do.
 
@@ -73,7 +73,7 @@ write outside the page (downloads, browser storage), or do something unspecified
 | Tool | Asks when |
 |---|---|
 | `add_file` | always (the agent's content enters the page; a session file also replaces the data) |
-| `open_session`, `apply_style` | always (the agent's content replaces the data or the style) |
+| `open_session` | always (the agent's content replaces the data) |
 | `new_session` | always (after the agent also passes `confirm: true`, which by itself is not consent) |
 | `recall_stash` | always (it loads a different dataset from browser storage, replacing the current one) |
 | `delete_stash` | always (permanent) |
@@ -224,7 +224,7 @@ A typical session loads files, builds the network, then looks at it:
 
 ## Tool reference
 
-There are 100 tools. Each file below is one group. "Read-only?" is the `readOnlyHint` annotation.
+There are 99 tools. Each file below is one group. "Read-only?" is the `readOnlyHint` annotation.
 Tools marked "consequential" carry `consequentialHint`: they replace or delete data or state, or
 download a file, so a client may want to confirm first. Those that also ask the user in the page are
 listed under [Consequential tools ask the user first](#consequential-tools-ask-the-user-first).
@@ -244,8 +244,7 @@ listed under [Consequential tools ask the user first](#consequential-tools-ask-t
 | `load_demo` | No (consequential) | Loads the demo outbreak (about 100 nodes), replacing current data. `source` is `session` or `files`. |
 | `generate_sequences` | No (consequential) | Adds random, related sequences (1 to 250,000, as the Generate button), for trying the app without data; many go in several node files. |
 | `open_session` | No (consequential) | Opens a saved `.microbetrace`, HIV-TRACE or GHOST session, replacing current data. |
-| `apply_style` | No | Applies a `.microbetracestyle` (colors, view settings, widget values) to the session and open views. |
-| `get_session_json` | Yes | Returns the session as the Save dialog would write it (`microbetrace`, `microbetracestyle` or `hivtrace`), without downloading. |
+| `get_session_json` | Yes | Returns the session as the Save dialog would write it (`microbetrace` or `hivtrace`), without downloading. |
 | `save_session` | No (consequential) | Saves the session like the Save dialog. Can download the file and/or return its JSON text. |
 | `new_session` | No (consequential) | Discards the current session and starts empty. Takes `confirm: true`, and the user must still allow it. |
 | `get_session_info` | Yes | Describes the loaded session: counts, fields, distance metric and threshold, load time, files, open views, loading log. |

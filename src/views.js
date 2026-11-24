@@ -430,7 +430,7 @@ const hasLinks = () => env.session.data.graph.edgeCount > 0;
 const hasSequences = () => env.session.data.nodes.some(d => d.seq);
 const FILES_HINT = "Add them in the Files view (the File menu's Add Data).";
 const chosenField = key => { const v = MT.settings.get(key); return v != null && v !== "None" && v !== ""; };
-const MAP_NEEDS = name => "The " + name + " places nodes by latitude and longitude columns, or by country, state, county, zipcode or census tract. Choose the columns that hold them in this view's settings (the gear). If the data has none, add a node list that does.";
+const MAP_NEEDS = name => "The " + name + " places nodes by latitude and longitude columns, or by country, state, county or zipcode. Choose the columns that hold them in this view's settings (the gear). If the data has none, add a node list that does.";
 MT.viewNeeds = {
   sequences: () => hasSequences() ? "" : "This view lines up nodes' sequences, and none of these nodes has one. Add a FASTA file, or a node list with a sequence column. " + FILES_HINT,
   phylogenetic_tree: () => hasLinks() || hasSequences() || env.session.files.some(f => f.format === "newick") ? "" :

@@ -95,10 +95,6 @@ export function mount(root, ctx) {
       data.forEach((t, i) => XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(t.data), (i + 1) + ' ' + title(t).slice(0, 27)));
       XLSX.writeFile(workbook, name + '.xlsx');
     },
-    pdf: name => MT.tablesPDF('Aggregation', data.map(t => ({
-      headers: [title(t), `Number of ${MT.titleize(t.dataset)}s`, 'Percentage'],
-      rows: t.data.map(row => [row[t.column] + '', row.n + '', row.percent])
-    })), name),
     json: name => MT.exportBlob(JSON.stringify(data), 'application/json', name + '.json')
   });
 

@@ -1,6 +1,6 @@
 // Export: file names, tables, plots, images, CSV and SVG.
 //
-// Default and clean file names, the table export menu, PDFs, SVG, plot and map
+// Default and clean file names, the table export menu, SVG, plot and map
 // images, saving a Blob, CSV, and the HIVTRACE export.
 //
 // An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
@@ -95,7 +95,7 @@ MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, rej
 // an older script, may have put it there); the ones with a stylesheet also fetch
 // dist/bundle.NAME.css, which goes ahead of main.css so that it can still override.
 // The promise is cached, so asking again, or from several views, loads it once.
-const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', plotly: 'Plotly', map: 'L', tree: 'TidyTree', alignment: 'alignmentViewer', pdf: 'pdfMake' };
+const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', plotly: 'Plotly', map: 'L', tree: 'TidyTree', alignment: 'alignmentViewer' };
 const LIBRARY_STYLES = ['table', 'map'];
 const styles = {};
 MT.loadStyle = href => styles[href] || (styles[href] = new Promise((resolve, reject) => {
@@ -117,25 +117,6 @@ MT.loadLibrary = name => {
     LIBRARY_STYLES.includes(name) ? MT.loadStyle('dist/bundle.' + name + '.css') : null
   ]).then(() => {});
 };
-
-// pdfmake and its fonts (1.9 MB) are only fetched when a PDF is first made
-MT.loadPDF = () => MT.loadLibrary('pdf');
-
-// A PDF of tables ({ title, headers, rows })
-MT.tablesPDF = (heading, tables, filename) => MT.loadPDF().then(() => pdfMake.createPdf({
-  content: [
-    { text: heading, style: 'header', alignment: 'center' },
-    ...tables.map(t => ({
-      style: 'paddedTable',
-      table: { headerRows: 1, widths: t.headers.map(() => '*'), body: [t.headers].concat(t.rows) }
-    }))
-  ],
-  footer: (currentPage, pageCount) => [{ text: `Page ${currentPage} of ${pageCount}`, alignment: 'center' }],
-  styles: {
-    header: { fontSize: 22, bold: true },
-    paddedTable: { margin: [10, 10, 10, 10] }
-  }
-}).download(filename + '.pdf')).catch(() => MT.toast.error("The PDF library couldn't be loaded, so the PDF wasn't made. Check your connection and try again."));
 
 // Wires the export dialog of a view drawn as an SVG. The dialog (inside root)
 // has fields named export-filename, -filetype, -scale and -quality,

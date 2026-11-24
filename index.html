@@ -98,13 +98,6 @@
         </div>
       </li>
       <li class="nav-item dropdown">
-        <button type="button" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Window</button>
-        <div class="dropdown-menu">
-          <button type="button" id="ReloadTab" class="dropdown-item">Reload</button>
-          <button type="button" id="FullScreenTab" class="dropdown-item">Toggle Full Screen</button>
-        </div>
-      </li>
-      <li class="nav-item dropdown">
         <button type="button" class="nav-link dropdown-toggle py-0" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Help</button>
         <div class="dropdown-menu">
           <button type="button" id="HelpTab" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#help-modal">Help</button>
@@ -474,13 +467,6 @@
                   <input type="color" id="background-color" data-setting="background-color" class="form-control form-control-sm" value="#ffffff">
                 </div>
               </div>
-              <div class="form-group row" title="Load an existing MicrobeTrace style file">
-                <div class="col-4">Apply Style</div>
-                <div class="col-8">
-                  <input type="file" id="apply-style" class="d-none">
-                  <label class="btn btn-light btn-sm w-100 text-start" for="apply-style">Choose MicrobeTrace Style File</label>
-                </div>
-              </div>
             </div>
             <div class="tab-pane fade" id="timeline-config" role="tabpanel" aria-labelledby="timeline-tab">
               <div class="form-group row" title="Which node date or number the timeline slider runs along. None turns the timeline off.">
@@ -529,17 +515,15 @@
             </div>
             <div class="col-5">
               <label for="save-file-format" class="form-label small mb-1">Format</label>
-              <select id="save-file-format" class="form-select form-select-sm" title="What would you like to save: the whole session, its network for HIV-TRACE, or only its style (its colors and settings)?">
+              <select id="save-file-format" class="form-select form-select-sm" title="What would you like to save: the whole session, or its network for HIV-TRACE?">
                 <option value="microbetrace" selected>MicrobeTrace session</option>
                 <option value="hivtrace">HIV-TRACE</option>
-                <option value="microbetracestyle">Style only</option>
               </select>
             </div>
           </div>
           <ul id="save-format-help" class="small text-muted ps-3 mb-2">
             <li><strong>MicrobeTrace session</strong>: everything, to carry on later. Reopen it with File &gt; Open.</li>
             <li><strong>HIV-TRACE</strong>: the network in the format HIV-TRACE writes, to use with other tools.</li>
-            <li><strong>Style only</strong>: just the colors and settings, to apply to another session.</li>
           </ul>
           <div class="form-group row" title="Should MicrobeTrace compress this save file?">
             <div class="col">
@@ -639,7 +623,7 @@
             <li><strong>Network</strong>: nodes and links; color, size and filter them by any column.</li>
             <li><strong>Table</strong>: the nodes or links as rows. <strong>Aggregation</strong>, <strong>Crosstab</strong>, <strong>Bubbles</strong>, <strong>Histogram</strong>, <strong>Scatterplot</strong> and <strong>Flow Diagram</strong>: summaries of columns.</li>
             <li><strong>Sequences</strong>: the aligned sequences. <strong>Phylogenetic Tree</strong> and <strong>Heatmap</strong>: need sequences or a distance matrix (the tree can also come from a Newick file).</li>
-            <li><strong>Map</strong>, <strong>Globe</strong> and <strong>Choropleth</strong>: need latitude and longitude, or country, state, county, zipcode or tract columns.</li>
+            <li><strong>Map</strong>, <strong>Globe</strong> and <strong>Choropleth</strong>: need latitude and longitude, or country, state, county or zipcode columns.</li>
             <li><strong>Timeline</strong> and <strong>Gantt</strong>: need a column of dates.</li>
             <li><strong>Waterfall</strong>: each cluster's links. <strong>Conflicts</strong>: where files disagree.</li>
           </ul>
@@ -649,7 +633,7 @@
 
           <h3 id="help-saving" class="h6">Saving, stashing and exporting</h3>
           <ul>
-            <li><strong>File, Save</strong> writes the whole session to a <code>.microbetrace</code> file you can open later (File, Open), or just its style. Nothing is sent anywhere.</li>
+            <li><strong>File, Save</strong> writes the whole session to a <code>.microbetrace</code> file you can open later (File, Open). Nothing is sent anywhere.</li>
             <li><strong>Stash in Browser</strong> keeps a named copy in this browser, on this computer, and <strong>Recall from Browser</strong> brings it back. Clearing the browser's site data deletes stashes, so save a file for anything you need to keep. If automatic stashing is on, MicrobeTrace offers to restore the last session at startup.</li>
             <li>Each view's download button exports what it shows: an image (PNG, JPEG, SVG), or for the tree a Newick file. The Table view exports its rows.</li>
           </ul>

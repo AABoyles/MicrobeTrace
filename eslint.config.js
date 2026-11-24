@@ -19,7 +19,7 @@ const libGlobals = {
   Cosmos: "readonly", JSZip: "readonly", L: "readonly", Papa: "readonly", Plotly: "readonly",
   Tabulator: "readonly", TomSelect: "readonly", TidyTree: "readonly", XLSX: "readonly", alignmentViewer: "readonly",
   bootstrap: "readonly", d3: "readonly", db: "readonly", goldenLayout: "readonly", patristic: "readonly",
-  pdfMake: "readonly", sortable: "readonly", tn93: "readonly", module: "readonly",
+  sortable: "readonly", tn93: "readonly", module: "readonly",
   MTAlignerScoring: "readonly", MTBind: "readonly", MTDates: "readonly", MTEvents: "readonly", MTFormats: "readonly", MTGraph: "readonly",
   MTNodeSources: "readonly", MTSessionFormat: "readonly", MTSettings: "readonly", MTWebMCP: "readonly",
 };

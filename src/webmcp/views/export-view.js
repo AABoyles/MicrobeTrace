@@ -4,7 +4,7 @@ import { viewSchema, openSchema, settle, need, blobToDataURL, finish, runExport 
 export default {
   name: 'export_view',
   title: 'Export view',
-  description: 'Runs a view\'s own Export dialog: image formats (png, jpeg, webp, svg), data formats (csv, xlsx, json for tables and crosstab; Newick nwk for the tree; geojson for maps; fasta/mega for sequences; csv for the heatmap), as that view offers (call with no format to learn them: the result lists formats). With download true (default) the file is saved by the browser as filename + extension. With download false nothing is saved and the content is returned instead: text formats (svg, csv, json, nwk, geojson, fasta) as text, images as an image; XLSX and PDF cannot be returned. The view is brought to the front first.',
+  description: 'Runs a view\'s own Export dialog: image formats (png, jpeg, webp, svg), data formats (csv, xlsx, json for tables and crosstab; Newick nwk for the tree; geojson for maps; fasta/mega for sequences; csv for the heatmap), as that view offers (call with no format to learn them: the result lists formats). With download true (default) the file is saved by the browser as filename + extension. With download false nothing is saved and the content is returned instead: text formats (svg, csv, json, nwk, geojson, fasta) as text, images as an image; XLSX cannot be returned. The view is brought to the front first.',
   inputSchema: {
     type: 'object',
     properties: {

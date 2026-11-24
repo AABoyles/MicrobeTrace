@@ -6,7 +6,7 @@ export default {
   name: 'open_session',
   title: 'Open a session file',
   description: 'Opens a saved session, replacing the current data: a MicrobeTrace session (.microbetrace JSON), an HIV-TRACE output (.hivtrace/.json with trace_results) or a GHOST output, given as text in contents, or a zip containing one as contentsBase64. extension (microbetrace, hivtrace, zip) is guessed from the content when auto. ' +
-    'Waits for the network to load and returns the summary. For a .microbetracestyle file use apply_style.',
+    'Waits for the network to load and returns the summary.',
   inputSchema: obj({
     contents: str('The file\'s JSON text'),
     contentsBase64: str('The file\'s bytes, base64-encoded (for a zip)'),

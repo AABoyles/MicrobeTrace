@@ -104,7 +104,7 @@ test('File › New asks to start a new session, says what goes, and offers to sa
   // Save names its formats, under a label
   const save = page.locator('#session-save-modal');
   await expect(save.locator('label[for="save-file-format"]')).toHaveText('Format');
-  expect(await save.locator('#save-file-format option').allTextContents()).toEqual(['MicrobeTrace session', 'HIV-TRACE', 'Style only']);
+  expect(await save.locator('#save-file-format option').allTextContents()).toEqual(['MicrobeTrace session', 'HIV-TRACE']);
   expect(await save.locator('#save-file-format').inputValue()).toBe('microbetrace');
   await save.locator('.btn-close').click();
   await expect(save).toBeHidden();

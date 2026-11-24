@@ -93,7 +93,6 @@ export function mount(root, ctx) {
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([headers].concat(rows)), title().slice(0, 31));
       XLSX.writeFile(workbook, name + '.xlsx');
     },
-    pdf: name => MT.tablesPDF('Crosstab: ' + title(), [{ headers, rows: rows.map(row => row.map(cell => cell + '')) }], name),
     json: name => {
       const objects = rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
       MT.exportBlob(JSON.stringify(objects), 'application/json', name + '.json');

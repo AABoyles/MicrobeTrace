@@ -6,7 +6,7 @@
 // stays put; small alignments; sort arrows beside their own titles; and one
 // meaning per icon.
 const { test, expect } = require('@playwright/test');
-const { watchErrors, open, fixtures, launchView, closeView, waitForModal } = require('./helpers');
+const { watchErrors, open, fixtures, launchView, closeView } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -146,17 +146,8 @@ test('the node color table is padded like the link table, its drops beside their
   expect(Math.abs((swatch.top + swatch.bottom) / 2 - (drop.top + drop.bottom) / 2)).toBeLessThan(3);
 });
 
-test('the style file button lines up, and a disabled toolbar button stays solid', async () => {
+test('a disabled toolbar button stays solid', async () => {
   await launched();
-  await page.click('#SettingsTab');
-  await waitForModal(page, '#global-settings-modal');
-  const dialog = page.locator('#global-settings-modal');
-  await dialog.locator('.nav-link', { hasText: 'Styling' }).click();
-  const button = await box(dialog.locator('label[for="apply-style"]'));
-  const other = await box(dialog.locator('select[data-setting="node-color-variable"]'));
-  expect([Math.round(button.left), Math.round(button.right)]).toEqual([Math.round(other.left), Math.round(other.right)]);
-  await dialog.locator('.btn-close').click();
-  await expect(dialog).toBeHidden();
   await page.evaluate(() => MT.settings.set('node-timeline-variable', 'date'));
   const pin = page.locator('.lm_content:has(.network-view) .view-controls .btn:disabled').first();
   await expect(pin).toBeVisible();

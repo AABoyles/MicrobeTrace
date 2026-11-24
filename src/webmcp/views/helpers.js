@@ -384,7 +384,7 @@ export async function runExport(item, { format, filename, scale, quality, downlo
   };
   let base;
   try {
-    // Resolves once the file is saved; a view that saves another way (XLSX, PDF) never reaches saveAs
+    // Resolves once the file is saved; a view that saves another way (XLSX) never reaches saveAs
     base = await exporter.run({ filetype: chosen.value, filename, scale, quality });
   } finally {
     m.saveAs = original;
