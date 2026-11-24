@@ -180,13 +180,15 @@ test('Pivot and autorotate have icons of their own', async () => {
   await launchView(page, 'crosstab');
   await expect(page.locator('button[title="Pivot Crosstab"] .bi-arrow-left-right')).toBeVisible();
   await closeView(page, 'crosstab');
-  await launchView(page, 'globe');
+  await launchView(page, 'geo_map');
+  await page.evaluate(() => MT.settings.set('map-projection', 'globe'));
   const toggle = page.locator('button[title="Toggle Autorotation"]');
   await expect(toggle.locator('.bi-play-fill')).toBeVisible();
   await toggle.click();
   await expect(toggle.locator('.bi-pause-fill')).toBeVisible();
   await toggle.click();
   await expect(toggle.locator('.bi-play-fill')).toBeVisible();
-  await closeView(page, 'globe');
+  await page.evaluate(() => MT.settings.set('map-projection', 'mercator'));
+  await closeView(page, 'geo_map');
   expect(errors).toEqual([]);
 });

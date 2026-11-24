@@ -74,8 +74,6 @@
     "golden-layout": "^2.6.0",
     "html5sortable": "^0.14.0",
     "jszip": "^3.10.2",
-    "leaflet": "^1.9.4",
-    "leaflet.markercluster": "^1.5.3",
     "papaparse": "^5.7.0",
     "patristic": "^0.6.0",
     "plotly.js": "^4.1.2",

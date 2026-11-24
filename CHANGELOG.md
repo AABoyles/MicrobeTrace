@@ -13,6 +13,13 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 
 - A Newick tree loads together with a FASTA file of the same IDs; it used to fail with "source.add is not a function". When one file can't be read, the load is reported as failed only after the other files have finished.
 
+### Maps
+
+- **One map, drawn with d3, replaces the Map, Choropleth and Globe views.** Its Projection setting draws it flat, as the United States (with Alaska and Hawaii inset) or as a globe, which turns when dragged and is shaded to look round. Shading (under Layers) colors countries, states or counties by how many nodes each holds, counted by the Country, State or County field on the Data tab, under a legend. The arrow keys pan (or turn the globe), + and - zoom, and there are Zoom In and Zoom Out buttons. Sessions that had the globe or the choropleth open the map in that mode, with their settings.
+- The map works offline and asks nothing of any other server: the street and satellite background tiles are gone, and the page's security policy allows no other hosts. Leaflet, its marker clusters and the `map` bundle are gone; nodes at the same place can still be spread apart with Jitter.
+- `data/stars.json`, the globe's star background, of unrecorded source and licence, is gone.
+- A GeoJSON file that can't be read says so, rather than failing silently.
+
 ### Removed
 
 - PDF export from the Aggregation and Crosstab views. CSV and Excel export remain, and the browser can print a view to PDF. The 1.9 MB `pdfmake` bundle and its dependency are gone.

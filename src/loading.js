@@ -17,6 +17,7 @@
 import { MTDates } from './dates.js';
 import { MTGraph } from './graph.js';
 import { MTSessionFormat } from './session-format.js';
+import { rewind, layoutViews, upgradeMapSettings } from './geo.js';
 
 export function installLoading(MT, env) {
 
@@ -118,6 +119,9 @@ MT.applySession = oldSession => {
     oldSession.style
   );
   if (oldSession.layout) env.session.layout = oldSession.layout;
+  // Sessions from when the globe and the choropleth were views of their own
+  // keep their settings, as the map's
+  upgradeMapSettings(env.session.style.widgets, [...layoutViews(env.session.layout), env.session.style.widgets['default-view']]);
   env.session.meta.startTime = Date.now();
   MT.session.restoreData(oldSession.data);
   if(oldSession.network) env.session.network = oldSession.network;
@@ -471,24 +475,24 @@ MT.align = params => {
   });
 };
 
+// The geodata in data/, fetched once (a request made while another is under way
+// waits for it) and kept in temp.mapData by name. GeoJSON comes with its
+// polygons wound as d3 needs them (see rewind in geo.js). A failed fetch is
+// forgotten, so the next request tries again.
+const mapRequests = {};
 MT.getMapData = type => {
-  return new Promise(resolve => {
-    let parts = type.split(".");
-    let name = parts[0],
-        format = parts[1];
-    if (env.temp.mapData[name]) {
-      return resolve(env.temp.mapData[name]);
-    }
-    fetch("data/" + type).then(response => format === "json" ? response.json() : response.text()).then(response => {
-      if (format === "csv") {
-        env.temp.mapData[name] = Papa.parse(response, { header: true }).data;
-      }
-      if (format === "json") {
-        env.temp.mapData[name] = response;
-      }
-      resolve(env.temp.mapData[name]);
-    });
-  });
+  const [name, format] = type.split(".");
+  if (env.temp.mapData[name]) return Promise.resolve(env.temp.mapData[name]);
+  if (!mapRequests[type]) {
+    mapRequests[type] = fetch("data/" + type)
+      .then(response => {
+        if (!response.ok) throw new Error("Could not load data/" + type + " (HTTP " + response.status + ")");
+        return format === "json" ? response.json() : response.text();
+      })
+      .then(data => env.temp.mapData[name] = format === "csv" ? Papa.parse(data, { header: true }).data : rewind(data))
+      .finally(() => delete mapRequests[type]);
+  }
+  return mapRequests[type];
 };
 
 // Choosing a view's variables from the data. Fields that MicrobeTrace keeps
@@ -552,26 +556,6 @@ MT.reportDateColumns = (items, fields) => {
   if (lines.length) MT.toast.warning(lines.join('<br>'), 15);
 };
 
-// The online tile layers the map views offer
-MT.tileLayers = () => ({
-  basemap: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 20
-  }),
-  satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
-    maxZoom: 19
-  })
-});
-
-// Adds a map's layer and removes it, as `show` says
-MT.showLayer = (map, layer, show) => {
-  if (!layer) return;
-  if (show && !map.hasLayer(layer)) layer.addTo(map);
-  if (!show && map.hasLayer(layer)) layer.remove();
-};
-
 // Lets the user add GeoJSON files to a map: each file chosen with `input` is
 // given to add(data, color), which draws it and returns { setColor(color),
 // remove() }. Each is listed in `list` with a color picker and a remove
@@ -602,24 +586,10 @@ MT.geoJSONUpload = (input, list, add, color = '#000000') => {
           layer.remove();
         });
         list.append(name, colorCell);
-      });
+      }).catch(() => MT.toast.error('"' + MT.escape(file.name) + '" could not be read as GeoJSON.'));
     });
     input.value = '';
   });
-};
-
-// MT.geoJSONUpload onto a Leaflet map. Returns the set of the added layers.
-MT.leafletGeoJSONUpload = (input, list, map) => {
-  const added = new Set();
-  MT.geoJSONUpload(input, list, (data, color) => {
-    const layer = L.geoJSON(data, { color, weight: 0.75, fillColor: '#fafaf8', fillOpacity: 0.5 }).addTo(map);
-    added.add(layer);
-    return {
-      setColor: color => layer.setStyle({ color }),
-      remove: () => { layer.remove(); added.delete(layer); }
-    };
-  });
-  return added;
 };
 
 // Placing nodes on a map. The kinds of location field, from the least
@@ -636,10 +606,14 @@ MT.pickLocationFields = (settings, prefix) => {
   });
 };
 
-// Where each of `nodes` is, as a Map of _id to [lat, lon]. field(kind) is
-// the node field holding that kind of location (or a latitude, 'lat', or
-// longitude, 'lon'), or null.
-MT.locateNodes = async (nodes, field) => {
+// What each node is at, by kind of location: an object of functions, one for
+// each kind whose field is chosen, each taking a node and returning the
+// country, state or county (a GeoJSON feature) or zipcode (a row of
+// zipcodes.csv) it names, or undefined. field(kind) is the node field holding
+// that kind of location, or null. A county is matched by its FIPS code, or by
+// name within the node's state. The map places nodes with these, and shades
+// regions by them.
+MT.placeFinders = async field => {
   const files = {
     countries: field('country') && 'countries.json',
     states: (field('state') || field('county')) && 'states.json',
@@ -662,48 +636,57 @@ MT.locateNodes = async (nodes, field) => {
     const number = parseFloat(value);
     return index.get(String(value)) || (isFinite(number) && index.get(String(number))) || undefined;
   };
-  const at = place => place && [parseFloat(place._lat), parseFloat(place._lon)];
-  const coordinate = (value, negative) => typeof value === 'string' ? (value.toUpperCase().includes(negative) ? -1 : 1) * parseFloat(value) : value;
 
-  const places = {};
+  const find = {};
   if (data.countries) {
     const i = index(data.countries.features, f => [f.id, f.properties.name]);
-    places.country = d => { const c = lookup(i, d[field('country')]); return c && at(c.properties); };
+    find.country = d => lookup(i, d[field('country')]);
   }
-  let stateOf = () => undefined;
   if (data.states) {
     const i = index(data.states.features, f => [f.properties.usps, f.properties.name, f.properties.name.toLowerCase()]);
-    stateOf = d => {
+    const state = d => {
       const v = field('state') && d[field('state')];
       if (v == null || v === '') return;
       return lookup(i, v) || lookup(i, String(v).toUpperCase()) || lookup(i, String(v).toLowerCase());
     };
-    if (field('state')) places.state = d => { const s = stateOf(d); return s && at(s.properties); };
-  }
-  if (data.counties) {
-    const i = index(data.counties.features, f => [f.properties.fips]);
-    places.county = d => {
-      const v = d[field('county')];
-      let county = lookup(i, v);
-      // Otherwise by name, within the node's state
-      if (!county && typeof v === 'string' && v) {
-        const state = stateOf(d), name = v.toLowerCase();
-        if (state) county = data.counties.features.find(c => c.properties.state === state.properties.usps &&
+    if (field('state')) find.state = state;
+    if (data.counties) {
+      const counties = index(data.counties.features, f => [f.properties.fips]);
+      find.county = d => {
+        const v = d[field('county')];
+        const county = lookup(counties, v);
+        if (county || typeof v !== 'string' || !v) return county;
+        // Otherwise by name, within the node's state
+        const s = state(d), name = v.toLowerCase();
+        return s && data.counties.features.find(c => c.properties.state === s.properties.usps &&
           (c.properties.name.includes(name) || name.includes(c.properties.name)));
-      }
-      return county && at(county.properties);
-    };
+      };
+    }
   }
   if (data.zipcodes) {
     const i = index(data.zipcodes, z => [z.zipcode]);
-    places.zipcode = d => at(lookup(i, d[field('zipcode')]));
+    find.zipcode = d => lookup(i, d[field('zipcode')]);
   }
+  return find;
+};
+
+// Where each of `nodes` is, as a Map of _id to [lat, lon]: the most precise
+// place it has (see MT.locationKinds), or its latitude and longitude. field is
+// as for MT.placeFinders, and also gives the latitude ('lat') and longitude
+// ('lon') fields.
+MT.locateNodes = async (nodes, field) => {
+  const find = await MT.placeFinders(field);
+  const at = place => {
+    const p = place && (place.properties || place);
+    return p && [parseFloat(p._lat), parseFloat(p._lon)];
+  };
+  const coordinate = (value, negative) => typeof value === 'string' ? (value.toUpperCase().includes(negative) ? -1 : 1) * parseFloat(value) : value;
   const lat = field('lat'), lon = field('lon');
   const positions = new Map();
   nodes.forEach(d => {
     let position;
     MT.locationKinds.forEach(kind => {
-      const p = places[kind] && places[kind](d);
+      const p = find[kind] && at(find[kind](d));
       if (p && isFinite(p[0]) && isFinite(p[1])) position = p;
     });
     if (lat && lon) {

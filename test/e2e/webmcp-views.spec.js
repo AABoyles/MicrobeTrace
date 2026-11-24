@@ -82,7 +82,7 @@ test('network control and layout', async () => {
 });
 
 test('images of every view', async () => {
-  const views = ['network', 'histogram', 'scatterplot', 'heatmap', 'table', 'phylogenetic_tree', 'bubbles', 'timeline', 'waterfall', 'sequences', 'crosstab', 'geo_map', 'globe'];
+  const views = ['network', 'histogram', 'scatterplot', 'heatmap', 'table', 'phylogenetic_tree', 'bubbles', 'timeline', 'waterfall', 'sequences', 'crosstab', 'geo_map'];
   for (const view of views) {
     await call('open_view', { view });
     const r = await agent('get_view_image', { view, maxWidth: 600 });

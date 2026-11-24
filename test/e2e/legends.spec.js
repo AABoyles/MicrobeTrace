@@ -72,30 +72,24 @@ test('legends show values as the data has them', async () => {
   expect((await legend('link')).map(r => r.label).sort()).toEqual(['Genetic Distance', 'links.csv']);
 });
 
-test('the map colors links by their first file, as the legend does', async () => {
+test('the map colors links by their first file, as the legend does, and docks it', async () => {
   const byValue = new Map((await legend('link')).map(r => [r.value, r.color]));
   await launchView(page, 'geo_map');
   // Each link drawn: its first file, and its color
-  const strokes = () => page.evaluate(() => temp.geoMap && temp.geoMap.layers.links ? temp.geoMap.layers.links.getLayers().map(l => [l.options.data.origin[0], l.options.color]) : []);
+  const strokes = () => page.evaluate(() => temp.geoMap ? temp.geoMap.drawn.links.map(l => [l.d.origin[0], l.stroke]) : []);
   await expect.poll(async () => (await strokes()).length).toBeGreaterThan(100);
   for (const [origin, color] of await strokes()) expect([origin, color]).toEqual([origin, byValue.get(origin)]);
   expect(await docked('geo_map', 'link')).toBe(true);
-  await closeView(page, 'geo_map');
-});
-
-test('the globe colors links from the link legend, and docks it', async () => {
-  const colors = (await legend('link')).map(r => r.color);
-  await launchView(page, 'globe');
-  await expect.poll(() => page.evaluate(() => temp.globe && temp.globe.drawn && temp.globe.drawn.links)).toBeGreaterThan(0);
-  const drawn = await page.evaluate(() => temp.globe.drawn.linkColors);
-  expect(drawn.length).toBeGreaterThan(0);
-  expect(drawn.every(c => colors.includes(c))).toBe(true);
-  expect(await docked('globe', 'link')).toBe(true);
+  // On the globe too
+  await page.evaluate(() => MT.settings.set('map-projection', 'globe'));
+  await expect.poll(() => page.evaluate(() => temp.geoMap.drawn.globe && temp.geoMap.drawn.links.length)).toBeGreaterThan(0);
+  for (const [origin, color] of await strokes()) expect([origin, color]).toEqual([origin, byValue.get(origin)]);
   // Without a color variable, the link color
   await page.evaluate(() => MT.settings.set('link-color-variable', 'None'));
-  await expect.poll(() => page.evaluate(() => temp.globe.drawn.linkColors)).toEqual([await page.evaluate(() => MT.settings.get('link-color'))]);
-  await page.evaluate(() => MT.settings.set('link-color-variable', 'origin'));
-  await closeView(page, 'globe');
+  const color = await page.evaluate(() => MT.settings.get('link-color'));
+  await expect.poll(async () => [...new Set((await strokes()).map(s => s[1]))]).toEqual([color]);
+  await page.evaluate(() => { MT.settings.set('link-color-variable', 'origin'); MT.settings.set('map-projection', 'mercator'); });
+  await closeView(page, 'geo_map');
 });
 
 test('the histogram colors bars by the legend of its dataset, the only one it docks', async () => {

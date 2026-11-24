@@ -30,14 +30,12 @@ const content = {
   crosstab: '#crosstab-field-x option', // the table waits for two fields to be chosen
   aggregation: '.tabulator-row',
   phylogenetic_tree: 'svg circle',
-  geo_map: '.leaflet-container',
-  globe: 'canvas',
+  geo_map: 'canvas.map-canvas',
   bubbles: 'svg circle',
   gantt: 'svg',
   timeline: 'svg',
   waterfall: '.waterfall-clusters .list-group-item',
   sequences: '.sequences-panel canvas',
-  choropleth: '.leaflet-container',
   conflicts: '.view-message:not([hidden])' // the fixture's files don't disagree
 };
 

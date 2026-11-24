@@ -196,7 +196,7 @@ test('icon-only buttons are named, show their name on keyboard focus, and are bi
 
 test('every view\'s icon-only buttons are named and at least 24 by 24 px', async () => {
   const views = ['table', 'aggregation', 'crosstab', 'histogram', 'scatterplot', 'heatmap', 'timeline', 'gantt', 'bubbles',
-    'flow_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'choropleth', 'globe', 'sequences', 'conflicts'];
+    'flow_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'sequences', 'conflicts'];
   for (const view of views) await launchView(page, view);
   // Lets each view finish laying out its toolbar before the sizes are read; no
   // event marks that

@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#1a1d20" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-title" content="MicrobeTrace">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' *.basemaps.cartocdn.com server.arcgisonline.com data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none';">
   <title>MicrobeTrace</title>
   <link rel="manifest" href="manifest.json">
   <link rel="canonical" href="https://aaboyles.github.io/MicrobeTrace/">
@@ -89,8 +89,6 @@
             <button type="button" class="dropdown-item viewbutton" data-href="conflicts">Conflicts</button>
             <h6 class="dropdown-header">Maps</h6>
             <button type="button" class="dropdown-item viewbutton" data-href="geo_map">Map</button>
-            <button type="button" class="dropdown-item viewbutton" data-href="choropleth">Choropleth</button>
-            <button type="button" class="dropdown-item viewbutton" data-href="globe">Globe</button>
             <h6 class="dropdown-header">Phylogenetics</h6>
             <button type="button" class="dropdown-item viewbutton" data-href="phylogenetic_tree">Phylogenetic Tree</button>
             <button type="button" class="dropdown-item viewbutton" data-href="sequences">Sequences</button>
@@ -601,7 +599,7 @@
             <li><a href="#help-views" data-help="help-views">The views</a></li>
             <li><a href="#help-thresholds" data-help="help-thresholds">Thresholds and links</a></li>
             <li><a href="#help-saving" data-help="help-saving">Saving, stashing and exporting</a></li>
-            <li><a href="#help-maps" data-help="help-maps">Maps and tiles</a></li>
+            <li><a href="#help-maps" data-help="help-maps">Maps</a></li>
             <li><a href="#help-shortcuts" data-help="help-shortcuts">Mouse and keyboard shortcuts</a></li>
           </ul>
 
@@ -623,7 +621,7 @@
             <li><strong>Network</strong>: nodes and links; color, size and filter them by any column.</li>
             <li><strong>Table</strong>: the nodes or links as rows. <strong>Aggregation</strong>, <strong>Crosstab</strong>, <strong>Bubbles</strong>, <strong>Histogram</strong>, <strong>Scatterplot</strong> and <strong>Flow Diagram</strong>: summaries of columns.</li>
             <li><strong>Sequences</strong>: the aligned sequences. <strong>Phylogenetic Tree</strong> and <strong>Heatmap</strong>: need sequences or a distance matrix (the tree can also come from a Newick file).</li>
-            <li><strong>Map</strong>, <strong>Globe</strong> and <strong>Choropleth</strong>: need latitude and longitude, or country, state, county or zipcode columns.</li>
+            <li><strong>Map</strong>: needs latitude and longitude, or country, state, county or zipcode columns. It can be flat, the United States, or a globe, and can shade countries, states or counties by their counts of nodes.</li>
             <li><strong>Timeline</strong> and <strong>Gantt</strong>: need a column of dates.</li>
             <li><strong>Waterfall</strong>: each cluster's links. <strong>Conflicts</strong>: where files disagree.</li>
           </ul>
@@ -638,8 +636,8 @@
             <li>Each view's download button exports what it shows: an image (PNG, JPEG, SVG), or for the tree a Newick file. The Table view exports its rows.</li>
           </ul>
 
-          <h3 id="help-maps" class="h6">Maps and tiles</h3>
-          <p>The map's boundaries and places come with MicrobeTrace and work offline. The background map layers (street, satellite and so on) are <strong>tiles downloaded from the Internet</strong> when you turn them on, so they show nothing without a connection. Draw nodes and links on a blank background, or with the country, state and county outlines, to stay offline.</p>
+          <h3 id="help-maps" class="h6">Maps</h3>
+          <p>Everything the map draws (its countries, states, counties and places) comes with MicrobeTrace, so it works offline and asks nothing of any other server. Choose its projection in its settings: <strong>Flat</strong>, <strong>United States</strong> (with Alaska and Hawaii inset) or <strong>Globe</strong>. Drag it to move it (or turn the globe), and zoom with the wheel or the toolbar. Under <strong>Shading</strong>, it can color countries, states or counties by how many nodes each holds. To draw other places, load your own GeoJSON file under <strong>User-Provided</strong>.</p>
 
           <h3 id="help-shortcuts" class="h6">Mouse and keyboard shortcuts</h3>
           <ul>
@@ -705,7 +703,7 @@
           <ul id="privacy-statement" aria-labelledby="privacy-heading">
             <li><strong>Your data stays in this browser.</strong> Files you load are processed on this computer and are never uploaded.</li>
             <li><strong>Stored on this computer:</strong> stashed sessions (and autostashes, if you turn Session Recovery on) are kept unencrypted in this browser's IndexedDB, with your accepted license. They include sequences and case attributes, last after the tab closes, and can be read by anyone using this browser profile. The app's offline copy is kept in the browser cache, and the WebMCP switch is remembered for the tab only.</li>
-            <li><strong>Third parties:</strong> only when you turn on a map base layer, tiles are requested from CARTO (street map) or Esri (satellite), who can see your IP address and the area you view. Nothing else is sent anywhere, and there is no analytics or tracking.</li>
+            <li><strong>Third parties:</strong> none. Nothing is sent anywhere, and there is no analytics or tracking.</li>
             <li><strong>AI agents:</strong> if you switch on WebMCP, agents in this browser can read and change the whole session, including its data. It is off by default and lasts for this tab only.</li>
           </ul>
           <p>

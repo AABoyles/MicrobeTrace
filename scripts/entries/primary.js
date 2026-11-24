@@ -3,7 +3,7 @@
 // the app's classic scripts use. Nothing here is a module for the app: src/ and
 // components/ still read `d3`, `bootstrap` and the rest as globals.
 //
-// The other libraries are lazy bundles (xlsx, table, plotly, map, tree,
+// The other libraries are lazy bundles (xlsx, table, plotly, tree,
 // alignment): MT.loadLibrary fetches each when a feature first needs it (#324).
 import * as d3Namespace from 'd3';
 import * as symbolExtra from 'd3-symbol-extra';

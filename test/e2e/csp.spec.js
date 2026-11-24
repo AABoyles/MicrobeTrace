@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const { watchErrors, loadNetwork, launchView, closeView } = require('./helpers');
 
 const views = ['network', 'table', 'heatmap', 'histogram', 'scatterplot', 'flow_diagram', 'crosstab', 'aggregation',
-  'phylogenetic_tree', 'geo_map', 'globe', 'bubbles', 'gantt', 'timeline', 'waterfall', 'sequences', 'choropleth', 'conflicts', 'files'];
+  'phylogenetic_tree', 'geo_map', 'bubbles', 'gantt', 'timeline', 'waterfall', 'sequences', 'conflicts', 'files'];
 
 test('the policy has no unsafe-inline in script-src, in the header or the meta tag', async ({ request }) => {
   const response = await request.get('/index.html');

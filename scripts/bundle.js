@@ -55,15 +55,6 @@ const bundles = [
     ]
   },
   { name: 'plotly', lazy: true, styles: [] },
-  {
-    name: 'map',
-    lazy: true,
-    styles: [
-      'node_modules/leaflet/dist/leaflet.css',
-      'node_modules/leaflet.markercluster/dist/MarkerCluster.css',
-      'node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css'
-    ]
-  },
   { name: 'tree', lazy: true, styles: [] },
   { name: 'alignment', lazy: true, styles: [] }
 ];
@@ -71,7 +62,7 @@ const bundles = [
 // Every package whose code ends up in dist/ or vendor/
 const versionedPackages = [
   '@cosmos.gl/graph', 'alignment-viewer', 'bioseq', 'bootstrap', 'bootstrap-icons', 'd3',
-  'd3-symbol-extra', 'golden-layout', 'html5sortable', 'jszip', 'leaflet', 'leaflet.markercluster',
+  'd3-symbol-extra', 'golden-layout', 'html5sortable', 'jszip',
   'papaparse', 'patristic', 'plotly.js', 'tabulator-tables', 'tidytree', 'tom-select', 'xlsx'
 ];
 

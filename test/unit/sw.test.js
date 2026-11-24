@@ -51,7 +51,7 @@ test("the shell is the app's startup, not the whole app (#343)", { skip }, () =>
   }
   // What is cached when first used: the lazy libraries, the other views, cosmos.gl
   const lazy = fs.readdirSync(path.join(root, "dist")).filter(f => /^bundle\.(?!primary)/.test(f)).map(f => "dist/" + f);
-  assert.ok(lazy.length >= 7, "the lazy bundles are missing");
+  assert.ok(lazy.length >= 5, "the lazy bundles are missing");
   for (const file of [...lazy, "vendor/cosmos.min.js", "components/network.html", "components/network.js", "components/table.js"]) {
     assert.ok(all.includes(file), file + " is not in the app");
     assert.ok(!shell.includes(file), file + " is precached, but it is loaded when first used");

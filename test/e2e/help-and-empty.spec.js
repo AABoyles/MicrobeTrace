@@ -86,7 +86,7 @@ test('Help opens the built-in help with no connection', async () => {
   await page.context().setOffline(false);
 });
 
-test('a map\'s Read More opens the help section on tiles', async () => {
+test('a link to the help on maps opens that section', async () => {
   await expect(page.locator('#help-modal')).toBeHidden();
   await page.locator('a[data-help="help-maps"]').first().evaluate(a => a.click());
   await waitForModal(page, '#help-modal');

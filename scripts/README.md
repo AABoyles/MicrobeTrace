@@ -10,10 +10,9 @@ _A directory for build scripts_
   [`dist/`](https://github.com/aaboyles/MicrobeTrace/tree/master/dist)). Each script
   bundle is built by esbuild from an entry module in
   [`entries/`](https://github.com/aaboyles/MicrobeTrace/tree/master/scripts/entries)
-  (`primary.js` for what the page needs at once, and one for each lazy bundle: `xlsx`, `table`, `plotly`, `map`, `tree`, `alignment`): it imports the npm packages and assigns the
+  (`primary.js` for what the page needs at once, and one for each lazy bundle: `xlsx`, `table`, `plotly`, `tree`, `alignment`): it imports the npm packages and assigns the
   globals the app's classic scripts use (`d3`, `bootstrap`, `Plotly`, ...), so to add a
-  library you import it there. Order matters where a plugin patches a global, as with
-  leaflet.markercluster, which needs `L` first (`entries/leaflet-global.js`). Plotly is
+  library you import it there. Plotly is
   built from
   [`plotly-bundle.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/plotly-bundle.js)
   so it carries exactly the traces MicrobeTrace draws (Plotly's prebuilt partial
