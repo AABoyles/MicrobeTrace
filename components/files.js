@@ -4,7 +4,7 @@
 // xlsx bundle is not a static `libraries` export: whether it is needed depends on the session's
 // files, so VIEW_LIBRARIES.files in views.js stays a function (#339).
 export function mount(root, app) {
-  const { MT, settings, events } = app;
+  const { MT, settings } = app;
 
 
   // How long the loading dialog may take to open before the load is given up,
@@ -156,7 +156,7 @@ export function mount(root, app) {
     if (extension == 'zip' || extension == 'xlsx' || extension == 'xls') {
       try {
         await MT.loadLibrary('xlsx');
-      } catch (error) {
+      } catch {
         MT.toast.error('"' + MT.escape(rawfile.name) + '" could not be read, because the spreadsheet library could not be loaded. Check your connection and try again.');
         return;
       }
@@ -252,7 +252,7 @@ export function mount(root, app) {
       <p class="file-detected small text-body-secondary mb-0 mt-1" hidden></p>
       <p class="file-problem small text-danger mb-0 mt-1" hidden></p>
       <div class="row w-100">
-        ${[1, 2, 3].map(i => `<div class="col-4 file-field">
+        ${[1, 2, 3].map(() => `<div class="col-4 file-field">
           <label></label>
           <select class="form-select form-select-sm"></select>
         </div>`).join('')}

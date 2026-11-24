@@ -143,10 +143,4 @@ module.exports = [
     languageOptions: { ...common, sourceType: "commonjs", globals: { ...globals.node, ...globals.browser, ...appGlobals, ...libGlobals, layout: "readonly" } },
     rules,
   },
-  {
-    // components/files.js still has unused variables while another change edits it (#346).
-    // Once it is clean, delete this block.
-    files: ["components/files.js"],
-    rules: { "no-unused-vars": ["warn", unusedVars] },
-  },
 ];
