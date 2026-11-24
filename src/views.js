@@ -53,7 +53,7 @@ MT.createLayout = () => {
 // optionally `libraries`, and is loaded with import() rather than a script tag. Add a view's
 // name here when it is converted (and take its <script> tag out of its HTML). The rest are
 // classic scripts that call MT.registerView, being phased out.
-const MODULE_VIEWS = new Set();
+const MODULE_VIEWS = new Set(["histogram"]);
 // The imported modules, by view name
 const modules = {};
 
