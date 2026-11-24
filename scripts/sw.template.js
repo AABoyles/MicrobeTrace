@@ -16,20 +16,28 @@ const INDEX = new URL("index.html", scope).href;
 
 // Only the app shell is precached (#343): scripts/build-sw.js says what it holds.
 // The other files are cached by the fetch handler below the first time they are
-// fetched, and a new version fetches again the ones the old version had cached (warm).
+// fetched, and a new version fetches again the ones the old version had cached (warm,
+// run when it activates).
 self.addEventListener("install", event => {
   // Bypass the HTTP cache so a stale copy can't be frozen into the new version.
   // No skipWaiting() here: the page offers the reload instead. (With no older
   // worker there is nothing to wait for, so the first install activates at once.)
   event.waitUntil(caches.open(CACHE).then(cache =>
-    cache.addAll(PRECACHE.map(url => new Request(new URL(url, scope).href, { cache: "reload" }))).then(() => warm(cache))));
+    cache.addAll(PRECACHE.map(url => new Request(new URL(url, scope).href, { cache: "reload" })))));
 });
 
 // Fetches again, for the new version, the files the old versions cached on use (the
 // other views and the lazy libraries), so that what a person has opened keeps opening
 // offline after an update. Best effort: a file that has gone or can't be fetched is
-// left for its first use, and a failure here never fails the install. The data/ and
+// left for its first use, and a failure here never fails the update. The data/ and
 // demo/ files are carried over instead (see CARRIED), since they are not code.
+//
+// It runs in activate, not install (#343): install finishes when the shell is cached, so
+// the page can offer the update at once instead of after re-fetching every view and
+// library a person ever opened. The trade-off: between the new version taking over and
+// warm finishing, a file not yet re-fetched is fetched from the network on use (and kept),
+// so someone who goes offline in that short window can miss a view they had open before.
+// The old caches are deleted only when warm is done, because it reads them.
 const warm = cache => caches.keys()
   .then(keys => Promise.all(keys.filter(k => k.startsWith(PREFIX) && k !== CACHE).map(name => caches.open(name).then(previous => previous.keys()))))
   .then(lists => {
@@ -58,8 +66,10 @@ self.addEventListener("activate", event => {
         Promise.all(old.map(name => caches.open(name).then(previous => previous.keys().then(requests =>
           Promise.all(requests.filter(r => CARRIED.test(new URL(r.url).pathname)).map(r =>
             cache.match(r).then(hit => hit || previous.match(r).then(response => response && cache.put(r, response)))))))))
+        // Take over first, so the page reloads without waiting on the warm-up
+        .then(() => self.clients.claim())
+        .then(() => warm(cache))
         .then(() => Promise.all(old.map(k => caches.delete(k))))))
-      .then(() => self.clients.claim())
   );
 });
 
