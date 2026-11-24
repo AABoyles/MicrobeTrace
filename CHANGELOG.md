@@ -27,6 +27,7 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 - `createMT` builds `MT` for the page and for the tests, which import it instead of running the code in a `vm` context. `test/app-files.js` is gone. (#341)
 - Bundles are built by esbuild from entry modules in `scripts/entries/`, and are rebuilt when a hash of their inputs changes, not when file times change. The Docker build installs dependencies once and prunes the dev dependencies before it finishes. (#342, #344, #345)
 - ESLint reports no warnings: `no-unused-vars` and `eqeqeq` are errors, and `npm run typecheck` runs tsc over the JSDoc-annotated modules in CI. (#346)
+- The Docker image sends files compressed. `server.js` only serves `.br` and `.gz` copies made in advance, and the image had none, so it sent every file in full (593 KB for `bundle.primary.js`, 157 KB as Brotli). `scripts/build-site.js` now writes the copies, so every built site has them. `npm run compress`, `npm run clean` and the `gzipper` dependency are gone, and `npm run build` runs `bundle`, `cache` and `site`. (#350)
 
 ## 0.7.1 (2026-11-20)
 
