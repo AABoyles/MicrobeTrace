@@ -2,9 +2,9 @@
 // Builds what the app loads but the repository doesn't hold (#325): dist/, fonts/
 // and most of vendor/ (npm run bundle), and sw.js (npm run cache). Run by
 // `npm start` and by the Playwright web server, so a fresh clone works after
-// `npm ci` alone. The bundles are rebuilt when they are missing or older than
-// package-lock.json or a script bundle.js reads (a pull that changed a dependency);
-// sw.js is cheap, so it is rewritten every time, which keeps its cache name in step
+// `npm ci` alone. The bundles are rebuilt when they are missing or when the hash
+// of what they are built from has changed (a pull that changed a dependency or a
+// script); sw.js is cheap, so it is rewritten every time, which keeps its cache name in step
 // with files edited since the last start.
 //
 // Fails with a hint when it needs to bundle but esbuild is missing, so that a
@@ -12,17 +12,23 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
+const { inputsHash } = require("./inputs-hash");
 
 const root = path.join(__dirname, "..");
-const mtime = file => fs.statSync(path.join(root, file), { throwIfNoEntry: false })?.mtimeMs ?? 0;
 
-// versions.json is written last by bundle.js, so it dates the build
-const built = mtime("dist/versions.json");
-// Everything bundle.js reads besides node_modules, so editing any of it rebuilds
-const inputs = ["package-lock.json", "scripts/bundle.js", "scripts/plotly-bundle.js", "scripts/buffer-shim.js",
-  "scripts/minify-css.js", "scripts/write-versions.js", "postcss.config.js"];
-const stale = !built || inputs.some(file => built < mtime(file))
-  || !fs.existsSync(path.join(root, "vendor/cosmos.min.js")) || !fs.existsSync(path.join(root, "fonts"));
+// bundle.js records a hash of its inputs in versions.json (scripts/inputs-hash.js,
+// #345). File times are no use here: git checkout and cache restores change them
+// without changing the content.
+function recordedHash() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(root, "dist/versions.json"), "utf8")).inputsHash;
+  } catch {
+    return undefined;
+  }
+}
+const stale = recordedHash() !== inputsHash()
+  || !fs.existsSync(path.join(root, "vendor/cosmos.min.js")) || !fs.existsSync(path.join(root, "fonts"))
+  || !["primary", "secondary", "pdf"].every(name => fs.existsSync(path.join(root, `dist/bundle.${name}.js`)));
 
 function run(script) {
   execFileSync(process.execPath, [path.join(__dirname, script)], { cwd: root, stdio: "inherit" });
