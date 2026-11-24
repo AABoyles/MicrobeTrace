@@ -28,7 +28,9 @@ const onMap = layer => page.evaluate(layer => {
   return !!layers[layer] && map.hasLayer(layers[layer]);
 }, layer);
 // The markers drawn (inside clusters too) and the links
+// (Empty until the view has mounted, which waits for Leaflet to load, #324)
 const markers = () => page.evaluate(() => {
+  if (!temp.geoMap) return [];
   const { map, layers } = temp.geoMap;
   if (!layers.nodes || !map.hasLayer(layers.nodes)) return [];
   return layers.nodes.getLayers().map(m => ({
@@ -37,6 +39,7 @@ const markers = () => page.evaluate(() => {
   }));
 });
 const lines = () => page.evaluate(() => {
+  if (!temp.geoMap) return 0;
   const { map, layers } = temp.geoMap;
   return layers.links && map.hasLayer(layers.links) ? layers.links.getLayers().length : 0;
 });
