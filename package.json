@@ -32,15 +32,18 @@
     "node": ">=26"
   },
   "scripts": {
+    "prestart": "node scripts/ensure-built.js",
     "start": "node server.js",
     "build": "npm run bundle && npm run cache && npm run compress",
-    "bundle": "scripts/bundle.sh",
+    "bundle": "node scripts/bundle.js",
     "cache": "node scripts/build-sw.js",
     "clean": "scripts/cleanup.sh",
     "site": "node scripts/build-site.js",
     "compress": "scripts/compress.sh",
-    "test": "node --test test/unit/*.test.js",
-    "coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='workers/**' --test-coverage-lines=64 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info test/unit/*.test.js",
+    "pretest": "node scripts/ensure-built.js",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"test/unit/*.test.js\" \"test/unit/*.test.mjs\"",
+    "precoverage": "node scripts/ensure-built.js",
+    "coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='workers/**' --test-coverage-lines=64 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"test/unit/*.test.js\" \"test/unit/*.test.mjs\"",
     "lint": "eslint .",
     "test:e2e": "playwright test",
     "update": "npm update && npm run bundle && npm run cache"

@@ -7,7 +7,7 @@ const assert = require('node:assert');
 const vm = require('vm');
 const fs = require('fs');
 const path = require('path');
-const APP_FILES = require('../app-files.js');
+const { APP_FILES, runAppFiles } = require('../app-files.js');
 
 const root = path.join(__dirname, '../..');
 const fixture = name => JSON.parse(fs.readFileSync(path.join(root, 'test/security', name), 'utf8'));
@@ -45,18 +45,12 @@ function load() {
   const ctx = {
     console: { log() {}, error() {}, warn() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTSessionFormat: require('../../src/session-format.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
-    MTGraph: require('../../src/graph.js'),
-    MTNodeSources: require('../../src/nodes.js'),
     d3: { schemePaired: ['#a6cee3', '#1f78b4'], schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c'] },
     document: stub()
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), ctx, { filename: path.join(root, file) });
+  runAppFiles(ctx);
   // MT.escape is defined in src/index.js, as the page loads: take it from there
   const escape = fs.readFileSync(path.join(root, 'src/index.js'), 'utf8').match(/const escape = (value => .*);\n/)[1];
   ctx.MT.escape = vm.runInContext('(' + escape + ')', ctx);

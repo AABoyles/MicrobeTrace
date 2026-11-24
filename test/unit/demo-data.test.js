@@ -5,7 +5,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const F = require('../../src/session-format.js');
+const F = require('../../src/session-format.js').MTSessionFormat;
 
 const demo = name => path.join(__dirname, '..', '..', 'demo', name);
 const lines = text => text.split(/\r?\n/).filter(line => line !== '');

@@ -12,3 +12,14 @@ test-results
 playwright-report
 coverage
 _site
+
+# Built from node_modules by `npm run bundle` and `npm run cache` (#325)
+dist/
+fonts/
+sw.js
+# vendor/ keeps its README and the bx-distance-models build (not on npm in a
+# loadable form: scripts/build-bx.sh); everything else in it is generated
+vendor/*
+!vendor/README.md
+!vendor/bx_distance_models.js
+!vendor/bx_distance_models_bg.wasm

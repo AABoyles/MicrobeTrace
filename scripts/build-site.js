@@ -5,7 +5,8 @@
 //
 //   node scripts/build-site.js [outDir]   (default: _site)
 //
-// The app shell comes from the service worker's precache list, so the two
+// Needs dist/, fonts/ and sw.js, so run `npm ci && npm run bundle && npm run cache`
+// first (#325). The app shell comes from the service worker's precache list, so the two
 // cannot drift apart. On top of that, the site needs the worker itself, the
 // map boundary files it caches on first use, the demo session and its pieces (loaded by
 // #demo and the WebMCP demo tool), package.json (read for the version shown

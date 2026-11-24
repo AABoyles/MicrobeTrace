@@ -18,9 +18,11 @@ MicrobeTrace began at the US Centers for Disease Control and Prevention (CDC), w
 ## To Run Your Own Server:
 
 ```sh
-npm ci --omit=dev && npm start      # http://localhost:5000 (PORT sets the port)
+npm ci && npm start                 # http://localhost:5000 (PORT sets the port)
 docker build -t microbetrace . && docker run -p 5000:5000 microbetrace
 ```
+
+`dist/`, `vendor/`, `fonts/` and `sw.js` are built from `node_modules`, not stored in the repository, so a copy of the repository does not run on its own: `npm start` builds them the first time (`scripts/ensure-built.js`, which needs the dev dependencies), the Docker image builds them, and to deploy to a static host run `npm ci && npm run bundle && npm run cache && npm run site` and publish `_site/`.
 
 The server serves only the files the app needs (the same list the GitHub Pages
 deploy publishes, `scripts/build-site.js`); anything else is a 404. `/health`
@@ -43,17 +45,17 @@ npm run test:e2e                  # end-to-end tests in Chromium (E2E_PORT sets 
 
 The build scripts (see [scripts/README.md](scripts/README.md)):
 
-* `npm run bundle` builds `dist/` and `vendor/` from `node_modules`. Run it after changing a dependency or `scripts/bundle.sh`, then commit the result. CI rebuilds them and fails if they differ.
-* `npm run cache` regenerates the service worker's precache list in `sw.js`. Run it after changing any file the app loads; `npm test` fails until you do.
+* `npm run bundle` builds `dist/`, `fonts/` and the generated files in `vendor/` from `node_modules`. None of them is committed; `npm start`, `npm test`, `npm run coverage` and the E2E web server run it when `dist/` is missing or older than `package-lock.json`, and CI, the Docker build and the Pages deploy run it. Run it yourself after changing a dependency or `scripts/bundle.js`.
+* `npm run cache` writes `sw.js` (also not committed) from `scripts/sw.template.js`, filling in the precache list and cache name from the files that exist, so run it after `bundle`. Edit the template, not `sw.js`.
 * `npm run compress` writes the `.br` and `.gz` copies of the largest files, which `server.js` serves when they exist. `npm run clean` removes them.
 * `npm run site` copies exactly the files the app needs into `_site/`.
 * `npm run build` runs `bundle`, `cache` and `compress`. `npm run update` updates the dependencies and then runs `bundle` and `cache`.
 
-**Deployment.** A push to `master` runs `.github/workflows/pages.yml`. It runs the CI workflow (`.github/workflows/ci.yml`: unit tests, the bundle check and the end-to-end tests) and, if those pass, publishes the output of `scripts/build-site.js` to GitHub Pages. Pull requests run the CI workflow alone.
+**Deployment.** A push to `master` runs `.github/workflows/pages.yml`. It runs the CI workflow (`.github/workflows/ci.yml`: unit tests and the end-to-end tests, on a fresh `npm run bundle && npm run cache`) and, if those pass, bundles the app (`npm run bundle && npm run cache`) and publishes the output of `scripts/build-site.js` to GitHub Pages. Pull requests run the CI workflow alone.
 
 **Browsers.** The app names Chrome, Firefox, Safari and Edge as the browsers to use. At startup it checks for WebAssembly, Web Workers and IndexedDB, and a browser without one of them gets a message saying which it lacks (`src/index.js`). The end-to-end tests run in Chromium only (`playwright.config.js`).
 
-**How the code fits together.** `index.html` is the one page: its menus, dialogs and Content-Security-Policy, which allows no inline scripts. `src/index.js` starts the page (the menus, global settings, color tables and global timeline), `src/common.js` (the session model and the work pipeline) and the classic scripts beside it hold what the views share: `src/loading.js` (reading files and sessions), `src/links-clusters.js`, `src/colors.js`, `src/export.js`, `src/views.js` (the layout and panels) and `src/ui.js`, each adding to the `MT` namespace, and `src/graph.js` and `src/nodes.js` hold the network and the values each file gives its nodes. Each view is an HTML fragment and a script in `components/`, which `src/views.js` loads into a golden-layout panel when the view opens. Heavy work runs in Web Workers in `workers/`, started with `MT.runWorker`: parsing, distances, alignment, trees and clustering. Third-party libraries are bundled into `dist/`, and those that workers must load are in `vendor/`. `sw.js` is the service worker that keeps the app working offline, and `server.js` serves the same files under `npm start`.
+**How the code fits together.** `index.html` is the one page: its menus, dialogs and Content-Security-Policy, which allows no inline scripts. `src/index.js` starts the page (the menus, global settings, color tables and global timeline), `src/common.js` (the session model and the work pipeline, also an ES module) and the other modules beside it hold what the views share: `src/loading.js` (reading files and sessions), `src/links-clusters.js`, `src/colors.js`, `src/export.js`, `src/views.js` (the layout and panels) and `src/ui.js`, each adding to the `MT` namespace, and `src/graph.js` and `src/nodes.js` hold the network and the values each file gives its nodes. Each view is an HTML fragment and a script in `components/`, which `src/views.js` loads into a golden-layout panel when the view opens. Heavy work runs in Web Workers in `workers/`, started with `MT.runWorker`: parsing, distances, alignment, trees and clustering. Third-party libraries are bundled into `dist/`, and those that workers must load are in `vendor/`. `sw.js` is the service worker that keeps the app working offline, and `server.js` serves the same files under `npm start`.
 
 More detail is in the READMEs next to the code: [`src/webmcp/`](src/webmcp/README.md), [`workers/`](workers/README.md), [`vendor/`](vendor/README.md), [`scripts/`](scripts/README.md), [`data/`](data/README.md), [`demo/`](demo/README.md), [`test/unit/`](test/unit/README.md), [`test/e2e/`](test/e2e/README.md), [`test/golden/`](test/golden/README.md) and [`test/security/`](test/security/README.md).
 

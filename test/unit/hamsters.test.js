@@ -1,7 +1,7 @@
 // Unit tests for the order of MT.runHamsters in src/links-clusters.js (#233).
 // Run with: npm test
 const test = require('node:test');
-const APP_FILES = require('../app-files.js');
+const { runAppFiles } = require('../app-files.js');
 const assert = require('node:assert');
 const vm = require('vm');
 const fs = require('fs');
@@ -20,14 +20,11 @@ function load({ directionality = true, tree = null, failTree = false } = {}) {
   const ctx = {
     console: { log() {}, error() {}, warn() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
     document: stub()
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(__dirname, '../../' + file), 'utf8'), ctx, { filename: path.join(__dirname, '../../' + file) });
+  runAppFiles(ctx);
   const MT = ctx.MT, log = [], warnings = [];
   ctx.session = { style: { widgets: { 'infer-directionality-false': !directionality } } };
   ctx.temp = { tree };
@@ -84,14 +81,11 @@ function bare() {
   const ctx = {
     console: { log() {}, error() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
     document: stub()
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(__dirname, '../../' + file), 'utf8'), ctx, { filename: path.join(__dirname, '../../' + file) });
+  runAppFiles(ctx);
   ctx.session = { style: { widgets: {} } };
   ctx.temp = {};
   return ctx;
@@ -140,14 +134,11 @@ test('computeDirectionality rejects, rather than hanging, when its worker throws
   const ctx = {
     console: { log() {}, error() {} },
     TextDecoder, TextEncoder,
-    MTSettings: require('../../src/settings.js'),
-    MTDates: require('../../src/dates.js'),
-    MTEvents: require('../../src/events.js'),
     document: stub()
   };
   ctx.self = ctx.window = ctx;
   vm.createContext(ctx);
-  for (const file of APP_FILES) vm.runInContext(fs.readFileSync(path.join(__dirname, '../../' + file), 'utf8'), ctx, { filename: path.join(__dirname, '../../' + file) });
+  runAppFiles(ctx);
   let terminated = false;
   ctx.Worker = class {
     postMessage() { setTimeout(() => this.onerror(new Error('too deep')), 1); }

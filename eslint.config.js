@@ -1,5 +1,5 @@
-// Lint rules for MicrobeTrace (#243). The app is plain scripts, not modules: the
-// files share globals through `self` (MT, session, temp) and the vendor bundles
+// Lint rules for MicrobeTrace (#243). The app is plain scripts, moving to ES
+// modules a few files at a time (#323): the files share globals through `self` (MT, session, temp) and the vendor bundles
 // in dist/ and vendor/ set theirs on `self` too, so each group of files is given
 // the globals it really sees. A file that needs one more says so with a
 // `/* global */` comment rather than adding it here.
@@ -58,11 +58,25 @@ const noDirectWidgets = {
 
 const common = { ecmaVersion: "latest" };
 
+// The src files already converted to ES modules (#323). They still set a global
+// for the classic scripts, so their names stay in libGlobals until those convert.
+const esModules = [
+  "src/aligner.js", "src/binder.js", "src/dates.js", "src/db.js", "src/events.js",
+  "src/graph.js", "src/nodes.js", "src/session-format.js", "src/settings.js",
+  "src/common.js", "src/loading.js", "src/links-clusters.js", "src/colors.js", "src/export.js",
+  "src/views.js", "src/ui.js",
+];
+
 module.exports = [
   { ignores },
   {
     files: ["src/**/*.js", "components/*.js"],
     languageOptions: { ...common, sourceType: "script", globals: { ...globals.browser, ...appGlobals, ...libGlobals } },
+    rules: { ...rules, ...noDirectWidgets },
+  },
+  {
+    files: esModules,
+    languageOptions: { ...common, sourceType: "module", globals: { ...globals.browser, ...appGlobals, ...libGlobals } },
     rules: { ...rules, ...noDirectWidgets },
   },
   {
@@ -73,6 +87,11 @@ module.exports = [
   {
     files: ["scripts/**/*.js", "server.js", "eslint.config.js", "playwright.config.js", "test/*.js", "test/unit/**/*.js", "test/golden/**/*.js"],
     languageOptions: { ...common, sourceType: "commonjs", globals: globals.node },
+    rules,
+  },
+  {
+    files: ["test/unit/**/*.mjs"],
+    languageOptions: { ...common, sourceType: "module", globals: globals.node },
     rules,
   },
   {

@@ -30,9 +30,11 @@ module.exports = defineConfig({
     }
   },
   webServer: {
-    command: 'node server.js',
+    // A fresh clone has no dist/ or sw.js: build them first (#325)
+    command: 'node scripts/ensure-built.js && node server.js',
     env: { PORT: String(port) },
     url: `http://localhost:${port}/index.html`,
-    reuseExistingServer: !process.env.CI
+    reuseExistingServer: !process.env.CI,
+    timeout: 240000 // the first start bundles dist/
   }
 });
