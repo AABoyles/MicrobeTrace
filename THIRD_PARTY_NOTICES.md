@@ -10,11 +10,13 @@ licence (Apache-2.0) is in `LICENSE`, and `NOTICE` gives the project's copyright
   `package-lock.json`. The two agree for every top-level package below. The installed copies in
   `node_modules` (checked from the main checkout, which has `node_modules`) match the lockfile.
 - **Licences** come from each package's `package.json` `license` field and its `LICENSE` file.
-- **What goes into each bundle** comes from `scripts/bundle.js`. For the two packages built by
-  esbuild (`vendor/cosmos.min.js` and the Plotly part of `dist/bundle.secondary.js`), the packages
-  actually included were read from an esbuild metafile, built with the same command. The
-  `cosmos.min.js` output matched the file committed before #325 byte for byte, and a sample of the Plotly
-  output appears verbatim in `dist/bundle.secondary.js`.
+- **What goes into each bundle** comes from the entry modules in `scripts/entries/`, which
+  `scripts/bundle.js` builds with esbuild (#342): each imports its libraries and esbuild includes the
+  code the imports reach. `vendor/cosmos.min.js` is built the same way, and `vendor/` also holds
+  copies of `bioseq`, `patristic` and `papaparse` for the workers. The tables below were written
+  when the bundles were joined minified files: the bundle each package goes into is still right, but
+  the packages embedded inside a bundle (the sections after the tables) should be rechecked with an
+  esbuild metafile.
 - **Upstream URLs** come from each package's `repository` or `homepage` field. Where the field
   is missing, the URL is marked.
 - **Marks.** "Not verified" means the item could not be checked from the repository or
@@ -40,9 +42,9 @@ package in `node_modules`, and the copyright lines are in the same files. They a
 | D3 | 7.9.0 | ISC | https://github.com/d3/d3 | `bundle.primary.js` |
 | Tabulator (`tabulator-tables`) | 6.6.1 | MIT | https://github.com/tabulator-tables/tabulator | `bundle.primary.js`, `bundle.primary.css` |
 | d3-symbol-extra | 0.1.0 | BSD-3-Clause | https://github.com/YellowTugboat/d3-symbol-extra | `bundle.secondary.js` |
-| d3-polygon | 3.0.1 | ISC | https://github.com/d3/d3-polygon | `bundle.secondary.js` |
+| d3-polygon | 3.0.1 | ISC | https://github.com/d3/d3-polygon | `bundle.primary.js` (part of D3; no longer a separate dependency) |
 | Plotly.js (built from `scripts/plotly-bundle.js`, see below) | 4.1.2 | MIT | https://github.com/plotly/plotly.js | `bundle.secondary.js` |
-| TidyTree (locally patched) | 0.7.0 (patched) | Apache-2.0 | https://github.com/cdcgov/TidyTree | `bundle.secondary.js`. Embeds Patristic 0.5.7 (below). |
+| TidyTree | 0.8.1 | Apache-2.0 | https://github.com/cdcgov/TidyTree | `bundle.secondary.js`, built from its TypeScript source (`tidytree/src/main.ts`). Embeds its own Patristic (below). |
 | Leaflet | 1.9.4 | BSD-2-Clause | https://github.com/Leaflet/Leaflet | `bundle.secondary.js`, `bundle.secondary.css` |
 | Leaflet.markercluster | 1.5.3 | MIT | https://github.com/Leaflet/Leaflet.markercluster | `bundle.secondary.js`, `bundle.secondary.css` |
 | html5sortable | 0.14.0 | MIT | https://github.com/lukasoppermann/html5sortable | `bundle.secondary.js` |

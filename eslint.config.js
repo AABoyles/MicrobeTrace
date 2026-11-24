@@ -90,6 +90,12 @@ module.exports = [
     rules,
   },
   {
+    // The bundle entry modules import the libraries (#342); esbuild runs them in the browser
+    files: ["scripts/entries/*.js"],
+    languageOptions: { ...common, sourceType: "module", globals: globals.browser },
+    rules,
+  },
+  {
     files: ["test/unit/**/*.mjs"],
     languageOptions: { ...common, sourceType: "module", globals: globals.node },
     rules,
