@@ -29,7 +29,7 @@ test("the site includes the app shell and the files it fetches at run time", { s
   for (const file of [...shellList(), ...appFiles()]) assert.ok(files.includes(file), file + " is part of the app but not published");
   for (const file of ["sw.js", "package.json", "robots.txt", "demo/Demo_outbreak_session.microbetrace",
     "data/countries.json", "data/stars.json", "data/states.json", "data/counties.json",
-    "data/zipcodes.csv", "data/tracts.csv"]) {
+    "data/zipcodes.csv"]) {
     assert.ok(files.includes(file), file + " is not published");
   }
 });

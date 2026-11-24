@@ -26,7 +26,7 @@ const fails = (name, args) => tools.fails(name, args);
 test('defines the session tools', async () => {
   const names = await page.evaluate(() => MTWebMCP.list().map(t => t.name));
   for (const n of ['add_file', 'list_pending_files', 'update_pending_file', 'remove_pending_file', 'reorder_pending_files',
-    'get_loading_options', 'set_loading_options', 'launch', 'load_demo', 'generate_sequences', 'open_session', 'apply_style',
+    'get_loading_options', 'set_loading_options', 'launch', 'load_demo', 'generate_sequences', 'open_session',
     'save_session', 'get_session_json', 'new_session', 'list_stashes', 'stash_session', 'recall_stash', 'delete_stash',
     'get_autostash', 'set_autostash', 'get_session_info', 'audit_sequences', 'exclude_sequences']) expect(names).toContain(n);
   expect(await call('get_session_info')).toMatchObject({ loaded: false, filesViewOpen: true });
@@ -125,11 +125,9 @@ test('launches and summarizes', async () => {
   expect(info.version).toBeTruthy();
 });
 
-test('saves the session and the style, and reopens them', async () => {
+test('saves the session and reopens it', async () => {
   const json = await call('get_session_json');
   expect(json.characters).toBeGreaterThan(1000);
-  const style = await call('save_session', { format: 'microbetracestyle' });
-  expect(JSON.parse(style.contents).widgets).toBeTruthy();
   const bare = await call('save_session', { returnContents: false });
   expect(bare.contents).toBeUndefined();
   const hiv = await call('get_session_json', { format: 'hivtrace' });
@@ -143,11 +141,6 @@ test('saves the session and the style, and reopens them', async () => {
   const info = await call('open_session', { contents: json.contents });
   expect(info).toMatchObject({ loaded: true, nodes: 310 });
 
-  const red = JSON.parse(style.contents);
-  red.widgets['link-color'] = '#ff0000';
-  expect(await call('apply_style', { contents: JSON.stringify(red) })).toMatchObject({ applied: true });
-  expect(await page.evaluate(() => session.style.widgets['link-color'])).toBe('#ff0000');
-  expect(await fails('apply_style', { contents: '{}' })).toMatch(/widgets/);
   expect(await fails('open_session', { contents: 'nope' })).toMatch(/valid JSON/);
 });
 

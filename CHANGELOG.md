@@ -13,9 +13,17 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 
 - A Newick tree loads together with a FASTA file of the same IDs; it used to fail with "source.add is not a function". When one file can't be read, the load is reported as failed only after the other files have finished.
 
+### Removed
+
+- PDF export from the Aggregation and Crosstab views. CSV and Excel export remain, and the browser can print a view to PDF. The 1.9 MB `pdfmake` bundle and its dependency are gone.
+- Style-only files (`.microbetracestyle`): the Save dialog's "Style only" format, Settings > Styling > Apply Style, and the WebMCP `apply_style` tool. A saved session already holds its style.
+- The Window menu (Reload and Toggle Full Screen), which did what the browser already does.
+- Placing nodes on the Map and Globe by census tract, and `data/tracts.csv` (2.5 MB, of unrecorded source and licence). ZIP codes still work.
+- Default settings that nothing read: the `physics-tree-*` settings of a view that no longer exists, and the old `tree-layout-*`, `tree-labels-*` and `tree-mode-*` switches.
+
 ### Reliability and performance
 
-- The page loads faster. Its startup scripts are 1.6 MB instead of 4.9 MB: the spreadsheet, table, Plotly, map, tree, alignment and PDF libraries load the first time a feature needs them. (#324)
+- The page loads faster. Its startup scripts are 1.6 MB instead of 4.9 MB: the spreadsheet, table, Plotly, map, tree and alignment libraries load the first time a feature needs them. (#324)
 - The service worker stores the app's shell when it is installed, and the other files (the other views and the libraries) the first time they are used, so a first visit downloads less. Whatever has been opened still works offline. (#343)
 
 ### Build, deployment and project

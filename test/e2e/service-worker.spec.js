@@ -33,7 +33,7 @@ test('the worker caches the shell, then each file when it is first used, and the
   // Only the shell: the lazy libraries and the other views wait for first use
   expect(precache).toContain('dist/bundle.primary.js');
   expect(precache).toContain('components/files.js');
-  for (const file of ['dist/bundle.plotly.js', 'dist/bundle.pdf.js', 'vendor/cosmos.min.js', 'components/histogram.js', 'components/histogram.html']) {
+  for (const file of ['dist/bundle.plotly.js', 'vendor/cosmos.min.js', 'components/histogram.js', 'components/histogram.html']) {
     expect(precache, file).not.toContain(file);
     expect(cached, file).not.toContain(file);
   }

@@ -26,7 +26,7 @@ test('the Save dialog explains the formats and the .zip', async () => {
   await page.keyboard.press('Control+s');
   await waitForModal(page, '#session-save-modal');
   const help = page.locator('#save-format-help');
-  for (const text of ['MicrobeTrace session', 'HIV-TRACE', 'Style only']) await expect(help).toContainText(text);
+  for (const text of ['MicrobeTrace session', 'HIV-TRACE']) await expect(help).toContainText(text);
   await expect(page.locator('#save-compress-help')).toContainText('open the .zip directly');
   await page.locator('#session-save-modal .btn-close').click();
   await expect(page.locator('#session-save-modal')).toBeHidden();

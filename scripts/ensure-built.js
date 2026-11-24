@@ -28,7 +28,7 @@ function recordedHash() {
 }
 const stale = recordedHash() !== inputsHash()
   || !fs.existsSync(path.join(root, "vendor/cosmos.min.js")) || !fs.existsSync(path.join(root, "fonts"))
-  || !["primary", "xlsx", "table", "plotly", "map", "tree", "alignment", "pdf"].every(name => fs.existsSync(path.join(root, `dist/bundle.${name}.js`)));
+  || !["primary", "xlsx", "table", "plotly", "map", "tree", "alignment"].every(name => fs.existsSync(path.join(root, `dist/bundle.${name}.js`)));
 
 function run(script) {
   execFileSync(process.execPath, [path.join(__dirname, script)], { cwd: root, stdio: "inherit" });

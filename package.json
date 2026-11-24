@@ -78,7 +78,6 @@
     "leaflet.markercluster": "^1.5.3",
     "papaparse": "^5.7.0",
     "patristic": "^0.6.0",
-    "pdfmake": "^0.3.11",
     "plotly.js": "^4.1.2",
     "postcss": "^8.5.29",
     "tabulator-tables": "^6.6.1",

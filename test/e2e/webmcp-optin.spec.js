@@ -109,7 +109,7 @@ test.describe('with WebMCP on', () => {
 
   test('the tools that ask the user', async ({ page }) => {
     const asks = await page.evaluate(() => MTWebMCP.list().filter(t => t.asksUser).map(t => t.name).sort());
-    expect(asks).toEqual(['add_file', 'apply_style', 'delete_stash', 'export_view', 'generate_sequences', 'invoke_view_action', 'launch',
+    expect(asks).toEqual(['add_file', 'delete_stash', 'export_view', 'generate_sequences', 'invoke_view_action', 'launch',
       'load_demo', 'new_session', 'open_session', 'recall_stash', 'reset_style', 'save_session', 'set_autostash', 'stash_session']);
     const descriptions = await page.evaluate(() => Object.fromEntries(MTWebMCP.list().map(t => [t.name, t.description])));
     expect(descriptions.delete_stash).toMatch(/user must allow this/);

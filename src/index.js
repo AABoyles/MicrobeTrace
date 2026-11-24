@@ -311,7 +311,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // The text a save writes, in one of the Save dialog's formats
   MT.sessionText = format => {
-    if (format === "microbetracestyle") return JSON.stringify(session.style);
     if (format === "hivtrace") return MT.exportHIVTRACE();
     MT.syncLayout();
     return JSON.stringify(session);
@@ -322,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // put right; with no name, the Save dialog's file name is used. Resolves to the
   // file's name. (WebMCP's save_session saves through this too.)
   MT.saveSession = async ({ format = "microbetrace", name, compress = false, data = MT.sessionText(format) } = {}) => {
-    const file = MT.cleanFilename(name === undefined ? byId("save-file-name").value : name, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
+    const file = MT.cleanFilename(name === undefined ? byId("save-file-name").value : name, ["zip", "microbetrace", "hivtrace", "json"]);
     if (compress) {
       await MT.loadLibrary("xlsx");
       const zip = new JSZip();
@@ -396,10 +395,6 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     askToExit(MT.reset, "Start a new session?", "Start New Session");
   });
-  on("ReloadTab", "click", e => {
-    e.preventDefault();
-    askToExit(MT.reload, "Reload MicrobeTrace?", "Reload");
-  });
 
   // Leaving the page while data is loaded asks first, as the browser does it.
   // MT.reload is for reloads that have already asked.
@@ -418,15 +413,6 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     MT.launchView(button.dataset.href);
   }));
-
-  on("FullScreenTab", "click", e => {
-    e.preventDefault();
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  });
 
   // Filtering ----------------------------------------------------------------
 
@@ -918,18 +904,6 @@ document.addEventListener("DOMContentLoaded", () => {
   settings.subscribe("background-color", color => {
     settings.set("background-color-contrast", MT.contrastColor(color));
     events.emit("background-color-change");
-  });
-
-  // A style file applies to everything open
-  on("apply-style", "change", e => {
-    const [file] = e.target.files;
-    if (!file) return;
-    file.text().then(text => {
-      MT.applyStyle(JSON.parse(text));
-      showColorTable("node");
-      showColorTable("link");
-      ["background-color-change", "selected-color-change", "node-border-change"].forEach(type => events.emit(type));
-    });
   });
 
   // The global timeline -------------------------------------------------------

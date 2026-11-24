@@ -624,7 +624,7 @@ MT.leafletGeoJSONUpload = (input, list, map) => {
 
 // Placing nodes on a map. The kinds of location field, from the least
 // precise to the most: a node takes the most precise location it has.
-MT.locationKinds = ['country', 'state', 'county', 'zipcode', 'tract'];
+MT.locationKinds = ['country', 'state', 'county', 'zipcode'];
 
 // With none of a view's location fields (prefix + kind) chosen, node fields
 // named for them are used
@@ -644,8 +644,7 @@ MT.locateNodes = async (nodes, field) => {
     countries: field('country') && 'countries.json',
     states: (field('state') || field('county')) && 'states.json',
     counties: field('county') && 'counties.json',
-    zipcodes: field('zipcode') && 'zipcodes.csv',
-    tracts: field('tract') && 'tracts.csv'
+    zipcodes: field('zipcode') && 'zipcodes.csv'
   };
   const data = {};
   await Promise.all(Object.entries(files).filter(([, file]) => file).map(([name, file]) => MT.getMapData(file).then(rows => data[name] = rows)));
@@ -698,10 +697,6 @@ MT.locateNodes = async (nodes, field) => {
   if (data.zipcodes) {
     const i = index(data.zipcodes, z => [z.zipcode]);
     places.zipcode = d => at(lookup(i, d[field('zipcode')]));
-  }
-  if (data.tracts) {
-    const i = index(data.tracts, t => [t.tract]);
-    places.tract = d => at(lookup(i, d[field('tract')]));
   }
   const lat = field('lat'), lon = field('lon');
   const positions = new Map();

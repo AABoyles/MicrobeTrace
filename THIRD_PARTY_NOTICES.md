@@ -13,17 +13,16 @@ licence (Apache-2.0) is in `LICENSE`, and `NOTICE` gives the project's copyright
   licence file (`LICENSE`, `LICENSE.md` and similar) where it has one. Where a package has no
   licence file, the tables say so.
 - **What goes into each bundle** comes from esbuild metafiles of the builds in `scripts/bundle.js`.
-  Each of the bundles `primary`, `xlsx`, `table`, `plotly`, `map`, `tree`, `alignment` and `pdf` is
+  Each of the bundles `primary`, `xlsx`, `table`, `plotly`, `map`, `tree` and `alignment` is
   built from an entry module in `scripts/entries/` (#342), and `vendor/cosmos.min.js` is built from
   `@cosmos.gl/graph`. Each build was run with the options in `scripts/bundle.js` and
   `write: false`, and every input under `node_modules/` was mapped to its package. A nested copy
   (one under another package's `node_modules`) is listed with its own version. `vendor/bioseq.min.js`,
   `vendor/patristic.min.js` and `vendor/papaparse.min.js` are copies of files, not builds, so the
   package is the one copied.
-- **Prebuilt code.** A few inputs are prebuilt files, so esbuild sees each as a single file:
-  `bootstrap.bundle.js` (which includes Popper), and pdfmake's `pdfmake.js` and `vfs_fonts.js`. For
-  those, the packages inside were found from the file's module markers and names, and their
-  versions are the installed ones, since the file does not state them.
+- **Prebuilt code.** One input, `bootstrap.bundle.js` (which includes Popper), is a prebuilt file,
+  so esbuild sees it as a single file. The package inside it was found from the file's names, and
+  its version is the installed one, since the file does not state it.
 - **Licence comments.** `scripts/bundle.js` builds `dist/` and the cosmos build with
   `legalComments: 'eof'`, so each bundle keeps its inputs' licence comments at the end of the file.
 - **Upstream URLs** come from each package's `repository` or `homepage` field. Where the field
@@ -38,8 +37,8 @@ package in `node_modules`, and the copyright lines are in the same files. They a
 
 The `primary` bundle is loaded with the page. The other bundles are lazy: each is fetched the first
 time a feature needs it. `xlsx` holds SheetJS and JSZip, `table` Tabulator, `plotly` Plotly.js,
-`map` Leaflet and its marker clusters, `tree` TidyTree (with D3), `alignment` alignment-viewer,
-and `pdf` pdfmake.
+`map` Leaflet and its marker clusters, `tree` TidyTree (with D3) and `alignment`
+alignment-viewer.
 
 ### `dist/` (JavaScript and CSS)
 
@@ -62,8 +61,6 @@ and `pdf` pdfmake.
 | Leaflet.markercluster | 1.5.3 | MIT | https://github.com/Leaflet/Leaflet.markercluster | `bundle.map.js`, `bundle.map.css`. The package has no licence file; its `package.json` says MIT. |
 | html5sortable | 0.14.0 | MIT | https://github.com/lukasoppermann/html5sortable | `bundle.primary.js` |
 | alignment-viewer | 0.3.4 | Apache-2.0 | https://github.com/CDCgov/AlignmentViewer | `bundle.alignment.js` |
-| pdfmake | 0.3.14 | MIT | https://github.com/bpampuch/pdfmake | `bundle.pdf.js`. Embeds the packages listed below. |
-| pdfmake virtual font files (`vfs_fonts.js`) | from pdfmake 0.3.14 | See the Roboto row in "Packages inside other bundled files" below | | `bundle.pdf.js` |
 
 ### `vendor/` (JavaScript and WebAssembly)
 
@@ -289,41 +286,6 @@ DOMPurify's source.
 | gl-matrix | 3.4.4 | MIT | https://github.com/toji/gl-matrix |
 | random | 4.1.0 | MIT | https://github.com/transitive-bullshit/random |
 | seedrandom | 3.0.5 | MIT (no licence file in package) | https://github.com/davidbau/seedrandom |
-
-### Packages inside pdfmake (`dist/bundle.pdf.js`)
-
-`pdfmake.js` is a prebuilt webpack bundle, so esbuild sees one file. The packages below were read
-from its `MODULE:` markers, from the names in the file, and from pdfkit's standalone build inside
-it. Versions are the installed ones. The copies inside the file were not checked, and the rows say
-so where the package is not in `package-lock.json`.
-
-| Package | Version | Licence | Upstream | Note |
-|---|---|---|---|---|
-| pdfkit | 0.20.2 | MIT | https://github.com/foliojs/pdfkit | Its standalone build is inside `pdfmake.js`, with the packages below it uses. It carries a `Copyright (c) Microsoft Corporation` banner, from a package not identified here. |
-| linebreak | 1.1.0 | MIT | https://github.com/devongovett/linebreaker | |
-| xmldoc | 2.0.3 | MIT | https://github.com/nfarina/xmldoc | |
-| sax (used by xmldoc) | 1.6.1 | BlueOak-1.0.0 | https://github.com/isaacs/sax-js | |
-| fontkit (used by pdfkit) | 2.0.4 | MIT | https://github.com/foliojs/fontkit | |
-| @noble/ciphers (used by pdfkit) | 1.3.0 | MIT | https://github.com/paulmillr/noble-ciphers | |
-| @noble/hashes (used by pdfkit) | 1.8.0 | MIT | https://github.com/paulmillr/noble-hashes | |
-| fflate (used by pdfkit) | 0.8.3 | MIT | https://github.com/101arrowz/fflate | |
-| png-js (used by pdfkit) | 2.0.0 | MIT (from its `LICENSE` file; its `package.json` has no `license` field) | https://github.com/devongovett/png.js | |
-| brotli | 1.3.3 | MIT | https://github.com/devongovett/brotli.js | Its decoder code carries a `Copyright 2013 Google Inc.` banner under the Apache License, Version 2.0. |
-| base64-js | 1.5.1 | MIT | https://github.com/beatgammit/base64-js | The copy in `pdfmake.js` was not checked. |
-| unicode-trie (used by linebreak) | 2.0.0 | MIT | https://github.com/devongovett/unicode-trie | |
-| tiny-inflate | 1.0.3 | MIT | https://github.com/devongovett/tiny-inflate | |
-| dfa | 1.2.0 | MIT | https://github.com/devongovett/dfa | |
-| clone | 2.1.2 | MIT | https://github.com/pvorb/node-clone | |
-| fast-deep-equal | 3.1.3 | MIT | https://github.com/epoberezkin/fast-deep-equal | |
-| events | 3.3.0 | MIT | https://github.com/Gozala/events | |
-| core-js | Not verified | Not verified | Not verified | Not in `package-lock.json`. Its module markers are in `pdfmake.js`. |
-| file-saver | Not verified | Not verified | Not verified | Not in `package-lock.json`. Its module marker is in `pdfmake.js`. |
-
-The Roboto fonts below are in `vfs_fonts.js`, which pdfmake's build includes.
-
-| Bundled in | Package | Version | Licence | Upstream |
-|---|---|---|---|---|
-| `dist/bundle.pdf.js` (pdfmake, `vfs_fonts.js`) | Roboto (Regular, Italic, Medium, Medium Italic) | Not verified (the font files were checked for their licence and copyright, not for a version number) | SIL Open Font License 1.1 (from the font files' own name table, not from a package) | https://github.com/googlefonts/roboto-classic (copyright line in the font files) |
 
 ## Notes and open items
 

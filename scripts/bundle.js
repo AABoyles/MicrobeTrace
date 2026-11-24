@@ -65,15 +65,14 @@ const bundles = [
     ]
   },
   { name: 'tree', lazy: true, styles: [] },
-  { name: 'alignment', lazy: true, styles: [] },
-  { name: 'pdf', lazy: true, styles: [] }
+  { name: 'alignment', lazy: true, styles: [] }
 ];
 
 // Every package whose code ends up in dist/ or vendor/
 const versionedPackages = [
   '@cosmos.gl/graph', 'alignment-viewer', 'bioseq', 'bootstrap', 'bootstrap-icons', 'd3',
   'd3-symbol-extra', 'golden-layout', 'html5sortable', 'jszip', 'leaflet', 'leaflet.markercluster',
-  'papaparse', 'patristic', 'pdfmake', 'plotly.js', 'tabulator-tables', 'tidytree', 'tom-select', 'xlsx'
+  'papaparse', 'patristic', 'plotly.js', 'tabulator-tables', 'tidytree', 'tom-select', 'xlsx'
 ];
 
 // Joins stylesheets with a newline after each, like `cat` plus `printf`. Joined as

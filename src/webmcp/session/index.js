@@ -15,7 +15,6 @@ import launch from './launch.js';
 import loadDemo from './load-demo.js';
 import generateSequences from './generate-sequences.js';
 import openSession from './open-session.js';
-import applyStyle from './apply-style.js';
 import getSessionJson from './get-session-json.js';
 import saveSession from './save-session.js';
 import newSession from './new-session.js';
@@ -42,7 +41,6 @@ export default [
   loadDemo,
   generateSequences,
   openSession,
-  applyStyle,
   getSessionJson,
   saveSession,
   newSession,
