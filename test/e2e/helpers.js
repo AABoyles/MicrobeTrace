@@ -83,7 +83,7 @@ async function allowing(page, fn) {
       try {
         await allow.waitFor({ state: 'visible', timeout: 200 });
         await allow.click({ timeout: 10000 });
-      } catch (e) { /* none showing, or it closed */ }
+      } catch { /* none showing, or it closed */ }
       if (page.isClosed()) return;
     }
   })();

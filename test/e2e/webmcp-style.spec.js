@@ -73,7 +73,6 @@ test('nodes can be selected, searched and expanded', async () => {
   r = await call('search_nodes', { query: 'g1', field: 'group', wholeWord: true });
   expect(r.matched).toBeGreaterThan(0);
   expect(await page.evaluate(() => session.data.nodes.filter(d => d.selected).every(d => d.group == 'g1'))).toBe(true);
-  const seeds = r.selectedCount;
   r = await call('select_nodes', { ids: ['S0'] });
   const n1 = await call('select_neighbors', { depth: 1 });
   const n2 = await call('select_neighbors', { depth: 3 });

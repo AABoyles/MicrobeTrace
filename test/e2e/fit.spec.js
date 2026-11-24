@@ -6,7 +6,7 @@
 // stays put; small alignments; sort arrows beside their own titles; and one
 // meaning per icon.
 const { test, expect } = require('@playwright/test');
-const { watchErrors, open, fixtures, launchView, closeView, waitForModal, openExport } = require('./helpers');
+const { watchErrors, open, fixtures, launchView, closeView, waitForModal } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -23,7 +23,7 @@ test.afterAll(() => page.close());
 
 const box = locator => locator.evaluate(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; });
 // A view's root, and its settings pane opened
-const view = name => page.locator(`.lm_content:has(.left-pane)`).filter({ visible: true }).last();
+const view = _name => page.locator(`.lm_content:has(.left-pane)`).filter({ visible: true }).last();
 // Once the pane (or whatever else is moving) has finished sliding
 const settled = locator => locator.evaluate(el => Promise.allSettled(el.getAnimations({ subtree: true }).map(a => a.finished)));
 // The files launched, for the tests that need a network

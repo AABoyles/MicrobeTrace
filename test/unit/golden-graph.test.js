@@ -197,7 +197,7 @@ test('MT.computeMST treats a missing link as no edge', async () => {
 // #236: the metric argument is honoured
 test('MT.computeMST and MT.computeNN use the metric they are given', async () => {
   const app = load(golden.toy);
-  const g = app.session.data.graph, n = golden.toy.nodes.length;
+  const g = app.session.data.graph;
   // A second field holding the same distances negated would flip the tree
   const tri = g.denseValues('tn93').map(v => 1 - v);
   g.setDistances(golden.toy.nodes, tri, 'other', 'Genetic Distance');
@@ -210,7 +210,7 @@ test('MT.computeMST and MT.computeNN use the metric they are given', async () =>
 
 // #228
 test('a threshold above the one links were stored within is reported', () => {
-  const { MT, session } = loadApp({ 'link-sort-variable': 'tn93', 'link-stored-thresholds': { tn93: 0.015 } });
+  const { MT } = loadApp({ 'link-sort-variable': 'tn93', 'link-stored-thresholds': { tn93: 0.015 } });
   assert.strictEqual(MT.storedThresholdBelow('tn93', 0.02), 0.015);
   assert.strictEqual(MT.storedThresholdBelow('tn93', 0.015), null);
   assert.strictEqual(MT.storedThresholdBelow('snps', 5), null);

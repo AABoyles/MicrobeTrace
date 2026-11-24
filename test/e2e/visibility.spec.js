@@ -85,7 +85,7 @@ test('a run of changes is applied once, with the last value', async () => {
 });
 
 test('a view that listens to node and link visibility redraws once for a change', async () => {
-  const draws = await page.evaluate(() => {
+  await page.evaluate(() => {
     window.drawn = 0;
     const redraw = () => drawn++;
     const offs = ['node-visibility', 'link-visibility'].map(type => MT.events.on(type, redraw));

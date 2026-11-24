@@ -174,7 +174,7 @@ for (const mode of Object.keys(STRATEGIES)) {
 // HIV-TRACE -g: hivtrace runs tn93 -a resolve -g FRACTION, which decides pair by
 // pair whether to average: when the pair's resolvable ambiguity codes (not gaps)
 // are at least FRACTION of the sites compared.
-test('hivtrace-g.fasta, HIVTRACE-G: MT.computeLinks against tn93 -a resolve -g 0.015', async t => {
+test('hivtrace-g.fasta, HIVTRACE-G: MT.computeLinks against tn93 -a resolve -g 0.015', async () => {
   const exp = expected('hivtrace-g.expected.json');
   const g = exp.modes['hivtrace-g'];
   const { MT, ids } = await pipeline('hivtrace-g', 'HIVTRACE-G', { 'distance-metrics-also': [], 'ambiguity-threshold': g.fraction });

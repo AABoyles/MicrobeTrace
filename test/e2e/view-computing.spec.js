@@ -26,7 +26,6 @@ const sequencesView = () => viewOf('Export Sequences');
 // Whether a view's computing card is up. (Views in one tab stack are hidden
 // behind the active tab, so this reads the card's own flag, not its visibility.)
 const shown = view => view.locator('.view-computing-card').evaluate(el => !el.hidden);
-const card = view => view.locator('.view-computing-card');
 const status = view => view.locator('.view-computing [role="status"]');
 const cancel = view => view.locator('.view-computing-cancel');
 const retry = view => view.locator('.view-computing-retry');

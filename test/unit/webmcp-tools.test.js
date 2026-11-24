@@ -76,7 +76,6 @@ globalThis.self = self;
 require('../../src/webmcp/index.js');
 
 const tools = () => W.list();
-const byName = name => tools().find(t => t.name == name);
 
 // Runs a tool as an agent does, with WebMCP on for the test
 async function agent(name, args) {
