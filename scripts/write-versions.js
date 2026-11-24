@@ -9,6 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { inputsHash } = require('./inputs-hash');
 
 const patched = {};
 
@@ -37,5 +38,6 @@ if (require.main === module) {
     console.error('Usage: node scripts/write-versions.js out.json package [package...]');
     process.exit(1);
   }
-  writeVersions(out, names);
+  // Without the hash, ensure-built.js would think the build is stale and redo it every time (#345)
+  writeVersions(out, names, inputsHash());
 }

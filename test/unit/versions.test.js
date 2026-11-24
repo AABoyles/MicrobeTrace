@@ -38,3 +38,20 @@ test("dist/versions.json records the hash of the inputs it was built from", { sk
   assert.match(require(versionsPath).inputsHash, /^[0-9a-f]{64}$/);
   assert.strictEqual(require(versionsPath).inputsHash, inputsHash(), "inputs changed since the last build: run npm run bundle");
 });
+
+// Run by hand, the script must still say what the inputs were, or ensure-built.js
+// would find the file stale and rebuild every time (#345).
+test("write-versions.js on the command line records the inputs hash", () => {
+  const { execFileSync } = require("child_process");
+  const os = require("os");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "versions-"));
+  try {
+    const out = path.join(dir, "versions.json");
+    execFileSync(process.execPath, [path.join(root, "scripts", "write-versions.js"), out, "d3"], { cwd: root });
+    const written = JSON.parse(fs.readFileSync(out, "utf8"));
+    assert.strictEqual(written.inputsHash, require(path.join(root, "scripts", "inputs-hash.js")).inputsHash());
+    assert.ok(written.packages.d3);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
