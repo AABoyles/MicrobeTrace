@@ -53,7 +53,7 @@ MT.createLayout = () => {
 // optionally `libraries`, and is loaded with import() rather than a script tag. Add a view's
 // name here when it is converted (and take its <script> tag out of its HTML). The rest are
 // classic scripts that call MT.registerView, being phased out.
-const MODULE_VIEWS = new Set(["histogram", "table", "network"]);
+const MODULE_VIEWS = new Set(["histogram", "table", "network", "geo_map", "choropleth", "globe", "phylogenetic_tree"]);
 // The imported modules, by view name
 const modules = {};
 
@@ -117,8 +117,6 @@ const renderView = contentItem => {
 const VIEW_LIBRARIES = {
   table: ["table"], conflicts: ["table"], crosstab: ["table"], aggregation: ["table"],
   scatterplot: ["plotly"], heatmap: ["plotly"], flow_diagram: ["plotly"], histogram: ["plotly"],
-  geo_map: ["map"], choropleth: ["map"],
-  phylogenetic_tree: ["tree"],
   // A session can hold spreadsheets added but not yet read, which the view lists
   files: () => env.session.files.some(f => /^xlsx?$/i.test(f.extension || "")) ? ["xlsx"] : []
 };
