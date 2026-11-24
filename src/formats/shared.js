@@ -3,8 +3,8 @@
 // Papa and XLSX are the bundles' globals, looked up when called so that Node
 // tests can set them first.
 
-// An ID as the app keeps it: text, without the spaces around it. The same rule as
-// MT.cleanID in src/common.js, which every loaded ID goes through, so that one ID
+// An ID as the app keeps it: text, without the spaces around it. This is also
+// MT.cleanID (src/common.js), which every loaded ID goes through, so that one ID
 // from two files is one node.
 export const cleanID = id => id == null ? '' : String(id).trim();
 

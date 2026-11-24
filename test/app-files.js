@@ -24,7 +24,7 @@ const APP_FILES = [
 const root = path.join(__dirname, '..');
 const leaves = {
   db: ['db', 'db'], MTDates: ['dates', 'MTDates'], MTEvents: ['events', 'MTEvents'], MTGraph: ['graph', 'MTGraph'],
-  MTNodeSources: ['nodes', 'MTNodeSources'], MTSessionFormat: ['session-format', 'MTSessionFormat'], MTSettings: ['settings', 'MTSettings'],
+  MTNodeSources: ['nodes', 'MTNodeSources'], MTSessionFormat: ['session-format', 'MTSessionFormat'], MTSettings: ['settings', 'MTSettings'], cleanID: ['formats/shared', 'cleanID'],
 };
 
 function runAppFiles(ctx) {

@@ -19,6 +19,7 @@ import { MTGraph } from './graph.js';
 import { MTNodeSources } from './nodes.js';
 import { MTSessionFormat } from './session-format.js';
 import { MTSettings } from './settings.js';
+import { cleanID } from './formats/shared.js';
 
 export const MT = {};
 self.MT = MT;
@@ -419,7 +420,8 @@ MT.addNodeField = (...names) => {
 // An ID as the app keeps it: text, without the spaces around it. Every
 // path that loads data goes through this, so one ID from two sources is one
 // node. (Matching stays case-sensitive: "a" and "A" are different IDs.)
-MT.cleanID = id => id == null ? "" : String(id).trim();
+// One rule for IDs, shared with the format parsers so one ID from two files is one node (#337)
+MT.cleanID = cleanID;
 
 MT.addNode = (newNode, check, source) => {
   if ('id' in newNode && !('_id' in newNode)) newNode._id = newNode.id;
