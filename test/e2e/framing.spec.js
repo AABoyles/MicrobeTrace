@@ -166,14 +166,15 @@ test('the flow diagram names its columns and lists their values in order, empty 
   await opened('flow_diagram');
   await expect.poll(() => plot('.flow-plot').evaluate(el => el.data && el.data[0].node.label.length)).toBeGreaterThan(0);
   const p = await plot('.flow-plot').evaluate(el => ({
-    titles: el.layout.annotations.map(a => a.text.replace(/<[^>]+>/g, '')),
+    titles: el.layout.annotations.map(a => a.text),
     labels: el.data[0].node.label,
     columns: el.data[0].node.customdata,
     y: el.data[0].node.y
   }));
   expect(p.titles.length).toBe(new Set(p.columns).size);
   for (const column of new Set(p.columns)) {
-    expect(p.titles).toContain(column);
+    // Each column's title is its name in bold
+    expect(p.titles).toContain('<b>' + column + '</b>');
     const values = p.labels.map((label, i) => ({ label, y: p.y[i] })).filter((v, i) => p.columns[i] === column)
       .sort((a, b) => a.y - b.y).map(v => v.label);
     const named = values.filter(v => v !== '(Empty)');
