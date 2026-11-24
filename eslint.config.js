@@ -33,10 +33,12 @@ const workerGlobals = {
 // Generated and vendored code is built, not written, so it isn't linted
 const ignores = ["dist/**", "vendor/**", "fonts/**", "sw.js", "_site/**", "coverage/**", "playwright-report/**", "test-results/**"];
 
-// Warnings for now; an error only where the codebase is already clean
+// A parameter named _x is kept on purpose (a callback's signature, or Express's
+// four-argument error handler), so it isn't reported (#346)
+const unusedVars = { argsIgnorePattern: "^_" };
 const rules = {
   "no-undef": "error",
-  "no-unused-vars": "warn",
+  "no-unused-vars": ["error", unusedVars],
   "eqeqeq": ["warn", "always", { null: "ignore" }],
 };
 
@@ -141,5 +143,11 @@ module.exports = [
     files: ["test/e2e/**/*.js", "test/security/**/*.js"],
     languageOptions: { ...common, sourceType: "commonjs", globals: { ...globals.node, ...globals.browser, ...appGlobals, ...libGlobals, layout: "readonly" } },
     rules,
+  },
+  {
+    // components/files.js still has unused variables while another change edits it (#346).
+    // Once it is clean, delete this block.
+    files: ["components/files.js"],
+    rules: { "no-unused-vars": ["warn", unusedVars] },
   },
 ];
