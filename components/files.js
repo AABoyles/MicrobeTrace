@@ -1301,7 +1301,7 @@
     stop.push(() => MT.sortable(table, 'destroy'), () => alsoMenu.destroy());
 
     // A programmatic way to do what the view does, for scripts and agents (see
-    // src/webmcp/session.js). It goes with the view.
+    // src/webmcp/session/). It goes with the view.
     const named = name => session.files.find(f => f.name == name);
     const describe = file => {
       const row = rowOf.get(file);
