@@ -1,3 +1,4 @@
+// @ts-check
 // Helpers the format modules share (#337). Nothing here reads or writes the
 // session, `temp`, `MT` or the page: a format is a function of its contents.
 // Papa and XLSX are the bundles' globals, looked up when called so that Node

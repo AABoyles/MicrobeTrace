@@ -33,6 +33,8 @@ jobs:
       - run: npm run coverage
       # ESLint (eslint.config.js): errors fail the build; warnings are counted, not fatal (#243)
       - run: npm run lint
+      # tsc over the modules that start with // @ts-check (tsconfig.json, #346)
+      - run: npm run typecheck
 
   e2e:
     name: E2E tests (Chromium)

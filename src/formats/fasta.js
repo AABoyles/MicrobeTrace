@@ -1,3 +1,4 @@
+// @ts-check
 import { claimId } from './shared.js';
 
 // FASTA: sequences, each under a ">" line (#337).

@@ -1,3 +1,4 @@
+// @ts-check
 import * as fasta from './fasta.js';
 import * as newick from './newick.js';
 import * as matrix from './matrix.js';
@@ -19,6 +20,7 @@ import { delimiterNames, isSheet, sheetText, tableSample } from './shared.js';
 //                                   writes of the session, `temp` or the page
 // Detection tries the formats in this order, so a more particular one comes first; the
 // last, the link list, is what a file is when no other fits.
+/** @type {{ name: string, matchName?: (extension: string, fileName?: string) => boolean, detect?: (text: string, fileName: string, table: () => any) => boolean }[]} */
 export const formats = [fasta, newick, matrix, nodes, links];
 
 export const formatByName = name => formats.find(format => format.name === name);

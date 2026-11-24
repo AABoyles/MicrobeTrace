@@ -1,3 +1,4 @@
+// @ts-check
 // MTGraph: the canonical store for MicrobeTrace's network. Every other view of
 // the links (link objects, the distance matrix, clusters, neighbor lists) is
 // derived from it.

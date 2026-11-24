@@ -1,3 +1,4 @@
+// @ts-check
 import { blankCell, cleanCell, isNumber, sheetText } from './shared.js';
 
 // A distance matrix: a square or triangular table, a row and a column for each node (#337).

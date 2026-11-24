@@ -1,3 +1,4 @@
+// @ts-check
 import { MTGraph } from '../graph.js';
 import { cleanID, sheetRows } from './shared.js';
 
@@ -57,6 +58,7 @@ export function parse(contents, options) {
     }
     const source = cleanID(copy[field1]), target = cleanID(copy[field2]);
     if (source === '' || target === '') { result.blanks++; continue; }
+    /** @type {Record<string, any>} */
     const link = Object.assign({ origin, visible: true }, copy, { source, target });
     // A file's distances are taken to be the distance metric's
     const distance = field3 === 'None' ? null : MTGraph.parseDistance(copy[field3]);

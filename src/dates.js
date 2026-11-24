@@ -1,3 +1,4 @@
+// @ts-check
 // Reading dates from node data, and what to do with nodes that have none.
 // Missing dates stay missing: nothing here (or anywhere) fills them in.
 // Numeric dates with -, / or . between their parts: a/b/yy, a/b/yyyy or

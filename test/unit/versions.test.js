@@ -15,7 +15,7 @@ const skip = fs.existsSync(versionsPath) ? false : "dist/ is missing: run `npm r
 const { packages } = skip ? { packages: {} } : require(versionsPath);
 
 // Used to build or test, not shipped
-const TOOLS = ["@eslint/js", "@playwright/test", "axe-core", "cssnano", "esbuild", "eslint", "globals", "gzipper", "postcss"];
+const TOOLS = ["@eslint/js", "@playwright/test", "axe-core", "cssnano", "esbuild", "eslint", "globals", "gzipper", "postcss", "typescript"];
 
 test("every shipped dependency is listed in dist/versions.json at its locked version", { skip }, () => {
   for (const name of Object.keys(pkg.devDependencies)) {

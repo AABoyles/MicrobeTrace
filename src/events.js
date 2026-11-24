@@ -1,3 +1,4 @@
+// @ts-check
 // MTEvents: the app-wide events views use to tell each other about changes.
 //
 //   const off = events.on('node-color-change', () => redraw());
@@ -25,6 +26,8 @@ const EVENTS = {
 export class MTEvents {
   constructor() {
     this.target = new EventTarget();
+    /** @type {Set<Function> | null} */
+    this.together = null;
   }
 
   // Calls fn(detail) on each event of this type. Returns a function that stops.
@@ -46,19 +49,19 @@ export class MTEvents {
     if (!(type in EVENTS)) throw new Error('Unknown MicrobeTrace event: ' + type);
     this.target.dispatchEvent(new CustomEvent(type, { detail }));
   }
-}
 
-// Emits events of several types as one change: a function that listens to
-// more than one of them (a view that redraws on each) runs once, not once per
-// event. Where they are listened to for different things, use emit.
-MTEvents.prototype.emitTogether = function(types, detail) {
-  this.together = new Set();
-  try {
-    types.forEach(type => this.emit(type, detail));
-  } finally {
-    this.together = null;
+  // Emits events of several types as one change: a function that listens to
+  // more than one of them (a view that redraws on each) runs once, not once per
+  // event. Where they are listened to for different things, use emit.
+  emitTogether(types, detail) {
+    this.together = new Set();
+    try {
+      types.forEach(type => this.emit(type, detail));
+    } finally {
+      this.together = null;
+    }
   }
-};
+}
 
 MTEvents.EVENTS = EVENTS;
 

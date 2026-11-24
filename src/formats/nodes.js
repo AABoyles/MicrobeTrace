@@ -1,3 +1,4 @@
+// @ts-check
 import { claimId, cleanCell, sheetRows } from './shared.js';
 
 // A node list: a row for each node, with an ID column, perhaps a sequence column,

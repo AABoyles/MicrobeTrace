@@ -11,6 +11,7 @@ npm ci
 npm test                                      # unit tests (node --test test/unit/*.test.js and *.test.mjs)
 npm run test:e2e                              # Playwright, Chromium only; starts its own server
 npm run test:e2e -- test/e2e/histogram.spec.js   # one spec
+npm run typecheck                             # tsc over the files that start with // @ts-check
 npm start                                     # http://localhost:5000 (builds dist/ first if missing)
 npm run bundle && npm run cache               # build dist/, vendor/, fonts/ and sw.js (not committed)
 ```

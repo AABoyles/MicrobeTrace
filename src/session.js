@@ -1,3 +1,4 @@
+// @ts-check
 // The session's owner (#338). session.data is written here and nowhere else: the code that
 // loads files, restores sessions, excludes sequences or tags clusters calls these functions,
 // and each tells the views through MT.events what it changed, so a view doesn't depend on

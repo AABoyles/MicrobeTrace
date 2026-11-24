@@ -41,6 +41,7 @@
     "site": "node scripts/build-site.js",
     "compress": "scripts/compress.sh",
     "pretest": "node scripts/ensure-built.js",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"test/unit/*.test.js\" \"test/unit/*.test.mjs\"",
     "precoverage": "node scripts/ensure-built.js",
     "coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='workers/**' --test-coverage-lines=64 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"test/unit/*.test.js\" \"test/unit/*.test.mjs\"",
@@ -86,6 +87,7 @@
     "tabulator-tables": "^6.6.1",
     "tidytree": "^0.8.1",
     "tom-select": "^2.6.2",
+    "typescript": "^7.0.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

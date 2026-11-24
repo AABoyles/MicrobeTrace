@@ -1,3 +1,4 @@
+// @ts-check
 // A Newick tree: its leaves are the nodes, and the distances along the tree the links (#337).
 export const name = 'newick';
 export const label = 'a Newick tree';
