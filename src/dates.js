@@ -15,7 +15,7 @@ const fullYear = text => text.length === 2 ? (+text < 70 ? 2000 : 1900) + +text 
 function localDate(year, month, day, [hours, minutes, seconds]) {
   const time = new Date(year, month - 1, day, hours, minutes, seconds);
   time.setFullYear(year); // years before 100 aren't 19xx
-  return time.getMonth() == month - 1 && time.getDate() == day ? time : null;
+  return time.getMonth() === month - 1 && time.getDate() === day ? time : null;
 }
 
 // The parts of a numeric date, or null. For a/b/yy the first two parts are as
@@ -27,13 +27,13 @@ function numericParts(text) {
   const time = [m[5], m[6], m[7]].map(t => +(t || 0));
   if (time[0] > 23 || time[1] > 59 || time[2] > 59) return null;
   if (p1.length === 4) return p3.length <= 2 ? { yearFirst: true, year: +p1, first: +p2, second: +p3, time } : null;
-  if (p1.length > 2 || (p3.length != 2 && p3.length != 4)) return null;
+  if (p1.length > 2 || (p3.length !== 2 && p3.length !== 4)) return null;
   return { yearFirst: false, year: fullYear(p3), first: +p1, second: +p2, time };
 }
 
 // The date numeric parts name, with a/b/yy read in the order given ('dmy' or 'mdy')
 function numericDate(parts, order) {
-  const [month, day] = parts.yearFirst || order != 'dmy' ? [parts.first, parts.second] : [parts.second, parts.first];
+  const [month, day] = parts.yearFirst || order !== 'dmy' ? [parts.first, parts.second] : [parts.second, parts.first];
   return localDate(parts.year, month, day, parts.time);
 }
 
@@ -53,7 +53,7 @@ function dateOrderOf(values) {
     const { first, second } = parts;
     if (first > 12 && second <= 12) dayFirst++;
     else if (second > 12 && first <= 12) monthFirst++;
-    else if (first >= 1 && second >= 1 && first <= 12 && second <= 12 && first != second) ambiguous++;
+    else if (first >= 1 && second >= 1 && first <= 12 && second <= 12 && first !== second) ambiguous++;
   }
   if (dayFirst && monthFirst) return { order: 'mdy', status: 'inconsistent' };
   if (dayFirst) return { order: 'dmy', status: 'day-first' };

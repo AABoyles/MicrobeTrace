@@ -173,7 +173,7 @@ MT.rowSplits = (n, parts) => {
 // any others chosen to compute too
 MT.computedMetrics = (widgets = env.session.style.widgets) => {
   const metric = widgets['default-distance-metric'];
-  const also = (widgets['distance-metrics-also'] || []).filter(m => m != metric && MT.distanceMetrics[m]);
+  const also = (widgets['distance-metrics-also'] || []).filter(m => m !== metric && MT.distanceMetrics[m]);
   return [metric, ...new Set(also)];
 };
 
@@ -202,10 +202,10 @@ MT.computeLinks = async subset => {
   const pairs = n * (n - 1) / 2;
   const storage = widgets['link-storage'];
   // Each metric kept takes its own 4 bytes a pair
-  const sparse = storage == 'threshold' || (storage != 'all' && pairs * metrics.length > MT.maxDenseLinks);
+  const sparse = storage === 'threshold' || (storage !== 'all' && pairs * metrics.length > MT.maxDenseLinks);
   // Kept within the link threshold for the distance metric, and within their
   // own default thresholds for the others
-  const thresholds = sparse ? metrics.map((m, i) => i == 0 ? parseFloat(widgets['link-threshold']) : MT.distanceMetrics[m].threshold) : null;
+  const thresholds = sparse ? metrics.map((m, i) => i === 0 ? parseFloat(widgets['link-threshold']) : MT.distanceMetrics[m].threshold) : null;
   if (sparse) MT.debug(`Keeping only links with ${metrics.map((m, i) => `${m} <= ${thresholds[i]}`).join(', ')} (${pairs.toLocaleString()} pairs)`);
 
   // Where only links within a threshold are kept, remember it (#228)
@@ -221,7 +221,7 @@ MT.computeLinks = async subset => {
     seqs,
     metric,
     metrics,
-    mode: strategy == 'HIVTRACE-G' ? 'hivtrace-g' : strategy.toLowerCase(),
+    mode: strategy === 'HIVTRACE-G' ? 'hivtrace-g' : strategy.toLowerCase(),
     fraction: parseFloat(widgets['ambiguity-threshold']),
     threshold: thresholds && thresholds[0],
     thresholds
@@ -288,7 +288,7 @@ MT.getCondensedDM = (metric, labels) => {
   const tri = new Float64Array(n * (n - 1) / 2).fill(NaN);
   g.forEachValue(metric, (v, e, s, t) => {
     let i = pos[s], j = pos[t];
-    if (typeof v != 'number') v = parseFloat(v); // XLSX link files give strings
+    if (typeof v !== 'number') v = parseFloat(v); // XLSX link files give strings
     if (i < 0 || j < 0 || isNaN(v)) return;
     if (i > j) [i, j] = [j, i];
     tri[MTGraph.pairIndex(i, j, n)] = v;
@@ -440,8 +440,8 @@ MT.computeNN = metric => MT.computeNNFlags("workers/compute-nn.js", "NN", metric
 // Flags the links the link-prune setting keeps (nothing to do for "none")
 MT.computePruning = () => {
   const prune = env.session.style.widgets["link-prune"];
-  if (prune == "nn") return MT.computeNN();
-  if (prune == "mst") return MT.computeMST();
+  if (prune === "nn") return MT.computeNN();
+  if (prune === "mst") return MT.computeMST();
   return Promise.resolve();
 };
 
@@ -470,7 +470,7 @@ MT.finishUp = async (oldSession) => {
   // Where the files just read disagree, say so, and offer to show where
   if (!oldSession) {
     const differ = Array.from(MT.nodeConflicts().values()).reduce((n, ids) => n + ids.length, 0);
-    if (differ) MT.toast.warning(`${differ.toLocaleString()} node value${differ == 1 ? '' : 's'} differ between files. Click to review them.`, 15,
+    if (differ) MT.toast.warning(`${differ.toLocaleString()} node value${differ === 1 ? '' : 's'} differ between files. Click to review them.`, 15,
       clicked => { if (clicked) MT.launchView("conflicts"); }, { action: "Review" });
     MT.reportDateColumns(env.session.data.nodes, env.session.data.nodeFields);
   }
@@ -522,7 +522,7 @@ MT.finishUp = async (oldSession) => {
     MT.updateAllViewNeeds();
   });
   db.getItem("stash-auto").then(autostash => {
-    if (autostash != "true") return;
+    if (autostash !== "true") return;
     if (env.temp.autostash) clearInterval(env.temp.autostash.interval);
     // The new copy is written first, and the previous one removed only once
     // it has committed, so a failed write (the quota, say) keeps the old copy.
@@ -562,7 +562,7 @@ MT.finishUp = async (oldSession) => {
   });
   document.querySelectorAll(".hideForHIVTrace").forEach(el => el.style.display = "flex");
   setTimeout(() => {
-    let files = env.layout.contentItems.find(item => item.componentType == "files");
+    let files = env.layout.contentItems.find(item => item.componentType === "files");
     if (files) files.remove();
     MT.progressDone();
     MT.hideModal("loading-information-modal");
@@ -610,7 +610,7 @@ MT.tagClusters = () => {
     // (The same clusters as before keep the same array, and what was built
     // from it stays good)
     const before = g.nodeCluster;
-    if (!before || before.length != nodeCluster.length || nodeCluster.some((c, x) => c !== before[x])) g.nodeCluster = nodeCluster;
+    if (!before || before.length !== nodeCluster.length || nodeCluster.some((c, x) => c !== before[x])) g.nodeCluster = nodeCluster;
 
     const degree = new Uint32Array(g.nodeCount);
     for (let x = 0; x < g.visibleCount; x++) {
@@ -643,10 +643,10 @@ MT.tagClusters = () => {
 MT.nodeTimes = field => {
   const nodes = env.session.data.nodes, n = nodes.length;
   const cache = env.temp.nodeTimes;
-  if (cache && cache.field === field && cache.raw.length == n) {
+  if (cache && cache.field === field && cache.raw.length === n) {
     let i = 0;
     while (i < n && nodes[i][field] === cache.raw[i]) i++;
-    if (i == n) return cache.times;
+    if (i === n) return cache.times;
   }
   const raw = nodes.map(d => d[field]);
   const order = MTDates.dateOrderOf(raw).order;
@@ -665,7 +665,7 @@ MT.setNodeVisibility = silent => {
   let nodes = env.session.data.nodes,
     clusters = env.session.data.clusters;
   let n = nodes.length;
-  let timeEnd = dateField != "None" && MT.parseDate(env.session.state.timeEnd);
+  let timeEnd = dateField !== "None" && MT.parseDate(env.session.state.timeEnd);
   const times = timeEnd ? MT.nodeTimes(dateField) : null;
   const until = timeEnd ? +timeEnd : 0;
   for (let i = 0; i < n; i++) {
@@ -686,7 +686,7 @@ MT.setLinkVisibility = silent => {
   let start = Date.now();
   let metric = env.session.style.widgets["link-sort-variable"],
     threshold = parseFloat(env.session.style.widgets["link-threshold"]),
-    showNN = env.session.style.widgets["link-prune"] != "none";
+    showNN = env.session.style.widgets["link-prune"] !== "none";
   const g = env.session.data.graph;
   const clusters = env.session.data.clusters;
   const nodeCluster = g.nodeCluster;
@@ -797,7 +797,7 @@ MT.updateStatistics = () => {
   const g = env.session.data.graph;
   let linkCount = 0;
   let clusterCount = 0;
-  if (env.session.style.widgets["timeline-date-field"]== 'None') {
+  if (env.session.style.widgets["timeline-date-field"]=== 'None') {
     linkCount = g.visibleCount;
     clusterCount = env.session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(cluster.nodes)).length;
   } else {
@@ -814,7 +814,7 @@ MT.updateStatistics = () => {
     vnodes.forEach(d => sizes.set(d.cluster, (sizes.get(d.cluster) || 0) + 1));
     clusterCount = env.session.data.clusters.filter(cluster => cluster.visible && MT.isCluster(sizes.get(cluster.id))).length;
   }
-  let singletons = vnodes.filter(d => d.degree == 0).length;
+  let singletons = vnodes.filter(d => d.degree === 0).length;
   const show = (id, n) => { document.getElementById(id).textContent = n.toLocaleString(); };
   show("numberOfSelectedNodes", vnodes.filter(d => d.selected).length);
   show("numberOfNodes", vnodes.length);

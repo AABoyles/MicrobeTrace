@@ -83,7 +83,7 @@ MT.processJSON = (json, extension) => {
     console.error(error);
     return;
   }
-  if (extension == "microbetrace") {
+  if (extension === "microbetrace") {
     MT.applySession(data);
   } else {
     if (data.version) {
@@ -368,7 +368,7 @@ MT.generateSeqs = (idPrefix, count, snps, seed) => {
     let randomCodonSet = sample(sampleCodons, nCodons).join("");
 
     // try again if not present
-    if (seqs[seqs.length - 1].seq.indexOf(randomCodonSet) == -1) continue;
+    if (seqs[seqs.length - 1].seq.indexOf(randomCodonSet) === -1) continue;
 
     // sequence to mutate
     let oldseed = seqs[Math.floor(MT.r01() * seqs.length)].seq;
@@ -425,11 +425,11 @@ MT.fitToReference = (nodes, referenceLength, minPadding = 0, originals = []) => 
 // Plain-text warnings for what MT.fitToReference reports, or for sequences
 // of differing lengths when nothing aligned them (unaligned: array of lengths)
 MT.lengthWarnings = (fit, unaligned) => {
-  const plural = (n, w) => `${n.toLocaleString()} ${w}${n == 1 ? '' : 's'}`;
+  const plural = (n, w) => `${n.toLocaleString()} ${w}${n === 1 ? '' : 's'}`;
   const warnings = [];
   if (fit) {
     if (fit.truncated) warnings.push(`${plural(fit.truncated, 'sequence')} extended past the end of the reference and had the excess cut off before distances were computed.`);
-    if (fit.padded) warnings.push(`${plural(fit.padded, 'sequence')} did not reach the end of the reference; ${fit.padded == 1 ? 'its' : 'their'} end was filled with gaps.`);
+    if (fit.padded) warnings.push(`${plural(fit.padded, 'sequence')} did not reach the end of the reference; ${fit.padded === 1 ? 'its' : 'their'} end was filled with gaps.`);
   }
   if (unaligned && unaligned.length) {
     // (A loop: spreading hundreds of thousands of lengths into Math.min overflows the stack, #302)
@@ -438,14 +438,14 @@ MT.lengthWarnings = (fit, unaligned) => {
       if (length < min) min = length;
       if (length > max) max = length;
     }
-    if (min != max) warnings.push(`Alignment is off but the sequences differ in length (${min.toLocaleString()} to ${max.toLocaleString()}). Positions will not correspond between sequences, so distances may be wrong. Turn on alignment or align them beforehand.`);
+    if (min !== max) warnings.push(`Alignment is off but the sequences differ in length (${min.toLocaleString()} to ${max.toLocaleString()}). Positions will not correspond between sequences, so distances may be wrong. Turn on alignment or align them beforehand.`);
   }
   return warnings;
 };
 
 MT.align = params => {
   return new Promise((resolve, reject) => {
-    if (params.aligner == "none") {
+    if (params.aligner === "none") {
       return resolve(params.nodes);
     }
     let n = params.nodes.length;
@@ -479,11 +479,11 @@ MT.getMapData = type => {
     if (env.temp.mapData[name]) {
       return resolve(env.temp.mapData[name]);
     }
-    fetch("data/" + type).then(response => format == "json" ? response.json() : response.text()).then(response => {
-      if (format == "csv") {
+    fetch("data/" + type).then(response => format === "json" ? response.json() : response.text()).then(response => {
+      if (format === "csv") {
         env.temp.mapData[name] = Papa.parse(response, { header: true }).data;
       }
-      if (format == "json") {
+      if (format === "json") {
         env.temp.mapData[name] = response;
       }
       resolve(env.temp.mapData[name]);
@@ -494,20 +494,20 @@ MT.getMapData = type => {
 // Choosing a view's variables from the data. Fields that MicrobeTrace keeps
 // for itself, or that identify items, are left out.
 const ownFields = ['index', '_id', 'id', 'selected', 'visible', 'origin', 'seq', 'source', 'target', 'nn', 'directed'];
-const choosable = fields => fields.filter(field => !ownFields.includes(field) && field[0] != '_');
+const choosable = fields => fields.filter(field => !ownFields.includes(field) && field[0] !== '_');
 const valuesOf = (items, field) => items.map(d => d[field]).filter(v => v != null && v !== '');
 
 // Fields that sort items into a few groups: text with 2 to 20 values
 MT.categoricalFields = (items, fields) => choosable(fields).filter(field => {
   const values = valuesOf(items, field);
-  if (!values.length || values.some(v => typeof v != 'string')) return false;
+  if (!values.length || values.some(v => typeof v !== 'string')) return false;
   const distinct = new Set(values).size;
   return distinct >= 2 && distinct <= 20;
 });
 
 // Fields of measurements: numbers with at least 3 values (cluster IDs aren't)
 MT.numericFields = (items, fields) => choosable(fields).filter(field => {
-  if (field == 'cluster') return false;
+  if (field === 'cluster') return false;
   const values = valuesOf(items, field);
   return values.length > 0 && values.every(v => typeof v === 'number' && isFinite(v)) && new Set(values).size >= 3;
 });
@@ -543,10 +543,10 @@ MT.reportDateColumns = (items, fields) => {
   MT.dateFields(items, fields).forEach(field => {
     const { status, present, readable } = MT.dateColumn(valuesOf(items, field));
     const notes = [];
-    if (status == 'inconsistent') notes.push('mixes day-first and month-first dates, so it is read month-first');
-    if (status == 'ambiguous') notes.push('has dates that could be day-first or month-first (such as 03/04/2020), so it is read month-first');
+    if (status === 'inconsistent') notes.push('mixes day-first and month-first dates, so it is read month-first');
+    if (status === 'ambiguous') notes.push('has dates that could be day-first or month-first (such as 03/04/2020), so it is read month-first');
     const unreadable = present - readable;
-    if (unreadable) notes.push(`${unreadable.toLocaleString()} value${unreadable == 1 ? ' could' : 's could'} not be read as ${unreadable == 1 ? 'a date' : 'dates'} and ${unreadable == 1 ? 'is' : 'are'} undated`);
+    if (unreadable) notes.push(`${unreadable.toLocaleString()} value${unreadable === 1 ? ' could' : 's could'} not be read as ${unreadable === 1 ? 'a date' : 'dates'} and ${unreadable === 1 ? 'is' : 'are'} undated`);
     if (notes.length) lines.push(`<strong>${MT.escape(field)}</strong>: ${notes.join('; ')}.`);
   });
   if (lines.length) MT.toast.warning(lines.join('<br>'), 15);
@@ -689,7 +689,7 @@ MT.locateNodes = async (nodes, field) => {
       // Otherwise by name, within the node's state
       if (!county && typeof v === 'string' && v) {
         const state = stateOf(d), name = v.toLowerCase();
-        if (state) county = data.counties.features.find(c => c.properties.state == state.properties.usps &&
+        if (state) county = data.counties.features.find(c => c.properties.state === state.properties.usps &&
           (c.properties.name.includes(name) || name.includes(c.properties.name)));
       }
       return county && at(county.properties);
@@ -713,7 +713,7 @@ MT.locateNodes = async (nodes, field) => {
     });
     if (lat && lon) {
       const p = [coordinate(d[lat], 'S'), coordinate(d[lon], 'W')];
-      if (typeof p[0] == 'number' && typeof p[1] == 'number' && isFinite(p[0]) && isFinite(p[1])) position = p;
+      if (typeof p[0] === 'number' && typeof p[1] === 'number' && isFinite(p[0]) && isFinite(p[1])) position = p;
     }
     if (position) positions.set(d._id, position);
   });
@@ -727,7 +727,7 @@ MT.jitterer = amount => {
   const offsets = new Map();
   return {
     at(id, [lat, lon]) {
-      const scale = amount() == -2 ? 0 : Math.pow(2, amount());
+      const scale = amount() === -2 ? 0 : Math.pow(2, amount());
       if (!scale) return [lat, lon];
       if (!offsets.has(id)) offsets.set(id, [MT.r01() * Math.PI * 2, MT.r01()]);
       const [theta, j] = offsets.get(id);

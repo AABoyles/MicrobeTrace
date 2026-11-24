@@ -84,7 +84,7 @@ export function makeSession(MT, root) {
     }
     node.origin = MT.uniq([].concat(newNode.origin || []).concat(node.origin));
     const values = {};
-    for (const field in newNode) if (field != '_id' && field != 'origin') values[field] = newNode[field];
+    for (const field in newNode) if (field !== '_id' && field !== 'origin') values[field] = newNode[field];
     source.add(node._id, values);
     // Each field takes the best source's value (an empty one, if none has more)
     const sources = d.sources;
@@ -200,7 +200,7 @@ export function makeSession(MT, root) {
     // Sessions saved before the ID column was the ID alone list it as a field
     // too: leave it out where it only repeats the ID
     d.nodeFields = d.nodeFields.filter(field => !(/^id$/i.test(field) &&
-      d.nodes.every(n => n[field] == null || '' + n[field] == n._id)));
+      d.nodes.every(n => n[field] == null || '' + n[field] == n._id))); // eslint-disable-line eqeqeq -- IDs in a saved session may be numbers, and match their text
     changed('reset');
   };
 

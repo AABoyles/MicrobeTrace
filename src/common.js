@@ -474,7 +474,7 @@ MT.getVisibleNeighbors = id => {
   const out = [];
   for (let v = 0; v < g.visibleCount; v++) {
     const e = g.visible[v], s = g.source(e), t = g.target(e);
-    if (s == x || t == x) out.push({ neighbor: g.ids[s == x ? t : s], link: MT.linkObject(e, true) });
+    if (s === x || t === x) out.push({ neighbor: g.ids[s === x ? t : s], link: MT.linkObject(e, true) });
   }
   return out;
 };
@@ -532,7 +532,7 @@ MT.workScope = () => {
 // the console, then reload. (Workers switch on with it too: runWorker starts
 // them with the name "debug", which each worker's debugTime reads.)
 MT.debugging = (() => {
-  try { return /[?&]debug\b/.test(location.search) || localStorage.getItem('MT.debug') == '1'; } catch { return false; }
+  try { return /[?&]debug\b/.test(location.search) || localStorage.getItem('MT.debug') === '1'; } catch { return false; }
 })();
 MT.debug = (...args) => { if (MT.debugging) console.log(...args); };
 // start is the Date.now() value from when the work began
@@ -636,15 +636,15 @@ MT.viewComputing = (root, what) => {
   // mode: "busy" (Cancel), "stopped" (Retry) or "idle" (nothing shown)
   const setState = (message, mode) => {
     const focused = box.contains(document.activeElement) ? document.activeElement : null;
-    card.hidden = mode == "idle";
-    cancelButton.hidden = mode != "busy";
-    retryButton.hidden = mode != "stopped";
-    bar.parentElement.hidden = mode != "busy";
+    card.hidden = mode === "idle";
+    cancelButton.hidden = mode !== "busy";
+    retryButton.hidden = mode !== "stopped";
+    bar.parentElement.hidden = mode !== "busy";
     text.textContent = message;
     status.textContent = message;
     // Focus can't stay on a control that's gone: move it to the one that replaces it
     if (focused && (card.hidden || focused.hidden)) {
-      const next = mode == "stopped" ? retryButton : mode == "busy" ? cancelButton : root.querySelector(".view-controls button");
+      const next = mode === "stopped" ? retryButton : mode === "busy" ? cancelButton : root.querySelector(".view-controls button");
       if (next) next.focus();
     }
   };
@@ -655,7 +655,7 @@ MT.viewComputing = (root, what) => {
     bar.style.width = percent + "%";
     bar.setAttribute("aria-valuenow", percent);
     text.textContent = `Computing ${what} (${percent}%)...`;
-    if (Math.floor(percent / 10) != announced) {
+    if (Math.floor(percent / 10) !== announced) {
       announced = Math.floor(percent / 10);
       status.textContent = `Computing ${what} (${percent}%)...`;
     }

@@ -32,7 +32,7 @@ MT.cleanFilename = (name, extensions = [], fallback = 'microbetrace-' + MT.today
 // what's saved. A name typed in is kept.
 MT.defaultFilename = (field, what = () => '') => {
   field.closest('.modal').addEventListener('show.bs.modal', () => {
-    if (field.value && field.value != field.dataset.suggested) return;
+    if (field.value && field.value !== field.dataset.suggested) return;
     field.value = field.dataset.suggested = ['microbetrace', what(), MT.today()].filter(Boolean).join('-');
   });
 };
@@ -168,7 +168,7 @@ MT.svgExport = (root, getSVG, settings, formats = {}, done) => {
       return name;
     }
     const svg = getSVG();
-    if (filetype == 'svg') {
+    if (filetype === 'svg') {
       MT.exportBlob(MT.unparseSVG(svg), 'image/svg+xml', name + '.' + filetype);
       if (done) done(svg);
     } else {
@@ -394,7 +394,7 @@ MT.unparseSVG = svgNode => {
       if (rule.selectorText.includes(selectorTextArr)) {
         extractedCSSText += rule.cssText;
       }
-      if (rule.selectorText == 'body') {  // issue #110
+      if (rule.selectorText === 'body') {  // issue #110
         extractedCSSText += rule.cssText.replace("body" , "text");;
       }
       // if (rule.selectorText == '.nodes path.selected') {  // issue #156
@@ -455,9 +455,9 @@ MT.exportHIVTRACE = () => {
           length: l[env.session.style.widgets["link-sort-variable"]],
           removed: false,
           sequences: [l.source, l.target],
-          source: env.session.data.nodes.findIndex(d => d._id == l.source),
+          source: env.session.data.nodes.findIndex(d => d._id == l.source), // eslint-disable-line eqeqeq -- node and link IDs may be numbers or text, depending on the file they came from
           support: 0,
-          target: env.session.data.nodes.findIndex(d => d._id == l.target)
+          target: env.session.data.nodes.findIndex(d => d._id == l.target) // eslint-disable-line eqeqeq -- node and link IDs may be numbers or text, depending on the file they came from
         })),
         "HIV Stages": {
           "A-1": 0,

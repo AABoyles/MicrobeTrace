@@ -18,26 +18,26 @@
 //
 // Returns a function that disconnects everything.
 
-const parseRadio = value => value == 'true' ? true : value == 'false' ? false : value;
+const parseRadio = value => value === 'true' ? true : value === 'false' ? false : value;
 
 // A control's value, typed
 function read(el) {
-  if (el.type == 'checkbox') return el.checked;
-  if (el.type == 'radio') return parseRadio(el.value);
-  if (el.type == 'number' || el.type == 'range') return el.value === '' ? null : Number(el.value);
+  if (el.type === 'checkbox') return el.checked;
+  if (el.type === 'radio') return parseRadio(el.value);
+  if (el.type === 'number' || el.type === 'range') return el.value === '' ? null : Number(el.value);
   return el.value;
 }
 
 function write(el, value) {
-  if (el.type == 'checkbox') el.checked = !!value;
-  else if (el.type == 'radio') el.checked = parseRadio(el.value) === value;
+  if (el.type === 'checkbox') el.checked = !!value;
+  else if (el.type === 'radio') el.checked = parseRadio(el.value) === value;
   else el.value = value == null ? '' : value;
   syncColorValue(el);
 }
 
 // A color input shows its value beside it, in a .color-value it's given
 function syncColorValue(el) {
-  if (el.type != 'color') return;
+  if (el.type !== 'color') return;
   let label = el.nextElementSibling;
   if (!label || !label.classList.contains('color-value')) {
     label = document.createElement('code');
@@ -60,7 +60,7 @@ export function MTBind(root, settings) {
   const cleanup = [];
   keys.forEach((els, key) => {
     if (settings.get(key) === undefined) {
-      const initial = els.find(el => el.type != 'radio' || el.checked);
+      const initial = els.find(el => el.type !== 'radio' || el.checked);
       if (initial) settings.set(key, read(initial));
     }
     const show = value => els.forEach(el => write(el, value));
@@ -68,17 +68,17 @@ export function MTBind(root, settings) {
     cleanup.push(settings.subscribe(key, show, { reload: true }));
 
     els.forEach(el => {
-      const live = el.type == 'range' || el.type == 'number' || el.type == 'text' || el.tagName === 'TEXTAREA';
+      const live = el.type === 'range' || el.type === 'number' || el.type === 'text' || el.tagName === 'TEXTAREA';
       // data-setting-on="change" waits for the edit to be committed
       const type = el.dataset.settingOn || (live ? 'input' : 'change');
       const listener = () => {
         // A radio's change event fires only on the one being checked
-        if (el.type == 'radio' && !el.checked) return;
+        if (el.type === 'radio' && !el.checked) return;
         settings.set(key, read(el));
       };
       el.addEventListener(type, listener);
       cleanup.push(() => el.removeEventListener(type, listener));
-      if (el.type == 'color') {
+      if (el.type === 'color') {
         // The value beside it follows the picker as it moves
         const follow = () => syncColorValue(el);
         el.addEventListener('input', follow);

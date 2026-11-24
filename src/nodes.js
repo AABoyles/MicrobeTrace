@@ -18,10 +18,10 @@ const empty = v => v === undefined || v === null || v === '' || (typeof v === 'n
 // Whether two values are the same: equal, the same number (33 and "33.00",
 // as a spreadsheet and a CSV give it), or the same text but for spaces
 const isNumber = v => typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && !isNaN(v));
-const same = (a, b) => a === b || (isNumber(a) && isNumber(b) ? +a == +b : String(a).trim() == String(b).trim());
+const same = (a, b) => a === b || (isNumber(a) && isNumber(b) ? +a === +b : String(a).trim() === String(b).trim());
 // Sequences are the same whatever their case: a FASTA file and a node list
 // often differ only in that, and the sequence is read the same either way
-const sameSequence = (a, b) => a === b || String(a).trim().toUpperCase() == String(b).trim().toUpperCase();
+const sameSequence = (a, b) => a === b || String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
 
 class Source {
   constructor(name, rank) {
@@ -115,7 +115,7 @@ export class MTNodeSources {
   // The source whose value a node's field uses: the one it picks, then the
   // one its field prefers, then the best ranked with a value
   decides(key, field) {
-    const named = name => name != null && this.ranked().find(s => s.name == name && s.value(key, field) !== undefined);
+    const named = name => name != null && this.ranked().find(s => s.name === name && s.value(key, field) !== undefined);
     const picked = named(this.picked(key, field));
     if (picked) return picked;
     const preferred = named(this.rules.get(field));
@@ -163,7 +163,7 @@ export class MTNodeSources {
     fields.forEach(field => {
       const having = this.ranked().filter(s => s.columns.has(field));
       if (having.length < 2) return;
-      const equal = field == 'seq' ? sameSequence : same;
+      const equal = field === 'seq' ? sameSequence : same;
       const keys = [];
       for (const key of shared) {
         let first;

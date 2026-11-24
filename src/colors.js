@@ -26,7 +26,7 @@ MT.colorScale = (range, domain) => {
 };
 
 // The value a link is colored by: for origin, the first of its files
-MT.linkColorValue = (link, variable) => variable == 'origin' ? [].concat(link.origin)[0] : link[variable];
+MT.linkColorValue = (link, variable) => variable === 'origin' ? [].concat(link.origin)[0] : link[variable];
 
 // A value as legends and tables show it: as it is in the data, or (Empty)
 MT.valueLabel = value => value === undefined || value === null || value === '' || value === 'null' || value === 'undefined' ? '(Empty)' : '' + value;
@@ -59,7 +59,7 @@ MT.extendPalette = (colors, n, kind, variable) => {
 
 MT.createNodeColorMap = () => {
   let variable = env.session.style.widgets["node-color-variable"];
-  if (variable == "None") {
+  if (variable === "None") {
     env.temp.style.nodeColorMap = () => env.session.style.widgets["node-color"];
     return [];
   }
@@ -95,7 +95,7 @@ MT.createNodeColorMap = () => {
     );
   }
 
-  if (env.session.style.widgets["node-timeline-variable"] == 'None') {
+  if (env.session.style.widgets["node-timeline-variable"] === 'None') {
     env.session.style.nodeColorsTableKeys[variable] = values;
     env.session.style.nodeColorsTable[variable] = nodeColors;
   } else {
@@ -143,7 +143,7 @@ MT.createNodeColorMap = () => {
 
 MT.createLinkColorMap = () => {
   let variable = env.session.style.widgets["link-color-variable"];
-  if (variable == "None") {
+  if (variable === "None") {
     env.temp.style.linkColorMap = () => env.session.style.widgets["link-color"];
     env.temp.style.linkAlphaMap = () => 1 - env.session.style.widgets["link-opacity"];
     return [];
@@ -175,7 +175,7 @@ MT.createLinkColorMap = () => {
   let i = 0,
     n = links.length,
     l;
-  if (variable == "origin") {
+  if (variable === "origin") {
     while (i < n) {
       l = links[i++];
       if (!l.visible) continue;
@@ -222,7 +222,7 @@ MT.createLinkColorMap = () => {
     );
   }
 
-  if (env.session.style.widgets["node-timeline-variable"] == 'None') {
+  if (env.session.style.widgets["node-timeline-variable"] === 'None') {
     env.session.style.linkColorsTableKeys[variable] = values;
     env.session.style.linkColorsTable[variable] = linkColors;
   } else {
@@ -238,7 +238,7 @@ MT.createLinkColorMap = () => {
       let i = 0,
         n = linksTL.length,
         l;
-      if (variable == "origin") {
+      if (variable === "origin") {
         while (i < n) {
           l = linksTL[i++];
           if (!l.visible) continue;
@@ -306,13 +306,13 @@ MT.createPolygonColorMap = () => {
   groups.forEach(d => aggregates[d.key] = d.values.length);
   let values = Object.keys(aggregates);
 
-  if (env.session.style.widgets["polygon-color-table-counts-sort"] == "ASC")
+  if (env.session.style.widgets["polygon-color-table-counts-sort"] === "ASC")
     values.sort(function(a, b) { return aggregates[a] - aggregates[b] });
-  else if (env.session.style.widgets["polygon-color-table-counts-sort"] == "DESC")
+  else if (env.session.style.widgets["polygon-color-table-counts-sort"] === "DESC")
     values.sort(function(a, b) { return aggregates[b] - aggregates[a] });
-  if (env.session.style.widgets["polygon-color-table-name-sort"] == "ASC")
+  if (env.session.style.widgets["polygon-color-table-name-sort"] === "ASC")
     values.sort(function(a, b) { return a - b });
-  else if (env.session.style.widgets["polygon-color-table-name-sort"] == "DESC")
+  else if (env.session.style.widgets["polygon-color-table-name-sort"] === "DESC")
     values.sort(function(a, b) { return b - a });
 
   if (values.length > env.session.style.polygonColors.length) {

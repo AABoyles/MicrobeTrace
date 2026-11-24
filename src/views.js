@@ -100,7 +100,7 @@ const VIEW_LIBRARIES = {
 // need that depends on the session.
 const librariesOf = view => {
   const listed = VIEW_LIBRARIES[view], declared = modules[view] && modules[view].libraries;
-  return [].concat(typeof listed == "function" ? listed() : listed || [], declared || []);
+  return [].concat(typeof listed === "function" ? listed() : listed || [], declared || []);
 };
 const loadLibraries = view => Promise.all(librariesOf(view).map(MT.loadLibrary)).catch(() => {
   throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
@@ -172,15 +172,15 @@ const typing = target => target.isContentEditable || target.tagName === 'TEXTARE
   (target.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'button', 'color'].includes(target.type));
 // In the capture phase, before a menu that Escape closes has closed
 document.addEventListener('keydown', e => {
-  if (e.key != 'Escape' || typing(e.target) || document.querySelector('.modal.show, .ts-wrapper.dropdown-active, .dropdown-menu.show')) return;
+  if (e.key !== 'Escape' || typing(e.target) || document.querySelector('.modal.show, .ts-wrapper.dropdown-active, .dropdown-menu.show')) return;
   openPanes.forEach(close => close());
 }, true);
 MT.paneToggle = (button, pane, open = false, { push, beside, resize } = {}) => {
   const root = pane.parentElement;
   let aside = false;
   const placeBeside = () => {
-    const now = open && root.clientWidth >= paneRoom + besideAtLeast;
-    if (now == aside) return;
+    const now = Boolean(open && root.clientWidth >= paneRoom + besideAtLeast);
+    if (now === aside) return;
     aside = now;
     beside.classList.toggle('pane-beside', aside);
     root.classList.toggle('pane-beside-open', aside);
@@ -227,7 +227,7 @@ MT.onDockChange = (root, fn) => {
   let room = MT.dockRoom(root);
   const observer = new ResizeObserver(() => {
     const now = MT.dockRoom(root);
-    if (now != room) { room = now; fn(); }
+    if (now !== room) { room = now; fn(); }
   });
   observer.observe(MT.panelDock(root));
   return () => observer.disconnect();
@@ -316,8 +316,8 @@ MT.describeView = (element, name, summary, { role = 'region' } = {}) => {
   const offs = names.map(n => events.on(n, refresh));
   return () => { offs.forEach(off => typeof off === 'function' && off()); note.remove(); };
 };
-const nodesOf = n => n.toLocaleString() + (n == 1 ? ' node' : ' nodes');
-const linksOf = n => n.toLocaleString() + (n == 1 ? ' link' : ' links');
+const nodesOf = n => n.toLocaleString() + (n === 1 ? ' node' : ' nodes');
+const linksOf = n => n.toLocaleString() + (n === 1 ? ' link' : ' links');
 const variableName = value => String(value || '').replace(/^(links|nodes)-/, '');
 // Each view's graphic: where it is, what it's called, and what it plots
 MT.viewGraphics = {
@@ -383,7 +383,7 @@ MT.launchView = (view, callback) => {
   if (!env.temp.componentCache[view]) {
     fetchView(view).then(() => MT.launchView(view, callback), viewFailed);
   } else {
-    let contentItem = env.layout.contentItems.find(item => item.componentType == view);
+    let contentItem = env.layout.contentItems.find(item => item.componentType === view);
     if (contentItem) {
       contentItem.parent.setActiveComponentItem(contentItem, true);
       // A view still loading its script is set up when it has
@@ -429,11 +429,11 @@ const setupView = contentItem => {
 const hasLinks = () => env.session.data.graph.edgeCount > 0;
 const hasSequences = () => env.session.data.nodes.some(d => d.seq);
 const FILES_HINT = "Add them in the Files view (the File menu's Add Data).";
-const chosenField = key => { const v = MT.settings.get(key); return v != null && v != "None" && v !== ""; };
+const chosenField = key => { const v = MT.settings.get(key); return v != null && v !== "None" && v !== ""; };
 const MAP_NEEDS = name => "The " + name + " places nodes by latitude and longitude columns, or by country, state, county, zipcode or census tract. Choose the columns that hold them in this view's settings (the gear). If the data has none, add a node list that does.";
 MT.viewNeeds = {
   sequences: () => hasSequences() ? "" : "This view lines up nodes' sequences, and none of these nodes has one. Add a FASTA file, or a node list with a sequence column. " + FILES_HINT,
-  phylogenetic_tree: () => hasLinks() || hasSequences() || env.session.files.some(f => f.format == "newick") ? "" :
+  phylogenetic_tree: () => hasLinks() || hasSequences() || env.session.files.some(f => f.format === "newick") ? "" :
     "A tree needs sequences, a distance matrix, or a Newick tree file. " + FILES_HINT,
   heatmap: () => hasLinks() || hasSequences() ? "" : "The heatmap draws the distances between nodes, which needs sequences (a FASTA file) or a distance matrix. " + FILES_HINT,
   waterfall: () => hasLinks() ? "" : "This view lists each cluster's links, and there are none. Links come from a link list, a distance matrix, or sequences close enough to link. " + FILES_HINT,
@@ -459,7 +459,7 @@ MT.settingsHaveLocation = prefix => {
 MT.updateViewNeeds = contentItem => {
   if (!contentItem || !contentItem.container) return;
   const view = contentItem.componentType, element = contentItem.container.element;
-  if (view == "files" || view == "conflicts" || !element) return;
+  if (view === "files" || view === "conflicts" || !element) return;
   // A change in the view's own settings (choosing a field) may meet its need
   if (!element.dataset.needsWatched) {
     element.dataset.needsWatched = "1";
@@ -512,7 +512,7 @@ MT.loadLayout = component => {
     if (["stack", "row", "column"].includes(c.type)) {
       const content = c.content.map(toConfig).filter(Boolean);
       // As launching them one by one did, the last view in each stack is active
-      return c.type == "stack" ? { type: c.type, content, activeItemIndex: Math.max(content.length - 1, 0) } : { type: c.type, content };
+      return c.type === "stack" ? { type: c.type, content, activeItemIndex: Math.max(content.length - 1, 0) } : { type: c.type, content };
     }
     const view = MT.viewName(c.type);
     if (views.includes(view)) return null;

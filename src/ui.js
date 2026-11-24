@@ -21,14 +21,14 @@ MT.columnTitle = (title, definition) => ({ ...definition, title, titleFormatter:
 
 MT.titleize = title => {
   let small = String(title).toLowerCase().replace(/_/g, " ");
-  if (small == "null") return "(Empty)";
-  if (small == "id" || small == " id") return "ID";
+  if (small === "null") return "(Empty)";
+  if (small === "id" || small === " id") return "ID";
   for (const key in MT.distanceMetrics) {
-    if (small == key.replace(/_/g, " ")) return MT.distanceMetrics[key].label;
+    if (small === key.replace(/_/g, " ")) return MT.distanceMetrics[key].label;
   }
-  if (small == "geo map") return "Map";
-  if (small == "timeline") return "Epi Curve";
-  if (small == "nn") return "Nearest Neighbor";
+  if (small === "geo map") return "Map";
+  if (small === "timeline") return "Epi Curve";
+  if (small === "nn") return "Nearest Neighbor";
   return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
 };
 
@@ -208,28 +208,28 @@ MT.floatingTable = (wrapper, menu, { onHide, onCounts, onFrequencies, onSelect }
     e.preventDefault();
     closeMenu();
     const action = item.dataset.action;
-    if (action == 'drag') {
+    if (action === 'drag') {
       handle.hidden = !handle.hidden;
       item.textContent = handle.hidden ? 'Drag' : 'Pin';
-    } else if (action == 'hide') {
+    } else if (action === 'hide') {
       if (onHide) onHide();
-    } else if (action == 'rename') {
+    } else if (action === 'rename') {
       // The value the menu was opened on, or the first
       const cell = (row && row.isConnected ? row : null) || wrapper.querySelector('[data-value]');
       if (cell) cell.dispatchEvent(new Event('mt-rename'));
       return;
-    } else if (action == 'expand') {
+    } else if (action === 'expand') {
       const expand = item.textContent === 'Expand';
       wrapper.classList.toggle('expanded', expand);
       item.textContent = expand ? 'Contract' : 'Expand';
-    } else if (action == 'counts' && onCounts) {
+    } else if (action === 'counts' && onCounts) {
       onCounts();
-    } else if (action == 'frequencies' && onFrequencies) {
+    } else if (action === 'frequencies' && onFrequencies) {
       onFrequencies();
-    } else if (action == 'select' && onSelect) {
+    } else if (action === 'select' && onSelect) {
       onSelect(row && row.isConnected ? row : null);
     }
-    if (action != 'hide' && opener && opener.isConnected) opener.focus();
+    if (action !== 'hide' && opener && opener.isConnected) opener.focus();
   });
   let offset = [0, 0];
   handle.addEventListener('mousedown', e => {
@@ -305,7 +305,7 @@ MT.nameRow = (row, value) => {
 // menus), and hides from assistive technology the controls inside them.
 MT.sortable = (element, options) => {
   const result = sortable(element, options);
-  if (options != 'destroy') {
+  if (options !== 'destroy') {
     element.removeAttribute('aria-dropeffect');
     element.querySelectorAll('[role="option"][aria-grabbed]').forEach(item => {
       item.removeAttribute('role');
