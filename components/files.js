@@ -145,6 +145,15 @@
 
     async function processFile(rawfile) {
       const extension = rawfile.name.split('.').pop().toLowerCase();
+      // The spreadsheet and zip reader is fetched the first time one is added (#324)
+      if (extension == 'zip' || extension == 'xlsx' || extension == 'xls') {
+        try {
+          await MT.loadLibrary('xlsx');
+        } catch (error) {
+          MT.toast.error('"' + MT.escape(rawfile.name) + '" could not be read, because the spreadsheet library could not be loaded. Check your connection and try again.');
+          return;
+        }
+      }
       if (extension == 'zip') {
         const zip = await new JSZip().loadAsync(rawfile);
         // Each entry is read on its own, not one after another
@@ -397,6 +406,7 @@
           ...alignerScoring()
         });
       }
+      await MT.loadLibrary('alignment');
       const canvas = await alignmentViewer(data, { showID: false });
       preview.innerHTML = '';
       preview.append(canvas);

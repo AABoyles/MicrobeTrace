@@ -21,10 +21,13 @@ process.chdir(path.join(__dirname, '..'));
 // imports the libraries and assigns the globals the app uses. esbuild bundles and
 // minifies it, so code the app never reaches is dropped.
 //
-// primary holds what must be loaded immediately: change it with index.html,
-// components/files.html or src/index.js. secondary holds what a view needs before
-// it can be rendered, and is where a new library usually goes. pdf is fetched the
-// first time a PDF is made (MT.loadPDF in src/export.js).
+// primary is loaded with the page and holds what the shell and the Files view need
+// at once: change it with index.html, components/files.html or src/index.js. Every
+// other bundle is lazy (#324): MT.loadLibrary (src/export.js) fetches it, and its
+// stylesheet, the first time a feature needs it, and src/views.js lists the ones
+// each view needs before it opens. To add a library, put it in the bundle that
+// loads when it is first used, or add a bundle (an entry module and a line here;
+// the lazy ones with styles are also named in LIBRARY_STYLES in src/export.js).
 //
 // Stylesheets are joined and minified separately. Entries starting with 'tmp:' are
 // files built into the scratch directory (see build() below); the rest are paths
@@ -36,21 +39,34 @@ const bundles = [
       'node_modules/bootstrap/dist/css/bootstrap.min.css',
       'node_modules/golden-layout/dist/css/goldenlayout-base.css',
       'tmp:goldenlayout-theme.css',
-      'node_modules/tabulator-tables/dist/css/tabulator.min.css',
-      'node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css',
+      'node_modules/tom-select/dist/css/tom-select.bootstrap5.min.css',
       'tmp:bootstrap-icons.css'
     ]
   },
+  // spreadsheets and zip files
+  { name: 'xlsx', lazy: true, styles: [] },
+  // Tabulator, for the table views and the recall dialog
   {
-    name: 'secondary',
+    name: 'table',
+    lazy: true,
     styles: [
-      'node_modules/tom-select/dist/css/tom-select.bootstrap5.min.css',
+      'node_modules/tabulator-tables/dist/css/tabulator.min.css',
+      'node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css'
+    ]
+  },
+  { name: 'plotly', lazy: true, styles: [] },
+  {
+    name: 'map',
+    lazy: true,
+    styles: [
       'node_modules/leaflet/dist/leaflet.css',
       'node_modules/leaflet.markercluster/dist/MarkerCluster.css',
       'node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css'
     ]
   },
-  { name: 'pdf', styles: [] }
+  { name: 'tree', lazy: true, styles: [] },
+  { name: 'alignment', lazy: true, styles: [] },
+  { name: 'pdf', lazy: true, styles: [] }
 ];
 
 // Every package whose code ends up in dist/ or vendor/
@@ -82,6 +98,12 @@ async function build(tmp) {
     fs.readFileSync('node_modules/bootstrap-icons/font/bootstrap-icons.min.css', 'utf8')
       .replace(/url\("fonts\//g, 'url("../fonts/'));
 
+  // A bundle that was renamed or removed would otherwise linger in dist/ (and in sw.js's list)
+  for (const f of fs.readdirSync('dist')) {
+    const m = /^bundle\.(.+)\.(js|css)$/.exec(f);
+    if (m && !bundles.some(b => b.name === m[1])) fs.rmSync(path.join('dist', f));
+  }
+
   console.log('Assembling Stylesheets...');
   for (const b of bundles) {
     if (b.styles.length) fs.writeFileSync(path.join(tmp, b.name + '.css'), concat(b.styles, tmp, '\n'));
@@ -112,7 +134,7 @@ async function build(tmp) {
   console.log('Building Javascript Bundles...');
 
   // Plotly is built with just the traces MicrobeTrace uses (scripts/plotly-bundle.js,
-  // which secondary.js imports). The stylesheet it imports is for map traces, which
+  // which plotly.js imports). The stylesheet it imports is for map traces, which
   // MicrobeTrace doesn't use. scattergl needs a stand-in for Node's buffer module
   // (scripts/buffer-shim.js), and a few packages look for Node's `global`.
   // golden-layout 2 and tidytree ship only ES modules or TypeScript, which is why

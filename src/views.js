@@ -97,11 +97,27 @@ const renderView = contentItem => {
   })));
 };
 
+// The lazy libraries (see MT.loadLibrary) each view needs before it can be set up,
+// which are fetched when the view first opens and not with the page (#324).
+// Libraries needed only by an action, like the spreadsheet one for an Excel
+// export, are loaded by that action.
+const VIEW_LIBRARIES = {
+  table: ["table"], conflicts: ["table"], crosstab: ["table"], aggregation: ["table"],
+  scatterplot: ["plotly"], heatmap: ["plotly"], flow_diagram: ["plotly"], histogram: ["plotly"],
+  geo_map: ["map"], choropleth: ["map"],
+  phylogenetic_tree: ["tree"],
+  // A session can hold spreadsheets added but not yet read, which the view lists
+  files: () => session.files.some(f => /^xlsx?$/i.test(f.extension || "")) ? ["xlsx"] : []
+};
+const loadLibraries = view => Promise.all([].concat(typeof VIEW_LIBRARIES[view] == "function" ? VIEW_LIBRARIES[view]() : VIEW_LIBRARIES[view] || []).map(MT.loadLibrary)).catch(() => {
+  throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
+});
+
 // Renders a view and, once its scripts have run, sets it up and mounts it.
 // A view closed while its script loaded is left alone. A view whose script
-// couldn't load is closed, with a message.
+// or library couldn't load is closed, with a message.
 const openView = contentItem => {
-  const ready = renderView(contentItem).then(() => {
+  const ready = loadLibraries(contentItem.componentType).then(() => renderView(contentItem)).then(() => {
     if (!contentItem.container.element.isConnected) return;
     setupView(contentItem);
     mountView(contentItem);

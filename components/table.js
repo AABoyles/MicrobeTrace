@@ -95,7 +95,8 @@
     const rows = () => items();
     MT.tableExport(root, {
       csv: name => MT.exportBlob(MT.toCSV(rows()), 'text/csv', name + '.csv'),
-      xlsx: name => {
+      xlsx: async name => {
+        await MT.loadLibrary('xlsx');
         const headers = session.data[dataset.slice(0, -1) + 'Fields'];
         const data = rows().map(item => {
           const row = {};

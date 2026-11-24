@@ -83,7 +83,8 @@
     const title = () => MT.titleize(fieldX.value) + ' by ' + MT.titleize(fieldY.value);
     MT.tableExport(root, {
       csv: name => MT.exportBlob(MT.toCSV({ fields: headers, data: rows }), 'text/csv', name + '.csv'),
-      xlsx: name => {
+      xlsx: async name => {
+        await MT.loadLibrary('xlsx');
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([headers].concat(rows)), title().slice(0, 31));
         XLSX.writeFile(workbook, name + '.xlsx');

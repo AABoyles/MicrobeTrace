@@ -172,7 +172,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return parts && { key, time: +parts[1], name: parts[2] };
   };
   const stashName = stash => stash.name || "Untitled";
-  const stashes = MT.table("#recall-stashes-available", {
+  // Tabulator is fetched when the Recall dialog is first opened (#324)
+  let stashes = null;
+  const stashOptions = {
     maxHeight: "50vh",
     layout: "fitColumns",
     selectableRows: 1,
@@ -187,14 +189,19 @@ document.addEventListener("DOMContentLoaded", () => {
         formatter: cell => MT.escape(new Date(cell.getValue()).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }))
       }
     ]
-  });
+  };
 
-  const selectedStash = () => stashes.getSelectedData()[0];
+  const selectedStash = () => stashes && stashes.getSelectedData()[0];
   // Recall and Delete act on the stash chosen
   const showChoice = () => ["recall-load-stash", "recall-delete-stash"].forEach(id => { byId(id).disabled = !selectedStash(); });
-  stashes.on("rowSelectionChanged", showChoice);
+  const buildStashes = () => MT.loadLibrary("table").then(() => {
+    if (stashes) return;
+    stashes = MT.table("#recall-stashes-available", stashOptions);
+    stashes.on("rowSelectionChanged", showChoice);
+    stashes.on("rowDblClick", (e, row) => recall(row.getData()));
+  });
   function updateStashes() {
-    return db.keys()
+    return buildStashes().then(() => db.keys())
       .then(keys => stashes.setData(keys.map(stashOf).filter(Boolean)))
       .then(showChoice);
   }
@@ -220,13 +227,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("RecallDataTab", "click", e => {
     e.preventDefault();
-    updateStashes();
+    updateStashes().catch(error => {
+      console.error(error);
+      MT.toast.error("The list of stashed sessions couldn't be loaded. Check your connection and try again.");
+    });
     modal("session-recall-modal").show();
   });
   // (The table is drawn while the dialog is hidden)
-  on("session-recall-modal", "shown.bs.modal", () => stashes.redraw());
+  on("session-recall-modal", "shown.bs.modal", () => stashes && stashes.redraw());
 
-  stashes.on("rowDblClick", (e, row) => recall(row.getData()));
   on("recall-load-stash", "click", () => {
     const stash = selectedStash();
     if (stash) recall(stash);
@@ -315,6 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
   MT.saveSession = async ({ format = "microbetrace", name, compress = false, data = MT.sessionText(format) } = {}) => {
     const file = MT.cleanFilename(name === undefined ? byId("save-file-name").value : name, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
     if (compress) {
+      await MT.loadLibrary("xlsx");
       const zip = new JSZip();
       zip.file(file + "." + format, data);
       const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } });
@@ -349,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const extension = file.name.split(".").pop().toLowerCase();
     MT.confirmReplace(() => {
       if (extension == "zip") {
-        new JSZip().loadAsync(file).then(zip => {
+        MT.loadLibrary("xlsx").then(() => new JSZip().loadAsync(file)).then(zip => {
           const entries = [];
           zip.forEach((relativePath, zipEntry) => {
             if (!zipEntry.dir && /\.(microbetrace|hivtrace|json)$/i.test(zipEntry.name)) entries.push(zipEntry);

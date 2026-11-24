@@ -78,12 +78,14 @@
 
     const title = t => MT.titleize(t.dataset) + ' ' + MT.titleize(t.column);
     MT.tableExport(root, {
-      'csv.zip': name => {
+      'csv.zip': async name => {
+        await MT.loadLibrary('xlsx');
         const zip = new JSZip();
         data.forEach(t => zip.file(t.dataset + '_' + t.column + '.csv', MT.toCSV(t.data)));
         zip.generateAsync({ type: 'blob' }).then(content => MT.saveAs(content, name + '.zip'));
       },
-      xlsx: name => {
+      xlsx: async name => {
+        await MT.loadLibrary('xlsx');
         const workbook = XLSX.utils.book_new();
         // Sheet names must be unique and at most 31 characters
         data.forEach((t, i) => XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(t.data), (i + 1) + ' ' + title(t).slice(0, 27)));

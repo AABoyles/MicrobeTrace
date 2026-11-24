@@ -51,6 +51,7 @@ export default {
       if (binary) fail('Excel files must be given as contentsBase64');
       contents = args.contents;
     }
+    if (binary) await self.MT.loadLibrary('xlsx');
     const view = await filesView();
     // The view stores names escaped (view.add escapes the raw name it is given), so the
     // duplicate check compares escaped names. Pass the raw name to view.add, not safeName.

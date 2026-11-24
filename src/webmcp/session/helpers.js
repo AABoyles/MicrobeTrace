@@ -166,6 +166,7 @@ export function openJSON(text, extension) {
 export async function sessionInZip(bytes) {
   let zip;
   try {
+    await self.MT.loadLibrary('xlsx');
     zip = await new self.JSZip().loadAsync(bytes);
   } catch (error) {
     fail('Could not read that as a zip file: ' + error.message);
@@ -248,6 +249,7 @@ export async function pendingSequences() {
     } else if (file.format == 'node' && file.field2 && file.field2 != 'None') {
       let rows;
       if (file.extension == 'xlsx' || file.extension == 'xls') {
+        await MT.loadLibrary('xlsx');
         const workbook = self.XLSX.read(file.contents, { type: 'array' });
         rows = self.XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false });
       } else {

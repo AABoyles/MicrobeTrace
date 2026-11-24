@@ -48,6 +48,11 @@ const exportName = root => {
 // dialog offers, and run({filetype, filename, scale, quality}), which its
 // button runs too. WebMCP's export_view runs it, so it needn't click the dialog.
 const exporters = new WeakMap();
+// A file type's library (the spreadsheet one, say) is fetched when it is first used (#324)
+const exportFailed = error => {
+  console.error(error);
+  MT.toast.error("The file couldn't be made: " + error.message + ". Check your connection and try again.");
+};
 const optionsOf = select => Array.from(select.options).map(o => ({ value: o.value, label: o.textContent.trim() }));
 MT.exporterOf = root => exporters.get(root) || null;
 
@@ -60,12 +65,12 @@ MT.tableExport = (root, formats) => {
   // Resolves to the base name used (the filename without its extension)
   const run = async ({ filetype, filename }) => {
     const name = filename === undefined ? field('export-filename').value || 'microbetrace-' + exportName(root) : filename;
-    formats[filetype](name);
+    await formats[filetype](name);
     return name;
   };
   exporters.set(root, { types: optionsOf(field('export-filetype')), run });
   root.querySelector('.export-button').addEventListener('click', () => {
-    run({ filetype: field('export-filetype').value, filename: field('export-filename').value });
+    run({ filetype: field('export-filetype').value, filename: field('export-filename').value }).catch(exportFailed);
   });
 };
 
@@ -84,8 +89,37 @@ MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, rej
   document.head.appendChild(script);
 }));
 
+// The libraries that are not in the page's first bundle (dist/bundle.NAME.js, one
+// per lazy bundle in scripts/bundle.js) are fetched the first time something needs
+// one (#324). A bundle's global tells whether it is already there (a test page, or
+// an older script, may have put it there); the ones with a stylesheet also fetch
+// dist/bundle.NAME.css, which goes ahead of main.css so that it can still override.
+// The promise is cached, so asking again, or from several views, loads it once.
+const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', plotly: 'Plotly', map: 'L', tree: 'TidyTree', alignment: 'alignmentViewer', pdf: 'pdfMake' };
+const LIBRARY_STYLES = ['table', 'map'];
+const styles = {};
+MT.loadStyle = href => styles[href] || (styles[href] = new Promise((resolve, reject) => {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  link.onload = resolve;
+  link.onerror = () => {
+    delete styles[href];
+    link.remove();
+    reject(new Error('Could not load ' + href));
+  };
+  document.head.insertBefore(link, document.querySelector('link[href$="main.css"]'));
+}));
+MT.loadLibrary = name => {
+  if (!LIBRARY_GLOBALS[name]) return Promise.reject(new Error('There is no library bundle named ' + name));
+  return Promise.all([
+    env[LIBRARY_GLOBALS[name]] ? null : MT.loadScript('dist/bundle.' + name + '.js'),
+    LIBRARY_STYLES.includes(name) ? MT.loadStyle('dist/bundle.' + name + '.css') : null
+  ]).then(() => {});
+};
+
 // pdfmake and its fonts (1.9 MB) are only fetched when a PDF is first made
-MT.loadPDF = () => env.pdfMake ? Promise.resolve() : MT.loadScript('dist/bundle.pdf.js');
+MT.loadPDF = () => MT.loadLibrary('pdf');
 
 // A PDF of tables ({ title, headers, rows })
 MT.tablesPDF = (heading, tables, filename) => MT.loadPDF().then(() => pdfMake.createPdf({
@@ -130,7 +164,7 @@ MT.svgExport = (root, getSVG, settings, formats = {}, done) => {
   const run = async ({ filetype, filename, scale, quality }) => {
     const name = MT.cleanFilename(filename === undefined ? field('export-filename').value : filename, [filetype, 'jpg', 'png', 'jpeg', 'webp', 'svg'], ['microbetrace', exportName(root), MT.today()].filter(Boolean).join('-'));
     if (formats[filetype]) {
-      formats[filetype](name);
+      await formats[filetype](name);
       return name;
     }
     const svg = getSVG();
@@ -155,7 +189,7 @@ MT.svgExport = (root, getSVG, settings, formats = {}, done) => {
   };
   exporters.set(root, { types: optionsOf(field('export-filetype')), run });
   $('.export-button').addEventListener('click', () => {
-    run({ filetype: field('export-filetype').value, filename: field('export-filename').value });
+    run({ filetype: field('export-filetype').value, filename: field('export-filename').value }).catch(exportFailed);
   });
 };
 

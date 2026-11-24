@@ -241,7 +241,8 @@ test('generates as the Generate button does: up to 250,000, in several files whe
 
 test('adds an excel file as base64 and a session by file name', async () => {
   await call('new_session', { confirm: true });
-  const base64 = await page.evaluate(() => {
+  const base64 = await page.evaluate(async () => {
+    await MT.loadLibrary('xlsx'); // fetched when first needed (#324)
     const ws = XLSX.utils.aoa_to_sheet([['source', 'target', 'distance'], ['a', 'b', 0.001], ['b', 'c', 0.002]]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');

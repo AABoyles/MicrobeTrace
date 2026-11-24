@@ -35,22 +35,22 @@ package in `node_modules`, and the copyright lines are in the same files. They a
 | Popper (`@popperjs/core`, inside Bootstrap's bundle) | 2.11.8 | MIT | https://github.com/popperjs/popper-core | `bundle.primary.js` (inside the Bootstrap bundle). The version is the installed `@popperjs/core`; the copy inside the bundle was not checked separately. |
 | Bootstrap Icons (CSS) | 1.13.2 | MIT | https://github.com/twbs/icons | `bundle.primary.css` (its CSS, with font paths rewritten to `../fonts/`) |
 | golden-layout | 2.6.0 | MIT | https://github.com/golden-layout/golden-layout | `bundle.primary.js`, `bundle.primary.css` (base and light theme CSS) |
-| tom-select | 2.6.2 | Apache-2.0 | https://github.com/orchidjs/tom-select | `bundle.primary.js`, `bundle.secondary.css` |
+| tom-select | 2.6.2 | Apache-2.0 | https://github.com/orchidjs/tom-select | `bundle.primary.js`, `bundle.primary.css` |
 | PapaParse | 5.7.0 | MIT | https://github.com/mholt/PapaParse | `bundle.primary.js`, `vendor/papaparse.min.js` |
-| JSZip | 3.10.2 | MIT OR GPL-3.0-or-later (dual; upstream offers either, and MIT is the one named here) | https://github.com/Stuk/jszip | `bundle.primary.js` |
-| SheetJS (`xlsx`, core build) | 0.20.3 | Apache-2.0 | https://git.sheetjs.com/SheetJS/sheetjs | `bundle.primary.js` |
+| JSZip | 3.10.2 | MIT OR GPL-3.0-or-later (dual; upstream offers either, and MIT is the one named here) | https://github.com/Stuk/jszip | `bundle.xlsx.js` |
+| SheetJS (`xlsx`, core build) | 0.20.3 | Apache-2.0 | https://git.sheetjs.com/SheetJS/sheetjs | `bundle.xlsx.js` |
 | D3 | 7.9.0 | ISC | https://github.com/d3/d3 | `bundle.primary.js` |
-| Tabulator (`tabulator-tables`) | 6.6.1 | MIT | https://github.com/tabulator-tables/tabulator | `bundle.primary.js`, `bundle.primary.css` |
-| d3-symbol-extra | 0.1.0 | BSD-3-Clause | https://github.com/YellowTugboat/d3-symbol-extra | `bundle.secondary.js` |
+| Tabulator (`tabulator-tables`) | 6.6.1 | MIT | https://github.com/tabulator-tables/tabulator | `bundle.table.js`, `bundle.table.css` |
+| d3-symbol-extra | 0.1.0 | BSD-3-Clause | https://github.com/YellowTugboat/d3-symbol-extra | `bundle.primary.js` |
 | d3-polygon | 3.0.1 | ISC | https://github.com/d3/d3-polygon | `bundle.primary.js` (part of D3; no longer a separate dependency) |
-| Plotly.js (built from `scripts/plotly-bundle.js`, see below) | 4.1.2 | MIT | https://github.com/plotly/plotly.js | `bundle.secondary.js` |
-| TidyTree | 0.8.1 | Apache-2.0 | https://github.com/cdcgov/TidyTree | `bundle.secondary.js`, built from its TypeScript source (`tidytree/src/main.ts`). Embeds its own Patristic (below). |
-| Leaflet | 1.9.4 | BSD-2-Clause | https://github.com/Leaflet/Leaflet | `bundle.secondary.js`, `bundle.secondary.css` |
-| Leaflet.markercluster | 1.5.3 | MIT | https://github.com/Leaflet/Leaflet.markercluster | `bundle.secondary.js`, `bundle.secondary.css` |
-| html5sortable | 0.14.0 | MIT | https://github.com/lukasoppermann/html5sortable | `bundle.secondary.js` |
-| alignment-viewer | 0.3.4 | Apache-2.0 | https://github.com/CDCgov/AlignmentViewer | `bundle.secondary.js` |
-| pdfmake | 0.3.11 | MIT | https://github.com/bpampuch/pdfmake | `bundle.secondary.js`. Embeds pdfkit, linebreak and xmldoc (below). |
-| pdfmake virtual font files (`vfs_fonts.js`) | from pdfmake 0.3.11 | See "Fonts embedded in pdfmake" below | | `bundle.secondary.js` |
+| Plotly.js (built from `scripts/plotly-bundle.js`, see below) | 4.1.2 | MIT | https://github.com/plotly/plotly.js | `bundle.plotly.js` |
+| TidyTree | 0.8.1 | Apache-2.0 | https://github.com/cdcgov/TidyTree | `bundle.tree.js`, built from its TypeScript source (`tidytree/src/main.ts`). Embeds its own Patristic (below). |
+| Leaflet | 1.9.4 | BSD-2-Clause | https://github.com/Leaflet/Leaflet | `bundle.map.js`, `bundle.map.css` |
+| Leaflet.markercluster | 1.5.3 | MIT | https://github.com/Leaflet/Leaflet.markercluster | `bundle.map.js`, `bundle.map.css` |
+| html5sortable | 0.14.0 | MIT | https://github.com/lukasoppermann/html5sortable | `bundle.primary.js` |
+| alignment-viewer | 0.3.4 | Apache-2.0 | https://github.com/CDCgov/AlignmentViewer | `bundle.alignment.js` |
+| pdfmake | 0.3.11 | MIT | https://github.com/bpampuch/pdfmake | `bundle.pdf.js`. Embeds pdfkit, linebreak and xmldoc (below). |
+| pdfmake virtual font files (`vfs_fonts.js`) | from pdfmake 0.3.11 | See "Fonts embedded in pdfmake" below | | `bundle.pdf.js` |
 
 ### `vendor/` (JavaScript and WebAssembly)
 
@@ -74,7 +74,7 @@ Both files are byte-for-byte copies of `node_modules/bootstrap-icons/font/fonts/
 
 Some bundled files contain code from packages that are not top-level dependencies here.
 
-### Packages inside Plotly (`dist/bundle.secondary.js`)
+### Packages inside Plotly (`dist/bundle.plotly.js`)
 
 Packages included by `scripts/plotly-bundle.js`, read from the esbuild metafile. Versions are the
 ones esbuild resolved from `node_modules`. Where a version was nested under another package,
@@ -155,11 +155,11 @@ Note: the licence banner of `d3-*` packages (ISC) is not kept in the minified fi
 
 | Bundled in | Package | Version | Licence | Upstream |
 |---|---|---|---|---|
-| `dist/bundle.secondary.js` (TidyTree) | Patristic (nested under TidyTree) | 0.5.7 | Apache-2.0 | https://github.com/CDCgov/patristic |
-| `dist/bundle.secondary.js` (pdfmake) | pdfkit | 0.19.1 | MIT | https://github.com/foliojs/pdfkit |
-| `dist/bundle.secondary.js` (pdfmake) | linebreak | 1.1.0 | MIT | https://github.com/devongovett/linebreaker |
-| `dist/bundle.secondary.js` (pdfmake) | xmldoc | 2.0.3 | MIT | https://github.com/nfarina/xmldoc |
-| `dist/bundle.secondary.js` (pdfmake, `vfs_fonts.js`) | Roboto (Regular, Italic, Medium, Medium Italic) | Not verified (the font files were checked for their licence and copyright, not for a version number) | SIL Open Font License 1.1 (from the font files' own name table, not from a package) | https://github.com/googlefonts/roboto-classic (copyright line in the font files) |
+| `dist/bundle.tree.js` (TidyTree) | Patristic (nested under TidyTree) | 0.5.7 | Apache-2.0 | https://github.com/CDCgov/patristic |
+| `dist/bundle.pdf.js` (pdfmake) | pdfkit | 0.19.1 | MIT | https://github.com/foliojs/pdfkit |
+| `dist/bundle.pdf.js` (pdfmake) | linebreak | 1.1.0 | MIT | https://github.com/devongovett/linebreaker |
+| `dist/bundle.pdf.js` (pdfmake) | xmldoc | 2.0.3 | MIT | https://github.com/nfarina/xmldoc |
+| `dist/bundle.pdf.js` (pdfmake, `vfs_fonts.js`) | Roboto (Regular, Italic, Medium, Medium Italic) | Not verified (the font files were checked for their licence and copyright, not for a version number) | SIL Open Font License 1.1 (from the font files' own name table, not from a package) | https://github.com/googlefonts/roboto-classic (copyright line in the font files) |
 
 The Patristic embedded in TidyTree is version 0.5.7, as TidyTree's own dependency declares. The
 top-level `patristic` (0.6.0) is the one in `vendor/patristic.min.js`.
@@ -171,5 +171,5 @@ top-level `patristic` (0.6.0) is the one in `vendor/patristic.min.js`.
   conditions apply to redistribution). That has not been done here.
 - Several minified files in `vendor/` (`bioseq.min.js`, `patristic.min.js`) and the Leaflet and Tabulator builds that are bundled (`leaflet.js`, `tabulator.min.js`) do not carry their own licence banner. This
   file is the notice for them.
-- `dist/bundle.secondary.js` carries the banners esbuild and pdfmake keep (for example pdfmake's
+- `dist/bundle.pdf.js` carries the banners esbuild and pdfmake keep (for example pdfmake's
   "@license MIT" and esbuild's bundled-licence comment for polybooljs).

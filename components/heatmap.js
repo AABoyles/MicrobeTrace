@@ -99,7 +99,8 @@
     MT.paneToggle($('.settings-toggle'), pane, false, { beside: $('.heatmap-plot'), resize });
     MT.plotExport(root, plot, settings, {
       csv: filename => MT.exportBlob(MT.toCSV(table()), 'text/csv', filename + '.csv'),
-      xlsx: filename => {
+      xlsx: async filename => {
+        await MT.loadLibrary('xlsx');
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(table()), 'Distances');
         XLSX.writeFile(workbook, filename + '.xlsx');
