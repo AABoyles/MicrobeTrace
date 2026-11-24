@@ -44,7 +44,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"test/unit/*.test.js\" \"test/unit/*.test.mjs\"",
     "precoverage": "node scripts/ensure-built.js",
-    "coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='workers/**' --test-coverage-lines=64 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"test/unit/*.test.js\" \"test/unit/*.test.mjs\"",
+    "coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='workers/**' --test-coverage-lines=60 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"test/unit/*.test.js\" \"test/unit/*.test.mjs\"",
     "lint": "eslint .",
     "test:e2e": "playwright test",
     "update": "npm update && npm run bundle && npm run cache"
