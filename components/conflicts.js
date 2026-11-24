@@ -94,11 +94,11 @@ export function mount(root, ctx) {
   root.style.overflow = 'hidden';
   // Choices made here or elsewhere, and files read again, show once a frame
   // (a choice tells the views twice, and the timeline many times)
-  let pending = false;
+  let pending = false, frame = 0;
   const refresh = () => {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(() => {
+    frame = requestAnimationFrame(() => {
       pending = false;
       showFields();
     });
@@ -113,6 +113,9 @@ export function mount(root, ctx) {
     resize: () => table.redraw(),
     destroy() {
       stop.forEach(fn => fn());
+      // A frame still waiting would redraw a table that is gone (#339)
+      cancelAnimationFrame(frame);
+      pending = false;
       table.destroy();
     }
   };

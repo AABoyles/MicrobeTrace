@@ -310,7 +310,7 @@ export function mount(root, ctx) {
     const animation = tree.animation;
     tree.setAnimation(0);
     fn(value);
-    requestAnimationFrame(() => tree && tree.setAnimation(animation));
+    requestAnimationFrame(() => tree && !destroyed && tree.setAnimation(animation));
   };
 
   const setBackground = () => { container.style.backgroundColor = settings.get('background-color'); };
