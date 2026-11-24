@@ -36,10 +36,12 @@ const ignores = ["dist/**", "vendor/**", "fonts/**", "sw.js", "_site/**", "cover
 // A parameter named _x is kept on purpose (a callback's signature, or Express's
 // four-argument error handler), so it isn't reported (#346)
 const unusedVars = { argsIgnorePattern: "^_" };
+// == null is allowed because it checks for null and undefined together. Any other loose
+// comparison carries a disable comment saying why the types may differ (#346).
 const rules = {
   "no-undef": "error",
   "no-unused-vars": ["error", unusedVars],
-  "eqeqeq": ["warn", "always", { null: "ignore" }],
+  "eqeqeq": ["error", "always", { null: "ignore" }],
 };
 
 // session.data is written through src/session.js, which tells the views what changed (#338).
