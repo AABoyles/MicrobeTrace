@@ -131,7 +131,7 @@ MT.createNodeColorMap = () => {
       key = table.findIndex( k => k === v);
       tempNodeColors.push(nodeColors[key]);
     }
-    nodeColors = env.temp.style.nodeColor = tempNodeColors; // env.temp node color maps saved only under timeline
+    nodeColors = env.temp.style.nodeColor = tempNodeColors; // temp node color maps saved only under timeline
     env.temp.style.nodeColorKeys = [...values];
   }
     
@@ -285,7 +285,7 @@ MT.createLinkColorMap = () => {
       key = table.findIndex( k => k === v);
       tempLinkColors.push(linkColors[key]);
     }
-    linkColors = env.temp.style.linkColor = tempLinkColors; // env.temp link color maps saved only under timeline
+    linkColors = env.temp.style.linkColor = tempLinkColors; // temp link color maps saved only under timeline
     env.temp.style.linkColorsKeys = [...values];
   }
 

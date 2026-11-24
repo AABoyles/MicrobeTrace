@@ -501,7 +501,7 @@ MT.finishUp = async (oldSession) => {
   } catch (error) {
     console.error(error);
     MT.hideModal("loading-information-modal");
-    MT.toast.error("Something went wrong! A new env.session will start in 5 seconds.");
+    MT.toast.error("Something went wrong! A new session will start in 5 seconds.");
     setTimeout(() => MT.reload(), 5000); // the 5 seconds the message above names
   }
   MT.setLinkVisibility(true);
@@ -552,7 +552,7 @@ MT.finishUp = async (oldSession) => {
         console.error("Autostash failed:", error);
         if (!state.warned) {
           state.warned = true;
-          MT.toast.error("Autostash couldn't save your env.session, so the last copy was kept. " + MT.escape(db.describeError(error)), 15);
+          MT.toast.error("Autostash couldn't save your session, so the last copy was kept. " + MT.escape(db.describeError(error)), 15);
         }
       } finally {
         state.busy = false;
