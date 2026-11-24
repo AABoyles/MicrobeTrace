@@ -20,7 +20,7 @@ const libGlobals = {
   Tabulator: "readonly", TomSelect: "readonly", TidyTree: "readonly", XLSX: "readonly", alignmentViewer: "readonly",
   bootstrap: "readonly", d3: "readonly", db: "readonly", goldenLayout: "readonly", patristic: "readonly",
   pdfMake: "readonly", sortable: "readonly", tn93: "readonly", module: "readonly",
-  MTAlignerScoring: "readonly", MTBind: "readonly", MTDates: "readonly", MTEvents: "readonly", MTGraph: "readonly",
+  MTAlignerScoring: "readonly", MTBind: "readonly", MTDates: "readonly", MTEvents: "readonly", MTFormats: "readonly", MTGraph: "readonly",
   MTNodeSources: "readonly", MTSessionFormat: "readonly", MTSettings: "readonly", MTWebMCP: "readonly",
 };
 
@@ -64,7 +64,7 @@ const esModules = [
   "src/aligner.js", "src/binder.js", "src/dates.js", "src/db.js", "src/events.js",
   "src/graph.js", "src/nodes.js", "src/session-format.js", "src/settings.js",
   "src/common.js", "src/loading.js", "src/links-clusters.js", "src/colors.js", "src/export.js",
-  "src/views.js", "src/ui.js", "src/webmcp/**/*.js",
+  "src/views.js", "src/ui.js", "src/formats/*.js", "src/webmcp/**/*.js",
 ];
 
 module.exports = [
