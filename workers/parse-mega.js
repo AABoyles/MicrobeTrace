@@ -1,5 +1,5 @@
 // Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
-const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
+const debugTime = (label, start) => { if (globalThis.name === 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 const isblank = /^\s*$/;
 
 // Parses MEGA text into [{id, seq}]; tolerates a BOM, CRLF and leading
@@ -11,8 +11,8 @@ function parseMega(text){
  let n = lines.length;
  for (let i = 0; i < n; i++) {
   let line = lines[i];
-  if (isblank.test(line) || line[0] == ';') continue;
-  if (line[0] == '#') {
+  if (isblank.test(line) || line[0] === ';') continue;
+  if (line[0] === '#') {
    if (currentSeq) seqs.push(currentSeq);
    currentSeq = {
     id: line.slice(1),

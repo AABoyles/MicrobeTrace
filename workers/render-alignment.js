@@ -15,11 +15,11 @@ onmessage = function(e){
  for (let i = 0; i < n; i++) if (seqs[i].length > longest) longest = seqs[i].length;
  const canvas = new OffscreenCanvas(longest * cw, n * ch);
  const context = canvas.getContext('2d', { alpha: false });
- const bases = Object.keys(colors).filter(base => base != 'ambig');
+ const bases = Object.keys(colors).filter(base => base !== 'ambig');
  const every = Math.max(1, Math.floor(n / 100));
  const total = n * (bases.length + (showChar ? 1 : 0));
  let done = 0;
- const step = row => { done++; if (row % every == 0) postMessage({progress: done / total}); };
+ const step = row => { done++; if (row % every === 0) postMessage({progress: done / total}); };
 
  context.fillStyle = colors.ambig;
  context.fillRect(0, 0, canvas.width, canvas.height);
@@ -30,7 +30,7 @@ onmessage = function(e){
    for (let col = 0; col < longest; col++) {
     const c = seq[col];
     if (!c) break;
-    if (c == base) context.fillRect(Math.floor(col * cw), y, cw, ch);
+    if (c === base) context.fillRect(Math.floor(col * cw), y, cw, ch);
    }
    step(row);
   }
