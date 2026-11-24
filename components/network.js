@@ -348,7 +348,7 @@ function initialPositions(view) {
     const cols = Math.max(1, Math.ceil(Math.sqrt(byKey.size)));
 
     let groupIdx = 0;
-    byKey.forEach((indices, key) => {
+    byKey.forEach(indices => {
       if (indices.length < 3) return; // too small — let BFS handle it
 
       const groupR = 3 * Math.sqrt(indices.length) + 10;
