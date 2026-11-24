@@ -107,7 +107,7 @@ const VIEW_LIBRARIES = {
   geo_map: ["map"], choropleth: ["map"],
   phylogenetic_tree: ["tree"],
   // A session can hold spreadsheets added but not yet read, which the view lists
-  files: () => session.files.some(f => /^xlsx?$/i.test(f.extension || "")) ? ["xlsx"] : []
+  files: () => env.session.files.some(f => /^xlsx?$/i.test(f.extension || "")) ? ["xlsx"] : []
 };
 const loadLibraries = view => Promise.all([].concat(typeof VIEW_LIBRARIES[view] == "function" ? VIEW_LIBRARIES[view]() : VIEW_LIBRARIES[view] || []).map(MT.loadLibrary)).catch(() => {
   throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
