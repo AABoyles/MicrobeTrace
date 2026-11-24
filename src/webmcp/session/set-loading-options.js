@@ -74,7 +74,7 @@ export default {
     if (args.referenceSequence !== undefined) {
       const seq = String(args.referenceSequence).replace(/\s+/g, '').toUpperCase();
       if (!/^[ACGTURYMKWSBDHVN-]+$/.test(seq)) fail('referenceSequence must be nucleotides (ACGT and ambiguity codes)');
-      self.session.data.reference = seq;
+      self.MT.session.setReference(seq);
     }
     if (args.distanceMetricsAlso !== undefined) {
       const also = unique(args.distanceMetricsAlso.filter(m => m != metric));

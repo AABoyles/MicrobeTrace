@@ -417,7 +417,7 @@
         ['file', 'first', 'consensus'].forEach(s => settings.set('reference-source-' + s, s == input.value));
         // (Even when no file is loaded: a reference left from another source
         // must not be used as though it had been loaded)
-        if (input.value == 'file') session.data.reference = referenceSelect.value;
+        if (input.value == 'file') MT.session.setReference(referenceSelect.value);
         showAlignmentRows();
       });
     });
@@ -433,7 +433,7 @@
       $('.reference-file-name').textContent = file.name;
     });
 
-    referenceSelect.addEventListener('change', () => { session.data.reference = referenceSelect.value; });
+    referenceSelect.addEventListener('change', () => { MT.session.setReference(referenceSelect.value); });
 
     // Opening the controls (or clicking the preview) previews the sequences
     const showPreview = () => readFastas().then(updatePreview).catch(previewFailed);
@@ -450,13 +450,12 @@
       row.querySelector('span').textContent = `${id} appears to be ${type}.`;
       const button = row.querySelector('button');
       button.addEventListener('click', () => {
-        const excluded = session.data.nodeExclusions;
         if (button.textContent === 'Exclude') {
-          excluded.push(id);
+          MT.session.excludeNodes(id);
           button.classList.replace('btn-warning', 'btn-success');
           button.textContent = 'Include';
         } else {
-          excluded.splice(excluded.indexOf(id), 1);
+          MT.session.includeNodes(id);
           button.classList.replace('btn-success', 'btn-warning');
           button.textContent = 'Exclude';
         }
@@ -656,9 +655,7 @@
     document.getElementById('loading-cancel').addEventListener('click', () => {
       MT.cancelWork();
       clearTimeout(temp.messageTimeout);
-      const reference = session.data.reference;
-      session.data = MT.dataSkeleton();
-      session.data.reference = reference;
+      MT.session.discardData();
       temp.tree = null;
       session.messages = [];
       MT.progressDone();
@@ -713,7 +710,7 @@
     async function parseFile(file, ctx) {
       const start = Date.now();
       const origin = [file.name];
-      const source = session.data.sources.add(file.name, session.files.indexOf(file));
+      const source = MT.session.addSource(file.name, session.files.indexOf(file));
 
       // An empty file is said to be, not loaded as nothing (#222)
       const contents = file.contents;
@@ -752,7 +749,7 @@
           fail(file, 'FASTA', parsed.problem);
           return false;
         }
-        parsed.nodes.forEach(node => { newNodes += MT.addNode(node, ctx.check, source); });
+        newNodes += MT.session.addNodes(parsed.nodes, source);
         tallyIds(ctx, parsed);
         MT.time('FASTA Merge', start);
         message(` - Parsed ${newNodes} New, ${parsed.total} Total Nodes from FASTA.`);
@@ -766,14 +763,14 @@
     async function parseLinkFile(file, ctx, origin, source, start) {
       message(`Parsing ${shownName(file)} as Link List...`);
       const metric = get('default-distance-metric');
-      if (!session.data.linkFields.includes(metric)) session.data.linkFields.push(metric);
+      MT.session.addLinkField(metric);
       const sheet = file.extension == 'xls' || file.extension == 'xlsx';
       const options = { field1: file.field1, field2: file.field2, field3: file.field3, metric, origin, delimiter: file.delimiter, sheet };
       const linkFormat = formatByName('link');
 
       const mergeLinks = parsed => {
         let l = 0;
-        parsed.fields.forEach(key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
+        MT.session.addLinkField(...parsed.fields);
         ctx.report.blanks += parsed.blanks;
         parsed.links.forEach(link => {
           const { source, target } = link;
@@ -784,7 +781,7 @@
         });
         return l;
       };
-      const mergeNodes = parsed => parsed.nodes.reduce((count, node) => count + MT.addNode(node, true, source), 0);
+      const mergeNodes = parsed => MT.session.addNodes(parsed.nodes, source);
 
       if (sheet) {
         const parsed = linkFormat.parse(file.contents, options);
@@ -824,7 +821,7 @@
       let m = 0;
       // (The columns chosen as the ID and sequence are not among the fields)
       MT.addNodeField(...parsed.fields);
-      parsed.nodes.forEach(node => { m += MT.addNode(node, ctx.check, source); });
+      m += MT.session.addNodes(parsed.nodes, source);
       tallyIds(ctx, parsed);
       MT.time(sheet ? 'Node Excel Parse' : 'Node CSV Parse', start);
       message(` - Parsed ${m} New, ${parsed.total} Total Nodes from Node ${sheet ? 'Excel Table' : 'CSV'}.`);
@@ -867,7 +864,7 @@
     // (A tree is parsed in place, so this is async only to match the others)
     async function parseNewickFile(file, ctx, origin, source, start) {
       const metric = get('default-distance-metric');
-      if (!session.data.linkFields.includes(metric)) session.data.linkFields.push(metric);
+      MT.session.addLinkField(metric);
       let newLinks = 0;
       let newNodes = 0;
       const parsed = formatByName('newick').parse(file.contents, { origin, metric });
@@ -894,7 +891,7 @@
       }, STILL_WORKING_MS);
 
       const files = session.files.slice().sort((a, b) => hierarchy.indexOf(a.format) - hierarchy.indexOf(b.format));
-      session.data.sources.reset();
+      MT.session.resetSources();
 
       session.meta.anySequences = session.files.some(file => (file.format == "fasta") || (file.format == "node" && file.field2 !== "None"));
 
@@ -949,9 +946,9 @@
         message('Building a consensus reference from the sequences...');
         step = 'building the consensus reference';
         MT.progress('Building a consensus reference');
-        session.data.reference = await MT.consensusReference(subset, alignerScoring());
+        MT.session.setReference(await MT.consensusReference(subset, alignerScoring()));
       } else if (source == 'first') {
-        session.data.reference = subset.length ? subset[0].seq : '';
+        MT.session.setReference(subset.length ? subset[0].seq : '');
       }
       if (!session.data.reference) {
         throw new Error(source == 'file' ?
@@ -1000,7 +997,7 @@
       // Nodes without a sequence hold only gaps; they are left out of the consensus
       step = 'computing the consensus sequence';
       MT.progress('Computing the consensus sequence');
-      session.data.consensus = await MT.computeConsensus(subset);
+      MT.session.setConsensus(await MT.computeConsensus(subset));
       await MT.computeConsensusDistances();
       subset.sort((a, b) => a['_diff'] - b['_diff']);
       if(session.style.widgets['ambiguity-resolution-strategy']){

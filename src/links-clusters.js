@@ -240,7 +240,7 @@ MT.computeLinks = async subset => {
   const before = g.edgeCount;
   metrics.forEach((m, i) => {
     const field = m;
-    if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
+    MT.session.addLinkField(field);
     if (sparse) {
       parts.forEach(({ results }) => {
         const { source, target, distance } = results[i];
@@ -571,7 +571,7 @@ MT.isCluster = nodeCount => nodeCount > 1;
 MT.tagClusters = () => {
   return new Promise(resolve => {
     let start = Date.now();
-    let clusters = session.data.clusters = [];
+    const clusters = [];
     const nodes = session.data.nodes;
     const g = session.data.graph;
     const lsv = session.style.widgets["link-sort-variable"];
@@ -600,6 +600,7 @@ MT.tagClusters = () => {
       nodeCluster[x] = clusterOf[component[x]];
       if (nodeCluster[x] >= 0) clusters[nodeCluster[x]].nodes++;
     }
+    MT.session.setClusters(clusters);
     // (The same clusters as before keep the same array, and what was built
     // from it stays good)
     const before = g.nodeCluster;

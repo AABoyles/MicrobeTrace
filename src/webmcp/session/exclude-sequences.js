@@ -22,10 +22,10 @@ export default {
       const view = await filesView();
       ids = unique(ids.concat(view.auditSequences(await pendingSequences(), args.checks || {}).map(f => f.id)));
     }
-    if (mode == 'add') ids.forEach(id => { if (!list.includes(id)) list.push(id); });
-    else if (mode == 'remove') ids.forEach(id => { const i = list.indexOf(id); if (i > -1) list.splice(i, 1); });
-    else if (mode == 'set') list.splice(0, list.length, ...unique(ids));
-    else if (mode == 'clear') list.splice(0, list.length);
+    if (mode == 'add') self.MT.session.excludeNodes(ids);
+    else if (mode == 'remove') self.MT.session.includeNodes(ids);
+    else if (mode == 'set') self.MT.session.setExclusions(unique(ids));
+    else if (mode == 'clear') self.MT.session.setExclusions([]);
     return { excluded: list.slice(), count: list.length, note: dataLoaded() ? 'A network is loaded: exclusions only apply to nodes added by a later launch.' : undefined };
   }
 };

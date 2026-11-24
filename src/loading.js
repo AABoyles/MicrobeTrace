@@ -45,7 +45,7 @@ MT.processSVG = svg => {
       base[session.style.widgets['default-distance-metric']] = 0;
       MT.addLink(base);
     });
-    session.data.linkFields.push("color");
+    MT.session.addLinkField("color");
   } else {
     all(".nodes g").forEach((node, i) => {
       nodes.push(node.getAttribute("transform").slice(10, -1).split(",").map(parseFloat));
@@ -115,22 +115,7 @@ MT.applySession = oldSession => {
   );
   if (oldSession.layout) session.layout = oldSession.layout;
   session.meta.startTime = Date.now();
-  const nodes = oldSession.data.nodes,
-        links = oldSession.data.links,
-        n = nodes.length,
-        m = links.length;
-  // (Older sessions saved each node's encoded sequence, which is rebuilt when needed)
-  for(let i = 0; i < n; i++) { delete nodes[i]._seqInt; MT.addNode(nodes[i]); }
-  for(let j = 0; j < m; j++) MT.addLink(links[j]);
-  // Where the nodes' values came from (sessions from before this have none)
-  if (oldSession.data.nodeSources) session.data.nodeSources = oldSession.data.nodeSources;
-  ['nodeFields', 'linkFields', 'clusterFields', 'nodeExclusions'].forEach(v => {
-    if(oldSession.data[v]) session.data[v] = MT.uniq(session.data[v].concat(oldSession.data[v]));
-  });
-  // Sessions saved before the ID column was the ID alone list it as a field
-  // too: leave it out where it only repeats the ID
-  session.data.nodeFields = session.data.nodeFields.filter(field => !(/^id$/i.test(field) &&
-    session.data.nodes.every(d => d[field] == null || "" + d[field] == d._id)));
+  MT.session.restoreData(oldSession.data);
   if(oldSession.network) session.network = oldSession.network;
   // Sessions from before distances were kept under their metric's name (#249)
   // kept the distance metric's as distance: they filter on that
@@ -191,7 +176,7 @@ MT.applyHIVTrace = hivtrace => {
     newLink[metric] = parseFloat(link.length);
     MT.addLink(newLink);
   }
-  session.data.linkFields.push(metric);
+  MT.session.addLinkField(metric);
   MT.runHamsters();
 };
 
@@ -218,7 +203,7 @@ MT.applyGHOST = ghost => {
       origin: ["GHOST Import"], visible: true });     
     MT.addLink(newLink);   
   }
-  [ session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps" ].forEach( key => { if (!session.data.linkFields.includes(key)) session.data.linkFields.push(key); });
+  MT.session.addLinkField(session.style.widgets['default-distance-metric'], "density", "dist", "shared", "src_genotype", "src_haps", "tgt_genotype", "tgt_haps");
 //	MT.finishUp(); 
   MT.runHamsters();
 }; 
@@ -240,7 +225,6 @@ MT.parseMEGA = text => MT.runWorker("workers/parse-mega.js", text, { name: "The 
 // with an Error saying why when the file cannot be read as one.
 MT.parseCSVMatrix = (file, source, nodeOrigin) => {
   return new Promise((resolve, reject) => {
-    let check = session.files.length > 1;
     const origin = [file.name];
     let nn = 0,
         nl = 0;
@@ -250,20 +234,14 @@ MT.parseCSVMatrix = (file, source, nodeOrigin) => {
       const start = Date.now();
       const nodes = data.nodes;
       const tn = nodes.length;
-      for (let i = 0; i < tn; i++) {
-        nn += MT.addNode({
-          _id: nodes[i],
-          origin: nodeOrigin || ['Genetic Distance']
-        }, check, source);
-      }
+      nn += MT.session.addNodes(nodes.map(id => ({ _id: id, origin: nodeOrigin || ['Genetic Distance'] })), source);
       const links = data.links;
       const tl = links.length;
       // Distances go under the distance metric, which the threshold filters on (#213)
       const field = session.style.widgets["default-distance-metric"];
-      if (!session.data.linkFields.includes(field)) session.data.linkFields.push(field);
-      for (let j = 0; j < tl; j++) {
-        nl += MT.addLink(MTGraph.distanceLink(Object.assign(links[j], { origin: origin }), field));
-      }
+      MT.session.addLinkField(field);
+      // (A matrix can hold millions of links, so they are made as they are added)
+      nl += MT.session.addLinks((function*() { for (const link of links) yield MTGraph.distanceLink(Object.assign(link, { origin: origin }), field); })());
       MT.time('CSV Matrix Merge', start);
       resolve({ nn, nl, tn, tl, ids: nodes, unparseable: data.unparseable || 0, example: data.example });
     }).catch(reject);
