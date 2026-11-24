@@ -1,166 +1,171 @@
-  MT.registerView('timeline', (root, { settings, events }) => {
+// The timeline view, loaded as an ES module by src/views.js (#339). Library globals (d3, MTBind)
+// stay globals; MT, the session and temp come from ctx.
+import { MTDates } from '../src/dates.js';
 
-    const $ = selector => root.querySelector(selector);
-    const chart = $('.timeline-chart');
-    const pane = $('.left-pane');
-    const margin = { top: 50, left: 50, right: 40, bottom: 30 };
-    // (Overflowing into the padding above, for the top count's label)
-    const svg = d3.select(chart).append('svg').style('overflow', 'visible');
-    const curve = svg.append('g').attr('class', 'timeline-epi-curve').attr('transform', `translate(${margin.left},0)`);
-    const axis = svg.append('g').attr('class', 'axis axis--x');
-    const countAxis = svg.append('g').attr('class', 'axis axis--y').attr('transform', `translate(${margin.left},0)`);
-    const brushG = svg.append('g').attr('class', 'brush').attr('transform', `translate(${margin.left},0)`);
-    const undatedNote = svg.append('text').attr('class', 'undated-note').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'currentColor');
-    let x;
+export function mount(root, ctx) {
+  const { MT, settings, events } = ctx;
 
-    // A node's date, or null
-    const dateOf = MT.parseDate;
+  const $ = selector => root.querySelector(selector);
+  const chart = $('.timeline-chart');
+  const pane = $('.left-pane');
+  const margin = { top: 50, left: 50, right: 40, bottom: 30 };
+  // (Overflowing into the padding above, for the top count's label)
+  const svg = d3.select(chart).append('svg').style('overflow', 'visible');
+  const curve = svg.append('g').attr('class', 'timeline-epi-curve').attr('transform', `translate(${margin.left},0)`);
+  const axis = svg.append('g').attr('class', 'axis axis--x');
+  const countAxis = svg.append('g').attr('class', 'axis axis--y').attr('transform', `translate(${margin.left},0)`);
+  const brushG = svg.append('g').attr('class', 'brush').attr('transform', `translate(${margin.left},0)`);
+  const undatedNote = svg.append('text').attr('class', 'undated-note').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'currentColor');
+  let x;
 
-    // The calendar periods bars can count, each with how its dates read
-    const periods = {
-      day: { interval: d3.timeDay, format: '%Y-%m-%d', name: d => d3.timeFormat('%Y-%m-%d')(d) },
-      week: { interval: d3.timeMonday, format: '%Y-%m-%d', name: d => 'Week of ' + d3.timeFormat('%Y-%m-%d')(d) },
-      month: { interval: d3.timeMonth, format: '%Y-%m', name: d => d3.timeFormat('%B %Y')(d) },
-      year: { interval: d3.timeYear, format: '%Y', name: d => d3.timeFormat('%Y')(d) }
-    };
-    // Automatic: the shortest period that makes no more than about 60 bars
-    function period(dates) {
-      const chosen = settings.get('timeline-bin');
-      if (periods[chosen]) return periods[chosen];
-      const [first, last] = d3.extent(dates);
-      return Object.values(periods).find(p => p.interval.count(first, last) < 60) || periods.year;
-    }
+  // A node's date, or null
+  const dateOf = MT.parseDate;
 
-    // Ticks at the starts of the bars' periods, so each label is a bar's own
-    // (whole dates can fall anywhere)
-    function ticks(interval, format, domain, most) {
-      if (format.includes('%d')) return most;
-      return interval.every(Math.ceil(interval.count(...domain) / most));
-    }
+  // The calendar periods bars can count, each with how its dates read
+  const periods = {
+    day: { interval: d3.timeDay, format: '%Y-%m-%d', name: d => d3.timeFormat('%Y-%m-%d')(d) },
+    week: { interval: d3.timeMonday, format: '%Y-%m-%d', name: d => 'Week of ' + d3.timeFormat('%Y-%m-%d')(d) },
+    month: { interval: d3.timeMonth, format: '%Y-%m', name: d => d3.timeFormat('%B %Y')(d) },
+    year: { interval: d3.timeYear, format: '%Y', name: d => d3.timeFormat('%Y')(d) }
+  };
+  // Automatic: the shortest period that makes no more than about 60 bars
+  function period(dates) {
+    const chosen = settings.get('timeline-bin');
+    if (periods[chosen]) return periods[chosen];
+    const [first, last] = d3.extent(dates);
+    return Object.values(periods).find(p => p.interval.count(first, last) < 60) || periods.year;
+  }
 
-    function draw() {
-      const width = MT.viewWidth(root) - margin.left - margin.right;
-      const height = root.clientHeight - margin.top - margin.bottom;
-      // A view in a background tab has no size; it draws when it's shown
-      if (width <= 0 || height <= 0) return;
-      // The chart's padding is the top margin
-      svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.bottom);
+  // Ticks at the starts of the bars' periods, so each label is a bar's own
+  // (whole dates can fall anywhere)
+  function ticks(interval, format, domain, most) {
+    if (format.includes('%d')) return most;
+    return interval.every(Math.ceil(interval.count(...domain) / most));
+  }
 
-      const field = dateField();
-      const order = field ? MTDates.dateOrderOf(session.data.nodes.map(d => d[field])).order : 'mdy';
-      const dates = field ? session.data.nodes.map(d => dateOf(d[field], order)).filter(d => d) : [];
-      // Nodes with no date aren't in the curve; say how many
-      const undated = field ? MTDates.countUndated(session.data.nodes, field, order) : 0;
-      undatedNote
-        .attr('x', margin.left + width).attr('y', margin.top - 30)
-        .text(dates.length && undated ? `${undated.toLocaleString()} undated ${undated == 1 ? 'node' : 'nodes'} not shown` : '');
-      // Without dates, a note saying what to choose instead of an empty chart
-      $('.view-message').hidden = dates.length > 0;
-      svg.style('display', dates.length ? null : 'none');
-      // Bars count calendar periods: whole days, weeks, months or years
-      const { interval, format, name } = period(dates.length ? dates : [new Date()]);
-      const domain = dates.length
-        ? [interval.floor(d3.min(dates)), interval.offset(interval.floor(d3.max(dates)), 1)]
-        : [new Date(2000, 1, 1), new Date()];
-      x = d3.scaleTime().domain(domain).range([0, width]);
-      const bins = dates.length ? d3.bin().domain(domain).thresholds(interval.range(...domain))(dates) : [];
-      const counts = bins.map(b => b.length);
-      const cumulative = !settings.get('timeline-noncumulative');
-      if (cumulative) counts.forEach((c, i) => { if (i) counts[i] += counts[i - 1]; });
-      const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(counts) || 1]).nice();
+  function draw() {
+    const width = MT.viewWidth(root) - margin.left - margin.right;
+    const height = root.clientHeight - margin.top - margin.bottom;
+    // A view in a background tab has no size; it draws when it's shown
+    if (width <= 0 || height <= 0) return;
+    // The chart's padding is the top margin
+    svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.bottom);
 
-      // A gap between neighboring bars, when there's room for one
-      const gap = width / bins.length > 4 ? 1 : 0;
-      curve.selectAll('rect.bar')
-        .data(bins)
-        .join(enter => enter.append('rect').call(rect => rect.append('title')))
-        .attr('class', 'bar')
-        .attr('data-count', (d, i) => counts[i])
-        .attr('x', d => x(d.x0))
-        .attr('y', (d, i) => y(counts[i]))
-        .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - gap))
-        .attr('height', (d, i) => height - y(counts[i]))
-        .attr('fill', settings.get('node-color'))
-        .select('title')
-        .text((d, i) => `${name(d.x0)}: ${counts[i]} ${counts[i] == 1 ? 'node' : 'nodes'}${cumulative ? ' so far' : ''}`);
+    const field = dateField();
+    const order = field ? MTDates.dateOrderOf(ctx.session.data.nodes.map(d => d[field])).order : 'mdy';
+    const dates = field ? ctx.session.data.nodes.map(d => dateOf(d[field], order)).filter(d => d) : [];
+    // Nodes with no date aren't in the curve; say how many
+    const undated = field ? MTDates.countUndated(ctx.session.data.nodes, field, order) : 0;
+    undatedNote
+      .attr('x', margin.left + width).attr('y', margin.top - 30)
+      .text(dates.length && undated ? `${undated.toLocaleString()} undated ${undated == 1 ? 'node' : 'nodes'} not shown` : '');
+    // Without dates, a note saying what to choose instead of an empty chart
+    $('.view-message').hidden = dates.length > 0;
+    svg.style('display', dates.length ? null : 'none');
+    // Bars count calendar periods: whole days, weeks, months or years
+    const { interval, format, name } = period(dates.length ? dates : [new Date()]);
+    const domain = dates.length
+      ? [interval.floor(d3.min(dates)), interval.offset(interval.floor(d3.max(dates)), 1)]
+      : [new Date(2000, 1, 1), new Date()];
+    x = d3.scaleTime().domain(domain).range([0, width]);
+    const bins = dates.length ? d3.bin().domain(domain).thresholds(interval.range(...domain))(dates) : [];
+    const counts = bins.map(b => b.length);
+    const cumulative = !settings.get('timeline-noncumulative');
+    if (cumulative) counts.forEach((c, i) => { if (i) counts[i] += counts[i - 1]; });
+    const y = d3.scaleLinear().range([height, 0]).domain([0, d3.max(counts) || 1]).nice();
 
-      axis
-        .attr('transform', `translate(${margin.left},${height})`)
-        .call(d3.axisBottom(x).ticks(ticks(interval, format, domain, Math.max(2, Math.floor(width / 90)))).tickSize(8).tickPadding(8).tickFormat(d3.timeFormat(format)));
-      // Counts up the side: whole numbers only
-      countAxis.call(d3.axisLeft(y).ticks(Math.min(y.domain()[1], Math.max(2, Math.floor(height / 50)))).tickFormat(d3.format('d')));
+    // A gap between neighboring bars, when there's room for one
+    const gap = width / bins.length > 4 ? 1 : 0;
+    curve.selectAll('rect.bar')
+      .data(bins)
+      .join(enter => enter.append('rect').call(rect => rect.append('title')))
+      .attr('class', 'bar')
+      .attr('data-count', (d, i) => counts[i])
+      .attr('x', d => x(d.x0))
+      .attr('y', (d, i) => y(counts[i]))
+      .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - gap))
+      .attr('height', (d, i) => height - y(counts[i]))
+      .attr('fill', settings.get('node-color'))
+      .select('title')
+      .text((d, i) => `${name(d.x0)}: ${counts[i]} ${counts[i] == 1 ? 'node' : 'nodes'}${cumulative ? ' so far' : ''}`);
 
-      brush.extent([[0, 0], [width, height]]);
-      brushG.call(brush);
-      // Keep the brushed range, if it's in view
-      const end = session.state.timeEnd;
-      brushG.call(brush.move, end && end < domain[1] && end > domain[0] ? [0, x(end)] : null);
-    }
+    axis
+      .attr('transform', `translate(${margin.left},${height})`)
+      .call(d3.axisBottom(x).ticks(ticks(interval, format, domain, Math.max(2, Math.floor(width / 90)))).tickSize(8).tickPadding(8).tickFormat(d3.timeFormat(format)));
+    // Counts up the side: whole numbers only
+    countAxis.call(d3.axisLeft(y).ticks(Math.min(y.domain()[1], Math.max(2, Math.floor(height / 50)))).tickFormat(d3.format('d')));
 
-    // Brushing hides the nodes after the brushed range. The range always starts
-    // at the beginning.
-    const brush = d3.brushX().on('brush end', event => {
-      if (!event.sourceEvent) return;
-      const selection = event.selection;
-      if (selection && selection[0] > 0) brushG.call(brush.move, [0, selection[1]]);
-      if (event.type == 'end') filter(selection ? x.invert(selection[1]) : null);
-    });
+    brush.extent([[0, 0], [width, height]]);
+    brushG.call(brush);
+    // Keep the brushed range, if it's in view
+    const end = ctx.session.state.timeEnd;
+    brushG.call(brush.move, end && end < domain[1] && end > domain[0] ? [0, x(end)] : null);
+  }
 
-    function filter(end) {
-      // With no range, nothing is hidden
-      session.state.timeEnd = end ? end.getTime() : Date.now();
-      // Filtering needs the field chosen, not just shown. (Choosing it redraws,
-      // keeping the range just set.)
-      if (!chosen()) settings.set('timeline-date-field', dateField());
-      MT.setNodeVisibility(true);
-      MT.setLinkVisibility(true);
-      MT.tagClusters().then(() => {
-        events.emit('node-visibility');
-        events.emit('link-visibility');
-      });
-    }
-
-    const setColor = () => curve.selectAll('rect.bar').attr('fill', settings.get('node-color'));
-    const setBackground = () => {
-      chart.style.background = settings.get('background-color');
-      axis.style('color', settings.get('background-color-contrast'));
-      countAxis.style('color', settings.get('background-color-contrast'));
-    };
-
-    // The date field: the one chosen, or else the data's first field of dates,
-    // which is shown but not saved until the curve filters by it (choosing it
-    // also tells the network and statistics to watch the dates)
-    const menu = $('[data-setting="timeline-date-field"]');
-    let [detected] = MT.dateFields(session.data.nodes, session.data.nodeFields);
-    const chosen = () => {
-      const field = settings.get('timeline-date-field');
-      return field && field != 'None' ? field : null;
-    };
-    const dateField = () => chosen() || detected || null;
-    const showField = () => { menu.value = dateField() || 'None'; };
-    // Choosing None leaves the curve empty
-    menu.addEventListener('change', () => {
-      if (menu.value == 'None') detected = null;
-      draw();
-    });
-
-    // The settings start open when there's no date field to draw
-    MT.paneToggle($('.settings-toggle'), pane, !dateField(), { beside: chart, resize: draw });
-    MT.svgExport(root, () => svg.node(), settings);
-
-    const stop = [
-      MTBind(pane, settings),
-      settings.subscribe('timeline-date-field', showField, { reload: true }),
-      settings.subscribe(['timeline-date-field', 'timeline-noncumulative', 'timeline-bin'], draw),
-      events.on('node-color-change', setColor),
-      events.on('background-color-change', setBackground)
-    ];
-    showField();
-    draw();
-    setBackground();
-
-    return {
-      resize: draw,
-      destroy: () => stop.forEach(fn => fn())
-    };
+  // Brushing hides the nodes after the brushed range. The range always starts
+  // at the beginning.
+  const brush = d3.brushX().on('brush end', event => {
+    if (!event.sourceEvent) return;
+    const selection = event.selection;
+    if (selection && selection[0] > 0) brushG.call(brush.move, [0, selection[1]]);
+    if (event.type == 'end') filter(selection ? x.invert(selection[1]) : null);
   });
+
+  function filter(end) {
+    // With no range, nothing is hidden
+    ctx.session.state.timeEnd = end ? end.getTime() : Date.now();
+    // Filtering needs the field chosen, not just shown. (Choosing it redraws,
+    // keeping the range just set.)
+    if (!chosen()) settings.set('timeline-date-field', dateField());
+    MT.setNodeVisibility(true);
+    MT.setLinkVisibility(true);
+    MT.tagClusters().then(() => {
+      events.emit('node-visibility');
+      events.emit('link-visibility');
+    });
+  }
+
+  const setColor = () => curve.selectAll('rect.bar').attr('fill', settings.get('node-color'));
+  const setBackground = () => {
+    chart.style.background = settings.get('background-color');
+    axis.style('color', settings.get('background-color-contrast'));
+    countAxis.style('color', settings.get('background-color-contrast'));
+  };
+
+  // The date field: the one chosen, or else the data's first field of dates,
+  // which is shown but not saved until the curve filters by it (choosing it
+  // also tells the network and statistics to watch the dates)
+  const menu = $('[data-setting="timeline-date-field"]');
+  let [detected] = MT.dateFields(ctx.session.data.nodes, ctx.session.data.nodeFields);
+  const chosen = () => {
+    const field = settings.get('timeline-date-field');
+    return field && field != 'None' ? field : null;
+  };
+  const dateField = () => chosen() || detected || null;
+  const showField = () => { menu.value = dateField() || 'None'; };
+  // Choosing None leaves the curve empty
+  menu.addEventListener('change', () => {
+    if (menu.value == 'None') detected = null;
+    draw();
+  });
+
+  // The settings start open when there's no date field to draw
+  MT.paneToggle($('.settings-toggle'), pane, !dateField(), { beside: chart, resize: draw });
+  MT.svgExport(root, () => svg.node(), settings);
+
+  const stop = [
+    MTBind(pane, settings),
+    settings.subscribe('timeline-date-field', showField, { reload: true }),
+    settings.subscribe(['timeline-date-field', 'timeline-noncumulative', 'timeline-bin'], draw),
+    events.on('node-color-change', setColor),
+    events.on('background-color-change', setBackground)
+  ];
+  showField();
+  draw();
+  setBackground();
+
+  return {
+    resize: draw,
+    destroy: () => stop.forEach(fn => fn())
+  };
+}
