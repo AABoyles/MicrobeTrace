@@ -89,6 +89,16 @@ test('exclusions are added, removed and set in place', () => {
   assert.deepStrictEqual(heard, [['exclusions'], ['exclusions'], ['exclusions'], ['exclusions']]);
 });
 
+test('setExclusions takes hundreds of thousands of IDs and keeps the same list', () => {
+  const { root, S } = setup();
+  const list = root.session.data.nodeExclusions;
+  const ids = Array.from({ length: 300000 }, (_, i) => 'id' + i);
+  S.setExclusions(ids.concat(ids.slice(0, 10)));
+  assert.strictEqual(root.session.data.nodeExclusions, list);
+  assert.strictEqual(list.length, 300000);
+  assert.strictEqual(list[299999], 'id299999');
+});
+
 test('reference, consensus and clusters are set and announced', () => {
   const { root, S, heard } = setup();
   S.setReference('ACGT');

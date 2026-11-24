@@ -142,7 +142,11 @@ export function makeSession(MT, root) {
   // Exactly these nodes (none, to clear)
   S.setExclusions = ids => {
     const list = data().nodeExclusions;
-    list.splice(0, list.length, ...new Set([].concat(ids).map(String)));
+    // A loop, not splice(0, n, ...ids): spreading a few hundred thousand IDs into
+    // arguments throws a RangeError (#338)
+    const set = new Set([].concat(ids).map(String));
+    list.length = 0;
+    for (const id of set) list.push(id);
     changed('exclusions');
   };
 
