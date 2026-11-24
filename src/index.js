@@ -56,8 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       if (self.temp && self.temp.autostash) clearInterval(self.temp.autostash.interval);
       await db.deleteAll();
-      try { localStorage.clear(); } catch (e) { /* unavailable */ }
-      try { sessionStorage.clear(); } catch (e) { /* unavailable */ }
+      try { localStorage.clear(); } catch { /* unavailable */ }
+      try { sessionStorage.clear(); } catch { /* unavailable */ }
       if (self.caches) await caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
       if (navigator.serviceWorker) await navigator.serviceWorker.getRegistrations().then(all => Promise.all(all.map(r => r.unregister())));
       if (navigator.storage && navigator.storage.getDirectory) {
@@ -1271,7 +1271,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let re;
       try {
         re = pattern(value);
-      } catch (error) {
+      } catch {
         return; // not yet a whole pattern
       }
       // Suggestions, each of which searches for itself

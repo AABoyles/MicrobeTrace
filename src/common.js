@@ -397,8 +397,6 @@ MT.defaultNode = () => ({
   origin: []
 });
 
-let isNumber = a => typeof a === "number";
-
 let uniq = a => {
   let seen = {};
   let out = [];
@@ -534,7 +532,7 @@ MT.workScope = () => {
 // the console, then reload. (Workers switch on with it too: runWorker starts
 // them with the name "debug", which each worker's debugTime reads.)
 MT.debugging = (() => {
-  try { return /[?&]debug\b/.test(location.search) || localStorage.getItem('MT.debug') == '1'; } catch (e) { return false; }
+  try { return /[?&]debug\b/.test(location.search) || localStorage.getItem('MT.debug') == '1'; } catch { return false; }
 })();
 MT.debug = (...args) => { if (MT.debugging) console.log(...args); };
 // start is the Date.now() value from when the work began
@@ -550,7 +548,7 @@ MT.runWorker = (script, message, { transfer, name, worker, onProgress, scope } =
       if (settled) return;
       settled = true;
       owners.delete(stop);
-      try { computer.terminate(); } catch (e) { /* already gone */ }
+      try { computer.terminate(); } catch { /* already gone */ }
       fn(value);
     };
     const what = name || script;

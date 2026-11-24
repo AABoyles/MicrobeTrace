@@ -36,7 +36,7 @@ export function detectFormat(contents, fileName = '') {
   if (isSheet(extension)) {
     try {
       text = sheetText(contents);
-    } catch (error) {
+    } catch {
       return { delimiter: ',' };
     }
   }

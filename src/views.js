@@ -333,7 +333,7 @@ MT.describeView = (element, name, summary, { role = 'region' } = {}) => {
   const links = () => env.session.data.links.filter(d => d.visible !== false).length;
   const refresh = () => {
     let text = '';
-    try { text = summary ? summary({ nodes: nodes(), links: links() }) : ''; } catch (e) { /* the name stands alone */ }
+    try { text = summary ? summary({ nodes: nodes(), links: links() }) : ''; } catch { /* the name stands alone */ }
     note.textContent = (text ? text + ' ' : '') + 'The Table view lists the same data.';
   };
   refresh();

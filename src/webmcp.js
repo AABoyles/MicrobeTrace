@@ -50,14 +50,14 @@
   const OFF = 'WebMCP is turned off in MicrobeTrace. The user can turn it on in Settings > AI Agents.';
 
   function stored() {
-    try { return !!self.sessionStorage && self.sessionStorage.getItem(STORAGE_KEY) == 'on'; } catch (e) { return false; }
+    try { return !!self.sessionStorage && self.sessionStorage.getItem(STORAGE_KEY) == 'on'; } catch { return false; }
   }
   function store(on) {
     try {
       if (!self.sessionStorage) return;
       if (on) self.sessionStorage.setItem(STORAGE_KEY, 'on');
       else self.sessionStorage.removeItem(STORAGE_KEY);
-    } catch (e) { /* storage blocked: on for this page only */ }
+    } catch { /* storage blocked: on for this page only */ }
   }
 
   let enabled = stored();
@@ -267,7 +267,7 @@
     try {
       text = JSON.stringify(args, (key, value) => typeof value === 'string' && value.length > 200 ?
         value.slice(0, 200) + '... (' + value.length.toLocaleString() + ' characters)' : value, 2);
-    } catch (e) { text = String(args); }
+    } catch { text = String(args); }
     return text && text.length > 2000 ? text.slice(0, 2000) + '\n...' : text || '{}';
   }
 
@@ -385,7 +385,7 @@
       const start = Date.now();
       const check = () => {
         let value;
-        try { value = test(); } catch (e) { value = false; }
+        try { value = test(); } catch { value = false; }
         if (value) return resolve(value);
         if (Date.now() - start > timeout) return reject(new ToolError(message));
         setTimeout(check, interval);
@@ -484,7 +484,7 @@
     if (pattern.length > MAX_REGEX) fail('That regex is too long (' + pattern.length + ' characters; at most ' + MAX_REGEX + ').');
     if (/\\[1-9]|\\k</.test(pattern)) fail('Regexes with backreferences are not allowed: they can be very slow.');
     if (nestedRepeat(pattern)) fail('That regex repeats a group that itself repeats (like (a+)+), which can take practically forever. Rewrite it without the nesting.');
-    try { return new RegExp(pattern, flags); } catch (e) { return fail('Invalid regex: ' + pattern); }
+    try { return new RegExp(pattern, flags); } catch { return fail('Invalid regex: ' + pattern); }
   }
   // A value as a regex is tested against it: text, cut to MAX_REGEX_INPUT
   const regexInput = x => { x = String(x); return x.length > MAX_REGEX_INPUT ? x.slice(0, MAX_REGEX_INPUT) : x; };

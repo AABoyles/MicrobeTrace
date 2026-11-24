@@ -276,12 +276,12 @@ MT.svgImage = async (svg, { scale = 1, backgroundColor, type = 'image/png', qual
   let css = '';
   for (const sheet of document.styleSheets) {
     let rules;
-    try { rules = sheet.cssRules; } catch (e) { continue; } // another origin's
+    try { rules = sheet.cssRules; } catch { continue; } // another origin's
     for (const rule of rules || []) {
       if (!rule.selectorText) continue;
       try {
         if (svg.matches(rule.selectorText) || svg.querySelector(rule.selectorText)) css += rule.cssText + '\n';
-      } catch (e) { /* a selector this browser can't match, like ::-moz- */ }
+      } catch { /* a selector this browser can't match, like ::-moz- */ }
     }
   }
   if (css) {
@@ -297,7 +297,7 @@ MT.svgImage = async (svg, { scale = 1, backgroundColor, type = 'image/png', qual
       const data = await blobToDataURL(await (await fetch(href)).blob());
       image.setAttribute('href', data);
       image.removeAttribute('xlink:href');
-    } catch (e) {
+    } catch {
       image.remove();
     }
   }));

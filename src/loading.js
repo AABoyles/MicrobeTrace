@@ -745,7 +745,7 @@ MT.demoURL = "demo/Demo_outbreak_session.microbetrace";
 MT.demoAvailable = async () => {
   if (navigator.onLine) return true;
   try { return !!(env.caches && await caches.match(new URL(MT.demoURL, location.href).href)); }
-  catch (error) { return false; }
+  catch { return false; }
 };
 
 // The demo buttons say when they need a connection, rather than failing

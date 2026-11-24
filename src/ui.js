@@ -479,7 +479,7 @@ MT.showOnline = element => element.querySelectorAll(".ifOnline").forEach(el => {
     var el = e.target.closest && e.target.closest('[data-mt-name]');
     if (!el) return hideTip();
     var visible = false;
-    try { visible = el.matches(':focus-visible'); } catch (error) { visible = true; }
+    try { visible = el.matches(':focus-visible'); } catch { visible = true; }
     if (!visible) return hideTip();
     if (!tip) {
       tip = document.createElement('div');
