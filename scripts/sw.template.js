@@ -14,19 +14,37 @@ const PREFIX = "microbetrace-";
 const scope = self.registration.scope;
 const INDEX = new URL("index.html", scope).href;
 
+// Only the app shell is precached (#343): scripts/build-sw.js says what it holds.
+// The other files are cached by the fetch handler below the first time they are
+// fetched, and a new version fetches again the ones the old version had cached (warm).
 self.addEventListener("install", event => {
   // Bypass the HTTP cache so a stale copy can't be frozen into the new version.
   // No skipWaiting() here: the page offers the reload instead. (With no older
   // worker there is nothing to wait for, so the first install activates at once.)
   event.waitUntil(caches.open(CACHE).then(cache =>
-    cache.addAll(PRECACHE.map(url => new Request(new URL(url, scope).href, { cache: "reload" })))));
+    cache.addAll(PRECACHE.map(url => new Request(new URL(url, scope).href, { cache: "reload" }))).then(() => warm(cache))));
 });
+
+// Fetches again, for the new version, the files the old versions cached on use (the
+// other views and the lazy libraries), so that what a person has opened keeps opening
+// offline after an update. Best effort: a file that has gone or can't be fetched is
+// left for its first use, and a failure here never fails the install. The data/ and
+// demo/ files are carried over instead (see CARRIED), since they are not code.
+const warm = cache => caches.keys()
+  .then(keys => Promise.all(keys.filter(k => k.startsWith(PREFIX) && k !== CACHE).map(name => caches.open(name).then(previous => previous.keys()))))
+  .then(lists => {
+    const urls = new Set(lists.flat().map(request => request.url));
+    const wanted = [...urls].filter(url => url.startsWith(self.location.origin) && !CARRIED.test(new URL(url).pathname));
+    return Promise.all(wanted.map(url => cache.match(url).then(hit => hit ||
+      fetch(new Request(url, { cache: "reload" })).then(response => response.ok && response.type === "basic" ? cache.put(url, response) : null))));
+  })
+  .catch(() => {});
 
 self.addEventListener("message", event => {
   if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
-// Files cached on first use rather than precached (the map boundaries in data/
+// Files cached on first use that are data, not code (the map boundaries in data/
 // and the demo session in demo/) are carried into the new version's cache
 // before the old one goes, so offline use keeps them across updates (#296).
 // They are data, not code, so an older copy can't mix versions of the app.
@@ -51,8 +69,8 @@ self.addEventListener("activate", event => {
 // pages that aren't cached. The browser re-fetches sw.js on navigation, which is
 // how a new version is found; it then waits for the user (see src/index.js).
 // Everything else from this origin: cache first, since the cache holds one
-// consistent version (replaced as a whole on update); files not precached
-// (data/, demo/) are fetched, then kept for next time and across updates.
+// consistent version (replaced as a whole on update); files not precached (the
+// other views, the lazy libraries, data/, demo/) are fetched, then kept for next time.
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET" || !request.url.startsWith(self.location.origin)) return;
