@@ -103,7 +103,8 @@ test('the histogram colors bars by the legend of its dataset, the only one it do
   await colorBy('node', 'group');
   const colors = (await legend('link')).map(r => r.color);
   await launchView(page, 'histogram');
-  const bars = () => page.evaluate(() => document.querySelector('.histogram-plot').data.map(t => t.marker.color));
+  // (The view mounts once Plotly has loaded, so the plot may not be there at first)
+  const bars = () => page.evaluate(() => (document.querySelector('.histogram-plot')?.data || []).map(t => t.marker.color));
   await expect.poll(async () => (await bars()).length).toBe(2);
   expect((await bars()).every(c => colors.includes(c))).toBe(true);
   await expect.poll(() => docked('histogram', 'link')).toBe(true);

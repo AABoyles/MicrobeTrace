@@ -83,6 +83,7 @@ function treeWorker(ctx) {
     }
     terminate() { worker.terminated = true; }
   };
+  ctx.MT.loadLibrary = async () => {}; // the tree bundle, which brings patristic (#324)
   ctx.MT.getDMLabels = () => ['a', 'b'];
   ctx.MT.getDM = async () => new Float64Array([0, 1, 1, 0]);
   return worker;

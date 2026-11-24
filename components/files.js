@@ -877,6 +877,7 @@
       MT.session.addLinkField(metric);
       let newLinks = 0;
       let newNodes = 0;
+      await MT.loadLibrary('tree'); // patristic, which parsing a Newick tree needs, comes with it (#324)
       const parsed = formatByName('newick').parse(file.contents, { origin, metric });
       temp.tree = parsed.tree;
       // Each node is added before its links, as the pairs are met

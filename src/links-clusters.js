@@ -352,7 +352,9 @@ MT.computeTree = ({ scope, onProgress } = {}) => {
       matrix,
       round: env.session.style.widgets["tree-round"]
     }, { transfer: [matrix.buffer], name: "The tree computation", scope });
-  }).then(response => {
+  }).then(async response => {
+    // patristic comes with the tree bundle, which the tree view loads too (#324)
+    await MT.loadLibrary("tree");
     env.temp.tree = patristic.parseJSON(response.tree);
     MT.time('Tree Transit', response.start);
   });

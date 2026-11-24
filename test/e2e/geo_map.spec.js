@@ -48,6 +48,8 @@ const placedLinks = () => page.evaluate(() => {
 });
 
 test('places the nodes from their latitude and longitude fields', async () => {
+  // (The map mounts once Leaflet has loaded, so wait for the first markers)
+  await expect.poll(async () => (await markers()).length).toBeGreaterThan(0);
   await expect.poll(async () => (await markers()).length).toBe(await placed());
   expect(await get('map-field-lat')).toBe('lat');
   expect(await get('map-field-lon')).toBe('lon');
