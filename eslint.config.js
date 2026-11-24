@@ -86,6 +86,12 @@ const esModules = [
   "src/views.js", "src/ui.js", "src/formats/*.js", "src/webmcp/**/*.js",
 ];
 
+// The views converted to ES modules (#339), loaded with import() by src/views.js. They get MT, the
+// session and temp from the ctx their mount function is given, so those are not globals here and
+// no-undef catches a leftover. Library globals stay (Plotly, Tabulator, d3, ...). Keep in step
+// with MODULE_VIEWS in src/views.js.
+const moduleViews = [];
+
 module.exports = [
   { ignores },
   {
@@ -96,6 +102,11 @@ module.exports = [
   {
     files: esModules,
     languageOptions: { ...common, sourceType: "module", globals: { ...globals.browser, ...appGlobals, ...libGlobals } },
+    rules: { ...rules, ...noDirectWidgets },
+  },
+  {
+    files: moduleViews,
+    languageOptions: { ...common, sourceType: "module", globals: { ...globals.browser, ...libGlobals } },
     rules: { ...rules, ...noDirectWidgets },
   },
   {

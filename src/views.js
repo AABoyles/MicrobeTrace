@@ -49,6 +49,14 @@ MT.createLayout = () => {
   env.layout.on("focus", e => bringForward(e.target));
 };
 
+// The views converted to ES modules (#339): components/NAME.js exports mount(root, ctx) and
+// optionally `libraries`, and is loaded with import() rather than a script tag. Add a view's
+// name here when it is converted (and take its <script> tag out of its HTML). The rest are
+// classic scripts that call MT.registerView, being phased out.
+const MODULE_VIEWS = new Set();
+// The imported modules, by view name
+const modules = {};
+
 // Fetches a view's HTML into temp.componentCache, and its script (so that
 // it is cached for the worker and a missing or wrong file shows up here, not
 // when the view opens). A failed fetch (offline, 404, or a server answering
@@ -67,7 +75,12 @@ const fetchView = view => {
     if (/^\s*<!doctype/i.test(text)) fail();
     return text;
   });
-  return Promise.all([get("components/" + view + ".html"), get("components/" + view + ".js")])
+  // A module view is imported, which fetches and checks its file as well as fetching does;
+  // an unconverted one is fetched, and run later by the script tag in its HTML.
+  const code = MODULE_VIEWS.has(view)
+    ? import("../components/" + view + ".js").then(module => { modules[view] = module; }, fail)
+    : get("components/" + view + ".js");
+  return Promise.all([get("components/" + view + ".html"), code])
     .then(([html]) => { env.temp.componentCache[view] = html; });
 };
 const viewFailed = error => MT.toast.error(error.message);
@@ -109,7 +122,13 @@ const VIEW_LIBRARIES = {
   // A session can hold spreadsheets added but not yet read, which the view lists
   files: () => env.session.files.some(f => /^xlsx?$/i.test(f.extension || "")) ? ["xlsx"] : []
 };
-const loadLibraries = view => Promise.all([].concat(typeof VIEW_LIBRARIES[view] == "function" ? VIEW_LIBRARIES[view]() : VIEW_LIBRARIES[view] || []).map(MT.loadLibrary)).catch(() => {
+// A module view names its own in `export const libraries`, besides any listed above
+// (once every view is a module the table can go, #339).
+const librariesOf = view => {
+  const listed = VIEW_LIBRARIES[view], declared = modules[view] && modules[view].libraries;
+  return [].concat(typeof listed == "function" ? listed() : listed || [], declared || []);
+};
+const loadLibraries = view => Promise.all(librariesOf(view).map(MT.loadLibrary)).catch(() => {
   throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
 });
 
@@ -129,13 +148,14 @@ const openView = contentItem => {
   return ready;
 };
 
-// Views written as modules register a mount function from their component's
-// script:
+// A view is a mount function, which a module view exports (see MODULE_VIEWS) and a classic one
+// registers from its script:
 //
-//   MT.registerView('histogram', (root, { settings, events }) => {
+//   export function mount(root, { settings, events, MT, session, temp }) {
 //     ...
 //     return { resize() { ... }, destroy() { ... } };
-//   });
+//   }
+//   MT.registerView('histogram', (root, { settings, events }) => { ... });  // classic
 //
 // mount runs once the view is in the layout, with the view's own element as
 // root (query inside it rather than by global ID). resize() runs when the view
@@ -344,10 +364,18 @@ MT.viewGraphics = {
 };
 
 const mountView = contentItem => {
-  const mount = MT.views[contentItem.componentType];
+  const view = contentItem.componentType;
+  const mount = modules[view] ? modules[view].mount : MT.views[view];
   if (!mount) return;
   const container = contentItem.container;
-  const handle = mount(container.element, { settings: MT.settings, events: MT.events, container }) || {};
+  // What a module view gets in place of the MT, session and temp globals (#339). session and
+  // temp are getters because loading a session replaces them.
+  const ctx = {
+    settings: MT.settings, events: MT.events, container, MT,
+    get session() { return env.session; },
+    get temp() { return env.temp; }
+  };
+  const handle = mount(container.element, ctx) || {};
   contentItem.panels = handle.panels || [];
   const graphic = MT.viewGraphics[contentItem.componentType];
   if (graphic) {
