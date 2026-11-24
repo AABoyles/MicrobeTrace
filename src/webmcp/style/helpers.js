@@ -302,7 +302,7 @@ export function applySelection(set, mode) {
   return changed;
 }
 
-export function selectionSummary(limit = 100, fields) {
+export function selectionSummary(limit = 100) {
   const selected = nodes().filter(d => d.selected);
   return {
     selectedCount: selected.length,

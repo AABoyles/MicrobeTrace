@@ -20,7 +20,7 @@ export default {
     const item = await need(view, { open, show: true });
     const root = rootOf(item);
     let el;
-    try { el = root.querySelector(control); } catch (e) { fail('Invalid selector ' + control); }
+    try { el = root.querySelector(control); } catch { fail('Invalid selector ' + control); }
     if (!el) fail('No control ' + control + ' in the ' + item.componentType + ' view; see other_controls in get_view_settings');
     if (el.disabled) fail('That control is disabled right now');
     if (el.tagName === 'SELECT') {

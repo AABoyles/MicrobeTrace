@@ -34,7 +34,7 @@ export default {
     requireData();
     const fields = entityFields(entity).filter(f => includeInternal || !isInternal(f));
     const rows = fields.map(field => {
-      const { values, items, sampled } = fieldValues(entity, field, { visibleOnly, limit: sampleLimit });
+      const { values, sampled } = fieldValues(entity, field, { visibleOnly, limit: sampleLimit });
       const present = values.filter(v => !isEmpty(v));
       const distinct = field == 'seq' ? present.length : new Set(present.map(v => typeof v === 'object' ? JSON.stringify(v) : v)).size;
       const row = { field, type: inferType(present, field), nonEmpty: present.length, distinct, internal: isInternal(field), examples: field == 'seq' ? [] : examples(present) };

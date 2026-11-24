@@ -8,8 +8,6 @@ export const timeoutSchema = def => ({ type: 'integer', minimum: 1000, descripti
 
 export const FORMATS = ['link', 'node', 'matrix', 'fasta', 'newick'];
 
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-
 export const dataLoaded = () => !!(self.session && self.session.data && self.session.data.nodes.length);
 
 // An agent's text, quoted and short, for a confirmation message
@@ -20,7 +18,7 @@ export const replacing = () => dataLoaded() ? ', replacing the data loaded now' 
 export function bytesOf(base64) {
   try {
     return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-  } catch (e) {
+  } catch {
     return fail('contentsBase64 is not valid base64');
   }
 }

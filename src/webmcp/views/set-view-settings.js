@@ -84,7 +84,7 @@ export default {
     });
     if (errors.length) fail(errors.join('\n'));
     const changes = [];
-    for (const { rec, key, value } of plan) {
+    for (const { key, value } of plan) {
       const from = self.MT.settings.get(key);
       self.MT.settings.set(key, value);
       changes.push({ key, from: from === undefined ? null : from, to: value, changed: !same(from, value) });
@@ -92,7 +92,7 @@ export default {
     await settle(150);
     // A control that did not take the value (a view that reads its controls
     // instead of the setting store) is written and told
-    plan.forEach(({ rec, key, value }) => {
+    plan.forEach(({ rec, value }) => {
       rec._controls.forEach(el => {
         if (!self.MTBind) return;
         if (el.tagName === 'SELECT' && el.multiple) return;

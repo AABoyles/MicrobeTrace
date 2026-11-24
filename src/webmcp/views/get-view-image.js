@@ -22,7 +22,7 @@ async function rasterize(root, scale) {
     d.removeAttribute('class');
     if (s.tagName === 'CANVAS') {
       let url = null;
-      try { if (s.width && s.height) url = s.toDataURL('image/png'); } catch (e) { /* tainted */ }
+      try { if (s.width && s.height) url = s.toDataURL('image/png'); } catch { /* tainted */ }
       if (url) {
         const img = document.createElement('img');
         img.setAttribute('src', url);

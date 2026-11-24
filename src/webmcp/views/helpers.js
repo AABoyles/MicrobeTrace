@@ -28,8 +28,6 @@ export const VIEWS = [
 
 const VIEW_IDS = VIEWS.map(v => v.id);
 
-const viewInfo = id => VIEWS.find(v => v.id == id);
-
 export const viewSchema = { type: 'string', enum: VIEW_IDS, description: 'The view\'s id (see list_views). Old names such as 2d_network or pixi mean network. Omit for the active view where the tool says so.' };
 
 export const openSchema = { type: 'boolean', description: 'Open the view first if it is not open (default false: fails if the view is not open)' };
@@ -168,7 +166,7 @@ export async function applyLayout(tree) {
   };
   front(tree);
   await settle(120);
-  items().forEach(i => { try { const m = MT().views[i.componentType]; void m; } catch (e) { /* nothing */ } });
+  items().forEach(i => { try { const m = MT().views[i.componentType]; void m; } catch { /* nothing */ } });
   window.dispatchEvent(new Event('resize'));
   await settle(80);
 }
@@ -201,7 +199,7 @@ function labelOf(el, root) {
   return '';
 }
 
-const descriptionOf = (el, root) => {
+const descriptionOf = el => {
   const t = el.title || (el.closest('[title]') && el.closest('[title]').title) || '';
   return t.trim();
 };
@@ -239,7 +237,7 @@ export function settingsOf(root) {
   });
   return Array.from(records.values()).map(({ key, controls }) => {
     const el = controls[0];
-    const rec = Object.assign({ key, label: labelOf(el, root) || self.MT.titleize(key), description: descriptionOf(el, root) }, sectionOf(el, root));
+    const rec = Object.assign({ key, label: labelOf(el, root) || self.MT.titleize(key), description: descriptionOf(el) }, sectionOf(el, root));
     if (el.type == 'checkbox') rec.type = 'boolean';
     else if (el.type == 'radio') {
       const options = controls.map(c => {
@@ -271,7 +269,8 @@ export function settingsOf(root) {
   });
 }
 
-export const publicRecord = r => { const { _controls, ...rest } = r; return rest; };
+// Drops the bound controls, which are DOM nodes, from a record
+export const publicRecord = r => Object.fromEntries(Object.entries(r).filter(([k]) => k !== '_controls'));
 
 // Inputs of a view that are not bound to settings
 export function otherControls(root) {
@@ -332,7 +331,7 @@ export function actionsOf(root, includeExport) {
   return out;
 }
 
-export const publicAction = a => { const { el, ...rest } = a; Object.keys(rest).forEach(k => rest[k] === undefined && delete rest[k]); return rest; };
+export const publicAction = a => { const rest = Object.fromEntries(Object.entries(a).filter(([k]) => k !== 'el')); Object.keys(rest).forEach(k => rest[k] === undefined && delete rest[k]); return rest; };
 
 export const blobToDataURL = blob => new Promise((resolve, reject) => {
   const r = new FileReader();

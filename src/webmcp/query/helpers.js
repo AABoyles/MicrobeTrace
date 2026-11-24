@@ -12,8 +12,6 @@ export const settings = () => (session_() && session_().style && session_().styl
 
 export const graph = () => requireData().graph;
 
-const IMPLICIT = 2 ** 31;
-
 export const MAX_ALL_EDGES = 4e6;
 
 // Field names MicrobeTrace keeps for itself, or that identify items
@@ -139,7 +137,7 @@ export function linkOut(e, fields, vis) {
 }
 
 // Adjacency over links: arrays of neighbors and edges per node index
-export function adjacency(scope, weightField) {
+export function adjacency(scope) {
   const g = graph();
   const edges = edgeList(scope == 'all' ? 'all' : 'visible');
   const nbr = new Array(g.nodeCount), eds = new Array(g.nodeCount);
@@ -284,8 +282,8 @@ export function summarizeValues(values, { field, top = 20, bins = 10 } = {}) {
   return out;
 }
 
-export function neighborsOf(ids, depth, scope, link) {
-  const { nbr, eds, g, count } = adjacency(scope);
+export function neighborsOf(ids, depth, scope) {
+  const { nbr, eds, g } = adjacency(scope);
   const out = [];
   ids.forEach(id => {
     const start = g.index.get('' + id);
@@ -307,8 +305,8 @@ export function neighborsOf(ids, depth, scope, link) {
   return out;
 }
 
-export function neighborRows(rows, { scope, includeNode, nodeFields, linkFields, limit }) {
-  const MT = MT_(), data = requireData(), vis = visibleSet();
+export function neighborRows(rows, { includeNode, nodeFields, linkFields, limit }) {
+  const data = requireData(), vis = visibleSet();
   return rows.map(r => {
     const total = r.neighbors.length;
     const list = r.neighbors.slice(0, limit).map(n => {
