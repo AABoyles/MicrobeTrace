@@ -92,7 +92,7 @@ const esModules = [
 // session and temp from the ctx their mount function is given, so those are not globals here and
 // no-undef catches a leftover. Library globals stay (Plotly, Tabulator, d3, ...). Keep in step
 // with MODULE_VIEWS in src/views.js.
-const moduleViews = ["components/histogram.js", "components/table.js", "components/network.js", "components/geo_map.js", "components/choropleth.js", "components/globe.js", "components/phylogenetic_tree.js", "components/sequences.js", "components/bubbles.js", "components/waterfall.js", "components/timeline.js", "components/gantt.js", "components/heatmap.js", "components/scatterplot.js", "components/flow_diagram.js", "components/conflicts.js", "components/aggregation.js", "components/crosstab.js"];
+const moduleViews = ["components/histogram.js", "components/table.js", "components/network.js", "components/geo_map.js", "components/choropleth.js", "components/globe.js", "components/phylogenetic_tree.js", "components/sequences.js", "components/bubbles.js", "components/waterfall.js", "components/timeline.js", "components/gantt.js", "components/heatmap.js", "components/scatterplot.js", "components/flow_diagram.js", "components/conflicts.js", "components/aggregation.js", "components/crosstab.js", "components/files.js"];
 
 module.exports = [
   { ignores },
