@@ -152,15 +152,18 @@ test('a Newick tree gives its leaves as nodes and every pair as a link, each nod
   const r = newick.parse('((A:1,B:2):3,C:4);', { origin, metric: 'tn93' });
   assert.deepStrictEqual(r.labels.slice().sort(), ['A', 'B', 'C']);
   assert.strictEqual(r.nodes.length, 3);
-  assert.strictEqual(r.links.length, 3);
+  assert.strictEqual(r.linkCount, 3);
+  assert.strictEqual(r.links, undefined, 'the links are not built up front');
+  const links = r.nodes.flatMap((_, i) => [...r.linksOf(i)]);
+  assert.strictEqual(links.length, 3);
   assert.ok(r.nodes.every(n => n.origin === origin));
-  const distance = (a, b) => r.links.find(l => (l.source === a && l.target === b) || (l.source === b && l.target === a)).tn93;
+  const distance = (a, b) => links.find(l => (l.source === a && l.target === b) || (l.source === b && l.target === a)).tn93;
   assert.strictEqual(distance('A', 'B'), 3);
   assert.strictEqual(distance('A', 'C'), 8);
   assert.strictEqual(distance('B', 'C'), 9);
   // The links of node i are those between it and the nodes before it
   r.nodes.forEach((node, i) => {
-    const mine = r.links.slice(i * (i - 1) / 2, i * (i + 1) / 2);
+    const mine = [...r.linksOf(i)];
     assert.strictEqual(mine.length, i);
     mine.forEach(l => assert.strictEqual(l.source, node._id));
   });

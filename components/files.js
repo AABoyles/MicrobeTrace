@@ -892,11 +892,11 @@ export function mount(root, app) {
       // The node's provenance is the tree file, not its label: a label there made
       // a tree loaded with a FASTA fail on their shared IDs
       newNodes += MT.addNode(node, ctx.check, source);
-      parsed.links.slice(i * (i - 1) / 2, i * (i + 1) / 2).forEach(link => { newLinks += MT.addLink(link, ctx.check); });
+      for (const link of parsed.linksOf(i)) newLinks += MT.addLink(link, ctx.check);
     });
     MT.time('Newick Tree Parse', start);
     message(` - Parsed ${newNodes} New, ${parsed.labels.length} Total Nodes from Newick Tree.`);
-    message(` - Parsed ${newLinks} New, ${parsed.links.length} Total Links from Newick Tree.`);
+    message(` - Parsed ${newLinks} New, ${parsed.linkCount} Total Links from Newick Tree.`);
     parsed.labels.forEach(id => ctx.linked.add(MT.cleanID(id)));
     return true;
   }

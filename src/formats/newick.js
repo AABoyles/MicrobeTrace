@@ -19,19 +19,20 @@ const balanced = text => {
 export const detect = text => text.trimStart().startsWith('(') && /;\s*$/.test(text) && balanced(text);
 
 // The tree, its nodes ({ _id, origin }) and a link ({ source, target, origin, [metric]:
-// distance }) between every pair of them. The links come in the order the pairs are
-// met, so nodes[i] is followed by links.slice(i * (i - 1) / 2, i * (i + 1) / 2): a
-// caller that adds each node before its links keeps that order. Needs patristic, a
-// global of the bundle.
+// distance }) between every pair of them. The links are made on demand, because a
+// tree of n leaves has n(n - 1) / 2 of them (#337): linksOf(i) yields those between
+// nodes[i] and the nodes before it, and linkCount is how many there are in all. A
+// caller that adds each node before linksOf(its index) gets the pairs in the order
+// they are met. Needs patristic, a global of the bundle.
 export function parse(contents, { origin, metric }) {
   const tree = patristic.parseNewick(contents);
   const { matrix, ids } = tree.toMatrix();
-  const nodes = [], links = [];
-  for (let i = 0; i < ids.length; i++) {
-    nodes.push({ _id: ids[i], origin });
+  const nodes = ids.map(_id => ({ _id, origin }));
+  function* linksOf(i) {
     for (let j = 0; j < i; j++) {
-      links.push({ source: ids[i], target: ids[j], origin, [metric]: parseFloat(matrix[i][j]) });
+      yield { source: ids[i], target: ids[j], origin, [metric]: parseFloat(matrix[i][j]) };
     }
   }
-  return { tree, nodes, links, labels: ids };
+  const linkCount = ids.length * (ids.length - 1) / 2;
+  return { tree, nodes, linksOf, linkCount, labels: ids };
 }
