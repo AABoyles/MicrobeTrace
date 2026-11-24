@@ -16,7 +16,7 @@ test.beforeAll(async ({ browser }) => {
   await page.setInputFiles('#data-files', [links]);
   await expect(page.locator('#file-table .file-table-row')).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
   nodes = await page.evaluate(() => session.data.nodes.length);
   saved = await page.evaluate(() => { MT.syncLayout(); return JSON.stringify(session); });
 });
@@ -26,7 +26,7 @@ const dialog = () => page.locator('#replace-modal');
 const startTime = () => page.evaluate(() => session.meta.startTime);
 // Marks the live session, so that replacing it can be told from keeping it
 const mark = () => page.evaluate(() => { session.meta.startTime = 1; });
-const replaced = () => page.waitForFunction(() => session.meta.startTime != 1 && session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+const replaced = () => page.waitForFunction(() => session.meta.startTime !== 1 && session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
 const file = { name: 'again.microbetrace', mimeType: 'application/json', get buffer() { return Buffer.from(saved); } };
 const stashes = () => page.evaluate(() => db.keys().then(keys => keys.filter(k => /^stash-\d/.test(k) && k.includes('Before replacing'))));
 
@@ -117,7 +117,7 @@ test('with nothing loaded, there is nothing to lose, so there is no question', a
   const freshErrors = watchErrors(fresh);
   await open(fresh);
   await fresh.setInputFiles('#OpenTab', file);
-  await fresh.waitForFunction(n => session.data.nodes.length == n && document.getElementById('numberOfNodes').textContent == '' + n, nodes, { timeout: 60000 });
+  await fresh.waitForFunction(n => session.data.nodes.length === n && document.getElementById('numberOfNodes').textContent === '' + n, nodes, { timeout: 60000 });
   await expect(fresh.locator('#replace-modal')).toBeHidden();
   expect(freshErrors).toEqual([]);
   await fresh.close();

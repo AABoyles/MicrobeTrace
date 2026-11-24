@@ -28,7 +28,9 @@ const onMap = layer => page.evaluate(layer => {
   return !!layers[layer] && map.hasLayer(layers[layer]);
 }, layer);
 // The markers drawn (inside clusters too) and the links
+// (Empty until the view has mounted, which waits for Leaflet to load, #324)
 const markers = () => page.evaluate(() => {
+  if (!temp.geoMap) return [];
   const { map, layers } = temp.geoMap;
   if (!layers.nodes || !map.hasLayer(layers.nodes)) return [];
   return layers.nodes.getLayers().map(m => ({
@@ -37,21 +39,24 @@ const markers = () => page.evaluate(() => {
   }));
 });
 const lines = () => page.evaluate(() => {
+  if (!temp.geoMap) return 0;
   const { map, layers } = temp.geoMap;
   return layers.links && map.hasLayer(layers.links) ? layers.links.getLayers().length : 0;
 });
 // The visible nodes with coordinates, and the visible links between them
-const placed = () => page.evaluate(() => session.data.nodes.filter(d => d.visible && typeof d.lat == 'number').length);
+const placed = () => page.evaluate(() => session.data.nodes.filter(d => d.visible && typeof d.lat === 'number').length);
 const placedLinks = () => page.evaluate(() => {
-  const placed = new Set(session.data.nodes.filter(d => d.visible && typeof d.lat == 'number').map(d => d._id));
+  const placed = new Set(session.data.nodes.filter(d => d.visible && typeof d.lat === 'number').map(d => d._id));
   return MT.getVisibleLinks().filter(l => placed.has(l.source) && placed.has(l.target)).length;
 });
 
 test('places the nodes from their latitude and longitude fields', async () => {
+  // (The map mounts once Leaflet has loaded, so wait for the first markers)
+  await expect.poll(async () => (await markers()).length).toBeGreaterThan(0);
   await expect.poll(async () => (await markers()).length).toBe(await placed());
   expect(await get('map-field-lat')).toBe('lat');
   expect(await get('map-field-lon')).toBe('lon');
-  const s0 = (await markers()).find(m => m.id == 'S0');
+  const s0 = (await markers()).find(m => m.id === 'S0');
   expect([s0.lat, s0.lon]).toEqual([30, -120]);
   expect(await page.evaluate(() => temp.geoMap.layers.nodes instanceof L.MarkerClusterGroup)).toBe(true);
 });
@@ -118,35 +123,35 @@ test('node transparency applies', async () => {
 
 test('jitter moves the nodes, and reroll moves them again', async () => {
   await set('map-node-jitter', 1);
-  await expect.poll(async () => (await markers()).find(m => m.id == 'S0').lat).not.toBe(30);
-  const first = (await markers()).find(m => m.id == 'S0');
+  await expect.poll(async () => (await markers()).find(m => m.id === 'S0').lat).not.toBe(30);
+  const first = (await markers()).find(m => m.id === 'S0');
   await pane().locator('a', { hasText: 'Nodes' }).click();
   await pane().locator('button', { hasText: 'Reroll' }).click();
-  await expect.poll(async () => (await markers()).find(m => m.id == 'S0').lat).not.toBe(first.lat);
+  await expect.poll(async () => (await markers()).find(m => m.id === 'S0').lat).not.toBe(first.lat);
   await set('map-node-jitter', -2);
-  await expect.poll(async () => (await markers()).find(m => m.id == 'S0').lat).toBe(30);
+  await expect.poll(async () => (await markers()).find(m => m.id === 'S0').lat).toBe(30);
 });
 
 test('clicking a node selects it, and selections made elsewhere show', async () => {
   const color = await get('selected-color');
   await page.evaluate(() => {
-    const marker = temp.geoMap.layers.nodes.getLayers().find(m => m.options.data._id == 'S0');
+    const marker = temp.geoMap.layers.nodes.getLayers().find(m => m.options.data._id === 'S0');
     marker.fire('click', { originalEvent: new MouseEvent('click') }, true);
   });
   await expect.poll(() => page.evaluate(() => session.data.nodes.filter(d => d.selected).map(d => d._id))).toEqual(['S0']);
-  await expect.poll(async () => (await markers()).find(m => m.id == 'S0').color).toBe(color);
+  await expect.poll(async () => (await markers()).find(m => m.id === 'S0').color).toBe(color);
   // Selection doesn't move the nodes
-  expect((await markers()).find(m => m.id == 'S0').lat).toBe(30);
+  expect((await markers()).find(m => m.id === 'S0').lat).toBe(30);
   await page.evaluate(() => {
     session.data.nodes.forEach(d => d.selected = false);
     MT.events.emit('node-selected');
   });
-  await expect.poll(async () => (await markers()).find(m => m.id == 'S0').color).toBe('#000000');
+  await expect.poll(async () => (await markers()).find(m => m.id === 'S0').color).toBe('#000000');
 });
 
 test('a node tooltip shows its tooltip variable', async () => {
   await page.evaluate(() => {
-    const marker = temp.geoMap.layers.nodes.getLayers().find(m => m.options.data._id == 'S1');
+    const marker = temp.geoMap.layers.nodes.getLayers().find(m => m.options.data._id === 'S1');
     temp.geoMap.layers.nodes.fire('mouseover', { layer: marker, originalEvent: new MouseEvent('mouseover', { clientX: 100, clientY: 100 }) });
   });
   await expect(page.locator('#tooltip')).toHaveText('S1');
@@ -209,7 +214,7 @@ test('choosing the State field alone places nodes at their states', async () => 
   await set('map-field-state', 'None');
   await set('map-field-lat', 'lat');
   await set('map-field-lon', 'lon');
-  await expect.poll(async () => (await markers()).find(m => m.id == 'S0').lat).toBe(30);
+  await expect.poll(async () => (await markers()).find(m => m.id === 'S0').lat).toBe(30);
 });
 
 test('the map follows the panel size', async () => {
@@ -236,12 +241,12 @@ for (const [filetype, filename] of [['geojson', 'map-test.geojson'], ['png', 'ma
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
     expect(download.suggestedFilename()).toBe(filename);
-    if (filetype == 'geojson') {
+    if (filetype === 'geojson') {
       const data = JSON.parse(require('fs').readFileSync(await download.path(), 'utf8'));
       const kinds = data.features.map(f => f.geometry.type);
-      expect(kinds.filter(k => k == 'Point').length).toBe(await placed());
-      expect(kinds.filter(k => k == 'LineString').length).toBe(await placedLinks());
-      const s0 = data.features.find(f => f.properties._id == 'S0');
+      expect(kinds.filter(k => k === 'Point').length).toBe(await placed());
+      expect(kinds.filter(k => k === 'LineString').length).toBe(await placedLinks());
+      const s0 = data.features.find(f => f.properties._id === 'S0');
       expect(s0.geometry.coordinates).toEqual([-120, 30]);
     } else {
       // The map at its size: the outlines and nodes, not just the background

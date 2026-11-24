@@ -43,7 +43,7 @@ function tx(mode, fn) {
         t.onabort = function () { reject(t.error || (request && request.error) || new Error('The transaction was aborted')); };
         request = fn(t.objectStore(DB_STORE));
       } catch (error) {
-        try { if (t) t.abort(); } catch (ignored) { /* already finished */ }
+        try { if (t) t.abort(); } catch { /* already finished */ }
         reject(error);
       }
     });

@@ -6,7 +6,7 @@
 // stays put; small alignments; sort arrows beside their own titles; and one
 // meaning per icon.
 const { test, expect } = require('@playwright/test');
-const { watchErrors, open, fixtures, launchView, closeView, waitForModal, openExport } = require('./helpers');
+const { watchErrors, open, fixtures, launchView, closeView, waitForModal } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -23,15 +23,15 @@ test.afterAll(() => page.close());
 
 const box = locator => locator.evaluate(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; });
 // A view's root, and its settings pane opened
-const view = name => page.locator(`.lm_content:has(.left-pane)`).filter({ visible: true }).last();
+const view = _name => page.locator(`.lm_content:has(.left-pane)`).filter({ visible: true }).last();
 // Once the pane (or whatever else is moving) has finished sliding
 const settled = locator => locator.evaluate(el => Promise.allSettled(el.getAnimations({ subtree: true }).map(a => a.finished)));
 // The files launched, for the tests that need a network
 async function launched() {
   if (await page.evaluate(() => session.data.clusters.length > 0)) return;
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
-  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
+  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType === 'files'));
 }
 async function openPane(name) {
   await launched();
@@ -82,7 +82,7 @@ test('in the tree’s pane, sliders fill their column, labels sit on one line, a
   const three = pane.locator('.btn-group-toggle').filter({ visible: true }).first();
   expect(await togglesFit(three)).toBe(true);
   const borders = await three.locator('.btn').evaluateAll(buttons => buttons.slice(1).map(b => getComputedStyle(b).borderLeftWidth));
-  expect(borders.every(w => w == '1px')).toBe(true);
+  expect(borders.every(w => w === '1px')).toBe(true);
   await closeView(page, 'phylogenetic_tree');
 });
 

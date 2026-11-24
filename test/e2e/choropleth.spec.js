@@ -35,7 +35,7 @@ const onMap = layer => page.evaluate(layer => {
 
 test('counts the nodes in each state, from their state field', async () => {
   await expect.poll(total).toBe(300);
-  const georgia = (await regions()).find(r => r.name == 'Georgia');
+  const georgia = (await regions()).find(r => r.name === 'Georgia');
   expect(georgia.density).toBe(60);
   expect(await page.evaluate(() => session.style.widgets['choropleth-aggregate-on'])).toBe('state');
   await expect.poll(() => onMap('countries')).toBe(true);
@@ -43,12 +43,12 @@ test('counts the nodes in each state, from their state field', async () => {
 
 test('the busiest regions get the high color, the empty ones the low', async () => {
   const r = await regions();
-  expect(r.find(r => r.name == 'Georgia').fill).toBe('#800026');
-  expect(r.find(r => r.name == 'Alaska').fill).toBe('#ffffcc');
+  expect(r.find(r => r.name === 'Georgia').fill).toBe('#800026');
+  expect(r.find(r => r.name === 'Alaska').fill).toBe('#ffffcc');
   await view().locator('.settings-toggle').click();
   await expect(pane()).toBeVisible();
   await set('choropleth-color-high', '#0000ff');
-  await expect.poll(async () => (await regions()).find(r => r.name == 'Georgia').fill).toBe('#0000ff');
+  await expect.poll(async () => (await regions()).find(r => r.name === 'Georgia').fill).toBe('#0000ff');
 });
 
 test('transparency applies to the regions, and the legend stays solid', async () => {
@@ -66,7 +66,7 @@ test('aggregates over countries', async () => {
 
 test('redraws when nodes are hidden', async () => {
   await page.evaluate(() => {
-    session.data.nodes.forEach(d => { if (d.state == 'Georgia') d.visible = false; });
+    session.data.nodes.forEach(d => { if (d.state === 'Georgia') d.visible = false; });
     MT.events.emit('node-visibility');
   });
   await expect.poll(total).toBe(240);
@@ -117,7 +117,7 @@ test('reopening the view restores its settings', async () => {
   expect(await page.evaluate(() => temp.choropleth)).toBeUndefined();
   await launchView(page, 'choropleth');
   await expect.poll(total).toBe(300);
-  expect((await regions()).find(r => r.name == 'Georgia').fill).toBe('#0000ff');
+  expect((await regions()).find(r => r.name === 'Georgia').fill).toBe('#0000ff');
   await expect(view().locator('input[data-setting="choropleth-transparency"]')).toHaveValue('0.6');
 });
 
@@ -128,7 +128,7 @@ for (const [filetype, filename] of [['geojson', 'choropleth-test.geojson'], ['pn
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
     expect(download.suggestedFilename()).toBe(filename);
-    if (filetype == 'geojson') {
+    if (filetype === 'geojson') {
       const data = JSON.parse(require('fs').readFileSync(await download.path(), 'utf8'));
       expect(data.features.reduce((s, f) => s + f.properties.density, 0)).toBe(300);
     } else {

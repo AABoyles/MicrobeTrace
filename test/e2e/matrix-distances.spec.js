@@ -25,7 +25,7 @@ test('an Excel matrix with an empty top-left cell loads', async () => {
   await expect(rows()).toHaveCount(1);
   await kind('matrix');
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.nodes.length == 3 && session.data.clusters.length > 0, null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length === 3 && session.data.clusters.length > 0, null, { timeout: 60000 });
   expect(await page.evaluate(() => session.data.graph.m)).toBe(3);
   expect(errors).toEqual([]);
 });
@@ -44,7 +44,7 @@ test('links with no distance column have no distance, are reported, and are show
   await page.setInputFiles('#data-files', [file('l.csv', 'a,b\nA,B\nB,C\n')]);
   await expect(rows()).toHaveCount(1);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.nodes.length == 3, null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length === 3, null, { timeout: 60000 });
   await expect(page.locator('.toast', { hasText: 'no distance' }).first()).toBeVisible();
   const values = await page.evaluate(() => {
     const g = session.data.graph, out = [];
@@ -53,5 +53,5 @@ test('links with no distance column have no distance, are reported, and are show
   });
   expect(values).toEqual([null, null]);
   // ...but they are shown: the threshold has nothing to judge them by
-  await page.waitForFunction(() => session.data.graph.visibleCount == 2, null, { timeout: 20000 });
+  await page.waitForFunction(() => session.data.graph.visibleCount === 2, null, { timeout: 20000 });
 });

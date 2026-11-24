@@ -27,21 +27,21 @@ const A = 0, C = 1, G = 2, T = 3;
 const resolve = ch => [...(IUPAC[ch.toUpperCase()] || '')].map(b => BASES.indexOf(b));
 
 function siteCounts(s1, s2, mode = 'resolve') {
-  if (s1.length != s2.length) throw new Error('Sequences must be aligned');
+  if (s1.length !== s2.length) throw new Error('Sequences must be aligned');
   const F = [0, 1, 2, 3].map(() => [0, 0, 0, 0]);
   for (let p = 0; p < s1.length; p++) {
-    const g1 = s1[p] == '-', g2 = s2[p] == '-';
+    const g1 = s1[p] === '-', g2 = s2[p] === '-';
     let r1 = resolve(s1[p]), r2 = resolve(s2[p]);
     if (g1 && g2) continue;
     if (g1 || g2) {
-      if (mode != 'gapmm') continue;
+      if (mode !== 'gapmm') continue;
       if (g1) r1 = [A, C, G, T]; else r2 = [A, C, G, T];
     }
     if (!r1.length || !r2.length) continue;
     const ambiguous = r1.length > 1 || r2.length > 1;
-    if (ambiguous && mode == 'skip') continue;
+    if (ambiguous && mode === 'skip') continue;
     const shared = r1.filter(b => r2.includes(b));
-    if (ambiguous && mode == 'resolve' && shared.length) {
+    if (ambiguous && mode === 'resolve' && shared.length) {
       shared.forEach(b => { F[b][b] += 1 / shared.length; });
       continue;
     }
@@ -64,7 +64,7 @@ function summarize(F) {
   }
   const ag = F[A][G] + F[G][A], ct = F[C][T] + F[T][C];
   let tv = 0;
-  for (let x = 0; x < 4; x++) for (let y = 0; y < 4; y++) if ((x % 2) != (y % 2)) tv += F[x][y];
+  for (let x = 0; x < 4; x++) for (let y = 0; y < 4; y++) if ((x % 2) !== (y % 2)) tv += F[x][y];
   return { L, ts: ag + ct, tv, P1: ag / L, P2: ct / L, Q: tv / L, pi: pi.map(f => f / (2 * L)) };
 }
 
@@ -90,8 +90,8 @@ const k2p = ({ P1, P2, Q }) => -0.5 * Math.log(1 - 2 * (P1 + P2) - Q) - 0.25 * M
 function t92(F, { P1, P2, Q, L }) {
   let gc1 = 0, gc2 = 0;
   for (let x = 0; x < 4; x++) for (let y = 0; y < 4; y++) {
-    if (x == C || x == G) gc1 += F[x][y];
-    if (y == C || y == G) gc2 += F[x][y];
+    if (x === C || x === G) gc1 += F[x][y];
+    if (y === C || y === G) gc2 += F[x][y];
   }
   const t1 = gc1 / L, t2 = gc2 / L, h = t1 + t2 - 2 * t1 * t2;
   return -h * Math.log(1 - (P1 + P2) / h - Q) - 0.5 * (1 - h) * Math.log(1 - 2 * Q);
@@ -124,7 +124,7 @@ function hivtraceG(s1, s2, fraction) {
   let resolved = 0;
   for (let p = 0; p < s1.length; p++) {
     const r1 = resolve(s1[p]), r2 = resolve(s2[p]);
-    if (!r1.length || !r2.length || (r1.length == 1 && r2.length == 1)) continue;
+    if (!r1.length || !r2.length || (r1.length === 1 && r2.length === 1)) continue;
     if (r1.length > 1 && r2.length > 1) resolved++;
     else if (r1.some(b => r2.includes(b))) resolved++;
   }

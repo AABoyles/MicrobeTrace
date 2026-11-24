@@ -21,7 +21,6 @@ const view = () => page.locator('.lm_content:has(.modal-title:has-text("Export S
 const pane = () => view().locator('.left-pane');
 const canvases = () => view().locator('canvas.alignment');
 const size = () => canvases().first().evaluate(c => [c.width, c.height]);
-const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 const sequences = () => page.evaluate(() => session.data.nodes.filter(d => d.seq).length);
 
 test('draws one row per sequence', async () => {
@@ -64,9 +63,9 @@ for (const [filetype, filename] of [['fasta', 'seqs-test.fasta'], ['mega', 'seqs
     await modal.locator('select').selectOption(filetype);
     const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('button', { hasText: 'Export' }).click()]);
     expect(download.suggestedFilename()).toBe(filename);
-    if (filetype != 'png') {
+    if (filetype !== 'png') {
       const text = fs.readFileSync(await download.path(), 'utf8');
-      expect(text.split(filetype == 'fasta' ? '>' : '#').length - 1).toBe(await sequences());
+      expect(text.split(filetype === 'fasta' ? '>' : '#').length - 1).toBe(await sequences());
     }
     expect(errors).toEqual([]);
   });

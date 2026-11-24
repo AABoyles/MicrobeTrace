@@ -22,10 +22,10 @@ const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key,
 // The view, launched if it isn't open, and in front
 async function opened(view) {
   await page.evaluate(view => {
-    const item = layout.contentItems.find(i => i.componentType == view);
+    const item = layout.contentItems.find(i => i.componentType === view);
     if (item) item.parent.setActiveComponentItem(item, true);
   }, view);
-  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType == view), view))) await launchView(page, view);
+  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
 }
 // The left edge of a view's docked tables (its right edge without any)
 const dockLeft = content => page.locator(`.lm_content:has(${content})`).first().evaluate(root => {
@@ -80,14 +80,14 @@ test('node labels keep their size as the view zooms out, and none run into anoth
   // The labels of the last whole frame
   const frame = () => page.evaluate(() => {
     const log = window.labelLog, last = log.lastIndexOf('frame'), before = log.lastIndexOf('frame', last - 1);
-    return log.slice(before + 1, last).filter(e => e != 'frame' && typeof e.text == 'string' && /^[A-Z][a-z]+$/.test(e.text));
+    return log.slice(before + 1, last).filter(e => e !== 'frame' && typeof e.text === 'string' && /^[A-Z][a-z]+$/.test(e.text));
   });
   await set('node-label-variable', 'state');
   await expect.poll(async () => (await frame()).length).toBeGreaterThan(0);
   const overlaps = labels => labels.some((a, i) => labels.some((b, j) => {
     if (j <= i) return false;
     const size = parseFloat(a.font), box = l => {
-      const left = l.align == 'center' ? l.x - l.width / 2 : l.align == 'right' ? l.x - l.width : l.x;
+      const left = l.align === 'center' ? l.x - l.width / 2 : l.align === 'right' ? l.x - l.width : l.x;
       return [left, l.y - size, left + l.width, l.y];
     };
     const [p, q] = [box(a), box(b)];
@@ -104,7 +104,7 @@ test('node labels keep their size as the view zooms out, and none run into anoth
   await expect.poll(() => page.evaluate(() => temp.network.graph.getZoomLevel())).toBeLessThan(zoom * 0.5);
   await expect.poll(async () => (await frame()).length).toBeGreaterThan(0);
   const after = await frame();
-  expect(after.every(l => l.font == font)).toBe(true);
+  expect(after.every(l => l.font === font)).toBe(true);
   expect(overlaps(after)).toBe(false);
   await set('node-label-variable', 'None');
 });
@@ -174,9 +174,9 @@ test('the flow diagram names its columns and lists their values in order, empty 
   expect(p.titles.length).toBe(new Set(p.columns).size);
   for (const column of new Set(p.columns)) {
     expect(p.titles).toContain(column);
-    const values = p.labels.map((label, i) => ({ label, y: p.y[i] })).filter((v, i) => p.columns[i] == column)
+    const values = p.labels.map((label, i) => ({ label, y: p.y[i] })).filter((v, i) => p.columns[i] === column)
       .sort((a, b) => a.y - b.y).map(v => v.label);
-    const named = values.filter(v => v != '(Empty)');
+    const named = values.filter(v => v !== '(Empty)');
     expect(named).toEqual(named.slice().sort((a, b) => a.localeCompare(b, undefined, { numeric: true })));
     if (values.includes('(Empty)')) expect(values[values.length - 1]).toBe('(Empty)');
   }
@@ -230,7 +230,7 @@ test('the waterfall says what to choose, and notes the clusters it doesn’t lis
   const view = page.locator('.lm_content:has(.waterfall)').first();
   await expect(view.locator('.waterfall-nodes-hint')).toBeVisible();
   await expect(view.locator('.waterfall-links-hint')).toBeVisible();
-  const singles = await page.evaluate(() => session.data.clusters.filter(c => c.visible && c.nodes == 1).length);
+  const singles = await page.evaluate(() => session.data.clusters.filter(c => c.visible && c.nodes === 1).length);
   await expect(view.locator('.waterfall-skipped')).toHaveText(`${singles} clusters of a single node aren’t listed.`);
   await view.locator('.waterfall-clusters a').first().click();
   await expect(view.locator('.waterfall-nodes-hint')).toBeHidden();

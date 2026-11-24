@@ -8,10 +8,10 @@ test('link-list columns whose headers contain / keep their values, and are usabl
   await open(page);
   const csv = 'From/ID,To/ID,Dist,Date/Time\nA,B,0.01,2024-01-02\nB,C,0.02,2024-01-03\n';
   await page.setInputFiles('#data-files', { name: 'links.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
-  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length == 1);
+  await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length === 1);
   await page.evaluate(() => Object.assign(session.files[0], { format: 'link', field1: 'From/ID', field2: 'To/ID', field3: 'Dist' }));
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.nodes.length > 0 && !layout.contentItems.some(i => i.componentType == 'files'), null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && !layout.contentItems.some(i => i.componentType === 'files'), null, { timeout: 60000 });
   const result = await page.evaluate(() => ({
     nodes: session.data.nodes.map(n => n._id).sort(),
     dates: session.data.links.map(l => l['Date/Time']).sort()

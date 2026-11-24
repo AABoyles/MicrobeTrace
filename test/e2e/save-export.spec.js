@@ -18,7 +18,7 @@ test.beforeAll(async ({ browser }) => {
   await page.setInputFiles('#data-files', fixtures);
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 3);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
 });
 test.afterAll(() => page.close());
 
@@ -61,7 +61,7 @@ test('a saved .zip opens directly, and a .zip without a session says so', async 
   const nodes = await page.evaluate(() => session.data.nodes.length);
   await page.setInputFiles('#OpenTab', copy);
   await confirmReplace(page);
-  await page.waitForFunction(n => session.data.nodes.length == n && document.getElementById('numberOfNodes').textContent != '', nodes, { timeout: 60000 });
+  await page.waitForFunction(n => session.data.nodes.length === n && document.getElementById('numberOfNodes').textContent !== '', nodes, { timeout: 60000 });
 
   const bytes = await page.evaluate(async () => {
     const zip = new JSZip();

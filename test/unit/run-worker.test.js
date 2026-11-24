@@ -56,8 +56,8 @@ test('settles once: a later error or reply is ignored', async () => {
 });
 
 test('runs a real worker, and rejects when one throws', async () => {
-  const { MT, ctx } = loadApp();
-  ctx.Worker = Worker;
+  const { MT } = loadApp();
+  globalThis.Worker = Worker;
   const out = await MT.runWorker('workers/parse-fasta.js', '');
   assert.deepStrictEqual(out.nodes, []);
   // compute-nn reads e.data.matrix; a null message makes it throw
@@ -65,8 +65,8 @@ test('runs a real worker, and rejects when one throws', async () => {
 });
 
 test('computeNNFlags rejects, rather than resolving, when its worker fails', async () => {
-  const { MT, session, ctx } = loadApp();
-  ctx.Worker = class extends Fake { constructor() { super(w => w.onerror({ message: 'out of memory' })); } };
+  const { MT, session } = loadApp();
+  globalThis.Worker = class extends Fake { constructor() { super(w => w.onerror({ message: 'out of memory' })); } };
   MT.getCondensedDM = () => ({ tri: new Float32Array(0) });
   session.data.graph = { ids: [] };
   await assert.rejects(MT.computeNNFlags('workers/compute-nn.js', 'NN'), /out of memory/);

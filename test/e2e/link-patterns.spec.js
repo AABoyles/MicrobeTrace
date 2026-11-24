@@ -30,7 +30,7 @@ test('a link dash pattern by variable: each link is drawn with its value’s pat
   // has them too), and work: the first is solid, the second dashed
   await page.evaluate(() => MT.settings.set('link-dash-variable', 'contact'));
   await expect.poll(async () => (await styles()).includes(1)).toBe(true);
-  const expected = await page.evaluate(() => temp.network.links.map(l => String(l.contact) == 'work' ? 1 : 0));
+  const expected = await page.evaluate(() => temp.network.links.map(l => String(l.contact) === 'work' ? 1 : 0));
   expect(await styles()).toEqual(expected);
   const legend = await rows();
   expect(legend.map(r => r.cells[0])).toEqual(['Link Contact', '(Empty)', 'work']);

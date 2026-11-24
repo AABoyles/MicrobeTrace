@@ -29,10 +29,15 @@ jobs:
       - run: npm run bundle
       - run: npm run cache
       # Runs the unit tests with coverage, failing if line coverage drops below the
-      # threshold in package.json (#175)
+      # threshold in package.json (#175). It was 64% until the WebMCP tools became modules
+      # (#340): loaded with new Function before, their 4,600 lines were never counted, and
+      # their handlers are tested by the E2E specs, so counting them took the total from
+      # 64.4% to 60.9% (67.3% without them). The threshold is the new baseline, 60%.
       - run: npm run coverage
       # ESLint (eslint.config.js): errors fail the build; warnings are counted, not fatal (#243)
       - run: npm run lint
+      # tsc over the modules that start with // @ts-check (tsconfig.json, #346)
+      - run: npm run typecheck
 
   e2e:
     name: E2E tests (Chromium)

@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Mark local and preview deployments, so they aren't mistaken for the real site
-  MT.isDevelopmentHost = host => host == "localhost" || host == "127.0.0.1" || /-git-.+\.vercel\.app$/.test(host);
+  MT.isDevelopmentHost = host => host === "localhost" || host === "127.0.0.1" || /-git-.+\.vercel\.app$/.test(host);
   byId("development-version").hidden = !MT.isDevelopmentHost(location.hostname);
 
   // Before anything else gets done, ask the user to accept the legal agreement
@@ -56,8 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       if (self.temp && self.temp.autostash) clearInterval(self.temp.autostash.interval);
       await db.deleteAll();
-      try { localStorage.clear(); } catch (e) { /* unavailable */ }
-      try { sessionStorage.clear(); } catch (e) { /* unavailable */ }
+      try { localStorage.clear(); } catch { /* unavailable */ }
+      try { sessionStorage.clear(); } catch { /* unavailable */ }
       if (self.caches) await caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
       if (navigator.serviceWorker) await navigator.serviceWorker.getRegistrations().then(all => Promise.all(all.map(r => r.unregister())));
       if (navigator.storage && navigator.storage.getDirectory) {
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
       registration.addEventListener("updatefound", () => {
         const worker = registration.installing;
         worker.addEventListener("statechange", () => {
-          if (worker.state == "installed" && navigator.serviceWorker.controller) offerUpdate(worker);
+          if (worker.state === "installed" && navigator.serviceWorker.controller) offerUpdate(worker);
         });
       });
     }).catch(error => {
@@ -158,8 +158,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     dialog.addEventListener("hidden.bs.modal", () => {
       choices.forEach(([id, handler]) => byId(id).removeEventListener("click", handler));
-      if (answer == "replace") replace();
-      else if (answer == "stash") stashSession("Before replacing, " + new Date().toLocaleString()).then(replace, () => MT.toast.error("Couldn't stash the current session, so it was kept."));
+      if (answer === "replace") replace();
+      else if (answer === "stash") stashSession("Before replacing, " + new Date().toLocaleString()).then(replace, () => MT.toast.error("Couldn't stash the current session, so it was kept."));
       else if (cancelled) cancelled();
     }, { once: true });
     // (Escape and the backdrop dismiss it: Cancel)
@@ -172,7 +172,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return parts && { key, time: +parts[1], name: parts[2] };
   };
   const stashName = stash => stash.name || "Untitled";
-  const stashes = MT.table("#recall-stashes-available", {
+  // Tabulator is fetched when the Recall dialog is first opened (#324)
+  let stashes = null;
+  const stashOptions = {
     maxHeight: "50vh",
     layout: "fitColumns",
     selectableRows: 1,
@@ -187,14 +189,19 @@ document.addEventListener("DOMContentLoaded", () => {
         formatter: cell => MT.escape(new Date(cell.getValue()).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }))
       }
     ]
-  });
+  };
 
-  const selectedStash = () => stashes.getSelectedData()[0];
+  const selectedStash = () => stashes && stashes.getSelectedData()[0];
   // Recall and Delete act on the stash chosen
   const showChoice = () => ["recall-load-stash", "recall-delete-stash"].forEach(id => { byId(id).disabled = !selectedStash(); });
-  stashes.on("rowSelectionChanged", showChoice);
+  const buildStashes = () => MT.loadLibrary("table").then(() => {
+    if (stashes) return;
+    stashes = MT.table("#recall-stashes-available", stashOptions);
+    stashes.on("rowSelectionChanged", showChoice);
+    stashes.on("rowDblClick", (e, row) => recall(row.getData()));
+  });
   function updateStashes() {
-    return db.keys()
+    return buildStashes().then(() => db.keys())
       .then(keys => stashes.setData(keys.map(stashOf).filter(Boolean)))
       .then(showChoice);
   }
@@ -220,13 +227,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   on("RecallDataTab", "click", e => {
     e.preventDefault();
-    updateStashes();
+    updateStashes().catch(error => {
+      console.error(error);
+      MT.toast.error("The list of stashed sessions couldn't be loaded. Check your connection and try again.");
+    });
     modal("session-recall-modal").show();
   });
   // (The table is drawn while the dialog is hidden)
-  on("session-recall-modal", "shown.bs.modal", () => stashes.redraw());
+  on("session-recall-modal", "shown.bs.modal", () => stashes && stashes.redraw());
 
-  stashes.on("rowDblClick", (e, row) => recall(row.getData()));
   on("recall-load-stash", "click", () => {
     const stash = selectedStash();
     if (stash) recall(stash);
@@ -266,13 +275,13 @@ document.addEventListener("DOMContentLoaded", () => {
     dialog.addEventListener("hidden.bs.modal", () => {
       byId("recover-restore").removeEventListener("click", restore);
       byId("recover-discard").removeEventListener("click", discard);
-      if (answer == "discard") {
+      if (answer === "discard") {
         Promise.all(keys.map(key => db.removeItem(key)))
           .then(() => MT.toast.success("Discarded the recovery copy"), error => {
             console.error(error);
             MT.toast.error("Couldn't discard the recovery copy: " + escape(db.describeError(error)), 15);
           });
-      } else if (answer == "restore") {
+      } else if (answer === "restore") {
         // Keep the copy as an ordinary stash (so it is not offered again, and
         // is still there if the restore goes wrong), written before the
         // autostash copy is removed
@@ -302,8 +311,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // The text a save writes, in one of the Save dialog's formats
   MT.sessionText = format => {
-    if (format == "microbetracestyle") return JSON.stringify(session.style);
-    if (format == "hivtrace") return MT.exportHIVTRACE();
+    if (format === "microbetracestyle") return JSON.stringify(session.style);
+    if (format === "hivtrace") return MT.exportHIVTRACE();
     MT.syncLayout();
     return JSON.stringify(session);
   };
@@ -315,6 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
   MT.saveSession = async ({ format = "microbetrace", name, compress = false, data = MT.sessionText(format) } = {}) => {
     const file = MT.cleanFilename(name === undefined ? byId("save-file-name").value : name, ["zip", "microbetrace", "hivtrace", "microbetracestyle", "json"]);
     if (compress) {
+      await MT.loadLibrary("xlsx");
       const zip = new JSZip();
       zip.file(file + "." + format, data);
       const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } });
@@ -348,8 +358,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!file) return;
     const extension = file.name.split(".").pop().toLowerCase();
     MT.confirmReplace(() => {
-      if (extension == "zip") {
-        new JSZip().loadAsync(file).then(zip => {
+      if (extension === "zip") {
+        MT.loadLibrary("xlsx").then(() => new JSZip().loadAsync(file)).then(zip => {
           const entries = [];
           zip.forEach((relativePath, zipEntry) => {
             if (!zipEntry.dir && /\.(microbetrace|hivtrace|json)$/i.test(zipEntry.name)) entries.push(zipEntry);
@@ -470,12 +480,12 @@ document.addEventListener("DOMContentLoaded", () => {
     updateNetwork();
   };
   settings.subscribe("link-prune", prune => {
-    if (prune != "none") showEpsilon();
+    if (prune !== "none") showEpsilon();
     MT.computePruning().then(updateNetwork, pruningFailed);
   });
   settings.subscribe("filtering-epsilon", () => {
     showEpsilon();
-    if (get("link-prune") != "none") MT.computePruning().then(updateNetwork, pruningFailed);
+    if (get("link-prune") !== "none") MT.computePruning().then(updateNetwork, pruningFailed);
   });
   settings.subscribe("cluster-minimum-size", () => {
     MT.setClusterVisibility(true);
@@ -494,9 +504,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (metric) byId("link-threshold").step = MT.thresholdStep(metric);
     MT.updateThresholdHistogram();
     // Pruning is by the filter variable, so its flags are recomputed first
-    const pruned = get("link-prune") != "none" ? MT.computePruning() : Promise.resolve();
+    const pruned = get("link-prune") !== "none" ? MT.computePruning() : Promise.resolve();
     pruned.then(() => {
-      if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold);
+      if (threshold != null && threshold != get("link-threshold")) settings.set("link-threshold", threshold); // eslint-disable-line eqeqeq -- the threshold may be stored as a number or as text in a saved session
       else updateNetwork();
     }, pruningFailed);
   });
@@ -542,10 +552,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Rows of the settings that only apply with some settings
   const showRows = () => {
     const rows = (selector, show) => all(selector).forEach(row => row.hidden = !show);
-    rows(".filtering-epsilon-row", get("link-prune") != "none");
+    rows(".filtering-epsilon-row", get("link-prune") !== "none");
     rows("#filtering-wrapper", !(get("cluster-minimum-size") > 1));
     ["node", "link"].forEach(kind => {
-      const none = get(kind + "-color-variable") == "None";
+      const none = get(kind + "-color-variable") === "None";
       rows(`.${kind}-color-table-row`, !none);
       rows(`.${kind}-color-value-row`, none);
     });
@@ -669,8 +679,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const selected = session.data.nodes.filter(d => d.selected).length;
     byId("numberOfSelectedNodes").textContent = selected.toLocaleString();
     const parts = [searchNote];
-    if (selected != announcedSelection || searchNote) {
-      parts.push(selected ? `${selected.toLocaleString()} node${selected == 1 ? "" : "s"} selected` : "No nodes selected");
+    if (selected !== announcedSelection || searchNote) {
+      parts.push(selected ? `${selected.toLocaleString()} node${selected === 1 ? "" : "s"} selected` : "No nodes selected");
     }
     announcedSelection = selected;
     searchNote = "";
@@ -738,13 +748,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const variable = get(kind + "-color-variable");
     const table = byId(kind + "-color-table"), wrapper = byId(kind + "-color-table-wrapper");
     const widget = name => kind + "-color-table-" + name;
-    if (variable == "None") {
+    if (variable === "None") {
       table.innerHTML = "";
       wrapper.style.display = "none";
       events.emit(kind + "-color-change");
       return;
     }
-    const Kind = kind == "node" ? "Node" : "Link";
+    const Kind = kind === "node" ? "Node" : "Link";
     const sortLink = (key, other) => {
       const a = MT.sortButton();
       a.addEventListener("click", () => {
@@ -755,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return a;
     };
     const overwrite = session.style.overwrite || {};
-    const title = overwrite[kind + "ColorHeaderVariable"] == variable ? overwrite[kind + "ColorHeaderTitle"] : Kind + " " + MT.titleize(variable);
+    const title = overwrite[kind + "ColorHeaderVariable"] == variable ? overwrite[kind + "ColorHeaderTitle"] : Kind + " " + MT.titleize(variable); // eslint-disable-line eqeqeq -- variable names may come from a saved session, where they may be stored as numbers
     const counts = get(widget("counts")), frequencies = get(widget("frequencies"));
     table.innerHTML = "<tr></tr>";
     const header = table.querySelector("tr");
@@ -780,25 +790,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const names = session.style[kind + "ValueNames"] = session.style[kind + "ValueNames"] || {};
-    const aggregates = kind == "node" ? MT.createNodeColorMap() : MT.createLinkColorMap();
-    const total = (kind == "node" ? MT.getVisibleNodes() : MT.getVisibleLinks()).length;
+    const aggregates = kind === "node" ? MT.createNodeColorMap() : MT.createLinkColorMap();
+    const total = (kind === "node" ? MT.getVisibleNodes() : MT.getVisibleLinks()).length;
     const values = Object.keys(aggregates);
     const nameSort = get(widget("name-sort")), countSort = get(widget("counts-sort"));
     if (isNaN(values[0])) { // String sorting
-      if (nameSort == "ASC") values.sort();
-      else if (nameSort == "DESC") values.sort((a, b) => a > b ? -1 : b > a ? 1 : 0);
+      if (nameSort === "ASC") values.sort();
+      else if (nameSort === "DESC") values.sort((a, b) => a > b ? -1 : b > a ? 1 : 0);
     } else { // Number sorting
-      if (nameSort == "ASC") values.sort((a, b) => a - b);
-      else if (nameSort == "DESC") values.sort((a, b) => b - a);
+      if (nameSort === "ASC") values.sort((a, b) => a - b);
+      else if (nameSort === "DESC") values.sort((a, b) => b - a);
     }
-    if (countSort == "ASC") values.sort((a, b) => aggregates[a] - aggregates[b]);
-    else if (countSort == "DESC") values.sort((a, b) => aggregates[b] - aggregates[a]);
+    if (countSort === "ASC") values.sort((a, b) => aggregates[a] - aggregates[b]);
+    else if (countSort === "DESC") values.sort((a, b) => aggregates[b] - aggregates[a]);
 
     // The maps and their saved values: nodeColorMap, nodeColorsTable and so on
     const colorMap = kind + "ColorMap", alphaMap = kind + "AlphaMap", alphas = kind + "Alphas";
     const savedColors = kind + "ColorsTable", savedKeys = kind + "ColorsTableKeys";
     // During the timeline the colors are kept separately (as linkColorsKeys, for links)
-    const timelineColors = kind + "Color", timelineKeys = kind == "node" ? "nodeColorKeys" : "linkColorsKeys";
+    const timelineColors = kind + "Color", timelineKeys = kind === "node" ? "nodeColorKeys" : "linkColorsKeys";
 
     values.forEach((value, i) => {
       const row = document.createElement("tr");
@@ -812,7 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
       row.querySelector("input").addEventListener("change", e => {
         const key = session.style[savedKeys][variable].findIndex(k => k === value);
         session.style[savedColors][variable].splice(key, 1, e.target.value);
-        if (get("node-timeline-variable") == "None") {
+        if (get("node-timeline-variable") === "None") {
           temp.style[colorMap] = MT.colorScale(session.style[savedColors][variable], session.style[savedKeys][variable]);
         } else {
           const timelineKey = temp.style[timelineKeys].findIndex(k => k === value);
@@ -861,11 +871,11 @@ document.addEventListener("DOMContentLoaded", () => {
       onHide: () => settings.set(kind + "-color-table-show", false),
       onCounts: toggle(kind + "-color-table-counts"),
       onFrequencies: toggle(kind + "-color-table-frequencies"),
-      onSelect: kind == "node" ? selectNodesOfRow : undefined
+      onSelect: kind === "node" ? selectNodesOfRow : undefined
     });
     settings.subscribe(kind + "-color-variable", () => showColorTable(kind));
     settings.subscribe(kind + "-color-table-show", show => {
-      wrapper.style.display = show && get(kind + "-color-variable") != "None" ? "block" : "none";
+      wrapper.style.display = show && get(kind + "-color-variable") !== "None" ? "block" : "none";
     }, { reload: true });
   });
 
@@ -885,14 +895,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // chosen, not when a session that already has it is opened.
   const shapeSuggested = new Set();
   settings.subscribe("node-color-variable", variable => {
-    if (variable == "None" || shapeSuggested.has(variable) || get("node-symbol-variable") != "None") return;
+    if (variable === "None" || shapeSuggested.has(variable) || get("node-symbol-variable") !== "None") return;
     const values = new Set(session.data.nodes.filter(d => d.visible).map(d => String(d[variable]))).size;
     // (Up to six values, or seven with (Empty), are still told apart by color)
     if (values <= 6) return;
     shapeSuggested.add(variable);
     const name = MT.escape(MT.titleize(variable));
     MT.toast.info(`${values.toLocaleString()} values of ${name} are hard to tell apart by color alone. Show ${name} as shapes too?`,
-      taken => { if (taken && get("node-color-variable") == variable) settings.set("node-symbol-variable", variable); },
+      taken => { if (taken && get("node-color-variable") === variable) settings.set("node-symbol-variable", variable); },
       { action: "Show as shapes" });
   });
 
@@ -941,8 +951,8 @@ document.addEventListener("DOMContentLoaded", () => {
       MT.scrubTimeline = null;
       MT.setTimelinePlaying = null;
       const pin = document.getElementById("pinbutton");
-      let loadingJsonFile = previous == variable;
-      if (previous != 'None' && !loadingJsonFile) {
+      let loadingJsonFile = previous === variable;
+      if (previous !== 'None' && !loadingJsonFile) {
         // change timeline variable when end time not reaching target time - redraw netwrok to start fresh
         if (MT.parseDate(session.state.timeEnd) < MT.parseDate(session.state.timeTarget)) {
           session.state.timeEnd = session.state.timeTarget;
@@ -954,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Already stored when the change came from the setting itself, so this notifies
       // only when showTimeline is called directly with another variable
       settings.set("node-timeline-variable", variable);
-      if (variable == "None") {
+      if (variable === "None") {
         document.getElementById("global-timeline-field").innerHTML = "";
         settings.set("timeline-date-field", 'None');
         showTimelineBar(false);
@@ -981,7 +991,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         pin.disabled = true;
       }
-      let globalTimelineField =  (session.style.overwrite && variable == session.style.overwrite.globalTimelineFieldVariable ? session.style.overwrite.globalTimelineField : MT.titleize(variable));
+      let globalTimelineField =  (session.style.overwrite && variable == session.style.overwrite.globalTimelineFieldVariable ? session.style.overwrite.globalTimelineField : MT.titleize(variable)); // eslint-disable-line eqeqeq -- variable names may come from a saved session, where they may be stored as numbers
       document.getElementById("global-timeline-field").textContent = globalTimelineField;
   
       var formatDateIntoYear = d3.timeFormat("%Y");
@@ -1005,7 +1015,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Each year named where it starts (or on the first tick)
       var tickDateFormat = (d, i) => {
         if (days<184) return formatDateDateMonth(d);
-        else if (days<367) return d.getMonth() == 0 || i == 0 ? formatDateMonthYear(d) : formatDateIntoMonth(d);
+        else if (days<367) return d.getMonth() === 0 || i === 0 ? formatDateMonthYear(d) : formatDateIntoMonth(d);
         else if (days<367*5) return formatDateIntoMonthYear(d);
         else return formatDateIntoYear(d);		
       }
@@ -1028,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
       var currentValue = 0;
       var targetValue = width;
       var playButton = d3.select("#timeline-play-button");
-      if (playButton.text() == "Pause") playButton.text("Play");
+      if (playButton.text() === "Pause") playButton.text("Play");
       var x = d3.scaleTime()
           .domain([startDate, endDate])
           .range([0, targetValue])
@@ -1051,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", () => {
               .on("start drag", function(event) {
                 currentValue = event.x;
                 update(x.invert(currentValue));
-                if (playButton.text() == "Pause") {
+                if (playButton.text() === "Pause") {
                   playButton.text("Play"); 
                   clearInterval(session.timeline);
                 }
@@ -1081,7 +1091,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .text(handleDateFormat(endDate))
           .attr("transform", "translate(0," + (-20) + ")")
       const togglePlayback = () => {
-        if (playButton.text() == "Pause") {
+        if (playButton.text() === "Pause") {
           playButton.text("Play");
           clearInterval(session.timeline);
         } else {
@@ -1094,7 +1104,7 @@ document.addEventListener("DOMContentLoaded", () => {
       playButton.on("click", togglePlayback);
       // Plays or pauses the animation, as the Play button does (WebMCP's control_timeline_playback)
       MT.setTimelinePlaying = play => {
-        if (play != (playButton.text() == "Pause")) togglePlayback();
+        if (play != (playButton.text() === "Pause")) togglePlayback(); // eslint-disable-line eqeqeq -- play may arrive from WebMCP as 1 or 0, which must match a boolean
       };
       function step() { 
         update(x.invert(currentValue));
@@ -1158,8 +1168,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const options = () => Array.from(results.querySelectorAll("li"));
   const setActive = li => {
     options().forEach(o => {
-      o.classList.toggle("active", o == li);
-      o.setAttribute("aria-selected", o == li);
+      o.classList.toggle("active", o === li);
+      o.setAttribute("aria-selected", o === li);
     });
     if (li) {
       search.setAttribute("aria-activedescendant", li.id);
@@ -1210,8 +1220,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const field = get("search-field");
     session.data.nodes.forEach(node => {
       if (!node[field]) node.selected = false;
-      if (typeof node[field] == "string") node.selected = re.test(node[field]);
-      if (typeof node[field] == "number") node.selected = node[field] + "" == value;
+      if (typeof node[field] === "string") node.selected = re.test(node[field]);
+      if (typeof node[field] === "number") node.selected = node[field] + "" === value;
     });
   };
   // Choosing a suggestion searches for exactly it
@@ -1227,7 +1237,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // (A click on a suggestion shouldn't take focus from the box)
   results.addEventListener("mousedown", e => e.preventDefault());
   search.addEventListener("keydown", e => {
-    const open = results.style.display == "block";
+    const open = results.style.display === "block";
     const items = options().filter(li => !li.classList.contains("no-matches"));
     const at = items.findIndex(li => li.classList.contains("active"));
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
@@ -1253,7 +1263,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const value = search.value;
     hideResults();
     search.classList.remove("is-invalid");
-    if (value == "") {
+    if (value === "") {
       nodes.forEach(node => node.selected = false);
     } else {
       const field = get("search-field");
@@ -1261,7 +1271,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let re;
       try {
         re = pattern(value);
-      } catch (error) {
+      } catch {
         return; // not yet a whole pattern
       }
       // Suggestions, each of which searches for itself
@@ -1290,7 +1300,7 @@ document.addEventListener("DOMContentLoaded", () => {
         results.append(li);
         showResults();
       }
-      searchNote = count ? `${count.toLocaleString()} suggestion${count == 1 ? "" : "s"}` : "No matches";
+      searchNote = count ? `${count.toLocaleString()} suggestion${count === 1 ? "" : "s"}` : "No matches";
     }
     events.emit("node-selected");
   });
@@ -1359,7 +1369,7 @@ document.addEventListener("DOMContentLoaded", () => {
   showRows();
   if (navigator.onLine) MT.showOnline(document);
 
-  if (location.hash == "#demo") {
+  if (location.hash === "#demo") {
     MT.loadDemo();
   } else {
     MT.launchView("files");

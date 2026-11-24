@@ -114,7 +114,7 @@ test('more than 2,000 points are drawn on a canvas, and still export under the C
   await expect.poll(async () => (await plot()).points).toBeGreaterThan(40000);
   expect(await view().locator('.js-plotly-plot').evaluate(el => el.data[0].type)).toBe('scattergl');
   for (const [filetype, check] of [
-    ['png', bytes => bytes.subarray(1, 4).toString() == 'PNG'],
+    ['png', bytes => bytes.subarray(1, 4).toString() === 'PNG'],
     ['svg', bytes => /<svg[\s\S]*<image[^>]*href="data:image\/png/.test(bytes.toString())]
   ]) {
     const modal = await openExport(page, view(), 'Export Scatterplot');

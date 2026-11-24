@@ -1,4 +1,4 @@
-// WebMCP tools for views (src/webmcp/views.js)
+// WebMCP tools for views (src/webmcp/views/)
 const { test, expect } = require('@playwright/test');
 const { watchErrors, loadNetwork, webmcp } = require('./helpers');
 
@@ -20,7 +20,7 @@ const agent = (name, args) => tools.agent(name, args);
 test('list_views and open_view', async () => {
   const list = await call('list_views');
   expect(list.views.map(v => v.id)).toContain('phylogenetic_tree');
-  expect(list.views.find(v => v.id == 'network').open).toBe(true);
+  expect(list.views.find(v => v.id === 'network').open).toBe(true);
   const r = await call('open_view', { view: 'histogram' });
   expect(r.openViews).toContain('histogram');
   expect(r.activeViews).toContain('histogram');
@@ -30,8 +30,8 @@ test('placement splits the layout', async () => {
   const r = await call('open_view', { view: 'table', placement: 'right', relativeTo: 'network' });
   expect(r.layout.type).toBe('row');
   const views = await call('list_views');
-  expect(views.views.find(v => v.id == 'table').visible).toBe(true);
-  expect(views.views.find(v => v.id == 'histogram').visible).toBe(true);
+  expect(views.views.find(v => v.id === 'table').visible).toBe(true);
+  expect(views.views.find(v => v.id === 'histogram').visible).toBe(true);
   const set = await call('set_layout', { layout: { type: 'column', content: [{ type: 'stack', content: [{ type: 'network' }] }, { type: 'stack', content: [{ type: 'histogram' }, { type: 'table' }], active: 'histogram' }] } });
   expect(set.layout.type).toBe('column');
   expect(set.activeViews).toContain('histogram');
@@ -42,10 +42,10 @@ test('placement splits the layout', async () => {
 test('view settings are discoverable and settable', async () => {
   await call('focus_view', { view: 'histogram' });
   const s = await call('get_view_settings', { view: 'histogram' });
-  const v = s.settings.find(x => x.key == 'histogram-variable');
+  const v = s.settings.find(x => x.key === 'histogram-variable');
   expect(v.type).toBe('choice');
   expect(v.options.length).toBeGreaterThan(2);
-  const log = s.settings.find(x => x.key == 'histogram-scale-log');
+  const log = s.settings.find(x => x.key === 'histogram-scale-log');
   expect(log.type).toBe('boolean');
   const r = await call('set_view_settings', { view: 'histogram', settings: { 'histogram-scale-log': true } });
   expect(r.changes[0].to).toBe(true);
@@ -54,7 +54,7 @@ test('view settings are discoverable and settable', async () => {
   await expect(call('set_view_settings', { view: 'histogram', settings: { 'histogram-variable': 'nonsense' } })).rejects.toThrow(/must be one of/);
   const n = await call('get_view_settings', { view: 'network', open: true });
   expect(n.count).toBeGreaterThan(30);
-  const range = n.settings.find(x => x.type == 'number' && x.control == 'slider');
+  const range = n.settings.find(x => x.type === 'number' && x.control === 'slider');
   expect(range.max).toBeGreaterThan(range.min);
 });
 
@@ -87,10 +87,10 @@ test('images of every view', async () => {
     await call('open_view', { view });
     const r = await agent('get_view_image', { view, maxWidth: 600 });
     expect(r.isError, view + ': ' + JSON.stringify(r.content[0].text)).toBeFalsy();
-    const img = r.content.find(c => c.type == 'image');
+    const img = r.content.find(c => c.type === 'image');
     expect(img, view).toBeTruthy();
     expect(img.mimeType).toBe('image/png');
-    const meta = JSON.parse(r.content.find(c => c.type == 'text').text);
+    const meta = JSON.parse(r.content.find(c => c.type === 'text').text);
     expect(meta.width, view).toBeLessThanOrEqual(600);
     const colors = await page.evaluate(async data => {
       const i = new Image(); i.src = 'data:image/png;base64,' + data; await i.decode();
@@ -125,7 +125,7 @@ test('export_view returns content or downloads', async () => {
 test('set_view_control', async () => {
   await call('open_view', { view: 'crosstab' });
   const s = await call('get_view_settings', { view: 'crosstab' });
-  const menu = s.other_controls.find(c => c.type == 'choice' && c.options.length > 2);
+  const menu = s.other_controls.find(c => c.type === 'choice' && c.options.length > 2);
   expect(menu).toBeTruthy();
   const r = await call('set_view_control', { view: 'crosstab', control: menu.control, value: menu.options[2].value });
   expect(r.value).toBe(menu.options[2].value);

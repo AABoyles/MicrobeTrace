@@ -30,12 +30,12 @@ test('opening the page and every view raises no policy violation', async ({ page
   for (const view of views) {
     await launchView(page, view);
     await page.waitForFunction(view => {
-      const item = layout.contentItems.find(i => i.componentType == view);
+      const item = layout.contentItems.find(i => i.componentType === view);
       return item && item.element && !item.ready;
     }, view);
     // A violation can be reported a moment after the view's first frame: wait for it
     await page.waitForTimeout(200);
-    if (view != 'network') await closeView(page, view);
+    if (view !== 'network') await closeView(page, view);
   }
   expect(await page.evaluate(() => window.cspViolations)).toEqual([]);
   expect(errors.filter(e => /Content Security Policy/i.test(e))).toEqual([]);

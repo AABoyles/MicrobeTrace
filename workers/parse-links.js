@@ -10,7 +10,7 @@ onmessage = function(e) {
  Papa.parse(text, {
   delimiter: delimiter || ",",
   header: true,
-  dynamicTyping: field => field != field1 && field != field2,
+  dynamicTyping: field => field != field1 && field != field2, // eslint-disable-line eqeqeq -- field names arrive from menus and files; a number and its text name the same column
   skipEmptyLines: true,
   complete: results => {
    postMessage({ rows: results.data, fields: results.meta.fields || [] });

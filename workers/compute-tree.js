@@ -1,5 +1,5 @@
 // Timings show only when debugging is on: runWorker names the worker "debug" then (see MT.debugging in src/common.js)
-const debugTime = (label, start) => { if (globalThis.name == 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
+const debugTime = (label, start) => { if (globalThis.name === 'debug') console.log(label + ' time: ', (Date.now() - start).toLocaleString(), 'ms'); };
 importScripts('../vendor/patristic.min.js');
 
 // Takes the n by n distance matrix as a flat Float64Array (NaN where there's no
@@ -12,7 +12,7 @@ onmessage = function(e){
   const row = matrix[i] = new Array(n);
   for (let j = 0; j < n; j++) {
    const v = flat[i * n + j];
-   row[j] = v == v ? v : null;
+   row[j] = v === v ? v : null;
   }
  }
  const RNJ = patristic.parseMatrix(matrix, e.data.labels);

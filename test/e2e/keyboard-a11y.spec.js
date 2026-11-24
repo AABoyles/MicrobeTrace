@@ -34,7 +34,7 @@ test('menu actions are buttons, and File > Open can be reached and used from the
   await page.evaluate(() => {
     window.pickerAsked = 0;
     const click = HTMLInputElement.prototype.click;
-    HTMLInputElement.prototype.click = function () { if (this.id == 'OpenTab') window.pickerAsked++; };
+    HTMLInputElement.prototype.click = function () { if (this.id === 'OpenTab') window.pickerAsked++; };
     window.restoreClick = () => { HTMLInputElement.prototype.click = click; };
   });
   await page.keyboard.press('Enter');

@@ -41,8 +41,8 @@ const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key,
 const views = ['table', 'aggregation', 'crosstab', 'histogram', 'scatterplot', 'heatmap', 'timeline', 'gantt', 'bubbles',
   'flow_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'choropleth', 'globe', 'sequences'];
 async function opened(view) {
-  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType == view), view))) await launchView(page, view);
-  await page.evaluate(view => { const item = layout.contentItems.find(i => i.componentType == view); item.parent.setActiveComponentItem(item, true); }, view);
+  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
+  await page.evaluate(view => { const item = layout.contentItems.find(i => i.componentType === view); item.parent.setActiveComponentItem(item, true); }, view);
 }
 // A control's name, as far as these controls go: its own, or its label's
 const unnamed = () => page.evaluate(() => Array.from(document.querySelectorAll('input:not([type=hidden]), select, textarea'))
@@ -80,7 +80,7 @@ test('every control has a name, the color swatches from their rows', async () =>
 test('each dialog is named by its title', async () => {
   const dialogs = await page.evaluate(() => Array.from(document.querySelectorAll('.modal'), modal => {
     const title = document.getElementById(modal.getAttribute('aria-labelledby'));
-    return [modal.id || modal.className, title && modal.contains(title) && title.classList.contains('modal-title') && title.textContent.trim() != ''];
+    return [modal.id || modal.className, title && modal.contains(title) && title.classList.contains('modal-title') && title.textContent.trim() !== ''];
   }));
   expect(dialogs.length).toBeGreaterThan(20);
   expect(dialogs.filter(([, named]) => !named)).toEqual([]);
@@ -91,9 +91,9 @@ test('the settings panes’ tabs are wired to their panels', async () => {
     const panel = document.getElementById(tab.getAttribute('aria-controls'));
     return {
       tab: tab.id,
-      panel: !!panel && panel.getAttribute('role') == 'tabpanel' && tab.getAttribute('href') == '#' + panel.id && panel.getAttribute('aria-labelledby') == tab.id,
-      inList: tab.parentElement.closest('[role="tablist"]') != null && (tab.parentElement.getAttribute('role') == 'presentation' || tab.parentElement.getAttribute('role') == 'tablist'),
-      selected: tab.getAttribute('aria-selected') == String(tab.classList.contains('active'))
+      panel: !!panel && panel.getAttribute('role') === 'tabpanel' && tab.getAttribute('href') === '#' + panel.id && panel.getAttribute('aria-labelledby') === tab.id,
+      inList: tab.parentElement.closest('[role="tablist"]') != null && (tab.parentElement.getAttribute('role') === 'presentation' || tab.parentElement.getAttribute('role') === 'tablist'),
+      selected: tab.getAttribute('aria-selected') === String(tab.classList.contains('active'))
     };
   }));
   expect(tabs.length).toBeGreaterThan(30);
@@ -123,7 +123,7 @@ test('draggable rows and tables have only the roles they play', async () => {
   expect(roles.groups).toBe(0);
   expect(roles.owns).toBe(0);
   expect(roles.holders.length).toBeGreaterThan(0);
-  expect(roles.holders.every(r => r == 'rowgroup')).toBe(true);
+  expect(roles.holders.every(r => r === 'rowgroup')).toBe(true);
 });
 
 // The scans below run in both themes; the app follows the system's setting
@@ -152,13 +152,13 @@ for (const scheme of themes) {
       // The whole page once, then each view on its own
       await page.evaluate(view => {
         document.querySelectorAll('[data-audit]').forEach(el => el.removeAttribute('data-audit'));
-        layout.contentItems.find(i => i.componentType == view).element.setAttribute('data-audit', '');
+        layout.contentItems.find(i => i.componentType === view).element.setAttribute('data-audit', '');
       }, view);
       const root = page.locator('[data-audit]'), toggle = root.locator('.settings-toggle').first();
       const pane = await toggle.count() > 0;
       if (pane && !(await toggle.evaluate(b => b.classList.contains('active')))) await toggle.click();
       if (pane) await root.locator('.left-pane').evaluate(el => Promise.allSettled(el.getAnimations().map(a => a.finished)));
-      found.push(...(await axe(page, view == 'network' ? null : '[data-audit]')).map(v => `${view} › ${v}`));
+      found.push(...(await axe(page, view === 'network' ? null : '[data-audit]')).map(v => `${view} › ${v}`));
       if (pane) await toggle.click();
     }
     expect(found).toEqual([]);
@@ -173,7 +173,7 @@ for (const scheme of themes) {
     // Sequence Settings is part of the Files view
     await launchView(page, 'files');
     await scanDialog(page, '#sequence-controls-modal', found);
-    await page.evaluate(() => layout.contentItems.find(i => i.componentType == 'files').remove());
+    await page.evaluate(() => layout.contentItems.find(i => i.componentType === 'files').remove());
     expect(found).toEqual([]);
   });
 

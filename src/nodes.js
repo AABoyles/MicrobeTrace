@@ -1,3 +1,4 @@
+// @ts-check
 // MTNodeSources: the values each file gives its nodes, kept as the file had
 // them, so a node's values can be traced to their files, and where files
 // disagree is known.
@@ -17,11 +18,11 @@ const empty = v => v === undefined || v === null || v === '' || (typeof v === 'n
 
 // Whether two values are the same: equal, the same number (33 and "33.00",
 // as a spreadsheet and a CSV give it), or the same text but for spaces
-const isNumber = v => typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && !isNaN(v));
-const same = (a, b) => a === b || (isNumber(a) && isNumber(b) ? +a == +b : String(a).trim() == String(b).trim());
+const isNumber = v => typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && !isNaN(+v));
+const same = (a, b) => a === b || (isNumber(a) && isNumber(b) ? +a === +b : String(a).trim() === String(b).trim());
 // Sequences are the same whatever their case: a FASTA file and a node list
 // often differ only in that, and the sequence is read the same either way
-const sameSequence = (a, b) => a === b || String(a).trim().toUpperCase() == String(b).trim().toUpperCase();
+const sameSequence = (a, b) => a === b || String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
 
 class Source {
   constructor(name, rank) {
@@ -115,7 +116,7 @@ export class MTNodeSources {
   // The source whose value a node's field uses: the one it picks, then the
   // one its field prefers, then the best ranked with a value
   decides(key, field) {
-    const named = name => name != null && this.ranked().find(s => s.name == name && s.value(key, field) !== undefined);
+    const named = name => name != null && this.ranked().find(s => s.name === name && s.value(key, field) !== undefined);
     const picked = named(this.picked(key, field));
     if (picked) return picked;
     const preferred = named(this.rules.get(field));
@@ -163,7 +164,7 @@ export class MTNodeSources {
     fields.forEach(field => {
       const having = this.ranked().filter(s => s.columns.has(field));
       if (having.length < 2) return;
-      const equal = field == 'seq' ? sameSequence : same;
+      const equal = field === 'seq' ? sameSequence : same;
       const keys = [];
       for (const key of shared) {
         let first;
@@ -181,34 +182,36 @@ export class MTNodeSources {
     });
     return out;
   }
+
+  // Saving and restoring sources, as sessions do. nodeOf(key) gives a node:
+  // a source's value the node also has (usually most) is saved as 1, and read
+  // back from the node; a value it doesn't have is saved as [value], and no
+  // value as 0.
+  /** @param {(key: string) => any} [nodeOf] */
+  save(nodeOf = () => undefined) {
+    return {
+      version: 1,
+      sources: this.list.map(source => {
+        const keys = new Array(source.rows);
+        source.rowOf.forEach((row, key) => { keys[row] = key; });
+        const columns = {};
+        source.columns.forEach((column, field) => {
+          columns[field] = keys.map((key, row) => {
+            const value = column[row];
+            if (empty(value)) return 0;
+            const node = nodeOf(key);
+            return node && node[field] === value ? 1 : [value];
+          });
+        });
+        return { name: source.name, rank: source.rank, keys, columns };
+      }),
+      rules: Object.fromEntries(this.rules),
+      picks: Array.from(this.picks, ([key, fields]) => Array.from(fields, ([field, name]) => [key, field, name])).flat()
+    };
+  }
 }
 
-// Saving and restoring sources, as sessions do. nodeOf(key) gives a node:
-// a source's value the node also has (usually most) is saved as 1, and read
-// back from the node; a value it doesn't have is saved as [value], and no
-// value as 0.
-MTNodeSources.prototype.save = function (nodeOf = () => undefined) {
-  return {
-    version: 1,
-    sources: this.list.map(source => {
-      const keys = new Array(source.rows);
-      source.rowOf.forEach((row, key) => { keys[row] = key; });
-      const columns = {};
-      source.columns.forEach((column, field) => {
-        columns[field] = keys.map((key, row) => {
-          const value = column[row];
-          if (empty(value)) return 0;
-          const node = nodeOf(key);
-          return node && node[field] === value ? 1 : [value];
-        });
-      });
-      return { name: source.name, rank: source.rank, keys, columns };
-    }),
-    rules: Object.fromEntries(this.rules),
-    picks: Array.from(this.picks, ([key, fields]) => Array.from(fields, ([field, name]) => [key, field, name])).flat()
-  };
-};
-
+/** @param {any} saved @param {(key: string) => any} [nodeOf] */
 MTNodeSources.restore = (saved, nodeOf = () => undefined) => {
   const sources = new MTNodeSources();
   if (!saved || !Array.isArray(saved.sources)) return sources;

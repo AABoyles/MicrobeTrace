@@ -4,15 +4,19 @@
 // GoldenLayout, slide their settings panes, describe themselves, and cache and
 // load the layout.
 //
-// An ES module (#323) that adds to MT (imported from common.js, which also sets
-// self.MT). It uses these MT names from the other files at run time, through MT:
+// An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
+// (#341). It uses these MT names from the other files at run time, through MT:
 //   common.js: events, settings
 //   loading.js: dateFields, loadDemo, locationKinds, pickLocationFields,
 //     updateDemoButtons
 //   ui.js: fillSelect, showColorOptions, showOnline, titleize
-// It also reads the session and temp globals, which src/index.js and the reset set on self.
-import { MT } from './common.js';
+// It reads the session and temp (and the layout) from env, which is self on the page and a
+// fake in tests; the browser and library globals (document, Worker, d3, ...) it reads bare.
+// The body of the installer is not indented, so that the diff of the change that wrapped it
+// stays small.
 
+
+export function installViews(MT, env) {
 let peek = ra => ra[ra.length - 1];
 
 const emptyLayout = {
@@ -26,32 +30,36 @@ const viewItems = item => !item ? [] : item.isComponent ? [item] : item.contentI
 const stacks = item => !item || item.isComponent ? [] : (item.isStack ? [item] : []).concat(item.contentItems.flatMap(stacks));
 
 MT.createLayout = () => {
-  if (self.layout) {
+  if (env.layout) {
     parkPanels();
-    self.layout.destroy();
+    env.layout.destroy();
   }
   recentViews.length = 0;
-  self.layout = new goldenLayout.GoldenLayout(document.getElementById("main-panel"));
-  self.layout.resizeWithContainerAutomatically = true;
+  env.layout = new goldenLayout.GoldenLayout(document.getElementById("main-panel"));
+  env.layout.resizeWithContainerAutomatically = true;
   // golden-layout builds a component before its element is in the page, where
   // a view's inline scripts couldn't find their own elements. Components are
   // therefore empty here, and renderView fills each one in once it's attached.
-  self.layout.registerComponentFunction(() => function () {});
+  env.layout.registerComponentFunction(() => function () {});
   // MicrobeTrace's open views, which golden-layout 1 called contentItems
-  Object.defineProperty(self.layout, "contentItems", { get: () => viewItems(self.layout.rootItem) });
-  self.layout.loadLayout(emptyLayout);
-  self.layout.on("stateChanged", () => session.layout = MT.cacheLayout(self.layout.rootItem));
-  self.layout.on("activeContentItemChanged", bringForward);
-  self.layout.on("focus", e => bringForward(e.target));
+  Object.defineProperty(env.layout, "contentItems", { get: () => viewItems(env.layout.rootItem) });
+  env.layout.loadLayout(emptyLayout);
+  env.layout.on("stateChanged", () => env.session.layout = MT.cacheLayout(env.layout.rootItem));
+  env.layout.on("activeContentItemChanged", bringForward);
+  env.layout.on("focus", e => bringForward(e.target));
 };
 
-// Fetches a view's HTML into temp.componentCache, and its script (so that
-// it is cached for the worker and a missing or wrong file shows up here, not
-// when the view opens). A failed fetch (offline, 404, or a server answering
+// Every view is an ES module (#339): components/NAME.js exports mount(root, ctx) and
+// optionally `libraries`, and is loaded with import(). The imported modules, by view name.
+const modules = {};
+
+// Fetches a view's HTML into temp.componentCache, and imports its module (so
+// that both are cached for the worker and a missing or wrong file shows up here,
+// not when the view opens). A failed fetch (offline, 404, or a server answering
 // with something other than HTML or script) is not cached, so the next attempt
 // tries again, and rejects with a message naming the view.
 const fetchView = view => {
-  if (temp.componentCache[view]) return Promise.resolve();
+  if (env.temp.componentCache[view]) return Promise.resolve();
   const fail = () => {
     throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
   };
@@ -63,41 +71,46 @@ const fetchView = view => {
     if (/^\s*<!doctype/i.test(text)) fail();
     return text;
   });
-  return Promise.all([get("components/" + view + ".html"), get("components/" + view + ".js")])
-    .then(([html]) => { temp.componentCache[view] = html; });
+  // Importing fetches and checks the view's file as well as fetching does. Its mount is also
+  // listed in MT.views, which WebMCP reads for the view names.
+  const code = import("../components/" + view + ".js").then(module => {
+    modules[view] = module;
+    MT.views[view] = module.mount;
+  }, fail);
+  return Promise.all([get("components/" + view + ".html"), code])
+    .then(([html]) => { env.temp.componentCache[view] = html; });
 };
 const viewFailed = error => MT.toast.error(error.message);
 
-// Renders a view's HTML into its (newly attached) layout item
-// (Scripts set as HTML don't run, so each is replaced by a copy that does.)
-// The page's content security policy allows no inline scripts, so a view's
-// script is a file, named by a <script src> in its HTML. Scripts added like
-// this run as soon as they load, in no set order, unless marked not async;
-// they are, so they run in the order added. The view is only set up once its
-// scripts have run, which is what the returned promise waits for (it rejects
-// if one fails to load).
+// Renders a view's HTML into its (newly attached) layout item. A view's code is
+// its module, imported by fetchView, so the HTML holds no scripts.
 const renderView = contentItem => {
-  const element = contentItem.container.element;
-  element.innerHTML = temp.componentCache[contentItem.componentType];
-  return Promise.all(Array.from(element.querySelectorAll("script"), old => new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    Array.from(old.attributes).forEach(a => script.setAttribute(a.name, a.value));
-    script.async = false;
-    script.textContent = old.textContent;
-    if (script.src) {
-      script.addEventListener("load", resolve);
-      script.addEventListener("error", () => reject(new Error("Could not load the " + MT.titleize(contentItem.componentType) + " view. Check your connection and try again.")));
-    }
-    old.replaceWith(script);
-    if (!script.src) resolve();
-  })));
+  contentItem.container.element.innerHTML = env.temp.componentCache[contentItem.componentType];
 };
 
-// Renders a view and, once its scripts have run, sets it up and mounts it.
-// A view closed while its script loaded is left alone. A view whose script
-// couldn't load is closed, with a message.
+// The lazy libraries (see MT.loadLibrary) each view needs before it can be set up,
+// which are fetched when the view first opens and not with the page (#324).
+// Libraries needed only by an action, like the spreadsheet one for an Excel
+// export, are loaded by that action.
+const VIEW_LIBRARIES = {
+  // A session can hold spreadsheets added but not yet read, which the view lists
+  files: () => env.session.files.some(f => /^xlsx?$/i.test(f.extension || "")) ? ["xlsx"] : []
+};
+// A view names its own in `export const libraries`; the table above is only for a
+// need that depends on the session.
+const librariesOf = view => {
+  const listed = VIEW_LIBRARIES[view], declared = modules[view] && modules[view].libraries;
+  return [].concat(typeof listed === "function" ? listed() : listed || [], declared || []);
+};
+const loadLibraries = view => Promise.all(librariesOf(view).map(MT.loadLibrary)).catch(() => {
+  throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
+});
+
+// Renders a view once its libraries have loaded, then sets it up and mounts it.
+// A view closed while they loaded is left alone. A view whose library couldn't
+// load is closed, with a message.
 const openView = contentItem => {
-  const ready = renderView(contentItem).then(() => {
+  const ready = loadLibraries(contentItem.componentType).then(() => renderView(contentItem)).then(() => {
     if (!contentItem.container.element.isConnected) return;
     setupView(contentItem);
     mountView(contentItem);
@@ -109,21 +122,19 @@ const openView = contentItem => {
   return ready;
 };
 
-// Views written as modules register a mount function from their component's
-// script:
+// A view is the mount function its module exports:
 //
-//   MT.registerView('histogram', (root, { settings, events }) => {
+//   export const libraries = ['plotly'];  // optional, loaded before mount
+//   export function mount(root, { settings, events, MT, session, temp }) {
 //     ...
 //     return { resize() { ... }, destroy() { ... } };
-//   });
+//   }
 //
 // mount runs once the view is in the layout, with the view's own element as
 // root (query inside it rather than by global ID). resize() runs when the view
-// changes size or its tab is shown, and destroy() when it closes. Views
-// without a mount function are older ones that set themselves up when their
-// script runs.
+// changes size or its tab is shown, and destroy() when it closes. MT.views holds
+// the mount functions imported so far, by name.
 MT.views = {};
-MT.registerView = (name, mount) => { MT.views[name] = mount; };
 
 // A settings pane (.left-pane) is this many pixels wide, and slides in from
 // this far off the left edge when closed (the -400px in main.css)
@@ -161,15 +172,15 @@ const typing = target => target.isContentEditable || target.tagName === 'TEXTARE
   (target.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'button', 'color'].includes(target.type));
 // In the capture phase, before a menu that Escape closes has closed
 document.addEventListener('keydown', e => {
-  if (e.key != 'Escape' || typing(e.target) || document.querySelector('.modal.show, .ts-wrapper.dropdown-active, .dropdown-menu.show')) return;
+  if (e.key !== 'Escape' || typing(e.target) || document.querySelector('.modal.show, .ts-wrapper.dropdown-active, .dropdown-menu.show')) return;
   openPanes.forEach(close => close());
 }, true);
 MT.paneToggle = (button, pane, open = false, { push, beside, resize } = {}) => {
   const root = pane.parentElement;
   let aside = false;
   const placeBeside = () => {
-    const now = open && root.clientWidth >= paneRoom + besideAtLeast;
-    if (now == aside) return;
+    const now = Boolean(open && root.clientWidth >= paneRoom + besideAtLeast);
+    if (now === aside) return;
     aside = now;
     beside.classList.toggle('pane-beside', aside);
     root.classList.toggle('pane-beside-open', aside);
@@ -216,7 +227,7 @@ MT.onDockChange = (root, fn) => {
   let room = MT.dockRoom(root);
   const observer = new ResizeObserver(() => {
     const now = MT.dockRoom(root);
-    if (now != room) { room = now; fn(); }
+    if (now !== room) { room = now; fn(); }
   });
   observer.observe(MT.panelDock(root));
   return () => observer.disconnect();
@@ -259,8 +270,8 @@ const parkPanels = element => Object.values(pagePanels).forEach(id => {
 });
 const inFront = item => item.parent && item.parent.isStack && item.parent.getActiveComponentItem() === item;
 MT.placePanels = () => {
-  if (!self.layout || !self.layout.rootItem) return parkPanels();
-  const views = self.layout.contentItems.filter(inFront)
+  if (!env.layout || !env.layout.rootItem) return parkPanels();
+  const views = env.layout.contentItems.filter(inFront)
     .sort((a, b) => (recentViews.indexOf(a) + 1 || Infinity) - (recentViews.indexOf(b) + 1 || Infinity));
   Object.entries(pagePanels).forEach(([kind, id]) => {
     const panel = document.getElementById(id);
@@ -293,11 +304,11 @@ MT.describeView = (element, name, summary, { role = 'region' } = {}) => {
   note.id = 'view-summary-' + (++summaryCount);
   element.insertAdjacentElement('afterend', note);
   element.setAttribute('aria-describedby', note.id);
-  const nodes = () => session.data.nodes.filter(d => d.visible !== false).length;
-  const links = () => session.data.links.filter(d => d.visible !== false).length;
+  const nodes = () => env.session.data.nodes.filter(d => d.visible !== false).length;
+  const links = () => env.session.data.links.filter(d => d.visible !== false).length;
   const refresh = () => {
     let text = '';
-    try { text = summary ? summary({ nodes: nodes(), links: links() }) : ''; } catch (e) { /* the name stands alone */ }
+    try { text = summary ? summary({ nodes: nodes(), links: links() }) : ''; } catch { /* the name stands alone */ }
     note.textContent = (text ? text + ' ' : '') + 'The Table view lists the same data.';
   };
   refresh();
@@ -305,8 +316,8 @@ MT.describeView = (element, name, summary, { role = 'region' } = {}) => {
   const offs = names.map(n => events.on(n, refresh));
   return () => { offs.forEach(off => typeof off === 'function' && off()); note.remove(); };
 };
-const nodesOf = n => n.toLocaleString() + (n == 1 ? ' node' : ' nodes');
-const linksOf = n => n.toLocaleString() + (n == 1 ? ' link' : ' links');
+const nodesOf = n => n.toLocaleString() + (n === 1 ? ' node' : ' nodes');
+const linksOf = n => n.toLocaleString() + (n === 1 ? ' link' : ' links');
 const variableName = value => String(value || '').replace(/^(links|nodes)-/, '');
 // Each view's graphic: where it is, what it's called, and what it plots
 MT.viewGraphics = {
@@ -324,10 +335,18 @@ MT.viewGraphics = {
 };
 
 const mountView = contentItem => {
-  const mount = MT.views[contentItem.componentType];
+  const view = contentItem.componentType;
+  const mount = modules[view] && modules[view].mount;
   if (!mount) return;
   const container = contentItem.container;
-  const handle = mount(container.element, { settings: MT.settings, events: MT.events, container }) || {};
+  // What a module view gets in place of the MT, session and temp globals (#339). session and
+  // temp are getters because loading a session replaces them.
+  const ctx = {
+    settings: MT.settings, events: MT.events, container, MT,
+    get session() { return env.session; },
+    get temp() { return env.temp; }
+  };
+  const handle = mount(container.element, ctx) || {};
   contentItem.panels = handle.panels || [];
   const graphic = MT.viewGraphics[contentItem.componentType];
   if (graphic) {
@@ -361,18 +380,18 @@ MT.viewName = view => MT.viewAliases[view] || view;
 
 MT.launchView = (view, callback) => {
   view = MT.viewName(view);
-  if (!temp.componentCache[view]) {
+  if (!env.temp.componentCache[view]) {
     fetchView(view).then(() => MT.launchView(view, callback), viewFailed);
   } else {
-    let contentItem = self.layout.contentItems.find(item => item.componentType == view);
+    let contentItem = env.layout.contentItems.find(item => item.componentType === view);
     if (contentItem) {
       contentItem.parent.setActiveComponentItem(contentItem, true);
       // A view still loading its script is set up when it has
       if (!contentItem.ready) setupView(contentItem);
       else if (callback) { contentItem.ready.then(() => callback(contentItem)); return; }
     } else {
-      if (!self.layout.rootItem) self.layout.loadLayout(emptyLayout);
-      let lastStack = peek(stacks(self.layout.rootItem)) || self.layout.rootItem;
+      if (!env.layout.rootItem) env.layout.loadLayout(emptyLayout);
+      let lastStack = peek(stacks(env.layout.rootItem)) || env.layout.rootItem;
       contentItem = lastStack.newComponent(view, undefined, MT.titleize(view));
       // The item is in the layout now; it is set up once its script has run
       // (the callback waits for that too)
@@ -392,11 +411,11 @@ MT.launchView = (view, callback) => {
 const setupView = contentItem => {
   const element = contentItem.element;
   const fill = (selector, fields) => element.querySelectorAll(selector).forEach(select => MT.fillSelect(select, fields, { none: true }));
-  fill("select.nodeVariables", session.data.nodeFields);
-  fill("select.linkVariables", session.data.linkFields);
+  fill("select.nodeVariables", env.session.data.nodeFields);
+  fill("select.linkVariables", env.session.data.linkFields);
   element.querySelectorAll("select.mixedVariables").forEach(select => {
-    MT.fillSelect(select, session.data.linkFields, { none: true, prefix: "links-", label: "Link " });
-    MT.fillSelect(select, session.data.nodeFields, { prefix: "nodes-", label: "Node ", append: true });
+    MT.fillSelect(select, env.session.data.linkFields, { none: true, prefix: "links-", label: "Link " });
+    MT.fillSelect(select, env.session.data.nodeFields, { prefix: "nodes-", label: "Node ", append: true });
   });
   fill("select.branch-variables", ["id", "depth", "height", "length", "value"]);
   element.querySelectorAll(".launch-color-options").forEach(button => button.addEventListener("click", MT.showColorOptions));
@@ -407,14 +426,14 @@ const setupView = contentItem => {
 // What each view needs of the session. A view lacking it opens with a short
 // note (see MT.updateViewNeeds) saying what to add, rather than blank. Each
 // entry returns the note's text, or "" when the session has what the view needs.
-const hasLinks = () => session.data.graph.edgeCount > 0;
-const hasSequences = () => session.data.nodes.some(d => d.seq);
+const hasLinks = () => env.session.data.graph.edgeCount > 0;
+const hasSequences = () => env.session.data.nodes.some(d => d.seq);
 const FILES_HINT = "Add them in the Files view (the File menu's Add Data).";
-const chosenField = key => { const v = MT.settings.get(key); return v != null && v != "None" && v !== ""; };
+const chosenField = key => { const v = MT.settings.get(key); return v != null && v !== "None" && v !== ""; };
 const MAP_NEEDS = name => "The " + name + " places nodes by latitude and longitude columns, or by country, state, county, zipcode or census tract. Choose the columns that hold them in this view's settings (the gear). If the data has none, add a node list that does.";
 MT.viewNeeds = {
   sequences: () => hasSequences() ? "" : "This view lines up nodes' sequences, and none of these nodes has one. Add a FASTA file, or a node list with a sequence column. " + FILES_HINT,
-  phylogenetic_tree: () => hasLinks() || hasSequences() || session.files.some(f => f.format == "newick") ? "" :
+  phylogenetic_tree: () => hasLinks() || hasSequences() || env.session.files.some(f => f.format === "newick") ? "" :
     "A tree needs sequences, a distance matrix, or a Newick tree file. " + FILES_HINT,
   heatmap: () => hasLinks() || hasSequences() ? "" : "The heatmap draws the distances between nodes, which needs sequences (a FASTA file) or a distance matrix. " + FILES_HINT,
   waterfall: () => hasLinks() ? "" : "This view lists each cluster's links, and there are none. Links come from a link list, a distance matrix, or sequences close enough to link. " + FILES_HINT,
@@ -422,9 +441,9 @@ MT.viewNeeds = {
   globe: () => MT.settingsHaveLocation("globe-field-") ? "" : MAP_NEEDS("globe"),
   choropleth: () => chosenField("choropleth-aggregate-on") ? "" :
     "The choropleth shades regions by how many nodes are in each, so it needs a column of countries, states or counties. Choose it in this view's settings (the gear), or load a GeoJSON file there. If the data has none, add a node list that does.",
-  timeline: () => MT.dateFields(session.data.nodes, session.data.nodeFields).length || chosenField("timeline-date-field") ? "" :
+  timeline: () => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || chosenField("timeline-date-field") ? "" :
     "The epi curve counts nodes by date, and no column holds dates. Add a node list with a date column. " + FILES_HINT,
-  gantt: () => MT.dateFields(session.data.nodes, session.data.nodeFields).length || (MT.settings.get("gantt-dates") || []).length ? "" :
+  gantt: () => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || (MT.settings.get("gantt-dates") || []).length ? "" :
     "This view draws each node's dates as bars, and no column holds dates. Add a node list with a date column. " + FILES_HINT
 };
 
@@ -440,14 +459,14 @@ MT.settingsHaveLocation = prefix => {
 MT.updateViewNeeds = contentItem => {
   if (!contentItem || !contentItem.container) return;
   const view = contentItem.componentType, element = contentItem.container.element;
-  if (view == "files" || view == "conflicts" || !element) return;
+  if (view === "files" || view === "conflicts" || !element) return;
   // A change in the view's own settings (choosing a field) may meet its need
   if (!element.dataset.needsWatched) {
     element.dataset.needsWatched = "1";
     element.addEventListener("change", () => setTimeout(() => MT.updateViewNeeds(contentItem)));
   }
   let text = "";
-  if (!session.data.nodes.length) {
+  if (!env.session.data.nodes.length) {
     text = "There's no data yet. Add files in the Files view (link or node lists, a distance matrix, FASTA or Newick), or look around with the demo data.";
   } else if (MT.viewNeeds[view]) {
     try { text = MT.viewNeeds[view](); } catch (error) { console.error(error); }
@@ -466,14 +485,14 @@ MT.updateViewNeeds = contentItem => {
     note.querySelector(".view-needs-demo").addEventListener("click", () => MT.loadDemo());
     element.appendChild(note);
   }
-  const empty = !session.data.nodes.length;
+  const empty = !env.session.data.nodes.length;
   note.querySelector(".view-needs-title").textContent = empty ? "No data yet" : MT.titleize(view) + " needs more data";
   note.querySelector(".view-needs-text").textContent = text;
   // The demo replaces the session, so only an empty one offers it
   note.querySelector(".view-needs-demo").hidden = !empty;
   if (empty) MT.updateDemoButtons();
 };
-MT.updateAllViewNeeds = () => self.layout.contentItems.forEach(MT.updateViewNeeds);
+MT.updateAllViewNeeds = () => env.layout.contentItems.forEach(MT.updateViewNeeds);
 
 MT.cacheLayout = contentItem => {
   if (!contentItem) return { type: "stack", content: [] };
@@ -493,7 +512,7 @@ MT.loadLayout = component => {
     if (["stack", "row", "column"].includes(c.type)) {
       const content = c.content.map(toConfig).filter(Boolean);
       // As launching them one by one did, the last view in each stack is active
-      return c.type == "stack" ? { type: c.type, content, activeItemIndex: Math.max(content.length - 1, 0) } : { type: c.type, content };
+      return c.type === "stack" ? { type: c.type, content, activeItemIndex: Math.max(content.length - 1, 0) } : { type: c.type, content };
     }
     const view = MT.viewName(c.type);
     if (views.includes(view)) return null;
@@ -502,12 +521,12 @@ MT.loadLayout = component => {
   };
   const root = toConfig(component || emptyLayout.root);
   return Promise.all(views.map(fetchView)).then(() => {
-    self.layout.loadLayout(Object.assign({}, emptyLayout, { root }));
+    env.layout.loadLayout(Object.assign({}, emptyLayout, { root }));
     // One at a time and in order, as each view's script runs when it loads.
     // Each item is marked as loading from the start, so a launchView for a
     // view still waiting its turn waits too, rather than setting up an empty
     // element (openView replaces the mark with its own when it starts).
-    return self.layout.contentItems.reduce((done, item) => {
+    return env.layout.contentItems.reduce((done, item) => {
       const opened = done.then(() => openView(item));
       item.ready = opened;
       opened.finally(() => { if (item.ready === opened) item.ready = null; });
@@ -515,3 +534,4 @@ MT.loadLayout = component => {
     }, Promise.resolve());
   }, viewFailed);
 };
+}

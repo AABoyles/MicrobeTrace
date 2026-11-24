@@ -33,15 +33,15 @@ const box = locator => locator.evaluate(el => { const r = el.getBoundingClientRe
 // Opens or closes a view's pane, once it has finished sliding
 async function pane(content, open) {
   const view = root(content), toggle = view.locator('.settings-toggle').first();
-  if ((await toggle.evaluate(b => b.classList.contains('active'))) != open) await toggle.click();
+  if ((await toggle.evaluate(b => b.classList.contains('active'))) !== open) await toggle.click();
   const left = view.locator('.left-pane');
   await (open ? expect(left).toBeVisible() : expect(left).toBeHidden());
   await left.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished))).catch(() => {});
   return left;
 }
 async function opened(view) {
-  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType == view), view))) await launchView(page, view);
-  await page.evaluate(view => layout.contentItems.find(i => i.componentType == view).parent.setActiveComponentItem(layout.contentItems.find(i => i.componentType == view), true), view);
+  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
+  await page.evaluate(view => layout.contentItems.find(i => i.componentType === view).parent.setActiveComponentItem(layout.contentItems.find(i => i.componentType === view), true), view);
   await expect(root(views[view] || '.table-grid')).toBeVisible();
 }
 

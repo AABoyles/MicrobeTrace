@@ -1,3 +1,4 @@
+// @ts-check
 // MTSettings: MicrobeTrace's settings as one observable store.
 //
 // The values live where they always have, in session.style.widgets, so saved

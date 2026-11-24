@@ -8,6 +8,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { runWorker, loadApp, parseFasta, expected } = require('../golden/harness.js');
 const MTAlignerScoring = require('../../src/aligner.js').MTAlignerScoring;
+const { MTGraph } = require('../../src/graph.js');
 
 const golden = expected('graph.json');
 const pairKey = ([a, b]) => [a, b].sort().join('-');
@@ -30,10 +31,10 @@ function load(toy, widgets = {}) {
 }
 
 // The links MT.computeMST / MT.computeNN flagged
-function flagged({ ctx, session }) {
+function flagged({ session }) {
   const g = session.data.graph, out = [];
   g.forEachEdge((e, s, t) => {
-    if (g.getFlags(e) & ctx.MTGraph.NN) out.push([g.ids[s], g.ids[t]]);
+    if (g.getFlags(e) & MTGraph.NN) out.push([g.ids[s], g.ids[t]]);
   });
   return pairSet(out);
 }
@@ -48,7 +49,7 @@ function inSomeMST(toy) {
       const u = stack.pop();
       toy.distances.forEach(([x, y, v]) => {
         if (v >= w) return;
-        const other = x == u ? y : y == u ? x : null;
+        const other = x === u ? y : y === u ? x : null;
         if (other && !seen.has(other)) { seen.add(other); stack.push(other); }
       });
     }
@@ -58,7 +59,7 @@ function inSomeMST(toy) {
 
 test('the hand-worked minimum spanning trees are right', () => {
   assert.deepStrictEqual(pairSet(inSomeMST(golden.toy)), pairSet(golden.toy.mst));
-  const weight = golden.toy.mst.reduce((s, p) => s + golden.toy.distances.find(d => pairKey(d) == pairKey(p))[2], 0);
+  const weight = golden.toy.mst.reduce((s, p) => s + golden.toy.distances.find(d => pairKey(d) === pairKey(p))[2], 0);
   assert.ok(Math.abs(weight - golden.toy.mstWeight) < 1e-12);
   assert.deepStrictEqual(pairSet(inSomeMST(golden.square)), pairSet(golden.square.mstUnion));
 });
@@ -103,7 +104,7 @@ test('MT.tagClusters on computed TN93 distances (distances.fasta, threshold 0.03
   // Clusters from the reference distances by union-find, against the app's
   const exp = expected('distances.expected.json');
   const parent = {};
-  const find = x => parent[x] == x ? x : (parent[x] = find(parent[x]));
+  const find = x => parent[x] === x ? x : (parent[x] = find(parent[x]));
   exp.ids.forEach(id => { parent[id] = id; });
   exp.pairs.forEach(([a, b], k) => { if (exp.modes.resolve.tn93[k] <= 0.03) parent[find(a)] = find(b); });
   const want = {};
@@ -160,8 +161,8 @@ test('the tree worker recovers the tree behind an additive matrix', async () => 
   // Each leaf's pendant branch, through a root of degree 2 if the tree was rooted on it
   Object.entries(t.leafLengths).forEach(([leaf, len]) => {
     let [[node, pendant]] = adj.get(leaf), prev = leaf;
-    while (adj.get(node).length == 2) {
-      const [nextNode, w] = adj.get(node).find(([v]) => v != prev);
+    while (adj.get(node).length === 2) {
+      const [nextNode, w] = adj.get(node).find(([v]) => v !== prev);
       pendant += w;
       prev = node;
       node = nextNode;
@@ -196,7 +197,7 @@ test('MT.computeMST treats a missing link as no edge', async () => {
 // #236: the metric argument is honoured
 test('MT.computeMST and MT.computeNN use the metric they are given', async () => {
   const app = load(golden.toy);
-  const g = app.session.data.graph, n = golden.toy.nodes.length;
+  const g = app.session.data.graph;
   // A second field holding the same distances negated would flip the tree
   const tri = g.denseValues('tn93').map(v => 1 - v);
   g.setDistances(golden.toy.nodes, tri, 'other', 'Genetic Distance');
@@ -209,7 +210,7 @@ test('MT.computeMST and MT.computeNN use the metric they are given', async () =>
 
 // #228
 test('a threshold above the one links were stored within is reported', () => {
-  const { MT, session } = loadApp({ 'link-sort-variable': 'tn93', 'link-stored-thresholds': { tn93: 0.015 } });
+  const { MT } = loadApp({ 'link-sort-variable': 'tn93', 'link-stored-thresholds': { tn93: 0.015 } });
   assert.strictEqual(MT.storedThresholdBelow('tn93', 0.02), 0.015);
   assert.strictEqual(MT.storedThresholdBelow('tn93', 0.015), null);
   assert.strictEqual(MT.storedThresholdBelow('snps', 5), null);

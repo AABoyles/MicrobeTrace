@@ -23,10 +23,10 @@ test.afterAll(() => page.close());
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 async function opened(view) {
   await page.evaluate(view => {
-    const item = layout.contentItems.find(i => i.componentType == view);
+    const item = layout.contentItems.find(i => i.componentType === view);
     if (item) item.parent.setActiveComponentItem(item, true);
   }, view);
-  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType == view), view))) await launchView(page, view);
+  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
 }
 const titles = selector => page.locator(selector).evaluateAll(els => els.map(el => el.getAttribute('title')));
 
@@ -126,10 +126,11 @@ test('hover text reads right', async () => {
 });
 
 test('each thing has one name', async () => {
+  // (Views with a library mount once it has loaded, so their buttons appear a moment later)
   await opened('geo_map');
-  expect(await titles('.lm_content:has(.map-canvas) .view-controls button')).toEqual(expect.arrayContaining(['Map Settings', 'Export Map']));
+  await expect.poll(() => titles('.lm_content:has(.map-canvas) .view-controls button')).toEqual(expect.arrayContaining(['Map Settings', 'Export Map']));
   await opened('phylogenetic_tree');
-  expect(await titles('.lm_content:has(.tree) .view-controls button')).toEqual(expect.arrayContaining(['Phylogenetic Tree Settings', 'Export Phylogenetic Tree']));
+  await expect.poll(() => titles('.lm_content:has(.tree) .view-controls button')).toEqual(expect.arrayContaining(['Phylogenetic Tree Settings', 'Export Phylogenetic Tree']));
   // Every settings button is "<View> Settings"
   const settings = await titles('.settings-toggle');
   expect(settings.every(t => /^[A-Z][\w ]+ Settings$/.test(t) && !t.startsWith('Toggle'))).toBe(true);
@@ -162,7 +163,8 @@ test('settings are named for what they do, and the tree’s menus turn labels an
   await opened('bubbles');
   expect(await page.locator('.lm_content:has(svg.bubbles) .left-pane .nav-link').allTextContents()).toContain('Layout');
   await opened('histogram');
-  expect(await page.locator('.lm_content:has(.histogram-plot) [data-setting="histogram-variable"] option').allTextContents()).toContain('Link Distance');
+  // (A chart view is set up once its library has loaded, so its menus fill in a moment later)
+  await expect.poll(() => page.locator('.lm_content:has(.histogram-plot) [data-setting="histogram-variable"] option').allTextContents()).toContain('Link Distance');
   await opened('phylogenetic_tree');
   const pane = page.locator('.lm_content:has(.tree) .left-pane');
   await expect(pane.locator('[data-setting="tree-leaf-label-show"], [data-setting="tree-tooltip-show"]')).toHaveCount(0);

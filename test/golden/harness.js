@@ -1,12 +1,13 @@
 // Runs MicrobeTrace's own code in Node for the golden tests (#171): the Web
 // Workers in workers/ (bx-distance-models' WebAssembly included) and
-// src/common.js, each in a vm context standing in for the browser, as
+// MT from src/common.js, the workers each in a vm context standing in for the browser, as
 // test/unit/distance-field.test.js does. Nothing here computes a result.
 
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { runAppFiles } = require('../app-files.js');
+const { createMT } = require('../../src/common.js');
+const { MTGraph } = require('../../src/graph.js');
 
 const root = path.join(__dirname, '../..');
 const quiet = { log() {}, warn() {}, error: (...a) => console.error(...a) };
@@ -65,27 +66,22 @@ const runWorker = (script, data) => new Promise((resolve, reject) => {
   w.postMessage(data);
 });
 
-// src/common.js loaded as the page loads it, with real workers, a fresh session
-// and the default settings, overridden by widgets
+// MT built by createMT (src/common.js, #341) with real workers, a fresh session and the
+// default settings, overridden by widgets. The session and temp live on the fake root it is
+// given; the browser globals the functions read (document, Worker) are set on globalThis.
 function loadApp(widgets = {}) {
   const stub = () => new Proxy(function() {}, {
     get: (t, k) => k === Symbol.toPrimitive ? () => '' : stub(),
     apply: () => stub(),
     construct: () => stub()
   });
-  const ctx = {
-    console: quiet, TextDecoder, TextEncoder, Worker,
-    navigator: { hardwareConcurrency: 4 },
-    document: stub()
-  };
-  ctx.self = ctx.window = ctx;
-  vm.createContext(ctx);
-  runAppFiles(ctx);
-  const MT = ctx.MT;
-  ctx.temp = {};
+  globalThis.document = stub();
+  globalThis.Worker = Worker;
+  const ctx = { temp: {} };
+  const MT = createMT(ctx);
   ctx.session = {
     style: { widgets: Object.assign(JSON.parse(JSON.stringify(MT.defaultWidgets)), widgets) },
-    data: { nodes: [], nodeFields: [], linkFields: [], clusters: [], graph: new ctx.MTGraph() }
+    data: { nodes: [], nodeFields: [], linkFields: [], clusters: [], graph: new MTGraph() }
   };
   return { ctx, MT, session: ctx.session };
 }

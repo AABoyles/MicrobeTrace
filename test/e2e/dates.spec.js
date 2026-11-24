@@ -21,7 +21,7 @@ const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key,
 const dated = () => page.evaluate(() => session.data.nodes.filter(d => MT.parseDate(d.date)).length);
 // The view, launched if it isn't open
 async function opened(view) {
-  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType == view), view))) await launchView(page, view);
+  if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
 }
 
 // The epi curve
@@ -39,7 +39,7 @@ test('the epi curve’s bars count calendar periods, each a week here', async ()
   expect(b.length).toBeLessThan(55);
   for (const bar of b) expect(bar.title).toMatch(/^Week of \d{4}-\d{2}-\d{2}: \d+ nodes?$/);
   const mondays = b.map(bar => new Date(bar.title.match(/\d{4}-\d{2}-\d{2}/)[0] + 'T00:00').getDay());
-  expect(mondays.every(day => day == 1)).toBe(true);
+  expect(mondays.every(day => day === 1)).toBe(true);
 });
 
 test('bars can count months instead, and say how many so far when cumulative', async () => {

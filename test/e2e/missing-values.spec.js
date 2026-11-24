@@ -29,12 +29,12 @@ async function load(page, nodeFile) {
   await page.setInputFiles('#data-files', [nodeFile]);
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 2);
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
 }
 
 // The nodes' values for the edited rows
 const read = page => page.evaluate(() => {
-  const byId = id => session.data.nodes.find(d => d._id == id);
+  const byId = id => session.data.nodes.find(d => d._id === id);
   return {
     lats: ['S0', 'S5', 'S9'].map(id => byId(id).lat),
     counts: ['S0', 'S5', 'S9'].map(id => byId(id).count),

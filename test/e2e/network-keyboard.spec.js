@@ -30,7 +30,7 @@ const at = i => page.evaluate(i => {
 // The IDs linked to point i, by the links drawn
 const linked = i => page.evaluate(i => {
   const { points, links } = temp.network, id = points[i]._id;
-  return links.filter(l => l.source == id || l.target == id).map(l => l.source == id ? l.target : l.source);
+  return links.filter(l => l.source === id || l.target === id).map(l => l.source === id ? l.target : l.source);
 }, i);
 // A point with this many links or more
 const withLinks = n => page.evaluate(n => {
@@ -107,7 +107,7 @@ test('L follows the focused node’s links, closest first', async () => {
   expect(i).toBeGreaterThanOrEqual(0);
   await page.evaluate(i => temp.network.focus(i), i);
   const from = await focusedId(), neighbours = await linked(i);
-  await expect(live()).toContainText(`${neighbours.length} link${neighbours.length == 1 ? '' : 's'}: `);
+  await expect(live()).toContainText(`${neighbours.length} link${neighbours.length === 1 ? '' : 's'}: `);
   await page.keyboard.press('l');
   await expect(live()).toHaveText(new RegExp(`^Link 1 of ${neighbours.length} from ${from}, \\w+ [\\d.]+\\. Node `));
   const first = await focusedId();
@@ -206,10 +206,10 @@ test('the links described follow the threshold', async () => {
   await page.evaluate(() => MT.settings.set('link-threshold', 0.005));
   await expect.poll(() => page.evaluate(() => temp.network.links.length)).toBeLessThan(299);
   await network().focus();
-  const j = await page.evaluate(id => temp.network.points.findIndex(d => d._id == id), await page.evaluate(i => temp.network.points[i]._id, i));
+  const j = await page.evaluate(id => temp.network.points.findIndex(d => d._id === id), await page.evaluate(i => temp.network.points[i]._id, i));
   await page.evaluate(j => temp.network.focus(j), j);
   const neighbours = await linked(j);
-  await expect(live()).toContainText(neighbours.length ? `${neighbours.length} link${neighbours.length == 1 ? '' : 's'}: ` : 'No links');
+  await expect(live()).toContainText(neighbours.length ? `${neighbours.length} link${neighbours.length === 1 ? '' : 's'}: ` : 'No links');
   await page.evaluate(() => MT.settings.set('link-threshold', 0.015));
   await expect.poll(() => page.evaluate(() => temp.network.links.length)).toBe(299);
   await expect(network()).toHaveAttribute('aria-label', /299 links/);

@@ -126,8 +126,8 @@ test('the loading dialog counts the files, and its log reads as text', async () 
   });
   expect(log.size).toBeGreaterThanOrEqual(12);
   expect(log.family).not.toMatch(/Courier|monospace/);
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
-  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType == 'files'));
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
+  await page.waitForFunction(() => !layout.contentItems.some(i => i.componentType === 'files'));
 });
 
 test('search opens once there is data, and says which field it searches', async () => {

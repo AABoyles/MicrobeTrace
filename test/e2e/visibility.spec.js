@@ -26,7 +26,7 @@ test('the visible links are built once, and shared by whoever asks', async () =>
   const [same, copies] = await page.evaluate(() => {
     const a = MT.getVisibleLinks(), b = MT.getVisibleLinks();
     const copy = MT.getVisibleLinks(true);
-    return [a.length > 0 && a.every((l, i) => l === b[i]), copy.length == a.length && copy.every((l, i) => l !== a[i] && l.origin !== a[i].origin && JSON.stringify(l) == JSON.stringify(a[i]))];
+    return [a.length > 0 && a.every((l, i) => l === b[i]), copy.length === a.length && copy.every((l, i) => l !== a[i] && l.origin !== a[i].origin && JSON.stringify(l) === JSON.stringify(a[i]))];
   });
   expect(same).toBe(true);
   expect(copies).toBe(true);
@@ -57,13 +57,13 @@ test('links that stay visible and in their cluster keep their objects, and the l
     const g = session.data.graph, now = MT.getVisibleLinks(), was = new Map(kept.map(l => [l.index, l]));
     const edges = Array.from(g.visible.subarray(0, g.visibleCount));
     return {
-      listed: now.length == g.visibleCount && now.every((l, i) => l.index === edges[i]),
+      listed: now.length === g.visibleCount && now.every((l, i) => l.index === edges[i]),
       // (but a link whose cluster has another number is a new object)
-      reused: now.every(l => !was.has(l.index) || (was.get(l.index).cluster === l.cluster) == (was.get(l.index) === l)),
+      reused: now.every(l => !was.has(l.index) || (was.get(l.index).cluster === l.cluster) === (was.get(l.index) === l)),
       some: now.some(l => was.get(l.index) === l),
       shrank: now.length < kept.length,
-      fresh: now.every(l => JSON.stringify(l) == JSON.stringify(MT.linkObject(l.index, true))),
-      statistics: document.getElementById('numberOfVisibleLinks').textContent == now.length.toLocaleString()
+      fresh: now.every(l => JSON.stringify(l) === JSON.stringify(MT.linkObject(l.index, true))),
+      statistics: document.getElementById('numberOfVisibleLinks').textContent === now.length.toLocaleString()
     };
   });
   expect(result).toEqual({ listed: true, reused: true, some: true, shrank: true, fresh: true, statistics: true });
@@ -81,11 +81,11 @@ test('a run of changes is applied once, with the last value', async () => {
   // Waits to see that no second update follows the first
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => updates)).toBe(1);
-  expect(await page.evaluate(() => MT.getVisibleLinks().length == session.data.graph.visibleCount && session.style.widgets['link-threshold'])).toBe(0.015);
+  expect(await page.evaluate(() => MT.getVisibleLinks().length === session.data.graph.visibleCount && session.style.widgets['link-threshold'])).toBe(0.015);
 });
 
 test('a view that listens to node and link visibility redraws once for a change', async () => {
-  const draws = await page.evaluate(() => {
+  await page.evaluate(() => {
     window.drawn = 0;
     const redraw = () => drawn++;
     const offs = ['node-visibility', 'link-visibility'].map(type => MT.events.on(type, redraw));
@@ -109,8 +109,8 @@ test('the timeline reads the dates once, and shows the nodes dated up to its dat
     const middle = sorted[Math.floor(sorted.length / 2)];
     window.scrubbed = middle;
     MT.scrubTimeline(middle);
-    const shown = session.data.nodes.every((d, i) => d.visible == (!dates[i] || dates[i] <= middle));
-    const linksKept = MT.getVisibleLinks().length == session.data.graph.visibleCount;
+    const shown = session.data.nodes.every((d, i) => d.visible === (!dates[i] || dates[i] <= middle));
+    const linksKept = MT.getVisibleLinks().length === session.data.graph.visibleCount;
     // A node's date changed: the next step reads it
     const node = session.data.nodes.find((d, i) => dates[i] && dates[i] > middle);
     node.date = '1900-01-01';

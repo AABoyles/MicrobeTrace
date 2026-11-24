@@ -15,7 +15,7 @@ const skip = fs.existsSync(versionsPath) ? false : "dist/ is missing: run `npm r
 const { packages } = skip ? { packages: {} } : require(versionsPath);
 
 // Used to build or test, not shipped
-const TOOLS = ["@eslint/js", "@playwright/test", "axe-core", "cssnano", "esbuild", "eslint", "globals", "gzipper", "postcss"];
+const TOOLS = ["@eslint/js", "@playwright/test", "axe-core", "cssnano", "esbuild", "eslint", "globals", "gzipper", "postcss", "typescript"];
 
 test("every shipped dependency is listed in dist/versions.json at its locked version", { skip }, () => {
   for (const name of Object.keys(pkg.devDependencies)) {
@@ -28,5 +28,30 @@ test("every shipped dependency is listed in dist/versions.json at its locked ver
 test("dist/versions.json lists nothing that is not a dependency", { skip }, () => {
   for (const name of Object.keys(packages)) {
     assert.ok(name in pkg.devDependencies, name + " is in dist/versions.json but not in package.json");
+  }
+});
+
+// The hash of the build's inputs (#345): ensure-built.js rebuilds when it differs
+// from the one in dist/versions.json.
+test("dist/versions.json records the hash of the inputs it was built from", { skip }, () => {
+  const { inputsHash } = require(path.join(root, "scripts", "inputs-hash.js"));
+  assert.match(require(versionsPath).inputsHash, /^[0-9a-f]{64}$/);
+  assert.strictEqual(require(versionsPath).inputsHash, inputsHash(), "inputs changed since the last build: run npm run bundle");
+});
+
+// Run by hand, the script must still say what the inputs were, or ensure-built.js
+// would find the file stale and rebuild every time (#345).
+test("write-versions.js on the command line records the inputs hash", () => {
+  const { execFileSync } = require("child_process");
+  const os = require("os");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "versions-"));
+  try {
+    const out = path.join(dir, "versions.json");
+    execFileSync(process.execPath, [path.join(root, "scripts", "write-versions.js"), out, "d3"], { cwd: root });
+    const written = JSON.parse(fs.readFileSync(out, "utf8"));
+    assert.strictEqual(written.inputsHash, require(path.join(root, "scripts", "inputs-hash.js")).inputsHash());
+    assert.ok(written.packages.d3);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 });

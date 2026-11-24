@@ -43,7 +43,7 @@ test('in a narrow window, the menu bar wraps above the view tabs, not over them'
   // A tab can be clicked
   await launchView(page, 'histogram');
   await page.locator('.lm_tab', { hasText: 'Network' }).click();
-  await expect.poll(() => page.evaluate(() => layout.contentItems.find(i => i.componentType == 'network').parent.getActiveComponentItem().componentType)).toBe('network');
+  await expect.poll(() => page.evaluate(() => layout.contentItems.find(i => i.componentType === 'network').parent.getActiveComponentItem().componentType)).toBe('network');
   await closeView(page, 'histogram');
   await page.setViewportSize({ width: 1400, height: 900 });
   await expect(page.locator('.navbar-toggler')).toBeHidden();

@@ -84,7 +84,7 @@ test('clicking a row selects its node', async () => {
   expect(await view().locator('.tabulator-row').first().evaluate((el, color) => {
     const probe = document.createElement('div');
     probe.style.backgroundColor = color;
-    return el.style.backgroundColor == probe.style.backgroundColor;
+    return el.style.backgroundColor === probe.style.backgroundColor;
   }, color)).toBe(true);
   await view().locator('.tabulator-row').first().click();
   await expect.poll(() => page.evaluate(() => session.data.nodes.filter(d => d.selected).length)).toBe(0);
@@ -94,7 +94,7 @@ test('selections made elsewhere show', async () => {
   // The row of the second node (selected rows move to the top)
   const background = () => view().locator('.tabulator').evaluate(el => {
     const all = Tabulator.findTable(el), t = all[all.length - 1];
-    const row = t.getRows().find(r => r.getData()._id == session.data.nodes[1]._id);
+    const row = t.getRows().find(r => r.getData()._id === session.data.nodes[1]._id);
     return row.getElement().style.backgroundColor;
   });
   await page.evaluate(() => { session.data.nodes[1].selected = true; MT.events.emit('node-selected'); });

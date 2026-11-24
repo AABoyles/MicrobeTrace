@@ -102,7 +102,7 @@ test('a distance matrix named dm.csv is read as a matrix, and loads', async () =
   await expect(active('dm.csv')).toHaveText('Matrix');
   await expect(row('dm.csv').locator('.file-detected')).toContainText('distance matrix');
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.nodes.length == 4 && session.data.graph.m == 6, null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length === 4 && session.data.graph.m === 6, null, { timeout: 60000 });
 });
 
 test('a tab-separated matrix and a triangular matrix are matrices', async () => {
@@ -120,7 +120,7 @@ test('a tab-separated link list has its columns, and loads', async () => {
   expect(await row('links.tsv').locator('select').evaluateAll(s => s.map(s => s.value))).toEqual(['source', 'target', 'distance']);
   await expect(page.locator('#launch')).toBeEnabled();
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.nodes.length == 4 && session.data.graph.m == 3, null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length === 4 && session.data.graph.m === 3, null, { timeout: 60000 });
 });
 
 test('a file is read from its contents: FASTA, Newick, nodes, links', async () => {

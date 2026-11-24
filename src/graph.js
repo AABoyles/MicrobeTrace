@@ -1,3 +1,4 @@
+// @ts-check
 // MTGraph: the canonical store for MicrobeTrace's network. Every other view of
 // the links (link objects, the distance matrix, clusters, neighbor lists) is
 // derived from it.
@@ -176,7 +177,7 @@ export class MTGraph {
   // its fields win and the origins are combined. Returns 1 if the link is new.
   addLink(link) {
     const s = this.node(link.source), t = this.node(link.target);
-    if (s == t) return 0;
+    if (s === t) return 0;
     this.thaw();
     this.version++;
     const key = MTGraph.pairKey(s, t);
@@ -267,7 +268,7 @@ export class MTGraph {
     let lo = offsets[a], hi = offsets[a + 1] - 1;
     while (lo <= hi) {
       const mid = (lo + hi) >> 1;
-      if (nbr[mid] == b) return eid[mid];
+      if (nbr[mid] === b) return eid[mid];
       if (nbr[mid] < b) lo = mid + 1;
       else hi = mid - 1;
     }
@@ -283,10 +284,10 @@ export class MTGraph {
   // (another metric for the same sequences); over others, they replace them.
   setDistances(ids, tri, field, origin) {
     const n = ids.length;
-    if (tri.length != n * (n - 1) / 2) throw new Error('Distance triangle does not match the number of sequences');
+    if (tri.length !== n * (n - 1) / 2) throw new Error('Distance triangle does not match the number of sequences');
     this.version++;
     const old = this.dense;
-    if (old && old.n == n && ids.every((id, r) => this.index.get('' + id) === old.rows[r])) {
+    if (old && old.n === n && ids.every((id, r) => this.index.get('' + id) === old.rows[r])) {
       old.tris.set(field, tri);
       this.column(field);
       // The explicit edges over these pairs carry this field too
@@ -336,7 +337,7 @@ export class MTGraph {
     const d = this.dense;
     if (!d || a >= d.pos.length || b >= d.pos.length) return -1;
     let i = d.pos[a], j = d.pos[b];
-    if (i < 0 || j < 0 || i == j) return -1;
+    if (i < 0 || j < 0 || i === j) return -1;
     if (i > j) [i, j] = [j, i];
     return pairIndex(i, j, d.n);
   }
@@ -451,7 +452,7 @@ export class MTGraph {
       const t = rows[i];
       for (let j = i + 1; j < n; j++, k++) {
         const v = tri[k];
-        if (v != v || ((shadow[k >> 3] >> (k & 7)) & 1)) continue;
+        if (v !== v || ((shadow[k >> 3] >> (k & 7)) & 1)) continue;
         fn(v, IMPLICIT + k, rows[j], t);
       }
     }
@@ -488,7 +489,7 @@ export class MTGraph {
       // no value the threshold could judge, so it is shown; any other link
       // with no value for the field is not (#220)
       // (a numeric column holds NaN where a link has no value)
-      if (v == null || v != v ? !(this.flags[e] & UNMEASURED) : !(v <= threshold)) continue;
+      if (v == null || v !== v ? !(this.flags[e] & UNMEASURED) : !(v <= threshold)) continue;
       if (nnOnly && !(this.flags[e] & NN)) continue;
       if (!keep(this.src[e])) continue;
       push(e);
@@ -514,7 +515,7 @@ export class MTGraph {
     }
     this.visible = out;
     this.visibleCount = c;
-    if (!same || c != before) this.visibleVersion++;
+    if (!same || c !== before) this.visibleVersion++;
     return out.subarray(0, c);
   }
 
@@ -525,7 +526,7 @@ export class MTGraph {
     const parent = new Int32Array(n);
     for (let i = 0; i < n; i++) parent[i] = i;
     const find = i => {
-      while (parent[i] != i) {
+      while (parent[i] !== i) {
         parent[i] = parent[parent[i]];
         i = parent[i];
       }
@@ -534,7 +535,7 @@ export class MTGraph {
     for (let x = 0; x < this.visibleCount; x++) {
       const e = this.visible[x];
       const a = find(this.source(e)), b = find(this.target(e));
-      if (a != b) parent[Math.max(a, b)] = Math.min(a, b);
+      if (a !== b) parent[Math.max(a, b)] = Math.min(a, b);
     }
     const label = new Int32Array(n).fill(-1);
     const out = new Int32Array(n);
@@ -610,7 +611,7 @@ MTGraph.parseDistance = v => {
 // and link lists) rather than under "distance" (#213)
 MTGraph.distanceLink = (link, field) => {
   const out = Object.assign({}, link);
-  if ('distance' in out && field != 'distance') {
+  if ('distance' in out && field !== 'distance') {
     out[field] = out.distance;
     delete out.distance;
   }

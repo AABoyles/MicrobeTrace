@@ -27,14 +27,14 @@ test.beforeAll(async ({ browser }) => {
     await expect(page.locator('#file-table .file-table-row')).toHaveCount(i + 1);
   }
   await page.click('#launch');
-  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 120000 });
+  await page.waitForFunction(() => session.data.clusters.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 120000 });
 });
 test.afterAll(() => page.close());
 
 const view = () => page.locator('.lm_content:has(.conflicts-view)');
 const row = id => view().locator('.conflicts-grid .tabulator-row', { has: page.locator('.tabulator-cell[tabulator-field="id"]', { hasText: new RegExp('^' + id + '\\b') }) });
 const used = id => row(id).locator('.conflict-value.used').textContent().then(t => t.trim());
-const state = id => page.evaluate(id => session.data.nodes.find(d => d._id == id).state, id);
+const state = id => page.evaluate(id => session.data.nodes.find(d => d._id === id).state, id);
 
 test('after launching, a notice says how many values differ, and opens the view', async () => {
   const notice = page.locator('.mt-toast-container .toast', { hasText: 'differ between files' });
@@ -59,7 +59,7 @@ test('clicking another file\'s value uses it for that node, and the views follow
   await page.evaluate(() => MT.settings.set('node-color-variable', 'state'));
   // The color table's count of Ohio, if it has a row for it
   const ohio = () => page.evaluate(() => {
-    const row = Array.from(document.querySelectorAll('#node-color-table tr')).find(tr => tr.cells[0] && tr.cells[0].textContent.trim() == 'Ohio');
+    const row = Array.from(document.querySelectorAll('#node-color-table tr')).find(tr => tr.cells[0] && tr.cells[0].textContent.trim() === 'Ohio');
     return row ? row.cells[1].textContent : null;
   });
   await expect.poll(ohio).toBe(null); // no node uses Ohio yet
@@ -74,7 +74,7 @@ test('clicking another file\'s value uses it for that node, and the views follow
 
 test('a field can use another file\'s values, and picks can be cleared', async () => {
   await view().locator('.conflicts-rule').selectOption('nodes-lab.csv');
-  await expect.poll(() => page.evaluate(() => ['S0', 'S5', 'S9', 'S20'].map(id => session.data.nodes.find(d => d._id == id).state))).toEqual(['Ohio', 'Ohio', 'Ohio', 'Texas']);
+  await expect.poll(() => page.evaluate(() => ['S0', 'S5', 'S9', 'S20'].map(id => session.data.nodes.find(d => d._id === id).state))).toEqual(['Ohio', 'Ohio', 'Ohio', 'Texas']);
   await expect.poll(() => used('S0')).toBe('Ohio');
   // A node's pick wins over the field's choice: pick the top file's for S2
   await row('S2').locator('.conflict-value', { hasText: 'Texas' }).click();
@@ -96,7 +96,7 @@ test('the table view shows the values chosen', async () => {
   await expect(table.locator('.tabulator-row').first()).toBeVisible();
   const shown = () => table.locator('.table-grid').evaluate(el => {
     const t = Tabulator.findTable(el).pop();
-    const row = t.getData().find(d => d._id == 'S3');
+    const row = t.getData().find(d => d._id === 'S3');
     return row && row.state;
   });
   // (The table's columns may not show state, but its rows are the nodes)
@@ -114,8 +114,8 @@ test('a saved session keeps the choices', async () => {
   expect(saved.picks).toEqual([['S4', 'state', 'nodes-cases.csv']]);
   await page.setInputFiles('#OpenTab', { name: 'choices.microbetrace', mimeType: 'application/json', buffer: Buffer.from(json) });
   await confirmReplace(page);
-  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
-  expect(await page.evaluate(() => ['S0', 'S4'].map(id => session.data.nodes.find(d => d._id == id).state))).toEqual(['Ohio', 'Texas']);
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
+  expect(await page.evaluate(() => ['S0', 'S4'].map(id => session.data.nodes.find(d => d._id === id).state))).toEqual(['Ohio', 'Texas']);
   expect(await page.evaluate(() => [session.data.sources.rules.get('state'), session.data.sources.picked('S4', 'state')])).toEqual(['nodes-lab.csv', 'nodes-cases.csv']);
   // The reopened session's view shows them
   await launchView(page, 'conflicts');
@@ -131,7 +131,7 @@ test('without disagreements, or sources, the view says so', async () => {
     delete old.data.nodeSources;
     MT.applySession(old);
   });
-  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent != '', null, { timeout: 60000 });
+  await page.waitForFunction(() => session.data.nodes.length > 0 && document.getElementById('numberOfNodes').textContent !== '', null, { timeout: 60000 });
   await launchView(page, 'conflicts');
   await expect(view().locator('.view-message')).toContainText("isn't known");
   await expect(view().locator('.conflicts-view')).toBeHidden();

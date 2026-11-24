@@ -14,7 +14,7 @@ onmessage = function(e){
    const v = tri[k];
    if (isFinite(v)) dm[i * n + j] = dm[j * n + i] = v;
   }
-  if (i % every == 0) postMessage({progress: i / n});
+  if (i % every === 0) postMessage({progress: i / n});
  }
  postMessage({dm: dm, start: start}, [dm.buffer]);
 };

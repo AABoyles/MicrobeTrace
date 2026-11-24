@@ -16,7 +16,7 @@ test('fitToReference counts the sequences it cut and padded', () => {
   ];
   const fit = MT.fitToReference(nodes, 10, 0);
   assert.deepStrictEqual({ ...fit }, { empty: 1, truncated: 1, padded: 1, referenceLength: 10 });
-  assert.ok(nodes.every(d => d._seq.length == 10));
+  assert.ok(nodes.every(d => d._seq.length === 10));
   assert.strictEqual(nodes[1]._seq, 'ACGTACGTAC');
   assert.strictEqual(nodes[2]._seq, 'ACGT------');
   assert.strictEqual(nodes[3]._seq, '----------');
@@ -33,7 +33,7 @@ test('MT.align reports the sequences it truncated', async () => {
   const out = await MT.align({ nodes, reference, aligner: 'sw', match: [1, -1], gap: [-5, -2] });
   assert.strictEqual(out.fit.truncated, 1); // the 20 extra bases the aligner dropped
   assert.strictEqual(out.fit.padded, 1);
-  assert.ok(out.every(d => d._seq.length == reference.length));
+  assert.ok(out.every(d => d._seq.length === reference.length));
   assert.ok(MT.lengthWarnings(out.fit).length >= 1);
 });
 
