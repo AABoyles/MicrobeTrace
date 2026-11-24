@@ -90,6 +90,5 @@ Software WebGL (CI, or a busy machine) varies too much for an absolute time to f
 the budgets are generous and off by default. `MT_PERF_BUDGET=1` holds the threshold change to
 2 s, for a machine with a GPU.
 
-When a view moves onto the settings store and `MT.registerView` (see `src/settings.js`,
-`src/binder.js` and the view contract in `src/common.js`), give it a spec like
-`histogram.spec.js` first, run it against the old version, then port the view.
+Before changing how a view works, give it a spec like `histogram.spec.js` first and run it
+against the old version (the view contract is in `components/AGENTS.md`).

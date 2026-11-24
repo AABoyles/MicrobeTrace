@@ -49,17 +49,13 @@ MT.createLayout = () => {
   env.layout.on("focus", e => bringForward(e.target));
 };
 
-// The views converted to ES modules (#339): components/NAME.js exports mount(root, ctx) and
-// optionally `libraries`, and is loaded with import() rather than a script tag. Add a view's
-// name here when it is converted (and take its <script> tag out of its HTML). The rest are
-// classic scripts that call MT.registerView, being phased out.
-const MODULE_VIEWS = new Set(["histogram", "table", "network", "geo_map", "choropleth", "globe", "phylogenetic_tree", "sequences", "bubbles", "waterfall", "timeline", "gantt", "heatmap", "scatterplot", "flow_diagram", "conflicts", "aggregation", "crosstab", "files"]);
-// The imported modules, by view name
+// Every view is an ES module (#339): components/NAME.js exports mount(root, ctx) and
+// optionally `libraries`, and is loaded with import(). The imported modules, by view name.
 const modules = {};
 
-// Fetches a view's HTML into temp.componentCache, and its script (so that
-// it is cached for the worker and a missing or wrong file shows up here, not
-// when the view opens). A failed fetch (offline, 404, or a server answering
+// Fetches a view's HTML into temp.componentCache, and imports its module (so
+// that both are cached for the worker and a missing or wrong file shows up here,
+// not when the view opens). A failed fetch (offline, 404, or a server answering
 // with something other than HTML or script) is not cached, so the next attempt
 // tries again, and rejects with a message naming the view.
 const fetchView = view => {
@@ -75,39 +71,21 @@ const fetchView = view => {
     if (/^\s*<!doctype/i.test(text)) fail();
     return text;
   });
-  // A module view is imported, which fetches and checks its file as well as fetching does;
-  // an unconverted one is fetched, and run later by the script tag in its HTML.
-  const code = MODULE_VIEWS.has(view)
-    ? import("../components/" + view + ".js").then(module => { modules[view] = module; }, fail)
-    : get("components/" + view + ".js");
+  // Importing fetches and checks the view's file as well as fetching does. Its mount is also
+  // listed in MT.views, which WebMCP reads for the view names.
+  const code = import("../components/" + view + ".js").then(module => {
+    modules[view] = module;
+    MT.views[view] = module.mount;
+  }, fail);
   return Promise.all([get("components/" + view + ".html"), code])
     .then(([html]) => { env.temp.componentCache[view] = html; });
 };
 const viewFailed = error => MT.toast.error(error.message);
 
-// Renders a view's HTML into its (newly attached) layout item
-// (Scripts set as HTML don't run, so each is replaced by a copy that does.)
-// The page's content security policy allows no inline scripts, so a view's
-// script is a file, named by a <script src> in its HTML. Scripts added like
-// this run as soon as they load, in no set order, unless marked not async;
-// they are, so they run in the order added. The view is only set up once its
-// scripts have run, which is what the returned promise waits for (it rejects
-// if one fails to load).
+// Renders a view's HTML into its (newly attached) layout item. A view's code is
+// its module, imported by fetchView, so the HTML holds no scripts.
 const renderView = contentItem => {
-  const element = contentItem.container.element;
-  element.innerHTML = env.temp.componentCache[contentItem.componentType];
-  return Promise.all(Array.from(element.querySelectorAll("script"), old => new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    Array.from(old.attributes).forEach(a => script.setAttribute(a.name, a.value));
-    script.async = false;
-    script.textContent = old.textContent;
-    if (script.src) {
-      script.addEventListener("load", resolve);
-      script.addEventListener("error", () => reject(new Error("Could not load the " + MT.titleize(contentItem.componentType) + " view. Check your connection and try again.")));
-    }
-    old.replaceWith(script);
-    if (!script.src) resolve();
-  })));
+  contentItem.container.element.innerHTML = env.temp.componentCache[contentItem.componentType];
 };
 
 // The lazy libraries (see MT.loadLibrary) each view needs before it can be set up,
@@ -118,8 +96,8 @@ const VIEW_LIBRARIES = {
   // A session can hold spreadsheets added but not yet read, which the view lists
   files: () => env.session.files.some(f => /^xlsx?$/i.test(f.extension || "")) ? ["xlsx"] : []
 };
-// A module view names its own in `export const libraries`, besides any listed above
-// (once every view is a module the table can go, #339).
+// A view names its own in `export const libraries`; the table above is only for a
+// need that depends on the session.
 const librariesOf = view => {
   const listed = VIEW_LIBRARIES[view], declared = modules[view] && modules[view].libraries;
   return [].concat(typeof listed == "function" ? listed() : listed || [], declared || []);
@@ -128,9 +106,9 @@ const loadLibraries = view => Promise.all(librariesOf(view).map(MT.loadLibrary))
   throw new Error("Could not load the " + MT.titleize(view) + " view. Check your connection and try again.");
 });
 
-// Renders a view and, once its scripts have run, sets it up and mounts it.
-// A view closed while its script loaded is left alone. A view whose script
-// or library couldn't load is closed, with a message.
+// Renders a view once its libraries have loaded, then sets it up and mounts it.
+// A view closed while they loaded is left alone. A view whose library couldn't
+// load is closed, with a message.
 const openView = contentItem => {
   const ready = loadLibraries(contentItem.componentType).then(() => renderView(contentItem)).then(() => {
     if (!contentItem.container.element.isConnected) return;
@@ -144,22 +122,19 @@ const openView = contentItem => {
   return ready;
 };
 
-// A view is a mount function, which a module view exports (see MODULE_VIEWS) and a classic one
-// registers from its script:
+// A view is the mount function its module exports:
 //
+//   export const libraries = ['plotly'];  // optional, loaded before mount
 //   export function mount(root, { settings, events, MT, session, temp }) {
 //     ...
 //     return { resize() { ... }, destroy() { ... } };
 //   }
-//   MT.registerView('histogram', (root, { settings, events }) => { ... });  // classic
 //
 // mount runs once the view is in the layout, with the view's own element as
 // root (query inside it rather than by global ID). resize() runs when the view
-// changes size or its tab is shown, and destroy() when it closes. Views
-// without a mount function are older ones that set themselves up when their
-// script runs.
+// changes size or its tab is shown, and destroy() when it closes. MT.views holds
+// the mount functions imported so far, by name.
 MT.views = {};
-MT.registerView = (name, mount) => { MT.views[name] = mount; };
 
 // A settings pane (.left-pane) is this many pixels wide, and slides in from
 // this far off the left edge when closed (the -400px in main.css)
@@ -361,7 +336,7 @@ MT.viewGraphics = {
 
 const mountView = contentItem => {
   const view = contentItem.componentType;
-  const mount = modules[view] ? modules[view].mount : MT.views[view];
+  const mount = modules[view] && modules[view].mount;
   if (!mount) return;
   const container = contentItem.container;
   // What a module view gets in place of the MT, session and temp globals (#339). session and

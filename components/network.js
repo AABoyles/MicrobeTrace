@@ -691,7 +691,7 @@ function showSymbolTable(view) {
     return;
   }
 
-  let nodeSymbols = app.session.style.nodeSymbolsTable[variable] = app.session.style.nodeSymbolsTable[variable] || [...session.style.nodeSymbols];
+  let nodeSymbols = app.session.style.nodeSymbolsTable[variable] = app.session.style.nodeSymbolsTable[variable] || [...app.session.style.nodeSymbols];
   // Each visible value, the most common first
   const tally = nodes => {
     const aggregates = {}, values = [];
@@ -726,7 +726,7 @@ function showSymbolTable(view) {
     if (!app.session.style.nodeSymbolsTableKeys[variable]) {
       const timeline = tally(app.session.network.timelineNodes);
       app.session.style.nodeSymbolsTableKeys[variable] = timeline.values;
-      app.session.style.nodeSymbolsTable[variable] = repeat([...session.style.nodeSymbols], timeline.values.length);
+      app.session.style.nodeSymbolsTable[variable] = repeat([...app.session.style.nodeSymbols], timeline.values.length);
     }
     const keys = app.session.style.nodeSymbolsTableKeys[variable];
     nodeSymbols = values.map(v => nodeSymbols[keys.findIndex(k => k === v)]);

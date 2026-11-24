@@ -6,8 +6,7 @@ function. `histogram.js` is the cleanest example to copy.
 
 ## The view contract
 
-Views are ES modules, loaded with `import()` (#339). Some are still classic scripts (see
-"Classic views" below); `MODULE_VIEWS` in `src/views.js` lists the converted ones.
+Views are ES modules, loaded with `import()` (#339).
 
 ```js
 // components/histogram.js
@@ -30,7 +29,6 @@ export function mount(root, ctx) {
 - `libraries` names the lazy bundles (`MT.loadLibrary`) the view needs; `views.js` awaits them
   before `mount`, and shows "Could not load the X view" if one fails. A view that needs one only
   for an action loads it in that action.
-- Everything below applies to both forms.
 - Query inside `root`, never by global ID: a view can be open more than once.
 - Read and write settings with `settings.get/set` and redraw from `settings.subscribe(keys, fn)`,
   not by reading the DOM or listening for other views' clicks. Unsubscribe in `destroy()`, along
@@ -43,31 +41,11 @@ export function mount(root, ctx) {
   can't become markup), the color maps on `temp.style`, `MT.getVisibleNodes/Links`.
 - Export dialogs live inside the view's HTML and follow the action-dialog rules in `CONTRIBUTING.md`.
 
-## Classic views (being phased out, #339)
-
-An unconverted view's HTML ends with `<script src="components/NAME.js"></script>`, and the script
-is an IIFE that calls `MT.registerView('NAME', (root, { settings, events }) => {...})` and reads
-`MT`, `session` and `temp` as globals. Its lazy libraries are listed in `VIEW_LIBRARIES` in
-`src/views.js`. It behaves the same once mounted.
-
-### Converting a view to a module
-
-1. Turn the file into the module form above: drop the IIFE and `MT.registerView`, `export function
-   mount(root, ctx)`, dedent, and `export const libraries = [...]` from its `VIEW_LIBRARIES` entry
-   (then delete that entry).
-2. Replace every `MT.`, `session` and `temp` with `ctx.`-reached ones (see above). Run
-   `npx eslint components/NAME.js`: a leftover is a `no-undef` error once step 4 is done.
-3. Delete the `<script src="components/NAME.js">` tag from `NAME.html`.
-4. Add the name to `MODULE_VIEWS` in `src/views.js` and the file to `moduleViews` in
-   `eslint.config.js`.
-5. `npm run cache`, then run the view's spec and `views`, `panels`, `a11y`, `service-worker`.
-
 ## Adding a view
 
 A new view touches more than this directory:
 
-1. `components/NAME.html` and `components/NAME.js` (a module: see the contract above, and add it
-   to `MODULE_VIEWS` and to `moduleViews` in `eslint.config.js`).
+1. `components/NAME.html` and `components/NAME.js` (a module: see the contract above).
 2. A `viewbutton` with `data-href="NAME"` in the View menu in `index.html`.
 3. Defaults for its settings (`NAME-...` keys) in `MT.defaultWidgets` in `src/common.js`.
 4. Its entries in `common.js`'s per-view tables: the accessible summary and what the view needs of
