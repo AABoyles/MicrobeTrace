@@ -62,7 +62,8 @@ test("the shell is the app's startup, not the whole app (#343)", { skip }, () =>
 });
 
 test("the shell follows the modules index.html loads", { skip }, () => {
-  assert.deepStrictEqual(importsOf("src/views.js"), ["src/common.js"]);
+  assert.ok(importsOf("src/mt.js").includes("src/common.js"));
+  assert.ok(importsOf("src/common.js").includes("src/views.js"));
   assert.ok(importsOf("src/formats/index.js").includes("src/formats/fasta.js"));
   const shell = shellList();
   const local = pageFiles();
