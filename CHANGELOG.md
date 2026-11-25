@@ -8,10 +8,13 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 
 - Genetic distances agree with HIV-TRACE's tn93 in every ambiguity strategy (bx-distance-models 0.2.0). GapMM weighs a gap facing a base as one site, not 4/3 (#282), and works with every distance metric. MicrobeTrace no longer loads tn93.js.
 - **Sequences with N are farther apart under Average, the default ambiguity strategy.** N and ? now count as any base when resolving or averaging, as tn93 does, instead of being skipped: under Average an N facing a base is three quarters of a mismatch, and under HIV-TRACE -g it counts toward the ambiguity fraction. Resolve barely changes (an N facing a base is a match, where it used to be left out). On the test data (300 sequences, most with a few N), TN93 links within 0.015 fall from 466 to 289 under Average and from 483 to 453 under HIV-TRACE -g. Resolve gives nearly the same links as before.
+- Building a tree from distances takes less than half as long, with patristic 0.7.1 (it is the same tree). (#360)
+- Inferring links' directions works again: since TidyTree 0.8 no link was ever turned around, as the tree was lost on its way to the worker. Sizing the tree's leaves by Representing works again too. (#360)
 
 ### Files and sessions
 
 - A Newick tree loads together with a FASTA file of the same IDs; it used to fail with "source.add is not a function". When one file can't be read, the load is reported as failed only after the other files have finished.
+- Newick trees can have quoted labels, and comments in square brackets are skipped. A malformed tree fails to load, saying what is wrong with it and where, rather than loading as some other tree. Very deep trees no longer overflow the stack when they are read. (#360)
 
 ### Maps
 

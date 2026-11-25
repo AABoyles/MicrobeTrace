@@ -179,6 +179,21 @@ test('a Newick tree gives its leaves as nodes and every pair as a link, each nod
   assert.ok(r.tree);
 });
 
+// How patristic reads Newick since 0.7 (#360)
+test('Newick labels can be quoted, comments are skipped, and a broken tree is refused', () => {
+  const labels = text => newick.parse(text, { origin, metric: 'tn93' }).labels;
+  assert.deepStrictEqual(labels("('O''Brien, B':1,A[a comment]:2);"), ["O'Brien, B", 'A']);
+  assert.throws(() => labels('((A:1,B:2);'), SyntaxError);
+  assert.throws(() => labels("('A:1,B:2);"), SyntaxError);
+});
+
+// Nothing in patristic recurses since 0.7, which overflowed on a tree this deep (#360)
+test('a deep Newick tree is read', () => {
+  const depth = 2000;
+  const text = '('.repeat(depth) + 'A:1' + Array.from({ length: depth }, (_, i) => `,L${i}:1):1`).join('') + ';';
+  assert.strictEqual(newick.parse(text, { origin, metric: 'tn93' }).labels.length, depth + 1);
+});
+
 // A workbook's bytes, as a file read for a spreadsheet gives them
 const workbook = (rows, sheets = 1) => {
   const book = XLSX.utils.book_new();
