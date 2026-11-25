@@ -32,8 +32,7 @@ const CASES = [
   ['C', 'A', 1, 'cousins: A is nearer R, so C to A is turned'],
   ['A', 'R', 1, 'to the root: the root is nearer, so the link is turned'],
   ['A', 'A', 0, 'a node with itself: distances are equal, so kept'],
-  // Not tested: a link from the root (R to A). patristic's getMRCA throws there, and
-  // the worker fails as a whole. Graph nodes are sequences, which are leaves.
+  ['R', 'A', 0, 'from the root: already points at the tip, so kept (patristic 0.6 threw here)'],
 ];
 
 // Runs the worker on several links at once

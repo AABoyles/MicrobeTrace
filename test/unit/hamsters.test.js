@@ -3,6 +3,7 @@
 const test = require('node:test');
 const { createMT } = require('../../src/common.js');
 const assert = require('node:assert');
+const patristic = require('patristic');
 
 // A stand-in for the page's document, which the installers touch as MT is built
 const stub = () => new Proxy(function() {}, {
@@ -89,7 +90,7 @@ function treeWorker(ctx) {
   return worker;
 }
 
-test('computeTree rejects, rather than hanging, when the tree is too deep to parse', async () => {
+test('computeTree rejects, rather than hanging, when the tree cannot be parsed', async () => {
   const ctx = bare(), worker = treeWorker(ctx);
   globalThis.patristic = { parseJSON: () => { throw new RangeError('Maximum call stack size exceeded'); } };
   await assert.rejects(ctx.MT.computeTree(), /Maximum call stack/);
@@ -120,11 +121,32 @@ test('computeDirectionality rejects, rather than hanging, when its worker throws
     postMessage() { setTimeout(() => this.onerror(new Error('too deep')), 1); }
     terminate() { terminated = true; }
   };
-  ctx.temp = { tree: { id: 'root' } };
+  ctx.temp = { tree: patristic.parseNewick('(a:1,b:2);') };
   ctx.session = { data: { graph: {
     edgeCount: 1, ids: ['a', 'b'],
     forEachEdge: fn => fn(0, 0, 1)
   } } };
   await assert.rejects(ctx.MT.computeDirectionality(), /too deep/);
   assert.ok(terminated);
+});
+
+// A Branch has no properties of its own to copy, so posting one gives the worker an
+// empty tree, and no link is ever turned (#360)
+test('computeDirectionality sends its worker a tree that survives being posted', async () => {
+  const ctx = bare();
+  let sent;
+  globalThis.Worker = class {
+    postMessage(message) {
+      sent = structuredClone(message);
+      setTimeout(() => this.onmessage({ data: { output: new Uint8Array(1).buffer, start: Date.now() } }), 1);
+    }
+    terminate() {}
+  };
+  ctx.temp = { tree: patristic.parseNewick('((a:1,b:3)x:2,c:4)r;') };
+  ctx.session = { data: { graph: {
+    edgeCount: 1, ids: ['a', 'b'],
+    forEachEdge: fn => fn(0, 0, 1)
+  } } };
+  await ctx.MT.computeDirectionality();
+  assert.strictEqual(patristic.parseJSON(sent.tree).toNewick(), '((a:1,b:3)x:2,c:4)r;');
 });

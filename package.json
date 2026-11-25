@@ -75,7 +75,7 @@
     "html5sortable": "^0.14.0",
     "jszip": "^3.10.2",
     "papaparse": "^5.7.0",
-    "patristic": "^0.6.0",
+    "patristic": "^0.7.1",
     "plotly.js": "^4.1.2",
     "postcss": "^8.5.29",
     "tabulator-tables": "^6.6.1",

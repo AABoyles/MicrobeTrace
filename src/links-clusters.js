@@ -343,8 +343,8 @@ MT.getDM = (maxNodes = MT.DM_MAX_NODES, { scope, onProgress } = {}) => {
 
 // The tree from the distance matrix, in a worker (its options are as MT.getDM's)
 MT.computeTree = ({ scope, onProgress } = {}) => {
-  // Every way out settles the promise, as MT.runHamsters waits on it:
-  // parsing a tree too deep for patristic throws here, on the main thread (#250)
+  // Every way out settles the promise, as MT.runHamsters waits on it: a tree
+  // too deep for the worker to post back (a structured clone recurses) rejects (#250, #369)
   return MT.getDM(undefined, { scope, onProgress }).then(dm => {
     const matrix = dm.slice(); // the worker takes this copy; the cached one stays
     return MT.runWorker("workers/compute-tree.js", {
@@ -375,7 +375,9 @@ MT.computeDirectionality = () => {
     MT.runWorker("workers/compute-directionality.js", {
       sources: sources,
       targets: targets,
-      tree: env.temp.tree
+      // A plain object: patristic's Branches keep nothing a structured clone copies,
+      // so the worker would get an empty tree and flip nothing (#360)
+      tree: env.temp.tree.toObject()
     }, { name: "The directionality computation" }).then(response => {
       let flips = new Uint8Array(response.output);
       MT.time('Directionality Transit', response.start);
@@ -393,7 +395,7 @@ MT.computeDirectionality = () => {
       }
       MT.time('Directionality Integration', start);
       resolve();
-    }).catch(reject); // (a worker that throws, say on a tree too deep for patristic, rejects)
+    }).catch(reject); // (a worker that throws, or a tree too deep to post to it, rejects)
   });
 };
 
@@ -448,8 +450,8 @@ MT.computePruning = () => {
 // Directions are inferred from the tree, so with that on, the tree is built
 // first (unless there is one already, from a Newick file) and the links are
 // flipped before finishUp freezes the graph and the views draw it. The tree
-// isn't built otherwise: building it on every load overflowed patristic's
-// stack on large datasets (#250), and only the tree view needs it then, which
+// isn't built otherwise: building it on every load overflowed the stack on
+// large datasets (#250), and only the tree view needs it then, which
 // builds it when opened (and reuses the one built here).
 MT.runHamsters = async () => {
   // MT.computeMST();

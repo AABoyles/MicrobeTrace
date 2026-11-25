@@ -26,10 +26,10 @@ export function mount(root, ctx) {
   if (settings.get('tree-leaf-tooltip-variable') === undefined) settings.set('tree-leaf-tooltip-variable', '_id');
 
   // Leaves can be sized by a node variable, or by one of the tree's own
-  // ('respresenting' is patristic's own spelling, so it stays the value; the label is spelled right)
-  const treeVariables = ['height', 'depth', 'length', 'respresenting', 'value'];
+  const treeVariables = ['height', 'depth', 'length', 'representing', 'value'];
+  // (Sessions saved before patristic 0.7 have its old spelling, #360)
+  if (settings.get('tree-leaf-node-radius-variable') === 'respresenting') settings.set('tree-leaf-node-radius-variable', 'representing');
   MT.fillSelect($('[data-setting="tree-leaf-node-radius-variable"]'), treeVariables, { append: true });
-  Array.from(root.querySelectorAll('[data-setting="tree-leaf-node-radius-variable"] option')).forEach(o => { if (o.value === 'respresenting') o.textContent = 'Representing'; });
 
   // Since 0.8, TidyTree hands each handler one array: [tree node, DOM event]
   // (and the tooltip text for showtooltip)

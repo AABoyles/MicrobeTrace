@@ -66,7 +66,7 @@ time a feature needs it. `xlsx` holds SheetJS and JSZip, `table` Tabulator, `plo
 | `vendor/bioseq.min.js` | bioseq | 0.2.0 | Apache-2.0 | https://github.com/CDCgov/bioseq-js |
 | `vendor/cosmos.min.js` | @cosmos.gl/graph (built with esbuild; see the packages it includes below) | 3.6.0 | MIT | https://github.com/cosmosgl/graph |
 | `vendor/papaparse.min.js` | PapaParse | 5.7.1 | MIT | https://github.com/mholt/PapaParse |
-| `vendor/patristic.min.js` | Patristic | 0.6.0 | Apache-2.0 | https://github.com/CDCgov/patristic |
+| `vendor/patristic.min.js` | Patristic | 0.7.1 | Apache-2.0 | https://github.com/CDCgov/patristic |
 | `vendor/bx_distance_models.js`, `vendor/bx_distance_models_bg.wasm` | bx-distance-models (not on NPM; built from commit `970bba4`, per `vendor/README.md`) | Commit `970bba4` (0.2.0) | **Not verified.** No licence file is in this repository or the build inputs, and the upstream licence was not checked. | https://github.com/AABoyles/bx-distance-models |
 
 ### `fonts/`
@@ -131,10 +131,10 @@ in `package.json`, but D3 depends on it, so it is still shipped.
 
 | Package | Version | Licence | Upstream |
 |---|---|---|---|
-| patristic (nested in tidytree) | 0.7.1 | Apache-2.0 | https://github.com/CDCgov/patristic |
+| patristic | 0.7.1 | Apache-2.0 | https://github.com/CDCgov/patristic |
 
-TidyTree declares Patristic 0.7.1 as its own dependency. The top-level `patristic` (0.6.0) is the
-one in `vendor/patristic.min.js`.
+TidyTree declares Patristic as its own dependency, and shares the top-level `patristic` that
+`vendor/patristic.min.js` is copied from.
 
 ### Packages inside Plotly (`dist/bundle.plotly.js`)
 

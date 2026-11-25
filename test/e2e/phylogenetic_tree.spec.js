@@ -3,7 +3,7 @@
 // restoring and export.
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
-const { watchErrors, loadNetwork, launchView, closeView, openExport } = require('./helpers');
+const { watchErrors, open, loadNetwork, launchView, closeView, openExport } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -144,6 +144,18 @@ test('reopening the view restores its settings', async () => {
   expect(await leaves().first().getAttribute('r')).toBe('15');
 });
 
+// Sessions from before patristic 0.7 have its old spelling of the variable (#360)
+test('a saved size variable of "respresenting" opens as Representing', async () => {
+  await closeView(page, 'phylogenetic_tree');
+  await set('tree-leaf-node-radius-variable', 'respresenting');
+  await launchView(page, 'phylogenetic_tree');
+  const select = view().locator('select[data-setting="tree-leaf-node-radius-variable"]');
+  await expect(select).toHaveValue('representing');
+  await expect(select.locator('option:checked')).toHaveText('Representing');
+  await expect.poll(() => leaves().count()).toBe(await leafCount());
+  await set('tree-leaf-node-radius-variable', 'None');
+});
+
 test('the tree follows the panel size', async () => {
   const width = () => view().locator('svg').first().evaluate(el => el.getBoundingClientRect().width);
   const before = await width();
@@ -168,3 +180,25 @@ for (const [filetype, filename] of [['nwk', 'tree-test.nwk'], ['svg', 'tree-test
     expect(errors).toEqual([]);
   });
 }
+
+// With Infer directionality on, each link ends at the leaf further from the two's
+// common ancestor: A is 1 from A and B's, B is 3; from the root, A is 3, C is 4 and
+// B is 5 (#360)
+test('links are directed by the tree when directions are inferred', async ({ browser }) => {
+  const page = await browser.newPage(), errors = watchErrors(page);
+  await open(page);
+  await page.evaluate(() => MT.settings.set('infer-directionality-false', false));
+  await page.setInputFiles('#data-files', { name: 'tree.nwk', mimeType: 'text/plain', buffer: Buffer.from('((A:1,B:3):2,C:4);') });
+  await expect(page.locator('#launch')).toBeEnabled();
+  await page.click('#launch');
+  await page.waitForFunction(() => session.data.clusters.length > 0);
+  // (Only the links turned around are marked as directed)
+  const links = await page.evaluate(() => {
+    const g = session.data.graph, out = [];
+    g.forEachEdge((e, s, t) => out.push(`${g.ids[s]}${g.ids[t]} ${!!(g.getFlags(e) & MTGraph.DIRECTED)}`));
+    return out.sort();
+  });
+  expect(links).toEqual(['AB true', 'AC true', 'CB false']);
+  expect(errors).toEqual([]);
+  await page.close();
+});
