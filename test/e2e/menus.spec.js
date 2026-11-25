@@ -176,7 +176,7 @@ test('the View menu has the network above two columns of grouped views', async (
   expect(headings.length).toBe(2);
   expect(Math.abs(headings[0] - headings[1])).toBeLessThan(2);
   expect(network.y + network.height).toBeLessThanOrEqual(headings[0] + 1);
-  await expect(items.locator('.viewbutton')).toHaveCount(18);
+  await expect(items.locator('.viewbutton')).toHaveCount(16);
   const views = await items.locator('.viewbutton').allInnerTexts();
   expect(views).toContain('Crosstab');
   expect(views).not.toContain('CrossTab');

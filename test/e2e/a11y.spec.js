@@ -39,7 +39,7 @@ async function axe(page, context = null, rules) {
 }
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
 const views = ['table', 'aggregation', 'crosstab', 'histogram', 'scatterplot', 'heatmap', 'timeline', 'gantt', 'bubbles',
-  'flow_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'choropleth', 'globe', 'sequences'];
+  'flow_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'sequences'];
 async function opened(view) {
   if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
   await page.evaluate(view => { const item = layout.contentItems.find(i => i.componentType === view); item.parent.setActiveComponentItem(item, true); }, view);
@@ -96,7 +96,7 @@ test('the settings panes’ tabs are wired to their panels', async () => {
       selected: tab.getAttribute('aria-selected') === String(tab.classList.contains('active'))
     };
   }));
-  expect(tabs.length).toBeGreaterThan(30);
+  expect(tabs.length).toBeGreaterThan(24);
   expect(tabs.filter(t => !t.panel || !t.inList || !t.selected)).toEqual([]);
   expect(new Set(tabs.map(t => t.tab)).size).toBe(tabs.length);
   // Switching tabs moves the selection

@@ -34,7 +34,7 @@ const securityHeaders = {
     "default-src 'self'; " +
     "script-src 'self' 'wasm-unsafe-eval'; " +
     "connect-src 'self'; " +
-    "img-src 'self' *.basemaps.cartocdn.com server.arcgisonline.com data:; " +
+    "img-src 'self' data:; " +
     "style-src 'self' 'unsafe-inline'; " +
     "manifest-src 'self'; font-src 'self'; " +
     "base-uri 'none'; form-action 'none'; object-src 'none';",

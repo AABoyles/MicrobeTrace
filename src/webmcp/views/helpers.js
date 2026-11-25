@@ -19,9 +19,7 @@ export const VIEWS = [
   { id: 'crosstab', title: 'Crosstab', group: 'Tables', description: 'A contingency table cross-tabulating two node variables.', requires: 'loaded data with categorical node fields' },
   { id: 'waterfall', title: 'Waterfall', group: 'Tables', description: 'Clusters and their members listed by size, as a waterfall of the cluster structure.', requires: 'loaded data with clusters' },
   { id: 'conflicts', title: 'Conflicts', group: 'Tables', description: 'Where several loaded files disagree about a node field, with per-file values and a choice of which file wins.', requires: 'two or more files giving the same node different values' },
-  { id: 'geo_map', title: 'Map', group: 'Maps', description: 'Nodes plotted on a Leaflet map from latitude/longitude fields, or from state, county or country fields (needs the internet for tiles).', requires: 'loaded data with geographic fields' },
-  { id: 'choropleth', title: 'Choropleth', group: 'Maps', description: 'A map shading regions (states, counties, countries) by the number of nodes in each.', requires: 'loaded data with a region field' },
-  { id: 'globe', title: 'Globe', group: 'Maps', description: 'Nodes and links on a rotating 3D globe from latitude/longitude fields.', requires: 'loaded data with latitude/longitude fields' },
+  { id: 'geo_map', title: 'Map', group: 'Maps', description: 'Nodes and links on a map, placed by latitude/longitude fields or by zipcode, county, state or country fields. Setting map-projection draws it flat (mercator), as the United States with Alaska and Hawaii inset (albers-usa) or as a globe; setting map-shade shades countries, states or counties by how many nodes each holds (a choropleth). Works offline.', requires: 'loaded data with geographic fields' },
   { id: 'phylogenetic_tree', title: 'Phylogenetic Tree', group: 'Sequences', description: 'A phylogenetic tree built from the sequences (neighbor-joining or similar), or a loaded Newick tree, with layouts (vertical, horizontal, circular) and node styling. Exports Newick.', requires: 'sequences, or a loaded Newick tree' },
   { id: 'sequences', title: 'Sequences', group: 'Sequences', description: 'The aligned sequences as a colored grid of bases, with consensus and variant highlighting. Exports FASTA/MEGA/PNG.', requires: 'sequences' }
 ];
@@ -303,7 +301,7 @@ export function actionsOf(root, includeExport) {
   const seen = new Map(), out = [];
   root.querySelectorAll('button, [role="button"], a.btn, input[type="button"], .dropdown-item').forEach(el => {
     if (el.closest('.modal') || el.classList.contains('btn-close') || el.matches('label')) return;
-    if (el.closest('.tabulator, .js-plotly-plot, .ts-wrapper, .leaflet-control-container')) return;
+    if (el.closest('.tabulator, .js-plotly-plot, .ts-wrapper')) return;
     const toggle = el.dataset.bsToggle;
     if (toggle === 'tab' || toggle === 'collapse') return;
     if (el.dataset.setting || el.querySelector('[data-setting]') || el.closest('.btn-group-toggle')) return;

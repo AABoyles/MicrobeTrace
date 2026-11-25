@@ -327,9 +327,7 @@ MT.viewGraphics = {
   bubbles: ['svg.bubbles', 'Bubble chart of node groups', c => `Bubbles for the groups of ${nodesOf(c.nodes)}.`],
   timeline: ['.timeline-chart', 'Epidemic curve over time', c => `Counts over time for ${nodesOf(c.nodes)}.`],
   flow_diagram: ['.flow-plot', 'Flow diagram between node groups', c => `Flows between the groups of ${nodesOf(c.nodes)}.`],
-  geo_map: ['.map-canvas', 'Map of node locations', c => `Map of ${nodesOf(c.nodes)} by location.`],
-  choropleth: ['.map-canvas', 'Choropleth map of regions', c => `Regions shaded by counts of ${nodesOf(c.nodes)}.`],
-  globe: ['canvas.globe', 'Globe of node locations', c => `Globe of ${nodesOf(c.nodes)} by location.`, 'img'],
+  geo_map: ['canvas.map-canvas', 'Map of node locations', c => `${MT.settings.get('map-projection') === 'globe' ? 'Globe' : 'Map'} of ${nodesOf(c.nodes)} by location${MT.settings.get('map-shade') !== 'none' ? ', with ' + MT.settings.get('map-shade') + ' shaded by their counts' : ''}. Drag or use the arrow keys to move it, and the wheel or + and - to zoom.`, 'img'],
   phylogenetic_tree: ['.tree', 'Phylogenetic tree', c => `Tree of ${nodesOf(c.nodes)}. Right-click or press Shift+F10 on a branch for its menu.`],
   sequences: ['.sequences-panel', 'Sequence alignment', c => `Alignment of the sequences of ${nodesOf(c.nodes)}.`]
 };
@@ -374,8 +372,10 @@ const mountView = contentItem => {
 };
 
 // Views that were renamed or removed, and the view that opens in their place
-// (in saved sessions, layouts and settings)
-MT.viewAliases = { '2d_network': 'network', 'pixi': 'network', '3d_network': 'network' };
+// (in saved sessions, layouts and settings). The globe and the choropleth are
+// modes of the map; a session that had them opens the map in that mode (see
+// upgradeMapSettings in geo.js).
+MT.viewAliases = { '2d_network': 'network', 'pixi': 'network', '3d_network': 'network', 'globe': 'geo_map', 'choropleth': 'geo_map' };
 MT.viewName = view => MT.viewAliases[view] || view;
 
 MT.launchView = (view, callback) => {
@@ -438,9 +438,6 @@ MT.viewNeeds = {
   heatmap: () => hasLinks() || hasSequences() ? "" : "The heatmap draws the distances between nodes, which needs sequences (a FASTA file) or a distance matrix. " + FILES_HINT,
   waterfall: () => hasLinks() ? "" : "This view lists each cluster's links, and there are none. Links come from a link list, a distance matrix, or sequences close enough to link. " + FILES_HINT,
   geo_map: () => MT.settingsHaveLocation("map-field-") ? "" : MAP_NEEDS("map"),
-  globe: () => MT.settingsHaveLocation("globe-field-") ? "" : MAP_NEEDS("globe"),
-  choropleth: () => chosenField("choropleth-aggregate-on") ? "" :
-    "The choropleth shades regions by how many nodes are in each, so it needs a column of countries, states or counties. Choose it in this view's settings (the gear), or load a GeoJSON file there. If the data has none, add a node list that does.",
   timeline: () => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || chosenField("timeline-date-field") ? "" :
     "The epi curve counts nodes by date, and no column holds dates. Add a node list with a date column. " + FILES_HINT,
   gantt: () => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || (MT.settings.get("gantt-dates") || []).length ? "" :

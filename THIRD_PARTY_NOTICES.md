@@ -13,7 +13,7 @@ licence (Apache-2.0) is in `LICENSE`, and `NOTICE` gives the project's copyright
   licence file (`LICENSE`, `LICENSE.md` and similar) where it has one. Where a package has no
   licence file, the tables say so.
 - **What goes into each bundle** comes from esbuild metafiles of the builds in `scripts/bundle.js`.
-  Each of the bundles `primary`, `xlsx`, `table`, `plotly`, `map`, `tree` and `alignment` is
+  Each of the bundles `primary`, `xlsx`, `table`, `plotly`, `tree` and `alignment` is
   built from an entry module in `scripts/entries/` (#342), and `vendor/cosmos.min.js` is built from
   `@cosmos.gl/graph`. Each build was run with the options in `scripts/bundle.js` and
   `write: false`, and every input under `node_modules/` was mapped to its package. A nested copy
@@ -37,8 +37,7 @@ package in `node_modules`, and the copyright lines are in the same files. They a
 
 The `primary` bundle is loaded with the page. The other bundles are lazy: each is fetched the first
 time a feature needs it. `xlsx` holds SheetJS and JSZip, `table` Tabulator, `plotly` Plotly.js,
-`map` Leaflet and its marker clusters, `tree` TidyTree (with D3) and `alignment`
-alignment-viewer.
+`tree` TidyTree (with D3) and `alignment` alignment-viewer.
 
 ### `dist/` (JavaScript and CSS)
 
@@ -57,8 +56,6 @@ alignment-viewer.
 | d3-symbol-extra | 0.1.0 | BSD-3-Clause | https://github.com/YellowTugboat/d3-symbol-extra | `bundle.primary.js` |
 | Plotly.js (built from `scripts/plotly-bundle.js`, see below) | 4.3.0 | MIT | https://github.com/plotly/plotly.js | `bundle.plotly.js` |
 | TidyTree | 0.8.1 | Apache-2.0 | https://github.com/cdcgov/TidyTree | `bundle.tree.js`, built from its TypeScript source (`tidytree/src/main.ts`). Embeds its own Patristic (below). |
-| Leaflet | 1.9.4 | BSD-2-Clause | https://github.com/Leaflet/Leaflet | `bundle.map.js`, `bundle.map.css` |
-| Leaflet.markercluster | 1.5.3 | MIT | https://github.com/Leaflet/Leaflet.markercluster | `bundle.map.js`, `bundle.map.css`. The package has no licence file; its `package.json` says MIT. |
 | html5sortable | 0.14.0 | MIT | https://github.com/lukasoppermann/html5sortable | `bundle.primary.js` |
 | alignment-viewer | 0.3.4 | Apache-2.0 | https://github.com/CDCgov/AlignmentViewer | `bundle.alignment.js` |
 
@@ -293,8 +290,8 @@ DOMPurify's source.
   those texts are not included in this repository (the MIT, BSD, ISC and Apache-2.0 notice
   conditions apply to redistribution). That has not been done here.
 - Packages marked "no licence file in package" have no licence file in `node_modules`. For them,
-  the `license` field in `package.json` is the only source checked here. There are 23 such
-  packages: 18 in Plotly, 3 in cosmos.gl, `@orchidjs/sifter` and `leaflet.markercluster`.
+  the `license` field in `package.json` is the only source checked here. There are 22 such
+  packages: 18 in Plotly, 3 in cosmos.gl and `@orchidjs/sifter`.
 - The bundles in `dist/` carry no licence comments (see "How this was checked"). Of the files in
   `vendor/`, `papaparse.min.js` keeps its own `@license` comment, and `bioseq.min.js` and
   `patristic.min.js` do not carry a licence banner. This file is the notice for those.

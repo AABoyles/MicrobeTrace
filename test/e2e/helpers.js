@@ -6,20 +6,14 @@ const fixtures = ['seqs.fasta', 'links.csv', 'nodes.csv'].map(f => path.join(__d
 // fix; remove its pattern when it is.
 const KNOWN_ERRORS = [];
 
-// The only hosts the app contacts (the img-src in the CSP in server.js): map
-// tiles for the online base layers. Some test machines can't reach them, so a
-// failed request to them isn't an app error. Any other failed request, same
-// origin or not, fails the test (a missing worker script, say).
-const EXTERNAL_HOSTS = [/(^|\.)basemaps\.cartocdn\.com$/, /^server\.arcgisonline\.com$/];
-
 // Collects page errors, failed requests and console errors, minus the known
 // ones above.
 function watchErrors(page) {
   const errors = [];
   const add = text => { if (!KNOWN_ERRORS.some(p => p.test(text))) errors.push(text); };
-  const failed = (url, what) => {
-    if (!EXTERNAL_HOSTS.some(h => h.test(new URL(url).hostname))) add(`${what} ${url}`);
-  };
+  // The app contacts no other host (its CSP allows none), so any failed
+  // request fails the test (a missing worker script, say)
+  const failed = (url, what) => add(`${what} ${url}`);
   page.on('pageerror', e => add(e.message));
   // A request the page itself cancelled (ERR_ABORTED), as a reload does to a
   // script still downloading (vendor/cosmos.min.js, say), is not an error; a
