@@ -29,7 +29,9 @@ test('About states the privacy facts and deletes everything stored in the browse
   await waitForModal(page, '#about-modal');
   const statement = page.locator('#privacy-statement');
   await expect(statement).toContainText('IndexedDB');
-  await expect(statement).toContainText('CARTO');
+  // The map draws offline, so nothing goes to a third party
+  await expect(statement).toContainText('Third parties: none.');
+  await expect(statement).not.toContainText('CARTO');
   await expect(statement).toContainText('WebMCP');
 
   await page.click('#delete-everything');

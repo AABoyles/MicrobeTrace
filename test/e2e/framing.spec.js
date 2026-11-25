@@ -1,6 +1,6 @@
 // Views framed to their data: the network fitted as its layout spreads, its
-// labels readable at any zoom; the choropleth and globe opening on the data,
-// with a titled legend and a Fit button; plots below the toolbar, clear of the
+// labels readable at any zoom; the map's shading and its globe opening on the
+// data, with a titled legend and a Fit button; plots below the toolbar, clear of the
 // docked tables, titled, with outlined points; the heatmap naming its metric
 // and showing missing pairs; the flow diagram naming its columns in order; the
 // map and the tree clear of the docked tables; the timeline starting where the
@@ -109,29 +109,36 @@ test('node labels keep their size as the view zooms out, and none run into anoth
   await set('node-label-variable', 'None');
 });
 
-test('the choropleth opens on the regions with data, with a titled legend', async () => {
-  await opened('choropleth');
-  await expect.poll(() => page.evaluate(() => temp.choropleth && temp.choropleth.layers.aggregates ? temp.choropleth.layers.aggregates.getLayers().length : 0)).toBeGreaterThan(0);
-  const legend = page.locator('.choropleth-legend');
+test('the map\'s shading opens on the regions with data, with a titled legend', async () => {
+  await opened('geo_map');
+  await set('map-shade', 'states');
+  await expect.poll(() => page.evaluate(() => temp.geoMap && temp.geoMap.regions ? temp.geoMap.regions.list.length : 0)).toBeGreaterThan(0);
+  const legend = page.locator('.map-legend');
   await expect(legend.locator('.legend-title')).toHaveText('Nodes by State');
   expect(await legend.locator('.legend-ends span').allTextContents()).toEqual(['0', '60']);
   // Each state with nodes is wholly in view
   await expect.poll(() => page.evaluate(() => {
-    const { map, layers } = temp.choropleth;
-    const view = map.getBounds();
-    return layers.aggregates.getLayers().filter(l => l.feature.properties.density > 0).every(l => view.contains(l.getBounds()));
+    const { projection, regions } = temp.geoMap;
+    const canvas = document.querySelector('.lm_content canvas.map-canvas');
+    return regions.list.filter(r => r.count > 0).every(r => {
+      const [[x0, y0], [x1, y1]] = d3.geoPath(projection).bounds(r.feature);
+      return x0 >= 0 && y0 >= 0 && x1 <= canvas.clientWidth && y1 <= canvas.clientHeight;
+    });
   })).toBe(true);
+  await set('map-shade', 'none');
 });
 
 test('the globe zooms to the nodes, has a Fit button, and calls its countries Borders', async () => {
-  await opened('globe');
-  await expect.poll(() => page.evaluate(() => temp.globe && temp.globe.positions.size)).toBeGreaterThan(0);
-  const scale = () => page.evaluate(() => temp.globe.projection.scale());
-  const globeRoot = page.locator('.lm_content:has(canvas.globe)').first();
-  const whole = await globeRoot.evaluate(el => Math.min(el.clientWidth, el.clientHeight) / 2 - 50);
+  await opened('geo_map');
+  await set('map-projection', 'globe');
+  await expect.poll(() => page.evaluate(() => temp.geoMap && temp.geoMap.drawn.globe && temp.geoMap.positions.size)).toBeGreaterThan(0);
+  const scale = () => page.evaluate(() => temp.geoMap.projection.scale());
+  const root = page.locator('.lm_content:has(canvas.map-canvas)').first();
+  const whole = await root.evaluate(el => Math.min(el.clientWidth, el.clientHeight) / 2 - 50);
   await expect.poll(scale).toBeGreaterThan(whole * 1.5);
-  await expect(globeRoot.locator('button[title="Fit to the Nodes"]')).toBeVisible();
-  await expect(globeRoot.locator('.left-pane .form-group', { hasText: 'Borders' })).toHaveCount(1);
+  await expect(root.locator('button[title="Fit to the Nodes"]')).toBeVisible();
+  await expect(root.locator('.left-pane .form-group', { hasText: 'Borders' })).toHaveCount(1);
+  await set('map-projection', 'mercator');
 });
 
 test('plots start below the toolbar, clear of the docked tables, with outlined points', async () => {
@@ -185,16 +192,14 @@ test('the flow diagram names its columns and lists their values in order, empty 
 
 test('the map and the tree leave the docked tables their room', async () => {
   await opened('geo_map');
-  await expect.poll(() => page.evaluate(() => temp.geoMap && temp.geoMap.layers.nodes ? 1 : 0)).toBe(1);
-  // (The map's own view: the choropleth is a map too)
-  await page.evaluate(() => temp.geoMap.map.getContainer().closest('.lm_content').querySelector('button[title="Fit to the Nodes"]').click());
-  await expect.poll(() => page.evaluate(() => {
-    const { map, layers } = temp.geoMap;
-    const root = map.getContainer().closest('.lm_content');
+  await expect.poll(() => page.evaluate(() => temp.geoMap && temp.geoMap.drawn.nodes.length)).toBeGreaterThan(0);
+  const map = page.locator('.lm_content:has(canvas.map-canvas)').first();
+  await map.locator('button[title="Fit to the Nodes"]').click();
+  await expect.poll(() => map.evaluate(root => {
     const dock = Array.from(root.children).find(c => c.classList.contains('panel-dock'));
     const left = dock && dock.children.length ? dock.getBoundingClientRect().left : root.getBoundingClientRect().right;
-    const box = map.getContainer().getBoundingClientRect();
-    const points = layers.nodes.getLayers().map(l => map.latLngToContainerPoint(l.getLatLng()).x + box.left);
+    const box = root.querySelector('canvas.map-canvas').getBoundingClientRect();
+    const points = temp.geoMap.drawn.nodes.map(n => n.x + box.left);
     return points.length > 0 && points.every(x => x < left);
   }), { timeout: 10000 }).toBe(true);
 

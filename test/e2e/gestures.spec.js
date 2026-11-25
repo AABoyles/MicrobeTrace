@@ -21,8 +21,7 @@ test('the charts, maps and tree are named and summarised', async () => {
     scatterplot: ['.scatterplot-plot', /^Scatterplot/],
     heatmap: ['.heatmap-plot', /^Heatmap/],
     phylogenetic_tree: ['.tree', /^Phylogenetic tree$/],
-    globe: ['canvas.globe', /^Globe/],
-    geo_map: ['.map-canvas', /^Map of node locations$/]
+    geo_map: ['canvas.map-canvas', /^Map of node locations$/]
   };
   for (const [name, [selector, label]] of Object.entries(views)) {
     await launchView(page, name);

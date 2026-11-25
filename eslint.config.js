@@ -16,7 +16,7 @@ const appGlobals = {
 // attach themselves to `self` (MTBind, MTGraph, ...). `module` is the UMD guard
 // in those same files.
 const libGlobals = {
-  Cosmos: "readonly", JSZip: "readonly", L: "readonly", Papa: "readonly", Plotly: "readonly",
+  Cosmos: "readonly", JSZip: "readonly", Papa: "readonly", Plotly: "readonly",
   Tabulator: "readonly", TomSelect: "readonly", TidyTree: "readonly", XLSX: "readonly", alignmentViewer: "readonly",
   bootstrap: "readonly", d3: "readonly", db: "readonly", goldenLayout: "readonly", patristic: "readonly",
   sortable: "readonly", tn93: "readonly", module: "readonly",
@@ -87,7 +87,7 @@ const esModules = [
   "src/aligner.js", "src/binder.js", "src/dates.js", "src/db.js", "src/events.js",
   "src/graph.js", "src/nodes.js", "src/session-format.js", "src/session.js", "src/settings.js",
   "src/mt.js", "src/common.js", "src/loading.js", "src/links-clusters.js", "src/colors.js", "src/export.js",
-  "src/views.js", "src/ui.js", "src/formats/*.js", "src/webmcp/**/*.js",
+  "src/views.js", "src/ui.js", "src/geo.js", "src/formats/*.js", "src/webmcp/**/*.js",
 ];
 
 // The views, ES modules loaded with import() by src/views.js (#339). They get MT, the session and

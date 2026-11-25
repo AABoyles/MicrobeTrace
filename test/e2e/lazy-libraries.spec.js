@@ -43,7 +43,7 @@ test('each view fetches the libraries it draws with, once', async ({ page }) => 
   await loadNetwork(page);
   expect(requested).toEqual(['primary']);
   const typeOf = name => page.evaluate(name => typeof self[name], name);
-  for (const [view, bundle, global] of [['histogram', 'plotly', 'Plotly'], ['table', 'table', 'Tabulator'], ['geo_map', 'map', 'L'], ['phylogenetic_tree', 'tree', 'TidyTree']]) {
+  for (const [view, bundle, global] of [['histogram', 'plotly', 'Plotly'], ['table', 'table', 'Tabulator'], ['phylogenetic_tree', 'tree', 'TidyTree']]) {
     await launchView(page, view);
     await expect.poll(() => typeOf(global), { message: view }).not.toBe('undefined');
     expect(requested.filter(name => name === bundle), bundle).toHaveLength(1);
@@ -72,6 +72,6 @@ test('adding an Excel file fetches the spreadsheet bundle', async ({ page }) => 
 test('every library MT.loadLibrary names has a bundle entry', () => {
   const source = fs.readFileSync(path.join(root, 'src', 'export.js'), 'utf8');
   const names = Object.keys(JSON.parse(/const LIBRARY_GLOBALS = (\{[^}]*\})/.exec(source)[1].replace(/(\w+):/g, '"$1":').replace(/'/g, '"')));
-  expect(names.length).toBeGreaterThan(5);
+  expect(names.length).toBeGreaterThan(4);
   for (const name of names) expect(fs.existsSync(path.join(root, 'scripts', 'entries', name + '.js')), name).toBe(true);
 });

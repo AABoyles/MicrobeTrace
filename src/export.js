@@ -1,6 +1,6 @@
 // Export: file names, tables, plots, images, CSV and SVG.
 //
-// Default and clean file names, the table export menu, SVG, plot and map
+// Default and clean file names, the table export menu, SVG and plot
 // images, saving a Blob, CSV, and the HIVTRACE export.
 //
 // An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
@@ -95,8 +95,8 @@ MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, rej
 // an older script, may have put it there); the ones with a stylesheet also fetch
 // dist/bundle.NAME.css, which goes ahead of main.css so that it can still override.
 // The promise is cached, so asking again, or from several views, loads it once.
-const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', plotly: 'Plotly', map: 'L', tree: 'TidyTree', alignment: 'alignmentViewer' };
-const LIBRARY_STYLES = ['table', 'map'];
+const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', plotly: 'Plotly', tree: 'TidyTree', alignment: 'alignmentViewer' };
+const LIBRARY_STYLES = ['table'];
 const styles = {};
 MT.loadStyle = href => styles[href] || (styles[href] = new Promise((resolve, reject) => {
   const link = document.createElement('link');
@@ -296,35 +296,6 @@ MT.svgImage = async (svg, { scale = 1, backgroundColor, type = 'image/png', qual
   }
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   return new Promise(resolve => canvas.toBlob(resolve, type, quality));
-};
-
-// Saves an image of a Leaflet map: its background, its tiles, the vector
-// layers it draws on canvases, and its image markers, in the order Leaflet
-// stacks them.
-// draw(context, canvas), if given, adds to the image before it is saved.
-MT.mapImage = async (map, filename, filetype, draw) => {
-  const container = map.getContainer(), box = container.getBoundingClientRect();
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.round(box.width);
-  canvas.height = Math.round(box.height);
-  const context = canvas.getContext('2d');
-  // The map's own background, where no layer covers it
-  context.fillStyle = getComputedStyle(container).backgroundColor;
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  const layers = Array.from(container.querySelector('.leaflet-map-pane').querySelectorAll('img.leaflet-tile-loaded, canvas, img.leaflet-marker-icon'));
-  // Tiles come from other servers: load them again, asking for CORS, so the
-  // canvas can still be saved. Tiles that won't load that way are left out.
-  const images = await Promise.all(layers.map(el => el.tagName === 'IMG' ? loadImage(el.src) : el));
-  layers.forEach((el, i) => {
-    const image = images[i], rect = el.getBoundingClientRect();
-    if (!image || !rect.width || !rect.height) return;
-    const layer = el.closest('.leaflet-layer');
-    context.globalAlpha = layer ? parseFloat(getComputedStyle(layer).opacity) : 1;
-    context.drawImage(image, rect.left - box.left, rect.top - box.top, rect.width, rect.height);
-  });
-  context.globalAlpha = 1;
-  if (draw) draw(context, canvas);
-  canvas.toBlob(blob => MT.saveImage(blob, filename + '.' + filetype), 'image/' + filetype);
 };
 
 MT.unparseSVG = svgNode => {
