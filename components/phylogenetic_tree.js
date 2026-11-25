@@ -2,6 +2,9 @@
 // MT, the session and temp come from ctx.
 export const libraries = ['tree'];
 
+// The settings each open copy of this view keeps to itself (#365)
+export const settingsPrefix = 'tree-';
+
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;
 

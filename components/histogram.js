@@ -2,6 +2,9 @@
 // stay globals; MT, the session and temp come from ctx.
 export const libraries = ['plotly'];
 
+// The settings each open copy of this view keeps to itself (#365)
+export const settingsPrefix = 'histogram-';
+
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;
 

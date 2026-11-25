@@ -14,6 +14,9 @@ const OCEAN = '#c6d7e1', LAND = '#f4f2ec', BORDER = '#8f989e', OUTLINE = '#b3bbc
 const RADIUS = 5, NEAR = 8, NEAR_LINK = 4;
 const MARGIN = 20;
 
+// The settings each open copy of this view keeps to itself (#365)
+export const settingsPrefix = 'map-';
+
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;
 

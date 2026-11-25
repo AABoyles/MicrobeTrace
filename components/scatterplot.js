@@ -1,6 +1,9 @@
 // The scatterplot view, loaded as an ES module by src/views.js (#339). Library globals (Plotly, d3, MTBind) stay globals; MT and the session come from ctx.
 export const libraries = ['plotly'];
 
+// The settings each open copy of this view keeps to itself (#365)
+export const settingsPrefix = 'scatterplot-';
+
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;
 

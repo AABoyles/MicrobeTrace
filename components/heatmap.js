@@ -1,6 +1,9 @@
 // The heatmap view, loaded as an ES module by src/views.js (#339). Library globals (Plotly, XLSX) stay globals; MT comes from ctx.
 export const libraries = ['plotly'];
 
+// The settings each open copy of this view keeps to itself (#365)
+export const settingsPrefix = 'heatmap-';
+
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;
 

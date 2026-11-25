@@ -17,6 +17,7 @@ it. WebGL runs in software (SwiftShader), so no GPU is needed.
 |---|---|
 | `views.spec.js` | The network statistics, and every view opening and drawing without errors |
 | `layout.spec.js` | Tabs, splitting a panel, resizing, saving and reloading the layout, New Session |
+| `multiview.spec.js` | Opening more than one of a view: numbered copies with their own settings, IDs and radio groups, saved and reopened; views that open once; agents addressing copies |
 | `ui.spec.js` | The license dialog, menus, the settings dialog, toggle buttons |
 | `global.spec.js` | The page around the views: filtering, the color tables and colors, statistics, search, reading dates, the global timeline, saving and reopening sessions, stashes, New Session |
 | `panels.spec.js` | The floating panels following the view in front without overlapping, the timeline bar below the views, settings panes closing, and dialog backdrops |

@@ -1,5 +1,5 @@
 import { fail, image } from '../core.js';
-import { viewSchema, openSchema, settle, rootOf, need, blobToDataURL, finish, exporterOf, runExport } from './helpers.js';
+import { idOf, viewSchema, openSchema, settle, rootOf, need, blobToDataURL, finish, exporterOf, runExport } from './helpers.js';
 
 const IMAGE_TYPES = ['png', 'jpeg', 'webp'];
 
@@ -79,13 +79,13 @@ export default {
         if (method === 'export') throw e;
       }
     } else if (method === 'export') {
-      fail('The ' + item.componentType + ' view has no image export; use method auto or dom.');
+      fail('The ' + idOf(item) + ' view has no image export; use method auto or dom.');
     }
     if (!dataURL) {
       dataURL = await rasterize(root, scale);
       used = 'dom';
     }
     const out = await finish(dataURL, { maxWidth, format, quality, background: self.MT.settings.get('background-color') });
-    return image(out.dataURL, { view: item.componentType, width: out.width, height: out.height, format, method: used, viewSize: { width: root.clientWidth, height: root.clientHeight } });
+    return image(out.dataURL, { view: idOf(item), width: out.width, height: out.height, format, method: used, viewSize: { width: root.clientWidth, height: root.clientHeight } });
   }
 };

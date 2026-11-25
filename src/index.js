@@ -411,7 +411,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   all(".viewbutton").forEach(button => button.addEventListener("click", e => {
     e.preventDefault();
-    MT.launchView(button.dataset.href);
+    // Another of a view that's open already, if it can be open more than once (#365)
+    MT.launchView(button.dataset.href, undefined, { another: true });
   }));
 
   // Filtering ----------------------------------------------------------------

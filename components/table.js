@@ -80,7 +80,7 @@ export function mount(root, ctx) {
     });
   }
 
-  root.querySelectorAll('[name="table-dataset"]').forEach(input => input.addEventListener('change', () => {
+  root.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener('change', () => {
     if (!input.checked) return;
     dataset = input.value;
     showColumns();

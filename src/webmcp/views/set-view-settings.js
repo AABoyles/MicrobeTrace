@@ -1,6 +1,6 @@
 import { fail } from '../core.js';
 import { same } from '../schema.js';
-import { viewSchema, openSchema, settle, rootOf, need, settingsOf, publicRecord } from './helpers.js';
+import { idOf, viewSchema, openSchema, settle, need, settingsFor, settingsOf, publicRecord } from './helpers.js';
 
 const cssColor = value => {
   const c = document.createElement('canvas').getContext('2d');
@@ -72,8 +72,8 @@ export default {
   },
   execute: async ({ view, open, settings, show = true }) => {
     const item = await need(view, { open, show });
-    const root = rootOf(item);
-    const records = settingsOf(root);
+    const store = settingsFor(item);
+    const records = settingsOf(item);
     const entries = Object.entries(settings || {});
     if (!entries.length) fail('settings is empty');
     const errors = [], plan = [];
@@ -85,8 +85,8 @@ export default {
     if (errors.length) fail(errors.join('\n'));
     const changes = [];
     for (const { key, value } of plan) {
-      const from = self.MT.settings.get(key);
-      self.MT.settings.set(key, value);
+      const from = store.get(key);
+      store.set(key, value);
       changes.push({ key, from: from === undefined ? null : from, to: value, changed: !same(from, value) });
     }
     await settle(150);
@@ -106,7 +106,7 @@ export default {
       });
     });
     await settle(100);
-    const after = settingsOf(root).filter(r => plan.some(p => p.key === r.key)).map(publicRecord);
-    return { view: item.componentType, changes, settings: after };
+    const after = settingsOf(item).filter(r => plan.some(p => p.key === r.key)).map(publicRecord);
+    return { view: idOf(item), changes, settings: after };
   }
 };

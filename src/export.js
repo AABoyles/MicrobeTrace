@@ -41,7 +41,7 @@ MT.defaultFilename = (field, what = () => '') => {
 // name, e.g. epi-curve
 const exportName = root => {
   const item = env.layout.contentItems.find(item => item.container.element.contains(root));
-  return item ? MT.titleize(item.componentType).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+  return item ? MT.viewTitle(item.componentType, item.instance).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
 };
 
 // The actions of export dialogs, by the view's root element: the file types a

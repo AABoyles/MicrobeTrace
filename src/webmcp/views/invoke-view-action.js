@@ -1,5 +1,5 @@
 import { fail } from '../core.js';
-import { viewSchema, openSchema, settle, rootOf, need, slug, actionsOf, publicAction } from './helpers.js';
+import { idOf, viewSchema, openSchema, settle, rootOf, need, slug, actionsOf, publicAction } from './helpers.js';
 
 export default {
   name: 'invoke_view_action',
@@ -35,6 +35,6 @@ export default {
     const after = actionsOf(root, false).map(publicAction);
     const now = after.find(a => a.id == target.id); // eslint-disable-line eqeqeq -- action ids are matched as text or number alike
     const changed = after.filter(a => { const b = before.find(x => x.id == a.id); return b && JSON.stringify(b) != JSON.stringify(a) && a.id != target.id; }); // eslint-disable-line eqeqeq -- action ids are matched as text or number alike
-    return { view: item.componentType, invoked: target.title, id: target.id, state: now || null, otherChanges: changed };
+    return { view: idOf(item), invoked: target.title, id: target.id, state: now || null, otherChanges: changed };
   }
 };

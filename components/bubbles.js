@@ -1,6 +1,9 @@
 // The bubbles view, loaded as an ES module by src/views.js (#339). Library globals (d3, MTBind)
 // stay globals; MT, the session and temp come from ctx.
 
+// The settings each open copy of this view keeps to itself (#365)
+export const settingsPrefix = 'bubble-';
+
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;
 

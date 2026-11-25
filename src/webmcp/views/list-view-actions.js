@@ -1,4 +1,4 @@
-import { viewSchema, openSchema, rootOf, need, actionsOf, publicAction } from './helpers.js';
+import { idOf, viewSchema, openSchema, rootOf, need, actionsOf, publicAction } from './helpers.js';
 
 export default {
   name: 'list_view_actions',
@@ -9,6 +9,6 @@ export default {
   execute: async ({ view, open, includeExport }) => {
     const item = await need(view, { open });
     const actions = actionsOf(rootOf(item), includeExport).map(publicAction);
-    return { view: item.componentType, count: actions.length, actions };
+    return { view: idOf(item), count: actions.length, actions };
   }
 };

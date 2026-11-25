@@ -1,5 +1,5 @@
 import { fail } from '../core.js';
-import { viewSchema, openSchema, rootOf, need, settingsOf, publicRecord, otherControls } from './helpers.js';
+import { idOf, viewSchema, openSchema, rootOf, need, settingsOf, publicRecord, otherControls } from './helpers.js';
 
 export default {
   name: 'get_view_settings',
@@ -19,13 +19,13 @@ export default {
   annotations: { readOnlyHint: true },
   execute: async ({ view, open, keys, onlyVisible }) => {
     const item = await need(view, { open });
-    let records = settingsOf(rootOf(item));
+    let records = settingsOf(item);
     if (keys) {
       const missing = keys.filter(k => !records.some(r => r.key === k));
-      if (missing.length) fail('The ' + item.componentType + ' view has no setting ' + missing.join(', ') + '. Its settings: ' + records.map(r => r.key).join(', '));
+      if (missing.length) fail('The ' + idOf(item) + ' view has no setting ' + missing.join(', ') + '. Its settings: ' + records.map(r => r.key).join(', '));
       records = records.filter(r => keys.includes(r.key));
     }
     if (onlyVisible) records = records.filter(r => r.visible);
-    return { view: item.componentType, count: records.length, settings: records.map(publicRecord), other_controls: otherControls(rootOf(item)) };
+    return { view: idOf(item), count: records.length, settings: records.map(publicRecord), other_controls: otherControls(rootOf(item)) };
   }
 };
