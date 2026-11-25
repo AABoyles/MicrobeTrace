@@ -335,7 +335,7 @@ All of these are read-only.
 | Tool | Read-only? | What it does |
 |---|---|---|
 | `list_views` | Yes | Lists every view: id, name, menu group, what it shows, what data it needs, and whether it is open. |
-| `open_view` | No | Opens a view and waits until it has drawn its first frame. |
+| `open_view` | No | Opens a view and waits until it has drawn its first frame. With `another`, opens a second copy of an open view, whose id is then `NAME@2`. |
 | `close_view` | No (consequential) | Closes an open view. |
 | `focus_view` | No | Makes an open view the front tab of its panel. |
 | `get_layout` | Yes | Returns how the views are arranged: panels in rows and columns. |

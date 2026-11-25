@@ -162,9 +162,10 @@ test('the View menu has the network above two lined-up columns', async () => {
 test('settings are named for what they do, and the tree’s menus turn labels and tooltips off', async () => {
   await opened('bubbles');
   expect(await page.locator('.lm_content:has(svg.bubbles) .left-pane .nav-link').allTextContents()).toContain('Layout');
-  await opened('histogram');
-  // (A chart view is set up once its library has loaded, so its menus fill in a moment later)
-  await expect.poll(() => page.locator('.lm_content:has(.histogram-plot) [data-setting="histogram-variable"] option').allTextContents()).toContain('Link Distance');
+  await opened('graph');
+  await page.evaluate(() => MT.settings.set('graph-data', 'links'));
+  // (A view is set up once its code has loaded, so its menus fill in a moment later)
+  await expect.poll(() => page.locator('.lm_content:has(.graph-plot) [data-setting="graph-x"] option').allTextContents()).toContain('Distance');
   await opened('phylogenetic_tree');
   const pane = page.locator('.lm_content:has(.tree) .left-pane');
   await expect(pane.locator('[data-setting="tree-leaf-label-show"], [data-setting="tree-tooltip-show"]')).toHaveCount(0);

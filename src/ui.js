@@ -27,7 +27,6 @@ MT.titleize = title => {
     if (small === key.replace(/_/g, " ")) return MT.distanceMetrics[key].label;
   }
   if (small === "geo map") return "Map";
-  if (small === "timeline") return "Epi Curve";
   if (small === "nn") return "Nearest Neighbor";
   return small.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase());
 };

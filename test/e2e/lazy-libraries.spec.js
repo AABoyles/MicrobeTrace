@@ -31,7 +31,7 @@ test('a fresh page loads only the primary bundle, within a byte budget', async (
   console.log('Startup JS and CSS bytes:', total);
   // About 1.6 MB today (it was 4.9 MB before the libraries were split out)
   expect(total).toBeLessThan(2.2 * 1024 * 1024);
-  for (const global of ['XLSX', 'JSZip', 'Tabulator', 'Plotly', 'L', 'TidyTree', 'alignmentViewer']) {
+  for (const global of ['XLSX', 'JSZip', 'Tabulator', 'd3Sankey', 'L', 'TidyTree', 'alignmentViewer']) {
     expect(await page.evaluate(name => typeof self[name], global), global).toBe('undefined');
   }
   expect(errors).toEqual([]);
@@ -43,14 +43,15 @@ test('each view fetches the libraries it draws with, once', async ({ page }) => 
   await loadNetwork(page);
   expect(requested).toEqual(['primary']);
   const typeOf = name => page.evaluate(name => typeof self[name], name);
-  for (const [view, bundle, global] of [['histogram', 'plotly', 'Plotly'], ['table', 'table', 'Tabulator'], ['phylogenetic_tree', 'tree', 'TidyTree']]) {
+  for (const [view, bundle, global] of [['sankey_diagram', 'sankey', 'd3Sankey'], ['table', 'table', 'Tabulator'], ['phylogenetic_tree', 'tree', 'TidyTree']]) {
     await launchView(page, view);
     await expect.poll(() => typeOf(global), { message: view }).not.toBe('undefined');
     expect(requested.filter(name => name === bundle), bundle).toHaveLength(1);
   }
-  // Another chart view reuses Plotly
-  await launchView(page, 'scatterplot');
-  expect(requested.filter(name => name === 'plotly')).toHaveLength(1);
+  // Another copy of a view reuses its library
+  await page.evaluate(() => MT.launchView('sankey_diagram', undefined, { another: true }));
+  await page.waitForFunction(() => document.querySelectorAll('.sankey-nodes').length === 2);
+  expect(requested.filter(name => name === 'sankey')).toHaveLength(1);
   expect(requested).not.toContain('xlsx');
   expect(errors).toEqual([]);
 });

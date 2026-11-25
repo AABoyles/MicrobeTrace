@@ -33,18 +33,18 @@ test('the worker caches the shell, then each file when it is first used, and the
   // Only the shell: the lazy libraries and the other views wait for first use
   expect(precache).toContain('dist/bundle.primary.js');
   expect(precache).toContain('components/files.js');
-  for (const file of ['dist/bundle.plotly.js', 'vendor/cosmos.min.js', 'components/histogram.js', 'components/histogram.html']) {
+  for (const file of ['dist/bundle.sankey.js', 'vendor/cosmos.min.js', 'components/sankey_diagram.js', 'components/sankey_diagram.html']) {
     expect(precache, file).not.toContain(file);
     expect(cached, file).not.toContain(file);
   }
 
   // A view opened online is cached with its library, and opens again offline
-  await page.evaluate(() => MT.launchView('histogram'));
-  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'histogram') && typeof Plotly !== 'undefined');
+  await page.evaluate(() => MT.launchView('sankey_diagram'));
+  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'sankey_diagram') && typeof d3Sankey !== 'undefined');
   await expect.poll(() => page.evaluate(async name => {
     const cache = await caches.open(name);
     return (await cache.keys()).map(r => new URL(r.url).pathname.replace(/^\//, ''));
-  }, cacheName)).toEqual(expect.arrayContaining(['components/histogram.html', 'components/histogram.js', 'dist/bundle.plotly.js']));
+  }, cacheName)).toEqual(expect.arrayContaining(['components/sankey_diagram.html', 'components/sankey_diagram.js', 'dist/bundle.sankey.js']));
 
   // Activating deletes the caches of other versions, but keeps what they had
   // cached on first use from data/ and demo/ (#296); app code is not carried
@@ -95,9 +95,9 @@ test('the worker caches the shell, then each file when it is first used, and the
   await page.reload();
   await expect(page.locator('nav.navbar')).toBeVisible();
   await expect(page).toHaveTitle(/MicrobeTrace/);
-  // The view opened earlier (the histogram, whose library was cached with it) still opens offline
-  await page.evaluate(() => MT.launchView('histogram'));
-  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'histogram') && typeof Plotly !== 'undefined');
+  // The view opened earlier (the Sankey diagram, whose library was cached with it) still opens offline
+  await page.evaluate(() => MT.launchView('sankey_diagram'));
+  await page.waitForFunction(() => layout.contentItems.some(i => i.componentType === 'sankey_diagram') && typeof d3Sankey !== 'undefined');
   await context.setOffline(false);
 });
 

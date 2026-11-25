@@ -13,7 +13,7 @@ licence (Apache-2.0) is in `LICENSE`, and `NOTICE` gives the project's copyright
   licence file (`LICENSE`, `LICENSE.md` and similar) where it has one. Where a package has no
   licence file, the tables say so.
 - **What goes into each bundle** comes from esbuild metafiles of the builds in `scripts/bundle.js`.
-  Each of the bundles `primary`, `xlsx`, `table`, `plotly`, `tree` and `alignment` is
+  Each of the bundles `primary`, `xlsx`, `table`, `sankey`, `tree` and `alignment` is
   built from an entry module in `scripts/entries/` (#342), and `vendor/cosmos.min.js` is built from
   `@cosmos.gl/graph`. Each build was run with the options in `scripts/bundle.js` and
   `write: false`, and every input under `node_modules/` was mapped to its package. A nested copy
@@ -36,7 +36,7 @@ package in `node_modules`, and the copyright lines are in the same files. They a
 ## Top-level libraries
 
 The `primary` bundle is loaded with the page. The other bundles are lazy: each is fetched the first
-time a feature needs it. `xlsx` holds SheetJS and JSZip, `table` Tabulator, `plotly` Plotly.js,
+time a feature needs it. `xlsx` holds SheetJS and JSZip, `table` Tabulator, `sankey` d3-sankey,
 `tree` TidyTree (with D3) and `alignment` alignment-viewer.
 
 ### `dist/` (JavaScript and CSS)
@@ -54,7 +54,7 @@ time a feature needs it. `xlsx` holds SheetJS and JSZip, `table` Tabulator, `plo
 | D3 | 7.9.2 | ISC | https://github.com/d3/d3 | `bundle.primary.js` and `bundle.tree.js`. Each embeds the `d3-*` modules listed below. |
 | Tabulator (`tabulator-tables`) | 6.7.1 | MIT | https://github.com/tabulator-tables/tabulator | `bundle.table.js`, `bundle.table.css` |
 | d3-symbol-extra | 0.1.0 | BSD-3-Clause | https://github.com/YellowTugboat/d3-symbol-extra | `bundle.primary.js` |
-| Plotly.js (built from `scripts/plotly-bundle.js`, see below) | 4.3.0 | MIT | https://github.com/plotly/plotly.js | `bundle.plotly.js` |
+| d3-sankey | 0.12.3 | BSD-3-Clause | https://github.com/d3/d3-sankey | `bundle.sankey.js`. Embeds the `d3-*` modules below. |
 | TidyTree | 0.8.1 | Apache-2.0 | https://github.com/cdcgov/TidyTree | `bundle.tree.js`, built from its TypeScript source (`tidytree/src/main.ts`). Embeds its own Patristic (below). |
 | html5sortable | 0.14.0 | MIT | https://github.com/lukasoppermann/html5sortable | `bundle.primary.js` |
 | alignment-viewer | 0.3.4 | Apache-2.0 | https://github.com/CDCgov/AlignmentViewer | `bundle.alignment.js` |
@@ -136,115 +136,16 @@ in `package.json`, but D3 depends on it, so it is still shipped.
 TidyTree declares Patristic as its own dependency, and shares the top-level `patristic` that
 `vendor/patristic.min.js` is copied from.
 
-### Packages inside Plotly (`dist/bundle.plotly.js`)
+### Packages inside d3-sankey (`dist/bundle.sankey.js`)
 
-Packages included by `scripts/plotly-bundle.js`. Versions are the ones esbuild resolved from
-`node_modules`. Where a version was nested under another package, the nested copy is used and the
-parent is named in brackets. `maplibre-gl` is not in the bundle: plotly.js imports its stylesheet,
-which the build empties, and no JavaScript from it reaches the bundle.
+d3-sankey has older copies of these nested under it.
 
 | Package | Version | Licence | Upstream |
 |---|---|---|---|
-| @plotly/d3 | 3.8.2 | BSD-3-Clause | https://github.com/plotly/d3 |
-| @plotly/d3-sankey | 0.12.3 | BSD-3-Clause | https://github.com/plotly/d3-sankey |
-| @plotly/d3-sankey-circular | 0.33.1 | MIT | https://github.com/plotly/d3-sankey-circular |
-| @plotly/point-cluster | 3.1.9 | MIT | https://github.com/plotly/point-cluster |
-| @plotly/regl | 2.1.2 | MIT | https://github.com/plotly/regl |
-| abs-svg-path | 0.1.1 | MIT (no licence file in package) | https://github.com/jkroso/abs-svg-path |
-| array-bounds | 1.0.1 | MIT (no licence file in package) | https://github.com/dfcreative/array-bounds |
-| array-find-index | 1.0.2 | MIT | https://github.com/sindresorhus/array-find-index |
-| array-normalize | 1.1.4 | MIT (no licence file in package) | https://github.com/dfcreative/array-normalize |
-| base64-arraybuffer | 1.0.2 | MIT | https://github.com/niklasvh/base64-arraybuffer |
-| binary-search-bounds | 2.0.5 | MIT | https://github.com/mikolalysenko/binary-search-bounds |
-| bit-twiddle | 1.0.2 | MIT | https://github.com/mikolalysenko/bit-twiddle |
-| bitmap-sdf | 1.0.4 | MIT (no licence file in package) | https://github.com/dfcreative/bitmap-sdf |
-| clamp | 1.0.1 | MIT | https://github.com/hughsk/clamp |
-| color-id | 1.1.0 | MIT (no licence file in package) | https://github.com/colorjs/color-id |
-| color-name | 1.1.4 | MIT | https://github.com/colorjs/color-name |
-| color-normalize | 1.5.2 | MIT (no licence file in package) | https://github.com/colorjs/color-normalize |
-| color-parse | 1.4.3 | MIT | https://github.com/colorjs/color-parse |
-| color-rgba | 2.4.0 | MIT (no licence file in package) | https://github.com/colorjs/color-rgba |
-| css-font | 1.2.0 | MIT | https://github.com/dy/css-font |
-| css-font-size-keywords | 1.0.0 | MIT | https://github.com/jedmao/css-font-size-keywords |
-| css-font-stretch-keywords | 1.0.1 | MIT | https://github.com/jedmao/css-font-stretch-keywords |
-| css-font-style-keywords | 1.0.1 | MIT | https://github.com/jedmao/css-font-style-keywords |
-| css-font-weight-keywords | 1.0.0 | MIT | https://github.com/jedmao/css-font-weight-keywords |
-| css-global-keywords | 1.0.1 | MIT | https://github.com/jedmao/css-global-keywords |
-| css-system-font-keywords | 1.0.0 | MIT | https://github.com/jedmao/css-system-font-keywords |
-| culori | 4.0.2 | MIT | https://github.com/Evercoder/culori |
-| d | 1.0.2 | ISC | https://github.com/medikoo/d |
-| d3-array (nested in @plotly/d3-sankey-circular) | 1.2.4 | BSD-3-Clause | https://github.com/d3/d3-array |
-| d3-array (nested in @plotly/d3-sankey) | 2.12.1 | BSD-3-Clause | https://github.com/d3/d3-array |
-| d3-collection | 1.0.7 | BSD-3-Clause | https://github.com/d3/d3-collection |
-| d3-color | 3.1.1 | ISC | https://github.com/d3/d3-color |
-| d3-dispatch (nested in plotly.js) | 1.0.6 | BSD-3-Clause | https://github.com/d3/d3-dispatch |
-| d3-force (nested in plotly.js) | 1.2.1 | BSD-3-Clause | https://github.com/d3/d3-force |
-| d3-format (nested in plotly.js) | 1.4.5 | BSD-3-Clause | https://github.com/d3/d3-format |
-| d3-interpolate | 3.0.2 | ISC | https://github.com/d3/d3-interpolate |
-| d3-path (nested in @plotly/d3-sankey-circular) | 1.0.9 | BSD-3-Clause | https://github.com/d3/d3-path |
-| d3-path (nested in @plotly/d3-sankey) | 1.0.9 | BSD-3-Clause | https://github.com/d3/d3-path |
-| d3-quadtree (nested in plotly.js) | 1.0.7 | BSD-3-Clause | https://github.com/d3/d3-quadtree |
-| d3-shape (nested in @plotly/d3-sankey-circular) | 1.3.7 | BSD-3-Clause | https://github.com/d3/d3-shape |
-| d3-shape (nested in @plotly/d3-sankey) | 1.3.7 | BSD-3-Clause | https://github.com/d3/d3-shape |
-| d3-time (nested in plotly.js) | 1.1.0 | BSD-3-Clause | https://github.com/d3/d3-time |
-| d3-time-format (nested in plotly.js) | 2.3.0 | BSD-3-Clause | https://github.com/d3/d3-time-format |
-| d3-timer (nested in plotly.js) | 1.0.10 | BSD-3-Clause | https://github.com/d3/d3-timer |
-| defined | 1.0.1 | MIT | https://github.com/inspect-js/defined |
-| detect-kerning | 2.1.2 | MIT (no licence file in package) | https://github.com/dy/detect-kerning |
-| dtype | 2.0.0 | MIT | https://github.com/shama/dtype |
-| dup | 1.0.0 | MIT | https://github.com/mikolalysenko/dup |
-| earcut (nested in regl-line2d) | 2.2.4 | ISC | https://github.com/mapbox/earcut |
-| elementary-circuits-directed-graph | 1.3.1 | MIT | https://github.com/antoinerg/elementary-circuits-directed-graph |
-| es5-ext | 0.10.64 | ISC | https://github.com/medikoo/es5-ext |
-| es6-iterator | 2.0.3 | MIT | https://github.com/medikoo/es6-iterator |
-| es6-symbol | 3.1.4 | ISC | https://github.com/medikoo/es6-symbol |
-| es6-weak-map | 2.0.3 | ISC | https://github.com/medikoo/es6-weak-map |
-| events | 3.3.0 | MIT | https://github.com/Gozala/events |
-| ext | 1.7.0 | ISC | https://github.com/medikoo/es5-ext |
-| fast-isnumeric | 1.1.4 | MIT | https://github.com/plotly/fast-isnumeric |
-| flatten-vertex-data | 1.0.2 | MIT | https://github.com/glo-js/flatten-vertex-data |
-| font-atlas | 2.1.0 | MIT | https://github.com/hughsk/font-atlas |
-| font-measure | 1.2.2 | MIT (no licence file in package) | https://github.com/dy/font-measure |
-| gl-mat4 | 1.2.0 | Zlib | https://github.com/stackgl/gl-mat4 |
-| gl-text | 1.4.0 | MIT | https://github.com/a-vis/gl-text |
-| gl-util | 3.1.3 | MIT (no licence file in package) | https://github.com/dy/gl-util |
-| glslify | 7.1.1 | MIT | https://github.com/stackgl/glslify |
-| has-hover | 1.0.1 | MIT (no licence file in package) | https://github.com/dfcreative/has-hover |
-| has-passive-events | 1.0.0 | MIT | https://github.com/dfcreative/has-passive-events |
-| is-browser | 2.1.0 | MIT | https://github.com/ForbesLindesay/is-browser |
-| is-mobile | 5.0.0 | MIT (no licence file in package) | https://github.com/juliangruber/is-mobile |
-| is-obj | 1.0.1 | MIT | https://github.com/sindresorhus/is-obj |
-| is-plain-obj | 1.1.0 | MIT | https://github.com/sindresorhus/is-plain-obj |
-| is-string-blank | 1.0.1 | MIT | https://github.com/plotly/is-string-blank |
-| is-svg-path | 1.0.2 | MIT (no licence file in package) | https://github.com/dfcreative/is-svg-path |
-| math-log2 | 1.0.1 | MIT | https://github.com/sindresorhus/math-log2 |
-| mouse-event-offset | 3.0.2 | MIT | https://github.com/mattdesl/mouse-event-offset |
-| native-promise-only | 0.8.1 | MIT (no licence file in package) | https://github.com/getify/native-promise-only |
-| normalize-svg-path | 1.1.0 | MIT | https://github.com/jkroso/normalize-svg-path |
-| object-assign | 4.1.1 | MIT | https://github.com/sindresorhus/object-assign |
-| parenthesis | 3.1.8 | MIT | https://github.com/dy/parenthesis |
-| parse-rect | 1.2.0 | MIT | https://github.com/dfcreative/parse-rect |
-| parse-svg-path | 0.2.0 | MIT | https://github.com/jkroso/parse-svg-path |
-| parse-svg-path (nested in svg-path-bounds) | 0.1.2 | MIT | https://github.com/jkroso/parse-svg-path |
-| parse-unit | 1.0.1 | MIT | https://github.com/mattdesl/parse-unit |
-| pick-by-alias | 1.2.0 | MIT (no licence file in package) | https://github.com/dfcreative/pick-by-alias |
-| point-in-polygon | 1.1.0 | MIT | https://github.com/substack/point-in-polygon |
-| polybooljs | 1.2.2 | MIT | https://github.com/velipso/polybooljs |
-| regl | 2.1.1 | MIT | https://github.com/regl-project/regl |
-| regl-error2d | 2.0.12 | MIT | https://github.com/dy/regl-error2d |
-| regl-line2d | 3.1.4 | MIT | https://github.com/dy/regl-line2d |
-| regl-scatter2d | 3.4.0 | MIT | https://github.com/dy/regl-scatter2d |
-| string-split-by | 1.0.0 | MIT (no licence file in package) | https://github.com/dy/string-split-by |
-| strongly-connected-components | 1.0.1 | MIT | https://github.com/mikolalysenko/strongly-connected-components |
-| svg-arc-to-cubic-bezier | 3.2.0 | ISC | https://github.com/colinmeinke/svg-arc-to-cubic-bezier |
-| svg-path-bounds | 1.0.2 | MIT (no licence file in package) | https://github.com/dfcreative/svg-path-bounds |
-| svg-path-sdf | 2.0.0 | MIT | https://github.com/dy/svg-path-sdf |
-| to-float32 | 1.1.0 | MIT | https://github.com/dy/to-float32 |
-| to-px | 1.1.0 | MIT | https://github.com/mikolalysenko/to-px |
-| type | 2.7.3 | ISC | https://github.com/medikoo/type |
-| typedarray-pool | 1.2.0 | MIT | https://github.com/mikolalysenko/typedarray-pool |
-| unquote | 1.1.1 | MIT | https://github.com/lakenen/node-unquote |
-| update-diff | 1.1.0 | MIT (no licence file in package) | https://github.com/dfcreative/update-diff |
+| d3-array (nested in d3-sankey) | 2.12.1 | BSD-3-Clause | https://github.com/d3/d3-array |
+| d3-path (nested in d3-sankey) | 1.0.9 | BSD-3-Clause | https://github.com/d3/d3-path |
+| d3-shape (nested in d3-sankey) | 1.3.7 | BSD-3-Clause | https://github.com/d3/d3-shape |
+| internmap (nested in d3-sankey) | 1.0.1 | ISC | https://github.com/mbostock/internmap |
 
 ### Packages inside cosmos.gl (`vendor/cosmos.min.js`)
 
@@ -290,8 +191,8 @@ DOMPurify's source.
   those texts are not included in this repository (the MIT, BSD, ISC and Apache-2.0 notice
   conditions apply to redistribution). That has not been done here.
 - Packages marked "no licence file in package" have no licence file in `node_modules`. For them,
-  the `license` field in `package.json` is the only source checked here. There are 22 such
-  packages: 18 in Plotly, 3 in cosmos.gl and `@orchidjs/sifter`.
+  the `license` field in `package.json` is the only source checked here. There are 4 such
+  packages: 3 in cosmos.gl and `@orchidjs/sifter`.
 - The bundles in `dist/` carry no licence comments (see "How this was checked"). Of the files in
   `vendor/`, `papaparse.min.js` keeps its own `@license` comment, and `bioseq.min.js` and
   `patristic.min.js` do not carry a licence banner. This file is the notice for those.

@@ -169,7 +169,7 @@ const openView = contentItem => {
 
 // A view is the mount function its module exports:
 //
-//   export const libraries = ['plotly'];  // optional, loaded before mount
+//   export const libraries = ['sankey'];  // optional, loaded before mount
 //   export function mount(root, { settings, events, MT, session, temp }) {
 //     ...
 //     return { resize() { ... }, destroy() { ... } };
@@ -363,16 +363,18 @@ MT.describeView = (element, name, summary, { role = 'region' } = {}) => {
 };
 const nodesOf = n => n.toLocaleString() + (n === 1 ? ' node' : ' nodes');
 const linksOf = n => n.toLocaleString() + (n === 1 ? ' link' : ' links');
-// (`settings` are the view's own, which differ between two copies of it)
-const variableName = value => String(value || '').replace(/^(links|nodes)-/, '');
-// Each view's graphic: where it is, what it's called, and what it plots
+// Each view's graphic: where it is, what it's called, and what it plots (by the
+// view's own settings, which differ between two copies of it)
 MT.viewGraphics = {
-  histogram: ['.histogram-plot', 'Histogram of link distances', (c, settings) => `Histogram of ${variableName(settings.get('histogram-variable'))} across ${linksOf(c.links)} and ${nodesOf(c.nodes)}.`],
-  scatterplot: ['.scatterplot-plot', 'Scatterplot of node values', (c, settings) => `Scatterplot of ${variableName(settings.get('scatterplot-yVar'))} against ${variableName(settings.get('scatterplot-xVar'))}, for ${nodesOf(c.nodes)}.`],
+  graph: ['.graph-plot', 'Graph', (c, settings) => {
+    const data = settings.get('graph-data'), x = MT.titleize(settings.get('graph-x'));
+    const what = { bar: 'Bar chart', line: 'Line plot', scatter: 'Scatterplot', rose: 'Wind rose' }[settings.get('graph-type')] || 'Histogram';
+    const of = data === 'nodes' ? nodesOf(c.nodes) : data === 'links' ? linksOf(c.links) + ' between ' + nodesOf(c.nodes) : 'the clusters of ' + nodesOf(c.nodes);
+    return what + ' of ' + (what === 'Scatterplot' ? MT.titleize(settings.get('graph-y')) + ' against ' : '') + x + ', for ' + of + '.';
+  }],
   heatmap: ['.heatmap-plot', 'Heatmap of pairwise distances', c => `Heatmap of the distances between ${nodesOf(c.nodes)}.`],
   bubbles: ['svg.bubbles', 'Bubble chart of node groups', c => `Bubbles for the groups of ${nodesOf(c.nodes)}.`],
-  timeline: ['.timeline-chart', 'Epidemic curve over time', c => `Counts over time for ${nodesOf(c.nodes)}.`],
-  flow_diagram: ['.flow-plot', 'Flow diagram between node groups', c => `Flows between the groups of ${nodesOf(c.nodes)}.`],
+  sankey_diagram: ['.sankey-plot', 'Sankey diagram of node groups', c => `Flows between the groups of ${nodesOf(c.nodes)}.`],
   geo_map: ['canvas.map-canvas', 'Map of node locations', (c, settings) => `${settings.get('map-projection') === 'globe' ? 'Globe' : 'Map'} of ${nodesOf(c.nodes)} by location${settings.get('map-shade') !== 'none' ? ', with ' + settings.get('map-shade') + ' shaded by their counts' : ''}. Drag or use the arrow keys to move it, and the wheel or + and - to zoom.`, 'img'],
   phylogenetic_tree: ['.tree', 'Phylogenetic tree', c => `Tree of ${nodesOf(c.nodes)}. Right-click or press Shift+F10 on a branch for its menu.`],
   sequences: ['.sequences-panel', 'Sequence alignment', c => `Alignment of the sequences of ${nodesOf(c.nodes)}.`]
@@ -430,8 +432,11 @@ const mountView = contentItem => {
 // Views that were renamed or removed, and the view that opens in their place
 // (in saved sessions, layouts and settings). The globe and the choropleth are
 // modes of the map; a session that had them opens the map in that mode (see
-// upgradeMapSettings in geo.js).
-MT.viewAliases = { '2d_network': 'network', 'pixi': 'network', '3d_network': 'network', 'globe': 'geo_map', 'choropleth': 'geo_map' };
+// upgradeMapSettings in geo.js). The histogram, the scatterplot and the epi curve
+// are types of graph; a session that had them opens a graph for each, with its
+// settings (see upgradeGraphs in charts.js).
+MT.viewAliases = { '2d_network': 'network', 'pixi': 'network', '3d_network': 'network', 'globe': 'geo_map', 'choropleth': 'geo_map',
+  'histogram': 'graph', 'scatterplot': 'graph', 'timeline': 'graph', 'flow_diagram': 'sankey_diagram' };
 MT.viewName = view => MT.viewAliases[view] || view;
 
 // Opens a view, or brings it to the front if it's open: the copy of it named
@@ -501,8 +506,6 @@ MT.viewNeeds = {
   heatmap: () => hasLinks() || hasSequences() ? "" : "The heatmap draws the distances between nodes, which needs sequences (a FASTA file) or a distance matrix. " + FILES_HINT,
   waterfall: () => hasLinks() ? "" : "This view lists each cluster's links, and there are none. Links come from a link list, a distance matrix, or sequences close enough to link. " + FILES_HINT,
   geo_map: settings => MT.settingsHaveLocation("map-field-", settings) ? "" : MAP_NEEDS("map"),
-  timeline: () => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || chosenField("timeline-date-field") ? "" :
-    "The epi curve counts nodes by date, and no column holds dates. Add a node list with a date column. " + FILES_HINT,
   gantt: settings => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || (settings.get("gantt-dates") || []).length ? "" :
     "This view draws each node's dates as bars, and no column holds dates. Add a node list with a date column. " + FILES_HINT
 };

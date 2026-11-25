@@ -13,30 +13,57 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => page.close());
 
-const view = () => page.locator('.lm_content:has(.js-plotly-plot)').first();
+const view = () => page.locator('.lm_content:has(.heatmap-plot)').first();
 const pane = () => view().locator('.left-pane');
 const widget = key => page.evaluate(key => session.style.widgets[key], key);
-// Each cell labelled with its nodes' own ids
 const labels = () => page.evaluate(() => session.data.nodes.map(d => String(d._id)));
 
-const plot = () => view().locator('.js-plotly-plot').evaluate(el => ({
-  rows: el.data[0].z.length,
-  columns: el.data[0].z[0].length,
-  x0: el.data[0].x[0],
-  y0: el.data[0].y[0],
-  colors: el.data[0].colorscale.map(c => c[1]),
-  tickLabels: el.layout.xaxis.showticklabels,
-  width: el.layout.width,
-  background: getComputedStyle(el.querySelector('.main-svg')).backgroundColor
-}));
+const plot = () => view().locator('.heatmap-svg').evaluate(async el => {
+  const image = el.querySelector('.cells'), img = new Image();
+  img.src = image.getAttribute('href');
+  await img.decode();
+  const m = image.transform.baseVal.consolidate().matrix;
+  const rect = el.querySelectorAll('.color-scale rect');
+  return {
+    size: [img.naturalWidth, img.naturalHeight],
+    // Turned from its first row at the bottom, and first column at the left
+    inverted: [m.a < 0, m.d > 0],
+    colors: [rect[0], rect[255]].map(r => d3.color(r.getAttribute('fill')).formatHex()),
+    xLabels: Array.from(el.querySelectorAll('.axis--x .tick text'), t => t.textContent),
+    width: +el.getAttribute('width'),
+    background: getComputedStyle(el.parentElement).backgroundColor
+  };
+});
+// The color of a cell, in the picture
+const cell = (row, column) => view().locator('.heatmap-svg .cells').evaluate(async (image, [row, column]) => {
+  const img = new Image();
+  img.src = image.getAttribute('href');
+  await img.decode();
+  const c = new OffscreenCanvas(img.naturalWidth, img.naturalHeight).getContext('2d');
+  c.drawImage(img, 0, 0);
+  const [r, g, b, a] = c.getImageData(column, row, 1, 1).data;
+  return a ? d3.rgb(r, g, b).formatHex() : null;
+}, [row, column]);
 
 test('draws the distance matrix', async () => {
-  await expect.poll(async () => (await plot()).rows).toBe(310);
-  const p = await plot(), names = await labels();
-  expect(p.columns).toBe(310);
-  expect([p.x0, p.y0]).toEqual([names[0], names[0]]);
-  expect(p.colors).toEqual(['#313695', '#ffffbf', '#a50026']);
-  expect(p.tickLabels).toBe(false);
+  await expect.poll(async () => (await plot()).size).toEqual([310, 310]);
+  const p = await plot();
+  expect(p.inverted).toEqual([false, false]);
+  expect(p.colors).toEqual(['#313695', '#a50026']);
+  expect(p.xLabels).toEqual([]);
+  // A node is at no distance from itself; a pair with no distance is clear, over the grey
+  expect(await cell(5, 5)).toBe('#313695');
+  expect(await cell(0, 309)).toBe(null);
+});
+
+test('pointing at a cell gives its pair and distance', async () => {
+  const names = await labels();
+  const box = await view().locator('.heatmap-svg .cells').boundingBox();
+  // The middle of the bottom left cell
+  await page.mouse.move(box.x + box.width / 620, box.y + box.height - box.height / 620);
+  await expect(page.locator('#tooltip')).toHaveText(`${names[0]} and ${names[0]}: 0`);
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height - 2);
+  await expect(page.locator('#tooltip')).toContainText(new RegExp(`^${names[0]} and `));
 });
 
 test('the settings pane opens and closes', async () => {
@@ -50,22 +77,22 @@ test('the settings pane opens and closes', async () => {
 });
 
 test('inverting an axis reverses it', async () => {
-  const names = await labels();
   await pane().locator('label', { hasText: 'X-Axis' }).click();
-  await expect.poll(async () => (await plot()).x0).toBe(names[names.length - 1]);
-  expect((await plot()).y0).toBe(names[0]);
+  await expect.poll(async () => (await plot()).inverted).toEqual([true, false]);
   expect(await widget('heatmap-invertX')).toBe(true);
   await expect(pane().locator('label', { hasText: 'X-Axis' }).locator('input')).toBeChecked();
   await pane().locator('label', { hasText: 'Y-Axis' }).click();
-  await expect.poll(async () => (await plot()).y0).toBe(names[names.length - 1]);
+  await expect.poll(async () => (await plot()).inverted).toEqual([true, true]);
   await pane().locator('label', { hasText: 'Y-Axis' }).click();
-  await expect.poll(async () => (await plot()).y0).toBe(names[0]);
+  await expect.poll(async () => (await plot()).inverted).toEqual([true, false]);
   expect(await widget('heatmap-invertY')).toBe(false);
 });
 
 test('axis labels can be shown', async () => {
   await pane().locator('label', { hasText: 'Show' }).click();
-  await expect.poll(async () => (await plot()).tickLabels).toBe(true);
+  const names = await labels();
+  // (The X axis is inverted: its labels are written in order, and placed from the right)
+  await expect.poll(async () => (await plot()).xLabels[0]).toBe(names[0]);
   expect(await widget('heatmap-axislabels-show')).toBe(true);
 });
 
@@ -75,7 +102,7 @@ test('the color scheme applies', async () => {
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  await expect.poll(async () => (await plot()).colors[2]).toBe('#00ff00');
+  await expect.poll(async () => (await plot()).colors[1]).toBe('#00ff00');
   expect(await widget('heatmap-color-high')).toBe('#00ff00');
 });
 
@@ -86,13 +113,12 @@ test('the background color applies', async () => {
 });
 
 test('reopening the view restores its settings', async () => {
-  const names = await labels();
   await closeView(page, 'heatmap');
   await launchView(page, 'heatmap');
-  await expect.poll(async () => (await plot()).x0).toBe(names[names.length - 1]);
+  await expect.poll(async () => (await plot()).inverted).toEqual([true, false]);
   const p = await plot();
-  expect(p.tickLabels).toBe(true);
-  expect(p.colors[2]).toBe('#00ff00');
+  expect(p.xLabels.length).toBeGreaterThan(10);
+  expect(p.colors[1]).toBe('#00ff00');
   await expect(pane().locator('label', { hasText: 'X-Axis' }).locator('input')).toBeChecked();
   await expect(pane().locator('label', { hasText: 'Y-Axis' }).locator('input')).not.toBeChecked();
   await expect(pane().locator('label', { hasText: 'Show' }).locator('input')).toBeChecked();

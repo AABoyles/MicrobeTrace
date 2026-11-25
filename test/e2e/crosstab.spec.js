@@ -78,3 +78,13 @@ test('exports CSV', async () => {
   expect(download.suggestedFilename()).toBe('crosstab-test.csv');
   expect(errors).toEqual([]);
 });
+
+test('clusters can be counted', async () => {
+  await pane().locator('label', { hasText: 'Clusters' }).click();
+  await fieldX().selectOption('nodes');
+  await fieldY().selectOption('visible');
+  await expect.poll(async () => (await table()).total).toBe(await page.evaluate(() => session.data.clusters.filter(c => c.visible).length));
+  expect(errors).toEqual([]);
+  await pane().locator('label', { hasText: 'Nodes' }).click();
+  await expect.poll(async () => (await table()).total).toBe(310);
+});

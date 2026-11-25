@@ -2,15 +2,15 @@
 
 Each view is `NAME.html` (its markup) plus `NAME.js` (its code). When the view opens,
 `src/views.js` fetches the HTML into a Golden Layout panel, loads the code and runs its mount
-function. `histogram.js` is the cleanest example to copy.
+function. `bubbles.js` is the cleanest example to copy.
 
 ## The view contract
 
 Views are ES modules, loaded with `import()` (#339).
 
 ```js
-// components/histogram.js
-export const libraries = ['plotly'];       // optional: the lazy bundles to load before mount
+// components/NAME.js
+export const libraries = ['sankey'];       // optional: the lazy bundles to load before mount
 
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;    // ctx.session and ctx.temp are read when needed
@@ -23,7 +23,7 @@ export function mount(root, ctx) {
 - `ctx` is `{ settings, events, container, MT, session, temp }`. A module has no `MT`, `session`
   or `temp` globals (the linter fails on them): take `MT` from `ctx`, and read `ctx.session` and
   `ctx.temp` where you use them, not destructured up front, because loading a session replaces
-  both. Library globals from the bundles (`d3`, `Plotly`, `Tabulator`, `XLSX`, `MTBind`, ...) stay
+  both. Library globals from the bundles (`d3`, `Tabulator`, `XLSX`, `MTBind`, ...) stay
   globals. Module-level helpers that need `ctx` can keep it in a module variable set by `mount`
   (`network.js` does this as `app`), but only in a view that can be open once: each copy has its own.
 - A view can be open more than once (#365), unless `MT.singleViews` (`src/views.js`) lists it. Its

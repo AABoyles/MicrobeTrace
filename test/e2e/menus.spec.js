@@ -176,7 +176,7 @@ test('the View menu has the network above two columns of grouped views', async (
   expect(headings.length).toBe(2);
   expect(Math.abs(headings[0] - headings[1])).toBeLessThan(2);
   expect(network.y + network.height).toBeLessThanOrEqual(headings[0] + 1);
-  await expect(items.locator('.viewbutton')).toHaveCount(16);
+  await expect(items.locator('.viewbutton')).toHaveCount(14);
   const views = await items.locator('.viewbutton').allInnerTexts();
   expect(views).toContain('Crosstab');
   expect(views).not.toContain('CrossTab');
@@ -209,9 +209,9 @@ test("exports suggest the view's name and the date", async () => {
   await expect(modal.locator('[name="export-filename"]')).toHaveValue(`microbetrace-network-${date}`);
   await modal.locator('.btn-close').click();
   await expect(modal).toBeHidden();
-  await launchView(page, 'timeline');
-  modal = await openExport(page, page.locator('.lm_content:has(#timeline-export-modal)'), 'Export Epi Curve');
-  await expect(modal.locator('[name="export-filename"]')).toHaveValue(`microbetrace-epi-curve-${date}`);
+  await launchView(page, 'graph');
+  modal = await openExport(page, page.locator('.lm_content:has(#graph-export-modal)'), 'Export Graph');
+  await expect(modal.locator('[name="export-filename"]')).toHaveValue(`microbetrace-graph-${date}`);
   await modal.locator('.btn-close').click();
   await expect(modal).toBeHidden();
 });

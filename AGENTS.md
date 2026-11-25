@@ -10,7 +10,7 @@ client-side; `server.js` only serves static files. Node >= 26.
 npm ci
 npm test                                      # unit tests (node --test test/unit/*.test.js and *.test.mjs)
 npm run test:e2e                              # Playwright, Chromium only; starts its own server
-npm run test:e2e -- test/e2e/histogram.spec.js   # one spec
+npm run test:e2e -- test/e2e/graph.spec.js   # one spec
 npm run typecheck                             # tsc over the files that start with // @ts-check
 npm run lint                                  # ESLint; errors fail CI, and the warning count should stay at 0
 npm start                                     # http://localhost:5000 (builds dist/ first if missing)
@@ -61,7 +61,7 @@ serially and is slow; run the specs for what you touched, not the whole suite, u
   synchronous ones (such as `dist/bundle.primary.js`). So a synchronous script can't use `MT` or the
   leaf modules, and a `defer` script can use only the modules placed before it in `index.html`.
   Workers can't `importScripts` a module, so a file a worker loads stays classic. Libraries come from
-  the bundles as globals (`d3`, `bootstrap`, `Plotly`, ...); the large ones load on first use through
+  the bundles as globals (`d3`, `bootstrap`, ...); the large ones load on first use through
   `MT.loadLibrary` (#324).
 - State: `session` is what gets saved (data in `session.data`, settings in `session.style.widgets`);
   `temp` is everything rebuilt on load. Read and write settings through `MT.settings.get/set` so

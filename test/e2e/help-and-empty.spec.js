@@ -47,12 +47,12 @@ test('#demo still loads the demo', async () => {
 
 test('views with no data at all say so, and offer the demo', async () => {
   await start(page);
-  await page.evaluate(() => MT.launchView('timeline'));
+  await page.evaluate(() => MT.launchView('graph'));
   const note = page.locator('.view-needs');
   await expect(note).toBeVisible();
   await expect(note).toContainText('No data yet');
   await expect(note.locator('.view-needs-demo')).toBeVisible();
-  // The timeline's own prompt to choose a date field is not shown over it
+  // The graph's own message that there's nothing to draw is not shown over it
   await expect(page.locator('.view-message')).toBeHidden();
 });
 
@@ -62,7 +62,7 @@ test('a view that lacks one kind of data says what it needs', async () => {
   await page.waitForFunction(() => document.querySelectorAll('#file-table .file-table-row').length >= 1);
   await page.click('#launch');
   await page.waitForFunction(() => session.data.nodes.length > 0);
-  await page.evaluate(() => { MT.launchView('sequences'); MT.launchView('geo_map'); MT.launchView('timeline'); });
+  await page.evaluate(() => { MT.launchView('sequences'); MT.launchView('geo_map'); });
   const seq = page.locator('.view-needs', { hasText: 'sequence' });
   await expect(seq.first()).toContainText('FASTA');
   const map = page.locator('.view-needs', { hasText: 'latitude and longitude' });
@@ -70,7 +70,7 @@ test('a view that lacks one kind of data says what it needs', async () => {
   // With data, the demo is not offered
   await expect(page.locator('.view-needs .view-needs-demo:visible')).toHaveCount(0);
   // Views that have what they need have no note
-  expect(await page.evaluate(() => ['table', 'network', 'histogram'].some(v => MT.viewNeeds[v]))).toBe(false);
+  expect(await page.evaluate(() => ['table', 'network', 'graph'].some(v => MT.viewNeeds[v]))).toBe(false);
 });
 
 test('Help opens the built-in help with no connection', async () => {

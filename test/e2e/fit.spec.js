@@ -1,6 +1,6 @@
 // Controls that fit: sliders filling their column, in one style; labels on
 // one line in dialogs and cards; toggle buttons inside their groups, each
-// divided from the next; settings rows held together (heatmap colors, flow
+// divided from the next; settings rows held together (heatmap colors, Sankey
 // variables, Gantt dates); padded color tables; pane sections that show
 // whether they're open, and Colors as the button it is; a search bar that
 // stays put; small alignments; sort arrows beside their own titles; and one
@@ -103,13 +103,13 @@ test('pane sections show whether they’re open, and Colors is a button', async 
   await root.locator('.settings-toggle').first().click();
 });
 
-test('the Epi Curve’s toggle fits its column', async () => {
-  const root = await openPane('timeline');
+test('the Graph’s toggles fit their column', async () => {
+  const root = await openPane('graph');
   for (const group of await root.locator('.left-pane .btn-group-toggle').filter({ visible: true }).all()) expect(await togglesFit(group)).toBe(true);
-  await closeView(page, 'timeline');
+  await closeView(page, 'graph');
 });
 
-test('the heatmap’s colors, flow variables and Gantt dates hold their rows together', async () => {
+test('the heatmap’s colors, Sankey variables and Gantt dates hold their rows together', async () => {
   let root = await openPane('heatmap');
   const swatches = await root.locator('.left-pane input[type="color"]').evaluateAll(inputs => inputs.map(i => i.getBoundingClientRect().top));
   expect(swatches.length).toBe(3);
@@ -120,11 +120,11 @@ test('the heatmap’s colors, flow variables and Gantt dates hold their rows tog
   expect(await root.locator('.heatmap-colors label').allInnerTexts()).toEqual(['Low', 'Middle', 'High']);
   await closeView(page, 'heatmap');
 
-  root = await openPane('flow_diagram');
-  const parts = await root.locator('.flow-items').first().evaluate(li => Array.from(li.children, c => { const r = c.getBoundingClientRect(); return r.top + r.height / 2; }));
+  root = await openPane('sankey_diagram');
+  const parts = await root.locator('.sankey-items').first().evaluate(li => Array.from(li.children, c => { const r = c.getBoundingClientRect(); return r.top + r.height / 2; }));
   expect(Math.max(...parts) - Math.min(...parts)).toBeLessThan(4);
-  await expect(root.locator('.flow-items .bi-grip-vertical').first()).toBeVisible();
-  await closeView(page, 'flow_diagram');
+  await expect(root.locator('.sankey-items .bi-grip-vertical').first()).toBeVisible();
+  await closeView(page, 'sankey_diagram');
 
   root = await openPane('gantt');
   await expect(root.locator('.gantt-date').first()).toBeVisible();

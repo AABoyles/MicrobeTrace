@@ -148,9 +148,9 @@ test('behind another view, the network neither simulates nor reads positions bac
 
 test('opening a view takes under 5 seconds', async () => {
   const start = Date.now();
-  await launchView(page, 'histogram');
-  await page.waitForFunction(() => document.querySelector('.histogram-plot .main-svg'), null, { timeout: 30000 });
-  results.histogramMs = Date.now() - start;
-  underBudget('opening a view', results.histogramMs, 5000);
+  await launchView(page, 'graph');
+  await page.waitForFunction(() => document.querySelector('.graph-svg .bar'), null, { timeout: 30000 });
+  results.graphMs = Date.now() - start;
+  underBudget('opening a view', results.graphMs, 5000);
   expect(errors).toEqual([]);
 });

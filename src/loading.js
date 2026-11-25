@@ -18,6 +18,7 @@ import { MTDates } from './dates.js';
 import { MTGraph } from './graph.js';
 import { MTSessionFormat } from './session-format.js';
 import { rewind, layoutViews, upgradeMapSettings } from './geo.js';
+import { upgradeGraphs } from './charts.js';
 
 export function installLoading(MT, env) {
 
@@ -122,9 +123,12 @@ MT.applySession = oldSession => {
   // Sessions from when the globe and the choropleth were views of their own
   // keep their settings, as the map's
   upgradeMapSettings(env.session.style.widgets, [...layoutViews(env.session.layout), env.session.style.widgets['default-view']]);
+  // As do those from when the histogram, scatterplot and epi curve were
+  upgradeGraphs(env.session.style.widgets, env.session.layout);
   env.session.meta.startTime = Date.now();
   MT.session.restoreData(oldSession.data);
   if(oldSession.network) env.session.network = oldSession.network;
+  keepBrushedDates();
   // Sessions from before distances were kept under their metric's name (#249)
   // kept the distance metric's as distance: they filter on that
   const widgets = env.session.style.widgets;
@@ -135,6 +139,25 @@ MT.applySession = oldSession => {
   MT.applyStyle(env.session.style);
   MT.finishUp(true);
   return true;
+};
+
+// The epi curve's brush hid the nodes after a date, which the global timeline now
+// does (#366): a session saved with nodes hidden so has the timeline at that date,
+// where it can be moved or turned off.
+const keepBrushedDates = () => {
+  const widgets = env.session.style.widgets, field = widgets["timeline-date-field"];
+  if (!field || field === "None" || (widgets["node-timeline-variable"] || "None") !== "None") return;
+  const until = +MT.parseDate(env.session.state.timeEnd);
+  const hides = until > 0 && env.session.data.nodeFields.includes(field) && MT.nodeTimes(field).some(time => time > until);
+  /* eslint-disable no-restricted-syntax -- session upgrade, before anything subscribes (#366) */
+  if (hides) {
+    widgets["node-timeline-variable"] = field;
+    env.session.network.timelinePinned = env.session.network.allPinned;
+    env.session.network.timelineNodes = (env.session.network.nodes || []).map(node => Object.assign({}, node));
+  } else {
+    widgets["timeline-date-field"] = "None";
+  }
+  /* eslint-enable no-restricted-syntax */
 };
 
 MT.applyStyle = style => {

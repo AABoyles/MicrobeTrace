@@ -38,7 +38,7 @@ MT.defaultFilename = (field, what = () => '') => {
 };
 
 // What an export dialog inside a view suggests calling the file: the view's
-// name, e.g. epi-curve
+// name, e.g. graph
 const exportName = root => {
   const item = env.layout.contentItems.find(item => item.container.element.contains(root));
   return item ? MT.viewTitle(item.componentType, item.instance).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
@@ -95,7 +95,7 @@ MT.loadScript = src => scripts[src] || (scripts[src] = new Promise((resolve, rej
 // an older script, may have put it there); the ones with a stylesheet also fetch
 // dist/bundle.NAME.css, which goes ahead of main.css so that it can still override.
 // The promise is cached, so asking again, or from several views, loads it once.
-const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', plotly: 'Plotly', tree: 'TidyTree', alignment: 'alignmentViewer' };
+const LIBRARY_GLOBALS = { xlsx: 'XLSX', table: 'Tabulator', sankey: 'd3Sankey', tree: 'TidyTree', alignment: 'alignmentViewer' };
 const LIBRARY_STYLES = ['table'];
 const styles = {};
 MT.loadStyle = href => styles[href] || (styles[href] = new Promise((resolve, reject) => {
@@ -173,15 +173,6 @@ MT.svgExport = (root, getSVG, settings, formats = {}, done) => {
     run({ filetype: field('export-filetype').value, filename: field('export-filename').value }).catch(exportFailed);
   });
 };
-
-// The export dialog of a view drawn with Plotly (see MT.svgExport)
-MT.plotExport = (root, plot, settings, formats = {}) => MT.svgExport(root, () => {
-  const svg = plot.querySelector('.main-svg');
-  // Plotly draws axis titles in a second SVG layer; bring them into this one
-  const titles = plot.querySelector('.main-svg .infolayer');
-  if (titles) svg.appendChild(titles);
-  return svg;
-}, settings, formats);
 
 // Downloads a Blob as a file
 MT.saveAs = (blob, filename) => {

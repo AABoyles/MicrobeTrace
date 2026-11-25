@@ -38,8 +38,8 @@ async function axe(page, context = null, rules) {
   }, [context, rules, TAGS]);
 }
 const set = (key, value) => page.evaluate(([key, value]) => MT.settings.set(key, value), [key, value]);
-const views = ['table', 'aggregation', 'crosstab', 'histogram', 'scatterplot', 'heatmap', 'timeline', 'gantt', 'bubbles',
-  'flow_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'sequences'];
+const views = ['table', 'aggregation', 'crosstab', 'graph', 'heatmap', 'gantt', 'bubbles',
+  'sankey_diagram', 'geo_map', 'phylogenetic_tree', 'waterfall', 'sequences'];
 async function opened(view) {
   if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
   await page.evaluate(view => { const item = layout.contentItems.find(i => i.componentType === view); item.parent.setActiveComponentItem(item, true); }, view);
@@ -96,7 +96,7 @@ test('the settings panes’ tabs are wired to their panels', async () => {
       selected: tab.getAttribute('aria-selected') === String(tab.classList.contains('active'))
     };
   }));
-  expect(tabs.length).toBeGreaterThan(24);
+  expect(tabs.length).toBeGreaterThan(20);
   expect(tabs.filter(t => !t.panel || !t.inList || !t.selected)).toEqual([]);
   expect(new Set(tabs.map(t => t.tab)).size).toBe(tabs.length);
   // Switching tabs moves the selection
@@ -111,7 +111,7 @@ test('the settings panes’ tabs are wired to their panels', async () => {
 
 test('draggable rows and tables have only the roles they play', async () => {
   await opened('aggregation');
-  await opened('flow_diagram');
+  await opened('sankey_diagram');
   const roles = await page.evaluate(() => ({
     options: document.querySelectorAll('[role="option"][draggable], [aria-grabbed]').length,
     groups: document.querySelectorAll('[role="columngroup"], [aria-title]').length,
@@ -208,7 +208,7 @@ for (const scheme of themes) {
   test(`axe finds nothing in the empty state of a view (${scheme})`, async ({ browser }) => {
     const fresh = await browser.newPage({ colorScheme: scheme });
     await open(fresh);
-    await fresh.evaluate(() => MT.launchView('timeline'));
+    await fresh.evaluate(() => MT.launchView('gantt'));
     await expect(fresh.locator('.view-needs')).toBeVisible();
     // (A pane still sliding in would be scanned partway across the window)
     await fresh.evaluate(() => Promise.allSettled(document.getAnimations().map(a => a.finished)));

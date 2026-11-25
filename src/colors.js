@@ -1,7 +1,7 @@
-// Colors: scales, palettes, the color maps and plot colors.
+// Colors: scales, palettes and the color maps.
 //
 // The color scales and palettes, the node, link and polygon color tables, and
-// the colors and layout of the plots.
+// the color of the graphs' gridlines.
 //
 // An ES module (#323) that adds to MT: installX(MT, env), which createMT in common.js calls
 // (#341). It uses these MT names from the other files at run time, through MT:
@@ -349,19 +349,6 @@ MT.contrastColor = hexcolor => {
   let yiq = r * 299 + g * 587 + b * 114;
   return yiq >= 128000 ? "#000000" : "#ffffff";
 };
-
-// Plotly layout colors for the current background
-MT.plotColors = settings => {
-  const background = settings.get('background-color'), contrast = settings.get('background-color-contrast');
-  return { paper_bgcolor: background, plot_bgcolor: background, font: { color: contrast } };
-};
-
-// A plot's frame: just below the view's toolbar at the top (Plotly's own
-// margin leaves 100px empty), and clear of the docked tables at the right
-MT.plotLayout = (root, settings) => ({
-  margin: { t: 50, r: 20 + MT.dockRoom(root), b: 60, l: 70 },
-  ...MT.plotColors(settings)
-});
 
 // A plot's gridlines: the contrast color, faint enough to sit behind the data
 MT.gridColor = (settings, opacity = 0.15) => {

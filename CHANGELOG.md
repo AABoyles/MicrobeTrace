@@ -16,6 +16,15 @@ The version is the `version` in `package.json`. Help > About shows it, with the 
 - A Newick tree loads together with a FASTA file of the same IDs; it used to fail with "source.add is not a function". When one file can't be read, the load is reported as failed only after the other files have finished.
 - Newick trees can have quoted labels, and comments in square brackets are skipped. A malformed tree fails to load, saying what is wrong with it and where, rather than loading as some other tree. Very deep trees no longer overflow the stack when they are read. (#360)
 
+### Views
+
+- **One Graph view replaces the Histogram, Scatterplot and Epi Curve.** It draws nodes, links or clusters as a histogram, a bar or column chart, a line plot of counts, a scatterplot, or wind roses (columns around a center, one rose for each value of a variable), in the colors of the node or link legend. A variable of dates is counted by day, week, month or year, as the Epi Curve was. What can't be placed (undated nodes, missing or infinite distances) is left out, and the graph says how much. Saved sessions open a Graph for each of the old views they had, with its settings. (#366)
+- **More than one of a view can be open**, each with its own settings: choose it again in the View menu. Files, Conflicts and the Network still open once. (#365)
+- Epi Curve's brush is gone. To show the nodes up to a date, use Timeline in Settings. A saved session whose brush hid nodes opens with the timeline at that date. (#366)
+- Flow Diagram is now called Sankey Diagram. (#363)
+- The Graph, Heatmap and Sankey Diagram are drawn with d3. Plotly, the app's largest library (1.8 MB), is gone, and with it zooming and panning in these charts. (#363)
+- The Clusters dataset works in Crosstab and Aggregation again.
+
 ### Maps
 
 - **One map, drawn with d3, replaces the Map, Choropleth and Globe views.** Its Projection setting draws it flat, as the United States (with Alaska and Hawaii inset) or as a globe, which turns when dragged and is shaded to look round. Shading (under Layers) colors countries, states or counties by how many nodes each holds, counted by the Country, State or County field on the Data tab, under a legend. The arrow keys pan (or turn the globe), + and - zoom, and there are Zoom In and Zoom Out buttons. Sessions that had the globe or the choropleth open the map in that mode, with their settings.
