@@ -1,4 +1,4 @@
-import { viewSchema, need, layoutState } from './helpers.js';
+import { idOf, viewSchema, need, layoutState } from './helpers.js';
 
 export default {
   name: 'focus_view',
@@ -7,6 +7,6 @@ export default {
   inputSchema: { type: 'object', properties: { view: viewSchema }, required: ['view'], additionalProperties: false },
   execute: async ({ view }) => {
     const item = await need(view, { show: true });
-    return Object.assign({ focused: item.componentType }, layoutState());
+    return Object.assign({ focused: idOf(item) }, layoutState());
   }
 };

@@ -54,7 +54,7 @@ const bundles = [
       'node_modules/tabulator-tables/dist/css/tabulator_bootstrap5.min.css'
     ]
   },
-  { name: 'plotly', lazy: true, styles: [] },
+  { name: 'sankey', lazy: true, styles: [] },
   { name: 'tree', lazy: true, styles: [] },
   { name: 'alignment', lazy: true, styles: [] }
 ];
@@ -62,8 +62,8 @@ const bundles = [
 // Every package whose code ends up in dist/ or vendor/
 const versionedPackages = [
   '@cosmos.gl/graph', 'alignment-viewer', 'bioseq', 'bootstrap', 'bootstrap-icons', 'd3',
-  'd3-symbol-extra', 'golden-layout', 'html5sortable', 'jszip',
-  'papaparse', 'patristic', 'plotly.js', 'tabulator-tables', 'tidytree', 'tom-select', 'xlsx'
+  'd3-sankey', 'd3-symbol-extra', 'golden-layout', 'html5sortable', 'jszip',
+  'papaparse', 'patristic', 'tabulator-tables', 'tidytree', 'tom-select', 'xlsx'
 ];
 
 // Joins stylesheets with a newline after each, like `cat` plus `printf`. Joined as
@@ -123,10 +123,6 @@ async function build(tmp) {
 
   console.log('Building Javascript Bundles...');
 
-  // Plotly is built with just the traces MicrobeTrace uses (scripts/plotly-bundle.js,
-  // which plotly.js imports). The stylesheet it imports is for map traces, which
-  // MicrobeTrace doesn't use. scattergl needs a stand-in for Node's buffer module
-  // (scripts/buffer-shim.js), and a few packages look for Node's `global`.
   // golden-layout 2 and tidytree ship only ES modules or TypeScript, which is why
   // the libraries are bundled from their modules and not from prebuilt files (#342).
   // The libraries' licence comments are kept, gathered at the end of each bundle, as
@@ -135,8 +131,7 @@ async function build(tmp) {
     await esbuild.build({
       entryPoints: [`scripts/entries/${b.name}.js`],
       bundle: true, minify: true, format: 'iife', target: 'es2020', legalComments: 'eof',
-      define: { global: 'globalThis' }, loader: { '.css': 'empty' },
-      alias: { buffer: './scripts/buffer-shim.js' }, logLevel: 'warning',
+      logLevel: 'warning',
       outfile: path.join('dist', `bundle.${b.name}.js`)
     });
   }

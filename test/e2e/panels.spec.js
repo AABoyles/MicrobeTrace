@@ -52,20 +52,20 @@ test('a view that shows no panels hides them', async () => {
 });
 
 test('a view that draws colors takes the color table for what it draws, but not the statistics', async () => {
-  // The histogram charts links, so takes the link color table alone
-  await launchView(page, 'histogram');
-  await expect.poll(where).toEqual([['histogram', true], [null, false], [null, false]]);
+  // The graph shows links, so takes the link color table alone
+  await launchView(page, 'graph');
+  await expect.poll(where).toEqual([['graph', true], [null, false], [null, false]]);
 });
 
 test('bringing the network back in front brings the panels back', async () => {
   await front('network');
   await expect.poll(where).toEqual([['network', true], ['network', true], ['network', true]]);
-  await front('histogram');
-  await expect.poll(where).toEqual([['histogram', true], [null, false], [null, false]]);
+  await front('graph');
+  await expect.poll(where).toEqual([['graph', true], [null, false], [null, false]]);
 });
 
 test('closing the view that has them hands them to the view now in front', async () => {
-  await closeView(page, 'histogram');
+  await closeView(page, 'graph');
   await front('network');
   await expect.poll(where).toEqual([['network', true], ['network', true], ['network', true]]);
   await closeView(page, 'heatmap');

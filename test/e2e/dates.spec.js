@@ -24,14 +24,15 @@ async function opened(view) {
   if (!(await page.evaluate(view => layout.contentItems.some(i => i.componentType === view), view))) await launchView(page, view);
 }
 
-// The epi curve
-const curve = () => page.locator('.lm_content:has(button[title="Export Epi Curve"])').first();
+// The epi curve: a histogram of the nodes' dates
+const curve = () => page.locator('.lm_content:has(.graph-plot)').first();
 const bars = () => curve().locator('svg rect.bar');
 const barBoxes = () => bars().evaluateAll(els => els.map(el => ({ x: +el.getAttribute('x'), width: +el.getAttribute('width'), count: +el.dataset.count, title: el.textContent })));
 
 test('the epi curve’s bars count calendar periods, each a week here', async () => {
-  await opened('timeline');
-  await set('timeline-bin', 'auto');
+  await opened('graph');
+  await set('graph-data', 'nodes');
+  await set('graph-bin', 'auto');
   await expect.poll(async () => (await barBoxes()).reduce((a, b) => a + b.count, 0)).toBe(await dated());
   const b = await barBoxes();
   // The year of dates makes about 53 weeks, each starting on a Monday
@@ -43,21 +44,23 @@ test('the epi curve’s bars count calendar periods, each a week here', async ()
 });
 
 test('bars can count months instead, and say how many so far when cumulative', async () => {
-  await opened('timeline');
-  await set('timeline-bin', 'month');
+  await opened('graph');
+  await set('graph-data', 'nodes');
+  await set('graph-bin', 'month');
   await expect.poll(async () => (await barBoxes()).length).toBe(12);
   const b = await barBoxes();
   expect(b[0].title).toMatch(/^January 2020: \d+ nodes$/);
   expect(b.reduce((a, bar) => a + bar.count, 0)).toBe(await dated());
-  await set('timeline-noncumulative', false);
+  await set('graph-cumulative', true);
   await expect.poll(async () => (await barBoxes()).slice(-1)[0].title).toBe(`December 2020: ${await dated()} nodes so far`);
-  await set('timeline-noncumulative', true);
-  await expect(curve().locator('select[data-setting="timeline-bin"]')).toHaveValue('month');
+  await set('graph-cumulative', false);
+  await expect(curve().locator('select[data-setting="graph-bin"]')).toHaveValue('month');
 });
 
 test('a count axis runs up the side, and neighboring bars have a gap between them', async () => {
-  await opened('timeline');
-  await set('timeline-bin', 'month');
+  await opened('graph');
+  await set('graph-data', 'nodes');
+  await set('graph-bin', 'month');
   await expect.poll(async () => (await barBoxes()).length).toBe(12);
   const ticks = await curve().locator('svg .axis--y .tick text').allTextContents();
   expect(ticks.length).toBeGreaterThan(2);
@@ -69,7 +72,7 @@ test('a count axis runs up the side, and neighboring bars have a gap between the
   // Each month's tick sits at its bar's start
   const months = await curve().locator('svg .axis--x .tick text').allTextContents();
   expect(months.every(t => /^\d{4}-\d{2}$/.test(t))).toBe(true);
-  await set('timeline-bin', 'auto');
+  await set('graph-bin', 'auto');
 });
 
 // The Gantt chart

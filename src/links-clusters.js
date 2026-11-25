@@ -677,7 +677,7 @@ MT.setNodeVisibility = silent => {
     if (cluster) {
       node.visible = node.visible && cluster.visible; 
     }
-    // Nodes after the epi curve's brushed range are hidden; undated ones stay
+    // Nodes after the timeline's date are hidden; undated ones stay
     if (timeEnd) node.visible = node.visible && !(times[i] > until);
   }
   if (!silent) MT.events.emit("node-visibility");
@@ -792,6 +792,10 @@ MT.getVisibleLinks = copy => {
   if (copy) return cache.links.map(link => Object.assign({}, link, { origin: link.origin.slice() }));
   return cache.links.slice();
 };
+
+// The visible clusters, lone nodes among them. (The Crosstab, Aggregation and
+// Graph views name this by their dataset, so a search for its name may not find it.)
+MT.getVisibleClusters = () => env.session.data.clusters.filter(cluster => cluster.visible);
 
 MT.updateStatistics = () => {
   if (!env.session.style.widgets["network-statistics-show"]) return;

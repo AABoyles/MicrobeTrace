@@ -4,7 +4,7 @@ import { hasLayout, layoutState, applyLayout } from './helpers.js';
 export default {
   name: 'set_layout',
   title: 'Set layout',
-  description: 'Replaces the whole arrangement of views. layout is a tree: {type: "row"|"column"|"stack", content: [...]} where a stack is a panel of tabs, a row puts children side by side, a column stacks them, and leaves are {type: <view id>} (each view at most once). A stack may name its front tab with active. Example: {type:"row", content:[{type:"stack",content:[{type:"network"}]},{type:"column",content:[{type:"stack",content:[{type:"histogram"}]},{type:"stack",content:[{type:"table"}]}]}]}. Views not listed are closed; the listed ones are re-created (settings are kept). Returns the resulting layout.',
+  description: 'Replaces the whole arrangement of views. layout is a tree: {type: "row"|"column"|"stack", content: [...]} where a stack is a panel of tabs, a row puts children side by side, a column stacks them, and leaves are {type: <view id>} (a view may be given more than once, but files, conflicts and network at most once; instance, 1 to 99, says which copy\'s settings it has). A stack may name its front tab with active. Example: {type:"row", content:[{type:"stack",content:[{type:"network"}]},{type:"column",content:[{type:"stack",content:[{type:"heatmap"}]},{type:"stack",content:[{type:"table"}]}]}]}. Views not listed are closed; the listed ones are re-created (settings are kept). Returns the resulting layout.',
   inputSchema: {
     type: 'object',
     properties: {

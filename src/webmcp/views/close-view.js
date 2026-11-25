@@ -1,4 +1,4 @@
-import { viewSchema, settle, need, layoutState } from './helpers.js';
+import { idOf, viewSchema, settle, need, layoutState } from './helpers.js';
 
 export default {
   name: 'close_view',
@@ -8,7 +8,7 @@ export default {
   annotations: { consequentialHint: true },
   execute: async ({ view }) => {
     const item = await need(view);
-    const name = item.componentType;
+    const name = idOf(item);
     item.remove();
     await settle(80);
     return Object.assign({ closed: name }, layoutState());

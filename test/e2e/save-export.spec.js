@@ -76,9 +76,9 @@ test('a saved .zip opens directly, and a .zip without a session says so', async 
 });
 
 test('image export has no watermark control, explains Scale and Resolution, and strips a typed extension', async () => {
-  await launchView(page, 'histogram');
-  const view = page.locator('.lm_content:has(button[title="Export Histogram"])');
-  const modal = await openExport(page, view, 'Export Histogram');
+  await launchView(page, 'graph');
+  const view = page.locator('.lm_content:has(button[title="Export Graph"])');
+  const modal = await openExport(page, view, 'Export Graph');
   await expect(modal).not.toContainText('Watermark');
   await expect(modal.locator('[name="export-opacity"]')).toHaveCount(0);
   await modal.locator('.export-advanced-button').click();
@@ -89,7 +89,7 @@ test('image export has no watermark control, explains Scale and Resolution, and 
   await modal.locator('[name="export-filetype"]').selectOption('png');
   const [download] = await Promise.all([page.waitForEvent('download'), modal.locator('.export-button').click()]);
   expect(download.suggestedFilename()).toBe('figure.png');
-  await closeView(page, 'histogram');
+  await closeView(page, 'graph');
 });
 
 test('a non-GeoJSON file is refused with a message, not an alert', async () => {

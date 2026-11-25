@@ -1,5 +1,5 @@
-// What views open on: variables chosen from the data (crosstab, flow diagram,
-// scatterplot), the first field of dates (epi curve, Gantt) or a note saying
+// What views open on: variables chosen from the data (crosstab, Sankey diagram,
+// graph), the first field of dates (graph, Gantt) or a note saying
 // what to choose, and sizes that fit the view (bubbles, tree leaves).
 const { test, expect } = require('@playwright/test');
 const { watchErrors, loadNetwork, launchView, closeView } = require('./helpers');
@@ -38,51 +38,34 @@ test('the crosstab opens on two categorical variables, drawn', async () => {
   await closeView(page, 'crosstab');
 });
 
-test('the flow diagram opens on two categorical variables', async () => {
-  await launchView(page, 'flow_diagram');
-  const flow = view('.flow-plot');
-  await expect.poll(() => flow.locator('.js-plotly-plot').evaluate(el => el.data && Array.from(new Set(el.data[0].node.customdata)))).toEqual(['State', 'Group']);
+test('the Sankey diagram opens on two categorical variables', async () => {
+  await launchView(page, 'sankey_diagram');
+  const sankey = view('.sankey-plot');
+  await expect.poll(() => sankey.locator('.sankey-headings text').allTextContents()).toEqual(['State', 'Group']);
   // A dozen labels, not a hundred clusters
-  expect(await flow.locator('.js-plotly-plot').evaluate(el => el.data[0].node.label.length)).toBeLessThan(15);
-  await closeView(page, 'flow_diagram');
+  expect(await sankey.locator('.sankey-nodes rect').count()).toBeLessThan(15);
+  await closeView(page, 'sankey_diagram');
 });
 
-test('the scatterplot opens on a measurement, with faint gridlines', async () => {
-  await launchView(page, 'scatterplot');
-  const plot = view('.scatterplot-plot').locator('.js-plotly-plot');
-  await expect.poll(() => plot.evaluate(el => el.layout && [el.layout.xaxis.title.text, el.layout.yaxis.title.text])).toEqual(['Cluster', 'TN93']);
-  const grid = await plot.evaluate(el => el.layout.xaxis.gridcolor);
-  const alpha = +grid.match(/rgba\(.*,\s*([\d.]+)\)/)[1];
+test('the graph opens on the links’ distances, and the nodes’ first field of dates, with faint gridlines', async () => {
+  await launchView(page, 'graph');
+  const graph = view('.graph-plot');
+  await expect(graph.locator('.x-title')).toHaveText('TN93');
+  const alpha = +(await graph.locator('.grid').first().evaluate(el => el.style.stroke)).match(/rgba\(.*,\s*([\d.]+)\)/)[1];
   expect(alpha).toBeLessThan(0.3);
-  await closeView(page, 'scatterplot');
-});
-
-test('the epi curve opens on the first field of dates, saving it only once it filters', async () => {
-  await launchView(page, 'timeline');
-  const curve = view('#timeline-export-modal');
+  await page.evaluate(() => MT.settings.set('graph-data', 'nodes'));
+  await expect(graph.locator('.x-title')).toHaveText('Date');
   const dated = await page.evaluate(() => session.data.nodes.filter(d => MT.parseDate(d.date)).length);
-  await expect.poll(() => curve.locator('svg rect.bar').evaluateAll(els => els.reduce((s, el) => s + +el.dataset.count, 0))).toBe(dated);
-  await expect(curve.locator('[data-setting="timeline-date-field"]')).toHaveValue('date');
-  await expect(curve.locator('.view-message')).toBeHidden();
-  // Shown, not saved: the network and statistics don't start watching dates
-  expect(await page.evaluate(() => MT.settings.get('timeline-date-field'))).toBe('None');
-  // Brushing filters by it, so saves it
-  const box = await curve.locator('svg .brush .overlay').boundingBox();
-  await page.mouse.move(box.x + 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
-  await page.mouse.up();
-  await expect.poll(() => page.evaluate(() => MT.settings.get('timeline-date-field'))).toBe('date');
-  await expect.poll(() => page.evaluate(() => session.data.nodes.filter(d => d.visible).length)).toBeLessThan(310);
-  // The brushed range stays drawn
-  expect(await curve.locator('svg .brush .selection').evaluate(el => +el.getAttribute('width') || 0)).toBeGreaterThan(box.width / 3);
-  // Clearing the brush shows every node again
-  await curve.locator('svg .brush .overlay').click({ position: { x: box.width - 5, y: box.height / 2 } });
-  await expect.poll(() => page.evaluate(() => session.data.nodes.filter(d => d.visible).length)).toBe(310);
-  await closeView(page, 'timeline');
+  await expect.poll(() => graph.locator('rect.bar').evaluateAll(els => els.reduce((s, el) => s + +el.dataset.count, 0))).toBe(dated);
+  // A scatterplot starts on a measurement other than its X
+  await page.evaluate(() => { MT.settings.set('graph-data', 'links'); MT.settings.set('graph-type', 'scatter'); });
+  await expect(graph.locator('.x-title')).toHaveText('TN93');
+  await expect(graph.locator('.y-title')).toHaveText('Cluster');
+  await page.evaluate(() => MT.settings.set('graph-type', 'histogram'));
+  await closeView(page, 'graph');
 });
 
-test('the network keeps its layout while the epi curve has a date field', async () => {
+test('the network keeps its layout while the timeline has a date field', async () => {
   await page.evaluate(() => MT.launchView('network'));
   await page.evaluate(() => MT.settings.set('timeline-date-field', 'date'));
   // (Read from the GPU, as saving and the timeline do)
@@ -96,15 +79,9 @@ test('the network keeps its layout while the epi curve has a date field', async 
   await page.evaluate(() => MT.settings.set('timeline-date-field', 'None'));
 });
 
-test('without a field of dates, the date views say what to choose', async () => {
+test('without a field of dates, the Gantt says what to choose', async () => {
   // As if the data had no dates
   await page.evaluate(() => { MT._dateFields = MT.dateFields; MT.dateFields = () => []; });
-  await launchView(page, 'timeline');
-  const curve = view('#timeline-export-modal');
-  // The shared note says what the view needs; the view's own prompt waits behind it
-  await expect(curve.locator('.view-needs')).toContainText('no column holds dates');
-  await expect(curve.locator('.left-pane')).toBeVisible();
-  await closeView(page, 'timeline');
   await page.evaluate(() => MT.settings.set('gantt-dates', []));
   await launchView(page, 'gantt');
   const gantt = view('#gantt-export-modal');

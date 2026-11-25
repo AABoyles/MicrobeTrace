@@ -117,8 +117,7 @@ test("a view's Cancel stops only its own workers, and closing a view stops its o
   await unstall();
   await retry(heatmapView()).click();
   await expect.poll(() => shown(heatmapView())).toBe(false);
-  const plot = heatmapView().locator('.js-plotly-plot');
-  await expect.poll(() => plot.evaluate(el => el.data && el.data[0].z.length)).toBe(await page.evaluate(() => session.data.nodes.length));
+  await expect(heatmapView().locator('.heatmap-svg .cells')).toBeVisible();
 });
 
 test('the alignment says it is computing, Cancel stops its worker, and Retry draws it', async () => {

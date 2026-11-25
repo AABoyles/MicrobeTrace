@@ -4,3 +4,4 @@
 declare const Papa: any;
 declare const XLSX: any;
 declare const patristic: any;
+declare const d3: any;

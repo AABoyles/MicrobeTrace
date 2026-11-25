@@ -55,7 +55,7 @@ test("changing any input changes the hash", () => {
 
 test("the hash covers the lockfile, the build scripts and every entry module", () => {
   const files = inputFiles(real);
-  for (const file of ["package-lock.json", "scripts/bundle.js", "scripts/plotly-bundle.js", "scripts/buffer-shim.js",
+  for (const file of ["package-lock.json", "scripts/bundle.js",
     "scripts/minify-css.js", "scripts/write-versions.js", "postcss.config.js",
     "scripts/entries/primary.js", "scripts/entries/xlsx.js", "scripts/entries/tree.js"]) {
     assert.ok(files.includes(file), file + " is missing");

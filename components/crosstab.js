@@ -65,7 +65,7 @@ export function mount(root, ctx) {
     table.replaceData(data);
   }
 
-  root.querySelectorAll('[name="crosstab-dataset"]').forEach(input => input.addEventListener('change', () => {
+  root.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener('change', () => {
     if (!input.checked) return;
     dataset = input.value;
     showFields();

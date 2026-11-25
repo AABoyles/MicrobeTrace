@@ -9,8 +9,8 @@ const path = require("path");
 
 const root = path.join(__dirname, "..");
 
-const FILES = ["package-lock.json", "postcss.config.js", "scripts/bundle.js", "scripts/plotly-bundle.js",
-  "scripts/buffer-shim.js", "scripts/minify-css.js", "scripts/write-versions.js", "scripts/inputs-hash.js"];
+const FILES = ["package-lock.json", "postcss.config.js", "scripts/bundle.js",
+  "scripts/minify-css.js", "scripts/write-versions.js", "scripts/inputs-hash.js"];
 const DIRECTORIES = ["scripts/entries"];
 
 // Paths use "/" whatever the platform, so the hash is the same on Windows (#328).

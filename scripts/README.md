@@ -10,13 +10,9 @@ _A directory for build scripts_
   [`dist/`](https://github.com/aaboyles/MicrobeTrace/tree/master/dist)). Each script
   bundle is built by esbuild from an entry module in
   [`entries/`](https://github.com/aaboyles/MicrobeTrace/tree/master/scripts/entries)
-  (`primary.js` for what the page needs at once, and one for each lazy bundle: `xlsx`, `table`, `plotly`, `tree`, `alignment`): it imports the npm packages and assigns the
-  globals the app's classic scripts use (`d3`, `bootstrap`, `Plotly`, ...), so to add a
-  library you import it there. Plotly is
-  built from
-  [`plotly-bundle.js`](https://github.com/aaboyles/MicrobeTrace/blob/master/scripts/plotly-bundle.js)
-  so it carries exactly the traces MicrobeTrace draws (Plotly's prebuilt partial
-  bundles leave out the sankey trace the flow diagram needs). Stylesheets are still
+  (`primary.js` for what the page needs at once, and one for each lazy bundle: `xlsx`, `table`, `sankey`, `tree`, `alignment`): it imports the npm packages and assigns the
+  globals the app's classic scripts use (`d3`, `bootstrap`, ...), so to add a
+  library you import it there. Stylesheets are still
   joined and minified with cssnano.
 
   It also writes `dist/versions.json` (via `write-versions.js`), which records the

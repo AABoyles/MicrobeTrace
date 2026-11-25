@@ -21,9 +21,9 @@ test('list_views and open_view', async () => {
   const list = await call('list_views');
   expect(list.views.map(v => v.id)).toContain('phylogenetic_tree');
   expect(list.views.find(v => v.id === 'network').open).toBe(true);
-  const r = await call('open_view', { view: 'histogram' });
-  expect(r.openViews).toContain('histogram');
-  expect(r.activeViews).toContain('histogram');
+  const r = await call('open_view', { view: 'graph' });
+  expect(r.openViews).toContain('graph');
+  expect(r.activeViews).toContain('graph');
 });
 
 test('placement splits the layout', async () => {
@@ -31,27 +31,27 @@ test('placement splits the layout', async () => {
   expect(r.layout.type).toBe('row');
   const views = await call('list_views');
   expect(views.views.find(v => v.id === 'table').visible).toBe(true);
-  expect(views.views.find(v => v.id === 'histogram').visible).toBe(true);
-  const set = await call('set_layout', { layout: { type: 'column', content: [{ type: 'stack', content: [{ type: 'network' }] }, { type: 'stack', content: [{ type: 'histogram' }, { type: 'table' }], active: 'histogram' }] } });
+  expect(views.views.find(v => v.id === 'graph').visible).toBe(true);
+  const set = await call('set_layout', { layout: { type: 'column', content: [{ type: 'stack', content: [{ type: 'network' }] }, { type: 'stack', content: [{ type: 'graph' }, { type: 'table' }], active: 'graph' }] } });
   expect(set.layout.type).toBe('column');
-  expect(set.activeViews).toContain('histogram');
+  expect(set.activeViews).toContain('graph');
   await call('close_view', { view: 'table' });
   expect((await call('get_layout')).openViews).not.toContain('table');
 });
 
 test('view settings are discoverable and settable', async () => {
-  await call('focus_view', { view: 'histogram' });
-  const s = await call('get_view_settings', { view: 'histogram' });
-  const v = s.settings.find(x => x.key === 'histogram-variable');
+  await call('focus_view', { view: 'graph' });
+  const s = await call('get_view_settings', { view: 'graph' });
+  const v = s.settings.find(x => x.key === 'graph-x');
   expect(v.type).toBe('choice');
   expect(v.options.length).toBeGreaterThan(2);
-  const log = s.settings.find(x => x.key === 'histogram-scale-log');
+  const log = s.settings.find(x => x.key === 'graph-log');
   expect(log.type).toBe('boolean');
-  const r = await call('set_view_settings', { view: 'histogram', settings: { 'histogram-scale-log': true } });
+  const r = await call('set_view_settings', { view: 'graph', settings: { 'graph-log': true } });
   expect(r.changes[0].to).toBe(true);
-  expect(await page.evaluate(() => document.querySelector('.js-plotly-plot').layout.yaxis.type)).toBe('log');
-  await call('set_view_settings', { view: 'histogram', settings: { 'histogram-scale-log': false } });
-  await expect(call('set_view_settings', { view: 'histogram', settings: { 'histogram-variable': 'nonsense' } })).rejects.toThrow(/must be one of/);
+  expect(await page.evaluate(() => document.querySelector('.graph-svg .axis--y .tick text').textContent)).toBe('1');
+  await call('set_view_settings', { view: 'graph', settings: { 'graph-log': false } });
+  await expect(call('set_view_settings', { view: 'graph', settings: { 'graph-x': 'nonsense' } })).rejects.toThrow(/must be one of/);
   const n = await call('get_view_settings', { view: 'network', open: true });
   expect(n.count).toBeGreaterThan(30);
   const range = n.settings.find(x => x.type === 'number' && x.control === 'slider');
@@ -82,7 +82,7 @@ test('network control and layout', async () => {
 });
 
 test('images of every view', async () => {
-  const views = ['network', 'histogram', 'scatterplot', 'heatmap', 'table', 'phylogenetic_tree', 'bubbles', 'timeline', 'waterfall', 'sequences', 'crosstab', 'geo_map'];
+  const views = ['network', 'graph', 'heatmap', 'sankey_diagram', 'table', 'phylogenetic_tree', 'bubbles', 'waterfall', 'sequences', 'crosstab', 'geo_map'];
   for (const view of views) {
     await call('open_view', { view });
     const r = await agent('get_view_image', { view, maxWidth: 600 });
@@ -116,10 +116,10 @@ test('export_view returns content or downloads', async () => {
   expect(svg.content).toMatch(/<svg/);
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    call('export_view', { view: 'histogram', format: 'png', filename: 'hist' })
+    call('export_view', { view: 'graph', format: 'png', filename: 'hist' })
   ]);
   expect(download.suggestedFilename()).toBe('hist.png');
-  await expect(call('export_view', { view: 'histogram', format: 'csv', download: false })).rejects.toThrow(/exports:/);
+  await expect(call('export_view', { view: 'graph', format: 'csv', download: false })).rejects.toThrow(/exports:/);
 });
 
 test('set_view_control', async () => {

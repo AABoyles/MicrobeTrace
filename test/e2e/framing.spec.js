@@ -2,7 +2,7 @@
 // labels readable at any zoom; the map's shading and its globe opening on the
 // data, with a titled legend and a Fit button; plots below the toolbar, clear of the
 // docked tables, titled, with outlined points; the heatmap naming its metric
-// and showing missing pairs; the flow diagram naming its columns in order; the
+// and showing missing pairs; the Sankey diagram naming its columns in order; the
 // map and the tree clear of the docked tables; the timeline starting where the
 // network is; and the waterfall saying what to choose.
 const { test, expect } = require('@playwright/test');
@@ -32,7 +32,7 @@ const dockLeft = content => page.locator(`.lm_content:has(${content})`).first().
   const dock = Array.from(root.children).find(c => c.classList.contains('panel-dock'));
   return dock && dock.children.length ? dock.getBoundingClientRect().left : root.getBoundingClientRect().right;
 });
-const plot = content => page.locator(`.lm_content:has(${content}) .js-plotly-plot`).first();
+const plot = content => page.locator(`.lm_content:has(${content}) ${content} svg`).first();
 
 test('the network stays in view as its layout spreads, clear of the docked tables', async () => {
   await opened('network');
@@ -141,47 +141,55 @@ test('the globe zooms to the nodes, has a Fit button, and calls its countries Bo
   await set('map-projection', 'mercator');
 });
 
-test('plots start below the toolbar, clear of the docked tables, with outlined points', async () => {
-  await opened('histogram');
-  await expect(plot('.histogram-plot')).toBeVisible();
-  const histogram = await plot('.histogram-plot').evaluate(el => el._fullLayout.margin);
-  expect(histogram.t).toBeLessThanOrEqual(60);
-  const room = await page.locator('.lm_content:has(.histogram-plot)').first().evaluate(root => root.getBoundingClientRect().right) - await dockLeft('.histogram-plot');
-  expect(room).toBeGreaterThan(100);
-  expect(histogram.r).toBeGreaterThanOrEqual(room);
-  await opened('scatterplot');
-  await expect.poll(() => plot('.scatterplot-plot').evaluate(el => el.data && el.data[0].marker.line && el.data[0].marker.line.width)).toBe(1);
-  expect(await plot('.scatterplot-plot').evaluate(el => el._fullLayout.margin.t)).toBeLessThanOrEqual(60);
+test('graphs start below the toolbar, clear of the docked tables, with outlined points', async () => {
+  await opened('graph');
+  await expect(plot('.graph-plot')).toBeVisible();
+  const axes = () => plot('.graph-plot').evaluate(svg => {
+    const box = svg.getBoundingClientRect(), y = svg.querySelector('.axis--y .domain').getBoundingClientRect(), x = svg.querySelector('.axis--x .domain').getBoundingClientRect();
+    return { top: y.top - box.top, right: x.right };
+  });
+  expect((await axes()).top).toBeLessThanOrEqual(61);
+  const left = await dockLeft('.graph-plot');
+  expect(await page.locator('.lm_content:has(.graph-plot)').first().evaluate(root => root.getBoundingClientRect().right) - left).toBeGreaterThan(100);
+  expect((await axes()).right).toBeLessThanOrEqual(left);
+  await set('graph-type', 'scatter');
+  await expect(plot('.graph-plot').locator('circle.point').first()).toBeVisible();
+  const point = await plot('.graph-plot').locator('circle.point').first().evaluate(el => [el.getAttribute('fill'), el.getAttribute('stroke')]);
+  expect(point[1]).toBeTruthy();
+  expect(point[1]).not.toBe(point[0]);
+  expect((await axes()).top).toBeLessThanOrEqual(61);
+  await set('graph-type', 'histogram');
 });
 
 test('the heatmap names its metric, greys missing pairs, and labels cells with ids', async () => {
   await opened('heatmap');
-  await expect.poll(() => plot('.heatmap-plot').evaluate(el => el.data && el.data[0].z.length)).toBe(310);
+  await expect(plot('.heatmap-plot').locator('.cells')).toBeVisible();
+  await set('heatmap-axislabels-show', true);
   const p = await plot('.heatmap-plot').evaluate(el => ({
-    title: el.data[0].colorbar.title.text,
-    background: el.layout.plot_bgcolor,
-    notes: (el.layout.annotations || []).map(a => a.text),
-    x0: el.data[0].x[0]
+    title: el.querySelector('.color-scale > text').textContent,
+    background: el.querySelector('rect').getAttribute('fill'),
+    note: el.querySelector('.missing-note').textContent,
+    x0: el.querySelector('.axis--x .tick text').textContent
   }));
   expect(p.title).toBe('TN93');
   expect(p.background).toBe('#d0d0d0');
-  expect(p.notes.join(' ')).toContain('No TN93');
+  expect(p.note).toContain('No TN93');
   expect(p.x0).toBe(await page.evaluate(() => String(session.data.nodes[0]._id)));
+  await set('heatmap-axislabels-show', false);
 });
 
-test('the flow diagram names its columns and lists their values in order, empty last', async () => {
-  await opened('flow_diagram');
-  await expect.poll(() => plot('.flow-plot').evaluate(el => el.data && el.data[0].node.label.length)).toBeGreaterThan(0);
-  const p = await plot('.flow-plot').evaluate(el => ({
-    titles: el.layout.annotations.map(a => a.text),
-    labels: el.data[0].node.label,
-    columns: el.data[0].node.customdata,
-    y: el.data[0].node.y
+test('the Sankey diagram names its columns and lists their values in order, empty last', async () => {
+  await opened('sankey_diagram');
+  await expect.poll(() => plot('.sankey-plot').locator('.sankey-nodes rect').count()).toBeGreaterThan(0);
+  const p = await plot('.sankey-plot').evaluate(el => ({
+    titles: Array.from(el.querySelectorAll('.sankey-headings text'), t => t.textContent),
+    labels: Array.from(el.querySelectorAll('.sankey-nodes rect'), r => r.dataset.label),
+    columns: Array.from(el.querySelectorAll('.sankey-nodes rect'), r => r.dataset.variable),
+    y: Array.from(el.querySelectorAll('.sankey-nodes rect'), r => +r.getAttribute('y'))
   }));
   expect(p.titles.length).toBe(new Set(p.columns).size);
   for (const column of new Set(p.columns)) {
-    // Each column's title is its name in bold
-    expect(p.titles).toContain('<b>' + column + '</b>');
+    expect(p.titles).toContain(column);
     const values = p.labels.map((label, i) => ({ label, y: p.y[i] })).filter((v, i) => p.columns[i] === column)
       .sort((a, b) => a.y - b.y).map(v => v.label);
     const named = values.filter(v => v !== '(Empty)');

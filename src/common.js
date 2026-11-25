@@ -101,16 +101,21 @@ MT.defaultWidgets = {
   "distance-metrics-also": [],
   "default-view": "network",
   "filtering-epsilon": -8,
-  "flow-showNodes": "selected",
+  "graph-type": "histogram", // or "bar", "line", "scatter" or "rose"
+  "graph-data": "links", // or "nodes" or "clusters"
+  "graph-x": null, // chosen from the data
+  "graph-y": null,
+  "graph-horizontal": false,
+  "graph-log": false,
+  "graph-bin": "auto", // or the period of dates to count: "day", "week", "month" or "year"
+  "graph-cumulative": false,
+  "graph-stratify": "None",
   "heatmap-invertX": false,
   "heatmap-invertY": false,
   "heatmap-color-high": "#a50026",
   "heatmap-color-medium": "#ffffbf",
   "heatmap-color-low": "#313695",
   "heatmap-axislabels-show": false,
-  "histogram-axis-x": true,
-  "histogram-scale-log": false,
-  "histogram-variable": "links-tn93",
   "infer-directionality-false": true,
   "link-color": "#a6cee3",
   "link-color-table-name-sort": "ASC",
@@ -197,19 +202,14 @@ MT.defaultWidgets = {
   "reference-source-file": false,
   "reference-source-first": false,
   "reference-source-consensus": true,
-  "scatterplot-xVar": null, // chosen from the data
-  "scatterplot-yVar": null,
-  "scatterplot-logScale": false,
-  "scatterplot-showNodes": false,
+  "sankey-showNodes": true,
   "search-field": "_id",
   //#298
   "search-case-sensitive": false,
   "search-whole-word" : false,
   "selected-color": "#ff8300",
   "selected-color-contrast": "#000000",
-  "timeline-bin": "auto",
-  "timeline-date-field": "None",
-  "timeline-noncumulative": true,
+  "timeline-date-field": "None", // the global timeline's, while it's on
   "tree-animation-on": true,
   "tree-branch-distances-hide": true,
   "tree-branch-distance-size": 12,

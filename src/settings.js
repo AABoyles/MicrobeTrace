@@ -56,5 +56,46 @@ export class MTSettings {
   }
 }
 
+// The settings as one view sees them, when it's not the first of its kind open
+// (#365): the view's own settings, those whose keys start with its prefix
+// (map-, say), are kept apart under key@instance, and the rest are shared. The
+// values stay in the one store, so they're saved with the session and loaded
+// with it. The first view of a kind uses the store itself, so its settings keep
+// the keys they've always had. A setting of its own not set yet is its default.
+export class MTViewSettings {
+  constructor(store, prefix, instance, defaults = {}) {
+    this.store = store;
+    this.prefix = prefix;
+    this.instance = instance;
+    this.defaults = defaults;
+  }
+
+  own(key) {
+    return key.startsWith(this.prefix);
+  }
+
+  key(key) {
+    return this.own(key) ? key + '@' + this.instance : key;
+  }
+
+  get(key) {
+    const value = this.store.get(this.key(key));
+    return value === undefined && this.own(key) ? this.defaults[key] : value;
+  }
+
+  set(key, value) {
+    if (this.get(key) !== value) this.store.set(this.key(key), value);
+  }
+
+  subscribe(keys, fn, options) {
+    const stop = [].concat(keys).map(key => this.store.subscribe(this.key(key), () => fn(this.get(key), key), options));
+    return () => stop.forEach(fn => fn());
+  }
+
+  notify(key) {
+    this.store.notify(this.key(key));
+  }
+}
+
 // Also a global, for the classic scripts that haven't become modules yet (#323)
 globalThis.MTSettings = MTSettings;

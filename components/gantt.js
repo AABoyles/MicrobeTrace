@@ -2,6 +2,9 @@
 // stay globals; MT, the session and temp come from ctx.
 import { MTDates } from '../src/dates.js';
 
+// The settings each open copy of this view keeps to itself (#365)
+export const settingsPrefix = 'gantt-';
+
 export function mount(root, ctx) {
   const { MT, settings, events } = ctx;
 

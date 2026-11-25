@@ -17,8 +17,7 @@ test.afterAll(() => page.close());
 
 test('the charts, maps and tree are named and summarised', async () => {
   const views = {
-    histogram: ['.histogram-plot', /^Histogram of link distances$/],
-    scatterplot: ['.scatterplot-plot', /^Scatterplot/],
+    graph: ['.graph-plot', /^Graph$/],
     heatmap: ['.heatmap-plot', /^Heatmap/],
     phylogenetic_tree: ['.tree', /^Phylogenetic tree$/],
     geo_map: ['canvas.map-canvas', /^Map of node locations$/]

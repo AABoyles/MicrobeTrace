@@ -52,14 +52,14 @@ test.describe('after loading a network', () => {
   });
 
   test('a view whose script fails to load says so, is closed, and loads on the next try', async () => {
-    await page.route('**/components/histogram.js', route => route.fulfill({ status: 404, body: 'Not found' }));
-    await page.evaluate(() => MT.launchView('histogram'));
-    await expect(page.locator('.toast', { hasText: 'Could not load the Histogram view' })).toBeVisible();
+    await page.route('**/components/graph.js', route => route.fulfill({ status: 404, body: 'Not found' }));
+    await page.evaluate(() => MT.launchView('graph'));
+    await expect(page.locator('.toast', { hasText: 'Could not load the Graph view' })).toBeVisible();
     // The 404 is made on purpose, as above: the toast is what's checked
     errors.length = 0;
-    expect(await page.evaluate(() => 'histogram' in temp.componentCache)).toBe(false);
-    await page.unroute('**/components/histogram.js');
-    await launchView(page, 'histogram');
+    expect(await page.evaluate(() => 'graph' in temp.componentCache)).toBe(false);
+    await page.unroute('**/components/graph.js');
+    await launchView(page, 'graph');
     expect(errors).toEqual([]);
   });
 });

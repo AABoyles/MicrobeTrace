@@ -1,0 +1,187 @@
+<div class="graph-plot"></div>
+<p class="view-message" hidden></p>
+
+<div class="view-controls">
+  <button type="button" class="btn btn-light btn-sm settings-toggle" title="Graph Settings">
+    <span class="bi bi-gear"></span>
+  </button>
+  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#graph-export-modal" title="Export Graph">
+    <span class="bi bi-download"></span>
+  </button>
+</div>
+
+<div class="left-pane">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item active" role="presentation">
+      <a href="#graph-settings" id="graph-tab" class="nav-link active" role="tab" data-bs-toggle="tab" aria-controls="graph-settings" aria-selected="true">Graph</a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="graph-settings" role="tabpanel" aria-labelledby="graph-tab">
+      <div class="form-group row" title="What kind of graph to draw">
+        <div class="col-3"><label for="graph-type">Type</label></div>
+        <div class="col-9">
+          <select id="graph-type" class="form-select form-select-sm" data-setting="graph-type">
+            <option value="histogram">Histogram</option>
+            <option value="bar">Bar or Column Chart</option>
+            <option value="line">Line Plot</option>
+            <option value="scatter">Scatterplot</option>
+            <option value="rose">Wind Rose</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="Should the graph show nodes, links or clusters?">
+        <div class="col-3">Dataset</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100">
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-data" data-setting="graph-data" value="nodes" autocomplete="off"> Nodes
+            </label>
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-data" data-setting="graph-data" value="links" autocomplete="off" checked> Links
+            </label>
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-data" data-setting="graph-data" value="clusters" autocomplete="off"> Clusters
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" title="Which variable should the graph be drawn along?">
+        <div class="col-3"><label for="graph-x">X Variable</label></div>
+        <div class="col-9">
+          <select id="graph-x" class="form-select form-select-sm" data-setting="graph-x"></select>
+        </div>
+      </div>
+      <div class="form-group row" title="Which variable should the points be placed by, up the graph?" data-graph-types="scatter">
+        <div class="col-3"><label for="graph-y">Y Variable</label></div>
+        <div class="col-9">
+          <select id="graph-y" class="form-select form-select-sm" data-setting="graph-y"></select>
+        </div>
+      </div>
+      <div class="form-group row graph-bin-row" title="How long a period of the dates each bar counts" data-graph-types="histogram bar line rose">
+        <div class="col-3"><label for="graph-bin">Dates By</label></div>
+        <div class="col-9">
+          <select id="graph-bin" class="form-select form-select-sm" data-setting="graph-bin">
+            <option value="auto">Automatic</option>
+            <option value="day">Days</option>
+            <option value="week">Weeks</option>
+            <option value="month">Months</option>
+            <option value="year">Years</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row" title="Draw a graph for each value of this variable" data-graph-types="rose">
+        <div class="col-3"><label for="graph-stratify">Stratify By</label></div>
+        <div class="col-9">
+          <select id="graph-stratify" class="form-select form-select-sm" data-setting="graph-stratify"></select>
+        </div>
+      </div>
+      <div class="form-group row" title="Should the bars run up the graph, or across it?" data-graph-types="histogram bar">
+        <div class="col-3">Direction</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100">
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-horizontal" data-setting="graph-horizontal" value="false" autocomplete="off" checked> Columns
+            </label>
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-horizontal" data-setting="graph-horizontal" value="true" autocomplete="off"> Bars
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" title="Should each count include those before it?" data-graph-types="histogram line">
+        <div class="col-3">Counts</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100">
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-cumulative" data-setting="graph-cumulative" value="false" autocomplete="off" checked> Separate
+            </label>
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-cumulative" data-setting="graph-cumulative" value="true" autocomplete="off"> Cumulative
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" title="Should the Y axis (or the counts) be on a linear or a logarithmic scale?" data-graph-types="histogram bar line scatter">
+        <div class="col-3">Scale</div>
+        <div class="col-9">
+          <div class="btn-group btn-group-toggle btn-group-sm w-100">
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-log" data-setting="graph-log" value="false" autocomplete="off" checked> Linear
+            </label>
+            <label class="btn btn-light col">
+              <input type="radio" name="graph-log" data-setting="graph-log" value="true" autocomplete="off"> Log
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" title="What color should the graph be?">
+        <div class="col-3">Color</div>
+        <div class="col-9">
+          <button type="button" class="btn btn-sm btn-light w-100 launch-color-options">Color Options</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="graph-export-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="false" aria-labelledby="graph-export-modal-title">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="graph-export-modal-title" class="modal-title h5">Export Graph</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <div class="col-9">
+            <input type="text" name="export-filename" aria-label="Filename" class="form-control form-control-sm" placeholder="Filename">
+          </div>
+          <div class="col-3">
+            <select name="export-filetype" aria-label="Format" class="form-select form-select-sm">
+              <option value="png" selected>PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WebP</option>
+              <option value="svg">SVG</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row mb-0">
+          <div class="col-3 offset-9">
+            <button class="btn btn-link btn-sm w-100 text-end export-advanced-button" type="button" data-bs-toggle="collapse" data-bs-target="#graph-export-advanced" aria-expanded="false" aria-controls="graph-export-advanced">Advanced</button>
+          </div>
+        </div>
+        <div class="collapse" id="graph-export-advanced" style="margin-top: 10px;">
+          <div class="card card-body">
+            <div class="form-group row">
+              <div class="col-3">
+                <label for="graph-export-scale">Scale</label>
+              </div>
+              <div class="col-9">
+                <input type="number" id="graph-export-scale" name="export-scale" class="form-control form-control-sm" min="0" step="0.1" value="1">
+                <div class="form-text">Multiplies the size of the picture as shown. 1 = as shown; 2 = twice as wide and tall.</div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-3">Resolution</div>
+              <div class="col-9 text-end"><span class="export-dimensions"></span><div class="form-text">Size of the image in pixels (width x height).</div></div>
+            </div>
+            <div class="row">
+              <div class="col-3">
+                <label for="graph-export-quality">Quality</label>
+              </div>
+              <div class="col-9">
+                <input type="range" class="form-range" id="graph-export-quality" name="export-quality" min="0" max="1.0" value="0.92" step="0.01">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary export-button" data-bs-dismiss="modal">Export</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+

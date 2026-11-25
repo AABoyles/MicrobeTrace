@@ -20,13 +20,11 @@ test.afterAll(() => page.close());
 const views = {
   aggregation: '.aggregation-grid',
   crosstab: '.crosstab-grid',
-  histogram: '.histogram-plot',
-  scatterplot: '.scatterplot-plot',
+  graph: '.graph-plot',
   heatmap: '.heatmap-plot',
-  timeline: '.timeline-chart',
   gantt: '.gantt',
   bubbles: 'svg.bubbles',
-  flow_diagram: '.flow-plot'
+  sankey_diagram: '.sankey-plot'
 };
 const root = content => page.locator(`.lm_content:has(${content})`).first();
 const box = locator => locator.evaluate(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width }; });
@@ -57,22 +55,22 @@ test('in a wide view, each table and chart moves aside for its pane, and back', 
 });
 
 test('the chart is redrawn to the width beside the pane', async () => {
-  await opened('histogram');
-  const plotWidth = () => root('.histogram-plot').locator('.main-svg').first().evaluate(el => +el.getAttribute('width'));
+  await opened('graph');
+  const plotWidth = () => root('.graph-plot').locator('.graph-svg').evaluate(el => +el.getAttribute('width'));
   const full = await plotWidth();
-  await pane('.histogram-plot', true);
+  await pane('.graph-plot', true);
   await expect.poll(plotWidth).toBeLessThan(full - 300);
-  const room = await root('.histogram-plot').evaluate(el => el.clientWidth - 410);
+  const room = await root('.graph-plot').evaluate(el => el.clientWidth - 410);
   expect(Math.abs((await plotWidth()) - room)).toBeLessThan(5);
-  await pane('.histogram-plot', false);
+  await pane('.graph-plot', false);
   await expect.poll(plotWidth).toBe(full);
 });
 
 test('in a narrow view the pane covers the chart, which moves aside once the view widens', async () => {
-  await opened('timeline');
+  await opened('graph');
   await page.setViewportSize({ width: 900, height: 800 });
-  const left = await pane('.timeline-chart', true);
-  const chart = root('.timeline-chart').locator('.timeline-chart');
+  const left = await pane('.graph-plot', true);
+  const chart = root('.graph-plot').locator('.graph-plot');
   await expect.poll(async () => (await box(chart)).left).toBeLessThan(50);
   expect((await box(chart)).left).toBeLessThan((await box(left)).right);
   // The chart keeps its whole width
@@ -80,7 +78,7 @@ test('in a narrow view the pane covers the chart, which moves aside once the vie
   expect(Math.abs((await svgWidth()) - (await box(chart)).width)).toBeLessThan(5);
   await page.setViewportSize({ width: 1400, height: 900 });
   await expect.poll(async () => (await box(chart)).left >= (await box(left)).right).toBe(true);
-  await pane('.timeline-chart', false);
+  await pane('.graph-plot', false);
 });
 
 test('the Table view has no settings pane; its text size is in its toolbar', async () => {

@@ -5,6 +5,7 @@ Tests of the ES-module files in `src/` are `*.test.mjs` and `import` them (#323)
 This is where we're developing MicrobeTrace's unit tests.
 
 `graph.test.mjs` checks `src/graph.js`, the network store, against the old link-object semantics.
+`charts.test.mjs` checks `src/charts.js`: reading and binning the values the Graph view draws, and upgrading sessions from before it (#366).
 `nodes.test.mjs` checks `src/nodes.js`, the values each file gives its nodes: which file wins where they disagree, provenance and conflicts.
 `formats-detect.test.mjs` and `formats-parse.test.mjs` check the format modules in `src/formats/` (#337): which format a file's contents are, and the plain data each parses to (repeated and blank IDs, tab-separated, triangular and labelled matrices, cut-off and empty files, spreadsheets). They set the bundles' `Papa`, `patristic` and `XLSX` on `globalThis` first.
 `menus.test.js` checks `MT.fillSelect`, which builds the variable menus as elements so a field name from a loaded session or HIV-TRACE file can't be markup (#204), with the files in `test/security/`.

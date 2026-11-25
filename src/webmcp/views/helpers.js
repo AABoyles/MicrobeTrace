@@ -7,12 +7,10 @@ export const GRAPH_WAIT_MS = 20000, VIEW_SHOW_WAIT_MS = 5000;
 export const VIEWS = [
   { id: 'files', title: 'Files', group: 'Data', description: 'Where data is loaded: the file list, field and distance-metric choices, and the Launch button. Opens by default until data is launched.', requires: 'nothing' },
   { id: 'network', title: 'Network', group: 'Visualizations', description: 'The 2D force-directed network of nodes (people/sequences) and links (genetic or other relationships), colored and sized by node/link variables, with clusters, polygons, labels, legends and a timeline player.', requires: 'loaded data' },
-  { id: 'histogram', title: 'Histogram', group: 'Visualizations', description: 'Distribution of one node or link variable (for example link distance, or a node field) as a histogram.', requires: 'loaded data' },
-  { id: 'scatterplot', title: 'Scatterplot', group: 'Visualizations', description: 'Plots nodes by two chosen numeric variables, optionally sized and colored by others.', requires: 'loaded data with numeric node fields' },
+  { id: 'graph', title: 'Graph', group: 'Visualizations', description: 'Nodes, links or clusters as a histogram, bar or column chart, line plot of counts, scatterplot of two variables, or wind roses (set graph-type and graph-data). Dates are counted by day, week, month or year, as an epidemic curve. Colored by the node or link color variable.', requires: 'loaded data' },
   { id: 'bubbles', title: 'Bubbles', group: 'Visualizations', description: 'Packed bubbles of nodes grouped by a variable (counts per category).', requires: 'loaded data' },
-  { id: 'flow_diagram', title: 'Flow Diagram', group: 'Visualizations', description: 'A Sankey-style diagram of how nodes flow between the categories of two variables.', requires: 'loaded data with categorical node fields' },
+  { id: 'sankey_diagram', title: 'Sankey Diagram', group: 'Visualizations', description: 'A Sankey-style diagram of how nodes flow between the categories of two variables.', requires: 'loaded data with categorical node fields' },
   { id: 'heatmap', title: 'Heatmap', group: 'Visualizations', description: 'A pairwise distance matrix between nodes (or clusters) as a heatmap; can export the matrix as CSV.', requires: 'loaded data with link distances' },
-  { id: 'timeline', title: 'Epi Curve', group: 'Visualizations', description: 'Counts of nodes (new cases) over time as an epidemic curve, from a date field.', requires: 'loaded data with a date field' },
   { id: 'gantt', title: 'Gantt', group: 'Visualizations', description: 'Timeline bars per node from start and end date fields.', requires: 'loaded data with date fields' },
   { id: 'table', title: 'Table', group: 'Tables', description: 'A sortable table of the nodes, links or clusters shown, with chosen columns. Exports CSV, XLSX or JSON.', requires: 'loaded data' },
   { id: 'aggregation', title: 'Aggregation', group: 'Tables', description: 'Summary counts of nodes or links grouped by a variable, as tables.', requires: 'loaded data' },
@@ -26,7 +24,7 @@ export const VIEWS = [
 
 const VIEW_IDS = VIEWS.map(v => v.id);
 
-export const viewSchema = { type: 'string', enum: VIEW_IDS, description: 'The view\'s id (see list_views). Old names such as 2d_network or pixi mean network. Omit for the active view where the tool says so.' };
+export const viewSchema = { type: 'string', description: 'The view\'s id: ' + VIEW_IDS.join(', ') + ' (see list_views). When a view is open more than once, the second and later copies are its id with a number: geo_map@2. Old names such as 2d_network or pixi mean network. Omit for the active view where the tool says so.' };
 
 export const openSchema = { type: 'boolean', description: 'Open the view first if it is not open (default false: fails if the view is not open)' };
 
@@ -38,13 +36,34 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export const settle = async (ms = 80) => { await nextFrame(); await nextFrame(); await sleep(ms); };
 
-const canon = view => view ? MT().viewName(String(view).trim().toLowerCase().replace(/[\s-]+/g, '_')) : view;
+const canon = view => {
+  if (!view) return view;
+  const { view: name, instance } = MT().parseViewId(String(view).trim().toLowerCase().replace(/[\s-]+/g, '_'));
+  return name + (instance > 1 ? '@' + instance : '');
+};
+
+// An open view's id: its name, with its number after the first copy (geo_map@2)
+export const idOf = item => MT().viewId(item);
+
 
 export const hasLayout = () => self.layout && self.layout.rootItem;
 
 export const items = () => hasLayout() ? self.layout.contentItems : [];
 
-export const itemOf = view => items().find(i => i.componentType === view);
+export const itemOf = view => items().find(i => idOf(i) === view) ||
+  // With only a second copy of a view open, the view's own name means it
+  items().find(i => i.componentType === view);
+
+// The id the next copy of a view would have
+export const nextId = view => {
+  const used = items().filter(i => i.componentType === view).map(i => i.instance);
+  let n = 1;
+  while (used.includes(n)) n++;
+  return view + (n > 1 ? '@' + n : '');
+};
+
+// The settings a view reads and writes (see MTViewSettings)
+export const settingsFor = item => item.settings || self.MT.settings;
 
 export const rootOf = item => item.container.element;
 
@@ -69,15 +88,15 @@ export async function activate(item) {
   await settle(60);
 }
 
-export function launch(view) {
+export function launch(view, options) {
   return new Promise((resolve, reject) => {
-    try { MT().launchView(view, resolve); } catch (e) { reject(e); }
+    try { MT().launchView(view, resolve, options); } catch (e) { reject(e); }
   });
 }
 
 export function checkView(view) {
   view = canon(view);
-  if (!VIEW_IDS.includes(view)) fail('Unknown view ' + JSON.stringify(view) + '. The views are: ' + VIEW_IDS.join(', '));
+  if (!VIEW_IDS.includes(String(view).split('@')[0])) fail('Unknown view ' + JSON.stringify(view) + '. The views are: ' + VIEW_IDS.join(', '));
   return view;
 }
 
@@ -89,7 +108,7 @@ export async function need(view, { open = false, show = false } = {}) {
     view = checkView(view);
     item = itemOf(view);
     if (!item) {
-      if (!open) fail('The ' + view + ' view is not open. Open it with open_view (or pass open: true). Open views: ' + (items().map(i => i.componentType).join(', ') || 'none'));
+      if (!open) fail('The ' + view + ' view is not open. Open it with open_view (or pass open: true). Open views: ' + (items().map(idOf).join(', ') || 'none'));
       item = await launch(view);
       await mounted(item);
     }
@@ -105,9 +124,9 @@ export async function need(view, { open = false, show = false } = {}) {
 // The layout as MT.cacheLayout saves it, plus each stack's active view
 export function snapshot(item = self.layout.rootItem) {
   if (!item) return { type: 'stack', content: [] };
-  if (item.isComponent) return { type: item.componentType };
+  if (item.isComponent) return { type: item.componentType, ...(item.instance > 1 ? { instance: item.instance } : {}) };
   const out = { type: item.type, content: item.contentItems.map(snapshot) };
-  if (item.type === 'stack') { const a = activeOf(item); if (a) out.active = a.componentType; }
+  if (item.type === 'stack') { const a = activeOf(item); if (a) out.active = idOf(a); }
   return out;
 }
 
@@ -116,22 +135,22 @@ function describe(item = self.layout.rootItem) {
   if (!item) return { type: 'stack', content: [] };
   if (item.isComponent) {
     const r = rootOf(item);
-    return { type: 'view', view: item.componentType, title: item.title, active: isActive(item), width: r ? r.clientWidth : 0, height: r ? r.clientHeight : 0 };
+    return { type: 'view', view: idOf(item), title: item.title, active: isActive(item), width: r ? r.clientWidth : 0, height: r ? r.clientHeight : 0 };
   }
   const out = { type: item.type, content: item.contentItems.map(describe) };
-  if (item.type === 'stack') { const a = activeOf(item); out.activeView = a ? a.componentType : null; }
+  if (item.type === 'stack') { const a = activeOf(item); out.activeView = a ? idOf(a) : null; }
   return out;
 }
 
 export const layoutState = () => ({
-  openViews: items().map(i => i.componentType),
-  activeViews: items().filter(isActive).map(i => i.componentType),
+  openViews: items().map(idOf),
+  activeViews: items().filter(isActive).map(idOf),
   tree: describe(),
   layout: snapshot()
 });
 
 // Applies a layout tree ({type: stack|row|column, content, active}; leaves
-// {type: viewId}), then makes each stack's `active` view the one in front
+// {type: viewId, instance}), then makes each stack's `active` view the one in front
 export async function applyLayout(tree) {
   const views = [];
   const check = (node, path) => {
@@ -140,8 +159,11 @@ export async function applyLayout(tree) {
       if (!Array.isArray(node.content)) fail('Layout node at ' + path + ' (' + node.type + ') needs a content array');
       node.content.forEach((c, i) => check(c, path + '.content[' + i + ']'));
     } else {
-      const v = checkView(node.type);
-      if (views.includes(v)) fail('The ' + v + ' view appears twice in the layout; each view can be open once');
+      // (A leaf may be written as its id, geo_map@2)
+      const [v, number] = checkView(node.type).split('@');
+      node.type = v;
+      if (number) node.instance = +number;
+      if (views.includes(v) && MT().singleViews.includes(v)) fail('The ' + v + ' view appears twice in the layout; it can be open once');
       views.push(v);
     }
   };
@@ -220,8 +242,8 @@ function sectionOf(el, root) {
 const optionsOf = select => Array.from(select.options).map(o => ({ value: o.value, label: o.textContent.trim() }));
 
 // Every [data-setting] control in a view, one record per setting
-export function settingsOf(root) {
-  const MTs = self.MT.settings;
+export function settingsOf(item) {
+  const root = rootOf(item), MTs = settingsFor(item);
   const records = new Map();
   root.querySelectorAll('[data-setting]').forEach(el => {
     if (el.closest('.modal')) return;
@@ -274,7 +296,7 @@ export const publicRecord = r => Object.fromEntries(Object.entries(r).filter(([k
 export function otherControls(root) {
   const out = [];
   root.querySelectorAll('select, input, textarea').forEach(el => {
-    if (el.dataset.setting || el.closest('.modal, .tabulator, .js-plotly-plot, .ts-wrapper, .dropdown-menu') || el.type === 'hidden' || el.type === 'file' || el.type === 'button') return;
+    if (el.dataset.setting || el.closest('.modal, .tabulator, .ts-wrapper, .dropdown-menu') || el.type === 'hidden' || el.type === 'file' || el.type === 'button') return;
     if (el.classList.contains('ts-control') || el.closest('.btn-group-toggle')) return;
     const control = controlSelector(root, el);
     if (!control) return;
@@ -301,7 +323,7 @@ export function actionsOf(root, includeExport) {
   const seen = new Map(), out = [];
   root.querySelectorAll('button, [role="button"], a.btn, input[type="button"], .dropdown-item').forEach(el => {
     if (el.closest('.modal') || el.classList.contains('btn-close') || el.matches('label')) return;
-    if (el.closest('.tabulator, .js-plotly-plot, .ts-wrapper')) return;
+    if (el.closest('.tabulator, .ts-wrapper')) return;
     const toggle = el.dataset.bsToggle;
     if (toggle === 'tab' || toggle === 'collapse') return;
     if (el.dataset.setting || el.querySelector('[data-setting]') || el.closest('.btn-group-toggle')) return;

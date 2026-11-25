@@ -23,17 +23,15 @@ test('network statistics', async () => {
 const content = {
   network: 'canvas',
   table: '.tabulator-row',
-  heatmap: '.main-svg',
-  histogram: '.main-svg',
-  scatterplot: '.main-svg',
-  flow_diagram: '.main-svg',
+  heatmap: '.heatmap-svg .cells',
+  graph: '.graph-svg .bar',
+  sankey_diagram: '.sankey-nodes rect',
   crosstab: '#crosstab-field-x option', // the table waits for two fields to be chosen
   aggregation: '.tabulator-row',
   phylogenetic_tree: 'svg circle',
   geo_map: 'canvas.map-canvas',
   bubbles: 'svg circle',
   gantt: 'svg',
-  timeline: 'svg',
   waterfall: '.waterfall-clusters .list-group-item',
   sequences: '.sequences-panel canvas',
   conflicts: '.view-message:not([hidden])' // the fixture's files don't disagree

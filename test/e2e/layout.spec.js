@@ -19,20 +19,20 @@ const savedLayout = () => page.evaluate(() => session.layout);
 test('opening views adds active tabs', async () => {
   expect(await viewNames(page)).toEqual(['network']);
   await launchView(page, 'table');
-  await launchView(page, 'histogram');
-  expect(await tabs()).toEqual(['Network', 'Table', 'Histogram*']);
-  await expect.poll(savedLayout).toEqual({ type: 'stack', content: [{ type: 'network' }, { type: 'table' }, { type: 'histogram' }] });
+  await launchView(page, 'graph');
+  expect(await tabs()).toEqual(['Network', 'Table', 'Graph*']);
+  await expect.poll(savedLayout).toEqual({ type: 'stack', content: [{ type: 'network' }, { type: 'table' }, { type: 'graph' }] });
 });
 
 test('clicking a tab or relaunching a view activates it', async () => {
   await page.click('.lm_tab >> nth=0');
-  await expect.poll(tabs).toEqual(['Network*', 'Table', 'Histogram']);
+  await expect.poll(tabs).toEqual(['Network*', 'Table', 'Graph']);
   await launchView(page, 'table');
-  await expect.poll(tabs).toEqual(['Network', 'Table*', 'Histogram']);
+  await expect.poll(tabs).toEqual(['Network', 'Table*', 'Graph']);
 });
 
 test('dragging a tab to the edge splits the panel', async () => {
-  const tab = await page.locator('.lm_tab', { hasText: 'Histogram' }).boundingBox();
+  const tab = await page.locator('.lm_tab', { hasText: 'Graph' }).boundingBox();
   const panel = await page.locator('#main-panel').boundingBox();
   await page.mouse.move(tab.x + tab.width / 2, tab.y + tab.height / 2);
   await page.mouse.down();
@@ -43,7 +43,7 @@ test('dragging a tab to the edge splits the panel', async () => {
     type: 'row',
     content: [
       { type: 'stack', content: [{ type: 'network' }, { type: 'table' }] },
-      { type: 'stack', content: [{ type: 'histogram' }] }
+      { type: 'stack', content: [{ type: 'graph' }] }
     ]
   });
 });
@@ -59,10 +59,10 @@ test('stacks resize with the window', async () => {
 test('a saved layout reloads with all its views', async () => {
   const saved = await savedLayout();
   await page.evaluate(saved => MT.loadLayout(saved), saved);
-  await expect.poll(() => viewNames(page)).toEqual(['network', 'table', 'histogram']);
+  await expect.poll(() => viewNames(page)).toEqual(['network', 'table', 'graph']);
   await expect.poll(savedLayout).toEqual(saved);
   // As launching them one by one did, the last view in each stack is active
-  await expect.poll(tabs).toEqual(['Network', 'Table*', 'Histogram*']);
+  await expect.poll(tabs).toEqual(['Network', 'Table*', 'Graph*']);
 });
 
 test('the old names of the network view open it, once', async () => {

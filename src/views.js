@@ -15,6 +15,7 @@
 // The body of the installer is not indented, so that the diff of the change that wrapped it
 // stays small.
 
+import { MTViewSettings } from './settings.js';
 
 export function installViews(MT, env) {
 let peek = ra => ra[ra.length - 1];
@@ -85,7 +86,51 @@ const viewFailed = error => MT.toast.error(error.message);
 // Renders a view's HTML into its (newly attached) layout item. A view's code is
 // its module, imported by fetchView, so the HTML holds no scripts.
 const renderView = contentItem => {
-  contentItem.container.element.innerHTML = env.temp.componentCache[contentItem.componentType];
+  const template = document.createElement("template");
+  template.innerHTML = env.temp.componentCache[contentItem.componentType];
+  // (Before it joins the page, where its radio buttons would join the first copy's groups)
+  if (contentItem.instance > 1) renumber(template.content, "-" + contentItem.instance);
+  contentItem.container.element.replaceChildren(template.content);
+};
+
+// The views that can be open only once: the files being loaded and their
+// conflicts are the session's, and the network's layout is too (its nodes'
+// positions are saved with it). Any other can be open several times (#365),
+// each an instance: 1, 2, 3 and so on.
+MT.singleViews = ["files", "conflicts", "network"];
+const instancesOf = view => env.layout.contentItems.filter(item => item.componentType === view).map(item => item.instance);
+const firstFree = used => {
+  let instance = 1;
+  while (used.includes(instance)) instance++;
+  return instance;
+};
+// What an open view is called by: its name, with its instance after the first
+// (geo_map@2), and the title of its tab (Map 2)
+MT.viewId = item => item.componentType + (item.instance > 1 ? "@" + item.instance : "");
+MT.viewTitle = (view, instance = 1) => MT.titleize(view) + (instance > 1 ? " " + instance : "");
+// A view's name and instance (undefined if it doesn't say) from its ID
+MT.parseViewId = id => {
+  const [, view, instance] = /^(.*?)(?:@([1-9]\d?))?$/.exec(String(id));
+  return { view: MT.viewName(view), instance: instance && !MT.singleViews.includes(MT.viewName(view)) ? +instance : undefined };
+};
+
+// A second copy of a view can't share its IDs, nor the names that make its radio
+// buttons groups, with the first: they get a suffix, as does what refers to them
+const REFERENCES = ["for", "aria-labelledby", "aria-describedby", "aria-controls", "aria-owns"];
+const TARGETS = ["href", "data-bs-target", "data-bs-parent"];
+const renumber = (root, suffix) => {
+  const ids = new Set(Array.from(root.querySelectorAll("[id]"), element => element.id));
+  root.querySelectorAll("*").forEach(element => {
+    REFERENCES.filter(name => element.hasAttribute(name)).forEach(name => {
+      element.setAttribute(name, element.getAttribute(name).split(/\s+/).map(id => ids.has(id) ? id + suffix : id).join(" "));
+    });
+    TARGETS.filter(name => element.hasAttribute(name)).forEach(name => {
+      const target = element.getAttribute(name);
+      if (target[0] === "#" && ids.has(target.slice(1))) element.setAttribute(name, target + suffix);
+    });
+    if (element.id) element.id += suffix;
+    if (element.type === "radio" && element.name) element.name += suffix;
+  });
 };
 
 // The lazy libraries (see MT.loadLibrary) each view needs before it can be set up,
@@ -124,7 +169,7 @@ const openView = contentItem => {
 
 // A view is the mount function its module exports:
 //
-//   export const libraries = ['plotly'];  // optional, loaded before mount
+//   export const libraries = ['sankey'];  // optional, loaded before mount
 //   export function mount(root, { settings, events, MT, session, temp }) {
 //     ...
 //     return { resize() { ... }, destroy() { ... } };
@@ -318,18 +363,30 @@ MT.describeView = (element, name, summary, { role = 'region' } = {}) => {
 };
 const nodesOf = n => n.toLocaleString() + (n === 1 ? ' node' : ' nodes');
 const linksOf = n => n.toLocaleString() + (n === 1 ? ' link' : ' links');
-const variableName = value => String(value || '').replace(/^(links|nodes)-/, '');
-// Each view's graphic: where it is, what it's called, and what it plots
+// Each view's graphic: where it is, what it's called, and what it plots (by the
+// view's own settings, which differ between two copies of it)
 MT.viewGraphics = {
-  histogram: ['.histogram-plot', 'Histogram of link distances', c => `Histogram of ${variableName(MT.settings.get('histogram-variable'))} across ${linksOf(c.links)} and ${nodesOf(c.nodes)}.`],
-  scatterplot: ['.scatterplot-plot', 'Scatterplot of node values', c => `Scatterplot of ${variableName(MT.settings.get('scatterplot-yVar'))} against ${variableName(MT.settings.get('scatterplot-xVar'))}, for ${nodesOf(c.nodes)}.`],
+  graph: ['.graph-plot', 'Graph', (c, settings) => {
+    const data = settings.get('graph-data'), x = MT.titleize(settings.get('graph-x'));
+    const what = { bar: 'Bar chart', line: 'Line plot', scatter: 'Scatterplot', rose: 'Wind rose' }[settings.get('graph-type')] || 'Histogram';
+    const of = data === 'nodes' ? nodesOf(c.nodes) : data === 'links' ? linksOf(c.links) + ' between ' + nodesOf(c.nodes) : 'the clusters of ' + nodesOf(c.nodes);
+    return what + ' of ' + (what === 'Scatterplot' ? MT.titleize(settings.get('graph-y')) + ' against ' : '') + x + ', for ' + of + '.';
+  }],
   heatmap: ['.heatmap-plot', 'Heatmap of pairwise distances', c => `Heatmap of the distances between ${nodesOf(c.nodes)}.`],
   bubbles: ['svg.bubbles', 'Bubble chart of node groups', c => `Bubbles for the groups of ${nodesOf(c.nodes)}.`],
-  timeline: ['.timeline-chart', 'Epidemic curve over time', c => `Counts over time for ${nodesOf(c.nodes)}.`],
-  flow_diagram: ['.flow-plot', 'Flow diagram between node groups', c => `Flows between the groups of ${nodesOf(c.nodes)}.`],
-  geo_map: ['canvas.map-canvas', 'Map of node locations', c => `${MT.settings.get('map-projection') === 'globe' ? 'Globe' : 'Map'} of ${nodesOf(c.nodes)} by location${MT.settings.get('map-shade') !== 'none' ? ', with ' + MT.settings.get('map-shade') + ' shaded by their counts' : ''}. Drag or use the arrow keys to move it, and the wheel or + and - to zoom.`, 'img'],
+  sankey_diagram: ['.sankey-plot', 'Sankey diagram of node groups', c => `Flows between the groups of ${nodesOf(c.nodes)}.`],
+  geo_map: ['canvas.map-canvas', 'Map of node locations', (c, settings) => `${settings.get('map-projection') === 'globe' ? 'Globe' : 'Map'} of ${nodesOf(c.nodes)} by location${settings.get('map-shade') !== 'none' ? ', with ' + settings.get('map-shade') + ' shaded by their counts' : ''}. Drag or use the arrow keys to move it, and the wheel or + and - to zoom.`, 'img'],
   phylogenetic_tree: ['.tree', 'Phylogenetic tree', c => `Tree of ${nodesOf(c.nodes)}. Right-click or press Shift+F10 on a branch for its menu.`],
   sequences: ['.sequences-panel', 'Sequence alignment', c => `Alignment of the sequences of ${nodesOf(c.nodes)}.`]
+};
+
+// The settings a view reads and writes: MT.settings, or for a second copy of
+// the view, one that keeps the view's own apart (see MTViewSettings). `module`
+// names the view's own with `export const settingsPrefix = 'map-'`.
+const settingsOf = contentItem => {
+  const { settingsPrefix } = modules[contentItem.componentType] || {};
+  if (!settingsPrefix || !(contentItem.instance > 1)) return MT.settings;
+  return new MTViewSettings(MT.settings, settingsPrefix, contentItem.instance, MT.defaultWidgets);
 };
 
 const mountView = contentItem => {
@@ -337,10 +394,11 @@ const mountView = contentItem => {
   const mount = modules[view] && modules[view].mount;
   if (!mount) return;
   const container = contentItem.container;
+  const settings = contentItem.settings = settingsOf(contentItem);
   // What a module view gets in place of the MT, session and temp globals (#339). session and
   // temp are getters because loading a session replaces them.
   const ctx = {
-    settings: MT.settings, events: MT.events, container, MT,
+    settings, events: MT.events, container, MT,
     get session() { return env.session; },
     get temp() { return env.temp; }
   };
@@ -350,7 +408,7 @@ const mountView = contentItem => {
   if (graphic) {
     const element = container.element.querySelector(graphic[0]);
     if (element && !element.hasAttribute('aria-label')) {
-      const undescribe = MT.describeView(element, graphic[1], graphic[2], { role: graphic[3] });
+      const undescribe = MT.describeView(element, graphic[1], counts => graphic[2](counts, settings), { role: graphic[3] });
       container.on('destroy', undescribe);
     }
   }
@@ -374,16 +432,24 @@ const mountView = contentItem => {
 // Views that were renamed or removed, and the view that opens in their place
 // (in saved sessions, layouts and settings). The globe and the choropleth are
 // modes of the map; a session that had them opens the map in that mode (see
-// upgradeMapSettings in geo.js).
-MT.viewAliases = { '2d_network': 'network', 'pixi': 'network', '3d_network': 'network', 'globe': 'geo_map', 'choropleth': 'geo_map' };
+// upgradeMapSettings in geo.js). The histogram, the scatterplot and the epi curve
+// are types of graph; a session that had them opens a graph for each, with its
+// settings (see upgradeGraphs in charts.js).
+MT.viewAliases = { '2d_network': 'network', 'pixi': 'network', '3d_network': 'network', 'globe': 'geo_map', 'choropleth': 'geo_map',
+  'histogram': 'graph', 'scatterplot': 'graph', 'timeline': 'graph', 'flow_diagram': 'sankey_diagram' };
 MT.viewName = view => MT.viewAliases[view] || view;
 
-MT.launchView = (view, callback) => {
-  view = MT.viewName(view);
+// Opens a view, or brings it to the front if it's open: the copy of it named
+// (see MT.viewId), or else the one most recently in front. With `another`, it
+// opens another copy of a view that's open (if it can be open more than once).
+MT.launchView = (id, callback, { another = false } = {}) => {
+  let { view, instance } = MT.parseViewId(id);
   if (!env.temp.componentCache[view]) {
-    fetchView(view).then(() => MT.launchView(view, callback), viewFailed);
+    fetchView(view).then(() => MT.launchView(id, callback, { another }), viewFailed);
   } else {
-    let contentItem = env.layout.contentItems.find(item => item.componentType === view);
+    const open = another && !MT.singleViews.includes(view) ? [] : env.layout.contentItems
+      .filter(item => item.componentType === view && (!instance || item.instance === instance));
+    let contentItem = recentViews.find(item => open.includes(item)) || open[0];
     if (contentItem) {
       contentItem.parent.setActiveComponentItem(contentItem, true);
       // A view still loading its script is set up when it has
@@ -392,7 +458,9 @@ MT.launchView = (view, callback) => {
     } else {
       if (!env.layout.rootItem) env.layout.loadLayout(emptyLayout);
       let lastStack = peek(stacks(env.layout.rootItem)) || env.layout.rootItem;
-      contentItem = lastStack.newComponent(view, undefined, MT.titleize(view));
+      if (!instance || another) instance = firstFree(instancesOf(view));
+      contentItem = lastStack.newComponent(view, { instance }, MT.viewTitle(view, instance));
+      contentItem.instance = instance;
       // The item is in the layout now; it is set up once its script has run
       // (the callback waits for that too)
       const ready = openView(contentItem);
@@ -429,7 +497,7 @@ const setupView = contentItem => {
 const hasLinks = () => env.session.data.graph.edgeCount > 0;
 const hasSequences = () => env.session.data.nodes.some(d => d.seq);
 const FILES_HINT = "Add them in the Files view (the File menu's Add Data).";
-const chosenField = key => { const v = MT.settings.get(key); return v != null && v !== "None" && v !== ""; };
+const chosenField = (key, settings = MT.settings) => { const v = settings.get(key); return v != null && v !== "None" && v !== ""; };
 const MAP_NEEDS = name => "The " + name + " places nodes by latitude and longitude columns, or by country, state, county or zipcode. Choose the columns that hold them in this view's settings (the gear). If the data has none, add a node list that does.";
 MT.viewNeeds = {
   sequences: () => hasSequences() ? "" : "This view lines up nodes' sequences, and none of these nodes has one. Add a FASTA file, or a node list with a sequence column. " + FILES_HINT,
@@ -437,18 +505,16 @@ MT.viewNeeds = {
     "A tree needs sequences, a distance matrix, or a Newick tree file. " + FILES_HINT,
   heatmap: () => hasLinks() || hasSequences() ? "" : "The heatmap draws the distances between nodes, which needs sequences (a FASTA file) or a distance matrix. " + FILES_HINT,
   waterfall: () => hasLinks() ? "" : "This view lists each cluster's links, and there are none. Links come from a link list, a distance matrix, or sequences close enough to link. " + FILES_HINT,
-  geo_map: () => MT.settingsHaveLocation("map-field-") ? "" : MAP_NEEDS("map"),
-  timeline: () => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || chosenField("timeline-date-field") ? "" :
-    "The epi curve counts nodes by date, and no column holds dates. Add a node list with a date column. " + FILES_HINT,
-  gantt: () => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || (MT.settings.get("gantt-dates") || []).length ? "" :
+  geo_map: settings => MT.settingsHaveLocation("map-field-", settings) ? "" : MAP_NEEDS("map"),
+  gantt: settings => MT.dateFields(env.session.data.nodes, env.session.data.nodeFields).length || (settings.get("gantt-dates") || []).length ? "" :
     "This view draws each node's dates as bars, and no column holds dates. Add a node list with a date column. " + FILES_HINT
 };
 
 // Whether a map view's settings (the prefix then a kind of location) name a
 // field of places or coordinates, once fields named for them are taken up
-MT.settingsHaveLocation = prefix => {
-  MT.pickLocationFields(MT.settings, prefix);
-  return [...MT.locationKinds, "lat", "lon"].some(kind => chosenField(prefix + kind));
+MT.settingsHaveLocation = (prefix, settings = MT.settings) => {
+  MT.pickLocationFields(settings, prefix);
+  return [...MT.locationKinds, "lat", "lon"].some(kind => chosenField(prefix + kind, settings));
 };
 
 // Shows or hides a view's note of what it needs. With no data at all every
@@ -466,7 +532,7 @@ MT.updateViewNeeds = contentItem => {
   if (!env.session.data.nodes.length) {
     text = "There's no data yet. Add files in the Files view (link or node lists, a distance matrix, FASTA or Newick), or look around with the demo data.";
   } else if (MT.viewNeeds[view]) {
-    try { text = MT.viewNeeds[view](); } catch (error) { console.error(error); }
+    try { text = MT.viewNeeds[view](settingsOf(contentItem)); } catch (error) { console.error(error); }
   }
   let note = element.querySelector(":scope > .view-needs");
   element.classList.toggle("view-needed", !!text);
@@ -499,26 +565,36 @@ MT.cacheLayout = contentItem => {
       content: contentItem.contentItems.map(MT.cacheLayout)
     };
   }
-  return { type: contentItem.componentType };
+  return { type: contentItem.componentType, ...(contentItem.instance > 1 ? { instance: contentItem.instance } : {}) };
 };
 
 // Replaces the layout with one saved by MT.cacheLayout
 MT.loadLayout = component => {
-  // A layout saved with several views that now open the same one gets it once
-  const views = [], toConfig = c => {
+  // A layout saved with several views that now open the same one gets it once,
+  // and so does one with several of a view that can be open only once
+  const views = [], instances = {}, leaves = [], containers = ["stack", "row", "column"];
+  const collect = c => containers.includes(c.type) ? (c.content || []).forEach(collect) : leaves.push(c.type);
+  collect(component || emptyLayout.root);
+  const toConfig = c => {
     if (["stack", "row", "column"].includes(c.type)) {
       const content = c.content.map(toConfig).filter(Boolean);
       // As launching them one by one did, the last view in each stack is active
       return c.type === "stack" ? { type: c.type, content, activeItemIndex: Math.max(content.length - 1, 0) } : { type: c.type, content };
     }
-    const view = MT.viewName(c.type);
-    if (views.includes(view)) return null;
-    views.push(view);
-    return { type: "component", componentType: view, title: MT.titleize(view) };
+    const view = MT.viewName(c.type), used = instances[view] || (instances[view] = []);
+    const retired = view !== c.type;
+    if (used.length && (retired || MT.singleViews.includes(view)) || retired && leaves.includes(view)) return null;
+    // (Each keeps its number, which names its settings)
+    const free = Number.isInteger(c.instance) && c.instance > 0 && c.instance < 100 && !used.includes(c.instance) && !MT.singleViews.includes(view);
+    const instance = free ? c.instance : firstFree(used);
+    used.push(instance);
+    if (!views.includes(view)) views.push(view);
+    return { type: "component", componentType: view, componentState: { instance }, title: MT.viewTitle(view, instance) };
   };
   const root = toConfig(component || emptyLayout.root);
   return Promise.all(views.map(fetchView)).then(() => {
     env.layout.loadLayout(Object.assign({}, emptyLayout, { root }));
+    env.layout.contentItems.forEach(item => { item.instance = item.container.initialState.instance; });
     // One at a time and in order, as each view's script runs when it loads.
     // Each item is marked as loading from the start, so a launchView for a
     // view still waiting its turn waits too, rather than setting up an empty

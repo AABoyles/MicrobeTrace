@@ -1152,28 +1152,52 @@ body.timeline-open #main-panel {
   display: none;
 }
 
-/* FLOW DIAGRAM */
-.flow-plot {
-  margin: 15px;
-  margin-top: 50px;
-  height: calc(100% - 65px);
+/* Graph */
+.graph-plot {
+  height: 100%;
 }
-.flow-variables {
+.graph-svg {
+  display: block;
+}
+
+/* Heatmap */
+.heatmap-plot {
+  position: relative;
+  height: 100%;
+}
+.heatmap-svg,
+.sankey-svg {
+  display: block;
+}
+.heatmap-note {
+  position: absolute;
+  top: 40%;
+  left: 0;
+  right: 0;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+/* Sankey diagram */
+.sankey-plot {
+  height: 100%;
+}
+.sankey-variables {
   padding-left: 0;
 }
-/* A flow variable: remove, its menu, and a grip to reorder, in one line */
-.flow-items {
+/* A Sankey diagram's variable: remove, its menu, and a grip to reorder, in one line */
+.sankey-items {
   list-style-type: none;
   display: flex;
   align-items: center;
   gap: 0.25rem;
   margin-bottom: 0.25rem;
 }
-.flow-selector {
+.sankey-selector {
   flex: 1;
   min-width: 0;
 }
-.flow-items .bi-grip-vertical,
+.sankey-items .bi-grip-vertical,
 .aggregation-items .bi-grip-vertical {
   cursor: grab;
 }
@@ -1270,27 +1294,6 @@ body.timeline-open #main-panel {
 .gantt {
   height: 100%;
   overflow-y: auto;
-}
-
-/* Timeline */
-.timeline-chart {
-  padding-top: 50px;
-}
-.timeline-chart .axis--grid .domain {
-  fill: #ddd;
-  stroke: none;
-}
-
-.timeline-chart .axis--x .domain,
-.timeline-chart .axis--grid .tick line {
-  stroke: #fff;
-}
-
-.timeline-chart .axis--grid .tick--minor line {
-  stroke-opacity: 0.5;
-}
-#timeline-date-field {
-  width: auto;
 }
 
 /* Waterfall View */

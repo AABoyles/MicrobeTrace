@@ -1,5 +1,5 @@
 import { image } from '../core.js';
-import { viewSchema, openSchema, settle, need, blobToDataURL, finish, runExport } from './helpers.js';
+import { idOf, viewSchema, openSchema, settle, need, blobToDataURL, finish, runExport } from './helpers.js';
 
 export default {
   name: 'export_view',
@@ -29,10 +29,10 @@ export default {
     await settle(100);
     const result = await runExport(item, { format, filename, scale, quality, download });
     if (download) {
-      return { view: item.componentType, downloaded: true, filename: result.name || result.filename, format: result.format, size: result.blob ? result.blob.size : null, note: result.note, formats: result.formats };
+      return { view: idOf(item), downloaded: true, filename: result.name || result.filename, format: result.format, size: result.blob ? result.blob.size : null, note: result.note, formats: result.formats };
     }
     const blob = result.blob;
-    const meta = { view: item.componentType, filename: result.name, format: result.format, mimeType: blob.type, size: blob.size, formats: result.formats };
+    const meta = { view: idOf(item), filename: result.name, format: result.format, mimeType: blob.type, size: blob.size, formats: result.formats };
     if (/^image\/(png|jpeg|webp)/.test(blob.type)) {
       const out = await finish(await blobToDataURL(blob), { maxWidth, format: blob.type === 'image/jpeg' ? 'jpeg' : 'png' });
       return image(out.dataURL, Object.assign(meta, { width: out.width, height: out.height }));

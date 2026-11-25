@@ -1,6 +1,6 @@
 // Colors and labels that match the data: the colors drawn for numbers and
 // empty values are their legend rows', with and without the timeline; links
-// on the map and globe and bars in the histogram follow the link legend, which
+// on the map and globe and bars in the graph follow the link legend, which
 // those views dock; legends show values as the data has them; and the
 // crosstab and aggregation name empty values, axes and order as the legends do.
 const fs = require('fs');
@@ -92,25 +92,25 @@ test('the map colors links by their first file, as the legend does, and docks it
   await closeView(page, 'geo_map');
 });
 
-test('the histogram colors bars by the legend of its dataset, the only one it docks', async () => {
+test('the graph colors bars by the legend of its dataset, the only one it docks', async () => {
   // The node legend needs a color variable (an earlier test may have set one, but not on its own)
   await colorBy('node', 'group');
   const colors = (await legend('link')).map(r => r.color);
-  await launchView(page, 'histogram');
-  // (The view mounts once Plotly has loaded, so the plot may not be there at first)
-  const bars = () => page.evaluate(() => (document.querySelector('.histogram-plot')?.data || []).map(t => t.marker.color));
+  await launchView(page, 'graph');
+  // (The view mounts once its code has loaded, so the plot may not be there at first)
+  const bars = () => page.evaluate(() => [...new Set([...document.querySelectorAll('.graph-svg .bar')].map(bar => bar.getAttribute('fill')))]);
   await expect.poll(async () => (await bars()).length).toBe(2);
   expect((await bars()).every(c => colors.includes(c))).toBe(true);
-  await expect.poll(() => docked('histogram', 'link')).toBe(true);
-  expect(await docked('histogram', 'node')).toBe(false);
+  await expect.poll(() => docked('graph', 'link')).toBe(true);
+  expect(await docked('graph', 'node')).toBe(false);
   // Charting a node variable docks the node legend instead
   const nodeColors = (await legend('node')).map(r => r.color);
-  await page.evaluate(() => MT.settings.set('histogram-variable', 'nodes-degree'));
-  await expect.poll(() => docked('histogram', 'node')).toBe(true);
-  expect(await docked('histogram', 'link')).toBe(false);
+  await page.evaluate(() => { MT.settings.set('graph-data', 'nodes'); MT.settings.set('graph-x', 'degree'); });
+  await expect.poll(() => docked('graph', 'node')).toBe(true);
+  expect(await docked('graph', 'link')).toBe(false);
   // (The bars are redrawn after the legend docks, so they're polled for)
   await expect.poll(async () => (await bars()).every(c => nodeColors.includes(c))).toBe(true);
-  await closeView(page, 'histogram');
+  await closeView(page, 'graph');
 });
 
 test('the crosstab labels empty values, names its axes and sorts both', async () => {
